@@ -1976,7 +1976,7 @@ config("optimize") {
       cflags = [ "-Os" ] + common_optimize_on_cflags
     }
   } else {
-    cflags = [ "-O2" ] + common_optimize_on_cflags
+    cflags = [ "-O3" ] + common_optimize_on_cflags
   }
   ldflags = common_optimize_on_ldflags
 }

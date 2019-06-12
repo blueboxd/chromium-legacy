@@ -17,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "headless/public/headless_shell.h"
 #include "ui/gfx/switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/app/chrome_main_mac.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_details.h"
+
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -85,15 +87,17 @@ int ChromeMain(int argc, const char** argv) {
   params.argc = argc;
   params.argv = argv;
   base::CommandLine::Init(params.argc, params.argv);
+  
 #endif  // defined(OS_WIN)
   base::CommandLine::Init(0, nullptr);
-  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  command_line->AppendSwitch(service_manager::switches::kNoSandbox);
   ALLOW_UNUSED_LOCAL(command_line);
 
 #if defined(OS_MACOSX)
   SetUpBundleOverrides();
 #endif
-
+  command_line->AppendSwitch(service_manager::switches::kNoSandbox);
   // Start the sampling profiler as early as possible - namely, once the command
   // line data is available. Allocated as an object on the stack to ensure that
   // the destructor runs on shutdown, which is important to avoid the profiler

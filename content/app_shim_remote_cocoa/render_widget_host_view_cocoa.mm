@@ -1149,6 +1149,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
+#if 0
 #if defined(MAC_OS_X_VERSION_10_11) && \
     MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
   // When linking against the 10.11 (or later) SDK and running on 10.11 or
@@ -1175,7 +1176,7 @@ void ExtractUnderlines(NSAttributedString* string,
       event.phase == NSEventPhaseCancelled) {
     return;
   }
-
+#endif
   WebGestureEvent updateEvent = WebGestureEventBuilder::Build(event, self);
   hostHelper_->GestureUpdate(updateEvent);
 }

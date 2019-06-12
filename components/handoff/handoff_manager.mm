@@ -78,28 +78,28 @@
 
 - (void)updateUserActivity {
   // Clear the user activity.
-  if (![self shouldUseActiveURL]) {
-    [self.userActivity invalidate];
-    self.userActivity = nil;
-    return;
-  }
-
-  // No change to the user activity.
-  const GURL userActivityURL(net::GURLWithNSURL(self.userActivity.webpageURL));
-  if (userActivityURL == _activeURL)
-    return;
-
-  // Invalidate the old user activity and make a new one.
-  [self.userActivity invalidate];
-
-  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
-      initWithActivityType:NSUserActivityTypeBrowsingWeb]);
-  self.userActivity = userActivity;
-  self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
-  NSString* origin = handoff::StringFromOrigin(_origin);
-  DCHECK(origin);
-  self.userActivity.userInfo = @{ handoff::kOriginKey : origin };
-  [self.userActivity becomeCurrent];
+//  if (![self shouldUseActiveURL]) {
+//    [self.userActivity invalidate];
+//    self.userActivity = nil;
+//    return;
+//  }
+//
+//  // No change to the user activity.
+//  const GURL userActivityURL(net::GURLWithNSURL(self.userActivity.webpageURL));
+//  if (userActivityURL == _activeURL)
+//    return;
+//
+//  // Invalidate the old user activity and make a new one.
+//  [self.userActivity invalidate];
+//
+//  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
+//      initWithActivityType:NSUserActivityTypeBrowsingWeb]);
+//  self.userActivity = userActivity;
+//  self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
+//  NSString* origin = handoff::StringFromOrigin(_origin);
+//  DCHECK(origin);
+//  self.userActivity.userInfo = @{ handoff::kOriginKey : origin };
+//  [self.userActivity becomeCurrent];
 }
 
 @end

@@ -558,13 +558,13 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
       // and end NSEvents come in. Leave them undefined. The caller will need
       // to specify them when the gesture is differentiated.
       break;
-    case NSEventTypeScrollWheel:
-      // When building against the 10.11 SDK or later, and running on macOS
-      // 10.11+, Cocoa no longer sends separate Begin/End gestures for scroll
-      // events. However, it's convenient to use the same path as the older
-      // OSes, to avoid logic duplication. We just need to support building a
-      // dummy WebGestureEvent.
-      break;
+//    case NSEventTypeScrollWheel:
+//      // When building against the 10.11 SDK or later, and running on macOS
+//      // 10.11+, Cocoa no longer sends separate Begin/End gestures for scroll
+//      // events. However, it's convenient to use the same path as the older
+//      // OSes, to avoid logic duplication. We just need to support building a
+//      // dummy WebGestureEvent.
+//      break;
     default:
       NOTIMPLEMENTED();
   }

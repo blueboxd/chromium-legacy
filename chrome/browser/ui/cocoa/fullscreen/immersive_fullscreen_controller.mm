@@ -129,8 +129,9 @@ const CGFloat kMenubarHideZoneHeight = 28;
   NSScreen* primaryScreen = [[NSScreen screens] firstObject];
   BOOL isWindowOnPrimaryScreen = [screen isEqual:primaryScreen];
 
-  BOOL eachScreenShouldHaveMenuBar = [NSScreen screensHaveSeparateSpaces];
-  return eachScreenShouldHaveMenuBar ?: isWindowOnPrimaryScreen;
+//  BOOL eachScreenShouldHaveMenuBar = [NSScreen screensHaveSeparateSpaces];
+//  return eachScreenShouldHaveMenuBar ?: isWindowOnPrimaryScreen;
+return YES;
 }
 
 - (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode {

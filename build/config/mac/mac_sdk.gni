@@ -102,7 +102,7 @@ if (mac_sdk_version != mac_sdk_min &&
                   "test",
                   xcode_version,
                   "-ge",
-                  "0730",
+                  "0001",
                 ],
                 "value") != 1) {
   print(

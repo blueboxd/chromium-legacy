@@ -46,14 +46,34 @@ bool CreateMachPort(ScopedMachReceiveRight* receive,
     options.mpl.mpl_qlimit = *queue_limit;
   }
 
-  kern_return_t kr =
-      mach_port_construct(mach_task_self(), &options, 0,
-                          ScopedMachReceiveRight::Receiver(*receive).get());
+  mach_port_t name;
+  kern_return_t kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &name);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_allocate";
+  }
+
+  kr = mach_port_insert_right(mach_task_self(), name, name, MACH_MSG_TYPE_MAKE_SEND);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_insert_right:MACH_MSG_TYPE_MAKE_SEND";
+  }
+  kr = mach_port_insert_right(mach_task_self(), name, name, MACH_MSG_TYPE_PORT_SEND);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_construct:MACH_MSG_TYPE_PORT_SEND";
+  }
+
+//  kern_return_t kr =
+//      mach_port_construct(mach_task_self(), &options, 0,
+//                          ScopedMachReceiveRight::Receiver(*receive).get());
+    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, ScopedMachReceiveRight::Receiver(*receive).get());
+//  kr = mach_port_insert_right(mach_task_self(), *ScopedMachReceiveRight::Receiver(*receive).get(), *ScopedMachReceiveRight::Receiver(*receive).get(), MACH_MSG_TYPE_MAKE_SEND);
+//  kr = mach_port_insert_right(mach_task_self(), *ScopedMachReceiveRight::Receiver(*receive).get(), *ScopedMachReceiveRight::Receiver(*receive).get(), MACH_MSG_TYPE_PORT_SEND);
+//  kr = mach_port_set_attributes(mach_task_self(), *ScopedMachReceiveRight::Receiver(*receive).get(), MACH_PORT_LIMITS_INFO,
+//					      (mach_port_info_t)(&options.mpl), sizeof(options.mpl)/sizeof(int));
   if (kr != KERN_SUCCESS) {
     MACH_LOG(ERROR, kr) << "mach_port_construct";
     return false;
   }
-
+	*ScopedMachReceiveRight::Receiver(*receive).get() = name;
   // Multiple rights are coalesced to the same name in a task, so assign the
   // send rights to the same name.
   if (send) {

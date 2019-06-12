@@ -181,39 +181,39 @@ NSString* const kRemindersSharingServiceName =
 
 // Performs the share action using the sharing service represented by |sender|.
 - (void)performShare:(NSMenuItem*)sender {
-  Browser* browser = chrome::FindLastActive();
-  DCHECK(browser);
-  [self saveTransitionDataFromBrowser:browser];
-
-  content::WebContents* contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
-  NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
-
-  NSSharingService* service =
-      base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
-  [service setDelegate:self];
-  [service setSubject:title];
-
-  NSArray* itemsToShare;
-  if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
-    // The Twitter share service expects the title as an additional share item.
-    // This is the same approach system apps use.
-    itemsToShare = @[ url, title ];
-  } else {
-    itemsToShare = @[ url ];
-  }
-  if ([[service name] isEqual:kRemindersSharingServiceName]) {
-    activity_.reset([[NSUserActivity alloc]
-        initWithActivityType:NSUserActivityTypeBrowsingWeb]);
-    // webpageURL must be http or https or an exception is thrown.
-    if ([url.scheme hasPrefix:@"http"]) {
-      [activity_ setWebpageURL:url];
-    }
-    [activity_ setTitle:title];
-    [activity_ becomeCurrent];
-  }
-  [service performWithItems:itemsToShare];
+//  Browser* browser = chrome::FindLastActive();
+//  DCHECK(browser);
+//  [self saveTransitionDataFromBrowser:browser];
+//
+//  content::WebContents* contents =
+//      browser->tab_strip_model()->GetActiveWebContents();
+//  NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
+//  NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
+//
+//  NSSharingService* service =
+//      base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
+//  [service setDelegate:self];
+//  [service setSubject:title];
+//
+//  NSArray* itemsToShare;
+//  if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
+//    // The Twitter share service expects the title as an additional share item.
+//    // This is the same approach system apps use.
+//    itemsToShare = @[ url, title ];
+//  } else {
+//    itemsToShare = @[ url ];
+//  }
+//  if ([[service name] isEqual:kRemindersSharingServiceName]) {
+//    activity_.reset([[NSUserActivity alloc]
+//        initWithActivityType:NSUserActivityTypeBrowsingWeb]);
+//    // webpageURL must be http or https or an exception is thrown.
+//    if ([url.scheme hasPrefix:@"http"]) {
+//      [activity_ setWebpageURL:url];
+//    }
+//    [activity_ setTitle:title];
+//    [activity_ becomeCurrent];
+//  }
+//  [service performWithItems:itemsToShare];
 }
 
 // Opens the "Sharing" subpane of the "Extensions" macOS preference pane.

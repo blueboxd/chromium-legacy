@@ -209,17 +209,17 @@ bool IsSignedWithEnforcement() {
   if (status != noErr)
     return false;
 
-  CFNumberRef signing_flags_cf = base::mac::GetValueFromDictionary<CFNumberRef>(
-      signing_info, kSecCodeInfoFlags);
-  if (!signing_flags_cf)
-    return false;
-
-  int signing_flags = 0;
-  if (!CFNumberGetValue(signing_flags_cf, kCFNumberIntType, &signing_flags))
-    return false;
-
-  return (signing_flags & kSecCodeSignatureRuntime) ||
-         (signing_flags & kSecCodeSignatureEnforcement);
+//  CFNumberRef signing_flags_cf = base::mac::GetValueFromDictionary<CFNumberRef>(
+//      signing_info, kSecCodeInfoFlags);
+//  if (!signing_flags_cf)
+//    return false;
+//
+//  int signing_flags = 0;
+//  if (!CFNumberGetValue(signing_flags_cf, kCFNumberIntType, &signing_flags))
+//    return false;
+//
+//  return (signing_flags & kSecCodeSignatureRuntime) ||
+//         (signing_flags & kSecCodeSignatureEnforcement);
 }
 
 }  // namespace

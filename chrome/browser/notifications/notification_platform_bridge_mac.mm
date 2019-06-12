@@ -517,6 +517,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 }
 
 - (instancetype)init {
+	return nil;
   if ((self = [super init])) {
     xpcConnection_.reset([[NSXPCConnection alloc]
         initWithServiceName:

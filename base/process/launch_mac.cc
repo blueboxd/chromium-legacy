@@ -186,7 +186,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
   PosixSpawnAttr attr;
 
-  short flags = POSIX_SPAWN_CLOEXEC_DEFAULT;
+  short flags = 0;//POSIX_SPAWN_CLOEXEC_DEFAULT;
   if (options.new_process_group) {
     flags |= POSIX_SPAWN_SETPGROUP;
     DPSXCHECK(posix_spawnattr_setpgroup(attr.get(), 0));

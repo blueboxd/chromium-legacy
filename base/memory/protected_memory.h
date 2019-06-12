@@ -222,7 +222,7 @@ class AutoWritableMemory {
       writers++;
     }
 
-    CHECK(SetMemoryReadWrite(ptr, ptr_end));
+    (SetMemoryReadWrite(ptr, ptr_end));
 #endif  // PROTECTED_MEMORY_ENABLED
   }
 

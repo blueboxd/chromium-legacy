@@ -74,15 +74,15 @@ typedef NSUInteger NSSpringLoadingHighlight;
 // them to be statically linked.
 // ----------------------------------------------------------------------------
 
-extern "C" {
-#if !defined(MAC_OS_X_VERSION_10_10) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
-BASE_EXPORT extern NSString* const CIDetectorTypeQRCode;
-BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
-BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
-BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
-#endif  // MAC_OS_X_VERSION_10_10
-}  // extern "C"
+//extern "C" {
+//#if !defined(MAC_OS_X_VERSION_10_10) || \
+//    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
+//BASE_EXPORT extern NSString* const CIDetectorTypeQRCode;
+//BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
+//BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
+//BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
+//#endif  // MAC_OS_X_VERSION_10_10
+//}  // extern "C"
 
 // ----------------------------------------------------------------------------
 // If compiling against an older version of the OSX SDK, declare classes and

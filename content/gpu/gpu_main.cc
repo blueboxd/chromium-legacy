@@ -101,11 +101,11 @@
 #endif
 
 #if defined(OS_MACOSX)
-extern "C" {
-void _LSSetApplicationLaunchServicesServerConnectionStatus(
-    uint64_t flags,
-    bool (^connection_allowed)(CFDictionaryRef));
-}
+//extern "C" {
+//void _LSSetApplicationLaunchServicesServerConnectionStatus(
+//    uint64_t flags,
+//    bool (^connection_allowed)(CFDictionaryRef));
+//}
 #endif  // defined(OS_MACOSX)
 
 namespace content {
@@ -284,7 +284,7 @@ int GpuMain(const MainFunctionParams& parameters) {
             base::MessagePump::Type::NS_RUNLOOP);
 
     // Tell LaunchServices to continue without a connection to the daemon.
-    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
+//    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(

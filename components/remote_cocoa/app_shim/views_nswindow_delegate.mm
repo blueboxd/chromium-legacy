@@ -128,19 +128,19 @@
 
 - (void)windowWillClose:(NSNotification*)notification {
   NSWindow* window = parent_->ns_window();
-  if (NSWindow* sheetParent = [window sheetParent]) {
-    // On no! Something called -[NSWindow close] on a sheet rather than calling
-    // -[NSWindow endSheet:] on its parent. If the modal session is not ended
-    // then the parent will never be able to show another sheet. But calling
-    // -endSheet: here will block the thread with an animation, so post a task.
-    // Use a block: The argument to -endSheet: must be retained, since it's the
-    // window that is closing and -performSelector: won't retain the argument
-    // (putting |window| on the stack above causes this block to retain it).
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(base::RetainBlock(^{
-          [sheetParent endSheet:window];
-        })));
-  }
+//  if (NSWindow* sheetParent = [window sheetParent]) {
+//    // On no! Something called -[NSWindow close] on a sheet rather than calling
+//    // -[NSWindow endSheet:] on its parent. If the modal session is not ended
+//    // then the parent will never be able to show another sheet. But calling
+//    // -endSheet: here will block the thread with an animation, so post a task.
+//    // Use a block: The argument to -endSheet: must be retained, since it's the
+//    // window that is closing and -performSelector: won't retain the argument
+//    // (putting |window| on the stack above causes this block to retain it).
+//    base::ThreadTaskRunnerHandle::Get()->PostTask(
+//        FROM_HERE, base::BindOnce(base::RetainBlock(^{
+//          [sheetParent endSheet:window];
+//        })));
+//  }
   DCHECK([window isEqual:[notification object]]);
   parent_->OnWindowWillClose();
   // |self| may be deleted here (it's NSObject, so who really knows).

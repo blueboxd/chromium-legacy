@@ -30,8 +30,21 @@ WaitableEvent::WaitableEvent(ResetPolicy reset_policy,
   options.mpl.mpl_qlimit = 1;
 
   mach_port_t name;
-  kern_return_t kr = mach_port_construct(mach_task_self(), &options, 0, &name);
-  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_construct";
+//  kern_return_t kr = mach_port_construct(mach_task_self(), &options, 0, &name);
+//  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_construct";
+  kern_return_t kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &name);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_allocate";
+  }
+
+  kr = mach_port_insert_right(mach_task_self(), name, name, MACH_MSG_TYPE_MAKE_SEND);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_insert_right:MACH_MSG_TYPE_MAKE_SEND";
+  }
+  kr = mach_port_insert_right(mach_task_self(), name, name, MACH_MSG_TYPE_PORT_SEND);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "mach_port_construct:MACH_MSG_TYPE_PORT_SEND";
+  }
 
   receive_right_ = new ReceiveRight(name, UseSlowWatchList(policy_));
   send_right_.reset(name);
@@ -338,21 +351,21 @@ bool WaitableEvent::PeekPort(mach_port_t port, bool dequeue) {
       return false;
     }
   } else {
-    mach_port_seqno_t seqno = 0;
-    mach_msg_size_t size;
-    mach_msg_id_t id;
-    mach_msg_trailer_t trailer;
-    mach_msg_type_number_t trailer_size = sizeof(trailer);
-    kern_return_t kr = mach_port_peek(
-        mach_task_self(), port, MACH_RCV_TRAILER_TYPE(MACH_RCV_TRAILER_NULL),
-        &seqno, &size, &id, reinterpret_cast<mach_msg_trailer_info_t>(&trailer),
-        &trailer_size);
-    if (kr == KERN_SUCCESS) {
-      return true;
-    } else {
-      MACH_CHECK(kr == KERN_FAILURE, kr) << "mach_port_peek";
-      return false;
-    }
+//    mach_port_seqno_t seqno = 0;
+//    mach_msg_size_t size;
+//    mach_msg_id_t id;
+//    mach_msg_trailer_t trailer;
+//    mach_msg_type_number_t trailer_size = sizeof(trailer);
+//    kern_return_t kr = mach_port_peek(
+//        mach_task_self(), port, MACH_RCV_TRAILER_TYPE(MACH_RCV_TRAILER_NULL),
+//        &seqno, &size, &id, reinterpret_cast<mach_msg_trailer_info_t>(&trailer),
+//        &trailer_size);
+//    if (kr == KERN_SUCCESS) {
+//      return true;
+//    } else {
+//      MACH_CHECK(kr == KERN_FAILURE, kr) << "mach_port_peek";
+//      return false;
+//    }
   }
 }
 

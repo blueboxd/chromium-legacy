@@ -297,13 +297,13 @@ const ActionList& GetActionList() {
 }
 
 void PostAnnouncementNotification(NSString* announcement) {
-  NSDictionary* notification_info = @{
-    NSAccessibilityAnnouncementKey : announcement,
-    NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
-  };
-  NSAccessibilityPostNotificationWithUserInfo(
-      [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification,
-      notification_info);
+//  NSDictionary* notification_info = @{
+//    NSAccessibilityAnnouncementKey : announcement,
+//    NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+//  };
+//  NSAccessibilityPostNotificationWithUserInfo(
+//      [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification,
+//      notification_info);
 }
 
 void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {

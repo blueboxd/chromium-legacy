@@ -548,9 +548,11 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
   }
 
   if (ocsp_response_ref) {
+   if (__builtin_available(macOS 10.9, *)) {
     status = SecTrustSetOCSPResponse(tmp_trust, ocsp_response_ref);
     if (status)
       return NetErrorFromOSStatus(status);
+	}
   }
 
   if (sct_array_ref) {

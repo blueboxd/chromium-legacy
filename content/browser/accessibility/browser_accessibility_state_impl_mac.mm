@@ -31,6 +31,7 @@ void SetupAccessibilityDisplayOptionsNotifier() {
   // so ensure that we setup the notification on the correct thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (@available(macOS 10.10, *)) {
   // Listen to accessibility display options changing, so that we can update
   // the renderer for the prefers reduced motion settings.
   //
@@ -48,6 +49,7 @@ void SetupAccessibilityDisplayOptionsNotifier() {
                   wc->GetRenderViewHost()->OnWebkitPreferencesChanged();
                 }
               }];
+	}
 }
 }  // namespace
 

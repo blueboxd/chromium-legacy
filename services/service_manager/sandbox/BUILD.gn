@@ -92,6 +92,7 @@ component("sandbox") {
       "CoreGraphics.framework",
       "Foundation.framework",
       "IOSurface.framework",
+      "ImageIO.framework",
     ]
   }
   if (is_win) {

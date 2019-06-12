@@ -16,7 +16,7 @@
 #include "ui/native_theme/caption_style.h"
 
 namespace ui {
-
+#if 0
 namespace {
 
 constexpr auto kUserDomain = kMACaptionAppearanceDomainUser;
@@ -121,17 +121,17 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 }
 
 }  // namespace
-
+#endif
 // static
 CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
 
-  style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
-  style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
-  style.text_size = GetMATextScaleAsCSSPercent();
-  style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
-
-  GetMAFontAsCSSFontSpecifiers(&style.font_family, &style.font_variant);
+//  style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
+//  style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
+//  style.text_size = GetMATextScaleAsCSSPercent();
+//  style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
+//
+//  GetMAFontAsCSSFontSpecifiers(&style.font_family, &style.font_variant);
 
   return style;
 }

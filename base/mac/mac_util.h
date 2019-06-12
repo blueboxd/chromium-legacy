@@ -117,7 +117,7 @@ BASE_EXPORT int MacOSXMinorVersion();
 // base::SysInfo::OperatingSystemVersionNumbers. Prefer the "AtLeast" and
 // "AtMost" variants to those that check for a specific version, unless you know
 // for sure that you need to check for a specific version.
-
+#define __MAC_OS_X_VERSION_MIN_REQUIRED__ 1070
 #define DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, TEST_DEPLOYMENT_TARGET) \
   inline bool IsOS10_##V() {                                          \
     TEST_DEPLOYMENT_TARGET(>, V, false)                               \
@@ -136,7 +136,7 @@ BASE_EXPORT int MacOSXMinorVersion();
   }
 
 #define TEST_DEPLOYMENT_TARGET(OP, V, RET)                      \
-  if (MAC_OS_X_VERSION_MIN_REQUIRED OP MAC_OS_X_VERSION_10_##V) \
+  if (__MAC_OS_X_VERSION_MIN_REQUIRED__ OP MAC_OS_X_VERSION_10_##V) \
     return RET;
 #define IGNORE_DEPLOYMENT_TARGET(OP, V, RET)
 

@@ -222,11 +222,11 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   SetDelayedWorkTimerValid(true);
 
   // The tolerance needs to be set before the fire date or it may be ignored.
-  if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
-    CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
-  } else {
-    CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
-  }
+//  if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
+//    CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
+//  } else {
+//    CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
+//  }
   CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
 }
 

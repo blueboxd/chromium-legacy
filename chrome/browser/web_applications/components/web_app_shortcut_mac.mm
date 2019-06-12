@@ -1028,8 +1028,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesByIdUnsorted()
       base::SysUTF8ToCFStringRef(bundle_id));
 
   // Retrieve the URLs found by LaunchServices.
-  base::scoped_nsobject<NSArray> urls(base::mac::CFToNSCast(
-      LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
+  base::scoped_nsobject<NSArray> urls(NULL);
 
   // Store only those results corresponding to this user data dir.
   std::vector<base::FilePath> paths;

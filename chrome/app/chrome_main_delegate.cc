@@ -796,6 +796,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 void ChromeMainDelegate::InitMacCrashReporter(
     const base::CommandLine& command_line,
     const std::string& process_type) {
+	return;
   // TODO(mark): Right now, InitializeCrashpad() needs to be called after
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Crashpad
   // initialization could occur sooner, preferably even before the framework

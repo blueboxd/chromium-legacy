@@ -10,10 +10,10 @@
 #include "base/mac/mac_logging.h"
 
 extern "C" {
-OSStatus SetApplicationIsDaemon(Boolean isDaemon);
-void _LSSetApplicationLaunchServicesServerConnectionStatus(
-    uint64_t flags,
-    bool (^connection_allowed)(CFDictionaryRef options));
+//OSStatus SetApplicationIsDaemon(Boolean isDaemon);
+//void _LSSetApplicationLaunchServicesServerConnectionStatus(
+//    uint64_t flags,
+//    bool (^connection_allowed)(CFDictionaryRef options));
 }  // extern "C"
 
 namespace sandbox {
@@ -23,15 +23,15 @@ void DisableLaunchServices() {
   // INIT_Process function in HIServices will abort if it cannot connect to
   // launchservicesd to get an ASN. By setting this flag, HIServices skips
   // that.
-  OSStatus status = SetApplicationIsDaemon(true);
-  OSSTATUS_LOG_IF(ERROR, status != noErr, status) << "SetApplicationIsDaemon";
+//  OSStatus status = SetApplicationIsDaemon(true);
+//  OSSTATUS_LOG_IF(ERROR, status != noErr, status) << "SetApplicationIsDaemon";
 
   // Close any connections to launchservicesd and use an always-false predicate
   // to discourage future attempts to connect.
-  _LSSetApplicationLaunchServicesServerConnectionStatus(
-      0, ^bool(CFDictionaryRef options) {
-        return false;
-      });
+//  _LSSetApplicationLaunchServicesServerConnectionStatus(
+//      0, ^bool(CFDictionaryRef options) {
+//        return false;
+//      });
 }
 
 }  // namespace sandbox

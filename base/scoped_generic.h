@@ -209,30 +209,30 @@ class ScopedGeneric {
   class Receiver {
    public:
     explicit Receiver(ScopedGeneric& parent) : scoped_generic_(&parent) {
-      CHECK(!scoped_generic_->receiving_)
-          << "attempted to construct Receiver for ScopedGeneric with existing "
-             "Receiver";
+//      CHECK(!scoped_generic_->receiving_)
+//          << "attempted to construct Receiver for ScopedGeneric with existing "
+//             "Receiver";
       scoped_generic_->receiving_ = true;
     }
 
     ~Receiver() {
       if (scoped_generic_) {
-        CHECK(scoped_generic_->receiving_);
+//        CHECK(scoped_generic_->receiving_);
         scoped_generic_->reset(value_);
         scoped_generic_->receiving_ = false;
       }
     }
 
     Receiver(Receiver&& move) {
-      CHECK(!used_) << "moving into already-used Receiver";
-      CHECK(!move.used_) << "moving from already-used Receiver";
+//      CHECK(!used_) << "moving into already-used Receiver";
+//      CHECK(!move.used_) << "moving from already-used Receiver";
       scoped_generic_ = move.scoped_generic_;
       move.scoped_generic_ = nullptr;
     }
 
     Receiver& operator=(Receiver&& move) {
-      CHECK(!used_) << "moving into already-used Receiver";
-      CHECK(!move.used_) << "moving from already-used Receiver";
+//      CHECK(!used_) << "moving into already-used Receiver";
+//      CHECK(!move.used_) << "moving from already-used Receiver";
       scoped_generic_ = move.scoped_generic_;
       move.scoped_generic_ = nullptr;
     }

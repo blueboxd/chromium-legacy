@@ -119,7 +119,7 @@ SkColor NSSystemColorToSkColor(NSColor* color) {
   // "-numberOfComponents not valid for the NSColor NSNamedColorSpace System
   // windowBackgroundColor; need to first convert colorspace." Hence the
   // conversion first to CGColor.
-  CGColorRef cg_color = [color CGColor];
+  CGColorRef cg_color = (CGColorRef)color;//[color CGColor];
   const size_t component_count = CGColorGetNumberOfComponents(cg_color);
   if (component_count == 4)
     return skia::CGColorRefToSkColor(cg_color);
@@ -272,16 +272,16 @@ NativeThemeMac::NativeThemeMac() {
   if (!IsForcedHighContrast()) {
     set_high_contrast(IsHighContrast());
     __block auto theme = this;
-    high_contrast_notification_token_ =
-        [[[NSWorkspace sharedWorkspace] notificationCenter]
-            addObserverForName:
-                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-                        object:nil
-                         queue:nil
-                    usingBlock:^(NSNotification* notification) {
-                      theme->set_high_contrast(IsHighContrast());
-                      theme->NotifyObservers();
-                    }];
+//    high_contrast_notification_token_ =
+//        [[[NSWorkspace sharedWorkspace] notificationCenter]
+//            addObserverForName:
+//                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+//                        object:nil
+//                         queue:nil
+//                    usingBlock:^(NSNotification* notification) {
+//                      theme->set_high_contrast(IsHighContrast());
+//                      theme->NotifyObservers();
+//                    }];
   }
 }
 

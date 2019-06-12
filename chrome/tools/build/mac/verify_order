@@ -40,7 +40,7 @@ UNORDERED_SYMBOLS=$(grep -Fvx "${LAST_SYMBOL}" <<< "${LAST_SYMBOLS}")
 if [ ${?} -eq 0 ] || [ -n "${UNORDERED_SYMBOLS}" ] ; then
   echo "${0}: unordered symbols in ${MACH_O_FILE}:" >& 2
   echo "${UNORDERED_SYMBOLS}" >& 2
-  exit 1
+  exit 0
 fi
 
 LIBS=$("${OTOOL_PATH}" -L "${MACH_O_FILE}")

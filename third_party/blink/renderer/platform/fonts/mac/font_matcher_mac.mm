@@ -181,8 +181,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
 // On OSX 10.10+, the default system font has more weights.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
-    font = [NSFont systemFontOfSize:size
-                             weight:toYosemiteFontWeight(desired_weight)];
+    font = [NSFont systemFontOfSize:size];
 #pragma clang diagnostic pop
 
     if (desired_traits & IMPORTANT_FONT_TRAITS)

@@ -84,6 +84,13 @@ if (is_component_build) {
     public_deps =
         content_shared_components + [ "//content/public/app:both_sources" ]
   }
+  if(is_mac) {
+    libs = [
+      "CoreServices.framework",
+      "CoreText.framework",
+      "ApplicationServices.framework",
+    ]
+  }
 } else if (is_nacl_nonsfi) {
   source_set("content") {
     set_sources_assignment_filter([])

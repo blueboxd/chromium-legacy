@@ -251,7 +251,7 @@ test("device_unittests") {
     if (mac_sdk_version == "10.10") {
       ldflags += [
         "-weak_framework",
-        "CoreBluetooth",
+        "IOBluetooth",
       ]
     }
   }

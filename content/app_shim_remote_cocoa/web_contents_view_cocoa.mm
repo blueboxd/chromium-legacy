@@ -263,10 +263,10 @@ using content::DropData;
   Visibility visibility = Visibility::kVisible;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
     visibility = Visibility::kHidden;
-  else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
-    visibility = Visibility::kVisible;
+//  else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
+//    visibility = Visibility::kVisible;
   else
-    visibility = Visibility::kOccluded;
+    visibility = Visibility::kVisible;
   host_->OnWindowVisibilityChanged(visibility);
 }
 
@@ -291,18 +291,18 @@ using content::DropData;
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
-  if (oldWindow) {
-    [notificationCenter
-        removeObserver:self
-                  name:NSWindowDidChangeOcclusionStateNotification
-                object:oldWindow];
-  }
-  if (newWindow) {
-    [notificationCenter addObserver:self
-                           selector:@selector(windowChangedOcclusionState:)
-                               name:NSWindowDidChangeOcclusionStateNotification
-                             object:newWindow];
-  }
+//  if (oldWindow) {
+//    [notificationCenter
+//        removeObserver:self
+//                  name:NSWindowDidChangeOcclusionStateNotification
+//                object:oldWindow];
+//  }
+//  if (newWindow) {
+//    [notificationCenter addObserver:self
+//                           selector:@selector(windowChangedOcclusionState:)
+//                               name:NSWindowDidChangeOcclusionStateNotification
+//                             object:newWindow];
+//  }
 }
 
 - (void)windowChangedOcclusionState:(NSNotification*)notification {

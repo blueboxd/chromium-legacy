@@ -26,7 +26,7 @@
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>
-	<string>${CHROMIUM_MIN_SYSTEM_VERSION}</string>
+	<string>10.7</string>
 	<key>LSUIElement</key>
 	<string>1</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

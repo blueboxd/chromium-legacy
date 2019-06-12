@@ -489,7 +489,7 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
 bool VTVideoEncodeAccelerator::CreateCompressionSession(
     const gfx::Size& input_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
+return false;
   std::vector<CFTypeRef> encoder_keys(
       1, kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder);
   std::vector<CFTypeRef> encoder_values(1, kCFBooleanTrue);
@@ -506,13 +506,7 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
   // and invalidated. Internally, VideoToolbox will join all of its threads
   // before returning to the client. Therefore, when control returns to us, we
   // are guaranteed that the output callback will not execute again.
-  OSStatus status = VTCompressionSessionCreate(
-      kCFAllocatorDefault, input_size.width(), input_size.height(),
-      kCMVideoCodecType_H264, encoder_spec,
-      nullptr /* sourceImageBufferAttributes */,
-      nullptr /* compressedDataAllocator */,
-      &VTVideoEncodeAccelerator::CompressionCallback,
-      reinterpret_cast<void*>(this), compression_session_.InitializeInto());
+OSStatus status=-1;
   if (status != noErr) {
     DLOG(ERROR) << " VTCompressionSessionCreate failed: " << status;
     return false;

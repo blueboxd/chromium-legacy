@@ -288,10 +288,10 @@ NativeWidgetNSWindowBridge::CreateNSWindow(
       break;
   }
 
-  if (params->titlebar_appears_transparent)
-    [ns_window setTitlebarAppearsTransparent:YES];
-  if (params->window_title_hidden)
-    [ns_window setTitleVisibility:NSWindowTitleHidden];
+//  if (params->titlebar_appears_transparent)
+//    [ns_window setTitlebarAppearsTransparent:YES];
+//  if (params->window_title_hidden)
+//    [ns_window setTitleVisibility:NSWindowTitleHidden];
   if (params->animation_enabled)
     [ns_window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
 

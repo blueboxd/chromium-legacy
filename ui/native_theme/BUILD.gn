@@ -62,7 +62,8 @@ jumbo_component("native_theme") {
     libs = [
       "CoreGraphics.framework",
       "AppKit.framework",
-      "MediaAccessibility.framework",
+#      "MediaAccessibility.framework",
+      "CoreText.framework",
     ]
   }
 }

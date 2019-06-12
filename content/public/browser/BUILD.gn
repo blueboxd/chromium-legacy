@@ -28,7 +28,6 @@ jumbo_source_set("browser_sources") {
     "android/child_process_importance.h",
     "android/compositor.h",
     "android/compositor_client.h",
-    "android/content_protocol_handler.h",
     "android/devtools_auth.h",
     "android/gpu_video_accelerator_factories_provider.h",
     "android/java_interfaces.h",
@@ -385,7 +384,7 @@ jumbo_source_set("browser_sources") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
-    "//services/ws/public/mojom",
+    "//services/viz/public/interfaces",
     "//third_party/webrtc/modules/desktop_capture",
 
     # We expose skia headers in the public API.
@@ -431,14 +430,6 @@ jumbo_source_set("browser_sources") {
 
   if (use_aura || is_mac) {
     sources += [ "context_factory.h" ]
-  }
-
-  if (use_aura) {
-    sources += [ "gpu_interface_provider_factory.h" ]
-    deps += [
-      "//services/ws/public/cpp/host",
-      "//ui/aura",
-    ]
   }
 
   if (is_mac) {

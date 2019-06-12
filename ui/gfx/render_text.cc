@@ -1073,8 +1073,36 @@ base::string16 RenderText::GetTextFromRange(const Range& range) const {
 }
 
 bool RenderText::IsNewlineSegment(const internal::LineSegment& segment) const {
-  DCHECK_LT(segment.char_range.start(), text_.length());
-  return text_[segment.char_range.start()] == '\n';
+  return IsNewlineSegment(text_, segment);
+}
+
+bool RenderText::IsNewlineSegment(const base::string16& text,
+                                  const internal::LineSegment& segment) const {
+  DCHECK_LT(segment.char_range.start(), text.length());
+  return text[segment.char_range.start()] == '\n';
+}
+
+Range RenderText::GetLineRange(const base::string16& text,
+                               const internal::Line& line) const {
+  // This will find the logical start and end indices of the given line.
+  size_t max_index = 0;
+  size_t min_index = text.length();
+  for (const auto& segment : line.segments) {
+    min_index = std::min<size_t>(min_index, segment.char_range.GetMin());
+    max_index = std::max<size_t>(max_index, segment.char_range.GetMax());
+  }
+
+  // Do not include the newline character, as that could be considered leading
+  // into the next line. Note that the newline character is always the last
+  // character of the line regardless of the text direction, so decrease the
+  // |max_index|.
+  if (!line.segments.empty() &&
+      (IsNewlineSegment(text, line.segments.back()) ||
+       IsNewlineSegment(text, line.segments.front()))) {
+    --max_index;
+  }
+
+  return Range(min_index, max_index);
 }
 
 RenderText::RenderText()
@@ -1162,27 +1190,14 @@ SelectionModel RenderText::LineSelectionModel(size_t line_index,
   }
 
   DCHECK_GT(GetNumLines(), 1U);
-  size_t max_index = 0;
-  size_t min_index = text().length();
-  for (const auto& segment : line.segments) {
-    min_index = std::min<size_t>(min_index, segment.char_range.GetMin());
-    max_index = std::max<size_t>(max_index, segment.char_range.GetMax());
-  }
-
-  // Do not select the newline character to preserve the line number of the
-  // cursor. Note that the newline character is always the last character of the
-  // line regardless of the text direction, so decrease the |max_index|.
-  if (!line.segments.empty() && (IsNewlineSegment(line.segments.back()) ||
-                                 IsNewlineSegment(line.segments.front()))) {
-    --max_index;
-  }
+  Range line_range = GetLineRange(text(), line);
 
   // Cursor affinity should be the opposite of visual direction to preserve the
   // line number of the cursor in multiline text.
   return direction == GetVisualDirectionOfLogicalEnd()
-             ? SelectionModel(DisplayIndexToTextIndex(max_index),
+             ? SelectionModel(DisplayIndexToTextIndex(line_range.end()),
                               CURSOR_BACKWARD)
-             : SelectionModel(DisplayIndexToTextIndex(min_index),
+             : SelectionModel(DisplayIndexToTextIndex(line_range.start()),
                               CURSOR_FORWARD);
 }
 
@@ -1227,14 +1242,15 @@ void RenderText::UpdateDisplayText(float text_width) {
     render_text->EnsureLayout();
 
     if (render_text->lines_.size() > max_lines_) {
-      // Find the start index of the line to be elided.
-      size_t start_of_elision = layout_text_.length();
-      for (const auto& segment : render_text->lines_[max_lines_ - 1].segments) {
-        uint32_t segment_start = segment.char_range.GetMin();
-        start_of_elision = std::min<size_t>(start_of_elision, segment_start);
-      }
-      base::string16 text_to_elide = layout_text_.substr(start_of_elision);
-      display_text_.assign(layout_text_.substr(0, start_of_elision) +
+      // Find the start and end index of the line to be elided.
+      Range line_range =
+          GetLineRange(layout_text_, render_text->lines_[max_lines_ - 1]);
+      // Add an ellipsis character in case the last line is short enough to fit
+      // on a single line. Otherwise that character will be elided anyway.
+      base::string16 text_to_elide =
+          layout_text_.substr(line_range.start(), line_range.length()) +
+          base::string16(kEllipsisUTF16);
+      display_text_.assign(layout_text_.substr(0, line_range.start()) +
                            Elide(text_to_elide, 0,
                                  static_cast<float>(display_rect_.width()),
                                  ELIDE_TAIL));

@@ -17,7 +17,7 @@ namespace updater {
 
 std::unique_ptr<PrefService> CreatePrefService() {
   base::FilePath product_data_dir;
-  if (!GetProductDataDirectory(&product_data_dir))
+  if (!GetProductDirectory(&product_data_dir))
     return nullptr;
 
   PrefServiceFactory pref_service_factory;

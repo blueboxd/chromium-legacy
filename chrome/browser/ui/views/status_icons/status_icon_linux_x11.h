@@ -12,8 +12,7 @@
 // https://standards.freedesktop.org/xembed-spec/xembed-spec-latest.html
 class StatusIconLinuxX11 : public views::StatusIconLinux {
  public:
-  StatusIconLinuxX11(const gfx::ImageSkia& image,
-                     const base::string16& tool_tip);
+  StatusIconLinuxX11();
   ~StatusIconLinuxX11() override;
 
   // StatusIcon:

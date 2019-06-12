@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,7 +48,7 @@ bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
 
   // Show toolbar if on a insecure external website. This checks the security
   // level, different from IsOriginSecure which just checks the origin itself.
-  if (!IsSiteSecure(web_contents))
+  if (!InstallableManager::IsContentSecure(web_contents))
     return true;
 
   return false;
@@ -92,4 +93,5 @@ void ManifestWebAppBrowserController::OnTabInserted(
   if (app_launch_url_.is_empty())
     app_launch_url_ = contents->GetURL();
   AppBrowserController::OnTabInserted(contents);
+  UpdateToolbarVisibility(false);
 }

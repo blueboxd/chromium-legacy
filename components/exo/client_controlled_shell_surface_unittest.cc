@@ -509,7 +509,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   // Maximized
   shell_surface->SetMaximized();
-  shell_surface->SetGeometry(fullscreen_bounds);
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 468));
   surface->Commit();
 
   EXPECT_TRUE(frame_view->GetVisible());
@@ -520,6 +520,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
 
   // AutoHide
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  shell_surface->SetGeometry(fullscreen_bounds);
   surface->Commit();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());

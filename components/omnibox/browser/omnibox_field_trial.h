@@ -159,26 +159,9 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // ---------------------------------------------------------
 // For the ZeroSuggestProvider field trial.
 
-// Returns whether the user is in a ZeroSuggest field trial, which shows
-// most visited URLs. This is true for both "MostVisited" and
-// "MostVisitedWithoutSERP" trials.
-bool InZeroSuggestMostVisitedFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification);
-
-// Returns whether the user is in ZeroSuggest field trial showing most
-// visited URLs except it doesn't show suggestions on Google search result
-// pages.
-bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification);
-
-// Returns whether the user is in a ZeroSuggest field trial, but should
-// show recently searched-for queries instead.
-bool InZeroSuggestPersonalizedFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification);
-
-// Returns whether the user is in a ZeroSuggest field trial where a remote
-// contextual suggestions endpoint is queried and sent the current URL.
-bool InZeroSuggestRemoteSendURLFieldTrial(
+// Returns the configured "ZeroSuggestVariant" parameter for
+// |page_classification|.
+std::string GetZeroSuggestVariant(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
 // Returns the server address associated with the current field trial.

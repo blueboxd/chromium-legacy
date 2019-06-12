@@ -14,7 +14,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
@@ -45,7 +45,7 @@ void OnGpuChannelEstablished(
   constexpr bool support_grcontext = true;
 
   auto context_provider =
-      base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, gpu::kNullSurfaceHandle,
           GURL(std::string("chrome://gpu/"
@@ -53,7 +53,7 @@ void OnGpuChannelEstablished(
                            "CreateGpuVideoAcceleratorFactories")),
           automatic_flushes, support_locking, support_grcontext,
           gpu::SharedMemoryLimits::ForMailboxContext(), attributes,
-          ws::command_buffer_metrics::ContextType::UNKNOWN);
+          viz::command_buffer_metrics::ContextType::UNKNOWN);
 
   // TODO(xingliu): This is on main thread, move to another thread?
   context_provider->BindToCurrentThread();
@@ -74,7 +74,7 @@ void CreateGpuVideoAcceleratorFactories(
 }
 
 BrowserGpuVideoAcceleratorFactories::BrowserGpuVideoAcceleratorFactories(
-    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider)
+    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider)
     : context_provider_(std::move(context_provider)) {}
 
 BrowserGpuVideoAcceleratorFactories::~BrowserGpuVideoAcceleratorFactories() =
@@ -197,7 +197,7 @@ BrowserGpuVideoAcceleratorFactories::
   return media::VideoEncodeAccelerator::SupportedProfiles();
 }
 
-scoped_refptr<ws::ContextProviderCommandBuffer>
+scoped_refptr<viz::ContextProviderCommandBuffer>
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
   return context_provider_;
 }

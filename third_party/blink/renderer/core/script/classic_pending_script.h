@@ -58,7 +58,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   void SetStreamer(ScriptStreamer*);
   void StreamingFinished();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kClassic;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -42,6 +43,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
@@ -1906,6 +1908,10 @@ class CreateWebContentsOnCrashObserver : public NotificationObserver {
 
   GURL url_;
   WebContents* first_web_contents_;
+
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateWebContentsOnCrashObserver);
 };
 
 // This test simulates android webview's behavior in apps that handle

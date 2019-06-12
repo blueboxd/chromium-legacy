@@ -56,6 +56,8 @@ source_set("dialogs_internal") {
     "java_script_dialog_presenter_impl.mm",
     "nsurl_protection_space_util.h",
     "nsurl_protection_space_util.mm",
+    "overlay_java_script_dialog_presenter.h",
+    "overlay_java_script_dialog_presenter.mm",
   ]
   deps = [
     ":completion_block_util",
@@ -64,6 +66,8 @@ source_set("dialogs_internal") {
     "//components/strings",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/dialogs/non_modal",

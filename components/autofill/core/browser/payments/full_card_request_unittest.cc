@@ -137,7 +137,7 @@ MATCHER_P4(CardMatches, record_type, number, month, year, "") {
 }
 
 // Verify getting the full PAN and the CVC for a masked server card.
-TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCard) {
+TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCardViaCvc) {
   EXPECT_CALL(*result_delegate(),
               OnFullCardRequestSucceeded(
                   testing::Ref(*request()),
@@ -156,6 +156,21 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCard) {
   card_unmask_delegate()->OnUnmaskResponse(response);
   OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
   card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the full PAN for a masked server card.
+TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForMaskedServerCardViaFido) {
+  EXPECT_CALL(*result_delegate(),
+              OnFullCardRequestSucceeded(
+                  testing::Ref(*request()),
+                  CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                  base::ASCIIToUTF16("")));
+
+  request()->GetFullCardViaFIDO(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
+      base::Value(base::Value::Type::DICTIONARY));
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
 }
 
 // Verify getting the CVC for a local card.

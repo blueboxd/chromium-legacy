@@ -38,27 +38,6 @@ const char kOutOfScopeUrlPath[] = "/out_of_scope/index.html";
 
 const char kAppName[] = "Test app";
 
-bool HasOpenedWindowAndOpener(content::WebContents* opener_contents,
-                              content::WebContents* opened_contents) {
-  bool has_opener;
-  CHECK(content::ExecuteScriptAndExtractBool(
-      opened_contents, "window.domAutomationController.send(!!window.opener);",
-      &has_opener));
-
-  bool has_openedWindow;
-  CHECK(content::ExecuteScriptAndExtractBool(
-      opener_contents,
-      "window.domAutomationController.send(!!window.openedWindow.window)",
-      &has_openedWindow));
-
-  return has_opener && has_openedWindow;
-}
-
-// Wrapper so that we can use base::BindOnce with NavigateToURL.
-void NavigateToURLWrapper(NavigateParams* params) {
-  ui_test_utils::NavigateToURL(params);
-}
-
 }  // anonymous namespace
 
 namespace extensions {
@@ -128,21 +107,6 @@ BookmarkAppNavigationBrowserTest::GetTestNavigationObserver(
 }
 
 // static
-content::RenderFrameHost* BookmarkAppNavigationBrowserTest::GetIFrame(
-    content::WebContents* web_contents) {
-  const auto all_frames = web_contents->GetAllFrames();
-  const content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-
-  DCHECK_EQ(2u, all_frames.size());
-  auto it = std::find_if(all_frames.begin(), all_frames.end(),
-                         [main_frame](content::RenderFrameHost* frame) {
-                           return main_frame != frame;
-                         });
-  DCHECK(it != all_frames.end());
-  return *it;
-}
-
-// static
 void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
     content::WebContents* web_contents,
     const GURL& link_url,
@@ -196,17 +160,6 @@ void BookmarkAppNavigationBrowserTest::ClickLinkAndWait(
     BookmarkAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel) {
   ClickLinkAndWaitForURL(web_contents, link_url, link_url, target, rel);
-}
-
-// static
-void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWait(
-    content::WebContents* web_contents,
-    const GURL& link_url,
-    BookmarkAppNavigationBrowserTest::LinkTarget target,
-    const std::string& rel,
-    int modifiers) {
-  ClickLinkWithModifiersAndWaitForURL(web_contents, link_url, link_url, target,
-                                      rel, modifiers);
 }
 
 BookmarkAppNavigationBrowserTest::BookmarkAppNavigationBrowserTest()
@@ -283,24 +236,6 @@ const Extension* BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp(
   return InstallBookmarkApp(web_app_info);
 }
 
-const Extension*
-BookmarkAppNavigationBrowserTest::InstallImmediateRedirectingApp(
-    const std::string& target_host,
-    const std::string& target_path) {
-  EXPECT_TRUE(https_server_.Start());
-  const GURL target_url = https_server_.GetURL(target_host, target_path);
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url =
-      https_server_.GetURL(GetAppUrlHost(), CreateServerRedirect(target_url));
-  web_app_info.scope = https_server_.GetURL(GetAppUrlHost(), "/");
-  web_app_info.title = base::UTF8ToUTF16("Redirecting Test app");
-  web_app_info.description = base::UTF8ToUTF16("Test description");
-  web_app_info.open_as_window = true;
-
-  return InstallBookmarkApp(web_app_info);
-}
-
 Browser* BookmarkAppNavigationBrowserTest::OpenTestBookmarkApp() {
   GURL app_url = https_server_.GetURL(GetAppUrlHost(), GetAppUrlPath());
   auto observer = GetTestNavigationObserver(app_url);
@@ -312,117 +247,9 @@ Browser* BookmarkAppNavigationBrowserTest::OpenTestBookmarkApp() {
 
 void BookmarkAppNavigationBrowserTest::NavigateToLaunchingPage(
     Browser* browser) {
-  ui_test_utils::NavigateToURL(browser, GetLaunchingPageURL());
-}
-
-void BookmarkAppNavigationBrowserTest::NavigateToLaunchingPage() {
-  NavigateToLaunchingPage(browser());
-}
-
-void BookmarkAppNavigationBrowserTest::NavigateToTestAppURL() {
-  const GURL app_url = https_server_.GetURL(GetAppUrlHost(), GetAppUrlPath());
-  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_TYPED);
-  ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
-      app_url, base::BindOnce(&NavigateToURLWrapper, &params)));
-}
-
-void BookmarkAppNavigationBrowserTest::
-    TestTabActionDoesNotNavigateOrOpenAppWindow(base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs = browser()->tab_strip_model()->count();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = initial_tab->GetLastCommittedURL();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
-  EXPECT_EQ(initial_tab, browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
-}
-
-void BookmarkAppNavigationBrowserTest::TestTabActionOpensBackgroundTab(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs = browser()->tab_strip_model()->count();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = initial_tab->GetLastCommittedURL();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
-  EXPECT_EQ(initial_tab, browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
-
-  content::WebContents* new_tab =
-      browser()->tab_strip_model()->GetWebContentsAt(num_tabs - 1);
-  EXPECT_NE(new_tab, initial_tab);
-  EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
-}
-
-void BookmarkAppNavigationBrowserTest::TestTabActionOpensForegroundWindow(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs = browser()->tab_strip_model()->count();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = initial_tab->GetLastCommittedURL();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
-
-  Browser* new_window = chrome::FindLastActive();
-  EXPECT_NE(new_window, browser());
-  EXPECT_FALSE(new_window->is_app());
-  EXPECT_EQ(target_url, new_window->tab_strip_model()
-                            ->GetActiveWebContents()
-                            ->GetLastCommittedURL());
-
-  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
-  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
-}
-
-void BookmarkAppNavigationBrowserTest::TestTabActionOpensAppWindow(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL initial_url = initial_tab->GetLastCommittedURL();
-  int num_tabs = browser()->tab_strip_model()->count();
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-
-  std::move(action).Run();
-
-  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
-  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
-  EXPECT_NE(browser(), chrome::FindLastActive());
-
-  EXPECT_EQ(initial_url, initial_tab->GetLastCommittedURL());
-  EXPECT_EQ(target_url, chrome::FindLastActive()
-                            ->tab_strip_model()
-                            ->GetActiveWebContents()
-                            ->GetLastCommittedURL());
-}
-
-void BookmarkAppNavigationBrowserTest::TestTabActionOpensAppWindowWithOpener(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  TestTabActionOpensAppWindow(target_url, std::move(action));
-
-  content::WebContents* initial_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* app_web_contents =
-      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
-
-  EXPECT_TRUE(HasOpenedWindowAndOpener(initial_web_contents, app_web_contents));
+  ui_test_utils::NavigateToURL(
+      browser,
+      https_server_.GetURL(GetLaunchingPageHost(), GetLaunchingPagePath()));
 }
 
 bool BookmarkAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
@@ -478,74 +305,11 @@ void BookmarkAppNavigationBrowserTest::TestAppActionOpensForegroundTab(
   EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
 }
 
-void BookmarkAppNavigationBrowserTest::TestAppActionOpensAppWindowWithOpener(
-    Browser* app_browser,
-    const GURL& target_url,
-    base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs_browser = browser()->tab_strip_model()->count();
-  int num_tabs_app_browser = app_browser->tab_strip_model()->count();
-
-  content::WebContents* app_web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  GURL initial_app_url = app_web_contents->GetLastCommittedURL();
-  GURL initial_tab_url = initial_tab->GetLastCommittedURL();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
-
-  Browser* new_app_browser = chrome::FindLastActive();
-  EXPECT_NE(new_app_browser, browser());
-  EXPECT_NE(new_app_browser, app_browser);
-  EXPECT_TRUE(new_app_browser->is_app());
-
-  EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
-  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
-
-  EXPECT_EQ(initial_app_url, app_web_contents->GetLastCommittedURL());
-
-  content::WebContents* new_app_web_contents =
-      new_app_browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(target_url, new_app_web_contents->GetLastCommittedURL());
-
-  EXPECT_TRUE(HasOpenedWindowAndOpener(app_web_contents, new_app_web_contents));
-}
-
 bool BookmarkAppNavigationBrowserTest::TestTabActionDoesNotOpenAppWindow(
     const GURL& target_url,
     base::OnceClosure action) {
   return TestActionDoesNotOpenAppWindow(browser(), target_url,
                                         std::move(action));
-}
-
-bool BookmarkAppNavigationBrowserTest::TestIFrameActionDoesNotOpenAppWindow(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs = browser()->tab_strip_model()->count();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
-
-  // When Site Isolation is enabled, navigating the iframe to a different
-  // origin causes the original iframe's RenderFrameHost to be deleted.
-  // So we retrieve the iframe's RenderFrameHost again.
-  EXPECT_EQ(target_url, GetIFrame(initial_tab)->GetLastCommittedURL());
-
-  return !HasFailure();
-}
-
-GURL BookmarkAppNavigationBrowserTest::GetLaunchingPageURL() {
-  return https_server_.GetURL(GetLaunchingPageHost(), GetLaunchingPagePath());
 }
 
 }  // namespace test

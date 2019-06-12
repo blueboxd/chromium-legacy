@@ -44,6 +44,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/pref_service.h"
@@ -644,8 +645,8 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
   // See its constructor.
   if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-      !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-          OmniboxEventProto::OTHER)) {
+      OmniboxFieldTrial::GetZeroSuggestVariant(OmniboxEventProto::OTHER) !=
+          ZeroSuggestProvider::kRemoteNoUrlVariant) {
     return;
   }
 

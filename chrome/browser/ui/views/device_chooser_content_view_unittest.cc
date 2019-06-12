@@ -274,3 +274,12 @@ TEST_F(DeviceChooserContentViewTest, ClickHelpButton) {
                              ui::EF_LEFT_MOUSE_BUTTON);
   content_view().ButtonPressed(help_button, event);
 }
+
+TEST_F(DeviceChooserContentViewTest, SetTableViewAlwaysDisabled) {
+  controller()->set_table_view_always_disabled(true);
+  EXPECT_FALSE(table_view()->GetEnabled());
+  AddUnpairedDevice();
+  EXPECT_EQ(1, table_view()->RowCount());
+  // The table should still be disabled even though there's an option.
+  EXPECT_FALSE(table_view()->GetEnabled());
+}

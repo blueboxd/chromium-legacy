@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
@@ -329,7 +329,7 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 // Verify that certificate manager dialog opens.
 IN_PROC_BROWSER_TEST_F(KioskErrorScreenTest, OpenCertificateConfig) {
   apps_loaded_waiter()->Wait();
-  EXPECT_TRUE(test::LoginScreenTester().LaunchApp(kTestKioskAppId));
+  EXPECT_TRUE(ash::LoginScreenTestApi::LaunchApp(kTestKioskAppId));
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 

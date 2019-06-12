@@ -113,7 +113,7 @@ class ShortcutsListScrollView : public views::ScrollView {
 ShortcutsListScrollView* CreateScrollView(
     std::unique_ptr<views::View> content_view) {
   ShortcutsListScrollView* const scroller = new ShortcutsListScrollView();
-  scroller->set_draw_overflow_indicator(false);
+  scroller->SetDrawOverflowIndicator(false);
   scroller->ClipHeightTo(0, 0);
   scroller->SetContents(std::move(content_view));
   scroller->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);

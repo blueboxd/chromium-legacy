@@ -11,8 +11,8 @@ class FilePath;
 
 namespace updater {
 
-// Returns a directory where updater or user data is stored.
-bool GetProductDataDirectory(base::FilePath* path);
+// Returns a directory where updater files or its data is stored.
+bool GetProductDirectory(base::FilePath* path);
 
 }  // namespace updater
 

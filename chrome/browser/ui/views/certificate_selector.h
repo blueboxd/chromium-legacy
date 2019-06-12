@@ -69,7 +69,7 @@ class CertificateSelector : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   ui::ModalType GetModalType() const override;
 
   // views::ButtonListener:

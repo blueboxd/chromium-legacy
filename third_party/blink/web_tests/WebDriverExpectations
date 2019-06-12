@@ -3,6 +3,7 @@
 # separate runner, run_webdriver_tests.py. Thus this is a separate
 # expectation file from TestExpectations.
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/element_clear/clear.py>>test_resettable_element_does_not_satisfy_validation_constraints[email-foo] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/minimize_window/minimize.py>>test_fully_exit_fullscreen [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/user_prompts.py>>test_dismiss[capabilities0-confirm] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/permissions/set.py>>test_non_secure_context[denied] [ Failure ]

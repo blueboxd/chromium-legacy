@@ -167,6 +167,7 @@ DocumentLoader::DocumentLoader(
   unreachable_url_ = params_->unreachable_url;
   error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
+  appcache_host_id_ = params_->appcache_host_id;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -457,6 +458,10 @@ const KURL& DocumentLoader::UrlForHistory() const {
 
 EncodedFormData* DocumentLoader::HttpBody() const {
   return http_body_.get();
+}
+
+const base::UnguessableToken& DocumentLoader::AppcacheHostId() const {
+  return appcache_host_id_;
 }
 
 void DocumentLoader::FillNavigationParamsForErrorPage(

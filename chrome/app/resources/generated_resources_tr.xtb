@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Dosya Bilgileri</translation>
 <translation id="2246549592927364792">Google'dan resim açıklamaları alınsın mı?</translation>
 <translation id="2249269794707377949">Belirli uygulamalarda, web sitelerinde ve dosya paylaşımlarında tek oturum açmak için kullanılan tüm Kerberos Hesapları buradan yönetilebilir.</translation>
-<translation id="224940702122312781">Bu sayfa çok fazla veri kullanacak.</translation>
 <translation id="2249605167705922988">ör. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Sistem görüntüleyici ile aç</translation>
 <translation id="225163402930830576">Ağları Yenile</translation>
@@ -1912,7 +1911,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Kaldırın, tekrar dokunun</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Senkronizasyon duraklatıldı</translation>
-<translation id="3861241522664181545">Sayfa duraklatıldı.</translation>
 <translation id="3862134173397075045">Chrome'da Google Cast deneyimine hoş geldiniz!</translation>
 <translation id="3862693525629180217">Yerleşik sensör kullanarak doğrula</translation>
 <translation id="3862788408946266506">"kiosk_only" manifest özelliğine sahip uygulamalar ChromeOS kiosk modunda yüklenmelidir</translation>
@@ -3861,7 +3859,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6920989436227028121">Normal sekme olarak aç</translation>
 <translation id="6921104647315081813">Etkinlikleri temizle</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> açılamadı</translation>
-<translation id="6921709132208495314">Bu sayfada veri kullanmayı durdurun</translation>
 <translation id="6922128026973287222">Google Veri Tasarrufu'nu kullanarak daha az veri kullanın, daha hızlı tarama yapın. Daha fazla bilgi edinmek için tıklayın.</translation>
 <translation id="6922745772873733498">Yazdırmak için bir pin girin</translation>
 <translation id="6923132443355966645">Kaydırma / Tıklama</translation>

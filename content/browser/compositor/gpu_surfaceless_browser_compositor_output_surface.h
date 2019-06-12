@@ -25,7 +25,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
     : public GpuBrowserCompositorOutputSurface {
  public:
   GpuSurfacelessBrowserCompositorOutputSurface(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context,
+      scoped_refptr<viz::ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
       std::unique_ptr<viz::OverlayCandidateValidator>
           overlay_candidate_validator,

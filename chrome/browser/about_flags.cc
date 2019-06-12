@@ -180,6 +180,10 @@
 #include "pdf/pdf_features.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "printing/printing_features.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // USE_OZONE
@@ -1419,6 +1423,13 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
+    {
+        "disable-accelerated-video-encode",
+        flag_descriptions::kAcceleratedVideoEncodeName,
+        flag_descriptions::kAcceleratedVideoEncodeDescription,
+        kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+        SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoEncode),
+    },
     {"enable-history-favicons-google-server-query",
      flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryName,
      flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryDescription,
@@ -1757,17 +1768,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsUnifiedInstallName,
      flag_descriptions::kDesktopPWAsUnifiedInstallDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsUnifiedInstall)},
-    {"enable-desktop-pwas-link-capturing",
-     flag_descriptions::kEnableDesktopPWAsLinkCapturingName,
-     flag_descriptions::kEnableDesktopPWAsLinkCapturingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsLinkCapturing)},
     {"enable-system-webapps", flag_descriptions::kEnableSystemWebAppsName,
      flag_descriptions::kEnableSystemWebAppsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemWebApps)},
-    {"enable-desktop-pwas-stay-in-window",
-     flag_descriptions::kDesktopPWAsStayInWindowName,
-     flag_descriptions::kDesktopPWAsStayInWindowDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsStayInWindow)},
     {"enable-desktop-pwas-omnibox-install",
      flag_descriptions::kDesktopPWAsOmniboxInstallName,
      flag_descriptions::kDesktopPWAsOmniboxInstallDescription, kOsDesktop,
@@ -2914,6 +2917,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePdfCompositorServiceName,
      flag_descriptions::kUsePdfCompositorServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
+
+    {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
+     flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
 #endif
 
     {"autofill-profile-client-validation",

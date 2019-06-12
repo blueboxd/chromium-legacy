@@ -173,14 +173,17 @@ class AutocompleteResult {
   // suggestions, remove the non-tail suggestions.
   static void MaybeCullTailSuggestions(ACMatches* matches);
 
-  // Populates |provider_to_matches| from |matches_|.
-  void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
+  // Populates |provider_to_matches| from |matches_|. This AutocompleteResult
+  // should not be used after the 'move' version.
+  void BuildProviderToMatchesCopy(ProviderToMatches* provider_to_matches) const;
+  void BuildProviderToMatchesMove(ProviderToMatches* provider_to_matches);
 
-  // Copies matches into this result. |old_matches| gives the matches from the
-  // last result, and |new_matches| the results from this result.
+  // Moves matches into this result. |old_matches| gives the matches from the
+  // last result, and |new_matches| the results from this result. |old_matches|
+  // should not be used afterwards.
   void MergeMatchesByProvider(
       metrics::OmniboxEventProto::PageClassification page_classification,
-      const ACMatches& old_matches,
+      ACMatches* old_matches,
       const ACMatches& new_matches);
 
   // This pulls the relevant fields out of a match for comparison with other

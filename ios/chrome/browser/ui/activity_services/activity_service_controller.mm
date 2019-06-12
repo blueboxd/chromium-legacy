@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
@@ -269,6 +270,24 @@ NSString* const kActivityServicesSnackbarCategory =
   return activityItems;
 }
 
+- (NSString*)sendTabToSelfContextMenuTitleForDevice:(NSString*)device_name
+                                daysSinceLastUpdate:(int)days {
+  NSString* active_time = @"";
+  if (days == 0) {
+    active_time = l10n_util::GetNSString(
+        IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_TODAY);
+  } else if (days == 1) {
+    active_time = l10n_util::GetNSStringF(
+        IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAY,
+        base::NumberToString16(days));
+  } else {
+    active_time = l10n_util::GetNSStringF(
+        IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAYS,
+        base::NumberToString16(days));
+  }
+  return [NSString stringWithFormat:@"%@ \u2022 %@", device_name, active_time];
+}
+
 - (NSArray*)
     applicationActivitiesForData:(ShareToData*)data
                       dispatcher:(id<BrowserCommands>)dispatcher
@@ -289,7 +308,13 @@ NSString* const kActivityServicesSnackbarCategory =
       NSMutableDictionary* sendTabToSelfTargets =
           [[NSMutableDictionary alloc] init];
       for (auto const& iter : target_device_map) {
-        NSString* title = base::SysUTF8ToNSString(iter.first);
+        int daysSinceLastUpdate =
+            (base::Time::Now() - iter.second.last_updated_timestamp).InDays();
+        NSString* title = [self
+            sendTabToSelfContextMenuTitleForDevice:base::SysUTF8ToNSString(
+                                                       iter.first)
+                               daysSinceLastUpdate:daysSinceLastUpdate];
+
         NSString* cache_guid = base::SysUTF8ToNSString(iter.second.cache_guid);
         sendTabToSelfTargets[title] = cache_guid;
       }

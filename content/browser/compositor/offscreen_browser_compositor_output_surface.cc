@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -31,7 +31,7 @@ static viz::ResourceFormat kFboTextureFormat = viz::RGBA_8888;
 
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
-        scoped_refptr<ws::ContextProviderCommandBuffer> context,
+        scoped_refptr<viz::ContextProviderCommandBuffer> context,
         std::unique_ptr<viz::OverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),

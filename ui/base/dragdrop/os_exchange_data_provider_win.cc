@@ -477,8 +477,8 @@ void OSExchangeDataProviderWin::SetVirtualFileContentAtIndexForTesting(
     if (storage_for_contents->pstm) {
       // A properly implemented IDataObject::GetData moves the stream pointer
       // to end.
-      const LARGE_INTEGER zero_displacement = {};
-      HRESULT hr = storage_for_contents->pstm->Seek(zero_displacement,
+      const LARGE_INTEGER kZeroDisplacement = {};
+      HRESULT hr = storage_for_contents->pstm->Seek(kZeroDisplacement,
                                                     STREAM_SEEK_END, nullptr);
       if (SUCCEEDED(hr))
         storage_for_contents->tymed = TYMED_ISTREAM;
@@ -1137,11 +1137,11 @@ static void CreateValidFileNameFromTitle(const GURL& url,
     *validated = title;
     base::i18n::ReplaceIllegalCharactersInPath(validated, '-');
   }
-  static const wchar_t extension[] = L".url";
-  static const size_t max_length = MAX_PATH - base::size(extension);
-  if (validated->size() > max_length)
-    validated->erase(max_length);
-  *validated += extension;
+  static const wchar_t kExtension[] = L".url";
+  static const size_t kMaxLength = MAX_PATH - base::size(kExtension);
+  if (validated->size() > kMaxLength)
+    validated->erase(kMaxLength);
+  *validated += kExtension;
 }
 
 static STGMEDIUM* GetStorageForFileNames(

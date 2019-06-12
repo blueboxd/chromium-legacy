@@ -304,6 +304,9 @@ void PrimaryAccountManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option) {
+  VLOG(1) << "StartSignOut: " << static_cast<int>(signout_source_metric) << ", "
+          << static_cast<int>(signout_delete_metric) << ", "
+          << static_cast<int>(remove_option);
   signin_client()->PreSignOut(
       base::BindOnce(&PrimaryAccountManager::OnSignoutDecisionReached,
                      base::Unretained(this), signout_source_metric,
@@ -318,6 +321,8 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
     SigninClient::SignoutDecision signout_decision) {
   DCHECK(IsInitialized());
 
+  VLOG(1) << "OnSignoutDecisionReached: "
+          << (signout_decision == SigninClient::SignoutDecision::ALLOW_SIGNOUT);
   signin_metrics::LogSignout(signout_source_metric, signout_delete_metric);
   if (!IsAuthenticated()) {
     return;
@@ -326,7 +331,7 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   // TODO(crbug.com/887756): Consider moving this higher up, or document why
   // the above blocks are exempt from the |signout_decision| early return.
   if (signout_decision == SigninClient::SignoutDecision::DISALLOW_SIGNOUT) {
-    DVLOG(1) << "Ignoring attempt to sign out while signout disallowed";
+    VLOG(1) << "Ignoring attempt to sign out while signout disallowed";
     return;
   }
 
@@ -395,8 +400,8 @@ void PrimaryAccountManager::OnRefreshTokensLoaded() {
     for (const auto& account : accounts_in_tracker_service) {
       if (GetAuthenticatedAccountId() != account.account_id &&
           !token_service_->RefreshTokenIsAvailable(account.account_id)) {
-        DVLOG(0) << "Removed account from account tracker service: "
-                 << account.account_id;
+        VLOG(0) << "Removed account from account tracker service: "
+                << account.account_id;
         account_tracker_service_->RemoveAccount(account.account_id);
       }
     }

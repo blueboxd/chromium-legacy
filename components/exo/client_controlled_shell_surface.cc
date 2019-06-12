@@ -578,18 +578,14 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
 
-    // The client's geometry uses fullscreen in client controlled,
-    // (but the surface is placed under the frame), so just use
-    // the window bounds instead for maximixed state.
-    // Snapped window states in tablet mode also do not include the caption
-    // height.
+    // Snapped window states in tablet mode do not include the caption height.
     const bool becoming_snapped =
         requested_state == ash::WindowStateType::kLeftSnapped ||
         requested_state == ash::WindowStateType::kRightSnapped;
     const bool is_tablet_mode =
         WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled();
     gfx::Rect client_bounds =
-        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
+        becoming_snapped && is_tablet_mode
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
@@ -902,12 +898,6 @@ base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->GetVisible()) {
-    // The client's geometry uses entire display area in client
-    // controlled in maximized, and the surface is placed under the
-    // frame. Just use the visible bounds (geometry) for the widget
-    // bounds.
-    if (widget_->IsMaximized())
-      return GetVisibleBounds();
     return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
   }
 

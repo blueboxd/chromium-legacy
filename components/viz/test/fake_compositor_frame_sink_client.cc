@@ -17,7 +17,7 @@ void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck(
 
 void FakeCompositorFrameSinkClient::OnBeginFrame(
     const BeginFrameArgs& args,
-    const PresentationFeedbackMap& feedbacks) {}
+    const FrameTimingDetailsMap& timing_details) {}
 
 void FakeCompositorFrameSinkClient::ReclaimResources(
     const std::vector<ReturnedResource>& resources) {

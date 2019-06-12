@@ -27,7 +27,7 @@ class ScriptState;
 class ModulatorImplBase : public Modulator {
  public:
   ~ModulatorImplBase() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit ModulatorImplBase(ScriptState*);
@@ -42,8 +42,8 @@ class ModulatorImplBase : public Modulator {
   bool IsScriptingDisabled() const override;
 
   bool BuiltInModuleInfraEnabled() const override;
-  bool BuiltInModuleEnabled(blink::layered_api::Module) const override;
-  void BuiltInModuleUseCount(blink::layered_api::Module) const override;
+  bool BuiltInModuleEnabled(layered_api::Module) const override;
+  void BuiltInModuleUseCount(layered_api::Module) const override;
 
   ModuleRecordResolver* GetModuleRecordResolver() override {
     return module_record_resolver_.Get();

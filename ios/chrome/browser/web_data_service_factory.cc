@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
@@ -106,7 +105,6 @@ std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
       base::DoNothing());
 }
 

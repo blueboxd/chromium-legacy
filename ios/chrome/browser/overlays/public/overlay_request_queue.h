@@ -30,6 +30,9 @@ class OverlayRequestQueue {
   // queue is updated.
   virtual OverlayRequest* front_request() const = 0;
 
+  // Cancels the UI for all requests in the queue then empties the queue.
+  virtual void CancelAllRequests() = 0;
+
  protected:
   OverlayRequestQueue() = default;
 

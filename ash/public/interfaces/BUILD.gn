@@ -56,7 +56,6 @@ mojom("test_interfaces") {
   testonly = true
   disable_variants = true
   sources = [
-    "login_screen_test_api.test-mojom",
     "status_area_widget_test_api.test-mojom",
   ]
   deps = [

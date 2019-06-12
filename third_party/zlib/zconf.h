@@ -8,9 +8,15 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+/*
+ * This library is also built as a part of AOSP, which does not need to include
+ * chromeconf.h. In that case, neither of these macros will be defined.
+ */
+#if defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD)
 /* This include does prefixing as below, but with an updated set of names.  Also
  * sets up export macros in component builds. */
 #include "chromeconf.h"
+#endif
 
 /*
  * If you *really* need a unique prefix for all types and library functions,

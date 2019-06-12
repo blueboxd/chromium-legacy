@@ -145,7 +145,7 @@ class AssistantManagerServiceImpl
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
-  void OnOpenUrl(const std::string& url) override;
+  void OnOpenUrl(const std::string& url, bool in_background) override;
   void OnPlaybackStateChange(
       const assistant_client::MediaStatus& status) override;
   void OnShowNotification(const action::Notification& notification) override;
@@ -232,7 +232,7 @@ class AssistantManagerServiceImpl
   void OnShowSuggestionsOnMainThread(
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
-  void OnOpenUrlOnMainThread(const std::string& url);
+  void OnOpenUrlOnMainThread(const std::string& url, bool in_background);
   void OnShowNotificationOnMainThread(
       const mojom::AssistantNotificationPtr& notification);
   void OnNotificationRemovedOnMainThread(const std::string& grouping_id);

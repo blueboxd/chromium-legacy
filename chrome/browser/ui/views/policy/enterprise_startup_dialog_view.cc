@@ -170,10 +170,10 @@ ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-views::View* EnterpriseStartupDialogView::CreateExtraView() {
+std::unique_ptr<views::View> EnterpriseStartupDialogView::CreateExtraView() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Show Google Chrome Enterprise logo only for official build.
-  views::ImageView* logo_image = new views::ImageView();
+  auto logo_image = std::make_unique<views::ImageView>();
   logo_image->SetImage(ui::ResourceBundle::GetSharedInstance()
                            .GetImageNamed(IDR_PRODUCT_LOGO_ENTERPRISE)
                            .AsImageSkia());

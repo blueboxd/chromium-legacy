@@ -361,4 +361,8 @@ id<GREYMatcher> HistoryClearBrowsingDataButton() {
   return [ChromeMatchersAppInterface historyClearBrowsingDataButton];
 }
 
+id<GREYMatcher> OpenInButton() {
+  return [ChromeMatchersAppInterface openInButton];
+}
+
 }  // namespace chrome_test_util

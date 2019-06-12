@@ -1,3 +1,4 @@
 include_rules = [
   "+chromeos/printing",
+  "+chrome/services/cups_ipp_parser/public",
 ]

@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
@@ -410,9 +411,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // |header_client| will be used in URLLoaderFactoryParams when creating the
   // factory.
   //
+  // |network_isolation_key| will be used in URLLoaderFactoryParams when
+  // creating the factory. All resource requests through this factory will
+  // propagate the key to the network stack so that resources with different
+  // keys do not share network resources like the http cache.
+  //
   // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 

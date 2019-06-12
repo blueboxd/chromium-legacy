@@ -2188,9 +2188,10 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     const extensions::Extension* extension = LoadExtension(app_dir);
     ASSERT_TRUE(extension);
 
-    AppLaunchParams params(
-        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension->id(),
+                           extensions::LAUNCH_CONTAINER_NONE,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           extensions::SOURCE_TEST);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

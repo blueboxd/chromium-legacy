@@ -45,6 +45,14 @@ class PrefRegistrySyncable;
 // omnibox text and suggestions.
 class ZeroSuggestProvider : public BaseSearchProvider {
  public:
+  // Fixed parameter values corresponding to each possible ZeroSuggestVariant,
+  // which also corresponds to each ZeroSuggestProvider::ResultType.
+  // Public for testing.
+  static const char kNoneVariant[];
+  static const char kRemoteNoUrlVariant[];
+  static const char kRemoteSendUrlVariant[];
+  static const char kMostVisitedVariant[];
+
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
                                      HistoryURLProvider* history_url_provider,
@@ -62,6 +70,13 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Sets |field_trial_triggered_| to false.
   void ResetSession() override;
+
+  // Calling |Start()| will reset the page classification. This is mainly
+  // intended for unit testing TypeOfResultToRun().
+  void SetPageClassificationForTesting(
+      metrics::OmniboxEventProto::PageClassification classification) {
+    current_page_classification_ = classification;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);

@@ -288,10 +288,11 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
-gfx::Size WebContentsDelegate::EnterPictureInPicture(WebContents* web_contents,
-                                                     const viz::SurfaceId&,
-                                                     const gfx::Size&) {
-  return gfx::Size();
+PictureInPictureResult WebContentsDelegate::EnterPictureInPicture(
+    WebContents* web_contents,
+    const viz::SurfaceId&,
+    const gfx::Size&) {
+  return PictureInPictureResult::kNotSupported;
 }
 
 bool WebContentsDelegate::ShouldAllowLazyLoad() {

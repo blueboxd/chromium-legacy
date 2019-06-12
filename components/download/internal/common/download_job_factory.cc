@@ -10,6 +10,7 @@
 #include "components/download/internal/common/parallel_download_job.h"
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/internal/common/save_package_download_job.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
@@ -47,11 +48,15 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
       create_info.method == "GET" && create_info.url().SchemeIsHTTPOrHTTPS();
   bool partial_response_success =
       download_item->GetReceivedSlices().empty() || create_info.offset != 0;
-  bool is_parallelizable =
-      has_strong_validator &&
-      create_info.accept_range == RangeRequestSupportType::kSupport &&
-      has_content_length && satisfy_min_file_size && satisfy_connection_type &&
-      http_get_method && partial_response_success;
+  bool range_support_allowed =
+      create_info.accept_range == RangeRequestSupportType::kSupport ||
+      (base::FeatureList::IsEnabled(
+           features::kUseParallelRequestsForUnknwonRangeSupport) &&
+       create_info.accept_range == RangeRequestSupportType::kUnknown);
+  bool is_parallelizable = has_strong_validator && range_support_allowed &&
+                           has_content_length && satisfy_min_file_size &&
+                           satisfy_connection_type && http_get_method &&
+                           partial_response_success;
 
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
@@ -65,9 +70,13 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_STRONG_VALIDATORS);
   }
-  if (create_info.accept_range != RangeRequestSupportType::kSupport) {
+  if (!range_support_allowed) {
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_ACCEPT_RANGE_HEADER);
+    if (create_info.accept_range == RangeRequestSupportType::kUnknown) {
+      RecordParallelDownloadCreationEvent(
+          ParallelDownloadCreationEvent::FALLBACK_REASON_UNKNOWN_RANGE_SUPPORT);
+    }
   }
   if (!has_content_length) {
     RecordParallelDownloadCreationEvent(

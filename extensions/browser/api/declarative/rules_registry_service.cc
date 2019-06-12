@@ -130,7 +130,7 @@ scoped_refptr<RulesRegistry> RulesRegistryService::GetRulesRegistry(
 
   scoped_refptr<RulesRegistry> registry = RegisterWebRequestRulesRegistry(
       rules_registry_id, RulesCacheDelegate::Type::kEphemeral);
-  DCHECK(ContainsKey(rule_registries_, key));
+  DCHECK(base::Contains(rule_registries_, key));
   return registry;
 }
 
@@ -184,7 +184,7 @@ RulesRegistryService::RegisterWebRequestRulesRegistry(
     int rules_registry_id,
     RulesCacheDelegate::Type cache_delegate_type) {
   DCHECK(browser_context_);
-  DCHECK(!ContainsKey(
+  DCHECK(!base::Contains(
       rule_registries_,
       RulesRegistryKey(declarative_webrequest_constants::kOnRequest,
                        rules_registry_id)));
@@ -208,7 +208,7 @@ RulesRegistryService::RegisterWebRequestRulesRegistry(
 
 void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered() {
   DCHECK(browser_context_);
-  DCHECK(!ContainsKey(
+  DCHECK(!base::Contains(
       rule_registries_,
       RulesRegistryKey(declarative_webrequest_constants::kOnRequest,
                        kDefaultRulesRegistryID)));

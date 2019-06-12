@@ -165,6 +165,7 @@ constexpr float kRotationNinetyCW = (90 / 180.0) * M_PI;
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
     UIFontDescriptor* baseDescriptor = [UIFontDescriptor

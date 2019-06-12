@@ -193,6 +193,10 @@ GpuServiceImpl::GpuServiceImpl(
 
 GpuServiceImpl::~GpuServiceImpl() {
   DCHECK(main_runner_->BelongsToCurrentThread());
+
+  // Ensure we don't try to exit when already in the process of exiting.
+  is_exiting_.Set();
+
   bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get().Reset();
@@ -830,14 +834,15 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
   if (in_host_process())
     return;
 
-  if (exit_callback_) {
-    if (for_context_loss) {
-      LOG(ERROR) << "Exiting GPU process because some drivers can't recover "
-                    "from errors. GPU process will restart shortly.";
-    }
-    is_exiting_.Set();
-    std::move(exit_callback_).Run();
+  if (IsExiting() || !exit_callback_)
+    return;
+
+  if (for_context_loss) {
+    LOG(ERROR) << "Exiting GPU process because some drivers can't recover "
+                  "from errors. GPU process will restart shortly.";
   }
+  is_exiting_.Set();
+  std::move(exit_callback_).Run();
 }
 
 }  // namespace viz

@@ -170,7 +170,8 @@ class GC_PLUGIN_IGNORE(
   // Visitor overrides.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void Visit(void*, TraceDescriptor) final;
-  void VisitBackingStoreStrongly(void* object,
+  void VisitBackingStoreStrongly(const char*,
+                                 void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final;
 
@@ -179,12 +180,13 @@ class GC_PLUGIN_IGNORE(
                  void** object_slot,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreWeakly(void*,
+  void VisitBackingStoreWeakly(const char*,
+                               void*,
                                void**,
                                TraceDescriptor,
                                WeakCallback,
                                void*) final {}
-  void VisitBackingStoreOnly(void*, void**) final {}
+  void VisitBackingStoreOnly(const char*, void*, void**) final {}
   void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
   }
   void RegisterWeakCallback(void*, WeakCallback) final {}
@@ -558,7 +560,8 @@ void V8EmbedderGraphBuilder::Visit(void* object,
   }
 }
 
-void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
+void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(const char*,
+                                                       void* object,
                                                        void** object_slot,
                                                        TraceDescriptor desc) {
   if (!object)

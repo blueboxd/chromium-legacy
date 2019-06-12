@@ -202,8 +202,9 @@ HeapCompact* ThreadHeap::Compaction() {
   return compaction_.get();
 }
 
-void ThreadHeap::RegisterMovingObjectReference(MovableReference* slot) {
-  Compaction()->RegisterMovingObjectReference(slot);
+void ThreadHeap::RegisterMovingObjectReference(const char* name,
+                                               MovableReference* slot) {
+  Compaction()->RegisterMovingObjectReference(name, slot);
 }
 
 void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,

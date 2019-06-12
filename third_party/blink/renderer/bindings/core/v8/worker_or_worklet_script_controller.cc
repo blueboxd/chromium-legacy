@@ -163,11 +163,7 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
     v8::ExtensionConfiguration extension_configuration =
         ScriptController::ExtensionsFor(global_scope_);
 
-    // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
-    // WorkletGlobalScope take a proper Agent.
-    v8::MicrotaskQueue* microtask_queue = nullptr;
-    if (Agent* agent = global_scope_->GetAgent())
-      microtask_queue = agent->event_loop()->microtask_queue();
+    v8::MicrotaskQueue* microtask_queue = global_scope_->GetMicrotaskQueue();
 
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));

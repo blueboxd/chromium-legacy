@@ -48,10 +48,10 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   }
 
   // OAuth2TokenServiceDelegate overrides:
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const override;
-  void UpdateAuthError(const std::string& account_id,
+      const CoreAccountId& account_id) const override;
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
   std::vector<std::string> GetAccounts() override;
 
@@ -72,19 +72,20 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // OA2TService aware accounts.
   void RevokeAllCredentials() override;
 
-  void LoadCredentials(const std::string& primary_account_id) override;
+  void LoadCredentials(const CoreAccountId& primary_account_id) override;
 
-  void ReloadAccountsFromSystem(const std::string& primary_account_id) override;
+  void ReloadAccountsFromSystem(
+      const CoreAccountId& primary_account_id) override;
 
  protected:
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
-  // Overridden from OAuth2TokenService to intercept token fetch requests and
-  // redirect them to the Account Manager.
-  void InvalidateAccessToken(const std::string& account_id,
+  // Overridden from OAuth2TokenServiceDelegate to intercept token fetch
+  // requests and redirect them to the Account Manager.
+  void InvalidateAccessToken(const CoreAccountId& account_id,
                              const std::string& client_id,
                              const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
@@ -124,7 +125,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Maps account_id to the last error for that account.
-  std::map<std::string, GoogleServiceAuthError> errors_;
+  std::map<CoreAccountId, GoogleServiceAuthError> errors_;
 
   AccountTrackerService* account_tracker_service_;
   RefreshTokenLoadStatus fire_refresh_token_loaded_;

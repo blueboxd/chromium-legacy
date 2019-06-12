@@ -69,7 +69,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/display/display_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -100,6 +99,7 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -117,9 +117,6 @@
 #endif
 
 namespace {
-
-// Passed as value of kTestType.
-const char kBrowserTestType[] = "browser";
 
 #if defined(OS_CHROMEOS)
 class FakeDeviceSyncImplFactory
@@ -155,25 +152,22 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
 InProcessBrowserTest::SetUpBrowserFunction*
     InProcessBrowserTest::global_browser_set_up_function_ = nullptr;
 
-InProcessBrowserTest::InProcessBrowserTest()
+InProcessBrowserTest::InProcessBrowserTest() {
+  Initialize();
 #if defined(TOOLKIT_VIEWS)
-    : InProcessBrowserTest(
-          base::BindOnce([]() -> std::unique_ptr<views::ViewsDelegate> {
-            return std::make_unique<AccessibilityChecker>();
-          })) {
+  views_delegate_ = std::make_unique<AccessibilityChecker>();
+#endif
 }
 
+#if defined(TOOLKIT_VIEWS)
 InProcessBrowserTest::InProcessBrowserTest(
-    DelegateCallback viewsDelegateCallback)
-#endif  // defined(TOOLKIT_VIEWS)
-    : browser_(NULL),
-      exit_when_last_browser_closes_(true),
-      open_about_blank_on_browser_launch_(true)
-#if defined(OS_MACOSX)
-      ,
-      autorelease_pool_(NULL)
-#endif  // OS_MACOSX
-{
+    std::unique_ptr<views::ViewsDelegate> views_delegate) {
+  Initialize();
+  views_delegate_ = std::move(views_delegate);
+}
+#endif
+
+void InProcessBrowserTest::Initialize() {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
 
@@ -203,16 +197,12 @@ InProcessBrowserTest::InProcessBrowserTest(
                                     src_dir.Append(GetChromeTestDataDir())));
 
 #if defined(OS_MACOSX)
-  bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
+  bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 
 #if defined(OS_CHROMEOS)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&CreateAshEventGeneratorDelegate));
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  views_delegate_ = std::move(viewsDelegateCallback).Run();
 #endif
 }
 
@@ -327,22 +317,13 @@ void InProcessBrowserTest::SetUp() {
 
 void InProcessBrowserTest::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {
-  // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
-  // This is a Browser test.
-  command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
-
-  // Use an sRGB color profile to ensure that the machine's color profile does
-  // not affect the results.
-  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
+  test_launcher_utils::PrepareBrowserCommandLineForBrowserTests(
+      command_line, open_about_blank_on_browser_launch_);
 
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
-
-  if (open_about_blank_on_browser_launch_ && command_line->GetArgs().empty())
-    command_line->AppendArg(url::kAboutBlankURL);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {

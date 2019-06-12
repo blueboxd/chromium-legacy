@@ -14,7 +14,9 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -24,7 +26,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Provides a consent dialog shown before entering an immersive VR session.
  */
 @JNINamespace("vr")
-public class VrConsentDialog implements ModalDialogProperties.Controller {
+public class VrConsentDialog
+        extends WebContentsObserver implements ModalDialogProperties.Controller {
     @NativeMethods
     /* package */ interface VrConsentUiHelperImpl {
         void onUserConsentResult(long nativeGvrConsentHelperImpl, boolean allowed);
@@ -37,6 +40,7 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
     private String mUrl;
 
     private VrConsentDialog(long instance, WebContents webContents) {
+        super(webContents);
         mNativeInstance = instance;
         mMetrics = new ConsentFlowMetrics(webContents);
         mUrl = webContents.getLastCommittedUrl();
@@ -57,6 +61,12 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
     @VisibleForTesting
     protected void onUserGesture(boolean allowed) {
         VrConsentDialogJni.get().onUserConsentResult(mNativeInstance, allowed);
+    }
+
+    @Override
+    public void didStartNavigation(NavigationHandle navigationHandle) {
+        mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
+        onUserGesture(false);
     }
 
     public void show(@NonNull ChromeActivity activity, @NonNull VrConsentListener listener) {
@@ -90,6 +100,8 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
 
     @Override
     public void onDismiss(PropertyModel model, int dismissalCause) {
+        if (dismissalCause == DialogDismissalCause.UNKNOWN) return;
+
         if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
             mListener.onUserConsent(true);
             mMetrics.logUserAction(ConsentDialogAction.USER_ALLOWED);

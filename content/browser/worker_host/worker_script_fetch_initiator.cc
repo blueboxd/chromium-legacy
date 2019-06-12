@@ -37,6 +37,7 @@
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -208,8 +209,11 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     const url::Origin kSafeOrigin = url::Origin();
 
     network::mojom::URLLoaderFactoryPtr default_factory;
+
+    // TODO(crbug.com/955476): Populate the network isolation key.
     RenderProcessHost::FromID(process_id)
-        ->CreateURLLoaderFactory(kSafeOrigin, nullptr /* header_client */,
+        ->CreateURLLoaderFactory(kSafeOrigin, net::NetworkIsolationKey(),
+                                 nullptr /* header_client */,
                                  mojo::MakeRequest(&default_factory));
     factory_bundle->default_factory_info() = default_factory.PassInterface();
   }

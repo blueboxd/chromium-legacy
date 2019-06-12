@@ -29,7 +29,6 @@
 namespace blink {
 
 class ContainerNode;
-class Document;
 class Element;
 class ComputedStyle;
 
@@ -39,11 +38,9 @@ class CORE_EXPORT ElementResolveContext {
   STACK_ALLOCATED();
 
  public:
-  explicit ElementResolveContext(const Document&);
-
   explicit ElementResolveContext(Element&);
 
-  Element* GetElement() const { return element_; }
+  Element& GetElement() const { return *element_; }
   const ContainerNode* ParentNode() const { return parent_node_; }
   const ContainerNode* LayoutParent() const { return layout_parent_; }
   const ComputedStyle* RootElementStyle() const {

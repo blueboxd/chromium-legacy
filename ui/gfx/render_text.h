@@ -566,15 +566,25 @@ class GFX_EXPORT RenderText {
 
   void set_strike_thickness_factor(SkScalar f) { strike_thickness_factor_ = f; }
 
-  // Whether |segment| corresponds to the newline character.
-  bool IsNewlineSegment(const internal::LineSegment& segment) const;
-
   // Return the line index that contains the argument; or the index of the last
   // line if the |caret| exceeds the text length.
   virtual size_t GetLineContainingCaret(const SelectionModel& caret) = 0;
 
  protected:
   RenderText();
+
+  // Whether |segment| corresponds to the newline character. This uses |text_|
+  // to look up the corresponding character.
+  bool IsNewlineSegment(const internal::LineSegment& segment) const;
+
+  // Whether |segment| corresponds to the newline character inside |text|.
+  bool IsNewlineSegment(const base::string16& text,
+                        const internal::LineSegment& segment) const;
+
+  // Returns the character range of segments in |line| excluding the trailing
+  // newline segment.
+  Range GetLineRange(const base::string16& text,
+                     const internal::Line& line) const;
 
   // NOTE: The value of these accessors may be stale. Please make sure
   // that these fields are up to date before accessing them.

@@ -59,7 +59,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
                   base::TimeTicks form_parsed_timestamp);
   ~FullCardRequest();
 
-  // Retrieves the pan and cvc for |card| and invokes
+  // Retrieves the pan for |card| after querying the user for CVC and invokes
   // Delegate::OnFullCardRequestSucceeded() or
   // Delegate::OnFullCardRequestFailed(). Only one request should be active at a
   // time.
@@ -71,6 +71,19 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    AutofillClient::UnmaskCardReason reason,
                    base::WeakPtr<ResultDelegate> result_delegate,
                    base::WeakPtr<UIDelegate> ui_delegate);
+
+  // Retrieves the pan for |card| through a FIDO assertion and invokes
+  // Delegate::OnFullCardRequestSucceeded() or
+  // Delegate::OnFullCardRequestFailed(). Only one request should be active at a
+  // time.
+  //
+  // If the card is local, has a non-empty GUID, and the user has updated its
+  // expiration date, then this function will write the new information to
+  // autofill table on disk.
+  void GetFullCardViaFIDO(const CreditCard& card,
+                          AutofillClient::UnmaskCardReason reason,
+                          base::WeakPtr<ResultDelegate> result_delegate,
+                          base::Value fido_assertion_info);
 
   // Returns true if there's a pending request to get the full card.
   bool IsGettingFullCard() const;
@@ -84,6 +97,23 @@ class FullCardRequest final : public CardUnmaskDelegate {
   }
 
  private:
+  // Retrieves the pan for |card| and invokes
+  // Delegate::OnFullCardRequestSucceeded() or
+  // Delegate::OnFullCardRequestFailed(). Only one request should be active at a
+  // time.
+  //
+  // If |ui_delegate| is set, then the user is queried for CVC.
+  // Else if |fido_assertion_info| is a dictionary, FIDO verification is used.
+  //
+  // If the card is local, has a non-empty GUID, and the user has updated its
+  // expiration date, then this function will write the new information to
+  // autofill table on disk.
+  void GetFullCard(const CreditCard& card,
+                   AutofillClient::UnmaskCardReason reason,
+                   base::WeakPtr<ResultDelegate> result_delegate,
+                   base::WeakPtr<UIDelegate> ui_delegate,
+                   base::Value fido_assertion_info);
+
   // CardUnmaskDelegate:
   void OnUnmaskResponse(const UnmaskResponse& response) override;
   void OnUnmaskPromptClosed() override;

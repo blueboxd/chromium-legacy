@@ -612,6 +612,7 @@ blink_core_tests("unit_tests") {
     "parser/sizes_calc_parser_test.cc",
     "properties/css_parsing_utils_test.cc",
     "properties/css_property_ref_test.cc",
+    "properties/css_property_test.cc",
     "properties/longhands/custom_property_test.cc",
     "resolver/css_variable_data_test.cc",
     "resolver/css_variable_resolver_test.cc",

@@ -34,7 +34,7 @@ void TestWallpaperController::Init(
 }
 
 void TestWallpaperController::SetCustomWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id,
     const std::string& file_name,
     ash::WallpaperLayout layout,
@@ -44,7 +44,7 @@ void TestWallpaperController::SetCustomWallpaper(
 }
 
 void TestWallpaperController::SetOnlineWallpaperIfExists(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode,
@@ -53,7 +53,7 @@ void TestWallpaperController::SetOnlineWallpaperIfExists(
 }
 
 void TestWallpaperController::SetOnlineWallpaperFromData(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& image_data,
     const std::string& url,
     ash::WallpaperLayout layout,
@@ -63,7 +63,7 @@ void TestWallpaperController::SetOnlineWallpaperFromData(
 }
 
 void TestWallpaperController::SetDefaultWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id,
     bool show_wallpaper) {
   ++set_default_wallpaper_count_;
@@ -76,7 +76,7 @@ void TestWallpaperController::SetCustomizedDefaultWallpaperPaths(
 }
 
 void TestWallpaperController::SetPolicyWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id,
     const std::string& data) {
   NOTIMPLEMENTED();
@@ -88,7 +88,7 @@ void TestWallpaperController::SetDevicePolicyWallpaperPath(
 }
 
 bool TestWallpaperController::SetThirdPartyWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id,
     const std::string& file_name,
     ash::WallpaperLayout layout,
@@ -106,13 +106,12 @@ void TestWallpaperController::CancelPreviewWallpaper() {
 }
 
 void TestWallpaperController::UpdateCustomWallpaperLayout(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     ash::WallpaperLayout layout) {
   NOTIMPLEMENTED();
 }
 
-void TestWallpaperController::ShowUserWallpaper(
-    const ash::WallpaperUserInfo& user_info) {
+void TestWallpaperController::ShowUserWallpaper(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
@@ -135,13 +134,13 @@ void TestWallpaperController::RemoveAlwaysOnTopWallpaper() {
 }
 
 void TestWallpaperController::RemoveUserWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id) {
   ++remove_user_wallpaper_count_;
 }
 
 void TestWallpaperController::RemovePolicyWallpaper(
-    const ash::WallpaperUserInfo& user_info,
+    const AccountId& account_id,
     const std::string& wallpaper_files_id) {
   NOTIMPLEMENTED();
 }

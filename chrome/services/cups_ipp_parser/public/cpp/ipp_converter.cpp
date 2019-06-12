@@ -16,7 +16,7 @@
 namespace ipp_converter {
 namespace {
 
-using ValueType = chrome::mojom::ValueType;
+using ValueType = cups_ipp_parser::mojom::ValueType;
 
 const char kStatusDelimiter[] = " ";
 const char kHeaderDelimiter[] = ": ";
@@ -265,8 +265,9 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 
 // Parses and converts |ipp| to corresponding mojom type for marshalling.
 // Returns nullptr on failure.
-chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
-  chrome::mojom::IppMessagePtr ret = chrome::mojom::IppMessage::New();
+cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
+  cups_ipp_parser::mojom::IppMessagePtr ret =
+      cups_ipp_parser::mojom::IppMessage::New();
 
   // Parse version numbers
   int major, minor;
@@ -287,10 +288,11 @@ chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
     return nullptr;
   }
 
-  std::vector<chrome::mojom::IppAttributePtr> attributes;
+  std::vector<cups_ipp_parser::mojom::IppAttributePtr> attributes;
   for (ipp_attribute_t* attr = ippFirstAttribute(ipp); attr != NULL;
        attr = ippNextAttribute(ipp)) {
-    chrome::mojom::IppAttributePtr attrptr = chrome::mojom::IppAttribute::New();
+    cups_ipp_parser::mojom::IppAttributePtr attrptr =
+        cups_ipp_parser::mojom::IppAttribute::New();
 
     auto* name = ippGetName(attr);
     if (!name) {
@@ -314,9 +316,9 @@ chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
     }
     attrptr->type = type.value();
 
-    std::vector<chrome::mojom::ValuePtr> values;
+    std::vector<cups_ipp_parser::mojom::ValuePtr> values;
     for (int i = 0; i < ippGetCount(attr); ++i) {
-      auto value = chrome::mojom::Value::New();
+      auto value = cups_ipp_parser::mojom::Value::New();
       switch (attrptr->type) {
         case ValueType::BOOLEAN: {
           auto v = ippGetBoolean(attr, i);

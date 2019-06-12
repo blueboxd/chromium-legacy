@@ -81,14 +81,14 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 class FakeOAuth2TokenServiceDelegateDesktop
     : public FakeOAuth2TokenServiceDelegate {
   std::string GetTokenForMultilogin(
-      const std::string& account_id) const override {
+      const CoreAccountId& account_id) const override {
     if (GetAuthError(account_id) == GoogleServiceAuthError::AuthErrorNone())
       return GetRefreshToken(account_id);
     return std::string();
   }
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override {
     if (GetAuthError(account_id).IsPersistentError()) {
@@ -99,7 +99,7 @@ class FakeOAuth2TokenServiceDelegateDesktop
         account_id, url_loader_factory, consumer);
   }
   void InvalidateTokenForMultilogin(
-      const std::string& failed_account) override {
+      const CoreAccountId& failed_account) override {
     UpdateAuthError(failed_account,
                     GoogleServiceAuthError(
                         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));

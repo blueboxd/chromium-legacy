@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Informacije o datoteci</translation>
 <translation id="2246549592927364792">Želite li dohvatiti opise slika s Googlea?</translation>
 <translation id="2249269794707377949">Ovdje možete upravljati svim Kerberos računima za jedinstvenu prijavu na određene aplikacije i web-lokacije te za dijeljenje datoteka.</translation>
-<translation id="224940702122312781">Ova stranica troši veliku količinu podataka.</translation>
 <translation id="2249605167705922988">npr. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Otvori u pregledniku sustava</translation>
 <translation id="225163402930830576">Osvježi mreže</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Podignite i ponovo dodirnite</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sinkronizacija je pauzirana</translation>
-<translation id="3861241522664181545">Stranica je pauzirana.</translation>
 <translation id="3862134173397075045">Dobro došli u značajku Cast u Chromeu!</translation>
 <translation id="3862693525629180217">Potvrda putem ugrađenog senzora</translation>
 <translation id="3862788408946266506">Aplikaciju s atributom manifesta "kiosk_only" potrebno je instalirati u načinu kioska OS-a Chrome</translation>
@@ -3860,7 +3858,6 @@
 <translation id="6920989436227028121">Otvori kao uobičajenu karticu</translation>
 <translation id="6921104647315081813">Izbriši aktivnosti</translation>
 <translation id="692114467174262153">Otvaranje preglednika <ph name="ALTERNATIVE_BROWSER_NAME" /> nije uspjelo</translation>
-<translation id="6921709132208495314">Zaustavite učitavanje podataka na ovu stranicu</translation>
 <translation id="6922128026973287222">Štedite podatke i pregledavajte brže uz Google uštedu podataka. Kliknite za više informacija.</translation>
 <translation id="6922745772873733498">Unesite PIN za ispis</translation>
 <translation id="6923132443355966645">Pomicanje/klik</translation>

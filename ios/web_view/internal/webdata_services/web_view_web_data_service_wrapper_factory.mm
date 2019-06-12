@@ -90,7 +90,7 @@ WebViewWebDataServiceWrapperFactory::BuildServiceInstanceFor(
       browser_state_path,
       ApplicationContext::GetInstance()->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      base::Callback<void(syncer::ModelType)>(), base::DoNothing());
+      base::DoNothing());
 }
 
 bool WebViewWebDataServiceWrapperFactory::ServiceIsNULLWhileTesting() const {

@@ -13,6 +13,9 @@ namespace subresource_redirect {
 // internal redirects.
 GURL GetSubresourceURLForURL(const GURL& original_url);
 
+// Gets the URL for the compression server.
+GURL GetLitePageSubresourceDomainURL();
+
 }  // namespace subresource_redirect
 
 #endif  // CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_UTIL_H_

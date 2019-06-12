@@ -14,15 +14,12 @@ struct Manifest;
 class WebLocalFrame;
 class WebURL;
 
-class BLINK_EXPORT WebManifestManager {
+class WebManifestManager {
  public:
-  using WebCallback = base::OnceCallback<void(const WebURL&, const Manifest&)>;
+  using Callback = base::OnceCallback<void(const WebURL&, const Manifest&)>;
 
-  static WebManifestManager* FromFrame(WebLocalFrame*);
-
-  virtual ~WebManifestManager() = default;
-
-  virtual void RequestManifest(WebCallback callback) = 0;
+  BLINK_EXPORT static void RequestManifestForTesting(WebLocalFrame*,
+                                                     Callback callback);
 };
 
 }  // namespace blink

@@ -37,7 +37,7 @@ public class SendTabToSelfShareActivity extends ShareActivity {
 
     @VisibleForTesting
     BottomSheetContent createBottomSheetContent(ChromeActivity activity, NavigationEntry entry) {
-        return new DevicePickerBottomSheetContent(getApplicationContext(), activity, entry);
+        return new DevicePickerBottomSheetContent(activity, entry);
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {

@@ -71,12 +71,10 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   void PopFrontRequest();
   void PopBackRequest();
 
-  // Cancels the UI for all requests in the queue then empties the queue.
-  void CancelAllRequests();
-
   // OverlayRequestQueue:
   void AddRequest(std::unique_ptr<OverlayRequest> request) override;
   OverlayRequest* front_request() const override;
+  void CancelAllRequests() override;
 
  private:
   // Private constructor called by container.

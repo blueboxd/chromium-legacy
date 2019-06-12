@@ -48,7 +48,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // BeginFrameSource does not call into |this| after it's deleted.
   callback_received_begin_frame_ = true;
   callback_received_receive_ack_ = true;
-  presentation_feedbacks_.clear();
+  frame_timing_details_.clear();
   SetNeedsBeginFrame(false);
 
   // For display root surfaces the surface is no longer going to be visible.
@@ -79,10 +79,9 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
     begin_frame_source_->RemoveObserver(this);
 }
 
-PresentationFeedbackMap
-CompositorFrameSinkSupport::TakePresentationFeedbacks() {
-  PresentationFeedbackMap map;
-  map.swap(presentation_feedbacks_);
+FrameTimingDetailsMap CompositorFrameSinkSupport::TakeFrameTimingDetailsMap() {
+  FrameTimingDetailsMap map;
+  map.swap(frame_timing_details_);
   return map;
 }
 
@@ -578,7 +577,9 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
-  presentation_feedbacks_.emplace(presentation_token, feedback);
+  FrameTimingDetails details;
+  details.presentation_feedback = feedback;
+  frame_timing_details_.emplace(presentation_token, details);
   UpdateNeedsBeginFramesInternal();
 }
 
@@ -629,8 +630,8 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
                            TRACE_EVENT_FLAG_FLOW_OUT, "step",
                            "IssueBeginFrame");
     last_frame_time_ = args.frame_time;
-    client_->OnBeginFrame(copy_args, std::move(presentation_feedbacks_));
-    presentation_feedbacks_.clear();
+    client_->OnBeginFrame(copy_args, std::move(frame_timing_details_));
+    frame_timing_details_.clear();
     UpdateNeedsBeginFramesInternal();
   }
 }
@@ -650,9 +651,9 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
     return;
 
   // We require a begin frame if there's a callback pending, or if the client
-  // requested it, or if the client needs to get some presentation feedbacks.
+  // requested it, or if the client needs to get some frame timing details.
   bool needs_begin_frame =
-      client_needs_begin_frame_ || !presentation_feedbacks_.empty() ||
+      client_needs_begin_frame_ || !frame_timing_details_.empty() ||
       !pending_surfaces_.empty() ||
       (compositor_frame_callback_ && !callback_received_begin_frame_);
 
@@ -769,9 +770,9 @@ int64_t CompositorFrameSinkSupport::ComputeTraceId() {
 
 bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     base::TimeTicks frame_time) {
-  // If there are pending presentation feedbacks from the previous frame(s),
+  // If there are pending timing details from the previous frame(s),
   // then the client needs to receive the begin-frame.
-  if (!presentation_feedbacks_.empty())
+  if (!frame_timing_details_.empty())
     return true;
 
   if (!client_needs_begin_frame_)

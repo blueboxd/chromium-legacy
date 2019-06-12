@@ -319,9 +319,10 @@ void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
-  for (const auto& pair : feedbacks) {
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+    const viz::FrameTimingDetailsMap& timing_details) {
+  for (const auto& pair : timing_details) {
+    client_->DidPresentCompositorFrame(pair.first,
+                                       pair.second.presentation_feedback);
   }
 
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);

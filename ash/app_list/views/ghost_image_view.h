@@ -52,6 +52,9 @@ class GhostImageView : public views::ImageView,
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
+  // Returns an ImageSkia with just an outline of the input ImageSkia.
+  gfx::ImageSkia GetIconOutline(const gfx::ImageSkia& original_icon);
+
   // Whether the view is hiding.
   bool is_hiding_;
 
@@ -73,6 +76,9 @@ class GhostImageView : public views::ImageView,
 
   // The number of items within the GhostImageView folder.
   base::Optional<size_t> num_items_;
+
+  // The outline of the dragged item's icon. Used as the ghost image.
+  gfx::ImageSkia outline_;
 
   DISALLOW_COPY_AND_ASSIGN(GhostImageView);
 };

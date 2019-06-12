@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_player.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
@@ -204,13 +203,6 @@ Frame* EmptyLocalFrameClient::FindFrame(const AtomicString& name) const {
 
 std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {
-  return nullptr;
-}
-
-std::unique_ptr<WebApplicationCacheHost>
-EmptyLocalFrameClient::CreateApplicationCacheHost(
-    DocumentLoader*,
-    WebApplicationCacheHostClient*) {
   return nullptr;
 }
 

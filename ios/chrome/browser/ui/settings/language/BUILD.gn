@@ -39,6 +39,8 @@ source_set("language_ui") {
     "language_settings_histograms.h",
     "language_settings_table_view_controller.h",
     "language_settings_table_view_controller.mm",
+    "language_settings_ui_constants.h",
+    "language_settings_ui_constants.mm",
   ]
   deps = [
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -63,6 +65,7 @@ source_set("unit_tests") {
     "language_settings_mediator_unittest.mm",
   ]
   deps = [
+    ":language_ui",
     "//base/test:test_support",
     "//components/language/core/browser",
     "//components/pref_registry",
@@ -74,8 +77,27 @@ source_set("unit_tests") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/settings/language",
-    "//ios/chrome/browser/ui/settings/language:language_ui",
     "//ios/chrome/browser/ui/settings/language/cells",
     "//testing/gtest",
+  ]
+}
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "language_settings_egtest.mm",
+  ]
+  deps = [
+    ":language_ui",
+    "//components/language/core/browser",
+    "//components/translate/core/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/translate",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ui/strings:ui_strings_grit",
   ]
 }

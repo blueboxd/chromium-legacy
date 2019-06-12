@@ -84,6 +84,6 @@ void InstantController::UpdateInfoForInstantTab() {
       InstantServiceFactory::GetForProfile(profile_);
   if (instant_service) {
     instant_service->UpdateThemeInfo();
-    instant_service->UpdateMostVisitedItemsInfo();
+    instant_service->UpdateMostVisitedInfo();
   }
 }

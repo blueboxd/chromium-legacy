@@ -271,6 +271,7 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
                                                     EGLint flags);
 
 struct ExtensionsEGL {
+  bool b_EGL_ANGLE_feature_control;
   bool b_EGL_EXT_platform_base;
   bool b_EGL_KHR_debug;
   bool b_EGL_ANDROID_blob_cache;
@@ -278,7 +279,6 @@ struct ExtensionsEGL {
   bool b_EGL_ANDROID_get_native_client_buffer;
   bool b_EGL_ANDROID_native_fence_sync;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
-  bool b_EGL_ANGLE_feature_control;
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_stream_producer_d3d_texture;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;

@@ -38,6 +38,9 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
+  // Don't need to request a frame/allow the stage updates to propagate before
+  // requesting local-floor because if the stage transform is set it just won't
+  // be emulated on the first frame, and we wait a frame before checking.
   return session.requestReferenceSpace('local-floor')
     .then((referenceSpace) => new Promise((resolve, reject) => {
       function onFirstFrame(time, xrFrame) {
@@ -53,6 +56,9 @@ let testFunction = function(session, t, fakeDeviceController) {
           assert_approx_equals(poseMatrix[14], 0.0, FLOAT_EPSILON);
 
           fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
+
+          // Need to request one animation frame for the new stage transform to
+          // propagate before we check that it's what we expect.
           session.requestAnimationFrame(() => {
             session.requestAnimationFrame(onFrame);
           });
@@ -73,6 +79,8 @@ let testFunction = function(session, t, fakeDeviceController) {
         resolve();
       }
 
+      // Need to wait one frame for the removal to propagate before we check that
+      // everything is at the expected emulated position.
       session.requestAnimationFrame(() => {
         session.requestAnimationFrame(onFirstFrame);
       });

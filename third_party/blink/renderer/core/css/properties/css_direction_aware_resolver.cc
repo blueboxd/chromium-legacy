@@ -98,6 +98,15 @@ PhysicalGroup<2> CSSDirectionAwareResolver::SizeGroup() {
   return PhysicalGroup<2>(kProperties);
 }
 
+PhysicalGroup<4> CSSDirectionAwareResolver::VisitedBorderColorGroup() {
+  static const CSSProperty* kProperties[] = {
+      &GetCSSPropertyInternalVisitedBorderTopColor(),
+      &GetCSSPropertyInternalVisitedBorderRightColor(),
+      &GetCSSPropertyInternalVisitedBorderBottomColor(),
+      &GetCSSPropertyInternalVisitedBorderLeftColor()};
+  return PhysicalGroup<4>(kProperties);
+}
+
 const CSSProperty& CSSDirectionAwareResolver::ResolveInlineStart(
     TextDirection direction,
     WritingMode writing_mode,

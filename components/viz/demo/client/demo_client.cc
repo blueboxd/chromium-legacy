@@ -170,8 +170,9 @@ void DemoClient::DidReceiveCompositorFrameAck(
   // See documentation in mojom for how this can be used.
 }
 
-void DemoClient::OnBeginFrame(const viz::BeginFrameArgs& args,
-                              const viz::PresentationFeedbackMap& feedbacks) {
+void DemoClient::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    const viz::FrameTimingDetailsMap& timing_details) {
   // Generate a new compositor-frame for each begin-frame. This demo client
   // generates and submits the compositor-frame immediately. But it is possible
   // for the client to delay sending the compositor-frame. |args| includes the

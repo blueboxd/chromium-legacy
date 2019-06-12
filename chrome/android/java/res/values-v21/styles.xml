@@ -22,6 +22,9 @@
         <!-- Overriding alertDialogTheme pre-v21 with our custom AlertDialog theme causes bad visual
              states on ListPreference because we don't use the support library ListPreference. -->
         <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
+        <!-- TODO(crbug.com/967022): Clean up the unnecessary preference alert dialog styles once
+             all dialog preferences are migrated to the support library. -->
+        <item name="alertDialogTheme">@style/Theme.Chromium.Preferences.AlertDialog</item>
         <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
 

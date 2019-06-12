@@ -71,6 +71,7 @@ class CSSProperties(object):
         self._last_used_enum_value = self._first_enum_value
 
         self._properties_by_id = {}
+        self._properties_by_name = {}
         self._aliases = []
         self._longhands = []
         self._shorthands = []
@@ -101,6 +102,12 @@ class CSSProperties(object):
             self.expand_parameters(field)
 
     def add_properties(self, properties):
+        for property_ in properties:
+            self._properties_by_name[property_['name'].original] = property_
+
+        for property_ in properties:
+            self.expand_visited(property_)
+
         self._aliases = [
             property_ for property_ in properties if property_['alias_for']]
         self._shorthands = [
@@ -148,6 +155,19 @@ class CSSProperties(object):
         self.expand_aliases()
         self._properties_including_aliases = self._longhands + \
             self._shorthands + self._aliases
+
+    def expand_visited(self, property_):
+        if not property_['visited_property_for']:
+            return
+        visited_property_for = property_['visited_property_for']
+        unvisited_property = self._properties_by_name[visited_property_for]
+        property_['visited'] = True
+        # The visited property needs a link to the unvisited counterpart.
+        property_['unvisited_property'] = unvisited_property
+        # The unvisited property needs a link to the visited counterpart.
+        assert 'visited_property' not in unvisited_property, \
+            'A property may not have multiple visited properties'
+        unvisited_property['visited_property'] = property_
 
     def expand_aliases(self):
         for i, alias in enumerate(self._aliases):

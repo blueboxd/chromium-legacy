@@ -26,8 +26,7 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override {}
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override {}
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
+  void RecordManipulationTypeCounts(ManipulationInfo info) override {}
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       ElementId scroll_latched_element_id) override {}

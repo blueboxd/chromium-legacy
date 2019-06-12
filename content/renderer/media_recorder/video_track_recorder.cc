@@ -24,7 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
@@ -267,7 +267,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
   scoped_refptr<media::VideoFrame> frame;
 
   // |context_provider| is null if the GPU process has crashed or isn't there.
-  ws::ContextProviderCommandBuffer* const context_provider =
+  viz::ContextProviderCommandBuffer* const context_provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   if (!context_provider) {
     // Send black frames (yuv = {0, 127, 127}).

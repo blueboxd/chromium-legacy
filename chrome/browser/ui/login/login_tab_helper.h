@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_LOGIN_LOGIN_TAB_HELPER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -23,6 +24,8 @@ class LoginTabHelper : public content::WebContentsObserver,
   ~LoginTabHelper() override;
 
   // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -34,7 +37,17 @@ class LoginTabHelper : public content::WebContentsObserver,
   void HandleCredentials(
       const base::Optional<net::AuthCredentials>& credentials);
 
+  // When the user enters credentials into the login prompt, they are populated
+  // in the auth cache and then page is reloaded to re-send the request with the
+  // cached credentials. This method is passed as the callback to the call that
+  // places the credentials into the cache.
+  void Reload();
+
   std::unique_ptr<content::LoginDelegate> delegate_;
+
+  net::AuthChallengeInfo challenge_;
+
+  base::WeakPtrFactory<LoginTabHelper> weak_ptr_factory_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

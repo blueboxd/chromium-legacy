@@ -57,7 +57,7 @@ scoped_refptr<TextureOwner> TextureOwner::Create(
 
 // static
 std::unique_ptr<gpu::gles2::AbstractTexture> TextureOwner::CreateTexture(
-    gpu::SharedContextState* context_state) {
+    scoped_refptr<gpu::SharedContextState> context_state) {
   DCHECK(context_state);
 
   // This assumes a non-passthrough (validating) command decoder, which is safe
@@ -70,7 +70,7 @@ std::unique_ptr<gpu::gles2::AbstractTexture> TextureOwner::CreateTexture(
       0,  // height
       1,  // depth
       0,  // border
-      GL_RGBA, GL_UNSIGNED_BYTE, context_state);
+      GL_RGBA, GL_UNSIGNED_BYTE, std::move(context_state));
 }
 
 GLuint TextureOwner::GetTextureId() const {

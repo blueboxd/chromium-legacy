@@ -48,7 +48,7 @@ class CORE_EXPORT ModuleScript : public Script {
   KURL ResolveModuleSpecifier(const String& module_request,
                               String* failure_reason = nullptr) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void ProduceCache() {}
 

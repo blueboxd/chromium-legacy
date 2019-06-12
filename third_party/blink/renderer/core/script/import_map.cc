@@ -187,7 +187,7 @@ ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
       values.clear();
     }
     if (values.size() == 2) {
-      if (blink::layered_api::GetBuiltinPath(values[0]).IsNull()) {
+      if (layered_api::GetBuiltinPath(values[0]).IsNull()) {
         AddIgnoredValueMessage(
             logger, entry.first,
             "Fallback from a non-builtin URL is not yet supported.");
@@ -282,8 +282,8 @@ base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
 
   for (const KURL& value : matched->value) {
     const KURL complete_url = postfix.IsEmpty() ? value : KURL(value, postfix);
-    if (blink::layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_,
-                                               complete_url)
+    if (layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_,
+                                        complete_url)
             .IsValid()) {
       *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                        matched->key + "\" and is mapped to " +

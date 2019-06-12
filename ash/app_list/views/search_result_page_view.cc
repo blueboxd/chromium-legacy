@@ -181,7 +181,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   // Leaves a placeholder area for the search box and the separator below it.
   scroller->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kSearchBoxHeight + kSeparatorThickness, 0, 0, 0)));
-  scroller->set_draw_overflow_indicator(false);
+  scroller->SetDrawOverflowIndicator(false);
   scroller->SetContents(base::WrapUnique(contents_view_));
   // Setting clip height is necessary to make ScrollView take into account its
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing

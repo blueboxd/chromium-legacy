@@ -5,17 +5,21 @@
 
 (() => {
   /**
-   * Waits for QuickView element to be closed.
+   * Waits for Quick View dialog to be closed.
+   *
    * @param {string} appId Files app windowId.
    */
   async function waitQuickViewClose(appId) {
     const caller = getCaller();
+
     function checkQuickViewElementsDisplayNone(elements) {
       chrome.test.assertTrue(Array.isArray(elements));
       if (elements.length > 0 && elements[0].styles.display !== 'none') {
         return pending(caller, 'Waiting for Quick View to close.');
       }
     }
+
+    // Check: the Quick View dialog should not be shown.
     await repeatUntil(async () => {
       const elements = ['#quick-view', '#dialog:not([open])'];
       return checkQuickViewElementsDisplayNone(
@@ -53,7 +57,7 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space),
         'fakeKeyDown failed');
 
-    // Check: the Quick View element should be shown.
+    // Check: the Quick View dialog should be shown.
     await repeatUntil(async () => {
       const elements = ['#quick-view', '#dialog[open]'];
       return checkQuickViewElementsDisplayBlock(
@@ -76,8 +80,39 @@
             'fakeMouseClick', appId, [panelElements]),
         'fakeMouseClick failed');
 
-    // Check: the Quick View element should not be shown.
+    // Check: the Quick View dialog should not be shown.
     await waitQuickViewClose(appId);
+  }
+
+  /**
+   * Assuming that Quick View is currently open per openQuickView above, return
+   * the text shown in the QuickView Metadata Box field |name|.
+   *
+   * @param {string} appId Files app windowId.
+   * @param {string} name QuickView Metadata Box field name.
+   *
+   * @return {string} text Text value in the field name.
+   */
+  async function getQuickViewMetadataBoxField(appId, name) {
+    /**
+     * The <files-metadata-box> element resides in the #quick-view shadow DOM
+     * as a child of the #dialog element.
+     */
+    let quickViewQuery = ['#quick-view', '#dialog[open] files-metadata-box'];
+
+    /**
+     * The <files-metadata-entry key="name"> element resides in the shadow DOM
+     * of the <files-metadata-box>.
+     */
+    quickViewQuery.push(`files-metadata-entry[key="${name}"]`);
+
+    /**
+     * It has a #value div child in its shadow DOM containing the field value.
+     */
+    quickViewQuery.push('#value > div:not([hidden])');
+
+    const element = await remoteCall.waitForElement(appId, quickViewQuery);
+    return element.text;
   }
 
   /**
@@ -118,16 +153,9 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Check that the correct mime type is displayed.
-    const mimeTypeSelector = [
-      '#quick-view',
-      '#metadata-box',
-      'files-metadata-entry[key="Type"]',
-      '#value div',
-    ];
-    chrome.test.assertEq(
-        'text/plain',
-        (await remoteCall.waitForElement(appId, mimeTypeSelector)).text);
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('text/plain', mimeType);
   };
 
   /**
@@ -343,6 +371,10 @@
       return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('text/plain', mimeType);
   };
 
   /**
@@ -710,6 +742,56 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+  };
+
+  /**
+   * Tests opening Quick View on an JPEG image that has EXIF displays the EXIF
+   * information in the QuickView Metadata Box.
+   */
+  testcase.openQuickViewImageExif = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    // Open Files app on Downloads containing ENTRIES.exifImage.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.exifImage], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.exifImage.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/jpeg', mimeType);
+
+    // Check: the correct image EXIF metadata should be displayed.
+    const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
+    chrome.test.assertEq('378 x 272', size);
+    const model = await getQuickViewMetadataBoxField(appId, 'Device model');
+    chrome.test.assertEq(model, 'FinePix S5000');
+    const film = await getQuickViewMetadataBoxField(appId, 'Device settings');
+    chrome.test.assertEq('f/2.8 0.004 5.7mm ISO200', film);
   };
 
   /**

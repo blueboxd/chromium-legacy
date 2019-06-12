@@ -20,7 +20,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
-#include "content/browser/utility_process_host_client.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -207,12 +206,8 @@ void UtilityProcessHost::RegisterUtilityMainThreadFactory(
   g_utility_main_thread_factory = create;
 }
 
-UtilityProcessHost::UtilityProcessHost(
-    const scoped_refptr<UtilityProcessHostClient>& client,
-    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner)
-    : client_(client),
-      client_task_runner_(client_task_runner),
-      sandbox_type_(service_manager::SANDBOX_TYPE_UTILITY),
+UtilityProcessHost::UtilityProcessHost()
+    : sandbox_type_(service_manager::SANDBOX_TYPE_UTILITY),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
@@ -455,15 +450,6 @@ bool UtilityProcessHost::StartProcess() {
 }
 
 bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
-  if (!client_.get())
-    return true;
-
-  client_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(&UtilityProcessHostClient::OnMessageReceived),
-          client_.get(), message));
-
   return true;
 }
 
@@ -479,23 +465,9 @@ void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
   for (auto& callback : pending_run_service_callbacks_)
     std::move(callback).Run(base::nullopt);
   pending_run_service_callbacks_.clear();
-
-  if (!client_.get())
-    return;
-
-  client_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UtilityProcessHostClient::OnProcessLaunchFailed, client_,
-                     error_code));
 }
 
 void UtilityProcessHost::OnProcessCrashed(int exit_code) {
-  if (!client_.get())
-    return;
-
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&UtilityProcessHostClient::OnProcessCrashed,
-                                client_, exit_code));
 }
 
 }  // namespace content

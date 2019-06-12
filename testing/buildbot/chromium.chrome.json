@@ -2175,12 +2175,7 @@
         },
         "name": "chrome_sizes",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chrome.tests"
-            }
-          ]
+          "can_use_on_swarming_builders": false
         }
       }
     ]

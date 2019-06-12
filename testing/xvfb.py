@@ -83,10 +83,25 @@ def run_executable(
     use_xvfb = False
     cmd.remove('--no-xvfb')
 
+  # Tests that run on Linux platforms with Ozone/Wayland backend require
+  # a Weston instance. However, there is no solution to run pure headless
+  # Wayland at the moment. Instead, the Weston compositor runs on top of
+  # X Server, which is ok, because Weston does all the communication job
+  # internally and clients are using Wayland protocols normally and unaware
+  # of the X.
+  use_weston = False
+  if '--use-weston' in cmd:
+    if not use_xvfb:
+      print >> sys.stderr, 'Unable to use Weston without xvfb'
+      return 1
+    use_weston = True
+    cmd.remove('--use-weston')
+
   if sys.platform == 'linux2' and use_xvfb:
     env['_CHROMIUM_INSIDE_XVFB'] = '1'
     openbox_proc = None
     xcompmgr_proc = None
+    weston_proc = None
     xvfb_proc = None
     xvfb_ready = MutableBoolean()
     def set_xvfb_ready(*_):
@@ -132,6 +147,10 @@ def run_executable(
         xcompmgr_proc = subprocess.Popen(
             'xcompmgr', stderr=subprocess.STDOUT, env=env)
 
+      if use_weston:
+        weston_proc = subprocess.Popen(
+            'weston', stderr=subprocess.STDOUT, env=env)
+
       return test_env.run_executable(cmd, env, stdoutfile)
     except OSError as e:
       print >> sys.stderr, 'Failed to start Xvfb or Openbox: %s' % str(e)
@@ -142,6 +161,7 @@ def run_executable(
     finally:
       kill(openbox_proc)
       kill(xcompmgr_proc)
+      kill(weston_proc)
       kill(xvfb_proc)
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
@@ -188,7 +208,7 @@ def find_display():
 
 
 def main():
-  usage = 'Usage: xvfb.py [command [--no-xvfb] args...]'
+  usage = 'Usage: xvfb.py [command [--no-xvfb or --use-weston] args...]'
   if len(sys.argv) < 2:
     print >> sys.stderr, usage
     return 2

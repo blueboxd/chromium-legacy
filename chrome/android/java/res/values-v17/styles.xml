@@ -245,6 +245,7 @@
         <item name="preferenceStyle">@style/Theme.Chromium.PreferenceItem</item>
         <item name="preferenceFragmentCompatStyle">@style/Theme.Chromium.PreferenceFragment</item>
         <item name="preferenceFragmentListStyle">@style/Theme.Chromium.PreferenceFragmentList</item>
+        <item name="dialogPreferenceStyle">@style/Theme.Chromium.DialogPreference</item>
     </style>
 
     <style name="Theme.Chromium.PreferenceFragment">
@@ -263,6 +264,23 @@
     <style name="Theme.Chromium.PreferenceItemNoDividers">
         <item name="allowDividerAbove">false</item>
         <item name="allowDividerBelow">false</item>
+    </style>
+
+    <style name="Theme.Chromium.DialogPreference">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:negativeButtonText">@android:string/cancel</item>
+    </style>
+
+    <style name="Theme.Chromium.Preferences.AlertDialog" parent="Theme.Chromium.AlertDialog">
+        <item name="buttonBarButtonStyle">@style/TextAppearance.DialogButtonCompat</item>
+    </style>
+
+    <!-- TODO(chouinard): Using all caps for support library preference dialog buttons to match
+         existing non-compat style, however we should later reexamine whether this is still the
+         right choice since it looks like most of our other AlertDialogs use the default title case.
+         -->
+    <style name="TextAppearance.DialogButtonCompat" parent="AlertDialogButtonStyle">
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">

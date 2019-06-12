@@ -133,7 +133,7 @@ class AppBannerManagerAndroid
   // necessarily succeed (e.g. |id| doesn't map to anything), but if this method
   // returns NO_ERROR_DETECTED, only a native app banner may be shown, and the
   // web app banner flow will not be run.
-  InstallableStatusCode QueryNativeApp(const std::string& platform,
+  InstallableStatusCode QueryNativeApp(const base::string16& platform,
                                        const GURL& url,
                                        const std::string& id);
 

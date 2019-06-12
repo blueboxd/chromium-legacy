@@ -26,7 +26,7 @@ class CommandBufferProxyImpl;
 struct SwapBuffersCompleteParams;
 }
 
-namespace ws {
+namespace viz {
 class ContextProviderCommandBuffer;
 }
 
@@ -40,7 +40,7 @@ class GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context,
+      scoped_refptr<viz::ContextProviderCommandBuffer> context,
       std::unique_ptr<viz::OverlayCandidateValidator>
           overlay_candidate_validator);
 

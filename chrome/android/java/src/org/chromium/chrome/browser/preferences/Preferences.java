@@ -318,7 +318,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
      * #getMainFragment()} returned null, which may indicate that the main fragment is a Support
      * Library fragment.
      */
-    private android.support.v4.app.Fragment getMainFragmentCompat() {
+    @VisibleForTesting
+    public android.support.v4.app.Fragment getMainFragmentCompat() {
         return getSupportFragmentManager().findFragmentById(android.R.id.content);
     }
 

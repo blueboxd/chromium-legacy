@@ -13,6 +13,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
+class PrefRegistrySimple;
+
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
@@ -42,6 +44,8 @@ class ASH_EXPORT MediaControllerImpl
   // |connector| can be null in tests.
   explicit MediaControllerImpl(service_manager::Connector* connector);
   ~MediaControllerImpl() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void AddObserver(MediaCaptureObserver* observer);
   void RemoveObserver(MediaCaptureObserver* observer);

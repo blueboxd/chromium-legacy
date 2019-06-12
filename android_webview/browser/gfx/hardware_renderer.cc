@@ -57,7 +57,7 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
       ParentCompositorDrawConstraints(), compositor_id_,
-      viz::PresentationFeedbackMap(), 0u);
+      viz::FrameTimingDetailsMap(), 0u);
   for (auto& child_frame : child_frame_queue_) {
     child_frame->WaitOnFutureIfNeeded();
     ReturnChildFrame(std::move(child_frame));
@@ -166,7 +166,7 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
   // presentation feedback to return as well.
   if (need_to_update_draw_constraints && !submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, viz::PresentationFeedbackMap(), 0u);
+        draw_constraints, compositor_id_, viz::FrameTimingDetailsMap(), 0u);
   }
 
   if (!child_id_.is_valid())
@@ -184,11 +184,12 @@ void HardwareRenderer::Draw(HardwareRendererDrawParams* params) {
   surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
                          viz::SurfaceId(frame_sink_id_, child_id_),
                          device_scale_factor_, params->color_space);
-  viz::PresentationFeedbackMap feedbacks =
-      support_->TakePresentationFeedbacks();
+  viz::FrameTimingDetailsMap timing_details =
+      support_->TakeFrameTimingDetailsMap();
   if (submitted_new_frame) {
     render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
-        draw_constraints, compositor_id_, std::move(feedbacks), frame_token);
+        draw_constraints, compositor_id_, std::move(timing_details),
+        frame_token);
   }
 }
 
@@ -218,7 +219,7 @@ void HardwareRenderer::DidReceiveCompositorFrameAck(
 
 void HardwareRenderer::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   NOTREACHED();
 }
 

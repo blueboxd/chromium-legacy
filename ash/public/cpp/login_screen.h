@@ -17,6 +17,8 @@ namespace ash {
 class LoginScreenClient;
 class LoginScreenModel;
 
+enum class ParentAccessRequestReason;
+
 // Allows clients (e.g. the browser process) to send messages to the ash
 // login/lock/user-add screens.
 // TODO(estade): move more of mojom::LoginScreen here.
@@ -61,11 +63,15 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // validates the parent access code for that child only, when it is  empty it
   // validates the code for any child signed in the device. |callback| is
   // invoked when the back button is clicked or the correct code was entered.
-  // Note: this is intended for children only. If a non child account id is
-  // provided, the validation will necessarily fail.
+  // |reason| contains information about why the parent access view is
+  // necessary, it is used to modify the view appearance by changing the title
+  // and description strings and background color. Note: this is intended for
+  // children only. If a non child account id is provided, the validation will
+  // necessarily fail.
   virtual void ShowParentAccessWidget(
       const AccountId& child_account_id,
-      base::RepeatingCallback<void(bool success)> callback) = 0;
+      base::RepeatingCallback<void(bool success)> callback,
+      ParentAccessRequestReason reason) = 0;
 
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.

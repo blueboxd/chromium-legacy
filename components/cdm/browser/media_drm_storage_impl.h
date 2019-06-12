@@ -32,6 +32,12 @@ class RenderFrameHost;
 
 namespace cdm {
 
+namespace prefs {
+
+extern const char kMediaDrmStorage[];
+
+}  // namespace prefs
+
 // Implements media::mojom::MediaDrmStorage using PrefService.
 // This file is located under components/ so that it can be shared by multiple
 // content embedders (e.g. chrome and chromecast).

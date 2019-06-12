@@ -22,7 +22,6 @@
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "net/url_request/url_request_context.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
@@ -231,8 +230,8 @@ HeadlessBrowserContextImpl::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return request_context_manager_->CreateRequestContext(
-      protocol_handlers, std::move(request_interceptors));
+  NOTREACHED();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
@@ -241,18 +240,21 @@ HeadlessBrowserContextImpl::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  NOTREACHED();
   return nullptr;
 }
 
 net::URLRequestContextGetter*
 HeadlessBrowserContextImpl::CreateMediaRequestContext() {
-  return request_context_manager_->url_request_context_getter();
+  NOTREACHED();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
 HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
+  NOTREACHED();
   return nullptr;
 }
 

@@ -17,6 +17,15 @@
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/961066): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_DifferentSharedMemoryBuffersForDifferentAgents \
+  DISABLED_DifferentSharedMemoryBuffersForDifferentAgents
+#else
+#define MAYBE_DifferentSharedMemoryBuffersForDifferentAgents \
+  DifferentSharedMemoryBuffersForDifferentAgents
+#endif
+
 namespace tracing {
 
 namespace {
@@ -297,7 +306,7 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
 }
 
 TEST_F(PerfettoIntegrationTest,
-       DifferentSharedMemoryBuffersForDifferentAgents) {
+       MAYBE_DifferentSharedMemoryBuffersForDifferentAgents) {
   base::RunLoop client1_enabled_callback;
   base::RunLoop client2_enabled_callback;
   auto client1 = std::make_unique<MockProducerClient>(

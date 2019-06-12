@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
@@ -1103,7 +1103,7 @@ class ExistingUserControllerAuthFailureTest
     // login, the login attempt cannot be shortcut by login manager mixin API -
     // it has to go through login UI.
     const std::string& password = user_context.GetKey()->GetSecret();
-    test::LoginScreenTester().SubmitPassword(test_user_.account_id, password);
+    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id, password);
   }
 
   void SetUpStubAuthenticatorAndAttemptLoginWithWrongPassword() {
@@ -1114,22 +1114,14 @@ class ExistingUserControllerAuthFailureTest
     test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
         .InjectAuthenticatorBuilder(std::move(authenticator_builder));
 
-    test::LoginScreenTester().SubmitPassword(test_user_.account_id,
-                                             "wrong!!!!!");
+    ash::LoginScreenTestApi::SubmitPassword(test_user_.account_id,
+                                            "wrong!!!!!");
   }
 
-  // Waits for auth error message to be shown in login UI. It runs
-  // LoginScreenTester::WaitForUiUpdate until
-  // LoginScreenTester::IsAuthErrorBubbleShown returns true.
+  // Waits for auth error message to be shown in login UI.
   void WaitForAuthErrorMessage() {
-    test::LoginScreenTester login_tester;
-
-    int ui_version = login_tester.GetUiUpdateCount();
-
-    while (!login_tester.IsAuthErrorBubbleShown()) {
-      ASSERT_TRUE(login_tester.WaitForUiUpdate(ui_version));
-      ui_version = login_tester.GetUiUpdateCount();
-    }
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(ash::LoginScreenTestApi::IsAuthErrorBubbleShown());
   }
 
  protected:

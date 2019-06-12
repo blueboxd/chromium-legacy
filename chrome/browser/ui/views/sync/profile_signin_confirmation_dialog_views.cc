@@ -113,16 +113,13 @@ int ProfileSigninConfirmationDialogViews::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
+std::unique_ptr<views::View>
+ProfileSigninConfirmationDialogViews::CreateExtraView() {
   if (!prompt_for_new_profile_)
     return nullptr;
 
-  const base::string16 continue_signin_text =
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE);
-
-  return views::MdTextButton::CreateSecondaryUiButton(this,
-                                                      continue_signin_text)
-      .release();
+  return views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE));
 }
 
 bool ProfileSigninConfirmationDialogViews::Accept() {

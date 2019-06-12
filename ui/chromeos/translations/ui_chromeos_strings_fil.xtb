@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> na file</translation>
 <translation id="457386861538956877">Higit pa...</translation>
 <translation id="4582497162516204941">I-install gamit ang Linux (Beta)</translation>
+<translation id="4594543368593301662">Ipinapakita ang mga resulta para sa <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Sa computer na ito</translation>
 <translation id="4669606053856530811">Mawawalan ng access ang mga miyembro ng '<ph name="SOURCE_NAME" />' maliban na lang kung ibinahagi sa kanila ang mga item na ito.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bulgarian na keyboard</translation>
 <translation id="5418923334382419584">Myanmar keyboard</translation>
 <translation id="5428105026674456456">Spanish</translation>
+<translation id="5438282218546237410">Walang resulta para sa <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Polish na keyboard</translation>
 <translation id="5465122519792752163">Nepali keyboard (InScript)</translation>
 <translation id="5469868506864199649">Italyano</translation>
 <translation id="5494920125229734069">Piliin ang lahat</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Mga Dot</translation>
+<translation id="5522908512596376669">Naging list view ang listahan ng file.</translation>
 <translation id="5524517123096967210">Hindi mabasa ang file.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> na larawan</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6054173164583630569">French na keyboard</translation>
 <translation id="6074825444536523002">Form ng Google</translation>
+<translation id="6096979789310008754">Na-clear ang text para sa paghahanap, ipinapakita ang lahat ng file at folder.</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Puwang</translation>
 <translation id="6133173853026656527">Inililipat ang <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elepante</translation>
 <translation id="8569764466147087991">Piliin ang isang file para buksan</translation>
 <translation id="8579285237314169903">Nagsi-sync ng <ph name="NUMBER_OF_FILES" /> (na) item...</translation>
+<translation id="8600173386174225982">Naging thumbnail view ang listahan ng file.</translation>
 <translation id="8669949407341943408">Inililipat...</translation>
 <translation id="8671210955687109937">Makakapagkomento</translation>
 <translation id="8686213429977032554">Hindi pa ibinabahagi ang file sa Drive na ito</translation>

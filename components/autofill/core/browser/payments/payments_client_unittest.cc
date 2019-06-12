@@ -164,12 +164,17 @@ class PaymentsClientTest : public testing::Test {
 
   // Issue an UnmaskCard request. This requires an OAuth token before starting
   // the request.
-  void StartUnmasking() {
+  void StartUnmasking(bool use_fido = false) {
     PaymentsClient::UnmaskRequestDetails request_details;
     request_details.billing_customer_number = 111222333444;
     request_details.card = test::GetMaskedServerCard();
-    request_details.user_response.cvc = base::ASCIIToUTF16("123");
     request_details.risk_data = "some risk data";
+    if (use_fido) {
+      request_details.fido_assertion_info =
+          base::Value(base::Value::Type::DICTIONARY);
+    } else {
+      request_details.user_response.cvc = base::ASCIIToUTF16("123");
+    }
     client_->UnmaskCard(request_details,
                         base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
                                        weak_ptr_factory_.GetWeakPtr()));
@@ -353,8 +358,16 @@ TEST_F(PaymentsClientTest,
       std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, UnmaskSuccess) {
-  StartUnmasking();
+TEST_F(PaymentsClientTest, UnmaskSuccessViaCVC) {
+  StartUnmasking(/*use_fido=*/false);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("1234", real_pan_);
+}
+
+TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
+  StartUnmasking(/*use_fido=*/true);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);

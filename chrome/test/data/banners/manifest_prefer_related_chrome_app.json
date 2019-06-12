@@ -2,13 +2,13 @@
   "name": "Manifest prefer related chrome app",
   "icons": [
     {
-      "src": "/banners/image-512px.png",
+      "src": "image-512px.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "scope": ".",
-  "start_url": ".",
+  "start_url": "manifest_test_page.html",
   "display": "standalone",
   "prefer_related_applications": true,
   "related_applications": [{

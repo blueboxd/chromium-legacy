@@ -41,9 +41,9 @@ class SharedImageInterface;
 struct SyncToken;
 }
 
-namespace ws {
+namespace viz {
 class ContextProviderCommandBuffer;
-}  // namespace ws
+}  // namespace viz
 
 namespace media {
 
@@ -158,7 +158,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
-  virtual scoped_refptr<ws::ContextProviderCommandBuffer>
+  virtual scoped_refptr<viz::ContextProviderCommandBuffer>
   GetMediaContextProvider() = 0;
   virtual gpu::ContextSupport* GetMediaContextProviderContextSupport() = 0;
 

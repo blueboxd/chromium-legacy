@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -121,8 +121,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
   test::OobeJS().ExpectHiddenPath(
       {"supervision-transition-md", "supervisionTransitionErrorDialog"});
 
-  EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   ProfileManager::GetPrimaryUserProfile()->GetPrefs()->SetInteger(
       arc::prefs::kArcSupervisionTransition,
@@ -155,8 +155,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
   test::OobeJS().ExpectHiddenPath(
       {"supervision-transition-md", "supervisionTransitionErrorDialog"});
 
-  EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   base::OneShotTimer* timer =
       LoginDisplayHost::default_host()
@@ -176,8 +176,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
   test::OobeJS().ExpectHiddenPath(
       {"supervision-transition-md", "supervisionTransitionDialog"});
 
-  EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS().TapOnPath({"supervision-transition-md", "accept-button"});
 

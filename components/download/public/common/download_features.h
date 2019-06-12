@@ -45,7 +45,12 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // Whether download resumption is allowed when there are no strong validators.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kAllowDownloadResumptionWithoutStrongValidators;
+
+// Whether download resumption is allowed when there are no strong validators.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kUseParallelRequestsForUnknwonRangeSupport;
 }  // namespace features
+
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FEATURES_H_

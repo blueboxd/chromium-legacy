@@ -1136,6 +1136,15 @@
           Kapag hindi nakatakda ang patakarang ito, mananatiling hindi apektado ang gawi ng mga mas partikular na patakaran.</translation>
 <translation id="2987155890997901449">I-enable ang ARC</translation>
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
+<translation id="2990018289267778247">Kung itatakda ang patakarang ito sa true, palaging lalabas ang mga opsyon sa Accessibility sa menu ng system tray.
+
+          Kung itatakda ang patakarang ito sa false, hindi kailanman lalabas ang mga opsyon sa Accessibility sa menu ng system tray.
+
+          Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, hindi lalabas sa menu ng system tray ang mga opsyon sa Accessibility, pero mapapalabas ng user ang mga opsyon sa Accessibility gamit ang page ng Mga Setting.
+
+          Kapag naka-enable ang mga feature ng accessibility (sa ibang paraan, hal. sa pamamagitan ng kumbinasyon ng key), palaging lalabas ang mga opsyon sa Accessibility sa menu ng system tray.</translation>
 <translation id="3011301228198307065">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
 
           Ang home page ay ang page na nabubuksan sa pamamagitan ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
@@ -1459,6 +1468,7 @@
         Ginagamit ang patakarang ito ng pag-enroll sa patakaran ng cloud ng saklaw ng machine sa desktop at maaari itong itakda ng Registry o GPO sa Windows, plist sa Mac, at JSON na file ng patakaran sa Linux.</translation>
 <translation id="3660562134618097814">Ilipat ang cookies ng SAML IdP sa pag-log in</translation>
 <translation id="3701121231485832347">Nagkokontrol ng mga setting na partikular sa mga <ph name="PRODUCT_OS_NAME" /> device na pinapamahalaan ng <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Malayuang pagpapatunay</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Hindi na ginagamit ang field na isang linya at aalisin ito sa hinaharap. Pakisimulang gamitin ang textbox na maraming linya sa ibaba.)</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="3711895659073496551">Suspendihin</translation>
@@ -1855,6 +1865,15 @@
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="4285674129118156176">Nagpapahintulot sa mga hindi affiliate na user na gamitin ang ARC</translation>
+<translation id="4289903996435140853">Nagbibigay-daan sa iyong magtakda ng listahan ng mga url na tumutukoy kung aling mga site ang awtomatikong bibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat makita sa bawat item sa listahan ang mga device at url para maging valid ang patakaran. Puwedeng makakita sa bawat item sa mga device ng field ng vendor ID at product ID. Ang anumang ID na aalisin ay ituturing na wildcard maliban sa isang exception, at iyon ay hindi makakatukoy ng product ID kung hindi tutukoy ng vendor ID. Kung hindi, hindi magiging valid ang patakaran at babalewalain ito.
+
+        Ginagamit ng model ng pahintulot sa USB ang URL ng humihiling na site ("humihiling na URL") at ang URL ng nangungunang frame site ("nag-e-embed na URL") para magbigay ng pahintulot sa humihiling na URL na i-access ang USB device. Puwedeng iba ang humihiling na URL sa nag-e-embed na URL kapag na-load ang humihiling na site sa iframe. Samakatuwid, maaaring magkaroon ang field ng "mga url" ng hanggang dalawang string ng URL na dine-delimit ng kuwit para matukoy ang humihiling at nag-e-embed na URL. Kung isang URL lang ang tutukuyin, magbibigay ng access sa mga kaukulang USB device kapag tumugma ang URL ng humihiling na site sa URL na ito anuman ang status ng pag-embed. Ang mga URL sa "mga url" ay dapat mga valid na URL, kung hindi ay babalewalain ang patakaran.
+
+        Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi ay ang personal na configuration ng user.
+
+        Hindi dapat sumalungat ang mga pattern ng URL sa patakarang ito sa mga pattern na na-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung magkakaroon ng salungatan, mananaig ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.
+
+        Pinagsasama ang mga value para sa patakarang ito at sa patakarang WebUsbAllowDevicesForUrls.</translation>
 <translation id="4298509794364745131">Tumutukoy ng listahan ng mga app na maaaring i-enable bilang app sa paggawa ng tala sa lock screen ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung naka-enable sa lock screen ang piniling app sa paggawa ng tala, maglalaman ang lock screen ng elemento ng UI para sa paglulunsad ng piniling app sa paggawa ng tala.
@@ -2006,6 +2025,7 @@
 <translation id="4639407427807680016">Mga pangalan ng mga host ng native na pagmemensahe na ibubukod mula sa blacklist</translation>
 <translation id="4650759511838826572">Huwag paganahin ang mga scheme ng protocol ng URL</translation>
 <translation id="465099050592230505">URL ng web store na enterprise (hindi na ginagamit)</translation>
+<translation id="4661889655253181651">Pinapayagan ka ng mga setting ng content na tukuyin kung paano pinamamahalaan ang mga content ng partikular na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
 <translation id="4665897631924472251">Mga setting ng pamamahala ng extension</translation>
 <translation id="4668325077104657568">Default na setting ng mga larawan</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2050,6 +2070,11 @@
       Malayuang kinuha ang mga suhestyong ito sa mga server ng Google.
 
       Kung nakatakda sa false ang setting na ito, hindi makukuha o maipapakita ang mga suhestyon.</translation>
+<translation id="4759650396863318477">Nagbibigay-daan sa iyong itakda ang yugto ng panahon, sa millisecond, kung kailan aabisuhan ang mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o dapat i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
+
+      Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user ang pangangailangang mag-update. Para sa mga <ph name="PRODUCT_OS_NAME" /> device, lalabas sa system tray ang notification sa pag-restart alinsunod sa patakarang <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para sa mga <ph name="PRODUCT_NAME" /> browser, magbabago ang menu ng app para isaad na kinakailangan ng muling paglulunsad kapag lumipas ang one third ng yugto ng panahon ng notification. Magbabago ng kulay ang notification na ito kapag lumipas ang two thirds ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Ang mga karagdagang notification na na-enable ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ay sumusunod sa kaparehong iskedyul na ito.
+
+      Kung hindi itatakda, ang default na yugto ng panahong 345600000 millisecond (apat na araw) ang gagamitin para sa mga <ph name="PRODUCT_OS_NAME" /> device at 604800000 millisecond (isang linggo) ang gagamitin para sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng credit card sa mga web form gamit ang dati nang na-store na impormasyon.
 
       Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng credit card, o hindi nito ise-save ang karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse siya sa web.
@@ -2258,6 +2283,15 @@
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="5213038356678567351">Mga website na hindi dapat mag-trigger ng paglipat ng browser.</translation>
 <translation id="5219844027738217407">Para sa mga Android app, nakakaapekto lang sa mikropono ang patakarang ito. Kapag nakatakda sa true ang patakarang ito, imu-mute ang mikropono para sa lahat ng Android app, nang walang exception.</translation>
+<translation id="5221394278852982313">Nagbibigay-daan sa iyong magtakda ng listahan ng mga url na tumutukoy kung aling mga site ang awtomatikong bibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat makita sa bawat item sa listahan ang mga device at url para maging valid ang patakaran. Puwedeng makakita sa bawat item sa mga device ng field ng vendor ID at product ID. Ang anumang ID na aalisin ay ituturing na wildcard maliban sa isang exception, at iyon ay hindi makakatukoy ng product ID kung hindi tutukoy ng vendor ID. Kung hindi, hindi magiging valid ang patakaran at babalewalain ito.
+
+        Ginagamit ng model ng pahintulot sa USB ang URL ng humihiling na site ("humihiling na URL") at ang URL ng nangungunang frame site ("nag-e-embed na URL") para magbigay ng pahintulot sa humihiling na URL na i-access ang USB device. Puwedeng iba ang humihiling na URL sa nag-e-embed na URL kapag na-load ang humihiling na site sa iframe. Samakatuwid, maaaring magkaroon ang field ng "mga url" ng hanggang dalawang string ng URL na dine-delimit ng kuwit para matukoy ang humihiling at nag-e-embed na URL. Kung isang URL lang ang tutukuyin, magbibigay ng access sa mga kaukulang USB device kapag tumugma ang URL ng humihiling na site sa URL na ito anuman ang status ng pag-embed. Ang mga URL sa "mga url" ay dapat mga valid na URL, kung hindi ay babalewalain ang patakaran.
+
+        Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi ay ang personal na configuration ng user.
+
+        Hindi dapat sumalungat ang mga pattern ng URL sa patakarang ito sa mga pattern na na-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung magkakaroon ng salungatan, mananaig ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.
+
+        Pinagsasama ang mga value para sa patakarang ito at sa patakarang DeviceWebUsbAllowDevicesForUrls.</translation>
 <translation id="5228316810085661003">Ang delay sa awtomatikong pag-log in ng lokal na account ng device
 
       Kung hindi itatakda ang patakaran ng |DeviceLocalAccountAutoLoginId|, walang bisa ang patakarang ito. Kung hindi:
@@ -2998,6 +3032,21 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung itatakda ang patakarang ito sa ''Huwag payagan ang mga user na pamahalaan ang mga certificate,'' hindi magagawa ng mga user na pamahalaan ang mga certificate, maaari lang nilang tingnan ang mga certificate.</translation>
 <translation id="6573305661369899995">Magtakda ng external na pagmumulan ng mga paghihigpit sa URL</translation>
+<translation id="6583851521569686409">Nagko-configure ng listahan ng mga printer.
+
+      Nagbibigay-daan ang patakarang ito sa mga administrator na magbigay ng mga configuration ng printer para sa
+      kanilang mga user.
+
+      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na puwedeng i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kasama ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
+
+      Dapat ay naglalaman ang <ph name="PRINTER_EFFECTIVE_MODEL" /> ng pangalan ng printer o nakatakda ang <ph name="PRINTER_AUTOCONF" /> sa true. Babalewalain ang mga printer na may pareho o walang anumang property.
+
+      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer.  Hindi mada-download ang mga PPD hanggang magamit ang printer.  Pagkatapos noon, maka-cache ang mga PPD na madalas gamitin.
+
+      Walang epekto ang patakarang ito sa kung puwedeng mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Ginawa ito para maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
+
+      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pagpapalawak ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o sa isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula sa ika-6 na posisyon, ibig sabihin, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang nakabatay sa zero ang posisyon.
+      </translation>
 <translation id="6598235178374410284">Larawan ng avatar ng user</translation>
 <translation id="6603004149426829878">Palaging magpadala ng anumang available na signal ng lokasyon sa server habang nireresolba ang timezone</translation>
 <translation id="6628120204569232711">Iulat ang status ng storage</translation>
@@ -4366,6 +4415,8 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="915194831143859291">Kung nakatakda sa false o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_OS_NAME" /> ang user na i-shut down ang device.
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
 <translation id="9152473318295429890">Ine-enable ang mga kontekstwal na suhestyon ng mga nauugnay na web page</translation>
+<translation id="9153446010242995516">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Subukang i-carry over ang pag-configure sa antas ng device (kabilang ang mga kredensyal ng network) sa pamamagitan ng proseso ng pag-roll back, kung posible, pero mag-roll back nang may ganap na powerwash kahit pa hindi posible ang pag-restore ng data (dahil hindi sinusuportahan ng target na bersyon ang pag-restore ng data o dahil sa backward-incompatible na pagbabago).
+          Sinusuportahan sa bersyon 75 pataas ng <ph name="PRODUCT_OS_NAME" />. Para sa mga dati nang kliyente, ang ibig sabihin ng value na ito ay naka-disable ang pag-roll back.</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
 <translation id="9159126470527871268">Nag-aabiso sa mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
 

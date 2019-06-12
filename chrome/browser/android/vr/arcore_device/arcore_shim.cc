@@ -22,6 +22,7 @@ namespace {
   CALL(ArFrame_acquireCamera)           \
   CALL(ArFrame_create)                  \
   CALL(ArFrame_destroy)                 \
+  CALL(ArFrame_getUpdatedTrackables)    \
   CALL(ArFrame_hitTestRay)              \
   CALL(ArFrame_transformCoordinates2d)  \
   CALL(ArHitResult_acquireTrackable)    \
@@ -160,6 +161,14 @@ void ArFrame_create(const ArSession* session, ArFrame** out_frame) {
 
 void ArFrame_destroy(ArFrame* frame) {
   arcore_api->impl_ArFrame_destroy(frame);
+}
+
+void ArFrame_getUpdatedTrackables(const ArSession* session,
+                                  const ArFrame* frame,
+                                  ArTrackableType filter_type,
+                                  ArTrackableList* out_trackable_list) {
+  arcore_api->impl_ArFrame_getUpdatedTrackables(session, frame, filter_type,
+                                                out_trackable_list);
 }
 
 void ArFrame_hitTestRay(const ArSession* session,

@@ -15,6 +15,7 @@
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -60,6 +61,14 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
 }
 
 }  // namespace
+
+// static
+bool XRDeviceImpl::IsXrDeviceConsentPromptDisabledForTesting() {
+  static bool is_xr_device_consent_prompt_disabled_for_testing =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableXrDeviceConsentPromptForTesting);
+  return is_xr_device_consent_prompt_disabled_for_testing;
+}
 
 XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
                            device::mojom::XRDeviceRequest request)
@@ -190,12 +199,16 @@ void XRDeviceImpl::RequestSession(
       // Reject promise.
       std::move(callback).Run(nullptr);
     } else {
-      GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
-          render_frame_host_->GetProcess()->GetID(),
-          render_frame_host_->GetRoutingID(),
-          base::BindOnce(&XRDeviceImpl::OnConsentResult,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                         std::move(callback)));
+      if (IsXrDeviceConsentPromptDisabledForTesting()) {
+        DoRequestSession(std::move(options), std::move(callback));
+      } else {
+        GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
+            render_frame_host_->GetProcess()->GetID(),
+            render_frame_host_->GetRoutingID(),
+            base::BindOnce(&XRDeviceImpl::OnConsentResult,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                           std::move(callback)));
+      }
     }
     return;
   }
@@ -203,11 +216,15 @@ void XRDeviceImpl::RequestSession(
 #elif defined(OS_WIN)
 
   DCHECK(!options->environment_integration);
-  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
-      GetWebContents(),
-      base::BindOnce(&XRDeviceImpl::OnConsentResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                     std::move(callback)));
+  if (IsXrDeviceConsentPromptDisabledForTesting()) {
+    DoRequestSession(std::move(options), std::move(callback));
+  } else {
+    XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+        GetWebContents(),
+        base::BindOnce(&XRDeviceImpl::OnConsentResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                       std::move(callback)));
+  }
   return;
 
 #else

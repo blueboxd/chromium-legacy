@@ -28,14 +28,16 @@ namespace views {
 class WebDialogView;
 }  // namespace views
 
-// Callback signalled by the dialog when the Gaia sign in flow compltes.
+// Callback signalled by the dialog when the Gaia sign in flow completes.
 // Parameters are:
 // 1. A base::Value that is of type DICTIONARY. The dictionary will always
 //    contain an exit_code entry and possibly more data if exit_code ==
 //    credential_provider::kUiecSuccess.
-// 2. A URL loader that will be used by various OAuth fetchers.
+// 2. Any extra scopes provided through flags.
+// 3. A URL loader that will be used by various OAuth fetchers.
 using HandleGcpwSigninCompleteResult =
     base::OnceCallback<void(base::Value,
+                            const std::string& additional_mdm_oauth_scopes,
                             scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Starts the Google Credential Provider for Windows (GCPW) Sign in flow. First

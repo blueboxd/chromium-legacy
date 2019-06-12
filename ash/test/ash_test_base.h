@@ -205,7 +205,9 @@ class AshTestBase : public testing::Test {
 
   // Simulates a user sign-in. It creates a new user session, adds it to
   // existing user sessions and makes it the active user session.
-  void SimulateUserLogin(const std::string& user_email);
+  void SimulateUserLogin(
+      const std::string& user_email,
+      user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR);
 
   // Simular to SimulateUserLogin but for a newly created user first ever login.
   void SimulateNewUserFirstLogin(const std::string& user_email);

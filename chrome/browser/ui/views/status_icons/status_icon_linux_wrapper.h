@@ -31,6 +31,10 @@ class StatusIconLinuxWrapper : public StatusIcon,
   // StatusIconLinux::Delegate overrides:
   void OnClick() override;
   bool HasClickAction() override;
+  const gfx::ImageSkia& GetImage() const override;
+  const base::string16& GetToolTip() const override;
+  const ui::MenuModel* GetMenuModel() const override;
+  void OnImplInitialized(bool success) override;
 
   // StatusIconMenuModel::Observer overrides:
   void OnMenuStateChanged() override;
@@ -47,17 +51,28 @@ class StatusIconLinuxWrapper : public StatusIcon,
   void UpdatePlatformContextMenu(StatusIconMenuModel* model) override;
 
  private:
+  enum StatusIconType {
+    kTypeDbus,
+    kTypeX11,
+    kTypeOther,
+  };
+
   // A status icon wrapper should only be created by calling
   // CreateWrappedStatusIcon().
-  explicit StatusIconLinuxWrapper(
-      std::unique_ptr<views::StatusIconLinux> status_icon);
+  StatusIconLinuxWrapper(std::unique_ptr<views::StatusIconLinux> status_icon,
+                         StatusIconType status_icon_type,
+                         const gfx::ImageSkia& image,
+                         const base::string16& tool_tip);
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;
 
   std::unique_ptr<views::StatusIconLinux> status_icon_;
+  StatusIconType status_icon_type_;
 
-  StatusIconMenuModel* menu_model_;
+  gfx::ImageSkia image_;
+  base::string16 tool_tip_;
+  StatusIconMenuModel* menu_model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconLinuxWrapper);
 };

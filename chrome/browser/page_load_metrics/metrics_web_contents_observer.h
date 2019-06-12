@@ -24,10 +24,6 @@
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -125,25 +121,6 @@ class MetricsWebContentsObserver
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
       content::NavigationHandle* navigation_handle);
-
-  // A resource request completed on the IO thread. This method is invoked on
-  // the UI thread. |render_frame_host_or_null will| be null for main or sub
-  // frame requests when browser-side navigation is enabled.
-  void OnRequestComplete(
-      const GURL& url,
-      const net::IPEndPoint& remote_endpoint,
-      int frame_tree_node_id,
-      const content::GlobalRequestID& request_id,
-      content::RenderFrameHost* render_frame_host_or_null,
-      content::ResourceType resource_type,
-      bool was_cached,
-      std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-          data_reduction_proxy_data,
-      int64_t raw_body_bytes,
-      int64_t original_content_length,
-      base::TimeTicks creation_time,
-      int net_error,
-      std::unique_ptr<net::LoadTimingInfo> load_timing_info);
 
   // Flush any buffered metrics, as part of the metrics subsystem persisting
   // metrics as the application goes into the background. The application may be

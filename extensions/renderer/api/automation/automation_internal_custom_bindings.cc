@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -37,6 +38,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -894,10 +896,10 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
         if (attribute == ax::mojom::IntAttribute::kPosInSet &&
             node->GetPosInSet()) {
-          attr_value = node->GetPosInSet();
+          attr_value = *node->GetPosInSet();
         } else if (attribute == ax::mojom::IntAttribute::kSetSize &&
                    node->GetSetSize()) {
-          attr_value = node->GetSetSize();
+          attr_value = *node->GetSetSize();
         } else if (!node->data().GetIntAttribute(attribute, &attr_value)) {
           return;
         }
@@ -1094,6 +1096,51 @@ void AutomationInternalCustomBindings::AddRoutes() {
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
+
+  RouteNodeIDPlusAttributeFunction(
+      "GetLanguageAnnotationForStringAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXTree* tree, ui::AXNode* node,
+         const std::string& attribute_name) {
+        ax::mojom::StringAttribute attr =
+            ui::ParseStringAttribute(attribute_name.c_str());
+        if (attr == ax::mojom::StringAttribute::kNone) {
+          // Set result as empty array.
+          result.Set(v8::Array::New(isolate, 0));
+          return;
+        }
+        std::vector<ui::LanguageSpan> language_annotation =
+            tree->language_info_stats->GetLanguageAnnotationForStringAttribute(
+                *node, attr);
+        const std::string& attribute_value = node->GetStringAttribute(attr);
+        // Build array.
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
+        v8::Local<v8::Array> array_result(
+            v8::Array::New(isolate, language_annotation.size()));
+        std::vector<size_t> offsets_for_adjustment(2, 0);
+        for (size_t i = 0; i < language_annotation.size(); ++i) {
+          offsets_for_adjustment[0] =
+              static_cast<size_t>(language_annotation[i].start_index);
+          offsets_for_adjustment[1] =
+              static_cast<size_t>(language_annotation[i].end_index);
+          // Convert UTF-8 offsets into UTF-16 offsets, since these objects
+          // will be used in Javascript.
+          base::UTF8ToUTF16AndAdjustOffsets(attribute_value,
+                                            &offsets_for_adjustment);
+
+          gin::DataObjectBuilder span(isolate);
+          span.Set("startIndex", static_cast<int>(offsets_for_adjustment[0]));
+          span.Set("endIndex", static_cast<int>(offsets_for_adjustment[1]));
+          span.Set("language", language_annotation[i].language);
+          span.Set("probability", language_annotation[i].probability);
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   span.Build())
+              .Check();
+        }
+        result.Set(array_result);
+      });
+
   RouteNodeIDFunction(
       "GetCustomActions",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -1308,13 +1355,17 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetTableCellColumnIndex",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper,
-         ui::AXNode* node) { result.Set(node->GetTableCellColIndex()); });
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableCellColIndex())
+          result.Set(*node->GetTableCellColIndex());
+      });
   RouteNodeIDFunction(
       "GetTableCellRowIndex",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper,
-         ui::AXNode* node) { result.Set(node->GetTableCellRowIndex()); });
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        if (node->GetTableCellRowIndex())
+          result.Set(*node->GetTableCellRowIndex());
+      });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {

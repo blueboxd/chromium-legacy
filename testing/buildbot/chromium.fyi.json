@@ -25910,8 +25910,8 @@
     "gtest_tests": [
       {
         "args": [
-          "--build-revision",
-          "${got_revision}"
+          "--build-revision=${got_revision}",
+          "--enable-logging"
         ],
         "experiment_percentage": 100,
         "merge": {

@@ -39,21 +39,21 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
 
   // OAuth2TokenServiceDelegate overrides.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
-  void UpdateAuthError(const std::string& account_id,
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
   GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const override;
+      const CoreAccountId& account_id) const override;
   std::vector<std::string> GetAccounts() override;
-  void LoadCredentials(const std::string& primary_account_id) override;
-  void UpdateCredentials(const std::string& account_id,
+  void LoadCredentials(const CoreAccountId& primary_account_id) override;
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  void RevokeCredentials(const std::string& account_id) override;
+  void RevokeCredentials(const CoreAccountId& account_id) override;
   void RevokeAllCredentials() override;
   const net::BackoffEntry* BackoffEntry() const override;
 
@@ -91,7 +91,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   std::set<chromeos::AccountManager::AccountKey> account_keys_;
 
   // A map from account id to the last seen error for that account.
-  std::map<std::string, AccountErrorStatus> errors_;
+  std::map<CoreAccountId, AccountErrorStatus> errors_;
 
   // Used to rate-limit token fetch requests so as to not overload the server.
   net::BackoffEntry backoff_entry_;

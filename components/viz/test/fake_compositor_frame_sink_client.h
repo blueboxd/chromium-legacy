@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -25,7 +25,7 @@ class FakeCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args,
-                    const PresentationFeedbackMap& feedbacks) override;
+                    const FrameTimingDetailsMap& timing_details) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;

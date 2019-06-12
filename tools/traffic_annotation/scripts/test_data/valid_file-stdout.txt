@@ -1,5 +1,5 @@
 ==== NEW ANNOTATION ====
-valid_file.cc
+source_file.cc
 XXX_UNIMPLEMENTED_XXX
 14
 Definition
@@ -25,7 +25,7 @@ id1
         comments: "comment1"
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-valid_file.cc
+source_file.cc
 XXX_UNIMPLEMENTED_XXX
 36
 Partial
@@ -41,7 +41,7 @@ completing_id2
         }
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-valid_file.cc
+source_file.cc
 XXX_UNIMPLEMENTED_XXX
 46
 Completing
@@ -61,7 +61,7 @@ id3
         comments: "comment3"
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-valid_file.cc
+source_file.cc
 XXX_UNIMPLEMENTED_XXX
 61
 BranchedCompleting

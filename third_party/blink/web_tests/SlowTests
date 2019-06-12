@@ -230,7 +230,7 @@ crbug.com/741259 editing/selection/select-bidi-run.html [ Slow ]
 crbug.com/451577 [ Linux ] http/tests/devtools/elements/user-properties.js [ Slow ]
 crbug.com/451577 [ Linux ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 
-crbug.com/793771 media/controls/modern/scrubbing.html [ Slow ]
+crbug.com/793771 media/controls/scrubbing.html [ Slow ]
 
 # These tests need to do many iterations and so can't be fast.
 crbug.com/748418 http/tests/streams/chromium/deep-recursion-getwriter.html [ Slow ]

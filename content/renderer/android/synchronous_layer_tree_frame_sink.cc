@@ -72,6 +72,30 @@ class SoftwareDevice : public viz::SoftwareOutputDevice {
   DISALLOW_COPY_AND_ASSIGN(SoftwareDevice);
 };
 
+// This is used with resourceless software draws.
+class SoftwareCompositorFrameSinkClient
+    : public viz::mojom::CompositorFrameSinkClient {
+ public:
+  SoftwareCompositorFrameSinkClient() = default;
+  ~SoftwareCompositorFrameSinkClient() override = default;
+
+  void DidReceiveCompositorFrameAck(
+      const std::vector<viz::ReturnedResource>& resources) override {
+    DCHECK(resources.empty());
+  }
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const viz::FrameTimingDetailsMap& timing_details) override {
+  }
+  void ReclaimResources(
+      const std::vector<viz::ReturnedResource>& resources) override {
+    DCHECK(resources.empty());
+  }
+  void OnBeginFramePausedChanged(bool paused) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SoftwareCompositorFrameSinkClient);
+};
+
 }  // namespace
 
 class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
@@ -178,15 +202,17 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
       base::Unretained(this)));
   registry_->RegisterLayerTreeFrameSink(routing_id_, this);
 
+  software_frame_sink_client_ =
+      std::make_unique<SoftwareCompositorFrameSinkClient>();
   constexpr bool root_support_is_root = true;
   constexpr bool child_support_is_root = false;
   constexpr bool needs_sync_points = true;
   root_support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, frame_sink_manager_.get(), kRootFrameSinkId, root_support_is_root,
-      needs_sync_points);
+      software_frame_sink_client_.get(), frame_sink_manager_.get(),
+      kRootFrameSinkId, root_support_is_root, needs_sync_points);
   child_support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, frame_sink_manager_.get(), kChildFrameSinkId, child_support_is_root,
-      needs_sync_points);
+      software_frame_sink_client_.get(), frame_sink_manager_.get(),
+      kChildFrameSinkId, child_support_is_root, needs_sync_points);
 
   viz::RendererSettings software_renderer_settings;
 
@@ -223,6 +249,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   client_->SetTreeActivationCallback(base::RepeatingClosure());
   root_support_.reset();
   child_support_.reset();
+  software_frame_sink_client_ = nullptr;
   software_output_surface_ = nullptr;
   display_ = nullptr;
   frame_sink_manager_ = nullptr;
@@ -239,8 +266,6 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
   if (fallback_tick_running_) {
     DCHECK(frame.resource_list.empty());
-    std::vector<viz::ReturnedResource> return_resources;
-    ReclaimResources(return_resources);
     did_submit_frame_ = true;
     return;
   }
@@ -530,23 +555,6 @@ bool SynchronousLayerTreeFrameSink::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
-  ReclaimResources(resources);
-}
-
-void SynchronousLayerTreeFrameSink::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {}
-
-void SynchronousLayerTreeFrameSink::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
-  DCHECK(resources.empty());
-  client_->ReclaimResources(resources);
-}
-
-void SynchronousLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {}
-
 void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   if (sync_client_) {
@@ -555,11 +563,12 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
 }
 
 void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
-    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   if (!client_)
     return;
-  for (const auto& pair : presentation_feedbacks) {
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+  for (const auto& pair : timing_details) {
+    client_->DidPresentCompositorFrame(pair.first,
+                                       pair.second.presentation_feedback);
   }
 }
 

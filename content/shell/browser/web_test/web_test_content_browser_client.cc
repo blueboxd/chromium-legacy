@@ -69,8 +69,10 @@ class TestOverlayWindow : public OverlayWindow {
   void Hide() override {}
   bool IsVisible() const override { return false; }
   bool IsAlwaysOnTop() const override { return false; }
-  gfx::Rect GetBounds() const override { return gfx::Rect(); }
-  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  gfx::Rect GetBounds() const override { return gfx::Rect(size_); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {
+    size_ = natural_size;
+  }
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
   void SetMutedState(MutedState muted_state) override {}
@@ -81,6 +83,8 @@ class TestOverlayWindow : public OverlayWindow {
   cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
+  gfx::Size size_;
+
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
 

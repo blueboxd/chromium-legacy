@@ -56,7 +56,7 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   // Overridden from views::BubbleDialogDelegateView:
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
@@ -93,13 +93,13 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
 InvertBubbleView::~InvertBubbleView() {
 }
 
-views::View* InvertBubbleView::CreateExtraView() {
+std::unique_ptr<views::View> InvertBubbleView::CreateExtraView() {
   auto learn_more = views::CreateVectorImageButton(this);
   views::SetImageFromVectorIcon(learn_more.get(),
                                 vector_icons::kHelpOutlineIcon);
   learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_tag(kLearnMoreButton);
-  return learn_more.release();
+  return learn_more;
 }
 
 int InvertBubbleView::GetDialogButtons() const {

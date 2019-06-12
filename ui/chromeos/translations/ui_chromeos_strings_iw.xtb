@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">קובץ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">עוד...</translation>
 <translation id="4582497162516204941">‏התקנה באמצעות Linux (בטא)</translation>
+<translation id="4594543368593301662">מוצגות תוצאות עבור <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">אמן</translation>
 <translation id="4656293982926141856">במחשב הזה</translation>
 <translation id="4669606053856530811">אם הפריטים האלה לא ישותפו עם החברים באחסון השיתופי '<ph name="SOURCE_NAME" />', הם יאבדו את הגישה אליהם.</translation>
@@ -384,12 +385,14 @@
 <translation id="5412637665001827670">מקלדת בולגרית</translation>
 <translation id="5418923334382419584">מקלדת מיאנמר</translation>
 <translation id="5428105026674456456">ספרדית</translation>
+<translation id="5438282218546237410">אין תוצאות עבור <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">מקלדת פולנית</translation>
 <translation id="5465122519792752163">‏מקלדת נפאלית (InScript)</translation>
 <translation id="5469868506864199649">איטלקית</translation>
 <translation id="5494920125229734069">בחר הכל</translation>
 <translation id="5500122897333236901">איסלנדית</translation>
 <translation id="5508696409934741614">נקודות</translation>
+<translation id="5522908512596376669">רשימת הקבצים מוצגת עכשיו בתצוגת רשימה.</translation>
 <translation id="5524517123096967210">הקובץ לא ניתן לקריאה.</translation>
 <translation id="5533102081734025921">תמונה בפורמט <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">‏תעתוק (namaste → नमस्ते)</translation>
@@ -436,6 +439,7 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6054173164583630569">מקלדת צרפתית</translation>
 <translation id="6074825444536523002">Google Forms</translation>
+<translation id="6096979789310008754">טקסט החיפוש נוקה, מוצגים עכשיו כל הקבצים והתיקיות.</translation>
 <translation id="6111770213269631447">‏תעתוק (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">רווח</translation>
 <translation id="6133173853026656527">מעביר את <ph name="FILE_NAME" />...</translation>
@@ -651,6 +655,7 @@
 <translation id="8561206103590473338">פיל</translation>
 <translation id="8569764466147087991">בחר קובץ לפתיחה</translation>
 <translation id="8579285237314169903">מבצע סנכרון ל-<ph name="NUMBER_OF_FILES" /> פריטים...</translation>
+<translation id="8600173386174225982">רשימת הקבצים מוצגת עכשיו בתצוגת תמונות ממוזערות.</translation>
 <translation id="8669949407341943408">מעביר...</translation>
 <translation id="8671210955687109937">יכול להגיב</translation>
 <translation id="8686213429977032554">‏קובץ זה של Drive עדיין לא משותף</translation>

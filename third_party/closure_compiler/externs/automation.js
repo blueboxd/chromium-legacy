@@ -7,8 +7,7 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.automation.FooType'.
 // Please run the closure compiler before committing changes.
-// See
-// https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: automation */
 
@@ -505,6 +504,17 @@ chrome.automation.TreeChangeObserverFilter = {
 chrome.automation.CustomAction;
 
 /**
+ * @typedef {{
+ *   startIndex: number,
+ *   endIndex: number,
+ *   language: string,
+ *   probability: number
+ * }}
+ * @see https://developer.chrome.com/extensions/automation#type-LanguageSpan
+ */
+chrome.automation.LanguageSpan;
+
+/**
  * @constructor
  * @private
  * @see https://developer.chrome.com/extensions/automation#type-AutomationNode
@@ -903,8 +913,7 @@ chrome.automation.AutomationNode.prototype.markerEnds;
 chrome.automation.AutomationNode.prototype.markerTypes;
 
 /**
- * If a selection is present, whether the anchor of the selection comes after
- * its focus in the accessibility tree.
+ * If a selection is present, whether the anchor of the selection comes after its focus in the accessibility tree.
  * @type {(boolean|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-isSelectionBackward
  */
@@ -1749,3 +1758,16 @@ chrome.automation.removeTreeChangeObserver = function(observer) {};
  * @see https://developer.chrome.com/extensions/automation#method-setDocumentSelection
  */
 chrome.automation.setDocumentSelection = function(params) {};
+
+/**
+ * Returns the detected languages for the provided string attribute as an array
+ * of LanguageSpan objects. There are several guarantees about the format of the
+ * LanguageSpan array: 1. Is either empty or contains LanguageSpans that cover
+ * all indices in the associated string attribute value. 2. Is sorted by
+ * increasing startIndex (those with smaller startIndex appear first). 3.
+ * LanguageSpans are non-overlapping and contain exactly one language.
+ * @param {string} attribute
+ * @return {!Array<!chrome.automation.LanguageSpan>}
+ * @see https://developer.chrome.com/extensions/automation#method-languageAnnotationForStringAttribute
+ */
+chrome.automation.languageAnnotationForStringAttribute = function(attribute) {};

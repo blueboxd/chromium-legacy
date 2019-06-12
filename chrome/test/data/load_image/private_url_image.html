@@ -1,0 +1,14 @@
+<html>
+<body>
+<img alt="long_placeholder_text" src="private_url_image.png" />
+<script>
+function checkImage() {
+	sendValueToTest((document.images[0].complete && (document.images[0].naturalWidth > 0)));
+}
+
+function sendValueToTest(value) {
+  window.domAutomationController.send(value);
+}
+</script>
+</body>
+</html>

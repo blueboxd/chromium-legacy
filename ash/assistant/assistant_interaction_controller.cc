@@ -487,7 +487,8 @@ void AssistantInteractionController::OnSuggestionChipPressed(
         FROM_HERE,
         base::BindOnce(&AssistantController::OpenUrl,
                        assistant_controller_->GetWeakPtr(),
-                       suggestion->action_url, /*from_server=*/false));
+                       suggestion->action_url, /*in_background=*/false,
+                       /*from_server=*/false));
     return;
   }
 
@@ -621,14 +622,14 @@ void AssistantInteractionController::OnWaitStarted() {
   OnProcessPendingResponse();
 }
 
-void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
+                                                       bool in_background) {
+  if (model_.interaction_state() != InteractionState::kActive)
     return;
-  }
   // We need to indicate that the navigation attempt is occurring as a result of
   // a server response so that we can differentiate from navigation attempts
   // initiated by direct user interaction.
-  assistant_controller_->OpenUrl(url, /*from_server=*/true);
+  assistant_controller_->OpenUrl(url, in_background, /*from_server=*/true);
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(

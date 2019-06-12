@@ -722,7 +722,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
   void ApplyViewportChanges(const ScrollAndScaleSet& info);
-  void RecordWheelAndTouchScrollingCount(const ScrollAndScaleSet& info);
+  void RecordManipulationTypeCounts(const ScrollAndScaleSet& scroll_info);
   void SendOverscrollAndScrollEndEventsFromImplSide(
       const ScrollAndScaleSet& info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);

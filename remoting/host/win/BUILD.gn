@@ -118,7 +118,7 @@ source_set("win") {
 
   if (is_clang) {
     # TODO(thakis): Remove this once midl.exe no longer produces nonstandard
-    # C++ (see the enums in com_imported_mstscax.tlh).
+    # C++ (see the enums in com_imported_mstscax.h).
     cflags = [ "-Wno-microsoft-enum-forward-reference" ]
   }
 

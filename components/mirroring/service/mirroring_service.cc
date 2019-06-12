@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/mirroring/service/session.h"
-#include "services/ws/public/cpp/gpu/gpu.h"
-#include "ui/base/ui_base_features.h"
+#include "services/viz/public/cpp/gpu/gpu.h"
 
 namespace mirroring {
 
@@ -56,12 +55,10 @@ void MirroringService::Start(mojom::SessionParametersPtr params,
                              mojom::CastMessageChannelPtr outbound_channel,
                              mojom::CastMessageChannelRequest inbound_channel) {
   session_.reset();  // Stops the current session if active.
-  std::unique_ptr<ws::Gpu> gpu = nullptr;
+  std::unique_ptr<viz::Gpu> gpu;
   if (params->type != mojom::SessionType::AUDIO_ONLY) {
-    gpu = ws::Gpu::Create(
-        service_binding_.GetConnector(),
-        features::IsUsingWindowService() ? "ui" : "content_system",
-        io_task_runner_);
+    gpu = viz::Gpu::Create(service_binding_.GetConnector(), "content_system",
+                           io_task_runner_);
   }
   session_ = std::make_unique<Session>(
       std::move(params), max_resolution, std::move(observer),

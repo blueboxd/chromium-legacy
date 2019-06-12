@@ -45,6 +45,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -2099,7 +2100,7 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
 
 namespace {
 
-RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
+RenderFrameMetadataProviderImpl* RenderFrameMetadataProviderFromFrameTreeNode(
     FrameTreeNode* node) {
   DCHECK(node);
   DCHECK(node->current_frame_host());
@@ -2109,7 +2110,7 @@ RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
       ->render_frame_metadata_provider();
 }
 
-RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
+RenderFrameMetadataProviderImpl* RenderFrameMetadataProviderFromWebContents(
     WebContents* web_contents) {
   DCHECK(web_contents);
   DCHECK(web_contents->GetRenderViewHost());
@@ -2345,7 +2346,7 @@ bool RequestFrame(WebContents* web_contents) {
 }
 
 RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
-    RenderFrameMetadataProvider* render_frame_metadata_provider)
+    RenderFrameMetadataProviderImpl* render_frame_metadata_provider)
     : render_frame_metadata_provider_(render_frame_metadata_provider) {
   render_frame_metadata_provider_->AddObserver(this);
   render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(true);

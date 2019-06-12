@@ -80,17 +80,19 @@ class CredentialProviderSigninDialogWinDialogTest
   void SendValidSigninCompleteMessage();
   void WaitForSigninCompleteMessage();
 
-  void ShowSigninDialog();
+  void ShowSigninDialog(const base::CommandLine& command_line);
 
   // A HandleGCPWSiginCompleteResult callback to check that the signin dialog
   // has correctly received and procesed the sign in complete message.
   void HandleSignInComplete(
       base::Value signin_result,
+      const std::string& additional_mdm_oauth_scopes,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader);
   bool signin_complete_called_ = false;
 
   std::string result_access_token_;
   std::string result_refresh_token_;
+  std::string additional_mdm_oauth_scopes_;
   int exit_code_;
   base::Value result_value_;
   CredentialProviderSigninDialogTestDataStorage test_data_storage_;
@@ -130,10 +132,10 @@ void CredentialProviderSigninDialogWinDialogTest::
   run_loop.Run();
 }
 
-void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog() {
+void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog(
+    const base::CommandLine& command_line) {
   web_view_ = ShowCredentialProviderSigninDialog(
-      base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM),
-      browser()->profile(),
+      command_line, browser()->profile(),
       base::BindOnce(
           &CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete,
           base::Unretained(this)));
@@ -143,7 +145,9 @@ void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog() {
 
 void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
     base::Value signin_result,
+    const std::string& additional_mdm_oauth_scopes,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader) {
+  additional_mdm_oauth_scopes_ = additional_mdm_oauth_scopes;
   exit_code_ = signin_result
                    .FindKeyOfType(credential_provider::kKeyExitCode,
                                   base::Value::Type::INTEGER)
@@ -170,7 +174,7 @@ void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SimulateEscape) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
 
   web_view_->GetWidget()->CloseWithReason(
@@ -193,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendEmptySigninComplete) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue());
   EXPECT_TRUE(signin_complete_called_);
@@ -205,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendInvalidSigninCompleteNoId) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue(
       std::string(), test_data_storage_.GetSuccessPassword(),
@@ -221,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendInvalidSigninCompleteNoPassword) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue(
       test_data_storage_.GetSuccessId(), std::string(),
@@ -237,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendInvalidSigninCompleteNoEmail) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue(
       test_data_storage_.GetSuccessId(),
@@ -253,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendInvalidSigninCompleteNoAccessToken) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue(
       test_data_storage_.GetSuccessId(),
@@ -269,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SendInvalidSigninCompleteNoRefreshToken) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendSigninCompleteMessage(test_data_storage_.MakeSignInResponseValue(
       test_data_storage_.GetSuccessId(),
@@ -285,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
                        SuccessfulLoginMessage) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   SendValidSigninCompleteMessage();
   EXPECT_TRUE(signin_complete_called_);
@@ -309,6 +313,21 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
   EXPECT_EQ(result_refresh_token_, test_data_storage_.GetSuccessRefreshToken());
 }
 
+IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
+                       SuccessfulLoginMessageWithAdditionalOauthScopes) {
+  const std::string additional_oauth_scopes_flag_value = "dummy_scopes";
+  base::CommandLine command_line =
+      base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM);
+  command_line.AppendSwitchASCII(
+      credential_provider::kGcpwAdditionalOauthScopes,
+      additional_oauth_scopes_flag_value);
+  ShowSigninDialog(command_line);
+  WaitForDialogToLoad();
+  SendValidSigninCompleteMessage();
+  EXPECT_TRUE(signin_complete_called_);
+  EXPECT_EQ(additional_oauth_scopes_flag_value, additional_mdm_oauth_scopes_);
+}
+
 // Tests the various exit codes for success / failure.
 class CredentialProviderSigninDialogWinDialogExitCodeTest
     : public CredentialProviderSigninDialogWinDialogTest,
@@ -316,7 +335,7 @@ class CredentialProviderSigninDialogWinDialogExitCodeTest
 
 IN_PROC_BROWSER_TEST_P(CredentialProviderSigninDialogWinDialogExitCodeTest,
                        SigninResultWithExitCode) {
-  ShowSigninDialog();
+  ShowSigninDialog(base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM));
   WaitForDialogToLoad();
   base::Value signin_result = test_data_storage_.MakeValidSignInResponseValue();
 

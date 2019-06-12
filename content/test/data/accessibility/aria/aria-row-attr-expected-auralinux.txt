@@ -7,7 +7,7 @@
 ++++++++[text] name='cell 3'
 ++++++[column header] name='cell 4' selectable rowindex:3 rowspan:2 (row=0, col=2, row_span=1, col_span=1, n_row_headers=0, n_col_headers=0)
 ++++++++[text] name='cell 4'
-++++[table row] selectable rowindex:4
+++++[table row] selectable
 ++++++[table cell] name='cell 2' selectable rowindex:4 (row=1, col=0, row_span=1, col_span=1, n_row_headers=0, n_col_headers=1)
 ++++++++[text] name='cell 2'
 ++++++[table cell] name='cell 3' selectable rowindex:4 (row=1, col=1, row_span=1, col_span=1, n_row_headers=0, n_col_headers=1)

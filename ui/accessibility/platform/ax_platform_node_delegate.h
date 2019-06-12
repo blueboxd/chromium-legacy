@@ -5,10 +5,15 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 
+#include <stdint.h>
+
+#include <memory>
+#include <new>
 #include <set>
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "ui/accessibility/ax_clipping_behavior.h"
 #include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -207,37 +212,36 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   //
   // Tables. All of these should be called on a node that's a table-like
-  // role.
+  // role, otherwise they return nullopt.
   //
   virtual bool IsTable() const = 0;
-  virtual int32_t GetTableColCount() const = 0;
-  virtual int32_t GetTableRowCount() const = 0;
-  virtual base::Optional<int32_t> GetTableAriaColCount() const = 0;
-  virtual base::Optional<int32_t> GetTableAriaRowCount() const = 0;
-  virtual int32_t GetTableCellCount() const = 0;
-  virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
-  virtual const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const = 0;
-  virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
-  virtual const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const = 0;
-  virtual AXPlatformNode* GetTableCaption() = 0;
+  virtual base::Optional<int> GetTableColCount() const = 0;
+  virtual base::Optional<int> GetTableRowCount() const = 0;
+  virtual base::Optional<int> GetTableAriaColCount() const = 0;
+  virtual base::Optional<int> GetTableAriaRowCount() const = 0;
+  virtual base::Optional<int> GetTableCellCount() const = 0;
+  virtual std::vector<int32_t> GetColHeaderNodeIds() const = 0;
+  virtual std::vector<int32_t> GetColHeaderNodeIds(int col_index) const = 0;
+  virtual std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
+  virtual std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const = 0;
+  virtual AXPlatformNode* GetTableCaption() const = 0;
 
   // Table row-like nodes.
   virtual bool IsTableRow() const = 0;
-  virtual int32_t GetTableRowRowIndex() const = 0;
+  virtual base::Optional<int> GetTableRowRowIndex() const = 0;
 
   // Table cell-like nodes.
   virtual bool IsTableCellOrHeader() const = 0;
-  virtual int32_t GetTableCellIndex() const = 0;
-  virtual int32_t GetTableCellColIndex() const = 0;
-  virtual int32_t GetTableCellRowIndex() const = 0;
-  virtual int32_t GetTableCellColSpan() const = 0;
-  virtual int32_t GetTableCellRowSpan() const = 0;
-  virtual int32_t GetTableCellAriaColIndex() const = 0;
-  virtual int32_t GetTableCellAriaRowIndex() const = 0;
-  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
-  virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
+  virtual base::Optional<int> GetTableCellIndex() const = 0;
+  virtual base::Optional<int> GetTableCellColIndex() const = 0;
+  virtual base::Optional<int> GetTableCellRowIndex() const = 0;
+  virtual base::Optional<int> GetTableCellColSpan() const = 0;
+  virtual base::Optional<int> GetTableCellRowSpan() const = 0;
+  virtual base::Optional<int> GetTableCellAriaColIndex() const = 0;
+  virtual base::Optional<int> GetTableCellAriaRowIndex() const = 0;
+  virtual base::Optional<int32_t> GetCellId(int row_index,
+                                            int col_index) const = 0;
+  virtual base::Optional<int32_t> CellIndexToId(int cell_index) const = 0;
 
   // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
   virtual bool IsCellOrHeaderOfARIATable() const = 0;
@@ -246,8 +250,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;
-  virtual int32_t GetPosInSet() const = 0;
-  virtual int32_t GetSetSize() const = 0;
+  virtual base::Optional<int> GetPosInSet() const = 0;
+  virtual base::Optional<int> GetSetSize() const = 0;
 
   //
   // Events.
@@ -283,7 +287,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because
   // the test behaves differently when the mouse happens to be over an
-  // element. The default value should be falses if not in testing mode.
+  // element. The default value should be false if not in testing mode.
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
  protected:

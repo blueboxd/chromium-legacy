@@ -36,10 +36,10 @@ namespace em = enterprise_management;
 
 namespace chromeos {
 
-using ::testing::AtLeast;
-using ::testing::AnyNumber;
-using ::testing::Mock;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::Mock;
 
 namespace {
 
@@ -250,6 +250,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     em::AutoUpdateSettingsProto* proto =
         device_policy_->payload().mutable_auto_update_settings();
     proto->set_disallowed_time_intervals(json_string);
+    BuildAndInstallDevicePolicy();
+  }
+
+  // Helper routine that sets the device DeviceScheduledUpdateCheck policy
+  void SetDeviceScheduledUpdateCheck(const std::string& json_string) {
+    em::DeviceScheduledUpdateCheckProto* proto =
+        device_policy_->payload().mutable_device_scheduled_update_check();
+    proto->set_device_scheduled_update_check_settings(json_string);
     BuildAndInstallDevicePolicy();
   }
 
@@ -702,6 +710,22 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   test_list.GetList().push_back(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
+}
+
+// Check valid JSON for DeviceScheduledUpdateCheck.
+TEST_F(DeviceSettingsProviderTest, DeviceScheduledUpdateCheckTests) {
+  const std::string json_string =
+      "{\"update_check_time\": {\"hour\": 23, \"minute\": 35}, "
+      "\"frequency\": \"DAILY\", \"day_of_week\": \"MONDAY\",  "
+      "\"day_of_month\": 15}";
+  base::DictionaryValue expected_val;
+  expected_val.SetPath({"update_check_time", "hour"}, base::Value(23));
+  expected_val.SetPath({"update_check_time", "minute"}, base::Value(35));
+  expected_val.Set("frequency", std::make_unique<base::Value>("DAILY"));
+  expected_val.Set("day_of_week", std::make_unique<base::Value>("MONDAY"));
+  expected_val.Set("day_of_month", std::make_unique<base::Value>(15));
+  SetDeviceScheduledUpdateCheck(json_string);
+  VerifyPolicyValue(kDeviceScheduledUpdateCheck, &expected_val);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {

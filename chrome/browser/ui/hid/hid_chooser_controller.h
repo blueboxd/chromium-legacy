@@ -14,6 +14,7 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "content/public/browser/hid_chooser.h"
 #include "services/device/public/mojom/hid.mojom-forward.h"
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -33,6 +34,7 @@ class HidChooserController : public ChooserController {
   // The callback is called with the selected device, or nullptr if no device is
   // selected.
   HidChooserController(content::RenderFrameHost* render_frame_host,
+                       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
                        content::HidChooser::Callback callback);
   ~HidChooserController() override;
 
@@ -50,7 +52,10 @@ class HidChooserController : public ChooserController {
 
  private:
   void OnGotDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
+  bool ShouldExcludeDevice(const device::mojom::HidDeviceInfo& device) const;
+  bool FilterMatchesAny(const device::mojom::HidDeviceInfo& device) const;
 
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters_;
   content::HidChooser::Callback callback_;
   const url::Origin requesting_origin_;
   const url::Origin embedding_origin_;

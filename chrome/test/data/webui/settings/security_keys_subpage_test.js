@@ -291,11 +291,18 @@ suite('SecurityKeysSetPINDialog', function() {
   function setNewPINEntries(pinValue, confirmPINValue) {
     setPINEntry(dialog.$.newPIN, pinValue);
     setPINEntry(dialog.$.confirmPIN, confirmPINValue);
+    const ret = test_util.eventToPromise('ui-ready', dialog);
+    dialog.$.pinSubmit.click();
+    return ret;
   }
 
   function setChangePINEntries(currentPINValue, pinValue, confirmPINValue) {
-    setNewPINEntries(pinValue, confirmPINValue);
+    setPINEntry(dialog.$.newPIN, pinValue);
+    setPINEntry(dialog.$.confirmPIN, confirmPINValue);
     setPINEntry(dialog.$.currentPIN, currentPINValue);
+    const ret = test_util.eventToPromise('ui-ready', dialog);
+    dialog.$.pinSubmit.click();
+    return ret;
   }
 
   test('SetPIN', async function() {
@@ -312,21 +319,21 @@ suite('SecurityKeysSetPINDialog', function() {
     assertShown('pinPrompt');
     assertTrue(dialog.$.currentPINEntry.hidden);
 
-    setNewPINEntries('123', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    await setNewPINEntries('123', '');
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
-    setNewPINEntries('123', '123');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    await setNewPINEntries('123', '123');
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
-    setNewPINEntries('1234', '123');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    setNewPINEntries('1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);  // Note True -> False
+    await setNewPINEntries('1234', '123');
+    assertFalse(dialog.$.newPIN.invalid);
+    assertTrue(dialog.$.confirmPIN.invalid);
 
     const setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
-    dialog.$.pinSubmit.click();
+    setNewPINEntries('1234', '1234');
     ({oldPIN, newPIN} = await browserProxy.whenCalled('setPIN'));
     assertTrue(dialog.$.pinSubmit.disabled);
     assertEquals(oldPIN, '');
@@ -352,11 +359,10 @@ suite('SecurityKeysSetPINDialog', function() {
       startSetPINResolver.resolve(
           [0 /* not yet complete */, null /* no current PIN */]);
       await uiReady;
-      setNewPINEntries('1234', '1234');
 
       browserProxy.setResponseFor(
           'setPIN', Promise.resolve([1 /* complete */, testCase[0]]));
-      dialog.$.pinSubmit.click();
+      setNewPINEntries('1234', '1234');
       await browserProxy.whenCalled('setPIN');
       await browserProxy.whenCalled('close');
       assertComplete();
@@ -384,31 +390,30 @@ suite('SecurityKeysSetPINDialog', function() {
     assertFalse(dialog.$.currentPINEntry.hidden);
 
     setChangePINEntries('123', '', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('123', '123', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('1234', '123', '1234');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertFalse(dialog.$.currentPIN.invalid);
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('123', '1234', '1234');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    setChangePINEntries('4321', '1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);  // Note True -> False
-
-    // Changing the new PIN so that it no longer matches the confirm PIN should
-    // prevent submitting the dialog.
-    setNewPINEntry('12345');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    // Fixing the new PIN should be sufficient to address that.
-    setNewPINEntry('1234');
-    assertFalse(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     let setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
+    setPINEntry(dialog.$.currentPIN, '4321');
+    setPINEntry(dialog.$.newPIN, '1234');
+    setPINEntry(dialog.$.confirmPIN, '1234');
     dialog.$.pinSubmit.click();
     let {oldPIN, newPIN} = await browserProxy.whenCalled('setPIN');
     assertShown('pinPrompt');
@@ -421,12 +426,11 @@ suite('SecurityKeysSetPINDialog', function() {
     uiReady = test_util.eventToPromise('ui-ready', dialog);
     setPINResolver.resolve([1 /* complete */, 49 /* incorrect PIN */]);
     await uiReady;
-    // Text box for current PIN should be cleared.
-    assertEquals(dialog.$.currentPIN.value, '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    // Text box for current PIN should not be cleared.
+    assertEquals(dialog.$.currentPIN.value, '4321');
 
-    setChangePINEntries('43211', '1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);
+    setPINEntry(dialog.$.currentPIN, '43211');
 
     browserProxy.resetResolver('setPIN');
     setPINResolver = new PromiseResolver();

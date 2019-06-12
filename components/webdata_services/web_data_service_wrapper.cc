@@ -96,7 +96,6 @@ WebDataServiceWrapper::WebDataServiceWrapper(
     const base::FilePath& context_path,
     const std::string& application_locale,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const syncer::SyncableService::StartSyncFlare& flare,
     const ShowErrorCallback& show_error_callback) {
   base::FilePath path = context_path.Append(kWebDataFilename);
   // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,

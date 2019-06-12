@@ -612,12 +612,26 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
 }
 
 TEST_F(AutoclickTest, AutoclickScrollEvents) {
+  UpdateDisplay("800x600");
   EnableExperimentalAutoclickFlag(true);
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kScroll);
   std::vector<ui::MouseEvent> events;
   std::vector<ui::MouseWheelEvent> wheel_events;
+
+  // Expect that the first scroll action occurs at the middle of the screen,
+  // since the position has not been set by the user.
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollUp);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
 
   // Expect that a dwell will set the scroll location.
   GetEventGenerator()->MoveMouseTo(90, 90);
@@ -644,7 +658,7 @@ TEST_F(AutoclickTest, AutoclickScrollEvents) {
   EXPECT_GT(wheel_events[0].x_offset(), 0);
   ClearMouseEvents();
 
-  // Try another position
+  // Try another position, and the other two types of scroll action.
   GetEventGenerator()->MoveMouseTo(200, 200);
   base::RunLoop().RunUntilIdle();
   GetAutoclickController()->DoScrollAction(

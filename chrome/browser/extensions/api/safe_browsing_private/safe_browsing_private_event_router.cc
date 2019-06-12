@@ -89,10 +89,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
     event.SetStringKey(kKeyUrl, params.url);
     event.SetStringKey(kKeyUserName, params.user_name);
     event.SetBoolKey(kKeyIsPhishingUrl, params.is_phishing_url);
-    if (identity_manager_->HasPrimaryAccount()) {
-      event.SetStringKey(kKeyProfileUserName,
-                         identity_manager_->GetPrimaryAccountInfo().email);
-    }
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
     ReportRealtimeEvent(kKeyPasswordReuseEvent, std::move(event));
   }
 }
@@ -115,10 +112,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUserName, user_name);
-    if (identity_manager_->HasPrimaryAccount()) {
-      event.SetStringKey(kKeyProfileUserName,
-                         identity_manager_->GetPrimaryAccountInfo().email);
-    }
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
     ReportRealtimeEvent(kKeyPasswordChangedEvent, std::move(event));
   }
 }
@@ -126,13 +120,12 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
 void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     const GURL& url,
     const std::string& file_name,
-    const std::string& download_digest_sha256,
-    const std::string& user_name) {
+    const std::string& download_digest_sha256) {
   api::safe_browsing_private::DangerousDownloadInfo params;
   params.url = url.spec();
   params.file_name = file_name;
   params.download_digest_sha256 = download_digest_sha256;
-  params.user_name = user_name;
+  params.user_name = GetProfileUserName();
 
   // |event_router_| can be null in tests.
   if (event_router_) {
@@ -151,12 +144,8 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
     event.SetStringKey(kKeyFileName, params.file_name);
-    event.SetStringKey(kKeyUserName, params.user_name);
     event.SetStringKey(kKeyDownloadDigestSha256, params.download_digest_sha256);
-    if (identity_manager_->HasPrimaryAccount()) {
-      event.SetStringKey(kKeyProfileUserName,
-                         identity_manager_->GetPrimaryAccountInfo().email);
-    }
+    event.SetStringKey(kKeyProfileUserName, params.user_name);
     ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
   }
 }
@@ -164,8 +153,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
 void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     const GURL& url,
     const std::string& reason,
-    int net_error_code,
-    const std::string& user_name) {
+    int net_error_code) {
   api::safe_browsing_private::InterstitialInfo params;
   params.url = url.spec();
   params.reason = reason;
@@ -173,7 +161,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     params.net_error_code =
         std::make_unique<std::string>(base::NumberToString(net_error_code));
   }
-  params.user_name = user_name;
+  params.user_name = GetProfileUserName();
 
   // |event_router_| can be null in tests.
   if (event_router_) {
@@ -193,11 +181,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     event.SetStringKey(kKeyUrl, params.url);
     event.SetStringKey(kKeyReason, params.reason);
     event.SetIntKey(kKeyNetErrorCode, net_error_code);
-    event.SetStringKey(kKeyUserName, params.user_name);
-    if (identity_manager_->HasPrimaryAccount()) {
-      event.SetStringKey(kKeyProfileUserName,
-                         identity_manager_->GetPrimaryAccountInfo().email);
-    }
+    event.SetStringKey(kKeyProfileUserName, params.user_name);
     event.SetBoolKey(kKeyClickedThrough, false);
     ReportRealtimeEvent(kKeyInterstitialEvent, std::move(event));
   }
@@ -206,8 +190,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
 void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     const GURL& url,
     const std::string& reason,
-    int net_error_code,
-    const std::string& user_name) {
+    int net_error_code) {
   api::safe_browsing_private::InterstitialInfo params;
   params.url = url.spec();
   params.reason = reason;
@@ -215,7 +198,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     params.net_error_code =
         std::make_unique<std::string>(base::NumberToString(net_error_code));
   }
-  params.user_name = user_name;
+  params.user_name = GetProfileUserName();
 
   // |event_router_| can be null in tests.
   if (event_router_) {
@@ -235,11 +218,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     event.SetStringKey(kKeyUrl, params.url);
     event.SetStringKey(kKeyReason, params.reason);
     event.SetIntKey(kKeyNetErrorCode, net_error_code);
-    event.SetStringKey(kKeyUserName, params.user_name);
-    if (identity_manager_->HasPrimaryAccount()) {
-      event.SetStringKey(kKeyProfileUserName,
-                         identity_manager_->GetPrimaryAccountInfo().email);
-    }
+    event.SetStringKey(kKeyProfileUserName, params.user_name);
     event.SetBoolKey(kKeyClickedThrough, true);
     ReportRealtimeEvent(kKeyInterstitialEvent, std::move(event));
   }
@@ -322,6 +301,13 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
   wrapper.SetKey(name, std::move(event));
 
   client_->UploadRealtimeReport(std::move(wrapper), base::DoNothing());
+}
+
+std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() {
+  // |identity_manager_| may be null is some tests.
+  return identity_manager_ && identity_manager_->HasPrimaryAccount()
+             ? identity_manager_->GetPrimaryAccountInfo().email
+             : std::string();
 }
 
 }  // namespace extensions

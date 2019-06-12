@@ -171,6 +171,10 @@ void AppServiceProxyImpl::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
+void AppServiceProxyImpl::FlushMojoCallsForTesting() {
+  bindings_.FlushForTesting();
+}
+
 apps::IconLoader* AppServiceProxyImpl::OverrideInnerIconLoaderForTesting(
     apps::IconLoader* icon_loader) {
   apps::IconLoader* old =

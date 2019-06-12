@@ -1,0 +1,6 @@
+noparent = True
+
+include_rules = [
+  "-chrome/android",
+  "-chrome/browser",
+]

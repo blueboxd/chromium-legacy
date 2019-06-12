@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 
-StatusIconLinuxX11::StatusIconLinuxX11(const gfx::ImageSkia& image,
-                                       const base::string16& tool_tip) {}
+StatusIconLinuxX11::StatusIconLinuxX11() = default;
 
 StatusIconLinuxX11::~StatusIconLinuxX11() = default;
 

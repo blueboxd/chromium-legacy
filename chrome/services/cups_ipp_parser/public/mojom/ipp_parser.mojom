@@ -6,7 +6,7 @@
 // request, IppRequest, and an interface for parsing arbitrary requests into
 // this format, IppParser.
 
-module chrome.mojom;
+module cups_ipp_parser.mojom;
 
 [Extensible]
 enum ValueType {

@@ -390,7 +390,7 @@ void GpuSharedImageVideoFactory::Initialize(
     return;
   }
   std::move(init_cb).Run(
-      TextureOwner::Create(TextureOwner::CreateTexture(shared_context.get()),
+      TextureOwner::Create(TextureOwner::CreateTexture(shared_context),
                            GetTextureOwnerMode(overlay_mode)));
 }
 

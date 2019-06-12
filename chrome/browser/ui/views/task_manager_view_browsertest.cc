@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -310,11 +311,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, SelectionConsistency) {
   EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
   EXPECT_EQ(1UL, GetTable()->selection_model().size());
 
-  // Press the button, which kills the process of the selected row.
-  PressKillButton();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
 
-  // Two rows should disappear.
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows -= 2), pattern));
+    // Press the button, which kills the process of the selected row.
+    PressKillButton();
+
+    // Two rows should disappear.
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows -= 2), pattern));
+  }
 
   // A later row should now be selected. The selection should be after the 4
   // rows sharing the tabs[0] process, and it should be at or before

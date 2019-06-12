@@ -156,11 +156,11 @@ void LabelExample::ContentsChanged(Textfield* sender,
 }
 
 void LabelExample::AddCustomLabel(View* container) {
-  View* control_container = new View();
+  std::unique_ptr<View> control_container = std::make_unique<View>();
   control_container->SetBorder(CreateSolidBorder(2, SK_ColorGRAY));
   control_container->SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
   GridLayout* layout = control_container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(control_container));
+      std::make_unique<views::GridLayout>(control_container.get()));
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
@@ -169,13 +169,14 @@ void LabelExample::AddCustomLabel(View* container) {
                         1.0f, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  layout->AddView(new Label(ASCIIToUTF16("Content: ")));
-  textfield_ = new Textfield();
-  textfield_->SetText(ASCIIToUTF16("Use the provided controls to configure the "
-      "content and presentation of this custom label."));
-  textfield_->SetEditableSelectionRange(gfx::Range());
-  textfield_->set_controller(this);
-  layout->AddView(textfield_);
+  layout->AddView(std::make_unique<Label>(ASCIIToUTF16("Content: ")));
+  auto textfield = std::make_unique<Textfield>();
+  textfield->SetText(
+      ASCIIToUTF16("Use the provided controls to configure the "
+                   "content and presentation of this custom label."));
+  textfield->SetEditableSelectionRange(gfx::Range());
+  textfield->set_controller(this);
+  textfield_ = layout->AddView(std::move(textfield));
 
   alignment_ =
       AddCombobox(layout, "Alignment: ", kAlignments, base::size(kAlignments));
@@ -191,29 +192,29 @@ void LabelExample::AddCustomLabel(View* container) {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 1);
-  multiline_ = new Checkbox(base::ASCIIToUTF16("Multiline"), this);
-  layout->AddView(multiline_);
-  shadows_ = new Checkbox(base::ASCIIToUTF16("Shadows"), this);
-  layout->AddView(shadows_);
-  selectable_ = new Checkbox(base::ASCIIToUTF16("Selectable"), this);
-  layout->AddView(selectable_);
+  multiline_ = layout->AddView(
+      std::make_unique<Checkbox>(base::ASCIIToUTF16("Multiline"), this));
+  shadows_ = layout->AddView(
+      std::make_unique<Checkbox>(base::ASCIIToUTF16("Shadows"), this));
+  selectable_ = layout->AddView(
+      std::make_unique<Checkbox>(base::ASCIIToUTF16("Selectable"), this));
   layout->AddPaddingRow(0, 8);
 
   column_set = layout->AddColumnSet(2);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 2);
-  custom_label_ = new ExamplePreferredSizeLabel();
-  custom_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  custom_label_->SetElideBehavior(gfx::NO_ELIDE);
-  custom_label_->SetText(textfield_->text());
-  layout->AddView(custom_label_);
+  auto custom_label = std::make_unique<ExamplePreferredSizeLabel>();
+  custom_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  custom_label->SetElideBehavior(gfx::NO_ELIDE);
+  custom_label->SetText(textfield_->text());
+  custom_label_ = layout->AddView(std::move(custom_label));
 
   // Disable the text selection checkbox if |custom_label_| does not support
   // text selection.
   selectable_->SetEnabled(custom_label_->IsSelectionSupported());
 
-  container->AddChildView(control_container);
+  container->AddChildView(std::move(control_container));
 }
 
 Combobox* LabelExample::AddCombobox(GridLayout* layout,
@@ -221,13 +222,12 @@ Combobox* LabelExample::AddCombobox(GridLayout* layout,
                                     const char** strings,
                                     int count) {
   layout->StartRow(0, 0);
-  layout->AddView(new Label(base::ASCIIToUTF16(name)));
-  Combobox* combobox =
-      new Combobox(std::make_unique<ExampleComboboxModel>(strings, count));
+  layout->AddView(std::make_unique<Label>(base::ASCIIToUTF16(name)));
+  auto combobox = std::make_unique<Combobox>(
+      std::make_unique<ExampleComboboxModel>(strings, count));
   combobox->SetSelectedIndex(0);
   combobox->set_listener(this);
-  layout->AddView(combobox);
-  return combobox;
+  return layout->AddView(std::move(combobox));
 }
 
 }  // namespace examples

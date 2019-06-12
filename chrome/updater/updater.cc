@@ -29,6 +29,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
@@ -41,6 +42,18 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 
+#if defined(OS_WIN)
+#include "chrome/updater/win/setup/setup.h"
+#include "chrome/updater/win/setup/uninstall.h"
+#endif
+
+// To install the updater, run:
+// "updater.exe --install --enable-logging --v=1 --vmodule=*/chrome/updater/*"
+// from the build directory. The program needs a number of dependencies which
+// are available in the build out directory.
+// To uninstall, run "updater.exe --uninstall" from its install directory or
+// from the build out directory. Doing this will make the program delete its
+// install directory using a shim cmd script.
 namespace updater {
 
 namespace {
@@ -88,7 +101,7 @@ class Observer : public update_client::UpdateClient::Observer {
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
   base::FilePath log_dir;
-  GetProductDataDirectory(&log_dir);
+  GetProductDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
@@ -121,6 +134,22 @@ void TerminateUpdaterMain() {
   ThreadPoolStop();
 }
 
+int UpdaterInstall() {
+#if defined(OS_WIN)
+  return Setup();
+#else
+  return -1;
+#endif
+}
+
+int UpdaterUninstall() {
+#if defined(OS_WIN)
+  return updater::Uninstall();
+#else
+  return -1;
+#endif
+}
+
 }  // namespace
 
 int UpdaterMain(int argc, const char* const* argv) {
@@ -134,15 +163,22 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   InitLogging(*command_line);
 
-  if (command_line->HasSwitch(kCrashHandlerSwitch)) {
+  if (command_line->HasSwitch(kCrashHandlerSwitch))
     return CrashReporterMain();
-  }
 
   InitializeUpdaterMain();
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
     int* ptr = nullptr;
     return *ptr;
+  }
+
+  if (command_line->HasSwitch(kInstall)) {
+    return UpdaterInstall();
+  }
+
+  if (command_line->HasSwitch(kUninstall)) {
+    return UpdaterUninstall();
   }
 
   auto installer = base::MakeRefCounted<Installer>(

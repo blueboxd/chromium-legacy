@@ -344,7 +344,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
-      function addPlaneToScene(plane) {
+      function addPlaneToScene(plane, timestamp) {
         if(typeof XRPlane.counter == 'undefined') {
           XRPlane.counter = 1;
           XRPlane.colors = [
@@ -399,9 +399,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           scene.addNode(plane.scene_node);
         }
-        else
+        else if(plane.lastChangedTime == timestamp)
         {
-          // old plane
+          // old plane that was updated in current frame
           plane.scene_node.onPlaneChanged(plane.polygon);
           plane.scene_node.matrix = plane.getPose(xrRefSpace).transform.matrix;
           plane.extended_polygon = extendPolygon(plane.polygon);
@@ -420,7 +420,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let previous_planes = new Set(all_planes);
         let detected_planes = frame.worldInformation.detectedPlanes;
         detected_planes.forEach(plane => {
-          addPlaneToScene(plane);
+          addPlaneToScene(plane, t);
           if(previous_planes.has(plane)) {
             previous_planes.delete(plane);
           }

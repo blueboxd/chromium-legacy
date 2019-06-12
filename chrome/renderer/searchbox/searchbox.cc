@@ -301,15 +301,15 @@ void SearchBox::UndoMostVisitedDeletion(
 }
 
 bool SearchBox::IsCustomLinks() const {
-  return items_are_custom_links_;
+  return most_visited_info_.items_are_custom_links;
 }
 
 bool SearchBox::IsUsingMostVisited() const {
-  return use_most_visited_;
+  return most_visited_info_.use_most_visited;
 }
 
-void SearchBox::ToggleMostVisitedOrCustomLinks() {
-  embedded_search_service_->ToggleMostVisitedOrCustomLinks(page_seq_no_);
+bool SearchBox::AreShortcutsVisible() const {
+  return most_visited_info_.is_visible;
 }
 
 void SearchBox::AddCustomLink(const GURL& url, const std::string& title) {
@@ -362,6 +362,14 @@ void SearchBox::UndoCustomLinkAction() {
 
 void SearchBox::ResetCustomLinks() {
   embedded_search_service_->ResetCustomLinks(page_seq_no_);
+}
+
+void SearchBox::ToggleMostVisitedOrCustomLinks() {
+  embedded_search_service_->ToggleMostVisitedOrCustomLinks(page_seq_no_);
+}
+
+void SearchBox::ToggleShortcutsVisibility() {
+  embedded_search_service_->ToggleShortcutsVisibility(page_seq_no_);
 }
 
 std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {
@@ -475,20 +483,24 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
   }
 }
 
-void SearchBox::MostVisitedChanged(
+void SearchBox::MostVisitedInfoChanged(
     const InstantMostVisitedInfo& most_visited_info) {
   has_received_most_visited_ = true;
-  items_are_custom_links_ = most_visited_info.items_are_custom_links;
+  most_visited_info_.items_are_custom_links =
+      most_visited_info.items_are_custom_links;
 
   std::vector<InstantMostVisitedItemIDPair> last_known_items;
   GetMostVisitedItems(&last_known_items);
 
   if (AreMostVisitedItemsEqual(last_known_items, most_visited_info.items) &&
-      use_most_visited_ == most_visited_info.use_most_visited) {
+      most_visited_info_.use_most_visited ==
+          most_visited_info.use_most_visited &&
+      most_visited_info_.is_visible == most_visited_info.is_visible) {
     return;  // Do not send duplicate onmostvisitedchange events.
   }
 
-  use_most_visited_ = most_visited_info.use_most_visited;
+  most_visited_info_.use_most_visited = most_visited_info.use_most_visited;
+  most_visited_info_.is_visible = most_visited_info.is_visible;
 
   most_visited_items_cache_.AddItems(most_visited_info.items);
   if (can_run_js_in_renderframe_) {

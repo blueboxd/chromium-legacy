@@ -86,6 +86,8 @@ def main():
     if '--retry-only-retry-on-failure-tests' not in rest_args_filtered:
       rest_args_filtered.append('--retry-only-retry-on-failure-tests')
     rest_args_filtered.append('--retry-limit=2')
+  rest_args_filtered.extend([
+      '--repository-absolute-path', path_util.GetChromiumSrcDir()])
 
   retval = browser_test_runner.Run(
       gpu_project_config.CONFIG, rest_args_filtered)

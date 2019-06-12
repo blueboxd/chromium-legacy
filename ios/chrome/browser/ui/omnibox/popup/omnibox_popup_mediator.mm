@@ -185,18 +185,12 @@ const CGFloat kOmniboxIconSize = 16;
     return;
   }
 
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+  self.faviconLoader->FaviconForPageUrl(
       pageURL, kOmniboxIconSize, kOmniboxIconSize,
       /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
         if (attributes.faviconImage && !attributes.usesDefaultImage)
           completion(attributes.faviconImage);
       });
-
-  // Only use cached attributes when they are a non-default icon. Never show
-  // monograms or default globe icon.
-  if (cachedAttributes.faviconImage && !cachedAttributes.usesDefaultImage) {
-      completion(cachedAttributes.faviconImage);
-  }
 }
 
 @end

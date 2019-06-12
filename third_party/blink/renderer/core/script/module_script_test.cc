@@ -35,7 +35,7 @@ class ModuleScriptTestModulator final : public DummyModulator {
     return Vector<ModuleRequest>();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
     DummyModulator::Trace(visitor);
   }

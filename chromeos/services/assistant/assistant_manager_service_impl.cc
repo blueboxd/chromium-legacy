@@ -572,11 +572,12 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
                      weak_factory_.GetWeakPtr(), text));
 }
 
-void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
+void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
+                                            bool is_background) {
   service_->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::OnOpenUrlOnMainThread,
-                     weak_factory_.GetWeakPtr(), url));
+                     weak_factory_.GetWeakPtr(), url, is_background));
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -660,7 +661,7 @@ void AssistantManagerServiceImpl::OnPlayMedia(
     std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
     // Fallack to web URL.
     if (!url.empty())
-      OnOpenUrlOnMainThread(url);
+      OnOpenUrlOnMainThread(url, /*in_background=*/false);
   }
 }
 
@@ -1242,12 +1243,14 @@ void AssistantManagerServiceImpl::OnShowTextOnMainThread(
       [&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
-void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
-    const std::string& url) {
+void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(const std::string& url,
+                                                        bool in_background) {
   receive_url_response_ = url;
+  const GURL gurl = GURL(url);
 
-  interaction_subscribers_.ForAllPtrs(
-      [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+  interaction_subscribers_.ForAllPtrs([&gurl, in_background](auto* ptr) {
+    ptr->OnOpenUrlResponse(gurl, in_background);
+  });
 }
 
 void AssistantManagerServiceImpl::OnPlaybackStateChange(

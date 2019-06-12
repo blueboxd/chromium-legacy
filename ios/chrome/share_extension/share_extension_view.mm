@@ -146,11 +146,18 @@ const CGFloat kButtonFontSize = 17;
         [self buttonWithTitle:addToBookmarksTitle
                      selector:@selector(addToBookmarksPressed:)];
 
+    NSString* openInChromeTitle = NSLocalizedString(
+        @"IDS_IOS_OPEN_IN_CHROME_SHARE_EXTENSION",
+        @"The Open in Chrome button text in share extension.");
+    UIButton* openButton =
+        [self buttonWithTitle:openInChromeTitle
+                     selector:@selector(openInChromePressed:)];
+
     UIStackView* contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[
       [self navigationBar], [self dividerViewWithVibrancy:vibrancyEffect],
       [self sharedItemView], [self dividerViewWithVibrancy:vibrancyEffect],
       self.readingListButton, [self dividerViewWithVibrancy:vibrancyEffect],
-      bookmarksButton
+      bookmarksButton, [self dividerViewWithVibrancy:vibrancyEffect], openButton
     ]];
     [contentStack setAxis:UILayoutConstraintAxisVertical];
     [[blurringView contentView] addSubview:contentStack];
@@ -347,6 +354,14 @@ const CGFloat kButtonFontSize = 17;
               withCompletion:^{
                 [_target shareExtensionViewDidSelectAddToBookmarks:sender];
               }];
+}
+
+- (void)openInChromePressed:(UIButton*)sender {
+  if (_dismissed) {
+    return;
+  }
+  _dismissed = YES;
+  [_target shareExtensionViewDidSelectOpenInChrome:sender];
 }
 
 - (void)animateButtonPressed:(UIButton*)sender

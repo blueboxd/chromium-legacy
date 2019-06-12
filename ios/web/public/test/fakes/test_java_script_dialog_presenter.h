@@ -29,7 +29,7 @@ struct TestJavaScriptDialog {
 class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
  public:
   TestJavaScriptDialogPresenter();
-  ~TestJavaScriptDialogPresenter();
+  ~TestJavaScriptDialogPresenter() override;
 
   // JavaScriptDialogPresenter overrides:
   void RunJavaScriptDialog(WebState* web_state,

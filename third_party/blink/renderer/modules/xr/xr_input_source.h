@@ -34,31 +34,32 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
       XRSession* session,
       const device::mojom::blink::XRInputSourceStatePtr& state);
 
-  XRInputSource(XRSession*, uint32_t source_id, device::mojom::XRTargetRayMode);
   XRInputSource(XRSession*,
-                const device::mojom::blink::XRInputSourceStatePtr& state);
+                uint32_t source_id,
+                device::mojom::XRTargetRayMode target_ray_mode =
+                    device::mojom::XRTargetRayMode::GAZING);
   XRInputSource(const XRInputSource& other);
   ~XRInputSource() override = default;
 
-  int16_t activeFrameId() const { return active_frame_id_; }
-  void setActiveFrameId(int16_t id) { active_frame_id_ = id; }
+  int16_t activeFrameId() const { return state_.active_frame_id; }
+  void setActiveFrameId(int16_t id) { state_.active_frame_id = id; }
 
-  bool primaryInputPressed() const { return primary_input_pressed_; }
-  void setPrimaryInputPressed(bool value) { primary_input_pressed_ = value; }
+  bool primaryInputPressed() const { return state_.primary_input_pressed; }
+  void setPrimaryInputPressed(bool val) { state_.primary_input_pressed = val; }
 
-  bool selectionCancelled() const { return selection_cancelled_; }
-  void setSelectionCancelled(bool value) { selection_cancelled_ = value; }
+  bool selectionCancelled() const { return state_.selection_cancelled; }
+  void setSelectionCancelled(bool val) { state_.selection_cancelled = val; }
 
   XRSession* session() const { return session_; }
 
-  const String& handedness() const { return handedness_string_; }
-  const String& targetRayMode() const { return target_ray_mode_string_; }
-  bool emulatedPosition() const { return emulated_position_; }
+  const String handedness() const;
+  const String targetRayMode() const;
+  bool emulatedPosition() const { return state_.emulated_position; }
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
-  Gamepad* gamepad() const;
+  Gamepad* gamepad() const { return gamepad_; }
 
-  uint32_t source_id() const { return source_id_; }
+  uint32_t source_id() const { return state_.source_id; }
 
   void SetPointerTransformMatrix(const TransformationMatrix*);
   void SetGamepadConnected(bool state);
@@ -72,49 +73,62 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     return nullptr;
   }
 
+  device::mojom::XRTargetRayMode TargetRayMode() const {
+    return state_.target_ray_mode;
+  }
+  const TransformationMatrix* BasePose() const {
+    return base_pose_matrix_.get();
+  }
+  const TransformationMatrix* PointerTransform() const {
+    return pointer_transform_matrix_.get();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class XRGripSpace;
-  friend class XRTargetRaySpace;
+  // In order to ease copying, any new member variables that can be trivially
+  // copied (except for Member<T> variables), should go here
+  struct InternalState {
+    int16_t active_frame_id = -1;
+    bool primary_input_pressed = false;
+    bool selection_cancelled = false;
+    const uint32_t source_id;
+    device::mojom::XRHandedness handedness = device::mojom::XRHandedness::NONE;
+    device::mojom::XRTargetRayMode target_ray_mode;
+    bool emulated_position = false;
+    TimeTicks base_timestamp;
 
-  void SetHandedness(device::mojom::XRHandedness);
-  void SetTargetRayMode(device::mojom::XRTargetRayMode);
-  void SetEmulatedPosition(bool emulated_position);
-  void SetBasePoseMatrix(const TransformationMatrix*);
+    InternalState(uint32_t source_id,
+                  device::mojom::XRTargetRayMode,
+                  TimeTicks base_timestamp);
+    InternalState(const InternalState& other);
+    ~InternalState();
+  };
 
   // Use to check if the updates that would/should be made by a given
   // XRInputSourceState would invalidate any SameObject properties guaranteed
   // by the idl, and thus require the xr_input_source to be recreated.
   bool InvalidatesSameObject(
       const device::mojom::blink::XRInputSourceStatePtr& state);
-  void UpdateGamepad(const device::Gamepad& gamepad);
 
-  int16_t active_frame_id_ = -1;
-  bool primary_input_pressed_ = false;
-  bool selection_cancelled_ = false;
+  // Note that UpdateGamepad should only be called after a check/recreation
+  // from InvalidatesSameObject
+  void UpdateGamepad(const base::Optional<device::Gamepad>& gamepad);
+
+  // These member variables all require special behavior when being copied or
+  // are Member<T> type variables.  When adding another one, be sure to keep the
+  // deep-copy constructor updated, when adding any new variable.
+  InternalState state_;
   const Member<XRSession> session_;
-  const uint32_t source_id_;
   Member<XRTargetRaySpace> target_ray_space_;
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
-
-  device::mojom::XRHandedness handedness_;
-  String handedness_string_;
-
-  device::mojom::XRTargetRayMode target_ray_mode_;
-  String target_ray_mode_string_;
-
-  bool emulated_position_ = false;
 
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   // This is the transform to apply to the base_pose_matrix_ to get the pointer
   // matrix. In most cases it should be static.
   std::unique_ptr<TransformationMatrix> pointer_transform_matrix_;
-
-  // gamepad_ uses this to get relative timestamps.
-  TimeTicks base_timestamp_;
 };
 
 }  // namespace blink

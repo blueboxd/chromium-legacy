@@ -72,7 +72,15 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   // Shows the bubble view.
   void Show(DisplayReason reason);
 
+  // Called by tests.
+  const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&
+  GetDeviceButtonsForTest();
+
  private:
+  friend class SendTabToSelfBubbleViewImplTest;
+  FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, PopulateScrollView);
+  FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, DevicePressed);
+
   // views::BubbleDialogDelegateView:
   void Init() override;
 

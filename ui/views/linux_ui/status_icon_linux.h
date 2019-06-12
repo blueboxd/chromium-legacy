@@ -29,6 +29,13 @@ class VIEWS_EXPORT StatusIconLinux {
     virtual void OnClick() = 0;
     virtual bool HasClickAction() = 0;
 
+    virtual const gfx::ImageSkia& GetImage() const = 0;
+    virtual const base::string16& GetToolTip() const = 0;
+    virtual const ui::MenuModel* GetMenuModel() const = 0;
+
+    // This should be called at most once by the implementation.
+    virtual void OnImplInitialized(bool success) = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -52,7 +59,7 @@ class VIEWS_EXPORT StatusIconLinux {
   Delegate* delegate() { return delegate_; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
- private:
+ protected:
   Delegate* delegate_ = nullptr;
 };
 

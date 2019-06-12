@@ -18,6 +18,10 @@ const char kAcceleratedVideoDecodeName[] = "Hardware-accelerated video decode";
 const char kAcceleratedVideoDecodeDescription[] =
     "Hardware-accelerated video decode where available.";
 
+const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
+const char kAcceleratedVideoEncodeDescription[] =
+    "Hardware-accelerated video encode where available.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =
@@ -545,19 +549,6 @@ const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "
     "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
-const char kEnableDesktopPWAsLinkCapturingName[] =
-    "Desktop PWAs Link Capturing";
-const char kEnableDesktopPWAsLinkCapturingDescription[] =
-    "Experimentally enable link capturing for Desktop PWAs. Navigations to "
-    "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
-    "#enable-desktop-pwas.";
-
-const char kDesktopPWAsStayInWindowName[] =
-    "Desktop PWAs out-of-scope links open in the app window";
-const char kDesktopPWAsStayInWindowDescription[] =
-    "Links to sites in a different scope will open inside the PWA window as "
-    "opposed to in the browser.";
-
 const char kDesktopPWAsOmniboxInstallName[] =
     "Desktop PWAs installable from the omnibox";
 const char kDesktopPWAsOmniboxInstallDescription[] =
@@ -1072,6 +1063,10 @@ const char kHardwareMediaKeyHandling[] = "Hardware Media Key Handling";
 const char kHardwareMediaKeyHandlingDescription[] =
     "Enables using media keys to control the active media session. This "
     "requires MediaSessionService to be enabled too";
+
+const char kHarfBuzzPDFSubsetterName[] = "HarfBuzz PDF Subsetter";
+const char kHarfBuzzPDFSubsetterDescription[] =
+    "Changes the PDF subsetter from sftnly to HarfBuzz.";
 
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";

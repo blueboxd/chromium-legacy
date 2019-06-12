@@ -83,31 +83,33 @@ namespace {
 class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
  public:
   std::unique_ptr<quic::QuicSpdyClientBase> CreateClient(
-      std::string host,
+      std::string host_for_handshake,
+      std::string host_for_lookup,
       uint16_t port,
       quic::ParsedQuicVersionVector versions,
       std::unique_ptr<quic::ProofVerifier> verifier) override {
     net::AddressList addresses;
-    int rv = net::SynchronousHostResolver::Resolve(host, &addresses);
+    int rv = net::SynchronousHostResolver::Resolve(host_for_lookup, &addresses);
     if (rv != net::OK) {
-      LOG(ERROR) << "Unable to resolve '" << host
+      LOG(ERROR) << "Unable to resolve '" << host_for_lookup
                  << "' : " << net::ErrorToShortString(rv);
       return nullptr;
     }
     // Determine IP address to connect to from supplied hostname.
     quic::QuicIpAddress ip_addr;
-    if (!ip_addr.FromString(host)) {
+    if (!ip_addr.FromString(host_for_lookup)) {
       net::AddressList addresses;
-      int rv = net::SynchronousHostResolver::Resolve(host, &addresses);
+      int rv =
+          net::SynchronousHostResolver::Resolve(host_for_lookup, &addresses);
       if (rv != net::OK) {
-        LOG(ERROR) << "Unable to resolve '" << host
+        LOG(ERROR) << "Unable to resolve '" << host_for_lookup
                    << "' : " << net::ErrorToShortString(rv);
         return nullptr;
       }
       ip_addr = net::ToQuicIpAddress(addresses[0].address());
     }
 
-    quic::QuicServerId server_id(host, port, false);
+    quic::QuicServerId server_id(host_for_handshake, port, false);
     return quic::QuicMakeUnique<net::QuicSimpleClient>(
         quic::QuicSocketAddress(ip_addr, port), server_id, versions,
         std::move(verifier));

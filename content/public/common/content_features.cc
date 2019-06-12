@@ -41,7 +41,13 @@ const base::Feature kAppCacheIncludePaddingInQuota{
 
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
-    "AudioServiceAudioStreams", base::FEATURE_DISABLED_BY_DEFAULT};
+  "AudioServiceAudioStreams",
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Launches the audio service on the browser startup.
 const base::Feature kAudioServiceLaunchOnStartup{
@@ -49,7 +55,13 @@ const base::Feature kAudioServiceLaunchOnStartup{
 
 // Runs the audio service in a separate process.
 const base::Feature kAudioServiceOutOfProcess{
-    "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
+  "AudioServiceOutOfProcess",
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Kill switch for Background Fetch.
 const base::Feature kBackgroundFetch{"BackgroundFetch",

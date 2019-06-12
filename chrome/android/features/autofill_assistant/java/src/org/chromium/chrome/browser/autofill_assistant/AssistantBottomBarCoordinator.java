@@ -123,10 +123,13 @@ class AssistantBottomBarCoordinator
         // Set children top margins to have a spacing between them.
         int childSpacing = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
+        int suggestionsVerticalInset = activity.getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.chip_bg_vertical_inset);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
-        setChildMarginTop(mSuggestionsCoordinator.getView(), childSpacing);
+        setChildMargin(mSuggestionsCoordinator.getView(), childSpacing - suggestionsVerticalInset,
+                -suggestionsVerticalInset);
 
         // Hide the carousels when they are empty.
         hideWhenEmpty(
@@ -325,8 +328,13 @@ class AssistantBottomBarCoordinator
     }
 
     private void setChildMarginTop(View child, int marginTop) {
+        setChildMargin(child, marginTop, 0);
+    }
+
+    private void setChildMargin(View child, int marginTop, int marginBottom) {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) child.getLayoutParams();
         params.topMargin = marginTop;
+        params.bottomMargin = marginBottom;
         child.setLayoutParams(params);
     }
 

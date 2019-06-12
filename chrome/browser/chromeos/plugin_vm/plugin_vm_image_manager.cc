@@ -461,12 +461,33 @@ download::DownloadParams PluginVmImageManager::GetDownloadParams(
   params.guid = base::GenerateGUID();
   params.callback = base::BindRepeating(&PluginVmImageManager::OnStartDownload,
                                         weak_ptr_factory_.GetWeakPtr());
-  // TODO(https://crbug.com/966399): Create annotation.
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("plugin_vm_image_download", R"(
+        semantics {
+          sender: "Plugin VM image manager"
+          description: "Request to download Plugin VM image is sent in order "
+            "to allow user to run Plugin VM."
+          trigger: "User clicking on Plugin VM icon when Plugin VM is not yet "
+            "installed."
+          data: "Request to download Plugin VM image. Sends cookies to "
+            "authenticate the user."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          chrome_policy {
+            PluginVmImage {
+              PluginVmImage: "{'url': 'example.com', 'hash': 'sha256hash'}"
+            }
+          }
+        }
+      )");
   params.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
   // RequestParams
-
   params.request_params.url = url;
   params.request_params.method = "GET";
 

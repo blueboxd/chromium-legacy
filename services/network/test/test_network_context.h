@@ -209,6 +209,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override {}
   void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
                          LoadHttpAuthCacheCallback callback) override {}
+  void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                         const net::AuthCredentials& credentials,
+                         AddAuthCacheEntryCallback callback) override {}
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override {}

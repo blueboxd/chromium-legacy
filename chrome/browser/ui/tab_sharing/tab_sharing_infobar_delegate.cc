@@ -55,21 +55,21 @@ base::string16 TabSharingInfoBarDelegate::GetMessageText() const {
 base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK)
-                                       ? IDS_TAB_SHARING_INFOBAR_SHARE_BUTTON
-                                       : IDS_TAB_SHARING_INFOBAR_STOP_BUTTON);
+                                       ? IDS_TAB_SHARING_INFOBAR_STOP_BUTTON
+                                       : IDS_TAB_SHARING_INFOBAR_SHARE_BUTTON);
 }
 
 int TabSharingInfoBarDelegate::GetButtons() const {
-  return shared_tab_name_.empty() ? BUTTON_CANCEL : BUTTON_OK | BUTTON_CANCEL;
+  return shared_tab_name_.empty() ? BUTTON_OK : BUTTON_OK | BUTTON_CANCEL;
 }
 
 bool TabSharingInfoBarDelegate::Accept() {
-  ui_->StartSharing(infobar());
+  ui_->StopSharing();
   return false;
 }
 
 bool TabSharingInfoBarDelegate::Cancel() {
-  ui_->StopSharing();
+  ui_->StartSharing(infobar());
   return false;
 }
 

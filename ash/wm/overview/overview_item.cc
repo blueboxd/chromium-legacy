@@ -29,7 +29,6 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
@@ -781,18 +780,13 @@ void OverviewItem::UpdateMaskAndShadow() {
   }
 
   transform_window_.UpdateMask(should_show);
-  gfx::Rect shadow_bounds =
-      gfx::ToEnclosedRect(transform_window_.GetTransformedBounds());
+  SetShadowBounds(should_show ? base::make_optional(gfx::ToEnclosedRect(
+                                    transform_window_.GetTransformedBounds()))
+                              : base::nullopt);
   if (transform_window_.IsMinimized()) {
     caption_container_view_->UpdatePreviewRoundedCorners(
         should_show, kOverviewWindowRoundingDp);
-    if (caption_container_view_->preview_view()) {
-      shadow_bounds =
-          caption_container_view_->preview_view()->GetBoundsInScreen();
-    }
   }
-  SetShadowBounds(should_show ? base::make_optional(shadow_bounds)
-                              : base::nullopt);
 }
 
 void OverviewItem::OnStartingAnimationComplete() {

@@ -38,13 +38,13 @@ bool GraphicsDelegateWin::InitializeOnMainThread() {
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
 
-  context_provider_ = base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+  context_provider_ = base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
       host, factory->GetGpuMemoryBufferManager(), content::kGpuStreamIdDefault,
       content::kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       GURL(std::string("chrome://gpu/VrUiWin")), false /* automatic flushes */,
       false /* support locking */, false /* support grcontext */,
       gpu::SharedMemoryLimits::ForMailboxContext(), attributes,
-      ws::command_buffer_metrics::ContextType::XR_COMPOSITING);
+      viz::command_buffer_metrics::ContextType::XR_COMPOSITING);
   gpu_memory_buffer_manager_ = factory->GetGpuMemoryBufferManager();
   return true;
 }

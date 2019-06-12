@@ -992,13 +992,17 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
         rph, routing_id, &default_factory_request);
   }
 
+  // TODO(crbug.com/955476): network isolation key to be created using worker
+  // script's origin.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
-    rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
-                                std::move(default_factory_request));
+    rph->CreateURLLoaderFactory(
+        origin, net::NetworkIsolationKey() /* network_isolation_key */,
+        std::move(default_header_client), std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    rph->CreateURLLoaderFactory(origin, std::move(default_header_client),
-                                mojo::MakeRequest(&original_factory));
+    rph->CreateURLLoaderFactory(
+        origin, net::NetworkIsolationKey() /* network_isolation_key */,
+        std::move(default_header_client), mojo::MakeRequest(&original_factory));
     GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_request),
                                            rph->GetID(),
                                            original_factory.PassInterface());

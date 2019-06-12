@@ -44,7 +44,7 @@ GpuClient::~GpuClient() {
   OnError(ErrorReason::kInDestructor);
 }
 
-void GpuClient::Add(ws::mojom::GpuRequest request) {
+void GpuClient::Add(mojom::GpuRequest request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   gpu_bindings_.AddBinding(this, std::move(request));
 }
@@ -188,7 +188,7 @@ void GpuClient::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    ws::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
+    mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
   auto* gpu_memory_buffer_manager = delegate_->GetGpuMemoryBufferManager();
 
   if (!gpu_memory_buffer_manager || !IsSizeValid(size)) {
@@ -212,7 +212,7 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 }
 
 void GpuClient::CreateGpuMemoryBufferFactory(
-    ws::mojom::GpuMemoryBufferFactoryRequest request) {
+    mojom::GpuMemoryBufferFactoryRequest request) {
   gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
 }
 

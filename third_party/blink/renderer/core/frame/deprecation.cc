@@ -60,6 +60,7 @@ enum Milestone {
   kM74,
   kM75,
   kM76,
+  kM77,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -104,6 +105,8 @@ const char* MilestoneString(Milestone milestone) {
       return "M75, around June 2019";
     case kM76:
       return "M76, around July 2019";
+    case kM77:
+      return "M77, around September 2019";
   }
 
   NOTREACHED();
@@ -153,6 +156,8 @@ double MilestoneDate(Milestone milestone) {
       return 1559620800000;  // June 4, 2019.
     case kM76:
       return 1564459200000;  // Jul 30, 2019.
+    case kM77:
+      return 1568088000000;  // Sep 10, 2019.
   }
 
   NOTREACHED();
@@ -538,23 +543,23 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   MilestoneString(kM72))};
 
     case WebFeature::kNoSysexWebMIDIWithoutPermission:
-      return {"NoSysexWebMIDIWithoutPermission", kM76,
+      return {"NoSysexWebMIDIWithoutPermission", kM77,
               String::Format(
                   "Web MIDI will ask a permission to use even if the sysex is "
                   "not specified in the MIDIOptions since %s. See "
                   "https://www.chromestatus.com/feature/5138066234671104 for "
                   "more details.",
-                  MilestoneString(kM76))};
+                  MilestoneString(kM77))};
 
     case WebFeature::kNoSysexWebMIDIOnInsecureOrigin:
-      return {"NoSysexWebMIDIOnInsecureOrigin", kM76,
+      return {"NoSysexWebMIDIOnInsecureOrigin", kM77,
               String::Format(
                   "Web MIDI will be deprecated on insecure origins since %s. "
                   "You should consider switching your application to a secure "
                   "origin, such as HTTPS. See "
                   "https://www.chromestatus.com/feature/5138066234671104 for "
                   "more details.",
-                  MilestoneString(kM76))};
+                  MilestoneString(kM77))};
 
     case WebFeature::kCustomCursorIntersectsViewport:
       return {

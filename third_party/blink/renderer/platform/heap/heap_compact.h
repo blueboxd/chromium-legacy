@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
@@ -63,7 +64,7 @@ class PLATFORM_EXPORT HeapCompact final {
   }
 
   // See |Heap::registerMovingObjectReference()| documentation.
-  void RegisterMovingObjectReference(MovableReference* slot);
+  void RegisterMovingObjectReference(const char* name, MovableReference* slot);
 
   // See |Heap::registerMovingObjectCallback()| documentation.
   void RegisterMovingObjectCallback(MovableReference*,
@@ -137,6 +138,7 @@ class PLATFORM_EXPORT HeapCompact final {
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   HashSet<MovableReference*> traced_slots_;
+  HashMap<MovableReference*, const char*> traced_slots_names_;
 
   // Set to |true| when a compacting sweep will go ahead.
   bool do_compact_ = false;

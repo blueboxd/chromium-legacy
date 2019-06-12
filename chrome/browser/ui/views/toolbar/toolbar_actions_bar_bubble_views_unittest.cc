@@ -33,7 +33,7 @@ const int kIconSize = 16;
 
 class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
  public:
-  views::View* TestCreateExtraView() {
+  std::unique_ptr<views::View> TestCreateExtraView() {
     DCHECK(bubble_);
     return bubble_->CreateExtraView();
   }

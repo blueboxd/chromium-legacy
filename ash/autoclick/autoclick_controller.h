@@ -27,8 +27,9 @@ namespace ash {
 
 class AccessibilityFeatureDisableDialog;
 class AutoclickDragEventRewriter;
-class AutoclickRingHandler;
 class AutoclickMenuBubbleController;
+class AutoclickRingHandler;
+class AutoclickScrollPositionHandler;
 
 // Autoclick is one of the accessibility features. If enabled, two circles will
 // animate at the mouse event location and an automatic mouse event event will
@@ -110,8 +111,9 @@ class ASH_EXPORT AutoclickController
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
-  void UpdateAutoclickRingWidget(views::Widget* widget,
-                                 const gfx::Point& point_in_screen);
+  void CreateAutoclickScrollPositionWidget(const gfx::Point& point_in_screen);
+  void UpdateAutoclickWidgetPosition(views::Widget* widget,
+                                     const gfx::Point& point_in_screen);
   void DoAutoclickAction();
   void StartAutoclickGesture();
   void CancelAutoclickAction();
@@ -119,6 +121,9 @@ class ASH_EXPORT AutoclickController
   void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
   void UpdateRingSize();
+  void InitializeScrollLocation();
+  void UpdateScrollPosition(const gfx::Point& point_in_screen);
+  void HideScrollPosition();
   void RecordUserAction(mojom::AutoclickEventType event_type) const;
   bool DragInProgress() const;
   void CreateMenuBubbleController();
@@ -176,7 +181,9 @@ class ASH_EXPORT AutoclickController
                               -kDefaultAutoclickMovementThreshold};
 
   // The widget containing the autoclick ring.
-  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> ring_widget_;
+  // The widget containing the autoclick scroll position indiciator.
+  std::unique_ptr<views::Widget> scroll_position_widget_;
   base::TimeDelta delay_;
   // The timer that counts down from the beginning of a gesture until a click.
   std::unique_ptr<base::RetainingOneShotTimer> autoclick_timer_;
@@ -186,6 +193,8 @@ class ASH_EXPORT AutoclickController
   // instead waiting for the mouse to begin a dwell.
   std::unique_ptr<base::RetainingOneShotTimer> start_gesture_timer_;
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
+  std::unique_ptr<AutoclickScrollPositionHandler>
+      autoclick_scroll_position_handler_;
   std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
   std::unique_ptr<AutoclickMenuBubbleController> menu_bubble_controller_;
 

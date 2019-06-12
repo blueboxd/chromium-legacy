@@ -323,10 +323,13 @@ void URLRequestHttpJob::Start() {
   request_info_.url = request_->url();
   request_info_.method = request_->method();
 
+  request_info_.network_isolation_key = request_->network_isolation_key();
   // TODO(crbug.com/963476): Remove this when network_isolation_key is being set
-  // in request_.
-  request_info_.network_isolation_key =
-      NetworkIsolationKey(request_->top_frame_origin());
+  // in request_ for most cases.
+  if (!request_info_.network_isolation_key.IsFullyPopulated()) {
+    request_info_.network_isolation_key =
+        NetworkIsolationKey(request_->top_frame_origin());
+  }
 
   request_info_.load_flags = request_->load_flags();
   request_info_.traffic_annotation =
@@ -1233,7 +1236,6 @@ void URLRequestHttpJob::SetAuth(const AuthCredentials& credentials) {
 }
 
 void URLRequestHttpJob::CancelAuth() {
-  // Proxy gets set first, then WWW.
   if (proxy_auth_state_ == AUTH_STATE_NEED_AUTH) {
     proxy_auth_state_ = AUTH_STATE_CANCELED;
   } else {
@@ -1241,26 +1243,18 @@ void URLRequestHttpJob::CancelAuth() {
     server_auth_state_ = AUTH_STATE_CANCELED;
   }
 
-  // These will be reset in OnStartCompleted.
-  response_info_ = nullptr;
-  receive_headers_end_ = base::TimeTicks::Now();
-  // TODO(davidben,mmenke): We should either reset override_response_headers_
-  // here or not call NotifyHeadersReceived a second time on the same response
-  // headers. See https://crbug.com/810063.
+  // The above lines should ensure this is the case.
+  DCHECK(!NeedsAuth());
 
-  ResetTimer();
-
-  // OK, let the consumer read the error page...
+  // Let the consumer read the HTTP error page. NeedsAuth() should now return
+  // false, so NotifyHeadersComplete() should not request auth from the client
+  // again.
   //
-  // Because we set the AUTH_STATE_CANCELED flag, NeedsAuth will return false,
-  // which will cause the consumer to receive OnResponseStarted instead of
-  // OnAuthRequired.
-  //
-  // We have to do this via InvokeLater to avoid "recursing" the consumer.
-  //
+  // Have to do this via PostTask to avoid re-entrantly calling into the
+  // consumer.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&URLRequestHttpJob::OnStartCompleted,
-                                weak_factory_.GetWeakPtr(), OK));
+      FROM_HERE, base::BindOnce(&URLRequestHttpJob::NotifyFinalHeadersReceived,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestHttpJob::ContinueWithCertificate(

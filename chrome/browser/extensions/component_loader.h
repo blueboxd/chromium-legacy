@@ -109,6 +109,10 @@ class ComponentLoader {
                                         const std::string& description_string);
 
   void AddChromeOsSpeechSynthesisExtensions();
+
+  // Loads the Kiosk Next extension or adds it to the load list. If this device
+  // doesn't support Kiosk Next, this method is a no-op.
+  void AddKioskNextExtension();
 #endif
 
   void set_ignore_whitelist_for_testing(bool value) {

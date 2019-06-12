@@ -6,6 +6,7 @@
 
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "extensions/browser/media_capture_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
@@ -109,12 +110,12 @@ bool ShellAppDelegate::TakeFocus(content::WebContents* web_contents,
   return false;
 }
 
-gfx::Size ShellAppDelegate::EnterPictureInPicture(
+content::PictureInPictureResult ShellAppDelegate::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
   NOTREACHED();
-  return gfx::Size();
+  return content::PictureInPictureResult::kNotSupported;
 }
 
 void ShellAppDelegate::ExitPictureInPicture() {

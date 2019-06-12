@@ -197,7 +197,7 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
       bool should_fire_beforeunload =
           contents->NeedToFireBeforeUnload() ||
           DevToolsWindow::NeedsToInterceptBeforeUnload(contents);
-      if (!ContainsKey(tabs_needing_unload_fired_, contents) &&
+      if (!base::Contains(tabs_needing_unload_fired_, contents) &&
           should_fire_beforeunload) {
         tabs_needing_before_unload_fired_.insert(contents);
       }

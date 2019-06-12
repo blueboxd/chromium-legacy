@@ -11,6 +11,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "ash/root_window_controller.h"
@@ -30,6 +31,9 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
@@ -100,6 +104,9 @@ constexpr char kTabletModeEnterHistogram[] =
 constexpr char kTabletModeExitHistogram[] =
     "Ash.TabletMode.AnimationSmoothness.Exit";
 
+// Set to true for unit tests so tablet mode can be changed synchronously.
+bool force_no_screenshot = false;
+
 // The angle between AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
 // between the screen and keyboard accelerometers is too high.
@@ -142,6 +149,26 @@ bool HasActiveInternalDisplay() {
 bool IsTransformAnimationSequence(ui::LayerAnimationSequence* sequence) {
   DCHECK(sequence);
   return sequence->properties() & ui::LayerAnimationElement::TRANSFORM;
+}
+
+std::unique_ptr<ui::Layer> CreateLayerFromScreenshotResult(
+    std::unique_ptr<viz::CopyOutputResult> copy_result) {
+  DCHECK(!copy_result->IsEmpty());
+  DCHECK_EQ(copy_result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+
+  const gfx::Size layer_size = copy_result->size();
+  viz::TransferableResource transferable_resource =
+      viz::TransferableResource::MakeGL(
+          copy_result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
+          copy_result->GetTextureResult()->sync_token, layer_size,
+          /*is_overlay_candidate=*/false);
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      copy_result->TakeTextureOwnership();
+  auto screenshot_layer = std::make_unique<ui::Layer>();
+  screenshot_layer->SetTransferableResource(
+      transferable_resource, std::move(release_callback), layer_size);
+
+  return screenshot_layer;
 }
 
 }  // namespace
@@ -233,6 +260,11 @@ TabletModeController::~TabletModeController() {
     observer.OnTabletControllerDestroyed();
 }
 
+// static
+void TabletModeController::SetForceNoScreenshotForTest() {
+  force_no_screenshot = true;
+}
+
 // TODO(jcliang): Hide or remove EnableTabletModeWindowManager
 // (http://crbug.com/620241).
 void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
@@ -246,38 +278,30 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
   for (auto* root_window : Shell::Get()->GetAllRootWindows())
     RootWindowController::ForWindow(root_window)->HideContextMenu();
 
+  // Suspend occlusion tracker when entering or exiting tablet mode.
+  SuspendOcclusionTracker();
+  DeleteScreenshot();
+
   if (should_enable) {
     state_ = State::kEnteringTabletMode;
-    // Suspend occlusion tracker when entering tablet mode.
-    SuspendOcclusionTracker();
 
-    tablet_mode_window_manager_.reset(new TabletModeWindowManager());
-    tablet_mode_window_manager_->Init();
-
-    base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
-    RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
-    for (auto& observer : tablet_mode_observers_)
-      observer.OnTabletModeStarted();
-
-    // In some cases, TabletModeWindowManager::TabletModeWindowManager uses
-    // split view to represent windows that were snapped in desktop mode. If
-    // there is a window snapped on one side but no window snapped on the other
-    // side, then overview mode should be started (to be seen on the side with
-    // no snapped window).
-    const auto state = Shell::Get()->split_view_controller()->state();
-    if (state == SplitViewState::kLeftSnapped ||
-        state == SplitViewState::kRightSnapped) {
-      Shell::Get()->overview_controller()->ToggleOverview();
+    // Take a screenshot if there is a top window that will get animated.
+    // TODO(sammiequon): Handle the case where the top window is not on the
+    // primary display.
+    aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
+    bool top_window_on_primary_display =
+        top_window &&
+        top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
+    if (!force_no_screenshot && top_window_on_primary_display) {
+      screenshot_set_callback_.Reset(
+          base::BindOnce(&TabletModeController::FinishInitTabletMode,
+                         weak_factory_.GetWeakPtr()));
+      TakeScreenshot(top_window, screenshot_set_callback_.callback());
+    } else {
+      FinishInitTabletMode();
     }
-
-    state_ = State::kInTabletMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(true);
-    VLOG(1) << "Enter tablet mode.";
   } else {
     state_ = State::kExitingTabletMode;
-    // Suspend occlusion tracker when exiting tablet mode.
-    SuspendOcclusionTracker();
 
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
     for (auto& observer : tablet_mode_observers_)
@@ -338,7 +362,7 @@ bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
 }
 
 void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
-  StopObservingAnimation(/*record_stats=*/false);
+  StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/false);
 
   if (state_ != State::kEnteringTabletMode &&
       state_ != State::kExitingTabletMode) {
@@ -351,7 +375,8 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
   observed_layer_->GetAnimator()->AddObserver(this);
 }
 
-void TabletModeController::StopObservingAnimation(bool record_stats) {
+void TabletModeController::StopObservingAnimation(bool record_stats,
+                                                  bool delete_screenshot) {
   StopObserving();
 
   if (observed_layer_)
@@ -363,6 +388,9 @@ void TabletModeController::StopObservingAnimation(bool record_stats) {
   if (record_stats && fps_counter_)
     fps_counter_->LogUma();
   fps_counter_.reset();
+
+  if (delete_screenshot)
+    DeleteScreenshot();
 }
 
 void TabletModeController::SetTabletModeToggleObserver(
@@ -580,7 +608,7 @@ void TabletModeController::OnLayerAnimationAborted(
   if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
     return;
 
-  StopObservingAnimation(/*record_stats=*/false);
+  StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
 }
 
 void TabletModeController::OnLayerAnimationEnded(
@@ -588,7 +616,7 @@ void TabletModeController::OnLayerAnimationEnded(
   if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
     return;
 
-  StopObservingAnimation(/*record_stats=*/true);
+  StopObservingAnimation(/*record_stats=*/true, /*delete_screenshot=*/true);
 }
 
 void TabletModeController::OnLayerAnimationScheduled(
@@ -605,12 +633,12 @@ void TabletModeController::OnLayerAnimationScheduled(
   // If another animation is scheduled while the animation we were originally
   // watching is still animating, abort and do not log stats as the stats will
   // not be accurate.
-  StopObservingAnimation(/*record_stats=*/false);
+  StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
 }
 
 void TabletModeController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(observed_window_, window);
-  StopObservingAnimation(/*record_stats=*/false);
+  StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -880,6 +908,91 @@ void TabletModeController::SuspendOcclusionTracker() {
 
 void TabletModeController::ResetPauser() {
   occlusion_tracker_pauser_.reset();
+}
+
+void TabletModeController::FinishInitTabletMode() {
+  tablet_mode_window_manager_.reset(new TabletModeWindowManager());
+  tablet_mode_window_manager_->Init();
+
+  base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
+  RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeStarted();
+
+  // In some cases, TabletModeWindowManager::TabletModeWindowManager uses
+  // split view to represent windows that were snapped in desktop mode. If
+  // there is a window snapped on one side but no window snapped on the other
+  // side, then overview mode should be started (to be seen on the side with
+  // no snapped window).
+  const auto state = Shell::Get()->split_view_controller()->state();
+  if (state == SplitViewState::kLeftSnapped ||
+      state == SplitViewState::kRightSnapped) {
+    Shell::Get()->overview_controller()->ToggleOverview();
+  }
+
+  state_ = State::kInTabletMode;
+  if (toggle_observer_)  // Null at startup and in tests.
+    toggle_observer_->OnTabletModeToggled(true);
+  VLOG(1) << "Enter tablet mode.";
+}
+
+void TabletModeController::DeleteScreenshot() {
+  screenshot_layer_.reset();
+  screenshot_taken_callback_.Cancel();
+  screenshot_set_callback_.Cancel();
+}
+
+void TabletModeController::TakeScreenshot(
+    aura::Window* top_window,
+    base::OnceClosure on_screenshot_taken) {
+  DCHECK(top_window);
+  DCHECK(!top_window->IsRootWindow());
+
+  auto* screenshot_window = top_window->GetRootWindow()->GetChildById(
+      kShellWindowId_ScreenRotationContainer);
+
+  // Pause the compositor and hide the top window before taking a screenshot.
+  // Use opacity zero instead of show/hide to preserve MRU ordering.
+  const auto roots = Shell::GetAllRootWindows();
+  for (auto* root : roots)
+    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
+  top_window->layer()->SetOpacity(0.f);
+
+  // Request a screenshot.
+  screenshot_taken_callback_.Reset(base::BindOnce(
+      &TabletModeController::OnScreenshotTaken, weak_factory_.GetWeakPtr(),
+      top_window, std::move(on_screenshot_taken)));
+  const gfx::Rect request_bounds(screenshot_window->layer()->size());
+  auto screenshot_request = std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+      screenshot_taken_callback_.callback());
+  screenshot_request->set_area(request_bounds);
+  screenshot_window->layer()->RequestCopyOfOutput(
+      std::move(screenshot_request));
+
+  top_window->layer()->SetOpacity(1.f);
+  for (auto* root : roots)
+    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);
+}
+
+void TabletModeController::OnScreenshotTaken(
+    aura::Window* top_window,
+    base::OnceClosure on_screenshot_taken,
+    std::unique_ptr<viz::CopyOutputResult> copy_result) {
+  if (!copy_result || copy_result->IsEmpty()) {
+    std::move(on_screenshot_taken).Run();
+    return;
+  }
+
+  // Stack the screenshot under |top_window|, to fully occlude all windows
+  // except |top_window| for the duration of the enter tablet mode animation.
+  screenshot_layer_ = CreateLayerFromScreenshotResult(std::move(copy_result));
+  top_window->parent()->layer()->Add(screenshot_layer_.get());
+  screenshot_layer_->SetBounds(top_window->GetRootWindow()->bounds());
+  top_window->parent()->layer()->StackBelow(screenshot_layer_.get(),
+                                            top_window->layer());
+
+  std::move(on_screenshot_taken).Run();
 }
 
 }  // namespace ash

@@ -33,6 +33,10 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
                HIDE_MAIN_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST,
   };
 
+  // The InfoMap requires methods to be called on the IO thread. Fake it.
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
+
   ExtensionsAPIClient api_client;
   auto info_map = base::MakeRefCounted<extensions::InfoMap>();
 

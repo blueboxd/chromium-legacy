@@ -280,7 +280,7 @@ body[type='open-multi-file'].check-select .dialog-header {
   flex: auto;
 }
 
-.dialog-header paper-button,
+.dialog-header cr-button,
 .dialog-header button {
   border-radius: 2px;
   height: 32px;
@@ -333,7 +333,7 @@ body.check-select .dialog-header
   width: 16px;
 }
 
-.dialog-header paper-button {
+.dialog-header cr-button {
   line-height: 32px;
   padding: 0 8px;
 }
@@ -575,18 +575,23 @@ html[dir='rtl'] #cloud-import-details {
   width: 0;
 }
 
-#cloud-import-details paper-button {
+#cloud-import-details cr-button {
+  --ink-color: white;
   align-self: flex-end;
+  border: none;
+  box-shadow: none;
   color: white;
   font-weight: 500;
   margin-top: 20px;
+  padding: 0;
+  text-transform: uppercase;
 }
 
-#cloud-import-details paper-button.import {
+#cloud-import-details cr-button.import {
   background-color: rgb(51, 103, 214);
 }
 
-#cloud-import-details paper-button.cancel {
+#cloud-import-details cr-button.cancel {
   background-color: rgb(219, 68, 55);
 }
 
@@ -601,8 +606,16 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button {
+  --ink-color: currentColor;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: currentColor;
   display: flex;
-  text-transform: none;
+}
+
+#cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
+  background-color: rgba(153, 153, 153, .2);
 }
 
 #cancel-selection-button > span {
@@ -780,15 +793,15 @@ html[dir='rtl'] #search-box .clear {
               0 2px 4px -1px rgba(0, 0, 0, 0.4);
 }
 
-.dialog-footer paper-button,
+.dialog-footer cr-button,
 .dialog-footer button {
   height: 32px;
   margin: 0 4px;
   min-width: 92px;
 }
 
-.dialog-footer paper-button[disabled],
-.dialog-footer paper-button[disabled]:hover,
+.dialog-footer cr-button[disabled],
+.dialog-footer cr-button[disabled]:hover,
 .dialog-footer button[disabled],
 .dialog-footer button[disabled]:hover {
   background-color: rgb(234, 234, 234);
@@ -837,7 +850,7 @@ html[dir='rtl'] #search-box .clear {
 .dialog-footer .primary:focus:not(:active),
 .dialog-footer .secondary:focus:not(:active),
 .dialog-footer select:focus:not(:active),
-#cloud-import-details paper-button.keyboard-focus {
+html.focus-outline-visible #cloud-import-details cr-button:focus {
   box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
 }
 

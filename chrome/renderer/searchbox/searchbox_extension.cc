@@ -650,6 +650,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
   static bool GetIsCustomLinks();
   static bool GetIsUsingMostVisited();
+  static bool GetAreShortcutsVisible();
 
   // Handlers for JS functions visible to all NTPs.
   static void DeleteMostVisitedItem(v8::Isolate* isolate,
@@ -662,13 +663,14 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   // custom links iframe, and/or the local NTP.
   static v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate,
                                                      int rid);
-  static void ToggleMostVisitedOrCustomLinks();
   static void UpdateCustomLink(int rid,
                                const std::string& url,
                                const std::string& title);
   static void ReorderCustomLink(int rid, int new_pos);
   static void UndoCustomLinkAction();
   static void ResetCustomLinks();
+  static void ToggleMostVisitedOrCustomLinks();
+  static void ToggleShortcutsVisibility();
   static std::string FixupAndValidateUrl(const std::string& url);
   static void LogEvent(int event);
   static void LogSuggestionEventWithValue(int event, int data);
@@ -728,6 +730,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
       .SetProperty("isUsingMostVisited",
                    &NewTabPageBindings::GetIsUsingMostVisited)
+      .SetProperty("areShortcutsVisible",
+                   &NewTabPageBindings::GetAreShortcutsVisible)
       .SetMethod("deleteMostVisitedItem",
                  &NewTabPageBindings::DeleteMostVisitedItem)
       .SetMethod("undoAllMostVisitedDeletions",
@@ -736,13 +740,15 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::UndoMostVisitedDeletion)
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
-      .SetMethod("toggleMostVisitedOrCustomLinks",
-                 &NewTabPageBindings::ToggleMostVisitedOrCustomLinks)
       .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
       .SetMethod("reorderCustomLink", &NewTabPageBindings::ReorderCustomLink)
       .SetMethod("undoCustomLinkAction",
                  &NewTabPageBindings::UndoCustomLinkAction)
       .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
+      .SetMethod("toggleMostVisitedOrCustomLinks",
+                 &NewTabPageBindings::ToggleMostVisitedOrCustomLinks)
+      .SetMethod("toggleShortcutsVisibility",
+                 &NewTabPageBindings::ToggleShortcutsVisibility)
       .SetMethod("fixupAndValidateUrl",
                  &NewTabPageBindings::FixupAndValidateUrl)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
@@ -864,6 +870,15 @@ bool NewTabPageBindings::GetIsUsingMostVisited() {
 }
 
 // static
+bool NewTabPageBindings::GetAreShortcutsVisible() {
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return true;
+
+  return search_box->AreShortcutsVisible();
+}
+
+// static
 void NewTabPageBindings::DeleteMostVisitedItem(v8::Isolate* isolate,
                                                v8::Local<v8::Value> rid_value) {
   // Manually convert to integer, so that the string "\"1\"" is also accepted.
@@ -926,14 +941,6 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
 }
 
 // static
-void NewTabPageBindings::ToggleMostVisitedOrCustomLinks() {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->ToggleMostVisitedOrCustomLinks();
-}
-
-// static
 void NewTabPageBindings::UpdateCustomLink(int rid,
                                           const std::string& url,
                                           const std::string& title) {
@@ -989,6 +996,22 @@ void NewTabPageBindings::ResetCustomLinks() {
     return;
   search_box->ResetCustomLinks();
   search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL);
+}
+
+// static
+void NewTabPageBindings::ToggleMostVisitedOrCustomLinks() {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->ToggleMostVisitedOrCustomLinks();
+}
+
+// static
+void NewTabPageBindings::ToggleShortcutsVisibility() {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->ToggleShortcutsVisibility();
 }
 
 // static

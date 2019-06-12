@@ -101,16 +101,13 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [self addLongPressGestureToView:self.view.omniboxButton];
   [self addLongPressGestureToView:self.view.tabGridButton];
   [self addLongPressGestureToView:self.view.toolsMenuButton];
+
+  [self updateLayoutBasedOnTraitCollection];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  [self updateAllButtonsVisibility];
-  if (IsRegularXRegularSizeClass(self)) {
-    [self.view.progressBar setHidden:YES animated:NO completion:nil];
-  } else if (self.loading) {
-    [self.view.progressBar setHidden:NO animated:NO completion:nil];
-  }
+  [self updateLayoutBasedOnTraitCollection];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -413,6 +410,15 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     [self.longPressDelegate
         longPressFocusPointChangedTo:[gesture locationOfTouch:0 inView:nil]];
+  }
+}
+
+- (void)updateLayoutBasedOnTraitCollection {
+  [self updateAllButtonsVisibility];
+  if (IsRegularXRegularSizeClass(self)) {
+    [self.view.progressBar setHidden:YES animated:NO completion:nil];
+  } else if (self.loading) {
+    [self.view.progressBar setHidden:NO animated:NO completion:nil];
   }
 }
 

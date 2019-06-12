@@ -138,8 +138,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     params.swap_response.swap_id = 0;  // Set later, in DecoderClient.
     params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     // TODO(brianderson): Tie swap_start to before_flush_time.
-    params.swap_response.swap_start = before_transaction_time;
-    params.swap_response.swap_end = before_transaction_time;
+    params.swap_response.timings.swap_start = before_transaction_time;
+    params.swap_response.timings.swap_end = before_transaction_time;
     for (auto& query : ca_layer_in_use_queries_) {
       gpu::TextureInUseResponse response;
       response.texture = query.texture;

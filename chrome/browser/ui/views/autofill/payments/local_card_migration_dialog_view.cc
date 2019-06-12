@@ -161,9 +161,9 @@ std::unique_ptr<views::ScrollView> CreateCardList(
   }
 
   auto card_list_scroll_view = std::make_unique<views::ScrollView>();
-  card_list_scroll_view->set_hide_horizontal_scrollbar(true);
+  card_list_scroll_view->SetHideHorizontalScrollBar(true);
   card_list_scroll_view->SetContents(std::move(card_list_view));
-  card_list_scroll_view->set_draw_overflow_indicator(false);
+  card_list_scroll_view->SetDrawOverflowIndicator(false);
   constexpr int kCardListScrollViewHeight = 140;
   card_list_scroll_view->ClipHeightTo(0, kCardListScrollViewHeight);
   return card_list_scroll_view;

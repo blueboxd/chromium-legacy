@@ -8,8 +8,8 @@
 #include "apps/test/app_window_waiter.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -548,14 +548,7 @@ class KioskTest : public OobeBaseTest {
     // TODO(https://crbug.com/932323): Implement or remove diagnostic mode.
     if (diagnostic_mode)
       return false;
-    ash::mojom::LoginScreenTestApiPtr test_api_;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &test_api_);
-    ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-    bool found;
-    login_screen.LaunchApp(app_id, &found);
-    return found;
+    return ash::LoginScreenTestApi::LaunchApp(app_id);
   }
 
   void ReloadKioskApps() {

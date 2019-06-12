@@ -200,7 +200,7 @@ class DisplayTest : public testing::Test {
   void UpdateBeginFrameTime(CompositorFrameSinkSupport* support,
                             base::TimeTicks frame_time) {
     support->last_frame_time_ = frame_time;
-    support->presentation_feedbacks_.clear();
+    support->frame_timing_details_.clear();
   }
 
  protected:
@@ -3363,9 +3363,9 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     RunAllPendingInMessageLoop();
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
-    ASSERT_EQ(2u, sub_support->presentation_feedbacks().size());
-    EXPECT_EQ(sub_support->presentation_feedbacks().count(frame_token_1), 1u);
-    EXPECT_EQ(sub_support->presentation_feedbacks().count(frame_token_2), 1u);
+    ASSERT_EQ(2u, sub_support->timing_details().size());
+    EXPECT_EQ(sub_support->timing_details().count(frame_token_1), 1u);
+    EXPECT_EQ(sub_support->timing_details().count(frame_token_2), 1u);
   }
 
   {

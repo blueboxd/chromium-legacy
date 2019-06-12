@@ -12,6 +12,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         'getAccounts',
         'addAccount',
         'removeAccount',
+        'setAsActiveAccount',
       ]);
 
       // Simulated error from a addKerberosAccount call.
@@ -26,11 +27,13 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         {
           principalName: 'user@REALM',
           isSignedIn: true,
+          isActive: true,
           pic: 'pic',
         },
         {
           principalName: 'user2@REALM2',
           isSignedIn: false,
+          isActive: false,
           pic: 'pic2',
         }
       ]);
@@ -46,6 +49,11 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     removeAccount(account) {
       this.methodCalled('removeAccount', account);
     }
+
+    /** @override */
+    setAsActiveAccount(account) {
+      this.methodCalled('setAsActiveAccount', account);
+    }
   }
 
   // Tests for the Kerberos Accounts settings page.
@@ -53,6 +61,18 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     let browserProxy = null;
     let kerberosAccounts = null;
     let accountList = null;
+
+    // Account indices (to help readability).
+    const Account = {
+      FIRST: 0,
+      SECOND: 1,
+    };
+
+    // Indices of 'More Actions' buttons.
+    const MoreActions = {
+      SET_AS_ACTIVE_ACCOUNT: 0,
+      REMOVE_ACCOUNT: 1,
+    };
 
     setup(function() {
       browserProxy = new TestKerberosAccountsBrowserProxy();
@@ -70,6 +90,16 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     teardown(function() {
       kerberosAccounts.remove();
     });
+
+    function clickMoreActions(accountIndex, moreActionsIndex) {
+      // Click 'More actions' for the given account.
+      kerberosAccounts.root.querySelectorAll('cr-icon-button')[accountIndex]
+          .click();
+      // Click on the given action.
+      kerberosAccounts.$$('cr-action-menu')
+          .querySelectorAll('button')[moreActionsIndex]
+          .click();
+    }
 
     test('AccountListIsPopulatedAtStartup', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
@@ -114,11 +144,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     test('RemoveAccount', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
-        // Click on 'More Actions' for the first account.
-        kerberosAccounts.root.querySelectorAll('cr-icon-button')[0].click();
-        // Click on 'Remove account'.
-        kerberosAccounts.$$('cr-action-menu').querySelector('button').click();
-
+        clickMoreActions(Account.FIRST, MoreActions.REMOVE_ACCOUNT);
         return browserProxy.whenCalled('removeAccount').then((account) => {
           assertEquals('user@REALM', account.principalName);
         });
@@ -129,6 +155,18 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertEquals(1, browserProxy.getCallCount('getAccounts'));
       cr.webUIListenerCallback('kerberos-accounts-changed');
       assertEquals(2, browserProxy.getCallCount('getAccounts'));
+    });
+
+    test('SetAsActiveAccount', function() {
+      return browserProxy.whenCalled('getAccounts')
+          .then(() => {
+            Polymer.dom.flush();
+            clickMoreActions(Account.SECOND, MoreActions.SET_AS_ACTIVE_ACCOUNT);
+            return browserProxy.whenCalled('setAsActiveAccount');
+          })
+          .then((account) => {
+            assertEquals('user2@REALM2', account.principalName);
+          });
     });
   });
 

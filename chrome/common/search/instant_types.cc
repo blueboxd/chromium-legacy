@@ -53,7 +53,9 @@ InstantMostVisitedItem::InstantMostVisitedItem(
 InstantMostVisitedItem::~InstantMostVisitedItem() {}
 
 InstantMostVisitedInfo::InstantMostVisitedInfo()
-    : items_are_custom_links(false), use_most_visited(false) {}
+    : items_are_custom_links(false),
+      use_most_visited(false),
+      is_visible(true) {}
 
 InstantMostVisitedInfo::InstantMostVisitedInfo(
     const InstantMostVisitedInfo& other) = default;

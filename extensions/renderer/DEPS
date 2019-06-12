@@ -1,7 +1,6 @@
 include_rules = [
   "+components/translate/core/language_detection",
   "+content/app/strings/grit",
-  "+content/public/child",
   "+content/public/renderer",
 
   "+gin",

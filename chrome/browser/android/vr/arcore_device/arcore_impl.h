@@ -98,7 +98,7 @@ class ArCoreImpl : public ArCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
-  std::vector<mojom::XRPlaneDataPtr> GetDetectedPlanes() override;
+  mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
   void Pause() override;
   void Resume() override;
   bool RequestHitTest(const mojom::XRRayPtr& ray,
@@ -118,14 +118,36 @@ class ArCoreImpl : public ArCore {
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
 
-  // List of trackables - used for retrieving planes detected by ARCore. May be
-  // null.
+  // List of trackables - used for retrieving planes detected by ARCore. The
+  // list will initially be null - call EnsureArCorePlanesList() before using
+  // it. Instead of creating it in every call to GetUpdatedPlanesData(), the
+  // list can be reused as it will be cleaned by calls to ArCore SDK.
   internal::ScopedArCoreObject<ArTrackableList*> arcore_planes_;
+
+  // Initializes |arcore_planes_| list.
+  void EnsureArCorePlanesList();
+
+  // Returns vector containing information about all planes updated in current
+  // frame, assigning IDs for newly detected planes as needed.
+  std::vector<mojom::XRPlaneDataPtr> GetUpdatedPlanesData();
+
+  // This must be called after GetUpdatedPlanesData as it assumes that all
+  // planes already have an ID assigned. The result includes freshly assigned
+  // IDs for newly detected planes along with previously known IDs for updated
+  // and unchanged planes. It excludes planes that are no longer being tracked.
+  std::vector<int32_t> GetAllPlaneIds();
 
   int32_t next_id_ = 1;
   std::unordered_map<void*, int32_t> ar_plane_address_to_id_;
 
-  int32_t CreateOrGetPlaneId(void* plane_address);
+  // Returns tuple containing plane id and a boolean signifying that the plane
+  // was created.
+  std::pair<int32_t, bool> CreateOrGetPlaneId(void* plane_address);
+
+  // Executes |fn| for each still tracked, non-subsumed plane present in
+  // |arcore_planes_|.
+  template <typename FunctionType>
+  void ForEachArCorePlane(FunctionType fn);
 
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_;

@@ -27,7 +27,7 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
                           ScriptPromiseResolver* promise_resolver)
       : url_(url), modulator_(modulator), promise_resolver_(promise_resolver) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implements ModuleTreeClient:
@@ -142,7 +142,7 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
   promise_resolver_->Resolve(module_namespace);
 }
 
-void DynamicImportTreeClient::Trace(blink::Visitor* visitor) {
+void DynamicImportTreeClient::Trace(Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(promise_resolver_);
   ModuleTreeClient::Trace(visitor);
@@ -150,7 +150,7 @@ void DynamicImportTreeClient::Trace(blink::Visitor* visitor) {
 
 }  // namespace
 
-void DynamicModuleResolver::Trace(blink::Visitor* visitor) {
+void DynamicModuleResolver::Trace(Visitor* visitor) {
   visitor->Trace(modulator_);
 }
 

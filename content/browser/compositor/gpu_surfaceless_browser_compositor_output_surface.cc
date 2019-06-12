@@ -14,13 +14,13 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
-        scoped_refptr<ws::ContextProviderCommandBuffer> context,
+        scoped_refptr<viz::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
         std::unique_ptr<viz::OverlayCandidateValidator>
             overlay_candidate_validator,

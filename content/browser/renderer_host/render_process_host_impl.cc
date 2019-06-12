@@ -2440,12 +2440,17 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
         SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
   }
 
+  // Since this function is about to get deprecated (crbug.com/891872), it
+  // should be fine to not add support for network isolation thus sending empty
+  // key.
   CreateURLLoaderFactory(request_initiator_site_lock,
+                         net::NetworkIsolationKey(),
                          nullptr /* header_client */, std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2482,6 +2487,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     params->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
+    params->network_isolation_key = network_isolation_key;
     SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
     params->header_client = std::move(header_client);
     network_context->CreateURLLoaderFactory(std::move(request),
@@ -2970,6 +2976,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreferCompositingToLCDText,
     switches::kEnableRGBA4444Textures,
     switches::kEnableSkiaBenchmarking,
+    switches::kEnableSubresourceRedirect,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
     switches::kEnableUnsafeWebGPU,
@@ -2992,6 +2999,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kFullMemoryCrashReport,
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
+    switches::kLitePagesServerSubresourceHost,
     switches::kLogFile,
     switches::kLoggingLevel,
     switches::kMaxActiveWebGLContexts,

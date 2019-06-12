@@ -115,6 +115,8 @@ void DriverEGL::InitializeClientExtensionBindings() {
   gfx::ExtensionSet extensions(gfx::MakeExtensionSet(client_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
+  ext.b_EGL_ANGLE_feature_control =
+      gfx::HasExtension(extensions, "EGL_ANGLE_feature_control");
   ext.b_EGL_EXT_platform_base =
       gfx::HasExtension(extensions, "EGL_EXT_platform_base");
   ext.b_EGL_KHR_debug = gfx::HasExtension(extensions, "EGL_KHR_debug");
@@ -140,6 +142,17 @@ void DriverEGL::InitializeClientExtensionBindings() {
     fn.eglQueryDebugKHRFn = reinterpret_cast<eglQueryDebugKHRProc>(
         GetGLProcAddress("eglQueryDebugKHR"));
   }
+
+  if (ext.b_EGL_ANGLE_feature_control) {
+    fn.eglQueryDisplayAttribANGLEFn =
+        reinterpret_cast<eglQueryDisplayAttribANGLEProc>(
+            GetGLProcAddress("eglQueryDisplayAttribANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_feature_control) {
+    fn.eglQueryStringiANGLEFn = reinterpret_cast<eglQueryStringiANGLEProc>(
+        GetGLProcAddress("eglQueryStringiANGLE"));
+  }
 }
 
 void DriverEGL::InitializeExtensionBindings() {
@@ -157,8 +170,6 @@ void DriverEGL::InitializeExtensionBindings() {
       gfx::HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       gfx::HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
-  ext.b_EGL_ANGLE_feature_control =
-      gfx::HasExtension(extensions, "EGL_ANGLE_feature_control");
   ext.b_EGL_ANGLE_query_surface_pointer =
       gfx::HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
   ext.b_EGL_ANGLE_stream_producer_d3d_texture =
@@ -285,12 +296,6 @@ void DriverEGL::InitializeExtensionBindings() {
         GetGLProcAddress("eglPostSubBufferNV"));
   }
 
-  if (ext.b_EGL_ANGLE_feature_control) {
-    fn.eglQueryDisplayAttribANGLEFn =
-        reinterpret_cast<eglQueryDisplayAttribANGLEProc>(
-            GetGLProcAddress("eglQueryDisplayAttribANGLE"));
-  }
-
   if (ext.b_EGL_KHR_stream) {
     fn.eglQueryStreamKHRFn = reinterpret_cast<eglQueryStreamKHRProc>(
         GetGLProcAddress("eglQueryStreamKHR"));
@@ -299,11 +304,6 @@ void DriverEGL::InitializeExtensionBindings() {
   if (ext.b_EGL_KHR_stream) {
     fn.eglQueryStreamu64KHRFn = reinterpret_cast<eglQueryStreamu64KHRProc>(
         GetGLProcAddress("eglQueryStreamu64KHR"));
-  }
-
-  if (ext.b_EGL_ANGLE_feature_control) {
-    fn.eglQueryStringiANGLEFn = reinterpret_cast<eglQueryStringiANGLEProc>(
-        GetGLProcAddress("eglQueryStringiANGLE"));
   }
 
   if (ext.b_EGL_ANGLE_query_surface_pointer) {

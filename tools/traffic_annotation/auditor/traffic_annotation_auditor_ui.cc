@@ -64,10 +64,6 @@ Options:
   --error-resilient   Optional flag, stating not to return error in exit code if
                       auditor fails to perform the tests. This flag can be used
                       for trybots to avoid spamming when tests cannot run.
-  --extractor-backend=[clang_tool,python_script]
-                      Optional flag specifying which backend to use for
-                      extracting annotation definitions from source code (Clang
-                      Tool or extractor.py). Defaults to "clang_tool".
   path_filters        Optional paths to filter which files the tool is run on.
                       It can also include deleted files names when auditor is
                       run on a partial repository.
@@ -130,14 +126,6 @@ std::string UpdateTextForTSV(std::string text) {
       text.find('\t') != std::string::npos)
     return base::StringPrintf("\"%s\"", text.c_str());
   return text;
-}
-
-ExtractorBackend GetExtractorBackend(const std::string& backend_switch) {
-  if (backend_switch.empty() || backend_switch == "clang_tool")
-    return ExtractorBackend::CLANG_TOOL;
-  if (backend_switch == "python_script")
-    return ExtractorBackend::PYTHON_SCRIPT;
-  return ExtractorBackend::INVALID;
 }
 
 // TODO(rhalavati): Update this function to extract the policy name and value
@@ -380,15 +368,7 @@ int main(int argc, char* argv[]) {
 
   // Extract annotations.
   if (extractor_input.empty()) {
-    std::string backend_switch =
-        command_line.GetSwitchValueASCII("extractor-backend");
-    ExtractorBackend backend = GetExtractorBackend(backend_switch);
-    if (backend == ExtractorBackend::INVALID) {
-      LOG(ERROR) << "Unrecognized extractor backend '" << backend_switch << "'";
-      return error_value;
-    }
-
-    if (!auditor.RunExtractor(backend, path_filters, filter_files, all_files,
+    if (!auditor.RunClangTool(path_filters, filter_files, all_files,
                               !error_resilient, errors_file)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return error_value;
@@ -396,7 +376,7 @@ int main(int argc, char* argv[]) {
 
     // Write extractor output if requested.
     if (!extractor_output.empty()) {
-      std::string raw_output = auditor.extractor_raw_output();
+      std::string raw_output = auditor.clang_tool_raw_output();
       base::WriteFile(extractor_output, raw_output.c_str(),
                       raw_output.length());
     }
@@ -407,7 +387,7 @@ int main(int argc, char* argv[]) {
                  << extractor_input.value().c_str();
       return error_value;
     } else {
-      auditor.set_extractor_raw_output(raw_output);
+      auditor.set_clang_tool_raw_output(raw_output);
     }
   }
 

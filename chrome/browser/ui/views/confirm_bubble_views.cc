@@ -79,13 +79,13 @@ bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   }
 }
 
-views::View* ConfirmBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View> ConfirmBubbleViews::CreateExtraView() {
   auto help_button = CreateVectorImageButton(this);
   help_button->SetFocusForPlatform();
   help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  help_button_ = help_button.release();
+  help_button_ = help_button.get();
   SetImageFromVectorIcon(help_button_, vector_icons::kHelpOutlineIcon);
-  return help_button_;
+  return help_button;
 }
 
 bool ConfirmBubbleViews::Cancel() {

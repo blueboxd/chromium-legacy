@@ -106,6 +106,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
 
   const EntryMap& GetExchanges();
 
+  void RecordHistograms();
+
  private:
   friend class base::RefCountedThreadSafe<PrefetchedSignedExchangeCache>;
 

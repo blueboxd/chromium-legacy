@@ -76,9 +76,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/784179): Remove nogncheck.
 #include "content/public/browser/context_factory.h"
-#include "content/public/browser/gpu_interface_provider_factory.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

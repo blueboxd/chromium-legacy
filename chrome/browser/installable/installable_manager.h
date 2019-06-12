@@ -40,6 +40,14 @@ class InstallableManager
   // Returns the minimum icon size in pixels for a site to be installable.
   static int GetMinimumIconSizeInPx();
 
+  // Returns true if the overall security state of |web_contents| is sufficient
+  // to be considered installable.
+  static bool IsContentSecure(content::WebContents* web_contents);
+
+  // Returns true for localhost and URLs that have been explicitly marked as
+  // secure via a flag.
+  static bool IsOriginConsideredSecure(const GURL& url);
+
   // Get the installable data, fetching the resources specified in |params|.
   // |callback| is invoked synchronously (i.e. not via PostTask on the UI thread
   // when the data is ready; the synchronous execution ensures that the
@@ -71,8 +79,6 @@ class InstallableManager
   void RecordAddToHomescreenNoTimeout();
   void RecordAddToHomescreenManifestAndIconTimeout();
   void RecordAddToHomescreenInstallabilityTimeout();
-
-  bool IsContentSecureForTesting();
 
  protected:
   // For mocking in tests.

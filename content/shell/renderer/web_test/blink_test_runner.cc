@@ -535,12 +535,14 @@ void BlinkTestRunner::CaptureLocalPixelsDump() {
 }
 
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
+  CHECK(waiting_for_layout_dump_results_);
   dump_result_->layout.emplace(completed_layout_dump);
   waiting_for_layout_dump_results_ = false;
   CaptureDumpComplete();
 }
 
 void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
+  CHECK(waiting_for_pixels_dump_result_);
   DCHECK_NE(0, snapshot.info().width());
   DCHECK_NE(0, snapshot.info().height());
 

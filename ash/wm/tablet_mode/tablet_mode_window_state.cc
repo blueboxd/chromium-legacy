@@ -153,6 +153,12 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
          window;
 }
 
+// True if |window| is the top window in BuildWindowForCycleList.
+bool IsTopWindow(aura::Window* window) {
+  DCHECK(window);
+  return window == TabletModeWindowManager::GetTopWindow();
+}
+
 }  // namespace
 
 // static
@@ -477,11 +483,6 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
   }
-}
-
-bool TabletModeWindowState::IsTopWindow(aura::Window* window) {
-  DCHECK(window);
-  return window == creator_->GetTopWindow();
 }
 
 }  // namespace ash

@@ -3941,6 +3941,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AutofillProfileSyncChangeOrigin">
+  <obsolete>
+    Deprecated in M77. The corresponding histogram has been deprecated.
+  </obsolete>
   <int value="0" label="Change in a local profile"/>
   <int value="1"
       label="Change in a converted local profile (that still equals to a
@@ -19705,6 +19708,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ExtensionIconState">
+  <obsolete>
+    Corresponding metric removed 2019-06.
+  </obsolete>
   <int value="0" label="DISABLED"/>
   <int value="1" label="VISIBLE"/>
   <int value="2" label="OVERFLOWED"/>
@@ -23626,6 +23632,9 @@ Called by update_net_error_codes.py.-->
   <int value="2916" label="CookieNoSameSite"/>
   <int value="2917" label="CookieInsecureAndSameSiteNone"/>
   <int value="2918" label="UnsizedMediaPolicy"/>
+  <int value="2919" label="ScrollByPrecisionTouchPad"/>
+  <int value="2920" label="PinchZoom"/>
+  <int value="2921" label="BuiltInModuleSwitchImported"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -27564,16 +27573,16 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
   <int value="2" label="USER_NOT_SIGNED_UP"/>
   <int value="3" label="CONNECTION_FAILED"/>
-  <int value="4" label="CAPTCHA_REQUIRED"/>
+  <int value="4" label="CAPTCHA_REQUIRED (deprecated)"/>
   <int value="5" label="ACCOUNT_DELETED"/>
   <int value="6" label="ACCOUNT_DISABLED"/>
   <int value="7" label="SERVICE_UNAVAILABLE"/>
-  <int value="8" label="TWO_FACTOR"/>
+  <int value="8" label="TWO_FACTOR (deprecated)"/>
   <int value="9" label="REQUEST_CANCELED"/>
   <int value="10" label="HOSTED_NOT_ALLOWED (deprecated)"/>
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
-  <int value="13" label="WEB_LOGIN_REQUIRED"/>
+  <int value="13" label="WEB_LOGIN_REQUIRED (deprecated)"/>
 </enum>
 
 <enum name="GoogleUpdateAfterItemClickedActions">
@@ -31175,6 +31184,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Cancelled item"/>
   <int value="2" label="Reading list item"/>
   <int value="3" label="Bookmark item"/>
+  <int value="4" label="Open in Chrome item"/>
 </enum>
 
 <enum name="iOSSizeClassForReporting">
@@ -33238,6 +33248,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
+  <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
@@ -35418,6 +35429,7 @@ from previous Chrome versions.
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
   <int value="1090377940" label="enable-quic-https"/>
+  <int value="1091631619" label="disable-accelerated-video-encode"/>
   <int value="1092896354" label="EnableFullscreenAppList:disabled"/>
   <int value="1094506652" label="UseGoogleLocalNtp:enabled"/>
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
@@ -35525,6 +35537,7 @@ from previous Chrome versions.
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
   <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>
+  <int value="1243180545" label="HarfBuzzPDFSubsetter:enabled"/>
   <int value="1243890754" label="ForbidSyncXHRInPageDismissal:disabled"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1247293682" label="topchrome-md"/>
@@ -38909,6 +38922,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="TimedOut"/>
   <int value="1" label="SwipedUp"/>
   <int value="2" label="ExpandedToModal"/>
+  <int value="3" label="TappedToModal"/>
 </enum>
 
 <enum name="MobileMessagesBannerEvent">
@@ -38960,6 +38974,7 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="Chrome Today Extension"/>
   <int value="13" label="Chrome Search Extension"/>
   <int value="14" label="Chrome Content Extension"/>
+  <int value="15" label="Chrome Share Extension"/>
 </enum>
 
 <enum name="MobileSessionShutdownType">
@@ -44358,6 +44373,7 @@ Called by update_net_trust_anchors.py.-->
       label="Remaining download time does not meet the requirement."/>
   <int value="8"
       label="HTTP method or url scheme does not meet the requirement."/>
+  <int value="9" label="Unknown range support from the response header."/>
 </enum>
 
 <enum name="ParentFrameKnown">
@@ -51428,6 +51444,24 @@ Called by update_net_trust_anchors.py.-->
              start)"/>
 </enum>
 
+<enum name="SecureCookieAction">
+  <int value="0"
+      label="The provided URL was invalid, so no URL-modification was
+             performed"/>
+  <int value="1"
+      label="Cookie was already for an 'HTTPS' URL, so no URL-modification
+             was performed"/>
+  <int value="2"
+      label="Cookie data was formatted incorrectly, so no URL-modification
+             was performed"/>
+  <int value="3"
+      label="Cookie was not marked as 'Secure', so no URL-modification was
+             performed"/>
+  <int value="4"
+      label="The URL's scheme was fixed up 'HTTPS' for backwards
+             compatibility"/>
+</enum>
+
 <enum name="SecurityInterstitialDecision">
   <int value="0" label="SHOW"/>
   <int value="1" label="PROCEED"/>
@@ -57896,6 +57930,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UserSelectableSyncType">
+  <obsolete>
+    Deprecated 10/2018; use SyncModelTypes instead. Note that this does NOT
+    correspond to the UserSelectableType enum in C++!
+  </obsolete>
   <int value="0" label="Bookmarks"/>
   <int value="1" label="Preferences"/>
   <int value="2" label="Passwords"/>

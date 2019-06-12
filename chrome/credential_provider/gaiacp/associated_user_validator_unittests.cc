@@ -295,6 +295,54 @@ TEST_F(AssociatedUserValidatorTest, BlockDenyUserAccess) {
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
+// Deny user access when the gaia handle is invalidated for a
+// local OS user.
+TEST_F(AssociatedUserValidatorTest,
+       DenySigninForLocalUserWithInvalidTokenHandle) {
+  FakeAssociatedUserValidator validator;
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  CComBSTR sid;
+  // Created a local test os user that is not domain joined.
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), &sid));
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
+  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+}
+
+// Donot deny user access even when the gaia handle is invalidated for a
+// domain joined OS user.
+TEST_F(AssociatedUserValidatorTest,
+       DonotDenySigninForADUserWithInvalidTokenHandle) {
+  FakeAssociatedUserValidator validator;
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  CComBSTR sid;
+  // Created a test os user with an assigned domain.
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), L"domain", &sid));
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
+  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+}
+
 // Tests various scenarios where user access is blocked.
 // Parameters are:
 // 1. CREDENTIAL_PROVIDER_USAGE_SCENARIO - Usage scenario.

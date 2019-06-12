@@ -352,47 +352,47 @@ bool TestAXNodeWrapper::IsTable() const {
   return node_->IsTable();
 }
 
-int TestAXNodeWrapper::GetTableRowCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableRowCount() const {
   return node_->GetTableRowCount();
 }
 
-int TestAXNodeWrapper::GetTableColCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableColCount() const {
   return node_->GetTableColCount();
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaRowCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableAriaRowCount() const {
   return node_->GetTableAriaRowCount();
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaColCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableAriaColCount() const {
   return node_->GetTableAriaColCount();
 }
 
-int TestAXNodeWrapper::GetTableCellCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellCount() const {
   return node_->GetTableCellCount();
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
+std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
   std::vector<int32_t> header_ids;
   node_->GetTableCellColHeaderNodeIds(&header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
-    int32_t col_index) const {
+std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
+    int col_index) const {
   std::vector<int32_t> header_ids;
   node_->GetTableColHeaderNodeIds(col_index, &header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
+std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
   std::vector<int32_t> header_ids;
   node_->GetTableCellRowHeaderNodeIds(&header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
-    int32_t row_index) const {
+std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
+    int row_index) const {
   std::vector<int32_t> header_ids;
   node_->GetTableRowHeaderNodeIds(row_index, &header_ids);
   return header_ids;
@@ -402,7 +402,7 @@ bool TestAXNodeWrapper::IsTableRow() const {
   return node_->IsTableRow();
 }
 
-int TestAXNodeWrapper::GetTableRowRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableRowRowIndex() const {
   return node_->GetTableRowRowIndex();
 }
 
@@ -410,41 +410,40 @@ bool TestAXNodeWrapper::IsTableCellOrHeader() const {
   return node_->IsTableCellOrHeader();
 }
 
-int TestAXNodeWrapper::GetTableCellIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellIndex() const {
   return node_->GetTableCellIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellColIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellColIndex() const {
   return node_->GetTableCellColIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellRowIndex() const {
   return node_->GetTableCellRowIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellColSpan() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellColSpan() const {
   return node_->GetTableCellColSpan();
 }
 
-int TestAXNodeWrapper::GetTableCellRowSpan() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellRowSpan() const {
   return node_->GetTableCellRowSpan();
 }
 
-int TestAXNodeWrapper::GetTableCellAriaColIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellAriaColIndex() const {
   return node_->GetTableCellAriaColIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
   return node_->GetTableCellAriaRowIndex();
 }
 
-int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
-                                     int32_t col_index) const {
-  ui::AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
-  if (cell)
-    return cell->id();
-
-  return -1;
+base::Optional<int32_t> TestAXNodeWrapper::GetCellId(int row_index,
+                                                     int col_index) const {
+  AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
+  if (!cell)
+    return base::nullopt;
+  return cell->id();
 }
 
 gfx::AcceleratedWidget
@@ -452,11 +451,11 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return native_event_target_;
 }
 
-int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
-  ui::AXNode* cell = node_->GetTableCellFromIndex(cell_index);
-  if (cell)
-    return cell->id();
-  return -1;
+base::Optional<int32_t> TestAXNodeWrapper::CellIndexToId(int cell_index) const {
+  AXNode* cell = node_->GetTableCellFromIndex(cell_index);
+  if (!cell)
+    return base::nullopt;
+  return cell->id();
 }
 
 bool TestAXNodeWrapper::IsCellOrHeaderOfARIATable() const {
@@ -629,11 +628,11 @@ bool TestAXNodeWrapper::IsOrderedSet() const {
   return node_->IsOrderedSet();
 }
 
-int32_t TestAXNodeWrapper::GetPosInSet() const {
+base::Optional<int> TestAXNodeWrapper::GetPosInSet() const {
   return node_->GetPosInSet();
 }
 
-int32_t TestAXNodeWrapper::GetSetSize() const {
+base::Optional<int> TestAXNodeWrapper::GetSetSize() const {
   return node_->GetSetSize();
 }
 

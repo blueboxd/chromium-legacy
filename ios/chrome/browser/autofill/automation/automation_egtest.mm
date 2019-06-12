@@ -9,25 +9,21 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
-#include "base/values.h"
-#import "ios/chrome/browser/autofill/automation/automation_action.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
-
-#include "base/guid.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
+#import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
@@ -287,7 +283,7 @@ static const int kRecipeRetryLimit = 5;
 - (bool)runActionsOnce {
   @try {
     // Load the initial page of the recipe.
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:startUrl]);
+    [ChromeEarlGrey loadURL:startUrl];
 
     for (AutomationAction* action in actions_) {
       CHROME_EG_ASSERT_NO_ERROR([action execute]);

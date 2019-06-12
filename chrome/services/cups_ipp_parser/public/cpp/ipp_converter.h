@@ -86,7 +86,7 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 
 // Mojom converter for ipp_t objects, return nullptr on failure.
 // Note: This function does not take ownership of |ipp|.
-chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp);
+cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp);
 
 }  // namespace ipp_converter
 

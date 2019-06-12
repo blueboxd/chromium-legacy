@@ -193,8 +193,11 @@ void Portal::Activate(blink::TransferableMessage data,
 
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
+  FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
+      portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
   std::unique_ptr<WebContents> portal_contents =
       portal_contents_impl_->DetachFromOuterWebContents();
+  owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());

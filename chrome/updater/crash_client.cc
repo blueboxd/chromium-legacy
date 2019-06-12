@@ -55,7 +55,7 @@ bool CrashClient::InitializeDatabaseOnly() {
   base::PathService::Get(base::FILE_EXE, &handler_path);
 
   base::FilePath database_path;
-  if (!GetProductDataDirectory(&database_path)) {
+  if (!GetProductDirectory(&database_path)) {
     LOG(ERROR) << "Failed to get the database path.";
     return false;
   }

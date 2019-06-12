@@ -2,7 +2,8 @@
 
 * [Home][home]
 * [Quick start](/android_webview/docs/quick-start.md)
-* [Device Setup](/android_webview/docs/device-setup.md)
+* [Device setup](/android_webview/docs/device-setup.md)
+* [Build instructions](/android_webview/docs/build-instructions.md)
 * [Test instructions](/android_webview/docs/test-instructions.md)
 * [WebView Beta](/android_webview/docs/prerelease.md)
 * [WebView Shell](/android_webview/docs/webview-shell.md)

@@ -8,6 +8,7 @@
 #include <vector>
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
@@ -62,6 +63,14 @@ bool VulkanInstance::Initialize(
     vulkan_function_pointers->vkEnumerateInstanceVersionFn(
         &supported_api_version);
   }
+
+#if defined(OS_ANDROID)
+  // Ensure that android works only with vulkan apiVersion >= 1.1. Vulkan will
+  // only be enabled for Android P+ and Android P+ requires vulkan
+  // apiVersion >= 1.1.
+  if (supported_api_version < VK_MAKE_VERSION(1, 1, 0))
+    return false;
+#endif
 
   // Use Vulkan 1.1 if it's available.
   api_version_ = (supported_api_version >= VK_MAKE_VERSION(1, 1, 0))

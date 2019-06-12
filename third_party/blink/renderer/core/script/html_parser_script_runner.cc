@@ -596,7 +596,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
   }
 }
 
-void HTMLParserScriptRunner::Trace(blink::Visitor* visitor) {
+void HTMLParserScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(host_);
   visitor->Trace(parser_blocking_script_);

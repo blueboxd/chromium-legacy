@@ -92,7 +92,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
       NetworkTypePattern::Physical(), false,
       chromeos::network_handler::ErrorCallback());
 
-  OpenApplication(AppLaunchParams(profile, extension,
+  OpenApplication(AppLaunchParams(profile, extension_id,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
                                   WindowOpenDisposition::NEW_WINDOW,
                                   extensions::SOURCE_CHROME_INTERNAL, true));

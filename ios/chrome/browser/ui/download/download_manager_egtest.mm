@@ -39,11 +39,6 @@ id<GREYMatcher> DownloadButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD);
 }
 
-// Matcher for "Open In..." button on Download Manager UI.
-id<GREYMatcher> OpenInButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_OPEN_IN);
-}
-
 // Provides downloads landing page with download link.
 std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     const net::test_server::HttpRequest& request) {
@@ -60,7 +55,7 @@ bool WaitForOpenInButton() {
   const NSTimeInterval kLongDownloadTimeout = 35;
   return base::test::ios::WaitUntilConditionOrTimeout(kLongDownloadTimeout, ^{
     NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:OpenInButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::OpenInButton()]
         assertWithMatcher:grey_notNil()
                     error:&error];
     return (error == nil);

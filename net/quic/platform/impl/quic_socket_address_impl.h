@@ -17,7 +17,7 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressImpl {
   explicit QuicSocketAddressImpl(const net::IPEndPoint& addr);
   QuicSocketAddressImpl(QuicIpAddress address, uint16_t port);
   explicit QuicSocketAddressImpl(const struct sockaddr_storage& saddr);
-  explicit QuicSocketAddressImpl(const struct sockaddr& saddr);
+  explicit QuicSocketAddressImpl(const sockaddr* saddr, socklen_t len);
   QuicSocketAddressImpl(const QuicSocketAddressImpl& other) = default;
   QuicSocketAddressImpl& operator=(const QuicSocketAddressImpl& other) =
       default;

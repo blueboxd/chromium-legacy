@@ -15,8 +15,8 @@
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -34,7 +34,7 @@ class VideoTrackAdapterSettings;
 // the IO-thread.
 // Adaptations is done by wrapping the original media::VideoFrame in a new
 // media::VideoFrame with a new visible_rect and natural_size.
-class BLINK_EXPORT VideoTrackAdapter
+class MODULES_EXPORT VideoTrackAdapter
     : public WTF::ThreadSafeRefCounted<VideoTrackAdapter> {
  public:
   using OnMutedCallback = base::RepeatingCallback<void(bool mute_state)>;

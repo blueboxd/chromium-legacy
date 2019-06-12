@@ -122,7 +122,7 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-View* DialogDelegate::CreateExtraView() {
+std::unique_ptr<View> DialogDelegate::CreateExtraView() {
   return nullptr;
 }
 

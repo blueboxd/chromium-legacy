@@ -109,6 +109,10 @@
                   '|chrome/browser/apps/'\
                   '|chrome/browser/chromeos/apps/'
     },
+    'apps_intent_helper': {
+      'filepath': 'chrome/browser/apps/intent_helper/|'\
+                  'chrome/browser/chromeos/apps/intent_helper/'
+    },
     'arc': {
       'filepath': 'arc/',
     },
@@ -1913,7 +1917,8 @@
     'android_tab': ['dtrainor+watch@chromium.org'],
     'android_uma_settings': ['asvitkine+watch@chromium.org',
                              'gayane+watch@chromium.org'],
-    'android_webapk': ['dominickn+watch-webapk@chromium.org'],
+    'android_webapk': ['dominickn+watch-webapk@chromium.org',
+                       'mxcai+watch-webapk@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'android_webview_network_service': ['timvolodine@chromium.org'],
     'animation_worklet': ['yigu@chromium.org',
@@ -1923,6 +1928,7 @@
                       'mgiuca+watch@chromium.org'],
     'apps': ['chromium-apps-reviews@chromium.org',
              'dominickn+watch-apps@chromium.org'],
+    'apps_intent_helper': ['mxcai+watch-intent-helper@chromium.org'],
     'arc': ['elijahtaylor+arcwatch@chromium.org',
             'hidehiko+watch@chromium.org',
             'victorhsieh+watch@chromium.org',

@@ -31,7 +31,7 @@ class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContext
       GLint border,
       GLenum format,
       GLenum type,
-      gpu::SharedContextState* shared_context_state);
+      scoped_refptr<gpu::SharedContextState> shared_context_state);
   ~AbstractTextureImplOnSharedContext() override;
 
   // AbstractTexture implementation.
@@ -49,7 +49,7 @@ class GPU_GLES2_EXPORT AbstractTextureImplOnSharedContext
 
  private:
   Texture* texture_;
-  SharedContextState* shared_context_state_ = nullptr;
+  scoped_refptr<SharedContextState> shared_context_state_;
   CleanupCallback cleanup_cb_;
 };
 

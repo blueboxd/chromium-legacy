@@ -33,6 +33,7 @@
 
 namespace remote_cocoa {
 class NativeWidgetNSWindowBridge;
+class ScopedNativeWindowMapping;
 }  // namespace remote_cocoa
 
 namespace ui {
@@ -382,6 +383,11 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // The id that this bridge may be looked up from.
   const uint64_t widget_id_;
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
+
+  // Structure used to look up this structure's interfaces from its
+  // gfx::NativeWindow.
+  std::unique_ptr<remote_cocoa::ScopedNativeWindowMapping>
+      native_window_mapping_;
 
   // Parent and child widgets.
   NativeWidgetMacNSWindowHost* parent_ = nullptr;

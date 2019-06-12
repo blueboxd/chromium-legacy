@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 
-#include <memory>
 #include <string>
 
-#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
+#include "base/macros.h"
 
 class AccountId;
 
@@ -44,14 +42,7 @@ class ScreenLockerTester {
   void UnlockWithPassword(const AccountId& account_id,
                           const std::string& password);
 
-  // LoginScreenTester proxy methods:
-  int64_t GetUiUpdateCount();
-  void WaitForUiUpdate(int64_t previous_update_count);
-
  private:
-  test::LoginScreenTester login_screen_tester_;
-  ash::mojom::LoginScreenTestApiPtr test_api_;
-
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTester);
 };
 

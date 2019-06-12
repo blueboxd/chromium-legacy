@@ -205,6 +205,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   bool DidCommit() const override;
   const ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
+  ukm::SourceId GetSourceId() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(

@@ -19,6 +19,7 @@ class SkColorFilter;
 
 namespace blink {
 
+class DarkModeColorClassifier;
 class DarkModeColorFilter;
 
 class PLATFORM_EXPORT DarkModeFilter {
@@ -47,6 +48,8 @@ class PLATFORM_EXPORT DarkModeFilter {
 
  private:
   DarkModeSettings settings_;
+
+  std::unique_ptr<DarkModeColorClassifier> text_classifier_;
 
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;

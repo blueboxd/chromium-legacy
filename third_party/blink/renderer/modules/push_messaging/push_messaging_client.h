@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -22,7 +22,8 @@ enum class PushRegistrationStatus;
 }  // namespace mojom
 
 class KURL;
-struct Manifest;
+class PushSubscriptionOptions;
+class ServiceWorkerRegistration;
 
 class PushMessagingClient final
     : public GarbageCollectedFinalized<PushMessagingClient>,
@@ -37,29 +38,30 @@ class PushMessagingClient final
 
   static PushMessagingClient* From(LocalFrame* frame);
 
-  void Subscribe(int64_t service_worker_registration_id,
-                 const WebPushSubscriptionOptions& options,
+  void Subscribe(ServiceWorkerRegistration* service_worker_registration,
+                 PushSubscriptionOptions* options,
                  bool user_gesture,
-                 std::unique_ptr<WebPushSubscriptionCallbacks> callbacks);
+                 std::unique_ptr<PushSubscriptionCallbacks> callbacks);
 
  private:
   // Returns an initialized PushMessaging service. A connection will be
   // established after the first call to this method.
   mojom::blink::PushMessaging* GetService();
 
-  void DidGetManifest(int64_t service_worker_registration_id,
+  void DidGetManifest(ServiceWorkerRegistration* service_worker_registration,
                       mojom::blink::PushSubscriptionOptionsPtr options,
                       bool user_gesture,
-                      std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
-                      const WebURL& manifest_url,
-                      const Manifest& manifest);
+                      std::unique_ptr<PushSubscriptionCallbacks> callbacks,
+                      const KURL& manifest_url,
+                      mojom::blink::ManifestPtr manifest);
 
-  void DoSubscribe(int64_t service_worker_registration_id,
+  void DoSubscribe(ServiceWorkerRegistration* service_worker_registration,
                    mojom::blink::PushSubscriptionOptionsPtr options,
                    bool user_gesture,
-                   std::unique_ptr<WebPushSubscriptionCallbacks> callbacks);
+                   std::unique_ptr<PushSubscriptionCallbacks> callbacks);
 
-  void DidSubscribe(std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
+  void DidSubscribe(ServiceWorkerRegistration* service_worker_registration,
+                    std::unique_ptr<PushSubscriptionCallbacks> callbacks,
                     mojom::blink::PushRegistrationStatus status,
                     const base::Optional<KURL>& endpoint,
                     mojom::blink::PushSubscriptionOptionsPtr options,

@@ -227,6 +227,11 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
 
+// Disables prompting the user for consent before fulfilling WebXR's
+// requestSession(). Use only when absolutely necessary, such as for perf tests.
+const char kDisableXrDeviceConsentPromptForTesting[] =
+    "disable-xr-device-consent-prompt-for-testing";
+
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".

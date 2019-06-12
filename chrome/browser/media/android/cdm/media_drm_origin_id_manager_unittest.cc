@@ -295,8 +295,8 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
   DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
   auto* dict = GetDictionary(kMediaDrmOriginIds);
   auto* list = dict->FindKey(kAvailableOriginIds);
-  EXPECT_FALSE(ContainsValue(list->GetList(),
-                             CreateUnguessableTokenValue(origin_id.value())));
+  EXPECT_FALSE(base::Contains(list->GetList(),
+                              CreateUnguessableTokenValue(origin_id.value())));
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {

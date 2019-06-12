@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -59,9 +60,8 @@ class ExternalFileResolver {
  private:
   void OnHelperResultObtained(
       net::Error error,
-      const scoped_refptr<storage::FileSystemContext>& file_system_context,
-      storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope,
-      const storage::FileSystemURL& file_system_url,
+      scoped_refptr<storage::FileSystemContext> file_system_context,
+      file_manager::util::FileSystemURLAndHandle isolated_file_system,
       const std::string& mime_type);
 
   void OnRedirectURLObtained(const GURL& redirect_url);
@@ -78,8 +78,7 @@ class ExternalFileResolver {
   StreamCallback stream_callback_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
-  storage::FileSystemURL file_system_url_;
+  file_manager::util::FileSystemURLAndHandle isolated_file_system_;
   std::string mime_type_;
   base::WeakPtrFactory<ExternalFileResolver> weak_ptr_factory_;
 

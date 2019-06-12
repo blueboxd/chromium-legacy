@@ -282,6 +282,8 @@ void AddStringsForAudioPlayer(base::DictionaryValue* dict) {
              IDS_AUDIO_PLAYER_REPEAT_BUTTON_LABEL);
   SET_STRING("AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL",
              IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL);
+  SET_STRING("AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL",
+             IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL);
 }
 
 void AddStringsForCloudImport(base::DictionaryValue* dict) {

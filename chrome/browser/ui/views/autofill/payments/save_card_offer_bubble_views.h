@@ -34,7 +34,7 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
                            SaveCardBubbleController* controller);
 
   // BubbleDialogDelegateView:
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   int GetDialogButtons() const override;

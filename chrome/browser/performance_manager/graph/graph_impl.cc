@@ -378,4 +378,24 @@ void GraphImpl::ReleaseSystemNode() {
   system_node_.reset();
 }
 
+template <>
+const std::vector<FrameNodeObserver*>& GraphImpl::GetObservers() const {
+  return frame_node_observers_;
+}
+
+template <>
+const std::vector<PageNodeObserver*>& GraphImpl::GetObservers() const {
+  return page_node_observers_;
+}
+
+template <>
+const std::vector<ProcessNodeObserver*>& GraphImpl::GetObservers() const {
+  return process_node_observers_;
+}
+
+template <>
+const std::vector<SystemNodeObserver*>& GraphImpl::GetObservers() const {
+  return system_node_observers_;
+}
+
 }  // namespace performance_manager

@@ -31,11 +31,9 @@ class LayerTreeViewDelegate {
   virtual void ApplyViewportChanges(
       const cc::ApplyViewportChangesArgs& args) = 0;
 
-  // Record use count of wheel/touch sources for scrolling on the compositor
-  // thread.
-  virtual void RecordWheelAndTouchScrollingCount(
-      bool has_scrolled_by_wheel,
-      bool has_scrolled_by_touch) = 0;
+  // Record use counts of different methods of scrolling (e.g. wheel, touch,
+  // precision touchpad, etc.).
+  virtual void RecordManipulationTypeCounts(cc::ManipulationInfo info) = 0;
 
   // Send overscroll DOM event when overscrolling has happened on the compositor
   // thread.

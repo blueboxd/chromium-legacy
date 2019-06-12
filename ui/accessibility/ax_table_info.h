@@ -91,8 +91,8 @@ class AX_EXPORT AXTableInfo {
 
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
-  base::Optional<size_t> aria_row_count = 0;
-  base::Optional<size_t> aria_col_count = 0;
+  base::Optional<int> aria_row_count = 0;
+  base::Optional<int> aria_col_count = 0;
 
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);

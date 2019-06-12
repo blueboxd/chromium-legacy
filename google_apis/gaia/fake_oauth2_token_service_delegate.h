@@ -24,32 +24,32 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   ~FakeOAuth2TokenServiceDelegate() override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // Overriden to make sure it works on Android.
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
 
   GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const override;
-  void UpdateAuthError(const std::string& account_id,
+      const CoreAccountId& account_id) const override;
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
   std::vector<std::string> GetAccounts() override;
   void RevokeAllCredentials() override;
-  void LoadCredentials(const std::string& primary_account_id) override;
-  void UpdateCredentials(const std::string& account_id,
+  void LoadCredentials(const CoreAccountId& primary_account_id) override;
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
-  void RevokeCredentials(const std::string& account_id) override;
+  void RevokeCredentials(const CoreAccountId& account_id) override;
   void ExtractCredentials(OAuth2TokenService* to_service,
-                          const std::string& account_id) override;
+                          const CoreAccountId& account_id) override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
   bool FixRequestErrorIfPossible() override;
 
-  std::string GetRefreshToken(const std::string& account_id) const;
+  std::string GetRefreshToken(const CoreAccountId& account_id) const;
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
@@ -69,11 +69,11 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
     GoogleServiceAuthError error;
   };
 
-  void IssueRefreshTokenForUser(const std::string& account_id,
+  void IssueRefreshTokenForUser(const CoreAccountId& account_id,
                                 const std::string& token);
 
   // Maps account ids to info.
-  std::map<std::string, std::unique_ptr<AccountInfo>> refresh_tokens_;
+  std::map<CoreAccountId, std::unique_ptr<AccountInfo>> refresh_tokens_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

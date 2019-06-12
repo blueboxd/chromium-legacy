@@ -262,19 +262,33 @@ class SignedExchangePrefetchBrowserTest
     EXPECT_EQ(1u, cached_exchanges.size());
     const auto it = cached_exchanges.find(sxg_url);
     ASSERT_TRUE(it != cached_exchanges.end());
-    EXPECT_EQ(sxg_url, it->second->outer_url());
-    EXPECT_EQ(inner_url, it->second->inner_url());
-    EXPECT_EQ(header_integrity, *it->second->header_integrity());
+    const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+        exchange = it->second;
+    EXPECT_EQ(sxg_url, exchange->outer_url());
+    EXPECT_EQ(inner_url, exchange->inner_url());
+    EXPECT_EQ(header_integrity, *exchange->header_integrity());
+    const int64_t headers_size_total =
+        exchange->outer_response()->headers->raw_headers().size() +
+        exchange->inner_response()->headers->raw_headers().size();
 
     // Shutdown the server.
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
+    base::HistogramTester histograms;
     // Subsequent navigation to the target URL wouldn't hit the network for
     // the target URL. The target content should still be read correctly.
     // The content is loaded from PrefetchedSignedExchangeCache.
     NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
 
     EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 1, 1);
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                 content.size(), 1);
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySizeTotal",
+                                 content.size(), 1);
+    histograms.ExpectBucketCount(
+        "PrefetchedSignedExchangeCache.HeadersSizeTotal", headers_size_total,
+        1);
   }
 
   void LoadPrefetchMainResourceSXGTestPage(
@@ -608,7 +622,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
                                          script_header_integrity),
            CreatePreloadLinkHeader(inner_url_script_url, "script")},
           ",");
-
+  const std::string page_sxg_content =
+      "<head><title>Prefetch Target (SXG)</title>"
+      "<script src=\"./script.js\"></script></head>";
+  const std::string script_sxg_content = "document.title=\"done\";";
   RegisterResponse(prefetch_page_path,
                    ResponseEntry(base::StringPrintf(
                        "<body><link rel='prefetch' href='%s'></body>",
@@ -619,11 +636,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
                     {{"cache-control", "public, max-age=600"}}));
   RegisterResponse(page_sxg_path,
                    CreateSignedExchangeResponseEntry(
-                       "<head><title>Prefetch Target (SXG)</title>"
-                       "<script src=\"./script.js\"></script></head>",
-                       {{"link", outer_link_header}}));
-  RegisterResponse(script_sxg_path, CreateSignedExchangeResponseEntry(
-                                        "document.title=\"done\";"));
+                       page_sxg_content, {{"link", outer_link_header}}));
+  RegisterResponse(script_sxg_path,
+                   CreateSignedExchangeResponseEntry(script_sxg_content));
   MockSignedExchangeHandlerFactory factory(
       {MockSignedExchangeHandlerParams(
            sxg_page_url, SignedExchangeLoadResult::kSuccess, net::OK,
@@ -658,24 +673,41 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   }
 
   const auto cached_exchanges = GetCachedExchanges(shell());
+  int64_t expected_body_size_total = 0u;
+  int64_t expected_headers_size_total = 0u;
+
   if (base::FeatureList::IsEnabled(
           features::kSignedExchangeSubresourcePrefetch)) {
     EXPECT_EQ(2u, cached_exchanges.size());
 
     const auto script_it = cached_exchanges.find(sxg_script_url);
     ASSERT_TRUE(script_it != cached_exchanges.end());
-    EXPECT_EQ(sxg_script_url, script_it->second->outer_url());
-    EXPECT_EQ(inner_url_script_url, script_it->second->inner_url());
-    EXPECT_EQ(script_header_integrity, *script_it->second->header_integrity());
+    const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+        script_exchange = script_it->second;
+    EXPECT_EQ(sxg_script_url, script_exchange->outer_url());
+    EXPECT_EQ(inner_url_script_url, script_exchange->inner_url());
+    EXPECT_EQ(script_header_integrity, *script_exchange->header_integrity());
+    expected_body_size_total += script_sxg_content.size();
+    expected_headers_size_total +=
+        script_exchange->outer_response()->headers->raw_headers().size() +
+        script_exchange->inner_response()->headers->raw_headers().size();
   } else {
     EXPECT_EQ(1u, cached_exchanges.size());
   }
 
-  const auto target_it = cached_exchanges.find(sxg_page_url);
-  ASSERT_TRUE(target_it != cached_exchanges.end());
-  EXPECT_EQ(sxg_page_url, target_it->second->outer_url());
-  EXPECT_EQ(inner_url_page_url, target_it->second->inner_url());
-  EXPECT_EQ(page_header_integrity, *target_it->second->header_integrity());
+  const auto page_it = cached_exchanges.find(sxg_page_url);
+  ASSERT_TRUE(page_it != cached_exchanges.end());
+  const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+      page_exchange = page_it->second;
+  EXPECT_EQ(sxg_page_url, page_exchange->outer_url());
+  EXPECT_EQ(inner_url_page_url, page_exchange->inner_url());
+  EXPECT_EQ(page_header_integrity, *page_exchange->header_integrity());
+  expected_body_size_total += page_sxg_content.size();
+  expected_headers_size_total +=
+      page_exchange->outer_response()->headers->raw_headers().size() +
+      page_exchange->inner_response()->headers->raw_headers().size();
+
+  base::HistogramTester histograms;
 
   if (base::FeatureList::IsEnabled(
           features::kSignedExchangeSubresourcePrefetch)) {
@@ -686,6 +718,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     NavigateToURLAndWaitTitle(sxg_page_url, "done");
     EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
     EXPECT_EQ(0, script_request_counter->GetRequestCount());
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 2, 1);
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                 page_sxg_content.size(), 1);
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                 script_sxg_content.size(), 1);
   } else {
     // Subsequent navigation to the target URL wouldn't hit the network for
     // the target URL. The target content should still be read correctly.
@@ -694,7 +731,14 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     NavigateToURLAndWaitTitle(sxg_page_url, "from server");
     EXPECT_EQ(0, script_sxg_request_counter->GetRequestCount());
     EXPECT_EQ(1, script_request_counter->GetRequestCount());
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 1, 1);
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                 page_sxg_content.size(), 1);
   }
+  histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySizeTotal",
+                               expected_body_size_total, 1);
+  histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.HeadersSizeTotal",
+                               expected_headers_size_total, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(SignedExchangePrefetchBrowserTest,

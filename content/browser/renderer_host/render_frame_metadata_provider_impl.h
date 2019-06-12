@@ -38,11 +38,11 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   void Bind(mojom::RenderFrameMetadataObserverClientRequest client_request,
             mojom::RenderFrameMetadataObserverPtr observer);
 
+  const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
+
   // Notifies the renderer to begin sending a notification on all frame
   // submissions.
-  void ReportAllFrameSubmissionsForTesting(bool enabled) override;
-
-  const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
+  void ReportAllFrameSubmissionsForTesting(bool enabled);
 
  private:
   friend class FakeRenderWidgetHostViewAura;

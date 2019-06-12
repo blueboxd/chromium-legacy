@@ -768,6 +768,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
                              Maybe<String> header_template,
                              Maybe<String> footer_template,
                              Maybe<bool> prefer_css_page_size,
+                             Maybe<String> transfer_mode,
                              std::unique_ptr<PrintToPDFCallback> callback) {
   callback->sendFailure(Response::Error("PrintToPDF is not implemented"));
   return;

@@ -526,8 +526,7 @@ void PreloadHelper::LoadLinksFromHeader(
         // undesirable alternative resource association that affects the next
         // navigation, but can only populate things in the cache that can be
         // used by the next navigation only when they requested the same URL
-        // with the same association mapping. TODO(crbug.com/935267): Implement
-        // this logic.
+        // with the same association mapping.
         params.rel = LinkRelAttribute("prefetch");
       }
     }

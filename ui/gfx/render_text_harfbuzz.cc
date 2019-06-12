@@ -348,7 +348,7 @@ class HarfBuzzLineBreaker {
       segment.char_range = run.range;
       segment.x_range = RangeF(SkScalarToFloat(text_x_),
                                SkScalarToFloat(text_x_) + run.shape.width);
-      AddLineSegment(segment);
+      AddLineSegment(segment, false);
     }
   }
 
@@ -451,7 +451,7 @@ class HarfBuzzLineBreaker {
       if (IsNewlineSegment(text_, segment) ||
           segment.width() <= available_width_ ||
           word_wrap_behavior_ == IGNORE_LONG_WORDS) {
-        AddLineSegment(segment);
+        AddLineSegment(segment, true);
       } else {
         DCHECK(word_wrap_behavior_ == TRUNCATE_LONG_WORDS ||
                word_wrap_behavior_ == WRAP_LONG_WORDS);
@@ -470,7 +470,7 @@ class HarfBuzzLineBreaker {
                 Range(remaining_segment.char_range.start(), cutoff_pos);
             cut_segment.x_range = RangeF(SkScalarToFloat(text_x_),
                                          SkScalarToFloat(text_x_ + width));
-            AddLineSegment(cut_segment);
+            AddLineSegment(cut_segment, true);
             // Updates old segment range.
             remaining_segment.char_range.set_start(cutoff_pos);
             remaining_segment.x_range.set_start(SkScalarToFloat(text_x_));
@@ -487,7 +487,7 @@ class HarfBuzzLineBreaker {
   // Add a line segment to the current line. Note that, in order to keep the
   // visual order correct for ltr and rtl language, we need to merge segments
   // that belong to the same run.
-  void AddLineSegment(const internal::LineSegment& segment) {
+  void AddLineSegment(const internal::LineSegment& segment, bool multiline) {
     DCHECK(!lines_.empty());
     internal::Line* line = &lines_.back();
     const internal::TextRunHarfBuzz& run = *(run_list_.runs()[segment.run]);
@@ -515,19 +515,22 @@ class HarfBuzzLineBreaker {
     line->segments.push_back(segment);
     line->size.set_width(line->size.width() + segment.width());
 
-    SkFont font(run.font_params.skia_face, run.font_params.font_size);
-    font.setEdging(run.font_params.render_params.antialiasing
-                       ? SkFont::Edging::kAntiAlias
-                       : SkFont::Edging::kAlias);
-    SkFontMetrics metrics;
-    font.getMetrics(&metrics);
+    // Newline characters are not drawn for multi-line, ignore their metrics.
+    if (!multiline || !IsNewlineSegment(text_, segment)) {
+      SkFont font(run.font_params.skia_face, run.font_params.font_size);
+      font.setEdging(run.font_params.render_params.antialiasing
+                         ? SkFont::Edging::kAntiAlias
+                         : SkFont::Edging::kAlias);
+      SkFontMetrics metrics;
+      font.getMetrics(&metrics);
 
-    // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down
-    max_descent_ = std::max(max_descent_,
-                            metrics.fDescent + run.font_params.baseline_offset);
-    // max_ascent_ is y-up, fAscent is y-down, baseline_offset is y-down
-    max_ascent_ = std::max(
-        max_ascent_, -(metrics.fAscent + run.font_params.baseline_offset));
+      // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down
+      max_descent_ = std::max(
+          max_descent_, metrics.fDescent + run.font_params.baseline_offset);
+      // max_ascent_ is y-up, fAscent is y-down, baseline_offset is y-down
+      max_ascent_ = std::max(
+          max_ascent_, -(metrics.fAscent + run.font_params.baseline_offset));
+    }
 
     if (run.font_params.is_rtl) {
       rtl_segments_.push_back(
@@ -1700,13 +1703,14 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
   ApplyCompositionAndSelectionStyles();
 
   internal::TextRunList* run_list = GetRunList();
+  const base::string16& display_text = GetDisplayText();
   for (size_t i = 0; i < lines().size(); ++i) {
     const internal::Line& line = lines()[i];
     const Vector2d origin = GetLineOffset(i) + Vector2d(0, line.baseline);
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
       // Don't draw the newline glyph (crbug.com/680430).
-      if (IsNewlineSegment(segment))
+      if (IsNewlineSegment(display_text, segment))
         continue;
 
       const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];

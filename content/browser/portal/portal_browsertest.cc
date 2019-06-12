@@ -584,6 +584,45 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
   input_event_ack_waiter.Wait();
 }
 
+// Tests that the outer FrameTreeNode is deleted after activation.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FrameDeletedAfterActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet; wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
+      portal_contents->GetOuterDelegateFrameTreeNodeId());
+  EXPECT_TRUE(outer_frame_tree_node);
+
+  EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
+                     "window.onportalactivate = e => "
+                     "document.body.appendChild(e.adoptPredecessor());"));
+
+  FrameDeletedObserver observer(outer_frame_tree_node->current_frame_host());
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
+  observer.Wait();
+}
+
 class PortalOOPIFBrowserTest : public PortalBrowserTest {
  protected:
   PortalOOPIFBrowserTest() {}

@@ -274,7 +274,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
                 ? std::make_unique<BorderedScrollView>()
                 : std::make_unique<views::ScrollView>();
   scroll_->set_owned_by_client();
-  scroll_->set_hide_horizontal_scrollbar(true);
+  scroll_->SetHideHorizontalScrollBar(true);
   scroll_->SetContents(std::move(pane));
   layout->AddView(scroll_.get());
 

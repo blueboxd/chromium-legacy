@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 
 namespace chromeos {
 
@@ -305,7 +306,9 @@ void FakePowerManagerClient::CreateArcTimers(
   std::vector<TimerId> timer_ids;
   for (auto& request : arc_timer_requests) {
     // Insert is safe as |next_timer_id_| is always incremented.
-    timer_expiration_fds_[next_timer_id_] = std::move(request.second);
+    arc_timers_.emplace(
+        next_timer_id_,
+        std::make_pair(new base::OneShotTimer(), std::move(request.second)));
     timer_ids.emplace_back(next_timer_id_);
     next_timer_id_++;
   }
@@ -321,8 +324,14 @@ void FakePowerManagerClient::StartArcTimer(
     TimerId timer_id,
     base::TimeTicks absolute_expiration_time,
     VoidDBusMethodCallback callback) {
-  auto it = timer_expiration_fds_.find(timer_id);
-  if (it == timer_expiration_fds_.end()) {
+  if (simulate_start_arc_timer_failure_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  auto it = arc_timers_.find(timer_id);
+  if (it == arc_timers_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
@@ -339,9 +348,10 @@ void FakePowerManagerClient::StartArcTimer(
   base::TimeDelta task_delay;
   if (absolute_expiration_time > current_ticks)
     task_delay = absolute_expiration_time - current_ticks;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&ArcTimerExpirationCallback, it->second.get()),
-      task_delay);
+  auto& timer = it->second.first;
+  int expiration_fd = it->second.second.get();
+  timer->Start(FROM_HERE, task_delay,
+               base::BindOnce(&ArcTimerExpirationCallback, expiration_fd));
 }
 
 void FakePowerManagerClient::DeleteArcTimers(const std::string& tag,
@@ -453,7 +463,7 @@ void FakePowerManagerClient::DeleteArcTimersInternal(const std::string& tag) {
     return;
 
   for (auto timer_id : it->second)
-    timer_expiration_fds_.erase(timer_id);
+    arc_timers_.erase(timer_id);
 
   client_timer_ids_.erase(it);
 }

@@ -1914,16 +1914,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_unittests"
       },
@@ -1944,16 +1937,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "browser_tests"
       },
@@ -1971,16 +1957,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_tests"
       },
@@ -1997,16 +1976,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_unittests"
       }
@@ -2033,17 +2005,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2067,17 +2032,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2101,17 +2059,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2135,17 +2086,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2173,17 +2117,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2214,17 +2151,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2263,17 +2193,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2298,17 +2221,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2332,17 +2248,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2366,17 +2275,10 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          },
           "shards": 2
         }
       }

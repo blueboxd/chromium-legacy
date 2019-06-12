@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -202,7 +202,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Returns the object id of the given policy object.
   const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Objects the invalidator depends on.
   invalidation::FakeInvalidationService invalidation_service_;
@@ -234,7 +234,7 @@ CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase(
       core_(dm_protocol::kChromeUserPolicyType,
             std::string(),
             &store_,
-            loop_.task_runner(),
+            scoped_task_environment_.GetMainThreadTaskRunner(),
             network::TestNetworkConnectionTracker::CreateGetter()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),

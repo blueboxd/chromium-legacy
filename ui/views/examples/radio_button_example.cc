@@ -35,21 +35,21 @@ void RadioButtonExample::CreateExampleView(View* container) {
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1.0f, GridLayout::USE_PREF, 0, 0);
-
+  const int group = 1;
   for (size_t i = 0; i < 3; ++i) {
     layout->StartRow(0, 0);
-    radio_buttons_.push_back(new RadioButton(
-        base::ASCIIToUTF16("Radio ") + base::NumberToString16(i), 1));
-    layout->AddView(radio_buttons_.back());
+    radio_buttons_.push_back(layout->AddView(std::make_unique<RadioButton>(
+        base::UTF8ToUTF16(base::StringPrintf("Radio %d in group %d",
+                                             static_cast<int>(i) + 1, group)),
+        group)));
   }
 
   layout->StartRow(0, 0);
-  select_ = new LabelButton(this, base::ASCIIToUTF16("Select"));
-  layout->AddView(select_);
-
+  select_ = layout->AddView(
+      std::make_unique<LabelButton>(this, base::ASCIIToUTF16("Select")));
   layout->StartRow(0, 0);
-  status_ = new LabelButton(this, base::ASCIIToUTF16("Show Status"));
-  layout->AddView(status_);
+  status_ = layout->AddView(
+      std::make_unique<LabelButton>(this, base::ASCIIToUTF16("Show Status")));
 }
 
 void RadioButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {

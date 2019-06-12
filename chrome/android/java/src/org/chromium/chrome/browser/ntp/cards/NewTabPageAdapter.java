@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -55,6 +59,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private final RemoteSuggestionsStatusObserver mRemoteSuggestionsStatusObserver;
 
+    // Used to track if the NTP has loaded or not. This assumes that there's only one
+    // NewTabPageAdapter per NTP. This does not fully tear down even when the main activity is
+    // destroyed. This is actually convenient in mimicking the current behavior of
+    // FeedProcessScopeFactory which comparing to is motivation behind experimenting with this
+    // delay.
+    private static boolean sHasLoadedBefore;
+
     /**
      * Creates the adapter that will manage all the cards to display on the NTP.
      * @param uiDelegate used to interact with the rest of the system.
@@ -77,10 +88,25 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
 
         if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
-        mRoot.addChildren(mSections);
-
         mFooter = new Footer();
-        mRoot.addChildren(mFooter);
+
+        int sectionDelay = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                "artificial_legacy_ntp_delay_ms", 0);
+        Runnable addSectionAndFooter = () -> {
+            mRoot.addChildren(mSections);
+            mRoot.addChildren(mFooter);
+        };
+        if (sectionDelay <= 0 || sHasLoadedBefore) {
+            addSectionAndFooter.run();
+            RecordHistogram.recordBooleanHistogram(
+                    "NewTabPage.ContentSuggestions.ArtificialDelay", false);
+        } else {
+            PostTask.postDelayedTask(TaskTraits.USER_BLOCKING, addSectionAndFooter, sectionDelay);
+            RecordHistogram.recordBooleanHistogram(
+                    "NewTabPage.ContentSuggestions.ArtificialDelay", true);
+        }
+        sHasLoadedBefore = true;
 
         mOfflinePageBridge = offlinePageBridge;
 
@@ -294,6 +320,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     @VisibleForTesting
     SuggestionsSource.Observer getSuggestionsSourceObserverForTesting() {
         return mRemoteSuggestionsStatusObserver;
+    }
+
+    @VisibleForTesting
+    static void setHasLoadedBeforeForTest(boolean value) {
+        sHasLoadedBefore = value;
     }
 
     private class RemoteSuggestionsStatusObserver

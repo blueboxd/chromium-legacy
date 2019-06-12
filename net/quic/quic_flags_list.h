@@ -358,3 +358,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_check_connected_before_flush,
           false)
+
+// When true, QuicConnectionId will allocate long connection IDs on the heap
+// instead of inline in the object.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_use_allocated_connection_ids,
+          false)

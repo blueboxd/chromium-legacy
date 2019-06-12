@@ -79,17 +79,6 @@ struct HasContains<Container,
                    void_t<decltype(std::declval<const Container&>().contains(
                        std::declval<const Element&>()))>> : std::true_type {};
 
-// Utility type trait to detect whether a given container type has a nested
-// mapped_type typedef. Used below to disable ContainsValue() for map like
-// types.
-// TOOD(crbug.com/970209): Remove once ContainsValue() is no longer used.
-template <typename Container, typename = void>
-struct HasMappedType : std::false_type {};
-
-template <typename Container>
-struct HasMappedType<Container, void_t<typename Container::mapped_type>>
-    : std::true_type {};
-
 }  // namespace internal
 
 // C++14 implementation of C++17's std::size():
@@ -228,32 +217,6 @@ template <
     std::enable_if_t<internal::HasContains<Container, Value>::value>* = nullptr>
 bool Contains(const Container& container, const Value& value) {
   return container.contains(value);
-}
-
-// Test to see if a set or map contains a particular key.
-// Returns true if the key is in the collection.
-// TODO(crbug.com/970209): Replace usages of ContainsKey() with Contains() and
-// remove this method.
-template <typename Collection, typename Key>
-bool ContainsKey(const Collection& collection, const Key& key) {
-  return Contains(collection, key);
-}
-
-// Test to see if a collection like a vector contains a particular value.
-// Returns true if the value is in the collection.
-//
-// Note: This method is disabled for std::map-like types to avoid confusion.
-// Since ContainsValue() would invoke std::map::find() through Contains(),
-// usages of keys would be reported, not values.
-//
-// TODO(crbug.com/970209): Replace usages of ContainsValue() with Contains() and
-// remove this method.
-template <
-    typename Collection,
-    typename Value,
-    std::enable_if_t<!internal::HasMappedType<Collection>::value>* = nullptr>
-bool ContainsValue(const Collection& collection, const Value& value) {
-  return Contains(collection, value);
 }
 
 // O(1) implementation of const casting an iterator for any sequence,

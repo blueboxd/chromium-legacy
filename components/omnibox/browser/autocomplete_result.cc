@@ -103,12 +103,13 @@ void AutocompleteResult::CopyOldMatches(
   // expire the old suggestion, and restore tail suggestions.  This would be
   // visually unappealing, and could occur on each keystroke.
   ProviderToMatches matches_per_provider, old_matches_per_provider;
-  BuildProviderToMatches(&matches_per_provider);
-  old_matches->BuildProviderToMatches(&old_matches_per_provider);
-  for (ProviderToMatches::const_iterator i(old_matches_per_provider.begin());
+  BuildProviderToMatchesCopy(&matches_per_provider);
+  // |old_matches| is going away soon, so we can move out the matches.
+  old_matches->BuildProviderToMatchesMove(&old_matches_per_provider);
+  for (ProviderToMatches::iterator i = old_matches_per_provider.begin();
        i != old_matches_per_provider.end(); ++i) {
-    MergeMatchesByProvider(input.current_page_classification(),
-                           i->second, matches_per_provider[i->first]);
+    MergeMatchesByProvider(input.current_page_classification(), &i->second,
+                           matches_per_provider[i->first]);
   }
 
   SortAndCull(input, template_url_service);
@@ -689,17 +690,23 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   }
 }
 
-void AutocompleteResult::BuildProviderToMatches(
+void AutocompleteResult::BuildProviderToMatchesCopy(
     ProviderToMatches* provider_to_matches) const {
-  for (auto i(begin()); i != end(); ++i)
-    (*provider_to_matches)[i->provider].push_back(*i);
+  for (const auto& match : *this)
+    (*provider_to_matches)[match.provider].push_back(match);
+}
+
+void AutocompleteResult::BuildProviderToMatchesMove(
+    ProviderToMatches* provider_to_matches) {
+  for (auto& match : *this)
+    (*provider_to_matches)[match.provider].push_back(std::move(match));
 }
 
 void AutocompleteResult::MergeMatchesByProvider(
     metrics::OmniboxEventProto::PageClassification page_classification,
-    const ACMatches& old_matches,
+    ACMatches* old_matches,
     const ACMatches& new_matches) {
-  if (new_matches.size() >= old_matches.size())
+  if (new_matches.size() >= old_matches->size())
     return;
 
   // Prevent old matches from this provider from outranking new ones and
@@ -724,14 +731,14 @@ void AutocompleteResult::MergeMatchesByProvider(
   // synchronous matches (which tend to have the highest scores) will
   // "overwrite" the initial matches from that provider's previous results,
   // minimally disturbing the rest of the matches.
-  size_t delta = old_matches.size() - new_matches.size();
-  for (auto i(old_matches.rbegin()); i != old_matches.rend() && delta > 0;
+  size_t delta = old_matches->size() - new_matches.size();
+  for (auto i = old_matches->rbegin(); i != old_matches->rend() && delta > 0;
        ++i) {
     if (!HasMatchByDestination(*i, new_matches)) {
-      AutocompleteMatch match = *i;
-      match.relevance = std::min(max_relevance, match.relevance);
-      match.from_previous = true;
-      matches_.push_back(std::move(match));
+      matches_.push_back(std::move(*i));
+      matches_.back().relevance =
+          std::min(max_relevance, matches_.back().relevance);
+      matches_.back().from_previous = true;
       delta--;
     }
   }

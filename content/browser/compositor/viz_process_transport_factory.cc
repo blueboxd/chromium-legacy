@@ -35,7 +35,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/reflector.h"
 
@@ -50,7 +50,7 @@ namespace {
 // child process client id.
 constexpr uint32_t kBrowserClientId = 0u;
 
-scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
+scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProviderImpl(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool support_locking,
@@ -58,7 +58,7 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
     bool support_raster_interface,
     bool support_grcontext,
     bool support_oop_rasterization,
-    ws::command_buffer_metrics::ContextType type) {
+    viz::command_buffer_metrics::ContextType type) {
   constexpr bool kAutomaticFlushes = false;
 
   gpu::ContextCreationAttribs attributes;
@@ -78,7 +78,7 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
       gpu::SharedMemoryLimits::ForDisplayCompositor();
 
   GURL url("chrome://gpu/VizProcessTransportFactory::CreateContextProvider");
-  return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+  return base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       std::move(url), kAutomaticFlushes, support_locking, support_grcontext,
@@ -450,7 +450,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
         kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
         kSharedWorkerContextSupportsRaster,
         kSharedWorkerContextSupportsGrContext, kSharedWorkerContextSupportsOOPR,
-        ws::command_buffer_metrics::ContextType::BROWSER_WORKER);
+        viz::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_| here, that is
     // already observered by LayerTreeFrameSink. The lost context will be caught
@@ -479,7 +479,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
         kCompositorContextSupportsRaster, kCompositorContextSupportsGrContext,
         kCompositorContextSupportsOOPR,
-        ws::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
+        viz::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
     main_context_provider_->SetDefaultTaskRunner(
         context_factory_private_.resize_task_runner());
 

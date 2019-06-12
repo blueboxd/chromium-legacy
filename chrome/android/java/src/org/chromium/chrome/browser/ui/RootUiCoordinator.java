@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinatorFactory;
@@ -23,11 +24,12 @@ import org.chromium.ui.base.DeviceFormFactor;
  * The specific things this component will manage and how it will hook into Chrome*Activity are
  * still being discussed See https://crbug.com/931496.
  */
-public class RootUiCoordinator implements Destroyable, InflationObserver,
-                                          ChromeActivity.MenuOrKeyboardActionHandler,
-                                          AppMenuBlocker {
+public class RootUiCoordinator
+        implements Destroyable, InflationObserver,
+                   MenuOrKeyboardActionController.MenuOrKeyboardActionHandler, AppMenuBlocker {
     protected ChromeActivity mActivity;
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
+    private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -37,12 +39,13 @@ public class RootUiCoordinator implements Destroyable, InflationObserver,
     public RootUiCoordinator(ChromeActivity activity) {
         mActivity = activity;
         mActivity.getLifecycleDispatcher().register(this);
-        mActivity.registerMenuOrKeyboardActionHandler(this);
+        mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
+        mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
     }
 
     @Override
     public void destroy() {
-        mActivity.unregisterMenuOrKeyboardActionHandler(this);
+        mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(this);
         mActivity = null;
         if (mAppMenuCoordinator != null) {
             mAppMenuCoordinator.unregisterAppMenuBlocker(this);

@@ -46,13 +46,12 @@ Polymer({
     /**
      * The GUID when an existing network is being configured. This will be
      * empty when configuring a new network.
-     * @private
      */
     guid: String,
 
     /**
      * The type of network being configured.
-     * @private {!chrome.networkingPrivate.NetworkType}
+     * @type {!chrome.networkingPrivate.NetworkType}
      */
     type: String,
 
@@ -62,14 +61,12 @@ Polymer({
     /** The default shared state. */
     shareDefault: Boolean,
 
-    /** @private */
     enableConnect: {
       type: Boolean,
       notify: true,
       value: false,
     },
 
-    /** @private */
     enableSave: {
       type: Boolean,
       notify: true,
@@ -86,7 +83,7 @@ Polymer({
      * The managed properties of an existing network.
      * This is used for determination of managed fields.
      * This will be undefined when configuring a new network.
-     * @private {!chrome.networkingPrivate.ManagedProperties|undefined}
+     * @type {!chrome.networkingPrivate.ManagedProperties|undefined}
      */
     managedProperties: {
       type: Object,
@@ -102,8 +99,17 @@ Polymer({
       value: null,
     },
 
-    /** Set if |guid| is not empty once managedProperties are received. */
-    propertiesReceived_: Boolean,
+    /**
+     * Whether this element is waiting for additional properties of the network
+     * to configure. If a network GUID is supplied, an asynchronous request is
+     * required to fetch these properties; otherwise, there is no need to wait
+     * for more properties to arrive.
+     * @private
+     */
+    waitingForProperties_: {
+      type: Boolean,
+      value: true,
+    },
 
     /** Set once managedProperties have been sent; prevents multiple saves. */
     propertiesSent_: Boolean,
@@ -326,7 +332,7 @@ Polymer({
 
   observers: [
     'setEnableConnect_(isConfigured_, propertiesSent_)',
-    'setEnableSave_(isConfigured_, propertiesReceived_)',
+    'setEnableSave_(isConfigured_, waitingForProperties_)',
     'updateConfigProperties_(managedProperties)',
     'updateSecurity_(configProperties_, security_)',
     'updateEapOuter_(eapProperties_.Outer)',
@@ -375,17 +381,17 @@ Polymer({
     this.selectedUserCertHash_ = undefined;
     this.guid = this.managedProperties.GUID;
     this.type = this.managedProperties.Type;
+    this.waitingForProperties_ = !!this.guid;
+
     if (this.guid) {
       this.networkingPrivate.getManagedProperties(
           this.guid, (managedProperties) => {
             this.getManagedPropertiesCallback_(managedProperties);
-            this.focusFirstInput_();
           });
     } else {
-      this.async(() => {
-        this.focusFirstInput_();
-      });
+      this.focusFirstInput_();
     }
+
     if (this.type == CrOnc.Type.VPN ||
         (this.globalPolicy &&
          this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
@@ -393,6 +399,7 @@ Polymer({
     } else {
       this.autoConnect_ = true;
     }
+
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
@@ -587,11 +594,13 @@ Polymer({
    * @private
    */
   setManagedProperties_: function(managedProperties) {
-    this.propertiesReceived_ = true;
     this.managedProperties = managedProperties;
     this.managedEapProperties_ = this.getManagedEap_(managedProperties);
     this.setError_(managedProperties.ErrorState);
     this.updateCertError_();
+
+    this.waitingForProperties_ = false;
+    this.focusFirstInput_();
 
     // Set the current shareNetwork_ value when properties are received.
     this.setShareNetwork_();
@@ -1230,7 +1239,7 @@ Polymer({
 
   /** @private */
   setEnableSave_: function() {
-    this.enableSave = this.isConfigured_ && this.propertiesReceived_;
+    this.enableSave = this.isConfigured_ && !this.waitingForProperties_;
   },
 
   /** @private */

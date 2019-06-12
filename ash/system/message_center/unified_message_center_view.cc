@@ -326,7 +326,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       std::make_unique<ScrollerContentsView>(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->SetVerticalScrollBar(scroll_bar_);
-  scroller_->set_draw_overflow_indicator(false);
+  scroller_->SetDrawOverflowIndicator(false);
   AddChildView(scroller_);
 }
 

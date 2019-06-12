@@ -119,39 +119,34 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
   } ErrorTableEntry;
 
   ErrorTableEntry table[] = {
-    { GoogleServiceAuthError::NONE, false },
-    { GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true },
-    { GoogleServiceAuthError::USER_NOT_SIGNED_UP, true },
-    { GoogleServiceAuthError::CONNECTION_FAILED, false },
-    { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
-    { GoogleServiceAuthError::ACCOUNT_DELETED, true },
-    { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, false },
-    { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, false },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
-    { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
-    { GoogleServiceAuthError::SERVICE_ERROR, true },
-    { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
+      {GoogleServiceAuthError::NONE, false},
+      {GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true},
+      {GoogleServiceAuthError::USER_NOT_SIGNED_UP, true},
+      {GoogleServiceAuthError::CONNECTION_FAILED, false},
+      {GoogleServiceAuthError::ACCOUNT_DELETED, true},
+      {GoogleServiceAuthError::ACCOUNT_DISABLED, true},
+      {GoogleServiceAuthError::SERVICE_UNAVAILABLE, false},
+      {GoogleServiceAuthError::REQUEST_CANCELED, false},
+      {GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true},
+      {GoogleServiceAuthError::SERVICE_ERROR, true},
   };
-  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
-                "table size should match number of auth error types");
+  static_assert(
+      base::size(table) == GoogleServiceAuthError::NUM_STATES -
+                               GoogleServiceAuthError::kDeprecatedStateCount,
+      "table size should match number of auth error types");
 
   // Mark the profile with an active timestamp so profile_metrics logs it.
   testing_profile_manager()->UpdateLastUser(profile());
 
-  for (size_t i = 0; i < base::size(table); ++i) {
-    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
-      continue;
+  for (ErrorTableEntry entry : table) {
     SetAuthError(GoogleServiceAuthError::NONE);
 
     base::HistogramTester histogram_tester;
-    SetAuthError(table[i].error_state);
+    SetAuthError(entry.error_state);
 
-    EXPECT_EQ(global_error()->HasMenuItem(), table[i].is_error);
-    EXPECT_EQ(global_error()->MenuItemLabel().empty(), !table[i].is_error);
-    EXPECT_EQ(global_error()->GetBubbleViewMessages().empty(),
-              !table[i].is_error);
+    EXPECT_EQ(global_error()->HasMenuItem(), entry.is_error);
+    EXPECT_EQ(global_error()->MenuItemLabel().empty(), !entry.is_error);
+    EXPECT_EQ(global_error()->GetBubbleViewMessages().empty(), !entry.is_error);
     EXPECT_FALSE(global_error()->GetBubbleViewTitle().empty());
     EXPECT_FALSE(global_error()->GetBubbleViewAcceptButtonLabel().empty());
     EXPECT_TRUE(global_error()->GetBubbleViewCancelButtonLabel().empty());
@@ -159,9 +154,11 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     ProfileMetrics::LogNumberOfProfiles(
         testing_profile_manager()->profile_manager());
 
-    if (table[i].is_error)
-      histogram_tester.ExpectBucketCount("Signin.AuthError", i, 1);
-    histogram_tester.ExpectBucketCount(
-        "Profile.NumberOfProfilesWithAuthErrors", table[i].is_error, 1);
+    if (entry.is_error) {
+      histogram_tester.ExpectBucketCount("Signin.AuthError", entry.error_state,
+                                         1);
+    }
+    histogram_tester.ExpectBucketCount("Profile.NumberOfProfilesWithAuthErrors",
+                                       entry.is_error, 1);
   }
 }

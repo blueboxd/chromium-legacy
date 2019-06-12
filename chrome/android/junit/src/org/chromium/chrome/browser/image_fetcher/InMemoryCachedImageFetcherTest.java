@@ -30,7 +30,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.BitmapCache;
+import org.chromium.chrome.browser.util.BitmapCache;
 
 /**
  * Unit tests for InMemoryCachedImageFetcher.

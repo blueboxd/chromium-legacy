@@ -99,6 +99,11 @@ void SendTabToSelfBubbleViewImpl::Show(DisplayReason reason) {
       ->SetVisible(true);
 }
 
+const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&
+SendTabToSelfBubbleViewImpl::GetDeviceButtonsForTest() {
+  return device_buttons_;
+}
+
 void SendTabToSelfBubbleViewImpl::Init() {
   auto* provider = ChromeLayoutProvider::Get();
   set_margins(

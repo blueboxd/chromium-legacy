@@ -223,14 +223,6 @@ const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Desktop PWAs capturing links.
-const base::Feature kDesktopPWAsLinkCapturing{
-    "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Determines whether in scope requests are always opened in the same window.
-const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
@@ -437,6 +429,11 @@ const base::Feature kManagedGuestSessionNotification{
     "ManagedGuestSessionNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID)
+const base::Feature kOnConnectNative{"OnConnectNative",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables modal permission prompts.
 // TODO(https://crbug.com/935900): Remove this.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
@@ -626,7 +623,7 @@ const base::Feature kSysInternals{"SysInternals",
 
 // Enables or disables the System Web App manager.
 const base::Feature kSystemWebApps{"SystemWebApps",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",

@@ -347,11 +347,6 @@ const char kPasswordGenerationName[] = "Password generation suggestion";
 const char kPasswordGenerationDescription[] =
     "Add 'Suggest Password' in suggestion list for form completion.";
 
-const char kPhysicalWeb[] = "Physical Web";
-const char kPhysicalWebDescription[] =
-    "When enabled, the omnibox will include suggestions for web pages "
-    "broadcast by devices near you.";
-
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";

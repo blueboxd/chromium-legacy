@@ -1148,6 +1148,42 @@ TEST_F(RenderTextTest, MultilineElideRTL) {
   EXPECT_EQ(render_text->GetNumLines(), 1U);
 }
 
+TEST_F(RenderTextTest, MultilineElideBiDi) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("אa\nbcdבגדהefg\nhו"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(2);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(30, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            UTF8ToUTF16("אa\nbcdבג") + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 2U);
+}
+
+TEST_F(RenderTextTest, MultilineElideLinebreak) {
+  RenderText* render_text = GetRenderText();
+  SetGlyphWidth(5);
+
+  base::string16 input_text(UTF8ToUTF16("hello\nworld"));
+  render_text->SetText(input_text);
+  render_text->SetCursorEnabled(false);
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(1);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetDisplayRect(Rect(100, 0));
+  render_text->GetStringSize();
+
+  EXPECT_EQ(render_text->GetDisplayText(),
+            input_text.substr(0, 5) + base::string16(kEllipsisUTF16));
+  EXPECT_EQ(render_text->GetNumLines(), 1U);
+}
+
 TEST_F(RenderTextTest, ElidedStyledTextRtl) {
   static const char* kInputTexts[] = {
       "http://ar.wikipedia.com/فحص",
@@ -2958,6 +2994,10 @@ TEST_F(RenderTextTest, StringSizeMultiline) {
       25, render_text->GetLineSize(SelectionModel(6, CURSOR_FORWARD)).width());
   // |GetStringSize()| of multi-line text does not include newline character.
   EXPECT_EQ(25, render_text->GetStringSize().width());
+  // Expect height to be 2 times the font height. This assumes simple strings
+  // that do not have special metrics.
+  int font_height = render_text->font_list().GetHeight();
+  EXPECT_EQ(font_height * 2, render_text->GetStringSize().height());
 }
 
 TEST_F(RenderTextTest, MinLineHeight) {

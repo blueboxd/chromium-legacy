@@ -93,6 +93,8 @@
              android:title="@string/menu_close_all_tabs" />
          <item android:id="@+id/close_all_incognito_tabs_menu_id"
              android:title="@string/menu_close_all_incognito_tabs" />
+         <item android:id="@+id/menu_group_tabs"
+             android:title="@string/menu_group_tabs" />
          <item android:id="@id/preferences_id"
              android:title="@string/menu_preferences" />
     </group>

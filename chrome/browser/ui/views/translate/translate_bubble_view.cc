@@ -219,6 +219,7 @@ void TranslateBubbleView::Init() {
 
   should_always_translate_ = model_->ShouldAlwaysTranslate();
   // Create different view based on user selection in
+  // kUseButtonTranslateBubbleUI.
   if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB) {
     before_translate_view_ = CreateViewBeforeTranslate();
     translating_view_ = CreateViewTranslating();
@@ -309,7 +310,7 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
     }
     // TODO(crbug.com/963148): implement handler to take care of RESET action.
     case BUTTON_ID_RESET: {
-      GetWidget()->Close();
+      ResetLanguage();
       break;
     }
   }
@@ -325,6 +326,31 @@ bool TranslateBubbleView::ShouldShowCloseButton() const {
 
 bool TranslateBubbleView::ShouldShowWindowTitle() const {
   return bubble_ui_model_ != language::TranslateUIBubbleModel::TAB;
+}
+
+void TranslateBubbleView::ResetLanguage() {
+  if (model_->GetViewState() ==
+      TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE) {
+    if (source_language_combobox_->GetSelectedIndex() ==
+        previous_source_language_index_ + 1) {
+      return;
+    }
+    source_language_combobox_->SetSelectedIndex(
+        previous_source_language_index_ + 1);
+    model_->UpdateOriginalLanguageIndex(
+        source_language_combobox_->GetSelectedIndex() - 1);
+    UpdateAdvancedView();
+  } else {
+    if (target_language_combobox_->GetSelectedIndex() ==
+        previous_target_language_index_) {
+      return;
+    }
+    target_language_combobox_->SetSelectedIndex(
+        previous_target_language_index_);
+    model_->UpdateTargetLanguageIndex(
+        target_language_combobox_->GetSelectedIndex());
+    UpdateAdvancedView();
+  }
 }
 
 void TranslateBubbleView::WindowClosing() {
@@ -643,8 +669,18 @@ void TranslateBubbleView::ConfirmAdvancedOptions() {
       SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
       SizeToContents();
     } else {
-      model_->Translate();
+      RemoveChildView(before_translate_view_);
+      RemoveChildView(translating_view_);
+      RemoveChildView(after_translate_view_);
+      tab_translate_view_ = CreateViewTab();
+      before_translate_view_ = tab_translate_view_;
+      translating_view_ = tab_translate_view_;
+      after_translate_view_ = tab_translate_view_;
+      AddChildView(before_translate_view_);
+      AddChildView(translating_view_);
+      AddChildView(after_translate_view_);
       SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
+      tabbed_pane_->SelectTabAt(1);
     }
   }
   translate::ReportUiAction(translate::DONE_BUTTON_CLICKED);
@@ -668,6 +704,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
       if (model_->GetOriginalLanguageIndex() ==
           // Selected Index is increased by 1 because we added "Unknown".
           source_language_combobox_->GetSelectedIndex() - 1) {
+        UpdateAdvancedView();
         break;
       }
       model_->UpdateOriginalLanguageIndex(
@@ -679,6 +716,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
     case COMBOBOX_ID_TARGET_LANGUAGE: {
       if (model_->GetTargetLanguageIndex() ==
           target_language_combobox_->GetSelectedIndex()) {
+        UpdateAdvancedView();
         break;
       }
       model_->UpdateTargetLanguageIndex(
@@ -792,8 +830,10 @@ views::View* TranslateBubbleView::CreateEmptyPane() {
 views::View* TranslateBubbleView::CreateViewTab() {
   base::string16 original_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
+  previous_source_language_index_ = model_->GetOriginalLanguageIndex();
   base::string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
+  previous_target_language_index_ = model_->GetTargetLanguageIndex();
   if (original_language_name.empty()) {
     original_language_name =
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE);
@@ -818,7 +858,7 @@ views::View* TranslateBubbleView::CreateViewTab() {
   // when we release ownership of the unique_ptr.
   // TODO(crbug.com/963148): Initial auto translate doesn't trigger tabbed pane
   // to highlight the correct pane.
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
+  tabbed_pane_ = new views::TabbedPane();
 
   // Three dots options menu button
   const SkColor option_icon_color = gfx::kChromeIconGrey;
@@ -879,14 +919,14 @@ views::View* TranslateBubbleView::CreateViewTab() {
 
   layout->StartRow(1, kColumnSetId);
   layout->AddView(language_icon.release());
-  layout->AddView(tabbed_pane);
+  layout->AddView(tabbed_pane_);
   layout->AddView(tab_translate_options_button.release());
   layout->AddView(close_button.release());
 
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
-  tabbed_pane->AddTab(original_language_name, CreateEmptyPane());
-  tabbed_pane->AddTab(target_language_name, CreateEmptyPane());
-  tabbed_pane->set_listener(this);
+  tabbed_pane_->AddTab(original_language_name, CreateEmptyPane());
+  tabbed_pane_->AddTab(target_language_name, CreateEmptyPane());
+  tabbed_pane_->set_listener(this);
 
   return view;
 }

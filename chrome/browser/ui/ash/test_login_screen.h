@@ -39,7 +39,8 @@ class TestLoginScreen : public ash::LoginScreen {
   void ShowParentAccessButton(bool show) override;
   void ShowParentAccessWidget(
       const AccountId& child_account_id,
-      base::RepeatingCallback<void(bool success)> callback) override;
+      base::RepeatingCallback<void(bool success)> callback,
+      ash::ParentAccessRequestReason reason) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
 
  private:

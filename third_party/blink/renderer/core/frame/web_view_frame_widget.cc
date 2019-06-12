@@ -125,11 +125,9 @@ void WebViewFrameWidget::ApplyViewportChanges(
   web_view_->ApplyViewportChanges(args);
 }
 
-void WebViewFrameWidget::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
-  web_view_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
+void WebViewFrameWidget::RecordManipulationTypeCounts(
+    cc::ManipulationInfo info) {
+  web_view_->RecordManipulationTypeCounts(info);
 }
 void WebViewFrameWidget::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,

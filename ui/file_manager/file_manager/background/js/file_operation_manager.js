@@ -49,8 +49,8 @@ function FileOperationManagerImpl() {
 /**
  * Adds an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler for the event.  This is called
- *     when the event is dispatched.
+ * @param {EventListener|function(!Event):*} handler The handler for the event.
+ *     This is called when the event is dispatched.
  * @override
  */
 FileOperationManagerImpl.prototype.addEventListener = function(type, handler) {
@@ -60,7 +60,7 @@ FileOperationManagerImpl.prototype.addEventListener = function(type, handler) {
 /**
  * Removes an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {EventListenerType} handler The handler to be removed.
+ * @param {EventListener|function(!Event):*} handler The handler to be removed.
  * @override
  */
 FileOperationManagerImpl.prototype.removeEventListener = function(

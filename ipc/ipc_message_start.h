@@ -69,6 +69,7 @@ enum IPCMessageStart {
   ExtensionWorkerMsgStart,
   SubresourceFilterMsgStart,
   ChromeAppsMsgStart,
+  UnfreezableFrameMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

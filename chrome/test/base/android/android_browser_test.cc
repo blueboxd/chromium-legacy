@@ -4,10 +4,26 @@
 
 #include "chrome/test/base/android/android_browser_test.h"
 
+#include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/test/test_utils.h"
 
 AndroidBrowserTest::AndroidBrowserTest() = default;
 AndroidBrowserTest::~AndroidBrowserTest() = default;
+
+void AndroidBrowserTest::SetUp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  SetUpCommandLine(command_line);
+  SetUpDefaultCommandLine(command_line);
+
+  BrowserTestBase::SetUp();
+}
+
+void AndroidBrowserTest::SetUpDefaultCommandLine(
+    base::CommandLine* command_line) {
+  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
+  test_launcher_utils::PrepareBrowserCommandLineForBrowserTests(
+      command_line, /*open_about_blank_on_launch=*/true);
+}
 
 void AndroidBrowserTest::PreRunTestOnMainThread() {
   // Pump startup related events.

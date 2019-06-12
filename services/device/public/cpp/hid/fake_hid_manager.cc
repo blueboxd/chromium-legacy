@@ -138,13 +138,42 @@ mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(
     const std::string& product_name,
     const std::string& serial_number,
     mojom::HidBusType bus_type) {
-  mojom::HidDeviceInfoPtr device = device::mojom::HidDeviceInfo::New();
+  mojom::HidDeviceInfoPtr device = mojom::HidDeviceInfo::New();
   device->guid = base::GenerateGUID();
   device->vendor_id = vendor_id;
   device->product_id = product_id;
   device->product_name = product_name;
   device->serial_number = serial_number;
   device->bus_type = bus_type;
+  AddDevice(device.Clone());
+  return device;
+}
+
+mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDeviceWithTopLevelUsage(
+    uint16_t vendor_id,
+    uint16_t product_id,
+    const std::string& product_name,
+    const std::string& serial_number,
+    mojom::HidBusType bus_type,
+    uint16_t usage_page,
+    uint16_t usage) {
+  mojom::HidDeviceInfoPtr device = mojom::HidDeviceInfo::New();
+  device->guid = base::GenerateGUID();
+  device->vendor_id = vendor_id;
+  device->product_id = product_id;
+  device->product_name = product_name;
+  device->serial_number = serial_number;
+  device->bus_type = bus_type;
+
+  std::vector<mojom::HidReportDescriptionPtr> input_reports;
+  std::vector<mojom::HidReportDescriptionPtr> output_reports;
+  std::vector<mojom::HidReportDescriptionPtr> feature_reports;
+  std::vector<mojom::HidCollectionInfoPtr> children;
+  device->collections.push_back(mojom::HidCollectionInfo::New(
+      mojom::HidUsageAndPage::New(usage, usage_page), std::vector<uint8_t>(),
+      mojom::kHIDCollectionTypeApplication, std::move(input_reports),
+      std::move(output_reports), std::move(feature_reports),
+      std::move(children)));
   AddDevice(device.Clone());
   return device;
 }

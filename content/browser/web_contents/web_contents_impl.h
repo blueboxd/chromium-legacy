@@ -79,6 +79,7 @@ class InterfaceProvider;
 }
 
 namespace content {
+enum class PictureInPictureResult;
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class DateTimeChooserAndroid;
@@ -981,9 +982,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
-  // Returns the size of the Picture-in-Picture window.
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
-                                  const gfx::Size& natural_size);
+  // Returns the result of the enter request.
+  PictureInPictureResult EnterPictureInPicture(const viz::SurfaceId&,
+                                               const gfx::Size& natural_size);
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.

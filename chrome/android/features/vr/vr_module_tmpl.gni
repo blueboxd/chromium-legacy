@@ -61,7 +61,7 @@ template("vr_module_tmpl") {
       _arch = ""
       _toolchain = ""
       _root_out_dir = root_out_dir
-      if (android_64bit_target_cpu) {
+      if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {
         if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
           _arch = "_64"
         } else {

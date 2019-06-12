@@ -80,13 +80,11 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
 
 }  // namespace
 
-UserSwitchAnimator::UserSwitchAnimator(
-    MultiUserWindowManagerImpl* owner,
-    const WallpaperUserInfo& wallpaper_user_info,
-    base::TimeDelta animation_speed)
+UserSwitchAnimator::UserSwitchAnimator(MultiUserWindowManagerImpl* owner,
+                                       const AccountId& new_account_id,
+                                       base::TimeDelta animation_speed)
     : owner_(owner),
-      wallpaper_user_info_(wallpaper_user_info),
-      new_account_id_(wallpaper_user_info_.account_id),
+      new_account_id_(new_account_id),
       animation_speed_(animation_speed),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover(NULL)),
@@ -171,7 +169,7 @@ void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
     wallpaper_controller->SetAnimationDuration(
         duration > kMinimalAnimationTime ? duration : kMinimalAnimationTime);
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
-      wallpaper_controller->ShowUserWallpaper(wallpaper_user_info_);
+      wallpaper_controller->ShowUserWallpaper(new_account_id_);
       wallpaper_user_id_for_test_ =
           (NO_USER_COVERS_SCREEN == screen_cover_ ? "->" : "") +
           new_account_id_.Serialize();
@@ -180,7 +178,7 @@ void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
     // Revert the wallpaper cross dissolve animation duration back to the
     // default.
     if (screen_cover_ == NEW_USER_COVERS_SCREEN)
-      wallpaper_controller->ShowUserWallpaper(wallpaper_user_info_);
+      wallpaper_controller->ShowUserWallpaper(new_account_id_);
 
     // Coming here the wallpaper user id is the final result. No matter how we
     // got here.

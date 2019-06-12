@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 
 class GURL;
 class Profile;
@@ -42,8 +43,6 @@ namespace mojom {
 enum class PushDeliveryStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
-
-struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -96,12 +95,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                              int64_t service_worker_registration_id,
                              int renderer_id,
                              int render_frame_id,
-                             const blink::WebPushSubscriptionOptions& options,
+                             blink::mojom::PushSubscriptionOptionsPtr options,
                              bool user_gesture,
                              RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const blink::WebPushSubscriptionOptions& options,
+                           blink::mojom::PushSubscriptionOptionsPtr options,
                            RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
@@ -168,7 +167,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Subscribe methods ---------------------------------------------------------
 
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
-                   const blink::WebPushSubscriptionOptions& options,
+                   blink::mojom::PushSubscriptionOptionsPtr options,
                    RegisterCallback callback,
                    ContentSetting permission_status);
 

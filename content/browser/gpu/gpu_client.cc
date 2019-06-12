@@ -10,7 +10,7 @@
 namespace content {
 
 std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> CreateGpuClient(
-    ws::mojom::GpuRequest request,
+    viz::mojom::GpuRequest request,
     viz::GpuClient::ConnectionErrorHandlerClosure connection_error_handler,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   const int client_id = ChildProcessHostImpl::GenerateChildProcessUniqueId();

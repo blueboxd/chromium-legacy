@@ -25,7 +25,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   explicit Entry(ModuleMap*);
   ~Entry() override {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ModuleMap::Entry"; }
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
@@ -53,7 +53,7 @@ ModuleMap::Entry::Entry(ModuleMap* map) : map_(map) {
   DCHECK(map_);
 }
 
-void ModuleMap::Entry::Trace(blink::Visitor* visitor) {
+void ModuleMap::Entry::Trace(Visitor* visitor) {
   visitor->Trace(module_script_);
   visitor->Trace(map_);
   visitor->Trace(clients_);
@@ -100,7 +100,7 @@ ModuleMap::ModuleMap(Modulator* modulator)
   DCHECK(modulator);
 }
 
-void ModuleMap::Trace(blink::Visitor* visitor) {
+void ModuleMap::Trace(Visitor* visitor) {
   visitor->Trace(map_);
   visitor->Trace(modulator_);
   visitor->Trace(loader_registry_);

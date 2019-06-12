@@ -187,8 +187,8 @@ jumbo_source_set("browser") {
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
     "//services/viz/public/cpp:manifest",
+    "//services/viz/public/cpp/gpu",
     "//services/viz/public/interfaces",
-    "//services/ws/public/cpp/gpu",
     "//skia",
     "//sql",
     "//storage/browser",
@@ -355,8 +355,6 @@ jumbo_source_set("browser") {
     "android/browser_startup_controller.h",
     "android/content_feature_list.cc",
     "android/content_feature_list.h",
-    "android/content_protocol_handler_impl.cc",
-    "android/content_protocol_handler_impl.h",
     "android/content_startup_flags.cc",
     "android/content_startup_flags.h",
     "android/content_url_loader_factory.cc",
@@ -375,8 +373,6 @@ jumbo_source_set("browser") {
     "android/text_suggestion_host_android.h",
     "android/text_suggestion_host_mojo_impl_android.cc",
     "android/text_suggestion_host_mojo_impl_android.h",
-    "android/url_request_content_job.cc",
-    "android/url_request_content_job.h",
     "appcache/appcache.cc",
     "appcache/appcache.h",
     "appcache/appcache_backend_impl.cc",
@@ -2608,8 +2604,6 @@ jumbo_source_set("browser") {
 
   if (use_aura) {
     deps += [
-      "//services/ws/public/cpp/host",
-      "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
@@ -2617,8 +2611,6 @@ jumbo_source_set("browser") {
       "//ui/wm/public",
     ]
     sources += [
-      "gpu_interface_provider.cc",
-      "gpu_interface_provider.h",
       "renderer_host/delegated_frame_host_client_aura.cc",
       "renderer_host/delegated_frame_host_client_aura.h",
       "renderer_host/render_widget_host_view_event_handler.cc",

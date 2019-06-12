@@ -32,6 +32,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/switches.h"
@@ -275,7 +276,9 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
           ->chromeos_listener()));
 #endif  // defined(OS_CHROMEOS)
 
-  if (subresource_redirect::ShouldForceEnableSubresourceRedirect()) {
+  if (subresource_redirect::ShouldForceEnableSubresourceRedirect() &&
+      resource_type == content::ResourceType::kImage &&
+      GURL(request.Url()).SchemeIs(url::kHttpsScheme)) {
     throttles.push_back(
         std::make_unique<
             subresource_redirect::SubresourceRedirectURLLoaderThrottle>());

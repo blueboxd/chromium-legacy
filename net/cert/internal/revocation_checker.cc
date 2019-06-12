@@ -10,6 +10,7 @@
 #include "crypto/sha2.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/internal/common_cert_errors.h"
+#include "net/cert/internal/crl.h"
 #include "net/cert/internal/ocsp.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/trust_store.h"
@@ -60,8 +61,6 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
         break;
     }
   }
-
-  // TODO(eroman): Check CRL.
 
   if (!policy.check_revocation) {
     // TODO(eroman): Should still check CRL/OCSP caches.
@@ -141,6 +140,80 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
           return true;
         case OCSPRevocationStatus::UNKNOWN:
           break;
+      }
+    }
+  }
+
+  // Check CRLs.
+  ParsedExtension crl_dp_extension;
+  if (cert->GetExtension(CrlDistributionPointsOid(), &crl_dp_extension)) {
+    std::vector<ParsedDistributionPoint> distribution_points;
+    if (ParseCrlDistributionPoints(crl_dp_extension.value,
+                                   &distribution_points)) {
+      for (const auto& distribution_point : distribution_points) {
+        if (distribution_point.has_crl_issuer) {
+          // Ignore indirect CRLs (CRL where CRLissuer != cert issuer), which
+          // are optional according to RFC 5280's profile.
+          continue;
+        }
+
+        for (const auto& crl_uri : distribution_point.uris) {
+          // Only consider http:// URLs (https:// could create a circular
+          // dependency).
+          GURL parsed_crl_url(crl_uri);
+          if (!parsed_crl_url.is_valid() ||
+              !parsed_crl_url.SchemeIs(url::kHttpScheme)) {
+            continue;
+          }
+
+          found_revocation_info = true;
+
+          if (!policy.networking_allowed)
+            continue;
+
+          if (!net_fetcher) {
+            LOG(ERROR) << "Cannot fetch CRL as didn't specify a |net_fetcher|";
+            continue;
+          }
+
+          // Fetch it over network.
+          //
+          // Note that no attempt is made to refetch without cache if a cached
+          // CRL is too old, nor is there a separate CRL cache. It is assumed
+          // the CRL server will send reasonable HTTP caching headers.
+          //
+          // TODO(eroman): Bound the maximum time allowed spent doing network
+          // requests.
+          std::unique_ptr<CertNetFetcher::Request> net_crl_request =
+              net_fetcher->FetchCrl(parsed_crl_url, CertNetFetcher::DEFAULT,
+                                    CertNetFetcher::DEFAULT);
+
+          Error net_error;
+          std::vector<uint8_t> crl_response_bytes;
+          net_crl_request->WaitForResult(&net_error, &crl_response_bytes);
+
+          if (net_error != OK) {
+            failed_network_fetch = true;
+            continue;
+          }
+
+          CRLRevocationStatus crl_status = CheckCRL(
+              base::StringPiece(
+                  reinterpret_cast<const char*>(crl_response_bytes.data()),
+                  crl_response_bytes.size()),
+              cert, &distribution_point, issuer_cert, base::Time::Now(),
+              max_age);
+
+          switch (crl_status) {
+            case CRLRevocationStatus::REVOKED:
+              MarkCertificateRevoked(cert_errors);
+              return false;
+            case CRLRevocationStatus::GOOD:
+              return true;
+            case CRLRevocationStatus::UNKNOWN:
+              break;
+          }
+        }
       }
     }
   }

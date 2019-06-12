@@ -258,7 +258,7 @@ class ChannelAssociatedGroupController
         id = next_interface_id_++;
         if (set_interface_id_namespace_bit_)
           id |= mojo::kInterfaceIdNamespaceMask;
-      } while (ContainsKey(endpoints_, id));
+      } while (base::Contains(endpoints_, id));
 
       Endpoint* endpoint = new Endpoint(this, id);
       if (encountered_error_)
@@ -320,7 +320,7 @@ class ChannelAssociatedGroupController
       return;
     {
       base::AutoLock locker(lock_);
-      DCHECK(ContainsKey(endpoints_, id));
+      DCHECK(base::Contains(endpoints_, id));
       Endpoint* endpoint = endpoints_[id].get();
       DCHECK(!endpoint->client());
       DCHECK(!endpoint->closed());
@@ -341,7 +341,7 @@ class ChannelAssociatedGroupController
     DCHECK(client);
 
     base::AutoLock locker(lock_);
-    DCHECK(ContainsKey(endpoints_, id));
+    DCHECK(base::Contains(endpoints_, id));
 
     Endpoint* endpoint = endpoints_[id].get();
     endpoint->AttachClient(client, std::move(runner));
@@ -359,7 +359,7 @@ class ChannelAssociatedGroupController
     DCHECK(mojo::IsValidInterfaceId(id));
 
     base::AutoLock locker(lock_);
-    DCHECK(ContainsKey(endpoints_, id));
+    DCHECK(base::Contains(endpoints_, id));
 
     Endpoint* endpoint = endpoints_[id].get();
     endpoint->DetachClient();

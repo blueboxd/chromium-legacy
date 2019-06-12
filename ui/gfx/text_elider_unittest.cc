@@ -175,7 +175,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
        "filename.mid" + kEllipsisStr + ".longext"},
       {FILE_PATH_LITERAL("filename.superduperextremelylongext"),
        "filename.sup" + kEllipsisStr + "emelylongext"},
-      {FILE_PATH_LITERAL("filenamereallylongtext.superduperextremelylongext"),
+      {FILE_PATH_LITERAL("filenamereallylongtext.superdeduperextremelylongext"),
        "filenamereall" + kEllipsisStr + "emelylongext"},
       {FILE_PATH_LITERAL(
            "file.name.really.long.text.superduperextremelylongext"),

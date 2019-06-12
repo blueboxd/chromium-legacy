@@ -103,8 +103,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_item.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
+#import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
@@ -423,7 +425,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DialogPresenter* _dialogPresenter;
 
   // Handles presentation of JavaScript dialogs.
-  std::unique_ptr<JavaScriptDialogPresenterImpl> _javaScriptDialogPresenter;
+  std::unique_ptr<web::JavaScriptDialogPresenter> _javaScriptDialogPresenter;
 
   // Keyboard commands provider.  It offloads most of the keyboard commands
   // management off of the BVC.
@@ -519,6 +521,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Bridges C++ WebStateListObserver methods to this BrowserViewController.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+
+  // Presenter for in-product help bubbles.
+  BubblePresenter* _bubblePresenter;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -799,8 +804,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     _browserContainerViewController = browserContainerViewController;
     _dependencyFactory = factory;
-    _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
-                                        presentingViewController:self];
     self.commandDispatcher = commandDispatcher;
     [self.commandDispatcher
         startDispatchingToTarget:self
@@ -837,8 +840,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
-    _javaScriptDialogPresenter.reset(
-        new JavaScriptDialogPresenterImpl(_dialogPresenter));
+    if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+      _javaScriptDialogPresenter =
+          std::make_unique<OverlayJavaScriptDialogPresenter>();
+    } else {
+      _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
+                                          presentingViewController:self];
+      _javaScriptDialogPresenter =
+          std::make_unique<JavaScriptDialogPresenterImpl>(_dialogPresenter);
+    }
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
     _inNewTabAnimation = NO;
 
@@ -1121,15 +1131,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BubblePresenter*)bubblePresenter {
-  if (!_bubblePresenter) {
-    _bubblePresenter =
+  if (!_bubblePresenter && self.browserState) {
+    self.bubblePresenter =
         [[BubblePresenter alloc] initWithBrowserState:self.browserState
                                              delegate:self
                                    rootViewController:self];
-    _bubblePresenter.dispatcher = self.dispatcher;
-    self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
   }
   return _bubblePresenter;
+}
+
+- (void)setBubblePresenter:(BubblePresenter*)bubblePresenter {
+  _bubblePresenter = bubblePresenter;
+  _bubblePresenter.dispatcher = self.dispatcher;
+  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
 }
 
 - (BOOL)isNTPActiveForCurrentWebState {
@@ -1449,6 +1463,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.tabStripView = nil;
 
   _browserState = nullptr;
+  self.bubblePresenter = nil;
+
   [self.commandDispatcher stopDispatchingToTarget:self];
   self.commandDispatcher = nil;
 
@@ -1630,11 +1646,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // case, display the Long Press InProductHelp if needed.
     auto completion =
         ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-          // Do not attempt to use the browserState if |-shutdown| was called
-          // during the BVC presentation animation. Attempting to present
-          // bubbles will crash since bubblePresenter requires a valid
-          // BrowserState.
-          if (!_isShutdown)
             [self.bubblePresenter presentLongPressBubbleIfEligible];
         };
 
@@ -3014,6 +3025,26 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (sadTabView) {
     [overlays addObject:sadTabView];
   }
+
+  UIViewController* overlayContainerViewController =
+      self.browserContainerViewController
+          .webContentsOverlayContainerViewController;
+  UIView* presentedOverlayView =
+      overlayContainerViewController.presentedViewController.view;
+  if (presentedOverlayView) {
+    [overlays addObject:presentedOverlayView];
+  }
+
+  UIView* childOverlayView =
+      overlayContainerViewController.childViewControllers.firstObject.view;
+  if (childOverlayView) {
+    DCHECK_EQ(1U, overlayContainerViewController.childViewControllers.count);
+    [overlays addObject:childOverlayView];
+  }
+
+  // The overlay container supports at most one overlay view, either by
+  // presentation or by containment.
+  DCHECK(!presentedOverlayView || !childOverlayView);
 
   return overlays;
 }

@@ -29,15 +29,15 @@ OAuth2TokenServiceDelegate::~OAuth2TokenServiceDelegate() {
 }
 
 bool OAuth2TokenServiceDelegate::ValidateAccountId(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   bool valid = !account_id.empty();
 
   // If the account is given as an email, make sure its a canonical email.
   // Note that some tests don't use email strings as account id, and after
   // the gaia id migration it won't be an email.  So only check for
   // canonicalization if the account_id is suspected to be an email.
-  if (account_id.find('@') != std::string::npos &&
-      gaia::CanonicalizeEmail(account_id) != account_id) {
+  if (account_id.id.find('@') != std::string::npos &&
+      gaia::CanonicalizeEmail(account_id.id) != account_id.id) {
     valid = false;
   }
 
@@ -69,14 +69,14 @@ void OAuth2TokenServiceDelegate::EndBatchChanges() {
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   for (auto& observer : observer_list_)
     observer.OnRefreshTokenAvailable(account_id);
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   for (auto& observer : observer_list_)
     observer.OnRefreshTokenRevoked(account_id);
@@ -88,7 +88,7 @@ void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
 }
 
 void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK(!account_id.empty());
   for (auto& observer : observer_list_)
@@ -96,7 +96,7 @@ void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
 }
 
 std::string OAuth2TokenServiceDelegate::GetTokenForMultilogin(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return std::string();
 }
 
@@ -106,7 +106,7 @@ OAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 }
 
 GoogleServiceAuthError OAuth2TokenServiceDelegate::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return GoogleServiceAuthError::AuthErrorNone();
 }
 
@@ -119,7 +119,7 @@ const net::BackoffEntry* OAuth2TokenServiceDelegate::BackoffEntry() const {
 }
 
 void OAuth2TokenServiceDelegate::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   NOTREACHED() << "OAuth2TokenServiceDelegate does not load credentials. "
                   "Subclasses that need to load credentials must provide "
                   "an implemenation of this method";
@@ -127,7 +127,7 @@ void OAuth2TokenServiceDelegate::LoadCredentials(
 
 void OAuth2TokenServiceDelegate::ExtractCredentials(
     OAuth2TokenService* to_service,
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   NOTREACHED();
 }
 

@@ -243,6 +243,8 @@ for filename, substitutions in (
   buf = buf.replace('chrome://resources/polymer/v1_0/', '../../cc/')
   buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
                     'cr_input/cr_input.html">', '')
+  buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
+                    'cr_button/cr_button.html">', '')
   buf = buf.replace('src="files_', 'src="' + elements_path('files_'))
   for old, new in substitutions:
     buf = buf.replace(old, new)

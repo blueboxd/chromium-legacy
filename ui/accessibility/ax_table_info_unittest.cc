@@ -66,6 +66,14 @@ void MakeRowHeader(AXNodeData* cell,
 
 }  // namespace
 
+// A macro for testing that a base::Optional has both a value and that its value
+// is set to a particular expectation.
+#define EXPECT_OPTIONAL_EQ(expected, actual) \
+  EXPECT_TRUE(actual.has_value());           \
+  if (actual) {                              \
+    EXPECT_EQ(expected, actual.value());     \
+  }
+
 class AXTableInfoTest : public testing::Test {
  public:
   AXTableInfoTest() {}
@@ -147,9 +155,10 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   EXPECT_TRUE(table->IsTable());
   EXPECT_FALSE(table->IsTableRow());
   EXPECT_FALSE(table->IsTableCellOrHeader());
-  EXPECT_EQ(2, table->GetTableColCount());
-  EXPECT_EQ(2, table->GetTableRowCount());
+  EXPECT_OPTIONAL_EQ(2, table->GetTableColCount());
+  EXPECT_OPTIONAL_EQ(2, table->GetTableRowCount());
 
+  ASSERT_TRUE(table->GetTableCellFromCoords(0, 0));
   EXPECT_EQ(4, table->GetTableCellFromCoords(0, 0)->id());
   EXPECT_EQ(5, table->GetTableCellFromCoords(0, 1)->id());
   EXPECT_EQ(6, table->GetTableCellFromCoords(1, 0)->id());
@@ -168,33 +177,32 @@ TEST_F(AXTableInfoTest, SimpleTable) {
   EXPECT_FALSE(row_0->IsTable());
   EXPECT_TRUE(row_0->IsTableRow());
   EXPECT_FALSE(row_0->IsTableCellOrHeader());
-  EXPECT_EQ(0, row_0->GetTableRowRowIndex());
+  EXPECT_OPTIONAL_EQ(0, row_0->GetTableRowRowIndex());
 
   AXNode* row_1 = tree.GetFromId(3);
   EXPECT_FALSE(row_1->IsTable());
   EXPECT_TRUE(row_1->IsTableRow());
   EXPECT_FALSE(row_1->IsTableCellOrHeader());
-  EXPECT_EQ(1, row_1->GetTableRowRowIndex());
+  EXPECT_OPTIONAL_EQ(1, row_1->GetTableRowRowIndex());
 
   AXNode* cell_0_0 = tree.GetFromId(4);
   EXPECT_FALSE(cell_0_0->IsTable());
   EXPECT_FALSE(cell_0_0->IsTableRow());
   EXPECT_TRUE(cell_0_0->IsTableCellOrHeader());
-  EXPECT_EQ(0, cell_0_0->GetTableCellIndex());
-  EXPECT_EQ(0, cell_0_0->GetTableCellColIndex());
-  EXPECT_EQ(0, cell_0_0->GetTableCellRowIndex());
-  EXPECT_EQ(1, cell_0_0->GetTableCellColSpan());
-  EXPECT_EQ(1, cell_0_0->GetTableCellRowSpan());
+  EXPECT_OPTIONAL_EQ(0, cell_0_0->GetTableCellIndex());
+  EXPECT_OPTIONAL_EQ(0, cell_0_0->GetTableCellColIndex());
+  EXPECT_OPTIONAL_EQ(0, cell_0_0->GetTableCellRowIndex());
+  EXPECT_OPTIONAL_EQ(1, cell_0_0->GetTableCellColSpan());
+  EXPECT_OPTIONAL_EQ(1, cell_0_0->GetTableCellRowSpan());
 
   AXNode* cell_1_1 = tree.GetFromId(7);
   EXPECT_FALSE(cell_1_1->IsTable());
   EXPECT_FALSE(cell_1_1->IsTableRow());
   EXPECT_TRUE(cell_1_1->IsTableCellOrHeader());
-  EXPECT_EQ(3, cell_1_1->GetTableCellIndex());
-  EXPECT_EQ(1, cell_1_1->GetTableCellColIndex());
-  EXPECT_EQ(1, cell_1_1->GetTableCellRowIndex());
-  EXPECT_EQ(1, cell_1_1->GetTableCellColSpan());
-  EXPECT_EQ(1, cell_1_1->GetTableCellRowSpan());
+  EXPECT_OPTIONAL_EQ(3, cell_1_1->GetTableCellIndex());
+  EXPECT_OPTIONAL_EQ(1, cell_1_1->GetTableCellRowIndex());
+  EXPECT_OPTIONAL_EQ(1, cell_1_1->GetTableCellColSpan());
+  EXPECT_OPTIONAL_EQ(1, cell_1_1->GetTableCellRowSpan());
 
   std::vector<AXNode*> col_headers;
   cell_1_1->GetTableCellColHeaders(&col_headers);

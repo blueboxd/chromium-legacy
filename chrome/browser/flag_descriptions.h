@@ -45,6 +45,9 @@ extern const char kAccelerated2dCanvasDescription[];
 extern const char kAcceleratedVideoDecodeName[];
 extern const char kAcceleratedVideoDecodeDescription[];
 
+extern const char kAcceleratedVideoEncodeName[];
+extern const char kAcceleratedVideoEncodeDescription[];
+
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
@@ -345,12 +348,6 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 
-extern const char kEnableDesktopPWAsLinkCapturingName[];
-extern const char kEnableDesktopPWAsLinkCapturingDescription[];
-
-extern const char kDesktopPWAsStayInWindowName[];
-extern const char kDesktopPWAsStayInWindowDescription[];
-
 extern const char kDesktopPWAsOmniboxInstallName[];
 extern const char kDesktopPWAsOmniboxInstallDescription[];
 
@@ -642,6 +639,9 @@ extern const char kHandwritingGestureDescription[];
 
 extern const char kHardwareMediaKeyHandling[];
 extern const char kHardwareMediaKeyHandlingDescription[];
+
+extern const char kHarfBuzzPDFSubsetterName[];
+extern const char kHarfBuzzPDFSubsetterDescription[];
 
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];

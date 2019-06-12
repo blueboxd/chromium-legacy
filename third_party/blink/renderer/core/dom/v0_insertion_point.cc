@@ -56,6 +56,15 @@ void V0InsertionPoint::SetDistributedNodes(
   // Attempt not to reattach nodes that would be distributed to the exact same
   // location by comparing the old and new distributions.
 
+  if (DistributedNodesAreFallback() && distributed_nodes.size() &&
+      distributed_nodes.at(0)->parentNode() != this) {
+    // Detach fallback nodes. Host children which are no longer distributed are
+    // detached in the DistributionPool destructor.
+    for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
+      distributed_nodes_.at(i)->RemovedFromFlatTree();
+    distributed_nodes_.Clear();
+  }
+
   wtf_size_t i = 0;
   wtf_size_t j = 0;
 

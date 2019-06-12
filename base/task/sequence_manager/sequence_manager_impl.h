@@ -122,7 +122,7 @@ class BASE_EXPORT SequenceManagerImpl
   std::string DescribeAllPendingTasks() const override;
 
   // SequencedTaskSource implementation:
-  Optional<PendingTask> TakeTask() override;
+  Optional<Task> TakeTask() override;
   void DidRunTask() override;
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
   bool HasPendingHighResolutionTasks() override;
@@ -366,7 +366,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // Helper to terminate all scoped trace events to allow starting new ones
   // in TakeTask().
-  Optional<PendingTask> TakeTaskImpl();
+  Optional<Task> TakeTaskImpl();
 
 #if DCHECK_IS_ON()
   void LogTaskDebugInfo(const ExecutingTask& executing_task);

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "chrome/browser/scoped_visibility_tracker.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class WebContents;
@@ -24,8 +25,8 @@ class PageLoadMetricsObserverDelegate {
   virtual base::TimeTicks GetNavigationStart() const = 0;
   virtual bool DidCommit() const = 0;
   virtual const ScopedVisibilityTracker& GetVisibilityTracker() const = 0;
-
   virtual const ResourceTracker& GetResourceTracker() const = 0;
+  virtual ukm::SourceId GetSourceId() const = 0;
 
   // TODO(crbug/939403): Consider migrating PageLoadExtraInfo data to this API
   // and deprecating that struct.

@@ -56,6 +56,7 @@
 #include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -91,6 +92,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
+#include "media/mojo/buildflags.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -229,6 +231,45 @@ void PassMojoCookieManagerToAwCookieManager(
   CookieManager::GetInstance()->SetMojoCookieManager(
       std::move(cookie_manager_info));
 }
+
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
+  std::move(callback).Run(true, base::UnguessableToken::Create());
+}
+
+void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
+  // Since CreateOriginId() always returns a non-empty origin ID, we don't need
+  // to allow empty origin ID.
+  std::move(callback).Run(false);
+}
+
+void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
+                           ::media::mojom::MediaDrmStorageRequest request) {
+  DCHECK(render_frame_host);
+
+  if (render_frame_host->GetLastCommittedOrigin().opaque()) {
+    DVLOG(1) << __func__ << ": Unique origin.";
+    return;
+  }
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents) << "WebContents not available.";
+
+  auto* aw_browser_context =
+      static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
+  DCHECK(aw_browser_context) << "AwBrowserContext not available.";
+
+  PrefService* pref_service = aw_browser_context->GetPrefService();
+  DCHECK(pref_service);
+
+  // The object will be deleted on connection error, or when the frame navigates
+  // away.
+  new cdm::MediaDrmStorageImpl(
+      render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
+      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
+}
+#endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 }  // anonymous namespace
 
@@ -871,6 +912,15 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
   }
 
   return safe_browsing_url_checker_delegate_.get();
+}
+
+void AwContentBrowserClient::ExposeInterfacesToMediaService(
+    service_manager::BinderRegistry* registry,
+    content::RenderFrameHost* render_frame_host) {
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+  registry->AddInterface(
+      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
+#endif
 }
 
 bool AwContentBrowserClient::ShouldOverrideUrlLoading(

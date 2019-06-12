@@ -189,12 +189,14 @@ struct CC_EXPORT ScrollAndScaleSet {
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
   BrowserControlsState browser_controls_constraint;
   bool browser_controls_constraint_changed;
-  bool has_scrolled_by_wheel;
-  bool has_scrolled_by_touch;
 
   // Set to true when a scroll gesture being handled on the compositor has
   // ended.
   bool scroll_gesture_did_end;
+
+  // Tracks different methods of scrolling (e.g. wheel, touch, precision
+  // touchpad, etc.).
+  ManipulationInfo manipulation_info;
 };
 
 template <typename Function>

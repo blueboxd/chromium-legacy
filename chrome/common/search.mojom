@@ -48,9 +48,6 @@ interface EmbeddedSearch {
   // Tells InstantExtended to undo one most visited item deletion.
   UndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
 
-  // Tells InstantExtended to toggle between most visited items or custom links.
-  ToggleMostVisitedOrCustomLinks(int32 page_seq_no);
-
   // Tells InstantExtended to add a custom link. Returns true if successful.
   AddCustomLink(int32 page_seq_no, url.mojom.Url url, string title)
       => (bool success);
@@ -74,6 +71,12 @@ interface EmbeddedSearch {
   // Tells InstantExtended to delete all custom links and use most visited sites
   // instead.
   ResetCustomLinks(int32 page_seq_no);
+
+  // Tells InstantExtended to toggle between most visited items or custom links.
+  ToggleMostVisitedOrCustomLinks(int32 page_seq_no);
+
+  // Tells InstantExtended to toggle visibility of the shortcuts.
+  ToggleShortcutsVisibility(int32 page_seq_no);
 
   // Logs events from InstantExtended New Tab Pages.
   LogEvent(int32 page_seq_no,
@@ -156,7 +159,7 @@ interface EmbeddedSearchClient {
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);
 
-  MostVisitedChanged(InstantMostVisitedInfo most_visited_info);
+  MostVisitedInfoChanged(InstantMostVisitedInfo most_visited_info);
 
   SetInputInProgress(bool input_in_progress);
 

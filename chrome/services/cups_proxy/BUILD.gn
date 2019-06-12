@@ -30,6 +30,8 @@ source_set("cups_proxy") {
   if (use_cups) {
     configs += [ "//printing:cups" ]
     sources += [
+      "ipp_validator.cc",
+      "ipp_validator.h",
       "printer_installer.cc",
       "printer_installer.h",
       "socket_manager.cc",
@@ -60,6 +62,7 @@ source_set("unit_tests") {
   # Target is empty unless libCUPS is available.
   if (use_cups) {
     sources = [
+      "ipp_validator_unittest.cc",
       "printer_installer_unittest.cc",
       "socket_manager_unittest.cc",
     ]

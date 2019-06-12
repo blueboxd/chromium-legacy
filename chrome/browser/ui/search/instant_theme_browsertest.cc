@@ -62,7 +62,7 @@ class TestThemeInfoObserver : public InstantServiceObserver {
     }
   }
 
-  void MostVisitedItemsChanged(const InstantMostVisitedInfo&) override {}
+  void MostVisitedInfoChanged(const InstantMostVisitedInfo&) override {}
 
   InstantService* const service_;
 

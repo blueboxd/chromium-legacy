@@ -46,6 +46,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -258,9 +259,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   int tab = FindResourceIndex(MatchTab("title1.html"));
   ASSERT_NE(-1, tab);
   ASSERT_TRUE(model()->GetTabId(tab).is_valid());
-  model()->Kill(tab);
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    model()->Kill(tab);
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  }
 
   // Tab should reappear in task manager upon reload.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -1009,18 +1013,21 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
                 ->GetLastCommittedURL();
     ASSERT_EQ(b_url.host(), "b.com");  // Sanity check of test code / setup.
 
-    int subframe_b = FindResourceIndex(MatchSubframe("http://b.com/"));
-    ASSERT_NE(-1, subframe_b);
-    ASSERT_TRUE(model()->GetTabId(subframe_b).is_valid());
-    model()->Kill(subframe_b);
+    {
+      content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+      int subframe_b = FindResourceIndex(MatchSubframe("http://b.com/"));
+      ASSERT_NE(-1, subframe_b);
+      ASSERT_TRUE(model()->GetTabId(subframe_b).is_valid());
+      model()->Kill(subframe_b);
 
-    ASSERT_NO_FATAL_FAILURE(
-        WaitForTaskManagerRows(0, MatchSubframe("http://b.com/")));
-    ASSERT_NO_FATAL_FAILURE(
-        WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
-    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnySubframe()));
-    ASSERT_NO_FATAL_FAILURE(
-        WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
+      ASSERT_NO_FATAL_FAILURE(
+          WaitForTaskManagerRows(0, MatchSubframe("http://b.com/")));
+      ASSERT_NO_FATAL_FAILURE(
+          WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+      ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnySubframe()));
+      ASSERT_NO_FATAL_FAILURE(
+          WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
+    }
   }
 
   HideTaskManager();

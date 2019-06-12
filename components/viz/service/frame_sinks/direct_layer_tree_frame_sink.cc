@@ -266,9 +266,10 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
 
 void DirectLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const PresentationFeedbackMap& feedbacks) {
-  for (const auto& pair : feedbacks)
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+    const FrameTimingDetailsMap& timing_details) {
+  for (const auto& pair : timing_details)
+    client_->DidPresentCompositorFrame(pair.first,
+                                       pair.second.presentation_feedback);
 
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   // Note that client_name is constant during the lifetime of the process and

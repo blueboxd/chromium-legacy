@@ -8,6 +8,7 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -43,6 +43,18 @@
 namespace em = enterprise_management;
 
 namespace chromeos {
+
+namespace {
+
+void WaitForShutdownButtonVisibility(bool visible) {
+  int ui_update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
+  while (ash::LoginScreenTestApi::IsShutdownButtonShown() != visible) {
+    ash::LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
+    ui_update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
+  }
+}
+
+}  // namespace
 
 class ShutdownPolicyBaseTest
     : public policy::DevicePolicyCrosBrowserTest,
@@ -176,15 +188,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     ShutdownPolicyBaseTest::TearDownOnMainThread();
   }
 
-  void WaitForShutdownButtonVisibility(bool visible) {
-    ScreenLockerTester tester;
-    int ui_update_count = tester.GetUiUpdateCount();
-    while (tester.IsLockShutdownButtonShown() != visible) {
-      tester.WaitForUiUpdate(ui_update_count);
-      ui_update_count = tester.GetUiUpdateCount();
-    }
-  }
-
  private:
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
@@ -244,36 +247,25 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
     }
   }
 
-  void WaitForShutdownButtonVisibility(bool visible) {
-    test::LoginScreenTester tester;
-    int ui_update_count = tester.GetUiUpdateCount();
-    while (tester.IsShutdownButtonShown() != visible) {
-      tester.WaitForUiUpdate(ui_update_count);
-      ui_update_count = tester.GetUiUpdateCount();
-    }
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyLoginTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyNotSet) {
-  test::LoginScreenTester tester;
-  EXPECT_FALSE(tester.IsRestartButtonShown());
-  EXPECT_TRUE(tester.IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsRestartButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyChange) {
-  test::LoginScreenTester tester;
   UpdateRebootOnShutdownPolicy(true);
   RefreshDevicePolicy();
   WaitForShutdownButtonVisibility(false);
-  EXPECT_TRUE(tester.IsRestartButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsRestartButtonShown());
 
   UpdateRebootOnShutdownPolicy(false);
   RefreshDevicePolicy();
   WaitForShutdownButtonVisibility(true);
-  EXPECT_FALSE(tester.IsRestartButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsRestartButtonShown());
 }
 
 }  // namespace chromeos

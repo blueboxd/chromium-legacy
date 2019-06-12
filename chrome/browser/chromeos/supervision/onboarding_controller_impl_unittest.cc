@@ -12,6 +12,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -112,14 +114,22 @@ class OnboardingControllerBaseTest : public testing::Test {
   void SetUp() override {
     profile_ = IdentityTestEnvironmentProfileAdaptor::
         CreateProfileForIdentityTestEnvironment();
-    identity_test_env_adaptor_ =
-        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
     identity_test_env()->MakeAccountAvailable(kTestAccountId);
     identity_test_env()->SetPrimaryAccount(kTestAccountId);
 
-    controller_impl_ = std::make_unique<OnboardingControllerImpl>(profile());
+    // Setting up an extension service, because some observers need to load
+    // extensions.
+    extensions::TestExtensionSystem* extension_system(
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile())));
+    extension_system->CreateExtensionService(
+        base::CommandLine::ForCurrentProcess(), base::FilePath(),
+        /*autoupdate_enabled=*/false);
 
+    controller_impl_ = std::make_unique<OnboardingControllerImpl>(profile());
     controller_impl_->BindRequest(mojo::MakeRequest(&controller_));
   }
 

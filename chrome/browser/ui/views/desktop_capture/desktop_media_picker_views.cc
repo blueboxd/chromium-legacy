@@ -61,10 +61,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
     : parent_(parent),
-      modality_(params.modality),
-      description_label_(new views::Label()),
-      audio_share_checkbox_(nullptr),
-      tabbed_pane_(nullptr) {
+      modality_(params.modality) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -121,7 +118,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         screen_scroll_view->ClipHeightTo(
             kGenericScreenStyle.item_size.height(),
             kGenericScreenStyle.item_size.height() * 2);
-        screen_scroll_view->set_hide_horizontal_scrollbar(true);
+        screen_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(screen_title_text, std::move(screen_scroll_view)));
@@ -152,7 +149,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                          kWindowStyle.item_size.height() * 2);
-        window_scroll_view->set_hide_horizontal_scrollbar(true);
+        window_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(window_title_text, std::move(window_scroll_view)));
@@ -196,11 +193,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   DCHECK(!source_types_.empty());
 
-  if (params.request_audio) {
-    audio_share_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    audio_share_checkbox_->SetChecked(params.approve_audio_by_default);
-  }
+  request_audio_ = params.request_audio;
+  approve_audio_by_default_ = params.approve_audio_by_default;
 
   // Focus on the first non-null media_list.
   OnSourceTypeSwitched(0);
@@ -363,8 +357,16 @@ base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
                                        : IDS_CANCEL);
 }
 
-views::View* DesktopMediaPickerDialogView::CreateExtraView() {
-  return audio_share_checkbox_;
+std::unique_ptr<views::View> DesktopMediaPickerDialogView::CreateExtraView() {
+  std::unique_ptr<views::Checkbox> audio_share_checkbox;
+  if (request_audio_) {
+    audio_share_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
+    audio_share_checkbox->SetChecked(approve_audio_by_default_);
+    audio_share_checkbox_ = audio_share_checkbox.get();
+  }
+  OnSourceTypeSwitched(0);
+  return audio_share_checkbox;
 }
 
 bool DesktopMediaPickerDialogView::Accept() {

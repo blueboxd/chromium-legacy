@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/policy/device_native_printers_handler.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
+#include "chrome/browser/chromeos/policy/device_scheduled_update_checker.h"
 #include "chrome/browser/chromeos/policy/device_wallpaper_image_handler.h"
 #include "chrome/browser/chromeos/policy/device_wifi_allowed_handler.h"
 #include "chrome/browser/chromeos/policy/device_wilco_dtc_configuration_handler.h"
@@ -250,6 +251,10 @@ void BrowserPolicyConnectorChromeOS::Init(
   tpm_auto_update_mode_policy_handler_ =
       std::make_unique<TPMAutoUpdateModePolicyHandler>(
           chromeos::CrosSettings::Get(), local_state);
+
+  device_scheduled_update_checker_ =
+      std::make_unique<DeviceScheduledUpdateChecker>(
+          chromeos::CrosSettings::Get());
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

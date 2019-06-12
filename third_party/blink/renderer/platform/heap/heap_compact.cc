@@ -40,7 +40,7 @@ class HeapCompact::MovableObjectFixups final {
     relocatable_pages_.insert(page);
   }
 
-  void AddOrFilter(MovableReference* slot) {
+  void AddOrFilter(MovableReference* slot, const char* name) {
     MovableReference value = *slot;
     CHECK(value);
 
@@ -98,6 +98,7 @@ class HeapCompact::MovableObjectFixups final {
 
     // Add regular fixup.
     fixups_.insert({value, slot});
+    fixup_names_.insert({slot, name});
 
     // Check whether the slot itself resides on a page that is compacted.
     if (LIKELY(!relocatable_pages_.Contains(slot_page)))
@@ -177,6 +178,12 @@ class HeapCompact::MovableObjectFixups final {
     DebugSlotType slot_type = kNormalSlot;
     base::debug::Alias(&slot_type);
 
+    // TODO(918064): Remove this after getting the type of the object that
+    // crashes compaction.
+    constexpr size_t kMaxNameLen = 256;
+    char slot_container_name[kMaxNameLen];
+    base::debug::Alias(slot_container_name);
+
     // If the object is referenced by a slot that is contained on a compacted
     // area itself, check whether it can be updated already.
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->second);
@@ -187,6 +194,12 @@ class HeapCompact::MovableObjectFixups final {
       if (!slot_location) {
         interior_it->second = to;
         slot_type = kInteriorSlotPreMove;
+        const char* name = fixup_names_.find(slot)->second;
+        size_t len = strlen(name);
+        if (len > kMaxNameLen)
+          len = kMaxNameLen;
+        strncpy(slot_container_name, name, len);
+        slot_container_name[len - 1] = 0;
       } else {
         LOG_HEAP_COMPACTION()
             << "Redirected slot: " << slot << " => " << slot_location;
@@ -254,6 +267,7 @@ class HeapCompact::MovableObjectFixups final {
   //
   // (TODO: consider in-place updating schemes.)
   std::unordered_map<MovableReference, MovableReference*> fixups_;
+  std::unordered_map<MovableReference*, const char*> fixup_names_;
 
   // Map from movable reference to callbacks that need to be invoked
   // when the object moves.
@@ -364,13 +378,15 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
+void HeapCompact::RegisterMovingObjectReference(const char* name,
+                                                MovableReference* slot) {
   CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
 
   if (!do_compact_)
     return;
 
   traced_slots_.insert(slot);
+  traced_slots_names_.insert(slot, name);
 }
 
 void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
@@ -440,11 +456,12 @@ void HeapCompact::FilterNonLiveSlots() {
   last_fixup_count_for_testing_ = 0;
   for (auto** slot : traced_slots_) {
     if (*slot) {
-      Fixups().AddOrFilter(slot);
+      Fixups().AddOrFilter(slot, traced_slots_names_.find(slot)->value);
       last_fixup_count_for_testing_++;
     }
   }
   traced_slots_.clear();
+  traced_slots_names_.clear();
 }
 
 void HeapCompact::Finish() {
@@ -465,6 +482,7 @@ void HeapCompact::Cancel() {
 
   last_fixup_count_for_testing_ = 0;
   traced_slots_.clear();
+  traced_slots_names_.clear();
   fixups_.reset();
   do_compact_ = false;
 }

@@ -22,6 +22,10 @@ class GPUBuffer : public DawnObject<DawnBuffer> {
  public:
   static GPUBuffer* Create(GPUDevice* device,
                            const GPUBufferDescriptor* webgpu_desc);
+  static std::pair<GPUBuffer*, DOMArrayBuffer*> CreateMapped(
+      GPUDevice* device,
+      const GPUBufferDescriptor* webgpu_desc,
+      ExceptionState& exception_state);
   explicit GPUBuffer(GPUDevice* device, uint64_t size, DawnBuffer buffer);
   ~GPUBuffer() override;
 

@@ -4,11 +4,11 @@
 
 #include "ash/system/unified/notification_hidden_view.h"
 
+#include "ash/login/login_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
-#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/rounded_label_button.h"
 #include "base/bind.h"
@@ -28,7 +28,7 @@ namespace {
 
 void ShowLockScreenNotificationSettings() {
   ash::Shell::Get()
-      ->message_center_controller()
+      ->login_screen_controller()
       ->ShowLockScreenNotificationSettings();
 }
 

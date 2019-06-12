@@ -29,7 +29,6 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -168,11 +167,13 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   // (2) Subscribe for Push Messaging, and verify that we've got the required
   // information in order to be able to create encrypted messages.
-  blink::WebPushSubscriptionOptions options;
-  options.user_visible_only = true;
-  options.application_server_key = kTestSenderId;
+  auto options = blink::mojom::PushSubscriptionOptions::New();
+  options->user_visible_only = true;
+  options->application_server_key = std::vector<uint8_t>(
+      kTestSenderId, kTestSenderId + sizeof(kTestSenderId) / sizeof(char) - 1);
+
   push_service->SubscribeFromWorker(
-      origin, kTestServiceWorkerId, options,
+      origin, kTestServiceWorkerId, std::move(options),
       base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),
                  &subscription_id, &p256dh, &auth, run_loop.QuitClosure()));
 

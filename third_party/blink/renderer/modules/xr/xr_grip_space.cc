@@ -17,18 +17,18 @@ XRGripSpace::XRGripSpace(XRSession* session, XRInputSource* source)
 XRPose* XRGripSpace::getPose(XRSpace* other_space,
                              const TransformationMatrix* base_pose_matrix) {
   // Grip is only available when using tracked pointer for input.
-  if (input_source_->target_ray_mode_ !=
+  if (input_source_->TargetRayMode() !=
       device::mojom::XRTargetRayMode::POINTING) {
     return nullptr;
   }
 
   // Make sure the required pose matrices are available.
-  if (!base_pose_matrix || !input_source_->base_pose_matrix_) {
+  if (!base_pose_matrix || !input_source_->BasePose()) {
     return nullptr;
   }
 
   std::unique_ptr<TransformationMatrix> grip_pose =
-      other_space->TransformBaseInputPose(*(input_source_->base_pose_matrix_),
+      other_space->TransformBaseInputPose(*(input_source_->BasePose()),
                                           *base_pose_matrix);
 
   if (!grip_pose) {

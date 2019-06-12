@@ -390,6 +390,11 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
+  if (factory_params_->network_isolation_key) {
+    url_request_->set_network_isolation_key(
+        factory_params_->network_isolation_key.value());
+  }
+
   // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
   // They are non-empty when the values are given by the UA code, therefore
   // they should be ignored by CORS checks.

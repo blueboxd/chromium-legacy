@@ -13,7 +13,7 @@ namespace media {
 
 V4L2DecodeSurface::V4L2DecodeSurface(int input_record,
                                      int output_record,
-                                     ReleaseCB release_cb)
+                                     base::OnceClosure release_cb)
     : input_record_(input_record),
       output_record_(output_record),
       decoded_(false),
@@ -63,6 +63,12 @@ void V4L2DecodeSurface::SetDecodeDoneCallback(base::OnceClosure done_cb) {
   DCHECK(!done_cb_);
 
   done_cb_ = std::move(done_cb);
+}
+
+void V4L2DecodeSurface::SetReleaseCallback(base::OnceClosure release_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  release_cb_ = std::move(release_cb);
 }
 
 std::string V4L2DecodeSurface::ToString() const {

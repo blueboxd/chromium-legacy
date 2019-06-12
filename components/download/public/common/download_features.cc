@@ -48,6 +48,11 @@ const base::Feature kUseInProgressDownloadManagerForDownloadService{
 const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
     "AllowDownloadResumptionWithoutStrongValidators",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
+    "UseParallelRequestForUnknownRangeSupport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace download

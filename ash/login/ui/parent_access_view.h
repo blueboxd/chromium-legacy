@@ -28,6 +28,8 @@ class ArrowButtonView;
 class LoginButton;
 class LoginPinView;
 
+enum class ParentAccessRequestReason;
+
 // The view that allows for input of parent access code to authorize certain
 // actions on child's device.
 class ASH_EXPORT ParentAccessView : public NonAccessibleView,
@@ -78,8 +80,12 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // Creates parent access view that will validate the parent access code for a
   // specific child, when |account_id| is set, or to any child signed in the
   // device, when it is empty. |callbacks| will be called when user performs
-  // certain actions.
-  ParentAccessView(const AccountId& account_id, const Callbacks& callbacks);
+  // certain actions. |reason| contains information about why the parent access
+  // view is necessary, it is used to modify the view appearance by changing the
+  // title and description strings and background color.
+  ParentAccessView(const AccountId& account_id,
+                   const Callbacks& callbacks,
+                   ParentAccessRequestReason reason);
   ~ParentAccessView() override;
 
   // views::View:

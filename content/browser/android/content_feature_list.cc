@@ -23,7 +23,6 @@ namespace {
 // in other locations in the code base (e.g. content_features.h).
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
-    &kEnhancedSelectionInsertionHandle,
     &kServiceGroupImportance,
 };
 
@@ -40,8 +39,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }  // namespace
 
 // Alphabetical:
-const base::Feature kEnhancedSelectionInsertionHandle{
-    "EnhancedSelectionInsertionHandle", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kRequestUnbufferedDispatch{
     "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kServiceGroupImportance{"ServiceGroupImportance",

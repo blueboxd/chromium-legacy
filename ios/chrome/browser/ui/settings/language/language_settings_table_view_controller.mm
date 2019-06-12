@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -30,13 +31,6 @@
 #endif
 
 namespace {
-
-NSString* const kLanguageSettingsTableViewAccessibilityIdentifier =
-    @"kLanguageSettingsTableViewAccessibilityIdentifier";
-NSString* const kAddLanguageButtonAccessibilityIdentifier =
-    @"kAddLanguageButtonAccessibilityIdentifier";
-NSString* const kTranslateSwitchAccessibilityIdentifier =
-    @"kTranslateSwitchAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierLanguages = kSectionIdentifierEnumZero,
@@ -427,8 +421,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* addLanguageItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeAddLanguage];
   self.addLanguageItem = addLanguageItem;
-  addLanguageItem.accessibilityIdentifier =
-      kAddLanguageButtonAccessibilityIdentifier;
   addLanguageItem.text = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE);
   addLanguageItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);

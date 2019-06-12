@@ -2837,7 +2837,7 @@
     "type": "console_test_launcher",
   },
   "web_engine_integration_tests": {
-    "label": "//fuchsia/runners:web_engine_integration_tests",
+    "label": "//fuchsia/engine:web_engine_integration_tests",
     "type": "console_test_launcher",
   },
   "web_engine_unittests": {

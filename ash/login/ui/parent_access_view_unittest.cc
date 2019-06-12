@@ -14,11 +14,14 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "components/account_id/account_id.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -39,14 +42,6 @@ class ParentAccessViewTest : public LoginTestBase {
   // LoginScreenTest:
   void SetUp() override {
     LoginTestBase::SetUp();
-
-    ParentAccessView::Callbacks callbacks;
-    callbacks.on_finished = base::BindRepeating(
-        &ParentAccessViewTest::OnFinished, base::Unretained(this));
-
-    view_ = new ParentAccessView(account_id_, callbacks);
-    SetWidget(CreateWidgetWithContent(view_));
-
     login_client_ = std::make_unique<MockLoginScreenClient>();
   }
 
@@ -69,6 +64,16 @@ class ParentAccessViewTest : public LoginTestBase {
     access_granted ? ++successful_validation_ : ++back_action_;
   }
 
+  void StartView(ParentAccessRequestReason reason =
+                     ParentAccessRequestReason::kUnlockTimeLimits) {
+    ParentAccessView::Callbacks callbacks;
+    callbacks.on_finished = base::BindRepeating(
+        &ParentAccessViewTest::OnFinished, base::Unretained(this));
+
+    view_ = new ParentAccessView(account_id_, callbacks, reason);
+    SetWidget(CreateWidgetWithContent(view_));
+  }
+
   const AccountId account_id_;
   std::unique_ptr<MockLoginScreenClient> login_client_;
 
@@ -86,8 +91,33 @@ class ParentAccessViewTest : public LoginTestBase {
 
 }  // namespace
 
+// Tests that title and description are correctly set when reason is unlock time
+// limits.
+TEST_F(ParentAccessViewTest, UnlockTimeLimitsStrings) {
+  StartView(ParentAccessRequestReason::kUnlockTimeLimits);
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE),
+            test_api.title_label()->text());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION),
+            test_api.description_label()->text());
+}
+
+// Tests that title and description are correctly set when reason is change
+// time.
+TEST_F(ParentAccessViewTest, ChangeTimeStrings) {
+  StartView(ParentAccessRequestReason::kChangeTime);
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME),
+      test_api.title_label()->text());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION),
+            test_api.description_label()->text());
+}
+
 // Tests that back button works.
 TEST_F(ParentAccessViewTest, BackButton) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(test_api.back_button()->GetEnabled());
   EXPECT_EQ(0, back_action_);
@@ -100,6 +130,7 @@ TEST_F(ParentAccessViewTest, BackButton) {
 
 // Tests that submit button submits code from code input.
 TEST_F(ParentAccessViewTest, SubmitButton) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
@@ -121,6 +152,7 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
 
 // Tests that access code can be entered with numpad.
 TEST_F(ParentAccessViewTest, Numpad) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -139,6 +171,7 @@ TEST_F(ParentAccessViewTest, Numpad) {
 
 // Tests that access code can be submitted with press of 'enter' key.
 TEST_F(ParentAccessViewTest, SubmitWithEnter) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
@@ -160,6 +193,7 @@ TEST_F(ParentAccessViewTest, SubmitWithEnter) {
 
 // Tests that 'enter' key does not submit incomplete code.
 TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
@@ -195,6 +229,7 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
 
 // Tests that backspace button works.
 TEST_F(ParentAccessViewTest, Backspace) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
@@ -231,6 +266,7 @@ TEST_F(ParentAccessViewTest, Backspace) {
 
 // Tests input with virtual pin keyboard.
 TEST_F(ParentAccessViewTest, PinKeyboard) {
+  StartView();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   ParentAccessView::TestApi test_api(view_);
@@ -252,6 +288,7 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
 
 // Tests that pin keyboard visibility changes upon tablet mode changes.
 TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.pin_keyboard_view()->GetVisible());
@@ -265,6 +302,7 @@ TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
 
 // Tests that error state is shown and cleared when neccesary.
 TEST_F(ParentAccessViewTest, ErrorState) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
 
@@ -299,6 +337,7 @@ TEST_F(ParentAccessViewTest, ErrorState) {
 
 // Tests children views traversal with tab key.
 TEST_F(ParentAccessViewTest, TabKeyTraversal) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
@@ -328,6 +367,7 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
 
 // Tests children views backwards traversal with tab key.
 TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
+  StartView();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 

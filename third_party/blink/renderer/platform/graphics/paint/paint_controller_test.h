@@ -61,10 +61,10 @@ class PaintControllerTestBase : public testing::Test {
   size_t NumCachedNewSubsequences() const {
     return paint_controller_->num_cached_new_subsequences_;
   }
+#if DCHECK_IS_ON()
   size_t NumIndexedItems() const {
     return paint_controller_->num_indexed_items_;
   }
-#if DCHECK_IS_ON()
   size_t NumSequentialMatches() const {
     return paint_controller_->num_sequential_matches_;
   }

@@ -15,7 +15,7 @@ cr.define('settings', function() {
      * |setPIN|. In this case the second number is either the number of tries
      * remaining to correctly specify the current PIN, or else null to indicate
      * that no PIN is currently set.
-     * @return {!Promise<Array<number>>}
+     * @return {!Promise<!Array<number>>}
      */
     startSetPIN() {}
 
@@ -24,7 +24,7 @@ cr.define('settings', function() {
      * whose meaning is the same as with |startSetPIN|. The first number will
      * always be 1 to indicate that the process has completed and thus the
      * second will be the CTAP error code.
-     * @return {!Promise<Array<number>>}
+     * @return {!Promise<!Array<number>>}
      */
     setPIN(oldPIN, newPIN) {}
 

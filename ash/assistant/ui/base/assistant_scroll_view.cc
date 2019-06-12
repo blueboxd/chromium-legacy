@@ -80,7 +80,7 @@ void AssistantScrollView::OnViewPreferredSizeChanged(views::View* view) {
 
 void AssistantScrollView::InitLayout() {
   SetBackgroundColor(SK_ColorTRANSPARENT);
-  set_draw_overflow_indicator(false);
+  SetDrawOverflowIndicator(false);
 
   // Content view.
   auto content_view = std::make_unique<ContentView>();

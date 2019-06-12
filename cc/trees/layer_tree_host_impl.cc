@@ -3713,7 +3713,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
-  UpdateScrollSourceInfo(type);
+  UpdateScrollSourceInfo(type, scroll_state);
 
   return scroll_status;
 }
@@ -4892,6 +4892,7 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
   if (!InnerViewportScrollNode())
     return;
+  has_pinch_zoomed_ = true;
   viewport()->PinchUpdate(magnify_delta, anchor);
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();
@@ -4961,10 +4962,23 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
 
   // Record and reset scroll source flags.
-  scroll_info->has_scrolled_by_wheel = has_scrolled_by_wheel_;
-  scroll_info->has_scrolled_by_touch = has_scrolled_by_touch_;
+  if (has_scrolled_by_wheel_) {
+    scroll_info->manipulation_info |= kManipulationInfoHasScrolledByWheel;
+  }
+  if (has_scrolled_by_touch_) {
+    scroll_info->manipulation_info |= kManipulationInfoHasScrolledByTouch;
+  }
+  if (has_scrolled_by_precisiontouchpad_) {
+    scroll_info->manipulation_info |=
+        kManipulationInfoHasScrolledByPrecisionTouchPad;
+  }
+  if (has_pinch_zoomed_) {
+    scroll_info->manipulation_info |= kManipulationInfoHasPinchZoomed;
+  }
+
+  has_scrolled_by_wheel_ = has_scrolled_by_touch_ =
+      has_scrolled_by_precisiontouchpad_ = has_pinch_zoomed_ = false;
   scroll_info->scroll_gesture_did_end = scroll_gesture_did_end_;
-  has_scrolled_by_wheel_ = has_scrolled_by_touch_ = false;
 
   // Record and reset overscroll delta.
   scroll_info->overscroll_delta = overscroll_delta_for_main_thread_;
@@ -5904,11 +5918,18 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
 }
 
 void LayerTreeHostImpl::UpdateScrollSourceInfo(
-    InputHandler::ScrollInputType type) {
-  if (type == InputHandler::WHEEL)
+    InputHandler::ScrollInputType type,
+    ScrollState* scroll_state) {
+  if (type == InputHandler::WHEEL &&
+      scroll_state->delta_granularity() ==
+          static_cast<double>(
+              ui::input_types::ScrollGranularity::kScrollByPrecisePixel)) {
+    has_scrolled_by_precisiontouchpad_ = true;
+  } else if (type == InputHandler::WHEEL) {
     has_scrolled_by_wheel_ = true;
-  else if (type == InputHandler::TOUCHSCREEN)
+  } else if (type == InputHandler::TOUCHSCREEN) {
     has_scrolled_by_touch_ = true;
+  }
 }
 
 void LayerTreeHostImpl::ShowScrollbarsForImplScroll(ElementId element_id) {

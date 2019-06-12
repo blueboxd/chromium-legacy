@@ -3379,19 +3379,28 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   }
 }
 
-void WebViewImpl::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
+void WebViewImpl::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!MainFrameImpl())
     return;
 
-  if (has_scrolled_by_wheel) {
+  if ((info & cc::kManipulationInfoHasScrolledByWheel) ==
+      cc::kManipulationInfoHasScrolledByWheel) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByWheel);
   }
-  if (has_scrolled_by_touch) {
+  if ((info & cc::kManipulationInfoHasScrolledByTouch) ==
+      cc::kManipulationInfoHasScrolledByTouch) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByTouch);
+  }
+  if ((info & cc::kManipulationInfoHasPinchZoomed) ==
+      cc::kManipulationInfoHasPinchZoomed) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(), WebFeature::kPinchZoom);
+  }
+  if ((info & cc::kManipulationInfoHasScrolledByPrecisionTouchPad) ==
+      cc::kManipulationInfoHasScrolledByPrecisionTouchPad) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(),
+                      WebFeature::kScrollByPrecisionTouchPad);
   }
 }
 

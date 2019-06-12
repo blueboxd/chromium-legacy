@@ -111,8 +111,9 @@ interface AssistantInteractionSubscriber {
   // Assistant got text response from server.
   OnTextResponse(string response);
 
-  // Assistant got open URL response from server.
-  OnOpenUrlResponse(url.mojom.Url url);
+  // Assistant got open URL response from server. |in_background| refers to
+  // being in background of Assistant UI, not in background of browser.
+  OnOpenUrlResponse(url.mojom.Url url, bool in_background);
 
   // Assistant speech recognition has started.
   OnSpeechRecognitionStarted();

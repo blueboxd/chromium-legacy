@@ -4,6 +4,7 @@
 
 #include "cc/paint/image_transfer_cache_entry.h"
 
+#include <array>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -22,6 +23,60 @@
 
 namespace cc {
 namespace {
+
+// Creates a SkImage backed by the YUV textures corresponding to |plane_images|
+// (in YUV order). The backend textures are first extracted out of the
+// |plane_images| (and work is flushed on each one). Note that we assume that
+// the image is opaque (no alpha plane). Then, a SkImage is created out of those
+// textures using the SkImage::MakeFromYUVATextures() API. Finally, if
+// |target_color_space| is not nullptr, the SkImage is converted to that color
+// space (note that before conversion, the image is assumed to be in sRGB). On
+// success, the resulting SkImage is returned. On failure, nullptr is returned
+// (e.g., if one of the backend textures is invalid or a Skia error occurs).
+//
+// Note that the conversion from YUV to RGB is done according to
+// |yuv_color_space|.
+//
+// TODO(andrescj): support embedded color profiles.
+// TODO(crbug.com/910276): support non-opaque images.
+sk_sp<SkImage> MakeYUVImageFromUploadedPlanes(
+    GrContext* context,
+    const std::vector<sk_sp<SkImage>>& plane_images,
+    sk_sp<SkColorSpace> target_color_space,
+    SkYUVColorSpace yuv_color_space = SkYUVColorSpace::kJPEG_SkYUVColorSpace) {
+  // 1) Extract the textures.
+  DCHECK_EQ(3u, plane_images.size());
+  std::array<GrBackendTexture, 3u> plane_backend_textures;
+  for (size_t plane = 0; plane < 3u; plane++) {
+    plane_backend_textures[plane] = plane_images[plane]->getBackendTexture(
+        true /* flushPendingGrContextIO */);
+    if (!plane_backend_textures[plane].isValid()) {
+      DLOG(ERROR) << "Invalid backend texture found";
+      return nullptr;
+    }
+  }
+
+  // 2) Create the YUV image. Note that the planes in |plane_backend_textures|
+  // are in YUV order.
+  SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount];
+  plane_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+  plane_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+  plane_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+  plane_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
+  sk_sp<SkImage> image = SkImage::MakeFromYUVATextures(
+      context, yuv_color_space, plane_backend_textures.data(), plane_indices,
+      plane_images[0]->dimensions(), kTopLeft_GrSurfaceOrigin);
+  if (!image) {
+    DLOG(ERROR) << "Could not create YUV image";
+    return nullptr;
+  }
+
+  // 3) Perform color space transformation if requested.
+  if (target_color_space)
+    image = image->makeColorSpace(target_color_space);
+
+  return image;
+}
 
 // TODO(ericrk): Replace calls to this with calls to SkImage::makeTextureImage,
 // once that function handles colorspaces. https://crbug.com/834837
@@ -152,56 +207,27 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     sk_sp<SkColorSpace> target_color_space) {
   context_ = context;
 
-  // 1) Extract the planar textures from |plane_images|.
-  std::vector<GrBackendTexture> plane_backend_textures(3u);
-  DCHECK_EQ(3u, plane_images.size());
-  for (size_t plane = 0; plane < 3u; plane++) {
-    plane_backend_textures[plane] = plane_images[plane]->getBackendTexture(
-        true /* flushPendingGrContextIO */);
-    if (!plane_backend_textures[plane].isValid()) {
-      DLOG(ERROR) << "Invalid backend texture found";
-      return false;
-    }
-    if (needs_mips) {
-      // TODO(andrescj): generate mipmaps when requested. This will require some
-      // resource management: we either let Skia own the new textures or we take
-      // ownership and delete them in |destroy_callback|.
-      NOTIMPLEMENTED();
+  // 1) Generate mipmap chains if requested.
+  if (needs_mips) {
+    for (size_t plane = 0; plane < plane_images.size(); plane++) {
+      plane_images[plane] = plane_images[plane]->makeTextureImage(
+          context_, nullptr /* dstColorSpace */, GrMipMapped::kYes);
+      if (!plane_images[plane]) {
+        DLOG(ERROR) << "Could not generate mipmap chain for plane " << plane;
+        return false;
+      }
     }
   }
   plane_images_ = std::move(plane_images);
 
-  // 2) Create a SkImage backed by the YUV textures extracted above. There are
-  //    two assumptions here:
-  //
-  //    - SkYUVColorSpace::kJPEG_SkYUVColorSpace is used for the YUV-to-RGB
-  //      matrix.
-  //    - The color space of the resulting image is sRGB.
-  //
-  // TODO(andrescj): support other YUV-to-RGB conversions and embedded color
-  // profiles.
-  SkYUVAIndex plane_indices[] = {
-      SkYUVAIndex{0, SkColorChannel::kR}, SkYUVAIndex{1, SkColorChannel::kR},
-      SkYUVAIndex{2, SkColorChannel::kR}, SkYUVAIndex{-1, SkColorChannel::kR}};
-  image_ = SkImage::MakeFromYUVATextures(
-      context_, SkYUVColorSpace::kJPEG_SkYUVColorSpace,
-      plane_backend_textures.data(), plane_indices,
-      plane_images_[0]->dimensions(), kTopLeft_GrSurfaceOrigin);
-  if (!image_) {
-    DLOG(ERROR) << "Could not create YUV SkImage";
+  // 2) Create a SkImage backed by |plane_images|.
+  image_ = MakeYUVImageFromUploadedPlanes(context_, plane_images_,
+                                          target_color_space);
+  if (!image_)
     return false;
-  }
 
-  // 3) Perform color space conversion if necessary.
-  if (target_color_space)
-    image_ = image_->makeColorSpace(target_color_space);
-  if (!image_) {
-    DLOG(ERROR) << "Could not do color space conversion";
-    return false;
-  }
-
-  // 4) Fill out the rest of the information.
-  has_mips_ = false;
+  // 3) Fill out the rest of the information.
+  has_mips_ = needs_mips;
   size_ = buffer_byte_size;
   fits_on_gpu_ = true;
   return true;
@@ -320,11 +346,18 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     return;
 
   if (!plane_images_.empty()) {
-    // TODO(andrescj): generate mipmaps for hardware-accelerated decodes when
-    // requested. This will require some resource management: we either let Skia
-    // own the new textures or we take ownership and delete them in
-    // |destroy_callback_|.
-    NOTIMPLEMENTED();
+    DCHECK(image_);
+    DCHECK_EQ(3u, plane_images_.size());
+    for (size_t plane = 0; plane < plane_images_.size(); plane++) {
+      DCHECK(plane_images_[plane]);
+      plane_images_[plane] = plane_images_[plane]->makeTextureImage(
+          context_, nullptr /* dstColorSpace */, GrMipMapped::kYes);
+    }
+    image_ = MakeYUVImageFromUploadedPlanes(
+        context_, plane_images_,
+        image_->imageInfo().refColorSpace() /* target_color_space */);
+    has_mips_ = true;
+    return;
   }
 
   has_mips_ = true;

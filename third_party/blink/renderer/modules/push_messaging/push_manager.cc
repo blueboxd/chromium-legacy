@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -51,9 +50,10 @@ Vector<String> PushManager::supportedContentEncodings() {
   return Vector<String>({"aes128gcm", "aesgcm"});
 }
 
-ScriptPromise PushManager::subscribe(ScriptState* script_state,
-                                     const PushSubscriptionOptionsInit* options,
-                                     ExceptionState& exception_state) {
+ScriptPromise PushManager::subscribe(
+    ScriptState* script_state,
+    const PushSubscriptionOptionsInit* options_init,
+    ExceptionState& exception_state) {
   if (!registration_->active()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
@@ -61,8 +61,8 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                           "Subscription failed - no active Service Worker"));
   }
 
-  const WebPushSubscriptionOptions& web_options =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* options =
+      PushSubscriptionOptions::FromOptionsInit(options_init, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -86,13 +86,13 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
     DCHECK(messaging_client);
 
     messaging_client->Subscribe(
-        registration_->RegistrationId(), web_options,
+        registration_, options,
         LocalFrame::HasTransientUserActivation(frame,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     GetPushProvider(registration_)
-        ->Subscribe(web_options,
+        ->Subscribe(options,
                     LocalFrame::HasTransientUserActivation(
                         nullptr, true /* check_if_main_thread */),
                     std::make_unique<PushSubscriptionCallbacks>(resolver,

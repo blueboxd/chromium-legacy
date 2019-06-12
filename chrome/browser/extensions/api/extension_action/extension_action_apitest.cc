@@ -21,10 +21,14 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -114,6 +118,34 @@ class MultiActionAPITest
   MultiActionAPITest()
       : current_channel_(
             extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
+
+  // Returns true if the |action| has whatever state its default is on the
+  // tab with the given |tab_id|.
+  bool ActionHasDefaultState(const ExtensionAction& action, int tab_id) const {
+    bool is_visible = action.GetIsVisible(tab_id);
+    bool default_is_visible =
+        action.default_state() == ActionInfo::STATE_ENABLED;
+    return is_visible == default_is_visible;
+  }
+
+  // Ensures the |action| is enabled on the tab with the given |tab_id|.
+  void EnsureActionIsEnabled(ExtensionAction* action, int tab_id) const {
+    if (!action->GetIsVisible(tab_id))
+      action->SetIsVisible(tab_id, true);
+  }
+
+  // Returns the id of the currently-active tab.
+  int GetActiveTabId() const {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    return SessionTabHelper::IdForTab(web_contents).id();
+  }
+
+  // Returns the action associated with |extension|.
+  ExtensionAction* GetExtensionAction(const Extension& extension) {
+    auto* action_manager = ExtensionActionManager::Get(profile());
+    return action_manager->GetExtensionAction(extension);
+  }
 
  private:
   std::unique_ptr<ScopedCurrentChannel> current_channel_;
@@ -322,23 +354,81 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
   ASSERT_EQ(1, toolbar_helper->NumberOfBrowserActions());
   EXPECT_EQ(extension->id(), toolbar_helper->GetExtensionId(0));
 
-  auto* action_manager = ExtensionActionManager::Get(profile());
-  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+  ExtensionAction* action = GetExtensionAction(*extension);
   ASSERT_TRUE(action);
 
-  const int tab_id = SessionTabHelper::IdForTab(
-                         browser()->tab_strip_model()->GetActiveWebContents())
-                         .id();
-  bool is_visible = action->GetIsVisible(tab_id);
-  // The action should only be disabled if that was its default state.
-  EXPECT_EQ(is_visible ? ActionInfo::STATE_ENABLED : ActionInfo::STATE_DISABLED,
-            action->default_state());
-  if (!is_visible)
-    action->SetIsVisible(tab_id, true);
+  const int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabled(action, tab_id);
+  EXPECT_FALSE(action->HasPopup(tab_id));
 
   ResultCatcher result_catcher;
   toolbar_helper->Press(0);
   ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+}
+
+// Tests the creation of a popup when one is specified in the manifest.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test Clicking",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {
+             "default_popup": "popup.html"
+           }
+         })";
+
+  constexpr char kPopupHtml[] =
+      R"(<!doctype html>
+         <html>
+           <script src="popup.js"></script>
+         </html>)";
+  constexpr char kPopupJs[] =
+      "window.onload = function() { chrome.test.notifyPass(); };";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.html"), kPopupHtml);
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.js"), kPopupJs);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
+      BrowserActionTestUtil::Create(browser());
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  const int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabled(action, tab_id);
+  EXPECT_TRUE(action->HasPopup(tab_id));
+
+  ResultCatcher result_catcher;
+  toolbar_helper->Press(0);
+  EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+
+  ProcessManager* process_manager = ProcessManager::Get(profile());
+  ProcessManager::FrameSet frames =
+      process_manager->GetRenderFrameHostsForExtension(extension->id());
+  ASSERT_EQ(1u, frames.size());
+  content::RenderFrameHost* render_frame_host = *frames.begin();
+  EXPECT_EQ(extension->GetResourceURL("popup.html"),
+            render_frame_host->GetLastCommittedURL());
+
+  content::WebContents* popup_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  ASSERT_TRUE(popup_contents);
+
+  content::WebContentsDestroyedWatcher contents_destroyed(popup_contents);
+  EXPECT_TRUE(content::ExecuteScript(popup_contents, "window.close()"));
+  contents_destroyed.Wait();
+
+  frames = process_manager->GetRenderFrameHostsForExtension(extension->id());
+  EXPECT_EQ(0u, frames.size());
 }
 
 INSTANTIATE_TEST_SUITE_P(,

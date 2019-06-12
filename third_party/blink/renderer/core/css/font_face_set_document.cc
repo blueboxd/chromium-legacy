@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -152,6 +153,15 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   if (font_value == "inherit" || font_value == "initial")
     return false;
 
+  if (!GetDocument()->documentElement()) {
+    auto* font_selector = GetDocument()->GetStyleEngine().GetFontSelector();
+    FontDescription description =
+        FontStyleResolver::ComputeFont(*parsed_style, font_selector);
+    font = Font(description);
+    font.Update(font_selector);
+    return true;
+  }
+
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   FontFamily font_family;
@@ -167,7 +177,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   style->GetFont().Update(style->GetFont().GetFontSelector());
 
   GetDocument()->UpdateActiveStyle();
-  GetDocument()->EnsureStyleResolver().ComputeFont(style.get(), *parsed_style);
+  GetDocument()->EnsureStyleResolver().ComputeFont(
+      *GetDocument()->documentElement(), style.get(), *parsed_style);
 
   font = style->GetFont();
   font.Update(GetFontSelector());

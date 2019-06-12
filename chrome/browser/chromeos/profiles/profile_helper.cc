@@ -253,6 +253,11 @@ void ProfileHelper::ProfileStartup(Profile* profile) {
   // GetOffTheRecordProfile() call above.
   profile->InitChromeOSPreferences();
 
+  if (IsPrimaryProfile(profile)) {
+    g_browser_process->platform_part()->InitializePrimaryProfileServices(
+        profile);
+  }
+
   // Add observer so we can see when the first profile's session restore is
   // completed. After that, we won't need the default profile anymore.
   if (!IsSigninProfile(profile) &&

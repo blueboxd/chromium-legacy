@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
@@ -90,11 +90,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
-  const PresentationFeedbackMap& presentation_feedbacks() {
-    return presentation_feedbacks_;
+  const FrameTimingDetailsMap& timing_details() {
+    return frame_timing_details_;
   }
 
-  PresentationFeedbackMap TakePresentationFeedbacks() WARN_UNUSED_RESULT;
+  FrameTimingDetailsMap TakeFrameTimingDetailsMap() WARN_UNUSED_RESULT;
 
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
@@ -324,7 +324,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  PresentationFeedbackMap presentation_feedbacks_;
+  FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 
   base::TimeTicks last_frame_time_;

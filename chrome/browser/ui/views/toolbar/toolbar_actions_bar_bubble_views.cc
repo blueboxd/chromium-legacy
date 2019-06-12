@@ -54,7 +54,7 @@ void ToolbarActionsBarBubbleViews::Show() {
   GetWidget()->Show();
 }
 
-views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info = delegate_->GetExtraViewInfo();
 
@@ -86,7 +86,7 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
   }
 
   if (icon && extra_view) {
-    views::View* parent = new views::View();
+    std::unique_ptr<views::View> parent = std::make_unique<views::View>();
     parent->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(),
         ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -95,9 +95,7 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
     parent->AddChildView(std::move(extra_view));
     return parent;
   }
-
-  return icon ? static_cast<views::View*>(icon.release())
-              : static_cast<views::View*>(extra_view.release());
+  return icon ? std::move(icon) : std::move(extra_view);
 }
 
 base::string16 ToolbarActionsBarBubbleViews::GetWindowTitle() const {

@@ -4,6 +4,7 @@
 
 module remote_cocoa.mojom;
 
+import "components/remote_cocoa/common/select_file_dialog.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -87,6 +88,9 @@ interface NativeWidgetNSWindow {
   // Set the NativeWidgetNSWindow indicated by |parent_id| to be the parent of
   // this NativeWidgetNSWindow.
   SetParent(uint64 parent_id);
+
+  // Open a panel for file selection or creation.
+  CreateSelectFileDialog(SelectFileDialog& dialog);
 
   // Places this NativeWidgetNSWindow in front of the NativeWidgetNSWindow
   // indicated by |sibling_id| in z-order.

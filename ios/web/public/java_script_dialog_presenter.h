@@ -17,6 +17,8 @@ class WebState;
 
 class JavaScriptDialogPresenter {
  public:
+  virtual ~JavaScriptDialogPresenter() = default;
+
   // Requests presentation of a JavaScript dialog. Clients must always call
   // |callback| even if they choose not to present the dialog.
   virtual void RunJavaScriptDialog(WebState* web_state,

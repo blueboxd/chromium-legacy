@@ -556,6 +556,9 @@ class TestImporter(object):
             username = self._fetch_ecosystem_infra_sheriff_username()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
+        if username in ['kyleju']:
+            _log.warning('Cannot TBR by %s: not a committer', username)
+            username = ''
         return username or TBR_FALLBACK
 
     def _fetch_ecosystem_infra_sheriff_username(self):

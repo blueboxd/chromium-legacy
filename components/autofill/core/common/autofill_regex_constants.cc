@@ -79,11 +79,12 @@ const char kAddressLinesExtraRe[] =
 const char kAddressLookupRe[] = "lookup";
 const char kCountryRe[] =
     "country|countries"
-    "|país|pais"       // es
-    "|(?<!(入|出))国"  // ja-JP
-    "|国家"            // zh-CN
-    "|국가|나라"       // ko-KR
-    "|کشور";           // fa
+    "|país|pais"           // es
+    "|land(?!.*(mark.*))"  // de-DE landmark is another field type in India.
+    "|(?<!(入|出))国"      // ja-JP
+    "|国家"                // zh-CN
+    "|국가|나라"           // ko-KR
+    "|کشور";               // fa
 const char kCountryLocationRe[] = "location";
 const char kZipCodeRe[] =
     "zip|postal|post.*code|pcode"
@@ -117,7 +118,6 @@ const char kCityRe[] =
     "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
 const char kStateRe[] =
     "(?<!(united|hist|history).?)state|county|region|province"
-    "|land(?!.*(mark.*))"   // de-DE landmark is another field type in India.
     "|county|principality"  // en-UK
     "|都道府県"             // ja-JP
     "|estado|provincia"     // pt-BR, pt-PT

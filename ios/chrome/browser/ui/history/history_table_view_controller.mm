@@ -608,7 +608,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         base::mac::ObjCCastStrict<HistoryEntryItem>(item);
     TableViewURLCell* URLCell =
         base::mac::ObjCCastStrict<TableViewURLCell>(cellToReturn);
-    FaviconAttributes* cachedAttributes = [self.imageDataSource
+    [self.imageDataSource
         faviconForURL:URLItem.URL
            completion:^(FaviconAttributes* attributes) {
              // Only set favicon if the cell hasn't been reused.
@@ -618,8 +618,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                [URLCell.faviconView configureWithAttributes:attributes];
              }
            }];
-    DCHECK(cachedAttributes);
-    [URLCell.faviconView configureWithAttributes:cachedAttributes];
   }
   if (item.type == ItemTypeEntriesStatusWithLink) {
     TableViewTextLinkCell* tableViewTextLinkCell =

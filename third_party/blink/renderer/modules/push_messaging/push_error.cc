@@ -10,31 +10,31 @@
 
 namespace blink {
 
-DOMException* PushError::Take(ScriptPromiseResolver* resolver,
-                              const WebPushError& web_error) {
-  switch (web_error.error_type) {
-    case WebPushError::kErrorTypeAbort:
+DOMException* PushError::CreateException(mojom::PushErrorType error,
+                                         const String& message) {
+  switch (error) {
+    case mojom::PushErrorType::ABORT:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                                web_error.message);
-    case WebPushError::kErrorTypeInvalidState:
+                                                message);
+    case mojom::PushErrorType::INVALID_STATE:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, web_error.message);
-    case WebPushError::kErrorTypeNetwork:
+          DOMExceptionCode::kInvalidStateError, message);
+    case mojom::PushErrorType::NETWORK:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
-                                                web_error.message);
-    case WebPushError::kErrorTypeNone:
+                                                message);
+    case mojom::PushErrorType::NONE:
       NOTREACHED();
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError,
-                                                web_error.message);
-    case WebPushError::kErrorTypeNotAllowed:
+                                                message);
+    case mojom::PushErrorType::NOT_ALLOWED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError, web_error.message);
-    case WebPushError::kErrorTypeNotFound:
+          DOMExceptionCode::kNotAllowedError, message);
+    case mojom::PushErrorType::NOT_FOUND:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotFoundError, web_error.message);
-    case WebPushError::kErrorTypeNotSupported:
+          DOMExceptionCode::kNotFoundError, message);
+    case mojom::PushErrorType::NOT_SUPPORTED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, web_error.message);
+          DOMExceptionCode::kNotSupportedError, message);
   }
   NOTREACHED();
   return MakeGarbageCollected<DOMException>(DOMExceptionCode::kUnknownError);

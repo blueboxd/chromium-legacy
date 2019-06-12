@@ -13,7 +13,7 @@
 
 namespace blink {
 
-void ClassicScript::Trace(blink::Visitor* visitor) {
+void ClassicScript::Trace(Visitor* visitor) {
   Script::Trace(visitor);
   visitor->Trace(script_source_code_);
 }

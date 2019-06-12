@@ -69,15 +69,6 @@ namespace {
 
 constexpr char kTestUser[] = "testuser@test.com";
 
-#if !defined(OS_ANDROID)
-constexpr char kValidTokenResponse[] = R"(
-    {
-      "access_token": "at1",
-      "expires_in": 3600,
-      "token_type": "Bearer"
-    })";
-#endif
-
 constexpr char kHostedDomainResponse[] = R"(
     {
       "hd": "test.com"
@@ -113,23 +104,14 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   void RegisterPolicyClientWithCallback(UserPolicySigninService* service) {
-    // Policy client registration on Android depends on Token Service having
-    // a valid login token, while on other platforms, the login refresh token
-    // is specified directly.
     UserPolicySigninServiceBase::PolicyRegistrationCallback callback =
         base::Bind(&UserPolicySigninServiceTest::OnRegisterCompleted,
                    base::Unretained(this));
-#if defined(OS_ANDROID)
     AccountInfo account_info =
         identity_test_env()->MakeAccountAvailable(kTestUser);
     service->RegisterForPolicyWithAccountId(kTestUser, account_info.gaia,
                                             callback);
     ASSERT_TRUE(IsRequestActive());
-#else
-    service->RegisterForPolicyWithLoginToken(kTestUser, "mock_oauth_token",
-                                             callback);
-    ASSERT_TRUE(IsRequestActive());
-#endif
   }
 
   void SetUp() override {
@@ -216,32 +198,17 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   void MakeOAuthTokenFetchSucceed() {
-#if defined(OS_ANDROID)
     ASSERT_TRUE(IsRequestActive());
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
             "access_token", base::Time::Now());
-#else
-    ASSERT_TRUE(IsRequestActive());
-    test_url_loader_factory_.AddResponse(
-        GaiaUrls::GetInstance()->oauth2_token_url().spec(),
-        kValidTokenResponse);
-    base::RunLoop().RunUntilIdle();
-    test_url_loader_factory_.ClearResponses();
-#endif
   }
 
   void MakeOAuthTokenFetchFail() {
-#if defined(OS_ANDROID)
     ASSERT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
             GoogleServiceAuthError::FromServiceError("fail"));
-#else
-    ASSERT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GaiaUrls::GetInstance()->oauth2_token_url().spec(), "",
-        net::HTTP_BAD_REQUEST));
-#endif
   }
 
   void ReportHostedDomainStatus(bool is_hosted_domain) {
@@ -294,53 +261,8 @@ class UserPolicySigninServiceTest : public testing::Test {
         &job_control, net::OK, DeviceManagementService::kSuccess,
         registration_response);
 
-    // UserCloudPolicyManager should not be initialized yet.
-    ASSERT_FALSE(manager_->core()->service());
     EXPECT_TRUE(register_completed_);
     EXPECT_EQ(dm_token_, expected_dm_token);
-
-    // Now call to fetch policy - this should fire off a fetch request.
-    EXPECT_CALL(device_management_service_, StartJob(_))
-        .WillOnce(DoAll(
-            device_management_service_.CaptureJobType(&job_type),
-            device_management_service_.StartJobFullControl(&job_control)));
-
-    signin_service->FetchPolicyForSignedInUser(
-        test_account_id_, dm_token_, client_id_,
-        test_url_loader_factory_.GetSafeWeakWrapper(),
-        base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
-                   base::Unretained(this)));
-
-    Mock::VerifyAndClearExpectations(this);
-    ASSERT_NE(nullptr, job_control);
-    EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-              job_type);
-
-    // UserCloudPolicyManager should now be initialized.
-    EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
-    ASSERT_TRUE(manager_->core()->service());
-
-    // Make the policy fetch succeed - this should result in a write to the
-    // store and ultimately result in a call to OnPolicyRefresh().
-    EXPECT_CALL(*mock_store_, Store(_));
-    EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(1);
-
-    // Create a fake policy blob to deliver to the client.
-    em::DeviceManagementResponse fetch_response;
-    em::PolicyData policy_data;
-    policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
-    em::PolicyFetchResponse* policy_response =
-        fetch_response.mutable_policy_response()->add_responses();
-    ASSERT_TRUE(
-        policy_data.SerializeToString(policy_response->mutable_policy_data()));
-    device_management_service_.DoURLCompletion(
-        &job_control, net::OK, DeviceManagementService::kSuccess,
-        fetch_response);
-
-    // Complete the store which should cause the policy fetch callback to be
-    // invoked.
-    mock_store_->NotifyStoreLoaded();
-    Mock::VerifyAndClearExpectations(this);
   }
 
   identity::IdentityTestEnvironment* identity_test_env() {
@@ -401,7 +323,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
   ASSERT_FALSE(manager_->core()->service());
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   // Make sure user is not signed in.
   ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
@@ -426,7 +348,7 @@ TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
   ASSERT_TRUE(IsRequestActive());
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)
 
 // TODO(joaodasilva): these tests rely on issuing the OAuth2 login refresh
 // token after signin. Revisit this after figuring how to handle that on
@@ -746,42 +668,6 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
   ASSERT_FALSE(manager_->core()->service());
 }
 
-TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
-  // Initiate a policy fetch request.
-  DeviceManagementService::JobConfiguration::JobType job_type =
-      DeviceManagementService::JobConfiguration::TYPE_INVALID;
-  DeviceManagementService::JobControl* job_control = nullptr;
-  EXPECT_CALL(device_management_service_, StartJob(_))
-      .WillOnce(
-          DoAll(device_management_service_.CaptureJobType(&job_type),
-                device_management_service_.StartJobFullControl(&job_control)));
-  UserPolicySigninService* signin_service =
-      UserPolicySigninServiceFactory::GetForProfile(profile_.get());
-  signin_service->FetchPolicyForSignedInUser(
-      test_account_id_, "mock_dm_token", "mock_client_id",
-      test_url_loader_factory_.GetSafeWeakWrapper(),
-      base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
-                 base::Unretained(this)));
-  ASSERT_NE(nullptr, job_control);
-  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-            job_type);
-
-  // Make the policy fetch fail.
-  EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(1);
-  device_management_service_.DoURLCompletion(
-      &job_control, net::HTTP_BAD_REQUEST, DeviceManagementService::kSuccess,
-      em::DeviceManagementResponse());
-
-  // UserCloudPolicyManager should be initialized.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
-  ASSERT_TRUE(manager_->core()->service());
-}
-
-TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
-  ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
-}
-
 TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   // Explicitly forcing this call is necessary for the clearing of the primary
   // account to result in the account being fully removed in this testing
@@ -797,74 +683,6 @@ TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
 
   // Now sign in again.
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
-}
-
-TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureTemporary) {
-  ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
-
-  ASSERT_TRUE(manager_->IsClientRegistered());
-
-  // Kick off another policy fetch.
-  DeviceManagementService::JobConfiguration::JobType job_type =
-      DeviceManagementService::JobConfiguration::TYPE_INVALID;
-  DeviceManagementService::JobControl* job_control = nullptr;
-  EXPECT_CALL(device_management_service_, StartJob(_))
-      .WillOnce(
-          DoAll(device_management_service_.CaptureJobType(&job_type),
-                device_management_service_.StartJobFullControl(&job_control)));
-  manager_->RefreshPolicies();
-
-  Mock::VerifyAndClearExpectations(this);
-  ASSERT_NE(nullptr, job_control);
-  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-            job_type);
-
-  // Now, fake a transient error from the server on this policy fetch. This
-  // should have no impact on the cached policy.
-  device_management_service_.DoURLCompletion(
-      &job_control, net::HTTP_BAD_REQUEST, DeviceManagementService::kSuccess,
-      em::DeviceManagementResponse());
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(manager_->IsClientRegistered());
-}
-
-TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
-  ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
-
-  EXPECT_TRUE(manager_->IsClientRegistered());
-#if !defined(OS_ANDROID)
-  EXPECT_FALSE(signin_util::IsUserSignoutAllowedForProfile(profile_.get()));
-#endif
-
-  // Kick off another policy fetch.
-  DeviceManagementService::JobConfiguration::JobType job_type =
-      DeviceManagementService::JobConfiguration::TYPE_INVALID;
-  DeviceManagementService::JobControl* job_control = nullptr;
-  EXPECT_CALL(device_management_service_, StartJob(_))
-      .WillOnce(
-          DoAll(device_management_service_.CaptureJobType(&job_type),
-                device_management_service_.StartJobFullControl(&job_control)));
-  manager_->RefreshPolicies();
-  Mock::VerifyAndClearExpectations(this);
-  ASSERT_NE(nullptr, job_control);
-  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-            job_type);
-
-  // Now, fake a SC_FORBIDDEN error from the server on this policy fetch.  This
-  // indicates that chrome management is disabled and will result in the cached
-  // policy being removed and the manager shut down.
-  EXPECT_CALL(*mock_store_, Clear());
-  device_management_service_.DoURLCompletion(
-      &job_control, net::OK,
-      DeviceManagementService::kDeviceManagementNotAllowed,
-      em::DeviceManagementResponse());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(manager_->IsClientRegistered());
-#if !defined(OS_ANDROID)
-  EXPECT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile_.get()));
-#endif
 }
 
 }  // namespace

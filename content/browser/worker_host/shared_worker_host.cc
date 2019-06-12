@@ -26,6 +26,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -316,12 +317,17 @@ void SharedWorkerHost::CreateNetworkFactory(
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   url::Origin origin = instance_->constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
+
+  // TODO(crbug.com/955476): network_isolation_key to be created using worker
+  // script's origin.
   if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
-    process->CreateURLLoaderFactory(origin, std::move(no_header_client),
+    process->CreateURLLoaderFactory(origin, net::NetworkIsolationKey(),
+                                    std::move(no_header_client),
                                     std::move(request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    process->CreateURLLoaderFactory(origin, std::move(no_header_client),
+    process->CreateURLLoaderFactory(origin, net::NetworkIsolationKey(),
+                                    std::move(no_header_client),
                                     mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
         std::move(request), process_id_, original_factory.PassInterface());

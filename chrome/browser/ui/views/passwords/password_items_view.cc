@@ -289,12 +289,11 @@ void PasswordItemsView::NotifyPasswordFormAction(
   model()->OnPasswordAction(password_form, action);
 }
 
-views::View* PasswordItemsView::CreateExtraView() {
+std::unique_ptr<views::View> PasswordItemsView::CreateExtraView() {
   auto view = views::MdTextButton::CreateSecondaryUiButton(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
-
-  return view.release();
+  return view;
 }
 
 int PasswordItemsView::GetDialogButtons() const {

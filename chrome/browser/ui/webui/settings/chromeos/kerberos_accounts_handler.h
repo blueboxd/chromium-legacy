@@ -51,6 +51,9 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "removeKerberosAccount" message callback.
   void HandleRemoveKerberosAccount(const base::ListValue* args);
 
+  // WebUI "setAsActiveKerberosAccount" message callback.
+  void HandleSetAsActiveKerberosAccount(const base::ListValue* args);
+
   // Callback for the credential manager's ListAccounts method.
   void OnListAccounts(base::Value callback_id,
                       const kerberos::ListAccountsResponse& response);

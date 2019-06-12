@@ -15,8 +15,9 @@ namespace layered_api {
 
 enum class Module {
   kBlank,
-  kVirtualScroller,
+  kElementsSwitch,
   kKvStorage,
+  kVirtualScroller,
 };
 
 }  // namespace layered_api

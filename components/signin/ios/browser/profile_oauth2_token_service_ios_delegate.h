@@ -24,24 +24,24 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // KeyedService
   void Shutdown() override;
 
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const override;
-  void UpdateAuthError(const std::string& account_id,
+      const CoreAccountId& account_id) const override;
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
 
-  void LoadCredentials(const std::string& primary_account_id) override;
+  void LoadCredentials(const CoreAccountId& primary_account_id) override;
   std::vector<std::string> GetAccounts() override;
 
   // This method should not be called when using shared authentication.
-  void UpdateCredentials(const std::string& account_id,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
 
   // Removes all credentials from this instance of |ProfileOAuth2TokenService|,
@@ -49,9 +49,10 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // Subsequent calls to |RefreshTokenIsAvailable| will return |false|.
   void RevokeAllCredentials() override;
 
-  void AddAccountFromSystem(const std::string& account_id) override;
+  void AddAccountFromSystem(const CoreAccountId& account_id) override;
 
-  void ReloadAccountsFromSystem(const std::string& primary_account_id) override;
+  void ReloadAccountsFromSystem(
+      const CoreAccountId& primary_account_id) override;
 
   // Reloads accounts from the provider. Fires |OnRefreshTokenAvailable| for
   // each new account. Fires |OnRefreshTokenRevoked| for each account that was
@@ -62,17 +63,17 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // Sets the primary account and then reloads the accounts from the provider.
   // Should be called when the user signs in to a new account.
   // |primary_account_id| must not be an empty string.
-  void ReloadCredentials(const std::string& primary_account_id);
+  void ReloadCredentials(const CoreAccountId& primary_account_id);
 
   // Adds |account_id| to |accounts_| if it does not exist or udpates
   // the auth error state of |account_id| if it exists. Fires
   // |OnRefreshTokenAvailable| if the account info is updated.
-  virtual void AddOrUpdateAccount(const std::string& account_id);
+  virtual void AddOrUpdateAccount(const CoreAccountId& account_id);
 
  protected:
   // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
   // if the account info is removed.
-  virtual void RemoveAccount(const std::string& account_id);
+  virtual void RemoveAccount(const CoreAccountId& account_id);
 
  private:
   friend class ProfileOAuth2TokenServiceIOSDelegateTest;
@@ -85,13 +86,13 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, AccountStatus> AccountStatusMap;
+  typedef std::map<CoreAccountId, AccountStatus> AccountStatusMap;
 
   // Clears exclude secondary accounts preferences.
   void ClearExcludedSecondaryAccounts();
 
   // The primary account id.
-  std::string primary_account_id_;
+  CoreAccountId primary_account_id_;
 
   // Info about the existing accounts.
   AccountStatusMap accounts_;

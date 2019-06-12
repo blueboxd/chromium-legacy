@@ -54,7 +54,7 @@ void ClientPolicyControllerTest::TearDown() {
 
 void ClientPolicyControllerTest::ExpectTemporary(std::string name_space) {
   EXPECT_TRUE(
-      base::ContainsValue(controller()->GetTemporaryNamespaces(), name_space))
+      base::Contains(controller()->GetTemporaryNamespaces(), name_space))
       << "Namespace " << name_space
       << " had incorrect lifetime type when getting temporary namespaces.";
   EXPECT_TRUE(controller()->IsTemporary(name_space))
@@ -62,7 +62,7 @@ void ClientPolicyControllerTest::ExpectTemporary(std::string name_space) {
       << " had incorrect lifetime type setting when directly checking"
          " if it is temporary.";
   EXPECT_FALSE(
-      base::ContainsValue(controller()->GetPersistentNamespaces(), name_space))
+      base::Contains(controller()->GetPersistentNamespaces(), name_space))
       << "Namespace " << name_space
       << " had incorrect lifetime type when getting persistent namespaces.";
   EXPECT_FALSE(controller()->IsPersistent(name_space))
@@ -122,8 +122,8 @@ TEST_F(ClientPolicyControllerTest, FallbackTest) {
   EXPECT_EQ(policy.name_space, kDefaultNamespace);
   EXPECT_TRUE(isTemporary(policy));
   ExpectTemporary(kDefaultNamespace);
-  EXPECT_FALSE(base::ContainsValue(controller()->GetTemporaryNamespaces(),
-                                   kUndefinedNamespace));
+  EXPECT_FALSE(base::Contains(controller()->GetTemporaryNamespaces(),
+                              kUndefinedNamespace));
   EXPECT_TRUE(controller()->IsTemporary(kUndefinedNamespace));
   ExpectDownloadSupport(kUndefinedNamespace, false);
   ExpectDownloadSupport(kDefaultNamespace, false);

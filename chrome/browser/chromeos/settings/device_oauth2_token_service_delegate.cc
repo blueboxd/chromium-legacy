@@ -82,7 +82,7 @@ void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
 }
 
 bool DeviceOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto accounts = GetAccounts();
   return std::find(accounts.begin(), accounts.end(), account_id) !=
          accounts.end();
@@ -111,10 +111,10 @@ std::vector<std::string> DeviceOAuth2TokenServiceDelegate::GetAccounts() const {
   return accounts;
 }
 
-std::string DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {
-  std::string result;
-  CrosSettings::Get()->GetString(kServiceAccountIdentity, &result);
-  return result;
+CoreAccountId DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {
+  std::string account_id;
+  CrosSettings::Get()->GetString(kServiceAccountIdentity, &account_id);
+  return CoreAccountId(account_id);
 }
 
 void DeviceOAuth2TokenServiceDelegate::OnRefreshTokenResponse(
@@ -127,10 +127,11 @@ void DeviceOAuth2TokenServiceDelegate::OnRefreshTokenResponse(
 void DeviceOAuth2TokenServiceDelegate::OnGetTokenInfoResponse(
     std::unique_ptr<base::DictionaryValue> token_info) {
   std::string gaia_robot_id;
+  // For robot accounts email id is the account id.
   token_info->GetString("email", &gaia_robot_id);
   gaia_oauth_client_.reset();
 
-  CheckRobotAccountId(gaia_robot_id);
+  CheckRobotAccountId(CoreAccountId(gaia_robot_id));
 }
 
 void DeviceOAuth2TokenServiceDelegate::OnOAuthError() {
@@ -148,8 +149,7 @@ void DeviceOAuth2TokenServiceDelegate::OnNetworkError(int response_code) {
   ReportServiceError(GoogleServiceAuthError::CONNECTION_FAILED);
 }
 
-std::string DeviceOAuth2TokenServiceDelegate::GetRefreshToken(
-    const std::string& account_id) const {
+std::string DeviceOAuth2TokenServiceDelegate::GetRefreshToken() const {
   switch (state_) {
     case STATE_LOADING:
     case STATE_NO_TOKEN:
@@ -177,10 +177,10 @@ DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 
 OAuth2AccessTokenFetcher*
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
-  std::string refresh_token = GetRefreshToken(account_id);
+  std::string refresh_token = GetRefreshToken();
   DCHECK(!refresh_token.empty());
   return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
                                           refresh_token);
@@ -234,7 +234,7 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
 }
 
 void DeviceOAuth2TokenServiceDelegate::CheckRobotAccountId(
-    const std::string& gaia_robot_id) {
+    const CoreAccountId& gaia_robot_id) {
   // Make sure the value returned by GetRobotAccountId has been validated
   // against current device settings.
   switch (CrosSettings::Get()->PrepareTrustedValues(
@@ -255,7 +255,7 @@ void DeviceOAuth2TokenServiceDelegate::CheckRobotAccountId(
       return;
   }
 
-  std::string policy_robot_id = GetRobotAccountId();
+  CoreAccountId policy_robot_id = GetRobotAccountId();
   if (policy_robot_id == gaia_robot_id) {
     state_ = STATE_TOKEN_VALID;
     ReportServiceError(GoogleServiceAuthError::NONE);

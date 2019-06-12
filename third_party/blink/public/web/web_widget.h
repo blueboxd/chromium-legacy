@@ -35,6 +35,7 @@
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -184,8 +185,7 @@ class WebWidget {
   // thread.
   virtual void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) {}
 
-  virtual void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                                 bool has_scrolled_by_touch) {}
+  virtual void RecordManipulationTypeCounts(cc::ManipulationInfo info) {}
 
   virtual void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,

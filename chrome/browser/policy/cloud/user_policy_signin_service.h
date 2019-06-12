@@ -40,16 +40,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   ~UserPolicySigninService() override;
 
-  // Registers a CloudPolicyClient for fetching policy for a user. The
-  // |oauth2_login_token| and |username| are explicitly passed because
-  // the user is not signed in yet (ProfileOAuth2TokenService does not have
-  // any tokens yet to prevent services from using it until after we've fetched
-  // policy).
-  void RegisterForPolicyWithLoginToken(
-      const std::string& username,
-      const std::string& oauth2_login_token,
-      const PolicyRegistrationCallback& callback);
-
   // Registers a CloudPolicyClient for fetching policy for a user. |username| is
   // explicitly passed because the user is not yet authenticated, but the token
   // service has a refresh token available for |account_id|.

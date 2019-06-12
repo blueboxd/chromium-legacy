@@ -56,15 +56,17 @@ class BackingVisitor : public Visitor {
                  void** object_slot,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreStrongly(void* object,
+  void VisitBackingStoreStrongly(const char*,
+                                 void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {}
-  void VisitBackingStoreWeakly(void*,
+  void VisitBackingStoreWeakly(const char*,
+                               void*,
                                void**,
                                TraceDescriptor,
                                WeakCallback,
                                void*) final {}
-  void VisitBackingStoreOnly(void*, void**) final {}
+  void VisitBackingStoreOnly(const char*, void*, void**) final {}
   void RegisterBackingStoreCallback(void** slot,
                                     MovingObjectCallback,
                                     void* callback_data) final {}

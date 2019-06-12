@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_auth_page_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -49,24 +49,24 @@ class LoginUIShelfVisibilityTest : public MixinBasedInProcessBrowserTest {
 
 // Verifies that shelf buttons are shown by default on login screen.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, DefaultVisibility) {
-  EXPECT_TRUE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_TRUE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 // Verifies that guest button and add user button are hidden when Gaia
 // dialog is shown.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, GaiaDialogOpen) {
-  EXPECT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   test::OobeGaiaPageWaiter().WaitUntilReady();
-  EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 // Verifies that guest button and add user button are hidden on post-login
 // screens, after a user session is started.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
   auto override = WizardController::ForceOfficialBuildForTesting();
-  EXPECT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   test::OobeGaiaPageWaiter().WaitUntilReady();
   LoginDisplayHost::default_host()
       ->GetOobeUI()
@@ -77,8 +77,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
   // Sync consent is the first post-login screen shown when a new user signs in.
   OobeScreenWaiter(SyncConsentScreenView::kScreenId).Wait();
 
-  EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
-  EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 }  // namespace chromeos

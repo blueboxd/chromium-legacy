@@ -37,7 +37,7 @@ class TaskTabHelper : public content::WebContentsObserver,
       content::WebContents* web_contents);
   const sessions::ContextRecordTaskId* get_context_record_task_id(
       int nav_id) const {
-    if (!ContainsKey(local_context_record_task_id_map_, nav_id))
+    if (!base::Contains(local_context_record_task_id_map_, nav_id))
       return nullptr;
     return &local_context_record_task_id_map_.find(nav_id)->second;
   }

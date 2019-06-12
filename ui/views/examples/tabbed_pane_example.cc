@@ -20,11 +20,12 @@ TabbedPaneExample::TabbedPaneExample() : ExampleBase("Tabbed Pane") {
 TabbedPaneExample::~TabbedPaneExample() = default;
 
 void TabbedPaneExample::CreateExampleView(View* container) {
-  tabbed_pane_ = new TabbedPane();
-  tabbed_pane_->set_listener(this);
-  add_ = new LabelButton(this, ASCIIToUTF16("Add"));
-  add_at_ = new LabelButton(this, ASCIIToUTF16("Add At 1"));
-  select_at_ = new LabelButton(this, ASCIIToUTF16("Select At 1"));
+  auto tabbed_pane = std::make_unique<TabbedPane>();
+  tabbed_pane->set_listener(this);
+  auto add = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add"));
+  auto add_at = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add At 1"));
+  auto select_at =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Select At 1"));
 
   GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
@@ -34,7 +35,7 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1.0f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tabbed_pane_column);
-  layout->AddView(tabbed_pane_);
+  tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
 
   // Create a few tabs with a button first.
   AddButton("Tab 1");
@@ -50,9 +51,9 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   }
 
   layout->StartRow(0 /* no expand */, button_column);
-  layout->AddView(add_);
-  layout->AddView(add_at_);
-  layout->AddView(select_at_);
+  add_ = layout->AddView(std::move(add));
+  add_at_ = layout->AddView(std::move(add_at));
+  select_at_ = layout->AddView(std::move(select_at));
 }
 
 void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {

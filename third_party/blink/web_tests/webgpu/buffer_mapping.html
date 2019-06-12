@@ -26,7 +26,7 @@ promise_test(async t => {
       usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.MAP_READ,
     });
 
-    const commandEncoder = device.createCommandEncoder({});
+    const commandEncoder = device.createCommandEncoder();
     commandEncoder.copyBufferToBuffer(buffer, 0, readback, 0, size);
     queue.submit([commandEncoder.finish()]);
 
@@ -123,6 +123,320 @@ promise_test(async t => {
     assert_equals(data.length, actual.length);
     for (let i = 0; i < data.length; ++i) {
       assert_equals(data[i], actual[i]);
+    }
+
+    {
+      // Test simple CreateBufferMapped
+      const [buffer, arrayBuffer] = device.createBufferMapped({
+        size: 12,
+        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      });
+
+      checkMapWriteResult(arrayBuffer, 12);
+
+      const view = new Uint32Array(arrayBuffer);
+      view[1] = 7;
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, new Uint32Array([0, 7, 0]));
+    }
+
+    {
+      // Test large CreateBufferMapped
+      const size = 512 * 1024;
+
+      const [buffer, arrayBuffer] = device.createBufferMapped({
+        size,
+        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      });
+
+      checkMapWriteResult(arrayBuffer, size);
+
+      const view = new Uint32Array(arrayBuffer);
+      assert_equals(view.byteLength, size);
+      for (let i = 0; i < view.length; ++i) {
+        view[i] = i;
+      }
+      const expected = view.slice();
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, expected);
+    }
+
+    {
+      // Test simple non-mappable CreateBufferMapped
+      const [buffer, arrayBuffer] = device.createBufferMapped({
+        size: 12,
+        usage: GPUBufferUsage.TRANSFER_SRC,
+      });
+
+      checkMapWriteResult(arrayBuffer, 12);
+
+      const view = new Uint32Array(arrayBuffer);
+      view[1] = 7;
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, new Uint32Array([0, 7, 0]));
+    }
+
+    {
+      // Test large non-mappable CreateBufferMapped
+      const size = 512 * 1024;
+
+      const [buffer, arrayBuffer] = device.createBufferMapped({
+        size,
+        usage: GPUBufferUsage.TRANSFER_SRC,
+      });
+
+      checkMapWriteResult(arrayBuffer, size);
+
+      const view = new Uint32Array(arrayBuffer);
+      assert_equals(view.byteLength, size);
+      for (let i = 0; i < view.length; ++i) {
+        view[i] = i;
+      }
+      const expected = view.slice();
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, expected);
+    }
+
+    {
+      // Test simple CreateBufferMappedAsync
+      const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+        size: 12,
+        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      });
+
+      checkMapWriteResult(arrayBuffer, 12);
+
+      const view = new Uint32Array(arrayBuffer);
+      view[1] = 7;
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, new Uint32Array([0, 7, 0]));
+    }
+
+    {
+      // Test large CreateBufferMappedAsync
+      const size = 512 * 1024;
+
+      const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+        size,
+        usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE,
+      });
+
+      checkMapWriteResult(arrayBuffer, size);
+
+      const view = new Uint32Array(arrayBuffer);
+      assert_equals(view.byteLength, size);
+      for (let i = 0; i < view.length; ++i) {
+        view[i] = i;
+      }
+      const expected = view.slice();
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, expected);
+    }
+
+    {
+      // Test simple non-mappable CreateBufferMappedAsync
+      const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+        size: 12,
+        usage: GPUBufferUsage.TRANSFER_SRC,
+      });
+
+      checkMapWriteResult(arrayBuffer, 12);
+
+      const view = new Uint32Array(arrayBuffer);
+      view[1] = 7;
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, new Uint32Array([0, 7, 0]));
+    }
+
+    {
+      // Test large non-mappable CreateBufferMappedAsync
+      const size = 512 * 1024;
+
+      const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+        size,
+        usage: GPUBufferUsage.TRANSFER_SRC,
+      });
+
+      checkMapWriteResult(arrayBuffer, size);
+
+      const view = new Uint32Array(arrayBuffer);
+      assert_equals(view.byteLength, size);
+      for (let i = 0; i < view.length; ++i) {
+        view[i] = i;
+      }
+      const expected = view.slice();
+      buffer.unmap();
+
+      // Array buffer should be detached.
+      assert_equals(arrayBuffer.byteLength, 0);
+      assert_equals(view.byteLength, 0);
+
+      await expectContents(buffer, expected);
+    }
+
+    {
+      // Test that ArrayBuffers are detached after unmap().
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        const arrayBuffer = await buffer.mapWriteAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_READ,
+        });
+        const arrayBuffer = await buffer.mapReadAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = device.createBufferMapped({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+    }
+
+    {
+      // Test that ArrayBuffers are detached after destroy().
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        const arrayBuffer = await buffer.mapWriteAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_READ,
+        });
+        const arrayBuffer = await buffer.mapReadAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = device.createBufferMapped({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+    }
+
+    {
+      // Test OOM buffer mapping errors.
+      {
+        let didReject = false;
+        await device.createBuffer({
+          size: Number.MAX_SAFE_INTEGER,
+          usage: GPUBufferUsage.MAP_WRITE,
+        }).mapWriteAsync().catch(() => {
+          didReject = true;
+        });
+        assert_true(didReject, "mapWriteAsync promise rejected");
+      }
+      {
+        let didReject = false;
+        await device.createBuffer({
+          size: Number.MAX_SAFE_INTEGER,
+          usage: GPUBufferUsage.MAP_READ,
+        }).mapReadAsync().catch(() => {
+          didReject = true;
+        });
+        assert_true(didReject, "mapReadAsync promise rejected");
+      }
+      {
+        let didReject = false;
+        await device.createBufferMappedAsync({
+          size: Number.MAX_SAFE_INTEGER,
+          usage: GPUBufferUsage.TRANSFER_DST,
+        }).catch(() => {
+          didReject = true;
+        });
+        assert_true(didReject, "createBufferMappedAsync promise rejected");
+      }
+      {
+        let didThrow = false;
+        try {
+          device.createBufferMapped({
+            size: Number.MAX_SAFE_INTEGER,
+            usage: GPUBufferUsage.TRANSFER_DST,
+          });
+        } catch (err) {
+          didThrow = true;
+        }
+        assert_true(didThrow);
+      }
     }
 
   }

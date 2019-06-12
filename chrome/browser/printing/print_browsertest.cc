@@ -33,6 +33,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -509,6 +510,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
 // a timed out test which indicates the print preview hung.
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
                        SubframeUnavailableDuringPrint) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));

@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">ביחד, המכשירים שלך יוכלו לעבוד עוד יותר טוב</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
+<translation id="1175572348579024023">גלילה</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="119944043368869598">ניקוי הכל</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדגמה.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
+<translation id="4831034276697007977">הקליקים האוטומטיים יושבתו. האם להמשיך?</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
 <translation id="485592688953820832">ללא פעולה (השהיה)</translation>
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
@@ -415,6 +417,7 @@
 <translation id="7564874036684306347">העברת חלונות לשולחן עבודה אחר עלולה לגרום להתנהגות בלתי צפויה.
 
 ייתכן שהודעות, חלונות ותיבות דו-שיח יתפצלו בהמשך בין שולחנות עבודה.</translation>
+<translation id="7568294522609223312">השבתת קליקים אוטומטיים</translation>
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>

@@ -18,9 +18,12 @@
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/common/service_manager_connection.h"
@@ -217,6 +220,11 @@ void LoginScreenClient::ShowAccountAccessHelpApp() {
   scoped_refptr<chromeos::HelpAppLauncher>(
       new chromeos::HelpAppLauncher(nullptr))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+}
+
+void LoginScreenClient::ShowLockScreenNotificationSettings() {
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
 }
 
 void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/environment.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -98,6 +99,12 @@ void SendFileOnIOThread(const std::string& device_serial,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
 
+std::string GetSerialFromEnvironment() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string serial;
+  return env->GetVar("ANDROID_SERIAL", &serial) ? serial : "";
+}
+
 }  // namespace
 
 AdbImpl::AdbImpl(
@@ -110,6 +117,7 @@ AdbImpl::AdbImpl(
 AdbImpl::~AdbImpl() {}
 
 Status AdbImpl::GetDevices(std::vector<std::string>* devices) {
+  const std::string& serial_from_env = GetSerialFromEnvironment();
   std::string response;
   Status status = ExecuteCommand("host:devices", &response);
   if (!status.IsOk())
@@ -120,7 +128,12 @@ Status AdbImpl::GetDevices(std::vector<std::string>* devices) {
         lines.token_piece(), base::kWhitespaceASCII,
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (fields.size() == 2 && fields[1] == "device") {
-      devices->push_back(fields[0]);
+      if (!serial_from_env.empty() && fields[0] == serial_from_env) {
+        // Move device with matching ANDROID_SERIAL to the top.
+        devices->insert(devices->begin(), fields[0]);
+      } else {
+        devices->push_back(fields[0]);
+      }
     }
   }
   return Status(kOk);

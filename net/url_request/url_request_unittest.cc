@@ -43,6 +43,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -289,6 +290,19 @@ void FillBuffer(char* buffer, size_t len) {
   }
 }
 #endif
+
+CookieList GetAllCookies(URLRequestContext* request_context) {
+  CookieList cookie_list;
+  base::RunLoop run_loop;
+  request_context->cookie_store()->GetAllCookiesAsync(
+      base::BindLambdaForTesting([&](const CookieList& cookies,
+                                     const CookieStatusList& excluded_list) {
+        cookie_list = cookies;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return cookie_list;
+}
 
 void TestLoadTimingCacheHitNoNetwork(
     const LoadTimingInfo& load_timing_info) {
@@ -8537,6 +8551,51 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true")
         != std::string::npos);
   }
+}
+
+TEST_F(URLRequestTestHTTP, BasicAuthWithCookiesCancelAuth) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url_requiring_auth =
+      http_test_server()->GetURL("/auth-basic?set-cookie-if-challenged");
+
+  // Request a page that will give a 401 containing a Set-Cookie header.
+  // Verify that cookies are set before credentials are provided, and then
+  // cancelling auth does not result in setting the cookies again.
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  TestDelegate d;
+
+  EXPECT_TRUE(GetAllCookies(&context).empty());
+
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      url_requiring_auth, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_site_for_cookies(url_requiring_auth);
+  r->Start();
+  d.RunUntilAuthRequired();
+
+  // Cookie should have been set.
+  EXPECT_EQ(1, network_delegate.set_cookie_count());
+  CookieList cookies = GetAllCookies(&context);
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ("got_challenged", cookies[0].Name());
+  EXPECT_EQ("true", cookies[0].Value());
+
+  // Delete cookie.
+  context.cookie_store()->DeleteAllAsync(CookieStore::DeleteCallback());
+
+  // Cancel auth and continue the request.
+  r->CancelAuth();
+  d.RunUntilComplete();
+  ASSERT_TRUE(r->response_headers());
+  EXPECT_EQ(401, r->response_headers()->response_code());
+
+  // Cookie should not have been set again.
+  EXPECT_TRUE(GetAllCookies(&context).empty());
+  EXPECT_EQ(1, network_delegate.set_cookie_count());
 }
 
 TEST_F(URLRequestTest, CatchFilteredCookies) {

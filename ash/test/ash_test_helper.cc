@@ -30,6 +30,7 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -186,6 +187,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   // Ensure tests have a wallpaper as placeholder.
   shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
+
+  TabletModeController::SetForceNoScreenshotForTest();
 }
 
 void AshTestHelper::TearDown() {

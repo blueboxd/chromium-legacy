@@ -751,4 +751,8 @@ const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
   return resource_tracker_;
 }
 
+ukm::SourceId PageLoadTracker::GetSourceId() const {
+  return source_id_;
+}
+
 }  // namespace page_load_metrics

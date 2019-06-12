@@ -179,7 +179,7 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
       base::mac::ObjCCastStrict<ManualFillPasswordCell>(cell);
 
   NSString* itemIdentifier = passwordItem.uniqueIdentifier;
-  FaviconAttributes* cachedAttributes = [self.imageDataSource
+  [self.imageDataSource
       faviconForURL:passwordItem.faviconURL
          completion:^(FaviconAttributes* attributes) {
            // Only set favicon if the cell hasn't been reused.
@@ -188,8 +188,6 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
              [passwordCell configureWithFaviconAttributes:attributes];
            }
          }];
-  DCHECK(cachedAttributes);
-  [passwordCell configureWithFaviconAttributes:cachedAttributes];
 }
 
 @end

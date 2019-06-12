@@ -237,9 +237,9 @@ void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
   ipc_router_.SendThemeBackgroundInfo(theme_info);
 }
 
-void SearchTabHelper::MostVisitedItemsChanged(
+void SearchTabHelper::MostVisitedInfoChanged(
     const InstantMostVisitedInfo& most_visited_info) {
-  ipc_router_.SendMostVisitedItems(most_visited_info);
+  ipc_router_.SendMostVisitedInfo(most_visited_info);
 }
 
 void SearchTabHelper::FocusOmnibox(bool focus) {
@@ -285,11 +285,6 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
-void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
-  if (instant_service_)
-    instant_service_->ToggleMostVisitedOrCustomLinks();
-}
-
 bool SearchTabHelper::OnAddCustomLink(const GURL& url,
                                       const std::string& title) {
   DCHECK(!url.is_empty());
@@ -329,6 +324,16 @@ void SearchTabHelper::OnUndoCustomLinkAction() {
 void SearchTabHelper::OnResetCustomLinks() {
   if (instant_service_)
     instant_service_->ResetCustomLinks();
+}
+
+void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
+  if (instant_service_)
+    instant_service_->ToggleMostVisitedOrCustomLinks();
+}
+
+void SearchTabHelper::OnToggleShortcutsVisibility() {
+  if (instant_service_)
+    instant_service_->ToggleShortcutsVisibility();
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,

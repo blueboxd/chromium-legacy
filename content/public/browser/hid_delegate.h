@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/hid_chooser.h"
 #include "services/device/public/mojom/hid.mojom-forward.h"
+#include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
 
 namespace content {
 
@@ -25,6 +26,7 @@ class CONTENT_EXPORT HidDelegate {
   // prompt.
   virtual std::unique_ptr<HidChooser> RunChooser(
       RenderFrameHost* frame,
+      std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       HidChooser::Callback callback) = 0;
 
   // Returns whether |frame| has permission to request access to a device.

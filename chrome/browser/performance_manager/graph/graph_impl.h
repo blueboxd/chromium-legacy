@@ -113,22 +113,6 @@ class GraphImpl : public Graph {
   // TypedNodeBase.
   template <typename Observer>
   const std::vector<Observer*>& GetObservers() const;
-  template <>
-  const std::vector<FrameNodeObserver*>& GetObservers() const {
-    return frame_node_observers_;
-  }
-  template <>
-  const std::vector<PageNodeObserver*>& GetObservers() const {
-    return page_node_observers_;
-  }
-  template <>
-  const std::vector<ProcessNodeObserver*>& GetObservers() const {
-    return process_node_observers_;
-  }
-  template <>
-  const std::vector<SystemNodeObserver*>& GetObservers() const {
-    return system_node_observers_;
-  }
 
  private:
   using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;

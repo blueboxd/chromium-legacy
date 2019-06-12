@@ -434,6 +434,9 @@ public class MediaDrmBridge {
     private static MediaDrmBridge create(byte[] schemeUUID, String securityOrigin,
             String securityLevel, boolean requiresMediaCrypto, long nativeMediaDrmBridge,
             long nativeMediaDrmStorageBridge) {
+        Log.i(TAG, "Create MediaDrmBridge with level %s and origin %s", securityLevel,
+                securityOrigin);
+
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;
@@ -482,6 +485,7 @@ public class MediaDrmBridge {
      */
     private boolean setOrigin(String origin) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        Log.i(TAG, "Set origin: %s", origin);
 
         if (!isWidevine()) {
             Log.d(TAG, "Property " + ORIGIN + " isn't supported");

@@ -44,24 +44,25 @@ void ProgressBarExample::CreateExampleView(View* container) {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("-")).release();
-  layout->AddView(minus_button_);
-  progress_bar_ = new ProgressBar();
-  layout->AddView(progress_bar_);
-  plus_button_ = MdTextButton::Create(this, base::ASCIIToUTF16("+")).release();
-  layout->AddView(plus_button_);
-  layout->StartRowWithPadding(0, 0, 0, 10);
-  layout->AddView(new Label(base::ASCIIToUTF16("Infinite loader:")));
-  ProgressBar* infinite_bar = new ProgressBar();
-  infinite_bar->SetValue(-1);
-  layout->AddView(infinite_bar);
+  minus_button_ =
+      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("-")));
+  progress_bar_ = layout->AddView(std::make_unique<ProgressBar>());
+  plus_button_ =
+      layout->AddView(MdTextButton::Create(this, base::ASCIIToUTF16("+")));
 
   layout->StartRowWithPadding(0, 0, 0, 10);
   layout->AddView(
-      new Label(base::ASCIIToUTF16("Infinite loader (very short):")));
-  ProgressBar* shorter_bar = new ProgressBar(2);
+      std::make_unique<Label>(base::ASCIIToUTF16("Infinite loader:")));
+  auto infinite_bar = std::make_unique<ProgressBar>();
+  infinite_bar->SetValue(-1);
+  layout->AddView(std::move(infinite_bar));
+
+  layout->StartRowWithPadding(0, 0, 0, 10);
+  layout->AddView(std::make_unique<Label>(
+      base::ASCIIToUTF16("Infinite loader (very short):")));
+  auto shorter_bar = std::make_unique<ProgressBar>(2);
   shorter_bar->SetValue(-1);
-  layout->AddView(shorter_bar);
+  layout->AddView(std::move(shorter_bar));
 }
 
 void ProgressBarExample::ButtonPressed(Button* sender, const ui::Event& event) {

@@ -100,7 +100,7 @@ class HTMLParserScriptRunner final
     return !!reentry_permit_->ScriptNestingLevel();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLParserScriptRunner";
   }

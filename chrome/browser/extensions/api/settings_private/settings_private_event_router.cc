@@ -59,7 +59,9 @@ void SettingsPrivateEventRouter::Shutdown() {
     event_router->UnregisterObserver(this);
 
   if (listening_) {
+#if defined(OS_CHROMEOS)
     cros_settings_subscription_map_.clear();
+#endif
     const PrefsUtil::TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
     settings_private::GeneratedPrefs* generated_prefs =
         settings_private::GeneratedPrefsFactory::GetForBrowserContext(context_);
@@ -128,12 +130,15 @@ void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
   } else if (!should_listen && listening_) {
     const PrefsUtil::TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
     for (const auto& it : keys) {
-      if (prefs_util_->IsCrosSetting(it.first))
+      if (prefs_util_->IsCrosSetting(it.first)) {
+#if defined(OS_CHROMEOS)
         cros_settings_subscription_map_.erase(it.first);
-      else if (generated_prefs && generated_prefs->HasPref(it.first))
+#endif
+      } else if (generated_prefs && generated_prefs->HasPref(it.first)) {
         generated_prefs->RemoveObserver(it.first, this);
-      else
+      } else {
         FindRegistrarForPref(it.first)->Remove(it.first);
+      }
     }
   }
   listening_ = should_listen;

@@ -86,19 +86,19 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
         ->OnDangerousDownloadOpened(GURL("https://evil.com/malware.exe"),
                                     "/path/to/malware.exe",
-                                    "sha256_or_malware_exe", "user_name");
+                                    "sha256_or_malware_exe");
   }
 
   void TriggerOnSecurityInterstitialShownEvent() {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
         ->OnSecurityInterstitialShown(GURL("https://phishing.com/"), "PHISHING",
-                                      0, "user_name");
+                                      0);
   }
 
   void TriggerOnSecurityInterstitialProceededEvent() {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
         ->OnSecurityInterstitialProceeded(GURL("https://phishing.com/"),
-                                          "PHISHING", -201, "user_name");
+                                          "PHISHING", -201);
   }
 
   void SetUpRouters() {
@@ -202,7 +202,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
             captured_args.FindKey("url")->GetString());
   EXPECT_EQ("/path/to/malware.exe",
             captured_args.FindKey("fileName")->GetString());
-  EXPECT_EQ("user_name", captured_args.FindKey("userName")->GetString());
+  EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
   EXPECT_EQ("sha256_or_malware_exe",
             captured_args.FindKey("downloadDigestSha256")->GetString());
 
@@ -211,8 +211,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
   base::Value* event = wrapper.FindKey(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
-  EXPECT_EQ("user_name", *event->FindStringKey(
-                             SafeBrowsingPrivateEventRouter::kKeyUserName));
   EXPECT_EQ(
       "/path/to/malware.exe",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
@@ -236,7 +234,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   EXPECT_EQ("https://phishing.com/", captured_args.FindKey("url")->GetString());
   EXPECT_EQ("PHISHING", captured_args.FindKey("reason")->GetString());
   EXPECT_EQ("-201", captured_args.FindKey("netErrorCode")->GetString());
-  EXPECT_EQ("user_name", captured_args.FindKey("userName")->GetString());
+  EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
@@ -247,8 +245,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
   EXPECT_EQ(-201, *event->FindIntKey(
                       SafeBrowsingPrivateEventRouter::kKeyNetErrorCode));
-  EXPECT_EQ("user_name", *event->FindStringKey(
-                             SafeBrowsingPrivateEventRouter::kKeyUserName));
   EXPECT_TRUE(
       *event->FindBoolKey(SafeBrowsingPrivateEventRouter::kKeyClickedThrough));
 }
@@ -270,7 +266,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
   EXPECT_EQ("https://phishing.com/", captured_args.FindKey("url")->GetString());
   EXPECT_EQ("PHISHING", captured_args.FindKey("reason")->GetString());
   EXPECT_FALSE(captured_args.FindKey("netErrorCode"));
-  EXPECT_EQ("user_name", captured_args.FindKey("userName")->GetString());
+  EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
@@ -281,8 +277,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
   EXPECT_EQ(
       0, *event->FindIntKey(SafeBrowsingPrivateEventRouter::kKeyNetErrorCode));
-  EXPECT_EQ("user_name", *event->FindStringKey(
-                             SafeBrowsingPrivateEventRouter::kKeyUserName));
   EXPECT_FALSE(
       *event->FindBoolKey(SafeBrowsingPrivateEventRouter::kKeyClickedThrough));
 }

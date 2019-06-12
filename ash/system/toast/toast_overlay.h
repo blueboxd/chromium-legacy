@@ -26,7 +26,7 @@ class Widget;
 
 namespace ash {
 
-class ToastManagerTest;
+class ToastManagerImplTest;
 class ToastOverlayView;
 class ToastOverlayButton;
 
@@ -60,7 +60,7 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver,
   void UpdateOverlayBounds();
 
  private:
-  friend class ToastManagerTest;
+  friend class ToastManagerImplTest;
 
   class ToastDisplayObserver;
 

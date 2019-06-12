@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
@@ -76,6 +77,61 @@ GPUAdapter* GPUDevice::adapter() const {
 
 GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
   return GPUBuffer::Create(this, descriptor);
+}
+
+WTF::Vector<ScriptValue> GPUDevice::createBufferMapped(
+    ScriptState* script_state,
+    const GPUBufferDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  GPUBuffer* gpu_buffer;
+  DOMArrayBuffer* array_buffer;
+  std::tie(gpu_buffer, array_buffer) =
+      GPUBuffer::CreateMapped(this, descriptor, exception_state);
+
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Object> creation_context = script_state->GetContext()->Global();
+
+  return WTF::Vector<ScriptValue>({
+      ScriptValue(script_state, ToV8(gpu_buffer, creation_context, isolate)),
+      ScriptValue(script_state, ToV8(array_buffer, creation_context, isolate)),
+  });
+}
+
+ScriptPromise GPUDevice::createBufferMappedAsync(
+    ScriptState* script_state,
+    const GPUBufferDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  GPUBuffer* gpu_buffer;
+  DOMArrayBuffer* array_buffer;
+  std::tie(gpu_buffer, array_buffer) =
+      GPUBuffer::CreateMapped(this, descriptor, exception_state);
+
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Object> creation_context = script_state->GetContext()->Global();
+
+  v8::Local<v8::Value> elements[] = {
+      ToV8(gpu_buffer, creation_context, isolate),
+      ToV8(array_buffer, creation_context, isolate),
+  };
+
+  ScriptValue result(script_state, v8::Array::New(isolate, elements, 2));
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  // TODO(enga): CreateBufferMappedAsync is intended to spend more time to
+  // create an optimal mapping for the buffer. It resolves the promise when the
+  // mapping is complete. Currently, there is always a staging buffer in the
+  // wire so this is already the optimal path and the promise is immediately
+  // resolved. When we can create a buffer such that the memory is mapped
+  // directly in the renderer process, this promise should be resolved
+  // asynchronously.
+
+  if (exception_state.HadException()) {
+    resolver->Reject(exception_state);
+  } else {
+    resolver->Resolve(result);
+  }
+  return promise;
 }
 
 GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor) {

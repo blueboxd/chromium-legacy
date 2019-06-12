@@ -200,6 +200,7 @@ class ChromeSigninViewControllerTest
         @"UIImageView",
         @"UIScrollView",
         @"UIView",
+        @"_UIScrollViewScrollIndicator",
       ];
       // If this test fails, the unknown class should be added in other_views if
       // it doesn't display any strings, otherwise the strings diplay by this

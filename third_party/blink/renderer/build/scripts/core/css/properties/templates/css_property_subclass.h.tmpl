@@ -52,6 +52,9 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% if property.inherited %}
     | kInherited
   {% endif %}
+  {% if property.visited %}
+    | kVisited
+  {% endif %}
     ,
   {% if property.separator != None %}
     '{{property.separator}}'
@@ -109,6 +112,11 @@ class {{property_classname}} final : public {{property.namespace_group}} {
       blink::WritingMode writing_mode) const override {
     return CSSDirectionAwareResolver::Resolve{{resolver_name}}(direction, writing_mode,
         CSSDirectionAwareResolver::{{physical_group_name}}Group());
+  }
+  {% endif %}
+  {% if property.visited_property %}
+  const CSSProperty* GetVisitedProperty() const override {
+    return &Get{{property.visited_property.property_id}}();
   }
   {% endif %}
   {% if property.style_builder_declare %}

@@ -14,6 +14,40 @@
 
 namespace blink {
 
+namespace {
+std::unique_ptr<TransformationMatrix> TryGetTransformationMatrix(
+    const gfx::mojom::blink::TransformPtr& transform) {
+  if (transform && transform->matrix.has_value()) {
+    return std::make_unique<TransformationMatrix>(
+        WTFFloatVectorToTransformationMatrix(transform->matrix.value()));
+  }
+
+  return nullptr;
+}
+
+std::unique_ptr<TransformationMatrix> TryGetTransformationMatrix(
+    const TransformationMatrix* other) {
+  if (other) {
+    return std::make_unique<TransformationMatrix>(*other);
+  }
+
+  return nullptr;
+}
+}  // namespace
+
+XRInputSource::InternalState::InternalState(
+    uint32_t source_id,
+    device::mojom::XRTargetRayMode target_ray_mode,
+    TimeTicks base_timestamp)
+    : source_id(source_id),
+      target_ray_mode(target_ray_mode),
+      base_timestamp(base_timestamp) {}
+
+XRInputSource::InternalState::InternalState(const InternalState& other) =
+    default;
+
+XRInputSource::InternalState::~InternalState() = default;
+
 XRInputSource* XRInputSource::CreateOrUpdateFrom(
     XRInputSource* other,
     XRSession* session,
@@ -22,52 +56,34 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     return other;
 
   XRInputSource* updated_source = other;
-  if (other && other->InvalidatesSameObject(state)) {
+
+  // Check if we have an existing object, and if we do, if it can be re-used.
+  if (!other) {
+    auto source_id = state->source_id;
+    updated_source = MakeGarbageCollected<XRInputSource>(session, source_id);
+  } else if (other->InvalidatesSameObject(state)) {
+    // Something in the state has changed which requires us to re-create the
+    // object.  Create a copy now, and we will blindly update any state later,
+    // knowing that we now have a new object if needed.
     updated_source = MakeGarbageCollected<XRInputSource>(*other);
-
-    // Need to explicitly override any of the properties that could cause us to
-    // recreate the object.
-    // TODO(https://crbug.com/962724): Simplify this creation pattern
-    if (state->gamepad) {
-      updated_source->gamepad_ = MakeGarbageCollected<Gamepad>(
-          updated_source, 0, updated_source->base_timestamp_, TimeTicks::Now());
-    } else {
-      updated_source->gamepad_ = nullptr;
-    }
-  } else if (!other) {
-    updated_source = MakeGarbageCollected<XRInputSource>(session, state);
   }
 
-  if (state->gamepad) {
-    updated_source->UpdateGamepad(*(state->gamepad));
-  }
+  updated_source->UpdateGamepad(state->gamepad);
 
   // Update the input source's description if this state update includes them.
   if (state->description) {
     const device::mojom::blink::XRInputSourceDescriptionPtr& desc =
         state->description;
 
-    // Setting target ray mode and handedness is fine here because earlier in
-    // this function the input source was re-created if necessary.
-    updated_source->SetTargetRayMode(desc->target_ray_mode);
-    updated_source->SetHandedness(desc->handedness);
-    updated_source->SetEmulatedPosition(desc->emulated_position);
+    updated_source->state_.target_ray_mode = desc->target_ray_mode;
+    updated_source->state_.handedness = desc->handedness;
+    updated_source->state_.emulated_position = desc->emulated_position;
 
-    if (desc->pointer_offset && desc->pointer_offset->matrix.has_value()) {
-      TransformationMatrix pointer_matrix =
-          WTFFloatVectorToTransformationMatrix(
-              desc->pointer_offset->matrix.value());
-      updated_source->SetPointerTransformMatrix(&pointer_matrix);
-    }
+    updated_source->pointer_transform_matrix_ =
+        TryGetTransformationMatrix(desc->pointer_offset);
   }
 
-  if (state->grip && state->grip->matrix.has_value()) {
-    TransformationMatrix grip_matrix =
-        WTFFloatVectorToTransformationMatrix(state->grip->matrix.value());
-    updated_source->SetBasePoseMatrix(&grip_matrix);
-  } else {
-    updated_source->SetBasePoseMatrix(nullptr);
-  }
+  updated_source->base_pose_matrix_ = TryGetTransformationMatrix(state->grip);
 
   return updated_source;
 }
@@ -75,66 +91,63 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
 XRInputSource::XRInputSource(XRSession* session,
                              uint32_t source_id,
                              device::mojom::XRTargetRayMode target_ray_mode)
-    : session_(session),
-      source_id_(source_id),
+    : state_(source_id, target_ray_mode, session->xr()->NavigationStart()),
+      session_(session),
       target_ray_space_(MakeGarbageCollected<XRTargetRaySpace>(session, this)),
-      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)),
-      base_timestamp_(session->xr()->NavigationStart()) {
-  SetTargetRayMode(target_ray_mode);
-  SetHandedness(device::mojom::XRHandedness::NONE);
-}
-
-XRInputSource::XRInputSource(
-    XRSession* session,
-    const device::mojom::blink::XRInputSourceStatePtr& state)
-    : XRInputSource(session,
-                    state->source_id,
-                    device::mojom::XRTargetRayMode::GAZING) {
-  if (state->gamepad) {
-    gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, base_timestamp_,
-                                             TimeTicks::Now());
-  }
-}
+      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)) {}
 
 // Must make new target_ray_space_ and grip_space_ to ensure that they point to
 // the correct XRInputSource object. Otherwise, the controller position gets
 // stuck when an XRInputSource gets re-created. Also need to make a deep copy of
 // the matrices since they use unique_ptrs.
 XRInputSource::XRInputSource(const XRInputSource& other)
-    : active_frame_id_(other.active_frame_id_),
-      primary_input_pressed_(other.primary_input_pressed_),
-      selection_cancelled_(other.selection_cancelled_),
+    : state_(other.state_),
       session_(other.session_),
-      source_id_(other.source_id_),
       target_ray_space_(
           MakeGarbageCollected<XRTargetRaySpace>(other.session_, this)),
       grip_space_(MakeGarbageCollected<XRGripSpace>(other.session_, this)),
       gamepad_(other.gamepad_),
-      emulated_position_(other.emulated_position_),
-      base_timestamp_(other.base_timestamp_) {
-  // Since these setters also set strings, for convenience, setting them via
-  // their existing setters.
-  SetTargetRayMode(other.target_ray_mode_);
-  SetHandedness(other.handedness_);
+      base_pose_matrix_(
+          TryGetTransformationMatrix(other.base_pose_matrix_.get())),
+      pointer_transform_matrix_(
+          TryGetTransformationMatrix(other.pointer_transform_matrix_.get())) {}
 
-  SetBasePoseMatrix(other.base_pose_matrix_.get());
-  SetPointerTransformMatrix(other.pointer_transform_matrix_.get());
-}
-
-XRSpace* XRInputSource::gripSpace() const {
-  if (target_ray_mode_ == device::mojom::XRTargetRayMode::POINTING) {
-    return grip_space_;
+const String XRInputSource::handedness() const {
+  switch (state_.handedness) {
+    case device::mojom::XRHandedness::NONE:
+      return "none";
+    case device::mojom::XRHandedness::LEFT:
+      return "left";
+    case device::mojom::XRHandedness::RIGHT:
+      return "right";
   }
 
-  return nullptr;
+  NOTREACHED() << "Unknown handedness: " << state_.handedness;
+}
+
+const String XRInputSource::targetRayMode() const {
+  switch (state_.target_ray_mode) {
+    case device::mojom::XRTargetRayMode::GAZING:
+      return "gaze";
+    case device::mojom::XRTargetRayMode::POINTING:
+      return "tracked-pointer";
+    case device::mojom::XRTargetRayMode::TAPPING:
+      return "screen";
+  }
+
+  NOTREACHED() << "Unknown target ray mode: " << state_.target_ray_mode;
 }
 
 XRSpace* XRInputSource::targetRaySpace() const {
   return target_ray_space_;
 }
 
-Gamepad* XRInputSource::gamepad() const {
-  return gamepad_;
+XRSpace* XRInputSource::gripSpace() const {
+  if (state_.target_ray_mode == device::mojom::XRTargetRayMode::POINTING) {
+    return grip_space_;
+  }
+
+  return nullptr;
 }
 
 bool XRInputSource::InvalidatesSameObject(
@@ -144,11 +157,11 @@ bool XRInputSource::InvalidatesSameObject(
   }
 
   if (state->description) {
-    if (state->description->handedness != handedness_) {
+    if (state->description->handedness != state_.handedness) {
       return true;
     }
 
-    if (state->description->target_ray_mode != target_ray_mode_) {
+    if (state->description->target_ray_mode != state_.target_ray_mode) {
       return true;
     }
   }
@@ -156,75 +169,31 @@ bool XRInputSource::InvalidatesSameObject(
   return false;
 }
 
-void XRInputSource::UpdateGamepad(const device::Gamepad& gamepad) {
-  DCHECK(gamepad_);
-  gamepad_->UpdateFromDeviceState(gamepad);
-}
-
-void XRInputSource::SetTargetRayMode(
-    device::mojom::XRTargetRayMode target_ray_mode) {
-  target_ray_mode_ = target_ray_mode;
-
-  switch (target_ray_mode_) {
-    case device::mojom::XRTargetRayMode::GAZING:
-      target_ray_mode_string_ = "gaze";
-      return;
-    case device::mojom::XRTargetRayMode::POINTING:
-      target_ray_mode_string_ = "tracked-pointer";
-      return;
-    case device::mojom::XRTargetRayMode::TAPPING:
-      target_ray_mode_string_ = "screen";
-      return;
-  }
-
-  NOTREACHED() << "Unknown target ray mode: " << target_ray_mode_;
-}
-
-void XRInputSource::SetHandedness(device::mojom::XRHandedness handedness) {
-  handedness_ = handedness;
-
-  switch (handedness_) {
-    case device::mojom::XRHandedness::NONE:
-      handedness_string_ = "none";
-      return;
-    case device::mojom::XRHandedness::LEFT:
-      handedness_string_ = "left";
-      return;
-    case device::mojom::XRHandedness::RIGHT:
-      handedness_string_ = "right";
-      return;
-  }
-
-  NOTREACHED() << "Unknown handedness: " << handedness_;
-}
-
-void XRInputSource::SetEmulatedPosition(bool emulated_position) {
-  emulated_position_ = emulated_position;
-}
-
-void XRInputSource::SetBasePoseMatrix(
-    const TransformationMatrix* base_pose_matrix) {
-  if (base_pose_matrix) {
-    base_pose_matrix_ =
-        std::make_unique<TransformationMatrix>(*base_pose_matrix);
-  } else {
-    base_pose_matrix_ = nullptr;
-  }
-}
-
 void XRInputSource::SetPointerTransformMatrix(
     const TransformationMatrix* pointer_transform_matrix) {
-  if (pointer_transform_matrix) {
-    pointer_transform_matrix_ =
-        std::make_unique<TransformationMatrix>(*pointer_transform_matrix);
-  } else {
-    pointer_transform_matrix_ = nullptr;
-  }
+  pointer_transform_matrix_ =
+      TryGetTransformationMatrix(pointer_transform_matrix);
 }
 
 void XRInputSource::SetGamepadConnected(bool state) {
   if (gamepad_)
     gamepad_->SetConnected(state);
+}
+
+void XRInputSource::UpdateGamepad(
+    const base::Optional<device::Gamepad>& gamepad) {
+  if (gamepad) {
+    if (!gamepad_) {
+      // TODO(https://crbug.com/955104): Is the Gamepad object creation time the
+      // correct time floor?
+      gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, state_.base_timestamp,
+                                               TimeTicks::Now());
+    }
+
+    gamepad_->UpdateFromDeviceState(*gamepad);
+  } else {
+    gamepad_ = nullptr;
+  }
 }
 
 void XRInputSource::Trace(blink::Visitor* visitor) {

@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Informação de ficheiro</translation>
 <translation id="2246549592927364792">Pretende obter descrições de imagens a partir do Google?</translation>
 <translation id="2249269794707377949">É possível gerir aqui todas as contas Kerberos para início de sessão único em determinadas aplicações e Websites, bem como partilhas de ficheiros.</translation>
-<translation id="224940702122312781">Esta página utiliza uma grande quantidade de dados.</translation>
 <translation id="2249605167705922988">por exemplo 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Abrir com o System Viewer</translation>
 <translation id="225163402930830576">Atualizar redes</translation>
@@ -1912,7 +1911,6 @@ Pretende pará-lo?</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Levante e toque novamente</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sincronização em pausa</translation>
-<translation id="3861241522664181545">Página em pausa.</translation>
 <translation id="3862134173397075045">Bem-vindo à experiência do Google Cast no Chrome!</translation>
 <translation id="3862693525629180217">Validar através do sensor integrado</translation>
 <translation id="3862788408946266506">É necessário instalar a aplicação com o atributo de manifesto "kiosk_only" no modo quiosque do Chrome OS.</translation>
@@ -3861,7 +3859,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6920989436227028121">Abrir como separador normal</translation>
 <translation id="6921104647315081813">Limpar atividades</translation>
 <translation id="692114467174262153">Não foi possível abrir o <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
-<translation id="6921709132208495314">Parar de utilizar dados nesta página</translation>
 <translation id="6922128026973287222">Poupe dados e navegue mais rápido com a Poupança de dados Google. Clique para saber mais.</translation>
 <translation id="6922745772873733498">Introduza um PIN para imprimir</translation>
 <translation id="6923132443355966645">Deslocar/clicar</translation>

@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
 <translation id="4582497162516204941">Linux (बीटा) वाला पैकेज इंस्टॉल करें</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" /> के लिए खोज नतीजे दिखाए जा रहे हैं.</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4656293982926141856">यह कंप्यूटर</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनके साथ शेयर नहीं किए जाते.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">बुल्गारियाई कीबोर्ड</translation>
 <translation id="5418923334382419584">म्यांमार कीबोर्ड</translation>
 <translation id="5428105026674456456">स्पैनिश</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" /> खोज के लिए कोई नतीजा नहीं मिला.</translation>
 <translation id="5464696796438641524">पोलिश कीबोर्ड</translation>
 <translation id="5465122519792752163">नेपाली कीबोर्ड (इंस्क्रिप्ट)</translation>
 <translation id="5469868506864199649">इतालवी</translation>
 <translation id="5494920125229734069">सभी को चुनें</translation>
 <translation id="5500122897333236901">आइसलैंडिक</translation>
 <translation id="5508696409934741614">बिंदु</translation>
+<translation id="5522908512596376669">फ़ाइल की सूची को अब सूची की तरह दिखाया जा रहा है.</translation>
 <translation id="5524517123096967210">फ़ाइल को पढ़ा नहीं जा सका.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> इमेज</translation>
 <translation id="5533555070048896610">लिप्यंतरण (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6054173164583630569">फ़्रेंच कीबोर्ड</translation>
 <translation id="6074825444536523002">Google फ़ॉर्म</translation>
+<translation id="6096979789310008754">खोज के लिए इस्तेमाल किए गए टेक्स्ट मिटा दिए गए हैं. सभी फ़ील्ड और फ़ोल्डर दिखाए जा रहे हैं.</translation>
 <translation id="6111770213269631447">लिप्यंतरण (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> को ले जाया जा रहा है...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">हाथी</translation>
 <translation id="8569764466147087991">खोलने के लिए फ़ाइल को चुनें</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> आइटम समन्‍वयित कर रहा है...</translation>
+<translation id="8600173386174225982">फ़ाइल की सूची अब थंबनेल की तरह दिखाई जा रही है.</translation>
 <translation id="8669949407341943408">चल रहे...</translation>
 <translation id="8671210955687109937">टिप्पणी कर सकते हैं</translation>
 <translation id="8686213429977032554">यह डिस्क अभी तक शेयर नहीं की गई है</translation>

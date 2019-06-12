@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 
-namespace chrome {
+namespace cups_ipp_parser {
 namespace {
 
 using ipp_converter::HttpHeader;
@@ -210,4 +210,4 @@ void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
   std::move(callback).Run(std::move(parsed_request));
 }
 
-}  // namespace chrome
+}  // namespace cups_ipp_parser

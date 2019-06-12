@@ -41,6 +41,7 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
     private final int mOuterSpace;
     private final int mInnerSpace;
     private final int mVerticalSpacing;
+    private final int mVerticalInset;
     private final int mGradientWidth;
     private final int mLastChildBorderRadius;
     private final int mShadowColor;
@@ -61,9 +62,17 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
                         .autofill_assistant_bottombar_horizontal_spacing);
         mInnerSpace = context.getResources().getDimensionPixelSize(
                 org.chromium.chrome.autofill_assistant.R.dimen.autofill_assistant_actions_spacing);
-        mVerticalSpacing = context.getResources().getDimensionPixelSize(
+        mVerticalInset = context.getResources().getDimensionPixelSize(
                 org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_bottombar_vertical_spacing);
+                        .autofill_assistant_button_bg_vertical_inset);
+
+        // We remove mVerticalInset from the vertical spacing as that inset will be added above and
+        // below the button by ButtonView.
+        mVerticalSpacing = context.getResources().getDimensionPixelSize(
+                                   org.chromium.chrome.autofill_assistant.R.dimen
+                                           .autofill_assistant_bottombar_vertical_spacing)
+                - mVerticalInset;
+
         mGradientWidth = context.getResources().getDimensionPixelSize(
                 org.chromium.chrome.autofill_assistant.R.dimen
                         .autofill_assistant_actions_gradient_width);
@@ -99,9 +108,10 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
 
         View lastChild = parent.getChildAt(parent.getChildCount() - 1);
         mLastChildRect.left = lastChild.getLeft() + lastChild.getTranslationX();
-        mLastChildRect.top = lastChild.getTop() + lastChild.getTranslationY();
+        mLastChildRect.top = lastChild.getTop() + lastChild.getTranslationY() + mVerticalInset;
         mLastChildRect.right = lastChild.getRight() + lastChild.getTranslationX();
-        mLastChildRect.bottom = lastChild.getBottom() + lastChild.getTranslationY();
+        mLastChildRect.bottom =
+                lastChild.getBottom() + lastChild.getTranslationY() - mVerticalInset;
 
         canvas.save();
 

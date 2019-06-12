@@ -7,10 +7,7 @@
 #include <cstdint>
 #include <string>
 
-#include "ash/public/cpp/ash_switches.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
-#include "base/command_line.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -28,9 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -84,11 +79,7 @@ class LoginAttemptObserver : public AuthStatusConsumer {
 
 }  // namespace
 
-ScreenLockerTester::ScreenLockerTester() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &test_api_);
-}
+ScreenLockerTester::ScreenLockerTester() = default;
 
 ScreenLockerTester::~ScreenLockerTester() = default;
 
@@ -118,53 +109,28 @@ void ScreenLockerTester::SetUnlockPassword(const AccountId& account_id,
 }
 
 bool ScreenLockerTester::IsLocked() {
-  if (!IsScreenLockerLocked())
-    return false;
-
-  // Check from ash's perspective.
-  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-  bool is_ui_shown;
-  login_screen.IsLockShown(&is_ui_shown);
-  return IsScreenLockerLocked() && is_ui_shown;
+  return IsScreenLockerLocked() && ash::LoginScreenTestApi::IsLockShown();
 }
 
 bool ScreenLockerTester::IsLockRestartButtonShown() {
-  if (!IsScreenLockerLocked())
-    return false;
-
-  return login_screen_tester_.IsRestartButtonShown() && IsScreenLockerLocked();
+  return IsScreenLockerLocked() &&
+         ash::LoginScreenTestApi::IsRestartButtonShown();
 }
 
 bool ScreenLockerTester::IsLockShutdownButtonShown() {
-  if (!IsScreenLockerLocked())
-    return false;
-
-  bool is_shutdown_button_shown = login_screen_tester_.IsShutdownButtonShown();
-  return IsScreenLockerLocked() && is_shutdown_button_shown;
+  return IsScreenLockerLocked() &&
+         ash::LoginScreenTestApi::IsShutdownButtonShown();
 }
 
 bool ScreenLockerTester::IsAuthErrorBubbleShown() {
-  if (!IsScreenLockerLocked())
-    return false;
-
-  bool is_auth_error_button_shown =
-      login_screen_tester_.IsAuthErrorBubbleShown();
-  return IsScreenLockerLocked() && is_auth_error_button_shown;
+  return IsScreenLockerLocked() &&
+         ash::LoginScreenTestApi::IsAuthErrorBubbleShown();
 }
 
 void ScreenLockerTester::UnlockWithPassword(const AccountId& account_id,
                                             const std::string& password) {
-  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-  login_screen.SubmitPassword(account_id, password);
+  ash::LoginScreenTestApi::SubmitPassword(account_id, password);
   base::RunLoop().RunUntilIdle();
-}
-
-int64_t ScreenLockerTester::GetUiUpdateCount() {
-  return login_screen_tester_.GetUiUpdateCount();
-}
-
-void ScreenLockerTester::WaitForUiUpdate(int64_t previous_update_count) {
-  login_screen_tester_.WaitForUiUpdate(previous_update_count);
 }
 
 }  // namespace chromeos

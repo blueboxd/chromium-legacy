@@ -298,6 +298,90 @@ TEST_F(AutofillProfileComparatorTest, CompareTokens) {
             comparator_.CompareTokens(kHelloThereBob, kHelloThereAlice));
 }
 
+TEST_F(AutofillProfileComparatorTest, Compare) {
+  // Checks the empty case.
+  EXPECT_TRUE(
+      comparator_.Compare(base::string16(), base::string16(),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(base::string16(), base::string16(),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+
+  // Checks that leading punctuation and white space are ignored.
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16(".,  -()."), UTF8ToUTF16(""),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16(".,  -()."), UTF8ToUTF16(""),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+
+  // Checks that trailing punctuation and white space are ignored.
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("a ., "), UTF8ToUTF16("a"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("a ., "), UTF8ToUTF16("a"),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+
+  // Checks that embedded punctuation and white space is collapsed to a single
+  // white space with RETAIN_WHITESPACE and is ignored with DISCARD_WHITESPACE.
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("a() -  a"), UTF8ToUTF16("a a"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("a() -  a"), UTF8ToUTF16("aa"),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+
+  // Checks that characters such as 'œ' respect the status quo established by
+  // NormalizeForComparison.
+  EXPECT_FALSE(comparator_.Compare(UTF8ToUTF16("œil"), UTF8ToUTF16("oeil")));
+
+  // Checks that a substring of the string is not considered equal.
+  EXPECT_FALSE(comparator_.Compare(UTF8ToUTF16("A"), UTF8ToUTF16("Anna")));
+
+  EXPECT_FALSE(comparator_.Compare(UTF8ToUTF16("Anna"), UTF8ToUTF16("A")));
+
+  // Checks that Compare behaves like NormalizeForComparison. Also, checks that
+  // diacritics are removed.
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("Timothé"), UTF8ToUTF16("timothe"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16(" sven-åke "), UTF8ToUTF16("sven ake"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("Ç 㸐"), UTF8ToUTF16("c 㸐"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("902103214"), UTF8ToUTF16("90210-3214"),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("Timothé-Noël Étienne Périer"),
+                          UTF8ToUTF16("timothe noel etienne perier"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("1600 Amphitheatre, Pkwy."),
+                          UTF8ToUTF16("1600 amphitheatre pkwy"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(base::WideToUTF16(L"Mid\x2013Island\x2003 Plaza"),
+                          UTF8ToUTF16("mid island plaza"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("1600 amphitheatre pkwy \n App. 2"),
+                          UTF8ToUTF16("1600 amphitheatre pkwy app 2"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("まéÖä정"), UTF8ToUTF16("まeoa정"),
+                          AutofillProfileComparator::RETAIN_WHITESPACE));
+  EXPECT_TRUE(
+      comparator_.Compare(UTF8ToUTF16("유재석"), UTF8ToUTF16("유 재석"),
+                          AutofillProfileComparator::DISCARD_WHITESPACE));
+  EXPECT_TRUE(comparator_.Compare(
+      UTF8ToUTF16("ビルゲイツ"), UTF8ToUTF16("ヒル・ケイツ"),
+      AutofillProfileComparator::DISCARD_WHITESPACE));
+}
+
 TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
   EXPECT_EQ(UTF8ToUTF16("timothe"),
             comparator_.NormalizeForComparison(UTF8ToUTF16("Timothé")));
@@ -346,15 +430,6 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
             comparator_.NormalizeForComparison(
                 UTF8ToUTF16("ビル・ゲイツ"),
                 AutofillProfileComparator::DISCARD_WHITESPACE));
-}
-
-TEST_F(AutofillProfileComparatorTest, MatchesAfterNormalization) {
-  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
-      base::ASCIIToUTF16("H3B 2Y5"), base::ASCIIToUTF16("H3B2Y5")));
-  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
-      base::UTF8ToUTF16("Jean-François"), base::UTF8ToUTF16("Jean François")));
-  EXPECT_TRUE(comparator_.MatchesAfterNormalization(
-      base::ASCIIToUTF16("(234) 567-8900"), base::ASCIIToUTF16("2345678900")));
 }
 
 TEST_F(AutofillProfileComparatorTest, GetNamePartVariants) {

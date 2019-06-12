@@ -56,7 +56,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -514,7 +513,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     int64_t service_worker_registration_id,
     int renderer_id,
     int render_frame_id,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     bool user_gesture,
     RegisterCallback callback) {
   PushMessagingAppIdentifier app_identifier =
@@ -542,7 +541,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   if (!web_contents)
     return;
 
-  if (!options.user_visible_only) {
+  if (!options->user_visible_only) {
     web_contents->GetMainFrame()->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
         kSilentPushUnsupportedMessage);
@@ -558,14 +557,14 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents->GetMainFrame(),
       requesting_origin, user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
-                     weak_factory_.GetWeakPtr(), app_identifier, options,
-                     std::move(callback)));
+                     weak_factory_.GetWeakPtr(), app_identifier,
+                     std::move(options), std::move(callback)));
 }
 
 void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback register_callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
@@ -586,7 +585,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   blink::mojom::PermissionStatus permission_status =
-      GetPermissionStatus(requesting_origin, options.user_visible_only);
+      GetPermissionStatus(requesting_origin, options->user_visible_only);
 
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     SubscribeEndWithError(
@@ -595,7 +594,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     return;
   }
 
-  DoSubscribe(app_identifier, options, std::move(register_callback),
+  DoSubscribe(app_identifier, std::move(options), std::move(register_callback),
               CONTENT_SETTING_ALLOW);
 }
 
@@ -621,7 +620,7 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 
 void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback register_callback,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
@@ -633,14 +632,17 @@ void PushMessagingServiceImpl::DoSubscribe(
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
 
+  std::string application_server_key_string(
+      options->application_server_key.begin(),
+      options->application_server_key.end());
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
-      ->GetToken(NormalizeSenderInfo(options.application_server_key), kGCMScope,
+      ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
                  std::map<std::string, std::string>() /* options */,
                  false /* is_lazy */,
                  base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
                                 weak_factory_.GetWeakPtr(), app_identifier,
-                                options.application_server_key,
+                                application_server_key_string,
                                 std::move(register_callback)));
 }
 

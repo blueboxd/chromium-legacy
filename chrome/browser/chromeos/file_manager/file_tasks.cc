@@ -427,7 +427,7 @@ bool ExecuteFileTask(Profile* profile,
           extensions::GetLaunchContainer(
               extensions::ExtensionPrefs::Get(extension_task_profile),
               extension);
-      AppLaunchParams params(extension_task_profile, extension,
+      AppLaunchParams params(extension_task_profile, task.app_id,
                              launch_container,
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
                              extensions::AppLaunchSource::SOURCE_FILE_HANDLER);

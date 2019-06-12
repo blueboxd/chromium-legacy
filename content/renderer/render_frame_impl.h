@@ -669,9 +669,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
       blink::WebLayerTreeView* layer_tree_view) override;
-  std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
-      blink::WebDocumentLoader* document_loader,
-      blink::WebApplicationCacheHostClient* client) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
@@ -1368,6 +1365,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
+  blink::WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(const GURL& url,

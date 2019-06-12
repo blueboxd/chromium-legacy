@@ -115,18 +115,15 @@ const CGFloat kFaviconMinWidthHeight = 16;
 
 #pragma mark - TableViewFaviconDataSource
 
-- (FaviconAttributes*)faviconForURL:(const GURL&)URL
-                         completion:(void (^)(FaviconAttributes*))completion {
+- (void)faviconForURL:(const GURL&)URL
+           completion:(void (^)(FaviconAttributes*))completion {
   FaviconLoader* faviconLoader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
-  FaviconAttributes* cachedAttributes = faviconLoader->FaviconForPageUrl(
+  faviconLoader->FaviconForPageUrl(
       URL, kFaviconWidthHeight, kFaviconMinWidthHeight,
       /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
         completion(attributes);
       });
-  DCHECK(cachedAttributes);
-
-  return cachedAttributes;
 }
 
 #pragma mark - Private

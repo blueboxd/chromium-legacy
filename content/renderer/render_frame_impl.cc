@@ -162,7 +162,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -1054,6 +1054,8 @@ void FillMiscNavigationParams(const CommonNavigationParams& common_params,
     navigation_params->origin_to_commit =
         commit_params.origin_to_commit.value();
   }
+  navigation_params->appcache_host_id =
+      commit_params.appcache_host_id.value_or(base::UnguessableToken());
 }
 
 }  // namespace
@@ -4006,6 +4008,10 @@ void RenderFrameImpl::UpdateSubresourceFactory(
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
+blink::WebLocalFrameClient::AppCacheType RenderFrameImpl::GetAppCacheType() {
+  return blink::WebLocalFrameClient::AppCacheType::kAppCacheForFrame;
+}
+
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 
@@ -4066,26 +4072,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   return media_factory_.CreateMediaPlayer(source, client, encrypted_client,
                                           initial_cdm, sink_id, layer_tree_view,
                                           settings);
-}
-
-std::unique_ptr<blink::WebApplicationCacheHost>
-RenderFrameImpl::CreateApplicationCacheHost(
-    blink::WebDocumentLoader* document_loader,
-    blink::WebApplicationCacheHostClient* client) {
-  if (!frame_ || !frame_->View())
-    return nullptr;
-
-  NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(document_loader);
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      frame_->GetTaskRunner(blink::TaskType::kNetworking);
-
-  return blink::WebApplicationCacheHost::CreateWebApplicationCacheHostForFrame(
-      frame_, client,
-      navigation_state->commit_params().appcache_host_id.value_or(
-          base::UnguessableToken()),
-      std::move(task_runner));
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>

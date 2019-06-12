@@ -54,7 +54,7 @@
 namespace {
 
 // An open User Manager window. There can only be one open at a time. This
-// is reset to NULL when the window is closed.
+// is reset to nullptr when the window is closed.
 UserManagerView* g_user_manager_view = nullptr;
 base::Closure* g_user_manager_shown_callback_for_testing = nullptr;
 bool g_is_user_manager_view_under_construction = false;
@@ -406,7 +406,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
 #if defined(OS_WIN)
-  // Set the app id for the task manager to the app id of its parent
+  // Set the app id for the user manager to the app id of its parent.
   ui::win::SetAppIdForWindow(
       shell_integration::win::GetChromiumModelIdForProfile(
           system_profile->GetPath()),
@@ -470,7 +470,7 @@ void UserManagerView::WindowClosing() {
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
   if (g_user_manager_view == this)
-    g_user_manager_view = NULL;
+    g_user_manager_view = nullptr;
 }
 
 bool UserManagerView::ShouldUseCustomFrame() const {

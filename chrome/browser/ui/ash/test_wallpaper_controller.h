@@ -42,53 +42,53 @@ class TestWallpaperController : public ash::WallpaperController {
             const base::FilePath& wallpapers,
             const base::FilePath& custom_wallpapers,
             const base::FilePath& device_policy_wallpaper) override;
-  void SetCustomWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetCustomWallpaper(const AccountId& account_id,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaperIfExists(
-      const ash::WallpaperUserInfo& user_info,
+      const AccountId& account_id,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperIfExistsCallback callback) override;
   void SetOnlineWallpaperFromData(
-      const ash::WallpaperUserInfo& user_info,
+      const AccountId& account_id,
       const std::string& image_data,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperFromDataCallback callback) override;
-  void SetDefaultWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetDefaultWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
-  void SetPolicyWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetPolicyWallpaper(const AccountId& account_id,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDevicePolicyWallpaperPath(
       const base::FilePath& device_policy_wallpaper_path) override;
-  bool SetThirdPartyWallpaper(const ash::WallpaperUserInfo& user_info,
+  bool SetThirdPartyWallpaper(const AccountId& account_id,
                               const std::string& wallpaper_files_id,
                               const std::string& file_name,
                               ash::WallpaperLayout layout,
                               const gfx::ImageSkia& image) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
-  void UpdateCustomWallpaperLayout(const ash::WallpaperUserInfo& user_info,
+  void UpdateCustomWallpaperLayout(const AccountId& account_id,
                                    ash::WallpaperLayout layout) override;
-  void ShowUserWallpaper(const ash::WallpaperUserInfo& user_info) override;
+  void ShowUserWallpaper(const AccountId& account_id) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(const ash::WallpaperUserInfo& user_info,
+  void RemoveUserWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id) override;
-  void RemovePolicyWallpaper(const ash::WallpaperUserInfo& user_info,
+  void RemovePolicyWallpaper(const AccountId& account_id,
                              const std::string& wallpaper_files_id) override;
   void GetOfflineWallpaperList(
       GetOfflineWallpaperListCallback callback) override;

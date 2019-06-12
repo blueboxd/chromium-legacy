@@ -27,7 +27,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
@@ -82,16 +82,16 @@ class ConnectionFilterImpl : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    // Ignore ws::mojom::Gpu interface request from Renderer process.
+    // Ignore viz::mojom::Gpu interface request from Renderer process.
     // The request will be handled in RenderProcessHostImpl.
     if (source_info.identity.name() == mojom::kRendererServiceName &&
-        interface_name == ws::mojom::Gpu::Name_)
+        interface_name == viz::mojom::Gpu::Name_)
       return;
 
     registry_.TryBindInterface(interface_name, interface_pipe, source_info);
   }
 
-  void BindGpuRequest(ws::mojom::GpuRequest request,
+  void BindGpuRequest(viz::mojom::GpuRequest request,
                       const service_manager::BindSourceInfo& source_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

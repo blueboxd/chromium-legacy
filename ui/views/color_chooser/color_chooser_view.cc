@@ -390,14 +390,14 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   columns->AddColumn(
       GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  textfield_ = new Textfield();
-  textfield_->set_controller(this);
-  textfield_->SetDefaultWidthInChars(kTextfieldLengthInChars);
-  textfield_->SetAccessibleName(
+  auto textfield = std::make_unique<Textfield>();
+  textfield->set_controller(this);
+  textfield->SetDefaultWidthInChars(kTextfieldLengthInChars);
+  textfield->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT));
-  layout->AddView(textfield_);
-  selected_color_patch_ = new SelectedColorPatchView();
-  layout->AddView(selected_color_patch_);
+  textfield_ = layout->AddView(std::move(textfield));
+  selected_color_patch_ =
+      layout->AddView(std::make_unique<SelectedColorPatchView>());
   AddChildView(std::move(container2));
 
   OnColorChanged(initial_color);

@@ -234,7 +234,10 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 #if DCHECK_IS_ON()
   view->SetIsUpdatingDescendantDependentFlags(true);
 #endif
-  RootLayer()->UpdateDescendantDependentFlags();
+  {
+    TRACE_EVENT0("blink", "PaintLayer::UpdateDescendantDependentFlags");
+    RootLayer()->UpdateDescendantDependentFlags();
+  }
 #if DCHECK_IS_ON()
   view->SetIsUpdatingDescendantDependentFlags(false);
 #endif

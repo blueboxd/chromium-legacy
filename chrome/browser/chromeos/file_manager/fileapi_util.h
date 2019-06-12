@@ -171,12 +171,20 @@ void GetMetadataForPath(
     int fields,
     storage::FileSystemOperationRunner::GetMetadataCallback callback);
 
+// Groups a FileSystemURL and a related ScopedFSHandle.
+//
+// The URL is guaranteed to be valid as long as the handle is valid.
+struct FileSystemURLAndHandle {
+  storage::FileSystemURL url;
+  storage::IsolatedContext::ScopedFSHandle handle;
+};
+
 // Obtains isolated file system URL from |virtual_path| pointing a file in the
 // external file system.
-std::pair<storage::FileSystemURL, storage::IsolatedContext::ScopedFSHandle>
-CreateIsolatedURLFromVirtualPath(const storage::FileSystemContext& context,
-                                 const GURL& origin,
-                                 const base::FilePath& virtual_path);
+FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
+    const storage::FileSystemContext& context,
+    const GURL& origin,
+    const base::FilePath& virtual_path);
 
 }  // namespace util
 }  // namespace file_manager

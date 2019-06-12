@@ -37,11 +37,6 @@
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#endif
-
 namespace {
 
 const int kAllowRadioButtonIndex = 0;
@@ -211,12 +206,6 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ManageButtonClicked) {
-#if defined(OS_CHROMEOS)
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-#endif
-
   const GURL url = embedded_test_server()->GetURL("/iframe.html");
   ui_test_utils::NavigateToURL(browser(), url);
 

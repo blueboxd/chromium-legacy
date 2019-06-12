@@ -862,6 +862,10 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
   if (status.status() != URLRequestStatus::SUCCESS)
     set_status(status);
 
+  // |status_| should not be ERR_IO_PENDING when calling into the
+  // URLRequest::Delegate().
+  DCHECK(!status_.is_io_pending());
+
   int net_error = OK;
   if (!status_.is_success())
     net_error = status_.error();

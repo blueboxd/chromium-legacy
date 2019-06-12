@@ -860,10 +860,10 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   host_->ProgressFlingIfNeeded(args.frame_time);
   if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {

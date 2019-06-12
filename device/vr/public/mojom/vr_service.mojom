@@ -266,6 +266,17 @@ struct XRPlaneData {
   array<XRPlanePointData> polygon;
 };
 
+// Struct containing information about existing & updated planes in frame N.
+// If the plane was removed between frame N-1 and N, its ID will not be present
+// in all_plane_ids.
+struct XRPlaneDetectionData {
+  // Array with ids of all planes.
+  array<int32> all_planes_ids;
+
+  // Array with plane data for updated planes.
+  array<XRPlaneData> updated_planes_data;
+};
+
 // The data needed for each animation frame of an XRSession.
 struct XRFrameData {
   // General XRSession value
@@ -310,9 +321,8 @@ struct XRFrameData {
   bool stage_parameters_updated;
   VRStageParameters? stage_parameters;
 
-  // Array containing detected planes data. If plane was detected in frame N and
-  // is no longer detected in frame N+1, it will not be present in the array.
-  array<XRPlaneData>? detected_planes;
+  // Detected plane information. Only present if plane detection is enabled.
+  XRPlaneDetectionData? detected_planes_data;
 };
 
 enum VRDisplayEventReason {

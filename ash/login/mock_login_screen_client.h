@@ -96,6 +96,7 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD0(ShowFeedback, void());
   MOCK_METHOD0(ShowResetScreen, void());
   MOCK_METHOD0(ShowAccountAccessHelpApp, void());
+  MOCK_METHOD0(ShowLockScreenNotificationSettings, void());
   MOCK_METHOD0(FocusOobeDialog, void());
   MOCK_METHOD1(OnFocusLeavingSystemTray, void(bool reverse));
   MOCK_METHOD0(OnUserActivity, void());

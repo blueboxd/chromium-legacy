@@ -92,6 +92,9 @@ public class AppBannerManagerTest {
     private static final String NATIVE_APP_MANIFEST_WITH_URL =
             "/chrome/test/data/banners/play_app_url_manifest.json";
 
+    private static final String WEB_APP_MANIFEST_WITH_UNSUPPORTED_PLATFORM =
+            "/chrome/test/data/banners/manifest_prefer_related_chrome_app.json";
+
     private static final String NATIVE_ICON_PATH = "/chrome/test/data/banners/launcher-icon-4x.png";
 
     private static final String NATIVE_APP_TITLE = "Mock app title";
@@ -648,5 +651,17 @@ public class AppBannerManagerTest {
         // expect to see the modal banner.
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testModalWebAppBannerTriggeredWithUnsupportedNativeApp() throws Exception {
+        // The web app banner should show if preferred_related_applications is true but there is no
+        // supported application platform specified in the related applications list.
+        triggerModalWebAppBanner(mTabbedActivityTestRule,
+                WebappTestPage.getServiceWorkerUrlWithManifestAndAction(mTestServer,
+                        WEB_APP_MANIFEST_WITH_UNSUPPORTED_PLATFORM, "call_stashed_prompt_on_click"),
+                false);
     }
 }

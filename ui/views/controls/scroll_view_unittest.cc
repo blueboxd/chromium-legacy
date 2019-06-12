@@ -1514,7 +1514,7 @@ TEST_F(ScrollViewTest, IgnoreOverlapWithHiddenHorizontalScroll) {
       /* horizontal */ false, /* overlaps_content */ false, kThickness));
 
   // Also, let's turn off horizontal scroll bar.
-  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetHideHorizontalScrollBar(true);
 
   View* contents = InstallContents();
   contents->SetBoundsRect(gfx::Rect(0, 0, 300, 300));

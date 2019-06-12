@@ -8,15 +8,15 @@
 #include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace chrome {
+namespace cups_ipp_parser {
 
-// chrome.mojom.IppParser handler.
+// cups_ipp_parser.IppParser handler.
 //
 // This handler accepts incoming IPP requests as arbitrary buffers, parses
 // the contents using libCUPS, and yields a chrome::mojom::IppRequest. It is
 // intended to operate under the heavily jailed, out-of-process CupsIppParser
 // Service.
-class IppParser : public chrome::mojom::IppParser {
+class IppParser : public mojom::IppParser {
  public:
   explicit IppParser(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
@@ -35,6 +35,6 @@ class IppParser : public chrome::mojom::IppParser {
   DISALLOW_COPY_AND_ASSIGN(IppParser);
 };
 
-}  // namespace chrome
+}  // namespace cups_ipp_parser
 
 #endif  // CHROME_SERVICES_CUPS_IPP_PARSER_IPP_PARSER_H_

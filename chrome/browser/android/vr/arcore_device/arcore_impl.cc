@@ -186,9 +186,7 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   return GetMojomPoseFromArPose(arcore_session_.get(), std::move(arcore_pose));
 }
 
-std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
-  std::vector<mojom::XRPlaneDataPtr> result;
-
+void ArCoreImpl::EnsureArCorePlanesList() {
   if (!arcore_planes_.is_valid()) {
     ArTrackableList_create(
         arcore_session_.get(),
@@ -196,10 +194,11 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
             .get());
     DCHECK(arcore_planes_.is_valid());
   }
+}
 
-  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-  ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
-                             arcore_planes_.get());
+template <typename FunctionType>
+void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
+  DCHECK(arcore_planes_.is_valid());
 
   int32_t trackable_list_size;
   ArTrackableList_getSize(arcore_session_.get(), arcore_planes_.get(),
@@ -220,6 +219,13 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
       continue;
     }
 
+    if (DCHECK_IS_ON()) {
+      ArTrackableType type;
+      ArTrackable_getType(arcore_session_.get(), trackable.get(), &type);
+      DCHECK(type == ArTrackableType::AR_TRACKABLE_PLANE)
+          << "arcore_planes_ contains a trackable that is not an ArPlane!";
+    }
+
     ArPlane* ar_plane =
         ArAsPlane(trackable.get());  // Naked pointer is fine here, ArAsPlane
                                      // does not increase ref count.
@@ -236,6 +242,20 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
       continue;
     }
 
+    fn(ar_plane);
+  }
+}
+
+std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
+  EnsureArCorePlanesList();
+
+  std::vector<mojom::XRPlaneDataPtr> result;
+
+  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
+  ArFrame_getUpdatedTrackables(arcore_session_.get(), arcore_frame_.get(),
+                               plane_tracked_type, arcore_planes_.get());
+
+  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
     // orientation
     ArPlaneType plane_type;
     ArPlane_getType(arcore_session_.get(), ar_plane, &plane_type);
@@ -267,30 +287,66 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
     }
 
     // id
-    int32_t plane_id = CreateOrGetPlaneId(ar_plane);
+    int32_t plane_id;
+    bool created;
+    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
 
     result.push_back(mojom::XRPlaneData::New(
         plane_id,
         mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
         std::move(pose), std::move(vertices)));
-  }
+  });
 
   return result;
 }
 
-int32_t ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
+std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
+  EnsureArCorePlanesList();
+
+  std::vector<int32_t> result;
+
+  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
+  ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
+                             arcore_planes_.get());
+
+  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
+    // id
+    int32_t plane_id;
+    bool created;
+    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+
+    // Newly detected planes should be handled by GetUpdatedPlanesData().
+    DCHECK(!created);
+
+    result.emplace_back(plane_id);
+  });
+
+  return result;
+}
+
+mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+
+  std::vector<mojom::XRPlaneDataPtr> updated_planes = GetUpdatedPlanesData();
+  std::vector<int32_t> all_plane_ids = GetAllPlaneIds();
+
+  return mojom::XRPlaneDetectionData::New(all_plane_ids,
+                                          std::move(updated_planes));
+}
+
+std::pair<int32_t, bool> ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
   auto it = ar_plane_address_to_id_.find(plane_address);
   if (it != ar_plane_address_to_id_.end()) {
-    return it->second;
+    return std::make_pair(it->second, false);
   }
 
   // Make sure that incrementing next_id_ won't cause an overflow.
   CHECK(next_id_ != std::numeric_limits<int32_t>::max());
 
   int32_t current_id = next_id_++;
-  ar_plane_address_to_id_[plane_address] = current_id;
+  ar_plane_address_to_id_.emplace(plane_address, current_id);
 
-  return current_id;
+  return std::make_pair(current_id, true);
 }
 
 void ArCoreImpl::Pause() {

@@ -232,7 +232,9 @@ void LocalWindowProxy::CreateContext() {
           V8Window::DomTemplate(isolate, World())->InstanceTemplate();
       CHECK(!global_template.IsEmpty());
       context = v8::Context::New(isolate, &extension_configuration,
-                                 global_template, global_proxy);
+                                 global_template, global_proxy,
+                                 v8::DeserializeInternalFieldsCallback(),
+                                 document->GetMicrotaskQueue());
       VLOG(1) << "A context is created NOT from snapshot";
     }
   }

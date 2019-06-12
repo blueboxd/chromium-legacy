@@ -21,7 +21,7 @@
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_address.h"
-#include "services/ws/public/cpp/gpu/gpu.h"
+#include "services/viz/public/cpp/gpu/gpu.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -98,23 +98,13 @@ class GaiaAuthFetcherTest : public testing::Test {
 
   void RunErrorParsingTest(const std::string& data,
                            const std::string& error,
-                           const std::string& error_url,
-                           const std::string& captcha_url,
-                           const std::string& captcha_token) {
+                           const std::string& error_url) {
     std::string out_error;
     std::string out_error_url;
-    std::string out_captcha_url;
-    std::string out_captcha_token;
 
-    GaiaAuthFetcher::ParseClientLoginFailure(data,
-                                             &out_error,
-                                             &out_error_url,
-                                             &out_captcha_url,
-                                             &out_captcha_token);
+    GaiaAuthFetcher::ParseClientLoginFailure(data, &out_error, &out_error_url);
     EXPECT_EQ(error, out_error);
     EXPECT_EQ(error_url, out_error_url);
-    EXPECT_EQ(captcha_url, out_captcha_url);
-    EXPECT_EQ(captcha_token, out_captcha_token);
   }
 
   GURL oauth2_token_source_;
@@ -234,48 +224,18 @@ TEST_F(GaiaAuthFetcherTest, ParseRequest) {
 }
 
 TEST_F(GaiaAuthFetcherTest, ParseErrorRequest) {
-  RunErrorParsingTest("Url=U\n"
-                      "Error=E\n"
-                      "CaptchaToken=T\n"
-                      "CaptchaUrl=C\n", "E", "U", "C", "T");
-  RunErrorParsingTest("CaptchaToken=T\n"
-                      "Error=E\n"
-                      "Url=U\n"
-                      "CaptchaUrl=C\n", "E", "U", "C", "T");
-  RunErrorParsingTest("\n\n\nCaptchaToken=T\n"
-                      "\nError=E\n"
-                      "\nUrl=U\n"
-                      "CaptchaUrl=C\n", "E", "U", "C", "T");
-}
-
-TEST_F(GaiaAuthFetcherTest, CheckTwoFactorResponse) {
-  std::string response =
-      base::StringPrintf("Error=BadAuthentication\n%s\n",
-                         GaiaAuthFetcher::kSecondFactor);
-  EXPECT_TRUE(GaiaAuthFetcher::IsSecondFactorSuccess(response));
-}
-
-TEST_F(GaiaAuthFetcherTest, CheckNormalErrorCode) {
-  std::string response = "Error=BadAuthentication\n";
-  EXPECT_FALSE(GaiaAuthFetcher::IsSecondFactorSuccess(response));
-}
-
-TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
-  std::string data = "Url=http://www.google.com/login/captcha\n"
-                     "Error=CaptchaRequired\n"
-                     "CaptchaToken=CCTOKEN\n"
-                     "CaptchaUrl=Captcha?ctoken=CCTOKEN\n";
-  GoogleServiceAuthError error =
-      GaiaAuthFetcher::GenerateAuthError(data, net::OK);
-
-  std::string token = "CCTOKEN";
-  GURL image_url("http://accounts.google.com/Captcha?ctoken=CCTOKEN");
-  GURL unlock_url("http://www.google.com/login/captcha");
-
-  EXPECT_EQ(error.state(), GoogleServiceAuthError::CAPTCHA_REQUIRED);
-  EXPECT_EQ(error.captcha().token, token);
-  EXPECT_EQ(error.captcha().image_url, image_url);
-  EXPECT_EQ(error.captcha().unlock_url, unlock_url);
+  RunErrorParsingTest(
+      "Url=U\n"
+      "Error=E\n",
+      "E", "U");
+  RunErrorParsingTest(
+      "Error=E\n"
+      "Url=U\n",
+      "E", "U");
+  RunErrorParsingTest(
+      "\n\n\nError=E\n"
+      "\nUrl=U\n",
+      "E", "U");
 }
 
 TEST_F(GaiaAuthFetcherTest, AccountDeletedError) {
@@ -480,8 +440,7 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
 }
 
 TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {
-  // OAuthLogin returns the same as the ClientLogin endpoint, minus CAPTCHA
-  // responses.
+  // OAuthLogin returns the same as the ClientLogin endpoint.
   std::string data("SID=sid\nLSID=lsid\nAuth=auth\n");
 
   GaiaAuthConsumer::ClientLoginResult result;

@@ -72,6 +72,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -3019,13 +3020,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   StartWorker(blink::ServiceWorkerStatusCode::kOk);
 
   // Crash the renderer process. The version should stop.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  RenderProcessHost* process =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher process_watcher(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   base::RunLoop run_loop;
   StopObserver observer(run_loop.QuitClosure());
   RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::AddObserver,
                                base::Unretained(version_.get()), &observer));
-  shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(
-      content::RESULT_CODE_KILLED);
+  process->Shutdown(content::RESULT_CODE_KILLED);
   run_loop.Run();
+  process_watcher.Wait();
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
   RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::RemoveObserver,

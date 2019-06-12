@@ -75,15 +75,15 @@ void EchoDialogView::Show(gfx::NativeWindow parent) {
   GetWidget()->Show();
 }
 
-views::View* EchoDialogView::CreateExtraView() {
+std::unique_ptr<views::View> EchoDialogView::CreateExtraView() {
   auto learn_more_button = views::CreateVectorImageButton(this);
   views::SetImageFromVectorIcon(learn_more_button.get(),
                                 vector_icons::kHelpOutlineIcon);
   learn_more_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
   learn_more_button->SetFocusForPlatform();
-  learn_more_button_ = learn_more_button.release();
-  return learn_more_button_;
+  learn_more_button_ = learn_more_button.get();
+  return learn_more_button;
 }
 
 int EchoDialogView::GetDialogButtons() const {

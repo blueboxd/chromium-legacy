@@ -111,7 +111,7 @@ static_library("vr_android") {
     "//device/vr/buildflags:buildflags",
     "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
-    "//services/ws/public/cpp/gpu",
+    "//services/viz/public/cpp/gpu",
     "//third_party/gvr-android-sdk:gvr_shim",
     "//ui/android",
     "//ui/base",

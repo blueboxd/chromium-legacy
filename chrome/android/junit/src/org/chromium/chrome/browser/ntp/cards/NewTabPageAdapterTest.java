@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -46,10 +48,13 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
+import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -93,7 +98,9 @@ import java.util.Locale;
  * the need for {@link CustomShadowAsyncTask}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
+@Config(manifest = Config.NONE,
+        shadows = {CustomShadowAsyncTask.class, ShadowPostTask.class,
+                NewTabPageAdapterTest.ShadowChromeFeatureList.class})
 @DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
         ChromeFeatureList.CHROME_DUET, ChromeFeatureList.UNIFIED_CONSENT})
 public class NewTabPageAdapterTest {
@@ -176,6 +183,7 @@ public class NewTabPageAdapterTest {
      */
     private static class ItemsMatcher { // TODO(pke): Find better name.
         private final List<String> mExpectedDescriptions = new ArrayList<>();
+        private final List<String> mExpectedNotDescriptions = new ArrayList<>();
         private final List<String> mActualDescriptions = new ArrayList<>();
 
         public ItemsMatcher(RecyclerViewAdapter.Delegate root) {
@@ -186,6 +194,10 @@ public class NewTabPageAdapterTest {
 
         private void expectDescription(String description) {
             mExpectedDescriptions.add(description);
+        }
+
+        private void expectNotDescription(String description) {
+            mExpectedNotDescriptions.add(description);
         }
 
         public void expectSection(SectionDescriptor descriptor) {
@@ -229,8 +241,35 @@ public class NewTabPageAdapterTest {
             expectDescription("FOOTER");
         }
 
+        public void expectNotFooter() {
+            expectNotDescription("FOOTER");
+        }
+
         public void finish() {
             assertThat(mActualDescriptions, is(mExpectedDescriptions));
+            for (final String notDescriptions : mExpectedNotDescriptions) {
+                assertThat(mActualDescriptions, not(contains(notDescriptions)));
+            }
+        }
+    }
+
+    @Implements(ChromeFeatureList.class)
+    static class ShadowChromeFeatureList {
+        private static Integer sValue;
+
+        @Resetter
+        public static void reset() {
+            sValue = null;
+        }
+
+        @Implementation
+        public static int getFieldTrialParamByFeatureAsInt(
+                String featureName, String paramName, int defaultValue) {
+            return sValue == null ? defaultValue : sValue;
+        }
+
+        public static void setValue(int value) {
+            sValue = value;
         }
     }
 
@@ -265,6 +304,7 @@ public class NewTabPageAdapterTest {
         PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
 
         resetUiDelegate();
+        NewTabPageAdapter.setHasLoadedBeforeForTest(false);
         reloadNtp();
     }
 
@@ -276,6 +316,8 @@ public class NewTabPageAdapterTest {
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         PrefServiceBridge.setInstanceForTesting(null);
+        ShadowPostTask.reset();
+        ShadowChromeFeatureList.reset();
     }
 
     /**
@@ -1037,6 +1079,31 @@ public class NewTabPageAdapterTest {
         // 2   | Status
         // 3   | Progress Indicator
         // 4   | Footer
+        assertItemsFor(sectionWithStatusCard().withProgress());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArtificialDelay() {
+        ShadowChromeFeatureList.setValue(1000);
+        NewTabPageAdapter.setHasLoadedBeforeForTest(false);
+        reloadNtp();
+
+        ItemsMatcher matcher = new ItemsMatcher(mAdapter.getRootForTesting());
+        matcher.expectAboveTheFoldItem();
+        matcher.expectNotFooter();
+        matcher.finish();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        assertItemsFor(sectionWithStatusCard().withProgress());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testArtificialDelaySecondLoad() {
+        ShadowChromeFeatureList.setValue(1000);
+        reloadNtp();
+        reloadNtp();
+
         assertItemsFor(sectionWithStatusCard().withProgress());
     }
 

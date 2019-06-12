@@ -451,7 +451,6 @@ viz_source_set("unit_tests") {
     "//media",
     "//media/capture:capture_lib",
     "//services/viz/public/interfaces",
-    "//services/ws/public/mojom",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

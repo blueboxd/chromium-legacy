@@ -90,12 +90,12 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
 
     // We are owned by the AutoclickRingHandler.
     set_owned_by_client();
-    SetNewLocation(event_location);
+    SetLocation(event_location);
   }
 
   ~AutoclickRingView() override = default;
 
-  void SetNewLocation(const gfx::Point& new_event_location) {
+  void SetLocation(const gfx::Point& new_event_location) {
     gfx::Point point = new_event_location;
     widget_->SetBounds(
         gfx::Rect(point.x() - (radius_ + kAutoclickRingArcWidth * 2),
@@ -131,12 +131,6 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
     gfx::Point center(GetPreferredSize().width() / 2,
                       GetPreferredSize().height() / 2);
     canvas->Save();
-
-    gfx::Transform scale;
-    // We want to scale from the center.
-    canvas->Translate(center.OffsetFromOrigin());
-    canvas->Transform(scale);
-    canvas->Translate(-center.OffsetFromOrigin());
 
     PaintAutoclickRing(canvas, center, radius_, current_angle_);
 
@@ -229,11 +223,11 @@ void AutoclickRingHandler::AnimateToState(double state) {
   DCHECK(view_.get());
   switch (current_animation_type_) {
     case AnimationType::GROW_ANIMATION:
-      view_->SetNewLocation(tap_down_location_);
+      view_->SetLocation(tap_down_location_);
       view_->UpdateWithGrowAnimation(this);
       break;
     case AnimationType::SHRINK_ANIMATION:
-      view_->SetNewLocation(tap_down_location_);
+      view_->SetLocation(tap_down_location_);
       view_->UpdateWithShrinkAnimation(this);
       break;
     case AnimationType::NONE:

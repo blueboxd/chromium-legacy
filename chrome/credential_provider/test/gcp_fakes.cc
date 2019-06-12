@@ -136,6 +136,17 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
                                    bool add_to_users_group,
                                    BSTR* sid,
                                    DWORD* error) {
+  return AddUser(username, password, fullname, comment, add_to_users_group,
+                 OSUserManager::GetLocalDomain().c_str(), sid, error);
+}
+HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
+                                   const wchar_t* password,
+                                   const wchar_t* fullname,
+                                   const wchar_t* comment,
+                                   bool add_to_users_group,
+                                   const wchar_t* domain,
+                                   BSTR* sid,
+                                   DWORD* error) {
   USES_CONVERSION;
 
   DCHECK(sid);
@@ -168,8 +179,7 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
 
   *sid = ::SysAllocString(W2COLE(sidstr));
   username_to_info_.emplace(
-      username, UserInfo(OSUserManager::GetLocalDomain().c_str(), password,
-                         fullname, comment, sidstr));
+      username, UserInfo(domain, password, fullname, comment, sidstr));
   ::LocalFree(sidstr);
 
   return S_OK;
@@ -359,6 +369,7 @@ HRESULT FakeOSUserManager::CreateNewSID(PSID* sid) {
   return CreateArbitrarySid(++next_rid_, sid);
 }
 
+// Creates a test OS user using the local domain.
 HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
                                             const base::string16& password,
                                             const base::string16& fullname,
@@ -366,9 +377,21 @@ HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
                                             const base::string16& gaia_id,
                                             const base::string16& email,
                                             BSTR* sid) {
+  return CreateTestOSUser(username, password, fullname, comment, gaia_id, email,
+                          OSUserManager::GetLocalDomain(), sid);
+}
+
+HRESULT FakeOSUserManager::CreateTestOSUser(const base::string16& username,
+                                            const base::string16& password,
+                                            const base::string16& fullname,
+                                            const base::string16& comment,
+                                            const base::string16& gaia_id,
+                                            const base::string16& email,
+                                            const base::string16& domain,
+                                            BSTR* sid) {
   DWORD error;
   HRESULT hr = AddUser(username.c_str(), password.c_str(), fullname.c_str(),
-                       comment.c_str(), true, sid, &error);
+                       comment.c_str(), true, domain.c_str(), sid, &error);
   if (FAILED(hr))
     return hr;
 

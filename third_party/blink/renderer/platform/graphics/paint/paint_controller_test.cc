@@ -80,8 +80,8 @@ TEST_P(PaintControllerTest, UpdateBasic) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(1u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(1u, NumIndexedItems());
   EXPECT_EQ(2u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -127,8 +127,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
 
   EXPECT_EQ(6u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(2u, NumIndexedItems());  // first
 #if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumIndexedItems());  // first
   EXPECT_EQ(5u,
             NumSequentialMatches());  // second, first foreground, unaffected
   EXPECT_EQ(1u, NumOutOfOrderMatches());  // first
@@ -180,8 +180,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
 
   EXPECT_EQ(4u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumIndexedItems());
   EXPECT_EQ(4u, NumSequentialMatches());  // second, unaffected
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -221,8 +221,8 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(2u, NumSequentialMatches());  // first, second
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -271,8 +271,8 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
 
   EXPECT_EQ(4u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumIndexedItems());
   EXPECT_EQ(4u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -329,8 +329,8 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(2u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(2u, NumIndexedItems());
   EXPECT_EQ(2u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -730,8 +730,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   EXPECT_EQ(8u, NumCachedNewItems());
   EXPECT_EQ(2u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(0u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -832,8 +832,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
 
   EXPECT_EQ(6u, NumCachedNewItems());
   EXPECT_EQ(1u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(2u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -971,8 +971,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   EXPECT_EQ(4u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(1u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(1u, NumIndexedItems());
   EXPECT_EQ(3u, NumSequentialMatches());
   EXPECT_EQ(1u, NumOutOfOrderMatches());
 #endif
@@ -1176,8 +1176,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(1u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(0u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -1258,8 +1258,8 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   EXPECT_EQ(1u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(1u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -1356,8 +1356,8 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   EXPECT_EQ(0u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
-  EXPECT_EQ(0u, NumIndexedItems());
 #if DCHECK_IS_ON()
+  EXPECT_EQ(0u, NumIndexedItems());
   EXPECT_EQ(0u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -1521,9 +1521,9 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
+#if DCHECK_IS_ON()
   // We indexed "first" and "second" when finding the cached item for "third".
   EXPECT_EQ(2u, NumIndexedItems());
-#if DCHECK_IS_ON()
   EXPECT_EQ(2u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif
@@ -1546,9 +1546,9 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
 
   EXPECT_EQ(2u, NumCachedNewItems());
   EXPECT_EQ(0u, NumCachedNewSubsequences());
+#if DCHECK_IS_ON()
   // We indexed "third" and "fourth" when finding the cached item for "first".
   EXPECT_EQ(2u, NumIndexedItems());
-#if DCHECK_IS_ON()
   EXPECT_EQ(2u, NumSequentialMatches());
   EXPECT_EQ(0u, NumOutOfOrderMatches());
 #endif

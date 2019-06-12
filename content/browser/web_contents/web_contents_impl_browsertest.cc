@@ -52,6 +52,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -60,6 +61,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -873,6 +875,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Kill the renderer process so when the navigate again, it will be a fresh
   // renderer with an empty in-memory cache.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   NavigateToURL(shell(), GetWebUIURL("crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
@@ -974,10 +977,20 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   }
 
  protected:
+  // Terminates the renderer to clear the in-memory cache.
+  void TerminateRenderer() {
+    RenderProcessHost* process =
+        shell()->web_contents()->GetMainFrame()->GetProcess();
+    RenderProcessHostWatcher process_watcher(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    NavigateToURL(shell(), GetWebUIURL("crash"));
+    process_watcher.Wait();
+  }
+
   bool TestResourceLoadFromDedicatedWorker(const GURL& url,
                                            const GURL& worker) {
-    // Kill the renderer to clear the in-memory cache.
-    NavigateToURL(shell(), GURL("chrome:crash"));
+    TerminateRenderer();
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -998,8 +1011,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
   // valid and return if the script was cached or not.
   bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
-    // Kill the renderer to clear the in-memory cache.
-    NavigateToURL(shell(), GetWebUIURL("crash"));
+    TerminateRenderer();
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -1008,6 +1020,8 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
     RenderFrameHost* host_to_load_resource =
         shell()->web_contents()->GetMainFrame();
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
 
     // If there is supposed to be a sub-frame, create it.
     if (sub_frame.is_valid()) {
@@ -1039,6 +1053,18 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
     EXPECT_TRUE(ExecuteScript(host_to_load_resource, loader_script));
     observer.WaitForResourceCompletion(resource);
+
+    // Test the network isolation key.
+    RenderFrameHostImpl* frame_host =
+        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
+    url::Origin top_frame_origin =
+        main_frame->frame_tree_node()->current_origin();
+
+    if (!top_frame_origin.opaque()) {
+      EXPECT_EQ(net::NetworkIsolationKey(top_frame_origin),
+                frame_host->network_isolation_key_);
+    }
+
     return (*observer.FindResource(resource))->was_cached;
   }
 
@@ -1120,8 +1146,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
 
   // Load the same resource from the same data url, it shouldn't be cached
   // because the origin should be unique.
-
   EXPECT_FALSE(TestResourceLoad(data_url, GURL()));
+
+  // Load the resource from a document that points to about:blank.
+  GURL blank_url("about:blank");
+  EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
+
+  // Load the same resource from about:blank url again, it shouldn't be cached
+  // because the origin is unique. TODO(crbug.com/888079) will change this
+  // behavior and about:blank main frame pages will inherit the origin of the
+  // page that opened it.
+  EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
+
+  // TODO(crbug.com/950069): Add tests for about:blank, about:srcdoc subframes
+  // when the cache key also starts using subframe origin.
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,

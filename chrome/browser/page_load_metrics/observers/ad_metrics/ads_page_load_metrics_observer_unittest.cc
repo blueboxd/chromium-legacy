@@ -380,18 +380,22 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     int total_task_time = pre_task_time + post_task_time;
     int total_time = pre_time + post_time;
     std::string suffix = type == "Activated" ? "Activation" : "Interactive";
+    std::string percent_usage_version =
+        prefix == "Cpu.AdFrames.PerFrame" ? "2" : "";
     type = type.empty() ? "" : "." + type;
 
+    CheckSpecificCpuHistogram(SuffixedHistogram(prefix + ".PercentUsage" +
+                                                percent_usage_version + type),
+                              SuffixedHistogram(prefix + ".TotalUsage" + type),
+                              total_task_time, total_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type),
-        SuffixedHistogram(prefix + ".TotalUsage" + type), total_task_time,
-        total_time);
-    CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Pre" + suffix),
+        SuffixedHistogram(prefix + ".PercentUsage" + percent_usage_version +
+                          type + ".Pre" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Pre" + suffix),
         pre_task_time, pre_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Post" + suffix),
+        SuffixedHistogram(prefix + ".PercentUsage" + percent_usage_version +
+                          type + ".Post" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Post" + suffix),
         post_task_time, post_time);
   }
@@ -843,6 +847,44 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   TestHistograms(histogram_tester(), test_ukm_recorder(),
                  std::vector<ExpectedFrameBytes>(), 0u /* non_ad_cached_kb */,
                  0u /* non_ad_uncached_kb */);
+}
+
+// Per-frame histograms recorded when root ad frame is destroyed.
+TEST_F(AdsPageLoadMetricsObserverTest,
+       FrameDestroyed_PerFrameHistogramsLogged) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* child_ad_frame = CreateAndNavigateSubFrame(kAdUrl, ad_frame);
+
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Add some data to the ad frame so it gets reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(child_ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Just delete the child frame this time.
+  content::RenderFrameHostTester::For(child_ad_frame)->Detach();
+
+  // Verify per-frame histograms not recorded.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Bytes.AdFrames.PerFrame.Total"), 0);
+
+  // Delete the root ad frame.
+  content::RenderFrameHostTester::For(ad_frame)->Detach();
+
+  // Verify per-frame histograms are recorded.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Bytes.AdFrames.PerFrame.Total"), 20, 1);
+
+  // Verify page totals not reported yet.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), 0);
+
+  NavigateMainFrame(kNonAdUrl);
+
+  // Verify histograms are logged correctly for the whole page.
+  TestHistograms(histogram_tester(), test_ukm_recorder(), {{0, 20}},
+                 0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
 }
 
 // Tests that main frame ad bytes are recorded correctly.

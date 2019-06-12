@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Informations sur le fichier</translation>
 <translation id="2246549592927364792">Obtenir des descriptions d'images de Google ?</translation>
 <translation id="2249269794707377949">Tous les comptes Kerberos pour l'authentification unique à certaines applications et à certains sites Web et pour les partages de fichiers peuvent être gérés ici.</translation>
-<translation id="224940702122312781">Cette page consomme beaucoup de données.</translation>
 <translation id="2249605167705922988">par exemple : 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Ouvrir avec le lecteur système</translation>
 <translation id="225163402930830576">Actualiser les réseaux</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Lever le doigt, puis appuyer de nouveau</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" /> : synchronisation désactivée</translation>
-<translation id="3861241522664181545">Chargement de la page suspendu.</translation>
 <translation id="3862134173397075045">Bienvenue dans l'expérience Cast sur Chrome</translation>
 <translation id="3862693525629180217">Valider via le capteur intégré</translation>
 <translation id="3862788408946266506">L'application dont le fichier manifeste comporte un attribut "kiosk_only" doit être installée en mode Kiosque pour Chrome OS</translation>
@@ -3861,7 +3859,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6920989436227028121">Ouvrir dans un onglet standard</translation>
 <translation id="6921104647315081813">Effacer les activités</translation>
 <translation id="692114467174262153">Impossible d'ouvrir <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">Ne plus consommer de données sur cette page</translation>
 <translation id="6922128026973287222">Sauvegardez les données et bénéficiez d'une navigation plus rapide avec l'Économiseur de données Google. Cliquez ici pour en savoir plus.</translation>
 <translation id="6922745772873733498">Saisissez un code pour imprimer</translation>
 <translation id="6923132443355966645">Défilement/Clic</translation>

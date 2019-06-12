@@ -7,6 +7,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 
@@ -33,12 +34,16 @@ PictureInPictureSession::PictureInPictureSession(
   if (controller)
     controller->SetActiveSession(this);
 
-  *window_size = GetWebContentsImpl()->EnterPictureInPicture(surface_id.value(),
-                                                             natural_size);
+  // TODO(beccahughes): Pass PictureInPictureResult::kNotSupported back to
+  // Blink.
+  auto result = GetWebContentsImpl()->EnterPictureInPicture(surface_id.value(),
+                                                            natural_size);
+  DCHECK_EQ(PictureInPictureResult::kSuccess, result);
 
   if (controller) {
     controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
     controller->SetAlwaysHideMuteButton(show_mute_button);
+    *window_size = controller->GetSize();
   }
 }
 

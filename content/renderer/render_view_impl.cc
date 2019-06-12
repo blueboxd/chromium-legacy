@@ -189,8 +189,6 @@
 #endif
 
 using blink::WebAXObject;
-using blink::WebApplicationCacheHost;
-using blink::WebApplicationCacheHostClient;
 using blink::WebConsoleMessage;
 using blink::WebData;
 using blink::WebDocument;

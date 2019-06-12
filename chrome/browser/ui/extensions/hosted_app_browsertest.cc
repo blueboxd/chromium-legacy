@@ -759,6 +759,28 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDangerous) {
                              proceed_through_interstitial);
 }
 
+// Check that localhost is not considered insecure.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForLocalhost) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL app_url =
+      embedded_test_server()->GetURL("localhost", "/ssl/google.html");
+  InstallPWA(app_url);
+
+  // Navigate to the app's launch page; the toolbar should be hidden.
+  NavigateAndCheckForToolbar(app_browser_, app_url, false);
+
+  // Navigate out of the app's scope on localhost, the toolbar should be
+  // visible.
+  NavigateAndCheckForToolbar(
+      app_browser_, embedded_test_server()->GetURL("localhost", "/simple.html"),
+      true);
+
+  // Navigate to a different origin; the toolbar should be visible.
+  NavigateAndCheckForToolbar(app_browser_, GURL("https://example.com"), true);
+}
+
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a hosted app.  https://crbug.com/721949.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
@@ -945,7 +967,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
 
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
 
-  AppLaunchParams params(browser()->profile(), app,
+  AppLaunchParams params(browser()->profile(), app->id(),
                          extensions::LaunchContainer::LAUNCH_CONTAINER_WINDOW,
                          WindowOpenDisposition::NEW_WINDOW,
                          extensions::AppLaunchSource::SOURCE_FILE_HANDLER);
@@ -1136,16 +1158,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PopOutDisabledInIncognito) {
 }
 
 // Tests that desktop PWAs open links in the browser.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       DesktopPWAsOpenLinksInAppWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAsStayInWindow);
-
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, DesktopPWAsOpenLinksInApp) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   InstallSecurePWA();
-  ASSERT_TRUE(base::FeatureList::IsEnabled(features::kDesktopPWAsStayInWindow));
   ASSERT_TRUE(
       extensions::util::GetInstalledPwaForUrl(profile(), GetSecureAppURL()));
 
@@ -1261,52 +1278,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InScopePWAPopupsHaveCorrectSize) {
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
 }
 
-// Tests that desktop PWAs open links in the browser.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       DesktopPWAsOpenLinksInBrowserWhenFeatureDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kDesktopPWAsStayInWindow);
-
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-  ASSERT_FALSE(
-      base::FeatureList::IsEnabled(features::kDesktopPWAsStayInWindow));
-  ASSERT_TRUE(
-      extensions::util::GetInstalledPwaForUrl(profile(), GetSecureAppURL()));
-
-  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
-
-  ASSERT_TRUE(app_browser_->app_controller());
-
-  TestAppActionOpensForegroundTab(
-      base::BindOnce(
-          [](Browser* browser, content::WebContents* app_contents,
-             const GURL& target_url) {
-            content::TestNavigationObserver observer(target_url);
-            observer.StartWatchingNewWebContents();
-
-            std::string script = base::StringPrintf("window.location = '%s';",
-                                                    target_url.spec().c_str());
-            ASSERT_TRUE(content::ExecuteScript(app_contents, script));
-
-            observer.WaitForNavigationFinished();
-          },
-          app_browser_, app_browser_->tab_strip_model()->GetActiveWebContents(),
-          GURL(kExampleURL)),
-      GURL(kExampleURL));
-}
-
 // Test navigating to an out of scope url on the same origin causes the url
 // to be shown to the user.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        LocationBarIsVisibleOffScopeOnSameOrigin) {
-  // If the feature for remaining in window is not enabled, the out of scope url
-  // will open in a new tab.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDesktopPWAsStayInWindow);
-
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 

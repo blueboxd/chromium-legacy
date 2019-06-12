@@ -51,6 +51,31 @@
 
 namespace content {
 
+namespace {
+
+// A renderer-initiated navigation should be ignored iff a) there is an ongoing
+// request b) which is browser initiated and c) the renderer request is not
+// user-initiated.
+bool ShouldIgnoreIncomingRendererRequest(
+    NavigationRequest* ongoing_navigation_request,
+    bool has_user_gesture) {
+  return ongoing_navigation_request &&
+         ongoing_navigation_request->browser_initiated() && !has_user_gesture;
+}
+
+// Informs the RenderFrameImpl associated with the |frame_tree_node| that a
+// navigation it started was dropped.
+void DropNavigation(FrameTreeNode* frame_tree_node) {
+  if (!IsPerNavigationMojoInterfaceEnabled()) {
+    RenderFrameHost* current_frame_host =
+        frame_tree_node->render_manager()->current_frame_host();
+    current_frame_host->Send(
+        new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
+  }
+}
+
+}  // namespace
+
 struct NavigatorImpl::NavigationMetricsData {
   NavigationMetricsData(base::TimeTicks start_time,
                         GURL url,
@@ -481,7 +506,8 @@ void NavigatorImpl::NavigateFromFrameProxy(
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    bool has_user_gesture) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -520,6 +546,13 @@ void NavigatorImpl::NavigateFromFrameProxy(
 
     // Navigations in Web UI pages count as browser-initiated navigations.
     is_renderer_initiated = false;
+  }
+
+  if (is_renderer_initiated &&
+      ShouldIgnoreIncomingRendererRequest(
+          render_frame_host->frame_tree_node()->navigation_request(),
+          has_user_gesture)) {
+    return;
   }
 
   base::Optional<url::Origin> final_initiator_origin = initiator_origin;
@@ -620,18 +653,10 @@ void NavigatorImpl::OnBeginNavigation(
     frame_tree_node->ResetNavigationRequest(false, true);
   }
 
-  // The renderer-initiated navigation request is ignored iff a) there is an
-  // ongoing request b) which is browser initiated and c) the renderer request
-  // is not user-initiated.
-  if (ongoing_navigation_request &&
-      ongoing_navigation_request->browser_initiated() &&
-      !common_params.has_user_gesture) {
-    if (!IsPerNavigationMojoInterfaceEnabled()) {
-      RenderFrameHost* current_frame_host =
-          frame_tree_node->render_manager()->current_frame_host();
-      current_frame_host->Send(
-          new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
-    }
+  // Verify this navigation has precedence.
+  if (ShouldIgnoreIncomingRendererRequest(ongoing_navigation_request,
+                                          common_params.has_user_gesture)) {
+    DropNavigation(frame_tree_node);
     return;
   }
 

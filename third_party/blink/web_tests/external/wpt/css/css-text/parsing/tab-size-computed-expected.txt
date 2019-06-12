@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Property tab-size value '0' computes to '0'
+PASS Property tab-size value '16' computes to '16'
+PASS Property tab-size value '4' computes to '4'
+FAIL Property tab-size value '2.5' computes to '2.5' assert_equals: expected "2.5" but got "8"
+PASS Property tab-size value '0px' computes to '0px'
+PASS Property tab-size value '10px' computes to '10px'
+PASS Property tab-size value 'calc(10px + 0.5em)' computes to '30px'
+PASS Property tab-size value 'calc(10px - 0.5em)' computes to '0px'
+Harness: the test ran to completion.
+

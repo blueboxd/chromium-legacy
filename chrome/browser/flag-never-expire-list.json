@@ -21,6 +21,7 @@
   "disable-accelerated-2d-canvas",
   "disable-accelerated-mjpeg-decode",
   "disable-accelerated-video-decode",
+  "disable-accelerated-video-encode",
   "disable-explicit-dma-fences",
   "disable-javascript-harmony-shipping",
   "disable-threaded-scrolling",

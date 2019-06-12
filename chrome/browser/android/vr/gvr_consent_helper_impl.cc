@@ -56,11 +56,10 @@ void GvrConsentHelperImpl::PromptUserAndGetConsent(
   on_user_consent_callback_ = std::move(on_user_consent_callback);
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jdelegate =
-      Java_VrConsentDialog_promptForUserConsent(
-          env, reinterpret_cast<jlong>(this),
-          GetTabFromRenderer(render_process_id, render_frame_id));
-  if (jdelegate.is_null()) {
+  jdelegate_ = Java_VrConsentDialog_promptForUserConsent(
+      env, reinterpret_cast<jlong>(this),
+      GetTabFromRenderer(render_process_id, render_frame_id));
+  if (jdelegate_.is_null()) {
     std::move(on_user_consent_callback_).Run(false);
     return;
   }
@@ -70,8 +69,9 @@ void GvrConsentHelperImpl::OnUserConsentResult(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
     jboolean is_granted) {
-  DCHECK(on_user_consent_callback_);
-  std::move(on_user_consent_callback_).Run(!!is_granted);
+  if (on_user_consent_callback_)
+    std::move(on_user_consent_callback_).Run(!!is_granted);
+  jdelegate_.Reset();
 }
 
 }  // namespace vr

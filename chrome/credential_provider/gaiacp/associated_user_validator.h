@@ -24,19 +24,19 @@ namespace credential_provider {
 // NOTE: This class is thread safe.
 //
 // The following functions are called at a time when it is impossible for
-// the valaditor to be accessed by multiple threads. The validator will only
+// the validator to be accessed by multiple threads. The validator will only
 // be accessed from another thread through the BackgroundTokenHandleUpdater
 // that is created in CGaiaCredentialProvider::Advise and destroyed in
 // CGaiaCredentialProvider::Unadvise:
 // StartRefreshingTokenHandleValidity: Only called on the main thread during
 // a call to DllGetClassObject.
 // IsUserAccessBlockingEnforced: Only called on the main thread in
-// CGaiaCredentialProvider::Advise and in
-// CGaiaCredentialProviderFilter::UpdateRemoteCredential.
+//   CGaiaCredentialProvider::Advise and in
+//   CGaiaCredentialProviderFilter::UpdateRemoteCredential.
 // AllowSigninForUsersWithInvalidTokenHandles: Only called on the main thread
-// in CGaiaCredentialProvider::FinalRelease.
+//   in CGaiaCredentialProvider::FinalRelease.
 // AllowSigninForAllAssociatedUsers: Only called on the main thread in
-// CGaiaCredentialProviderFilter::Filter.
+//   CGaiaCredentialProviderFilter::Filter.
 //
 // The following functions can be called while the validator can be accessed
 // from another thread:

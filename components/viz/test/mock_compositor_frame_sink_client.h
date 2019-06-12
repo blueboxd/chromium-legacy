@@ -6,7 +6,7 @@
 #define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 
 #include "base/callback.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +29,7 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   MOCK_METHOD1(DidReceiveCompositorFrameAck,
                void(const std::vector<ReturnedResource>&));
   MOCK_METHOD2(OnBeginFrame,
-               void(const BeginFrameArgs&, const PresentationFeedbackMap&));
+               void(const BeginFrameArgs&, const FrameTimingDetailsMap&));
   MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
   MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
   MOCK_METHOD1(OnBeginFramePausedChanged, void(bool paused));

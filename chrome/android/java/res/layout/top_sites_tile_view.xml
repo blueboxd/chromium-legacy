@@ -52,7 +52,7 @@
         app:srcCompat="@drawable/ic_offline_pin_blue_white" />
 
     <!-- The title. -->
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/tile_view_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,6 +60,6 @@
         android:ellipsize="end"
         android:gravity="center_horizontal"
         android:lines="2"
-        android:lineSpacingMultiplier="1.17"
-        android:textAppearance="@style/TextAppearance.BlackCaption" />
+        android:textAppearance="@style/TextAppearance.BlackCaption"
+        app:leading="@dimen/text_size_small_leading" />
 </org.chromium.chrome.browser.suggestions.tile.TopSitesTileView>

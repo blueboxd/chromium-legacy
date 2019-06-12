@@ -23,7 +23,6 @@ mojom("mojom") {
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:video_capture",
     "//media/mojo/interfaces",
-    "//services/ws/public/mojom",
     "//ui/gfx/geometry/mojo",
   ]
 

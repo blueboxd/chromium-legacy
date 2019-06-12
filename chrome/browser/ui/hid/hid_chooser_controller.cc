@@ -19,10 +19,12 @@
 
 HidChooserController::HidChooserController(
     content::RenderFrameHost* render_frame_host,
+    std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     content::HidChooser::Callback callback)
     : ChooserController(render_frame_host,
                         IDS_HID_CHOOSER_PROMPT_ORIGIN,
                         IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME),
+      filters_(std::move(filters)),
       callback_(std::move(callback)),
       requesting_origin_(render_frame_host->GetLastCommittedOrigin()),
       embedding_origin_(
@@ -123,15 +125,78 @@ void HidChooserController::OpenHelpCenterUrl() const {
 void HidChooserController::OnGotDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   for (auto& device : devices) {
-    if (UsbBlocklist::Get().IsExcluded(
-            {device->vendor_id, device->product_id, 0})) {
+    if (ShouldExcludeDevice(*device))
       continue;
-    }
-    // TODO(mattreynolds): Add |device| to |devices_| only if it matches the
-    // filters in the requestDevice call.
-    devices_.push_back(std::move(device));
+
+    if (FilterMatchesAny(*device))
+      devices_.push_back(std::move(device));
   }
 
   if (view())
     view()->OnOptionsInitialized();
+}
+
+bool HidChooserController::ShouldExcludeDevice(
+    const device::mojom::HidDeviceInfo& device) const {
+  // Do not pass the device to the chooser if it is on the USB blocklist.
+  if (UsbBlocklist::Get().IsExcluded({device.vendor_id, device.product_id, 0}))
+    return true;
+
+  // Do not pass the device to the chooser if it has a top-level collection with
+  // the FIDO usage page.
+  auto find_it =
+      std::find_if(device.collections.begin(), device.collections.end(),
+                   [](const device::mojom::HidCollectionInfoPtr& c) {
+                     return c->usage->usage_page == device::mojom::kPageFido;
+                   });
+  return find_it != device.collections.end();
+}
+
+bool HidChooserController::FilterMatchesAny(
+    const device::mojom::HidDeviceInfo& device) const {
+  if (filters_.empty())
+    return true;
+
+  for (const auto& filter : filters_) {
+    if (filter->device_ids) {
+      if (filter->device_ids->is_vendor()) {
+        if (filter->device_ids->get_vendor() != device.vendor_id)
+          continue;
+      } else if (filter->device_ids->is_vendor_and_product()) {
+        const auto& vendor_and_product =
+            filter->device_ids->get_vendor_and_product();
+        if (vendor_and_product->vendor != device.vendor_id)
+          continue;
+        if (vendor_and_product->product != device.product_id)
+          continue;
+      }
+    }
+
+    if (filter->usage) {
+      if (filter->usage->is_page()) {
+        const uint16_t usage_page = filter->usage->get_page();
+        auto find_it =
+            std::find_if(device.collections.begin(), device.collections.end(),
+                         [=](const device::mojom::HidCollectionInfoPtr& c) {
+                           return usage_page == c->usage->usage_page;
+                         });
+        if (find_it == device.collections.end())
+          continue;
+      } else if (filter->usage->is_usage_and_page()) {
+        const auto& usage_and_page = filter->usage->get_usage_and_page();
+        auto find_it = std::find_if(
+            device.collections.begin(), device.collections.end(),
+            [&usage_and_page](const device::mojom::HidCollectionInfoPtr& c) {
+              return usage_and_page->usage_page == c->usage->usage_page &&
+                     usage_and_page->usage == c->usage->usage;
+            });
+        if (find_it == device.collections.end())
+          continue;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
 }

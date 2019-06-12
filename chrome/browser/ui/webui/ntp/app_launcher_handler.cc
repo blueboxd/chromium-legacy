@@ -521,7 +521,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
       disposition == WindowOpenDisposition::NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
-    AppLaunchParams params(profile, extension,
+    AppLaunchParams params(profile, extension_id,
                            disposition == WindowOpenDisposition::NEW_WINDOW
                                ? extensions::LAUNCH_CONTAINER_WINDOW
                                : extensions::LAUNCH_CONTAINER_TAB,

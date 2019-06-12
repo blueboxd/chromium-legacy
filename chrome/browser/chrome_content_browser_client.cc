@@ -188,8 +188,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/services/noop/public/cpp/utils.h"
-#include "chrome/services/noop/public/mojom/noop.mojom.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -541,8 +539,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
 #include "chrome/browser/apps/platform_apps/platform_app_navigation_redirector.h"
-#include "chrome/browser/extensions/bookmark_app_experimental_navigation_throttle.h"
-#include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/user_script_listener.h"
@@ -4213,24 +4209,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     if (url_to_app_throttle)
       throttles.push_back(std::move(url_to_app_throttle));
   }
-
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsLinkCapturing)) {
-    auto bookmark_app_experimental_throttle =
-        extensions::BookmarkAppExperimentalNavigationThrottle::
-            MaybeCreateThrottleFor(handle);
-    if (bookmark_app_experimental_throttle)
-      throttles.push_back(std::move(bookmark_app_experimental_throttle));
-  } else if (!base::FeatureList::IsEnabled(
-                 features::kDesktopPWAsStayInWindow)) {
-    // Only add the bookmark app navigation throttle if the stay in
-    // window flag is not set, as the navigation throttle controls
-    // opening out of scope links in the browser.
-    auto bookmark_app_throttle =
-        extensions::BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
-            handle);
-    if (bookmark_app_throttle)
-      throttles.push_back(std::move(bookmark_app_throttle));
-  }
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -5009,8 +4987,6 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
 
 void ChromeContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  chrome::MaybeStartNoopService();
-
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 

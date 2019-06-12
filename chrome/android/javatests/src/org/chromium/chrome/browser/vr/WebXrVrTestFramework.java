@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
+import android.support.annotation.IntDef;
+
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
@@ -12,18 +14,42 @@ import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Extension of VrTestFramework containing WebXR for VR-specific functionality.
  */
 public class WebXrVrTestFramework extends WebXrTestFramework {
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({CONSENT_DIALOG_ACTION_DO_NOTHING, CONSENT_DIALOG_ACTION_ALLOW,
+            CONSENT_DIALOG_ACTION_DENY})
+    public @interface ConsentDialogAction {}
+
+    public static final int CONSENT_DIALOG_ACTION_DO_NOTHING = 0;
+    public static final int CONSENT_DIALOG_ACTION_ALLOW = 1;
+    public static final int CONSENT_DIALOG_ACTION_DENY = 2;
+
     // If set, a consent dialog is expected on all enterSessionWithUserGesture* methods.
     protected boolean mShouldExpectConsentDialog = true;
+
+    @ConsentDialogAction
+    protected int mConsentDialogAction = CONSENT_DIALOG_ACTION_ALLOW;
 
     public WebXrVrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
         if (!TestVrShellDelegate.isOnStandalone()) {
             Assert.assertFalse("Test started in VR", VrShellDelegate.isInVr());
         }
+    }
+
+    /**
+     * Set the default action to be taken when the consent dialog is displayed.
+     *
+     * @param action The action to take on a consent dialog.
+     */
+    public void setConsentDialogAction(@ConsentDialogAction int action) {
+        mConsentDialogAction = action;
     }
 
     /**
@@ -45,7 +71,10 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
 
         if (!mShouldExpectConsentDialog) return;
         PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
+        if (mConsentDialogAction == CONSENT_DIALOG_ACTION_ALLOW)
+            PermissionUtils.acceptConsentPrompt(getRule().getActivity());
+        else if (mConsentDialogAction == CONSENT_DIALOG_ACTION_DENY)
+            PermissionUtils.declineConsentPrompt(getRule().getActivity());
     }
 
     /**

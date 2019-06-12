@@ -60,7 +60,7 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
 }
 
-views::View* SaveCardOfferBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   if (controller()->GetSyncState() !=
       AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
     return nullptr;
@@ -68,12 +68,12 @@ views::View* SaveCardOfferBubbleViews::CreateExtraView() {
 
   // CreateMainContentView() must happen prior to this so that |prefilled_name|
   // gets populated.
-  auto* upload_explanation_tooltip =
-      new views::TooltipIcon(l10n_util::GetStringUTF16(
-          (cardholder_name_textfield_ &&
-           !cardholder_name_textfield_->text().empty())
-              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
-              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+  auto upload_explanation_tooltip = std::make_unique<
+      views::TooltipIcon>(l10n_util::GetStringUTF16(
+      (cardholder_name_textfield_ &&
+       !cardholder_name_textfield_->text().empty())
+          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
+          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);

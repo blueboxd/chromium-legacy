@@ -41,19 +41,6 @@ TableExample::~TableExample() {
 }
 
 void TableExample::CreateExampleView(View* container) {
-  column1_visible_checkbox_ =
-      new Checkbox(ASCIIToUTF16("Fruit column visible"), this);
-  column1_visible_checkbox_->SetChecked(true);
-  column2_visible_checkbox_ =
-      new Checkbox(ASCIIToUTF16("Color column visible"), this);
-  column2_visible_checkbox_->SetChecked(true);
-  column3_visible_checkbox_ =
-      new Checkbox(ASCIIToUTF16("Origin column visible"), this);
-  column3_visible_checkbox_->SetChecked(true);
-  column4_visible_checkbox_ =
-      new Checkbox(ASCIIToUTF16("Price column visible"), this);
-  column4_visible_checkbox_->SetChecked(true);
-
   GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
 
@@ -80,8 +67,7 @@ void TableExample::CreateExampleView(View* container) {
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, 0);
   table_ = table.get();
-  layout->AddView(
-      TableView::CreateScrollViewWithTable(std::move(table)).release());
+  layout->AddView(TableView::CreateScrollViewWithTable(std::move(table)));
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
@@ -95,10 +81,21 @@ void TableExample::CreateExampleView(View* container) {
 
   layout->StartRow(0 /* no expand */, 1);
 
-  layout->AddView(column1_visible_checkbox_);
-  layout->AddView(column2_visible_checkbox_);
-  layout->AddView(column3_visible_checkbox_);
-  layout->AddView(column4_visible_checkbox_);
+  auto make_checkbox =
+      [this](base::string16 text) -> std::unique_ptr<Checkbox> {
+    auto result = std::make_unique<Checkbox>(text, this);
+    result->SetChecked(true);
+    return result;
+  };
+
+  column1_visible_checkbox_ =
+      layout->AddView(make_checkbox(ASCIIToUTF16("Fruit column visible")));
+  column2_visible_checkbox_ =
+      layout->AddView(make_checkbox(ASCIIToUTF16("Color column visible")));
+  column3_visible_checkbox_ =
+      layout->AddView(make_checkbox(ASCIIToUTF16("Origin column visible")));
+  column4_visible_checkbox_ =
+      layout->AddView(make_checkbox(ASCIIToUTF16("Price column visible")));
 }
 
 int TableExample::RowCount() {

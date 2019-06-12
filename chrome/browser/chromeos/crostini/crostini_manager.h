@@ -658,8 +658,12 @@ class CrostiniManager : public KeyedService,
   void RemoveInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
   bool HasInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
 
+  void OnDBusShuttingDownForTesting();
+
  private:
   class CrostiniRestarter;
+
+  void RemoveDBusObservers();
 
   // Callback for ConciergeClient::CreateDiskImage. Called after the Concierge
   // service method finishes.
@@ -924,6 +928,8 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<InstallerViewStatusObserver>
       installer_view_status_observers_;
+
+  bool dbus_observers_removed_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

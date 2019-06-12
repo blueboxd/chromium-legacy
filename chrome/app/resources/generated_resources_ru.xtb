@@ -829,7 +829,6 @@
 <translation id="2242687258748107519">Информация о файле</translation>
 <translation id="2246549592927364792">Получать от Google описания изображений?</translation>
 <translation id="2249269794707377949">Здесь можно управлять всеми аккаунтами Kerberos, которые использовались для единого входа в определенные приложения и на сайты, а также для доступа к общим папкам.</translation>
-<translation id="224940702122312781">Для загрузки этой страницы потребуется большой объем трафика.</translation>
 <translation id="2249605167705922988">Например: 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Открыть в программе просмотра по умолчанию</translation>
 <translation id="225163402930830576">Обновить сети</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Коснитесь несколько раз</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: синхронизация приостановлена</translation>
-<translation id="3861241522664181545">Загрузка страницы приостановлена</translation>
 <translation id="3862134173397075045">Добро пожаловать в Cast для Chrome!</translation>
 <translation id="3862693525629180217">Подтвердить с помощью встроенного датчика</translation>
 <translation id="3862788408946266506">Приложения, у которых в манифесте есть атрибут kiosk_only, можно устанавливать только в режиме киоска</translation>
@@ -3860,7 +3858,6 @@
 <translation id="6920989436227028121">Открыть в обычной вкладке</translation>
 <translation id="6921104647315081813">Очистить журнал активности</translation>
 <translation id="692114467174262153">Не удалось открыть <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">Остановить загрузку страницы</translation>
 <translation id="6922128026973287222">Расширение "Экономия трафика" от Google помогает быстрее просматривать веб-страницы и расходовать меньше трафика. Нажмите здесь, чтобы узнать подробности.</translation>
 <translation id="6922745772873733498">Чтобы запустить печать, введите PIN-код</translation>
 <translation id="6923132443355966645">Прокрутить/нажать</translation>

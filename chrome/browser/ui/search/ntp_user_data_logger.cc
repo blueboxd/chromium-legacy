@@ -336,9 +336,6 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
   }
 
   switch (event) {
-    case NTP_ALL_TILES_RECEIVED:
-      tiles_received_time_ = time;
-      break;
     case NTP_ALL_TILES_LOADED:
       // permitted above for non-Google search providers
       break;
@@ -495,7 +492,6 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
   if (from.is_valid() && to.is_valid() && (to == ntp_url_)) {
     DVLOG(1) << "Returning to New Tab Page";
     logged_impressions_.fill(base::nullopt);
-    tiles_received_time_ = base::TimeDelta();
     has_emitted_ = false;
     should_record_doodle_load_time_ = true;
   }
@@ -538,17 +534,12 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << tiles_count;
 
-  UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime", tiles_received_time_);
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime", load_time);
 
   // Split between ML (aka SuggestionsService) and MV (aka TopSites).
   if (has_server_side_suggestions) {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.MostLikely",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostLikely", load_time);
   } else {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.MostVisited",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostVisited", load_time);
   }
 
@@ -559,14 +550,10 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
 
   // Split between Web and Local.
   if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.Web",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web", load_time);
     // Only third-party NTPs can be loaded from the web.
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
   } else {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.LocalNTP",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP", load_time);
     // Further split between Google and non-Google.
     if (is_google) {
@@ -578,12 +565,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
 
   // Split between Startup and non-startup.
   if (during_startup_) {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.Startup",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Startup", load_time);
   } else {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.NewTab",
-                            tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.NewTab", load_time);
   }
 

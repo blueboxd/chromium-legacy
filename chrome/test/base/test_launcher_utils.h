@@ -21,6 +21,12 @@ namespace test_launcher_utils {
 // when running under tests.
 void PrepareBrowserCommandLineForTests(base::CommandLine* command_line);
 
+// Appends browser switches to provided |command_line| to be used
+// when running under browser tests. These are in addition to the flags from
+// PrepareBrowserCommandLineForTests().
+void PrepareBrowserCommandLineForBrowserTests(base::CommandLine* command_line,
+                                              bool open_about_blank_on_launch);
+
 // Appends all switches from |in_command_line| to |out_command_line| except for
 // |switch_to_remove|.
 // TODO(xhwang): Add CommandLine::RemoveSwitch() so we don't need this hack.

@@ -46,6 +46,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
@@ -868,8 +869,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   Attach();
   SendCommand("Inspector.enable", nullptr);
 
-  shell()->LoadURL(GURL(content::kChromeUICrashURL));
-  WaitForNotification("Inspector.targetCrashed");
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    WaitForNotification("Inspector.targetCrashed");
+  }
+
   ClearNotifications();
   shell()->LoadURL(url);
   WaitForNotification("Inspector.targetReloadedAfterCrash", true);
@@ -888,8 +893,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   Attach();
   SendCommand("Inspector.enable", nullptr);
 
-  shell()->LoadURL(GURL(content::kChromeUICrashURL));
-  WaitForNotification("Inspector.targetCrashed");
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    WaitForNotification("Inspector.targetCrashed");
+  }
+
   ClearNotifications();
   SendCommand("Page.reload", nullptr, false);
   WaitForNotification("Inspector.targetReloadedAfterCrash", true);
@@ -1763,8 +1772,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest,
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   EmulateDeviceSize(gfx::Size(200, 200));
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), GURL(content::kChromeUICrashURL), 1);
+
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    NavigateToURLBlockUntilNavigationsComplete(
+        shell(), GURL(content::kChromeUICrashURL), 1);
+  }
+
   SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
   // Should not crash at this point.
 }

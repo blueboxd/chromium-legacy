@@ -43,6 +43,7 @@ java_cpp_enum("channel_enum_srcjar") {
 }
 
 process_version("generate_version_constants") {
+  process_only = true
   template_file = "java/VersionConstants.java.version"
   output = _version_constants_java_file
   sources = [

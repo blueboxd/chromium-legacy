@@ -279,7 +279,7 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class InstallableManagerWhitelistOriginBrowserTest
+class InstallableManagerAllowlistOriginBrowserTest
     : public InstallableManagerBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(kUnsafeSecureOriginFlag, kInsecureOrigin);
@@ -1661,13 +1661,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                                         "/banners/play_app_manifest.json")));
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerWhitelistOriginBrowserTest,
+IN_PROC_BROWSER_TEST_F(InstallableManagerAllowlistOriginBrowserTest,
                        SecureOriginCheckRespectsUnsafeFlag) {
-  // The whitelisted origin should be regarded as secure.
+  // The allowlisted origin should be regarded as secure.
   ui_test_utils::NavigateToURL(browser(), GURL(kInsecureOrigin));
-  EXPECT_TRUE(GetManager(browser())->IsContentSecureForTesting());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(InstallableManager::IsContentSecure(contents));
 
-  // While a non-whitelisted origin should not.
+  // While a non-allowlisted origin should not.
   ui_test_utils::NavigateToURL(browser(), GURL(kOtherInsecureOrigin));
-  EXPECT_FALSE(GetManager(browser())->IsContentSecureForTesting());
+  EXPECT_FALSE(InstallableManager::IsContentSecure(contents));
 }

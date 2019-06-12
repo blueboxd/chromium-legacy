@@ -541,7 +541,6 @@
     "AudioService": [
         {
             "platforms": [
-                "linux",
                 "mac",
                 "windows"
             ],
@@ -555,6 +554,24 @@
                     "enable_features": [
                         "AudioServiceAudioStreams",
                         "AudioServiceOutOfProcess",
+                        "AudioServiceOutOfProcessKillAtHang",
+                        "AudioServiceSandbox",
+                        "WebRtcApmInAudioService"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioProcess_APM",
+                    "params": {
+                        "timeout_seconds": "180"
+                    },
+                    "enable_features": [
                         "AudioServiceOutOfProcessKillAtHang",
                         "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
@@ -2371,7 +2388,7 @@
             ]
         }
     ],
-    "GwpAsanPartitionAlloc": [
+    "GwpAsanPartitionAllocLaunch": [
         {
             "platforms": [
                 "mac",
@@ -4968,6 +4985,25 @@
                     },
                     "enable_features": [
                         "SkipTouchEventFilter"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SpellingServiceRestEndpoint": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SpellingServiceRestApi"
                     ]
                 }
             ]

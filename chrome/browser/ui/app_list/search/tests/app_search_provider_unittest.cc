@@ -742,6 +742,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 
   // This both allows Crostini UI and enables Crostini.
   crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
   EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
   EXPECT_EQ("Terminal", RunQuery("ter"));
@@ -768,6 +769,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 TEST_F(AppSearchProviderTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.
   crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
 
   // Search based on keywords and name
@@ -777,6 +779,10 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
   crostini_test_helper.UpdateAppKeywords(testApp, keywords);
   testApp.set_executable_file_name("executable");
   crostini_test_helper.AddApp(testApp);
+
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ("goodApp", RunQuery("wow"));
   EXPECT_EQ("goodApp", RunQuery("amazing"));
   EXPECT_EQ("goodApp", RunQuery("excellent app"));

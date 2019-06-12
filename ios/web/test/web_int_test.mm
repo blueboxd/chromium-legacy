@@ -4,8 +4,10 @@
 
 #import "ios/web/test/web_int_test.h"
 
+#include "base/base_paths.h"
 #import "base/ios/block_types.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -62,7 +64,10 @@ void WebIntTest::SetUp() {
   // Start the http server.
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   ASSERT_FALSE(server.IsRunning());
-  server.StartOrDie();
+
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  server.StartOrDie(test_data_dir.Append("."));
 
   // Remove any previously existing WKWebView data.
   RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],

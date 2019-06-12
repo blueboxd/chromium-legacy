@@ -5,15 +5,17 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -417,32 +419,31 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
 
   bool IsTable() const override;
-  int32_t GetTableColCount() const override;
-  int32_t GetTableRowCount() const override;
-  base::Optional<int32_t> GetTableAriaColCount() const override;
-  base::Optional<int32_t> GetTableAriaRowCount() const override;
-  int32_t GetTableCellCount() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const override;
-  ui::AXPlatformNode* GetTableCaption() override;
+  base::Optional<int> GetTableColCount() const override;
+  base::Optional<int> GetTableRowCount() const override;
+  base::Optional<int> GetTableAriaColCount() const override;
+  base::Optional<int> GetTableAriaRowCount() const override;
+  base::Optional<int> GetTableCellCount() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  std::vector<int32_t> GetRowHeaderNodeIds() const override;
+  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
+  ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;
-  int32_t GetTableRowRowIndex() const override;
+  base::Optional<int> GetTableRowRowIndex() const override;
 
   bool IsTableCellOrHeader() const override;
-  int32_t GetTableCellIndex() const override;
-  int32_t GetTableCellColIndex() const override;
-  int32_t GetTableCellRowIndex() const override;
-  int32_t GetTableCellColSpan() const override;
-  int32_t GetTableCellRowSpan() const override;
-  int32_t GetTableCellAriaColIndex() const override;
-  int32_t GetTableCellAriaRowIndex() const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIndexToId(int32_t cell_index) const override;
+  base::Optional<int> GetTableCellIndex() const override;
+  base::Optional<int> GetTableCellColIndex() const override;
+  base::Optional<int> GetTableCellRowIndex() const override;
+  base::Optional<int> GetTableCellColSpan() const override;
+  base::Optional<int> GetTableCellRowSpan() const override;
+  base::Optional<int> GetTableCellAriaColIndex() const override;
+  base::Optional<int> GetTableCellAriaRowIndex() const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
+  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
 
   bool IsCellOrHeaderOfARIATable() const override;
   bool IsCellOrHeaderOfARIAGrid() const override;
@@ -467,8 +468,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  int32_t GetPosInSet() const override;
-  int32_t GetSetSize() const override;
+  base::Optional<int> GetPosInSet() const override;
+  base::Optional<int> GetSetSize() const override;
 
  protected:
   using BrowserAccessibilityPositionInstance =

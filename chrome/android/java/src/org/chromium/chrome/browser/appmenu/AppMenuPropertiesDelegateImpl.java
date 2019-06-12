@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -262,6 +263,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 // Enable close all tabs if there are normal tabs or incognito tabs.
                 menu.findItem(R.id.close_all_tabs_menu_id)
                         .setEnabled(mTabModelSelector.getTotalTabCount() > 0);
+            }
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+                menu.findItem(R.id.menu_group_tabs).setVisible(false);
             }
         }
 

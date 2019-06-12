@@ -6,6 +6,7 @@
 
 #include "base/ios/block_types.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -24,6 +25,20 @@ namespace {
 
 NSString* const kSendTabToSelfActivityType =
     @"com.google.chrome.sendTabToSelfActivity";
+
+const char kClickResultHistogramName[] = "SendTabToSelf.ShareMenu.ClickResult";
+const char kDeviceCountHistogramName[] = "SendTabToSelf.ShareMenu.DeviceCount";
+
+// TODO(crbug.com/970886): Move to a directory accessible on all platforms.
+// State of the send tab to self option in the context menu.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SendTabToSelfClickResult {
+  kShowItem = 0,
+  kClickItem = 1,
+  kShowDeviceList = 2,
+  kMaxValue = kShowDeviceList,
+};
 
 }  // namespace
 
@@ -53,6 +68,8 @@ NSString* const kSendTabToSelfActivityType =
                   (NSDictionary<NSString*, NSString*>*)sendTabToSelfTargets
                          presenter:(id<ActivityServicePresentation>)presenter
                              title:(NSString*)title {
+  base::UmaHistogramEnumeration(kClickResultHistogramName,
+                                SendTabToSelfClickResult::kShowItem);
   if (self = [super init]) {
     _sendTabToSelfTargets = sendTabToSelfTargets;
     _dispatcher = dispatcher;
@@ -99,11 +116,18 @@ NSString* const kSendTabToSelfActivityType =
       ProceduralBlock action = ^{
         SendTabToSelfCommand* command =
             [[SendTabToSelfCommand alloc] initWithTargetDeviceId:deviceId];
+        base::UmaHistogramEnumeration(kClickResultHistogramName,
+                                      SendTabToSelfClickResult::kClickItem);
         [self.dispatcher sendTabToSelf:command];
       };
       [targetActions addObject:[[ContextMenuItem alloc] initWithTitle:key
                                                                action:action]];
     }
+
+    base::UmaHistogramEnumeration(kClickResultHistogramName,
+                                  SendTabToSelfClickResult::kShowDeviceList);
+    base::UmaHistogramCounts100(kDeviceCountHistogramName,
+                                [targetActions count]);
 
     NSString* title = l10n_util::GetNSStringF(
         IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION,

@@ -19,20 +19,19 @@
 using extensions::ExtensionPrefs;
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
-                                 const extensions::Extension* extension,
+                                 const web_app::AppId& app_id,
                                  extensions::LaunchContainer container,
                                  WindowOpenDisposition disposition,
                                  extensions::AppLaunchSource source,
                                  int64_t display_id)
     : profile(profile),
-      extension_id(extension ? extension->id() : std::string()),
+      app_id(app_id),
       container(container),
       disposition(disposition),
       command_line(base::CommandLine::NO_PROGRAM),
       source(source),
       display_id(display_id),
-      opener(nullptr) {
-}
+      opener(nullptr) {}
 
 AppLaunchParams::AppLaunchParams(const AppLaunchParams& other) = default;
 
@@ -47,7 +46,8 @@ AppLaunchParams CreateAppLaunchParamsUserContainer(
   // is to launch as a regular tab.
   extensions::LaunchContainer container =
       extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
-  return AppLaunchParams(profile, extension, container, disposition, source);
+  return AppLaunchParams(profile, extension->id(), container, disposition,
+                         source);
 }
 
 AppLaunchParams CreateAppLaunchParamsWithEventFlags(
@@ -75,6 +75,6 @@ AppLaunchParams CreateAppLaunchParamsWithEventFlags(
         extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
-  return AppLaunchParams(profile, extension, container, disposition, source,
-                         display_id);
+  return AppLaunchParams(profile, extension->id(), container, disposition,
+                         source, display_id);
 }

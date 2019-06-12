@@ -289,13 +289,13 @@ void SynchronousCompositorProxy::SetBeginFrameSourcePaused(bool paused) {
 
 void SynchronousCompositorProxy::BeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   if (needs_begin_frame_for_animate_input_) {
     needs_begin_frame_for_animate_input_ = false;
     input_handler_proxy_->SynchronouslyAnimate(args.frame_time);
   }
   if (layer_tree_frame_sink_) {
-    layer_tree_frame_sink_->DidPresentCompositorFrame(presentation_feedbacks);
+    layer_tree_frame_sink_->DidPresentCompositorFrame(timing_details);
     if (needs_begin_frame_for_frame_sink_)
       layer_tree_frame_sink_->BeginFrame(args);
   }

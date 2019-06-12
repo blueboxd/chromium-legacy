@@ -55,7 +55,7 @@
         border-color: var(--avatar-selected-color);
       }
 
-      #avatar-grid .avatar.keyboard-focus {
+      :host-context(.focus-outline-visible) #avatar-grid .avatar:focus {
         --avatar-outline-color: var(--avatar-focus-color);
         --avatar-outline-width: 1px;
       }

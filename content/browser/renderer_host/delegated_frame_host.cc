@@ -367,9 +367,9 @@ void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
 
 void DelegatedFrameHost::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details);
   client_->OnBeginFrame(args.frame_time);
 }
 

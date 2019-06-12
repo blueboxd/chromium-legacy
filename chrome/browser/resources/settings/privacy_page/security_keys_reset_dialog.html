@@ -20,7 +20,8 @@
          on-close="closeDialog_">
       <div slot="title">[[title_]]</div>
       <div slot="body">
-        <iron-pages attr-for-selected="id" selected="[[shown_]]">
+        <iron-pages attr-for-selected="id" selected="[[shown_]]"
+            on-iron-select="onIronSelect_">
           <div id="initial">
             <p>$i18n{securityKeysResetStep1}</p>
             <paper-spinner-lite active></paper-spinner-lite>

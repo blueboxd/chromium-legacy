@@ -43,6 +43,7 @@ net_unittest_bundle_data_globs = [
     "data/cert_issuer_source_aia_unittest/*.pem",
     "data/cert_issuer_source_static_unittest/*.pem",
     "data/certificate_policies_unittest/*.pem",
+    "data/crl_unittest/*.pem",
     "data/embedded_test_server/*",
     "data/filter_unittests/*",
     "data/name_constraints_unittest/*.pem",

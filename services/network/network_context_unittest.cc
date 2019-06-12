@@ -113,6 +113,10 @@
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+#include "net/ftp/ftp_auth_cache.h"
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
@@ -5571,6 +5575,75 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
   EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
                                          &response_body));
   EXPECT_EQ("None", response_body);
+}
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+TEST_F(NetworkContextTest, AddFtpAuthCacheEntry) {
+  GURL url("ftp://example.test/");
+  const char kUsername[] = "test_user";
+  const char kPassword[] = "test_pass";
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  params->enable_ftp_url_support = true;
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(params));
+  net::AuthChallengeInfo challenge;
+  challenge.is_proxy = false;
+  challenge.challenger = url::Origin::Create(url);
+
+  ASSERT_TRUE(network_context->url_request_context()->ftp_auth_cache());
+  ASSERT_FALSE(
+      network_context->url_request_context()->ftp_auth_cache()->Lookup(url));
+  base::RunLoop run_loop;
+  network_context->AddAuthCacheEntry(
+      challenge,
+      net::AuthCredentials(base::ASCIIToUTF16(kUsername),
+                           base::ASCIIToUTF16(kPassword)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  net::FtpAuthCache::Entry* entry =
+      network_context->url_request_context()->ftp_auth_cache()->Lookup(url);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->origin);
+  EXPECT_EQ(base::ASCIIToUTF16(kUsername), entry->credentials.username());
+  EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials.password());
+}
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
+  GURL url("http://example.test/");
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::AuthChallengeInfo challenge;
+  challenge.is_proxy = false;
+  challenge.challenger = url::Origin::Create(url);
+  challenge.scheme = "basic";
+  challenge.realm = "testrealm";
+  const char kUsername[] = "test_user";
+  const char kPassword[] = "test_pass";
+
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+  ASSERT_TRUE(cache);
+
+  ASSERT_FALSE(
+      cache->Lookup(url, challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC));
+  base::RunLoop run_loop;
+  network_context->AddAuthCacheEntry(
+      challenge,
+      net::AuthCredentials(base::ASCIIToUTF16(kUsername),
+                           base::ASCIIToUTF16(kPassword)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  net::HttpAuthCache::Entry* entry =
+      cache->Lookup(url, challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->origin());
+  EXPECT_EQ(challenge.realm, entry->realm());
+  EXPECT_EQ(net::HttpAuth::StringToScheme(challenge.scheme), entry->scheme());
+  EXPECT_EQ(base::ASCIIToUTF16(kUsername), entry->credentials().username());
+  EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials().password());
 }
 
 }  // namespace

@@ -9,7 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
@@ -30,6 +30,7 @@
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -94,9 +95,7 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     base::OnceClosure closure_;
   };
 
-  PluginVmLauncherViewBrowserTest() {}
-
-  void SetUp() override { DialogBrowserTest::SetUp(); }
+  PluginVmLauncherViewBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -106,6 +105,8 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
+
+  void TearDownOnMainThread() override { scoped_user_manager_.reset(); }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -117,14 +118,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   }
 
  protected:
-  chromeos::MockUserManager user_manager_;
-  PluginVmLauncherViewForTesting* view_;
-  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
-  SetupObserver* setup_observer_;
-  std::unique_ptr<base::HistogramTester> histogram_tester_;
-
   bool HasAcceptButton() {
     return view_->GetDialogClientView()->ok_button() != nullptr;
   }
@@ -132,9 +125,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   bool HasCancelButton() {
     return view_->GetDialogClientView()->cancel_button() != nullptr;
   }
-
- protected:
-  chromeos::FakeConciergeClient* fake_concierge_client_;
 
   void AllowPluginVm() {
     EnablePluginVmFeature();
@@ -182,6 +172,16 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE));
   }
 
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  PluginVmLauncherViewForTesting* view_;
+  SetupObserver* setup_observer_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
+  chromeos::FakeConciergeClient* fake_concierge_client_;
+
  private:
   void EnablePluginVmFeature() {
     scoped_feature_list_.InitAndEnableFeature(features::kPluginVm);
@@ -202,10 +202,13 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   void SetUserWithAffiliation() {
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         browser()->profile()->GetProfileUserName(), "id"));
-    user_manager_.AddUserWithAffiliationAndType(
-        account_id, true, user_manager::USER_TYPE_REGULAR);
+    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    user_manager->AddUserWithAffiliation(account_id, true);
+    user_manager->LoginUser(account_id);
     chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
-        user_manager_.GetActiveUser());
+        user_manager->GetActiveUser());
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
   }
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherViewBrowserTest);

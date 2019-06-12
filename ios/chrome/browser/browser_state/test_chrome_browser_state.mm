@@ -44,7 +44,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
-#include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -87,7 +86,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
       base::DoNothing());
 }
 

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_DEVICE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 
@@ -59,6 +60,13 @@ class GPUDevice final : public DawnObject<DawnDevice> {
   GPUAdapter* adapter() const;
 
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
+  WTF::Vector<ScriptValue> createBufferMapped(
+      ScriptState* script_state,
+      const GPUBufferDescriptor* descriptor,
+      ExceptionState& exception_state);
+  ScriptPromise createBufferMappedAsync(ScriptState* script_state,
+                                        const GPUBufferDescriptor* descriptor,
+                                        ExceptionState& exception_state);
   GPUTexture* createTexture(const GPUTextureDescriptor* descriptor);
   GPUSampler* createSampler(const GPUSamplerDescriptor* descriptor);
 

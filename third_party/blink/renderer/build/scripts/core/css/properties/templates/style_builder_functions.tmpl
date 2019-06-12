@@ -18,7 +18,7 @@ void {{prefix ~ '::' if prefix}}ApplyValue(StyleResolverState& state, const CSSV
     {% if property.style_builder_inline == header and property.style_builder_generate_initial %}
 {{declare_initial(property.name.to_upper_camel_case() if not header)|indent(spaces, true)}} {
 {{(caller(property) ~ '}')|indent(spaces, true)}}
-    {% else %}
+    {% elif header %}
 {{declare_initial()|indent(spaces, true)-}};
     {% endif %}
   {% endif %}
@@ -30,7 +30,7 @@ void {{prefix ~ '::' if prefix}}ApplyValue(StyleResolverState& state, const CSSV
     {% if property.style_builder_inline == header and property.style_builder_generate_inherit %}
 {{declare_inherit(property.name.to_upper_camel_case() if not header)|indent(spaces, true)}} {
 {{(caller(property) ~ '}')|indent(spaces, true)}}
-    {% else %}
+    {% elif header %}
 {{declare_inherit()|indent(spaces, true)-}};
     {% endif %}
   {% endif %}
@@ -42,7 +42,7 @@ void {{prefix ~ '::' if prefix}}ApplyValue(StyleResolverState& state, const CSSV
     {% if property.style_builder_inline == header and property.style_builder_generate_value %}
 {{declare_value(property.name.to_upper_camel_case() if not header)|indent(spaces, true)}} {
 {{(caller(property) ~ '}')|indent(spaces, true)}}
-    {% else %}
+    {% elif header %}
 {{declare_value()|indent(spaces, true)-}};
     {% endif %}
   {% endif %}
@@ -368,6 +368,24 @@ To<Longhand>(resolved_property).{{apply_call}};
     state.Style()->{{visited_link_setter}}(
         StyleBuilderConverter::{{property.converter}}(state, value, true));
   }
+    {% endcall %}
+  {% elif property.style_builder_template in ['color_only', 'visited_color'] %}
+    {% set initial_color = property.style_builder_template_args['initial_color'] or 'StyleColor::CurrentColor' %}
+    {% set is_visited = property.style_builder_template == 'visited_color' %}
+    {% set main_getter = is_visited and property.unvisited_property.getter or property.getter %}
+    {% call(property) apply_initial(property, header) %}
+  auto color = {{initial_color}}();
+  {{set_value(property)}}(color);
+    {% endcall %}
+
+    {% call(property) apply_inherit(property, header) %}
+  auto color = state.ParentStyle()->{{main_getter}}();
+  {{set_value(property)}}(color);
+    {% endcall %}
+
+    {% call(property) apply_value(property, header) %}
+    {% set visited_link = is_visited and 'true' or 'false' %}
+  {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value, {{visited_link}}));
     {% endcall %}
   {% elif property.style_builder_template == 'counter' %}
     {% set action = property.style_builder_template_args['action'] %}

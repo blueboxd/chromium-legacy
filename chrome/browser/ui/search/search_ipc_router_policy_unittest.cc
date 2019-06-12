@@ -141,20 +141,20 @@ TEST_F(SearchIPCRouterPolicyTest,
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_FALSE(router_policy->ShouldSendThemeBackgroundInfo());
-  EXPECT_FALSE(router_policy->ShouldSendMostVisitedItems());
+  EXPECT_FALSE(router_policy->ShouldSendMostVisitedInfo());
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(true));
   EXPECT_FALSE(router_policy->ShouldSendOmniboxFocusChanged());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
+TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedInfo) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendMostVisitedItems());
+  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendMostVisitedInfo());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItems) {
+TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedInfo) {
   // Send most visited items only if the current tab is an Instant NTP.
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendMostVisitedItems());
+  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendMostVisitedInfo());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo) {

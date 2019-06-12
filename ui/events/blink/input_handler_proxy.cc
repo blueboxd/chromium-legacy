@@ -61,6 +61,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.is_in_inertial_phase =
           (event.data.scroll_begin.inertial_phase ==
            WebGestureEvent::InertialPhaseState::kMomentum);
+      scroll_state_data.delta_granularity =
+          static_cast<double>(event.data.scroll_begin.delta_hint_units);
       break;
     case WebInputEvent::kGestureScrollUpdate:
       scroll_state_data.delta_x = -event.data.scroll_update.delta_x;
@@ -70,6 +72,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.is_in_inertial_phase =
           event.data.scroll_update.inertial_phase ==
           WebGestureEvent::InertialPhaseState::kMomentum;
+      scroll_state_data.delta_granularity =
+          static_cast<double>(event.data.scroll_update.delta_units);
       break;
     case WebInputEvent::kGestureScrollEnd:
       scroll_state_data.is_ending = true;

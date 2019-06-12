@@ -434,6 +434,9 @@ public class ChromeBrowserInitializer {
 
         // TODO(crbug.com/960767): Remove this in M77.
         ServiceManagerStartupUtils.cleanupSharedPreferences();
+
+        PostTask.postTask(
+                TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);
     }
 
     private ActivityStateListener createActivityStateListener() {

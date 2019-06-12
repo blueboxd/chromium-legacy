@@ -1095,15 +1095,9 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
     if (max > min && value >= min && value <= max)
       index = static_cast<int>(((value - min)) * 100 / (max - min));
   } else {
-    switch (GetRole()) {
-      case ax::mojom::Role::kListItem:
-      case ax::mojom::Role::kListBoxOption:
-      case ax::mojom::Role::kTreeItem:
-        index = node()->GetPosInSet() - 1;
-        break;
-      default:
-        break;
-    }
+    base::Optional<int> pos_in_set = node()->GetPosInSet();
+    if (pos_in_set && *pos_in_set > 0)
+      index = *pos_in_set - 1;
   }
   return index;
 }
@@ -1116,15 +1110,8 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
     // in RangeMin and RangeMax.
     count = 100;
   } else {
-    switch (GetRole()) {
-      case ax::mojom::Role::kList:
-      case ax::mojom::Role::kListBox:
-      case ax::mojom::Role::kDescriptionList:
-        count = node()->GetSetSize();
-        break;
-      default:
-        break;
-    }
+    if (IsCollection() && node()->GetSetSize())
+      count = *node()->GetSetSize();
   }
   return count;
 }
@@ -1435,46 +1422,38 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 }
 
 int BrowserAccessibilityAndroid::RowCount() const {
-  if (ui::IsTableLike(GetRole()))
-    return node()->GetTableRowCount();
+  if (!IsCollection())
+    return 0;
 
-  if (GetRole() == ax::mojom::Role::kList ||
-      GetRole() == ax::mojom::Role::kListBox ||
-      GetRole() == ax::mojom::Role::kDescriptionList ||
-      GetRole() == ax::mojom::Role::kTree) {
-    return node()->GetSetSize();
-  }
+  if (node()->GetSetSize())
+    return *node()->GetSetSize();
 
-  return 0;
+  return node()->GetTableRowCount().value_or(0);
 }
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
-  if (ui::IsTableLike(GetRole()))
-    return node()->GetTableColCount();
-
+  if (IsCollection())
+    return node()->GetTableColCount().value_or(0);
   return 0;
 }
 
 int BrowserAccessibilityAndroid::RowIndex() const {
-  if (GetRole() == ax::mojom::Role::kListItem ||
-      GetRole() == ax::mojom::Role::kListBoxOption ||
-      GetRole() == ax::mojom::Role::kTreeItem) {
-    return node()->GetPosInSet() - 1;
-  }
-
-  return node()->GetTableCellRowIndex();
+  base::Optional<int> pos_in_set = node()->GetPosInSet();
+  if (pos_in_set && pos_in_set > 0)
+    return *pos_in_set - 1;
+  return node()->GetTableCellRowIndex().value_or(0);
 }
 
 int BrowserAccessibilityAndroid::RowSpan() const {
-  return node()->GetTableCellRowSpan();
+  return node()->GetTableCellRowSpan().value_or(0);
 }
 
 int BrowserAccessibilityAndroid::ColumnIndex() const {
-  return node()->GetTableCellColIndex();
+  return node()->GetTableCellColIndex().value_or(0);
 }
 
 int BrowserAccessibilityAndroid::ColumnSpan() const {
-  return node()->GetTableCellColSpan();
+  return node()->GetTableCellColSpan().value_or(0);
 }
 
 float BrowserAccessibilityAndroid::RangeMin() const {

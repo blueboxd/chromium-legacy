@@ -25,7 +25,7 @@ class ModuleRecordResolverImplTestModulator final : public DummyModulator {
   ModuleRecordResolverImplTestModulator() {}
   ~ModuleRecordResolverImplTestModulator() override {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetScriptState(ScriptState* script_state) {
     script_state_ = script_state;
@@ -57,7 +57,7 @@ class ModuleRecordResolverImplTestModulator final : public DummyModulator {
   Member<ModuleScript> module_script_;
 };
 
-void ModuleRecordResolverImplTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleRecordResolverImplTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(module_script_);
   DummyModulator::Trace(visitor);

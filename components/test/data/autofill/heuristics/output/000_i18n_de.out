@@ -5,7 +5,7 @@ ADDRESS_HOME_LINE1 | a1 | Straße und Hausnummer: |  | fn_1-default
 ADDRESS_HOME_LINE2 | a2 | Adresszusatz: |  | fn_1-default
 ADDRESS_HOME_CITY | ct | Stadt: |  | fn_1-default
 ADDRESS_HOME_ZIP | zc | Postleitzahl: |  | fn_1-default
-ADDRESS_HOME_STATE | st | Land: |  | fn_1-default
+ADDRESS_HOME_COUNTRY | st | Land: |  | fn_1-default
 UNKNOWN_TYPE | aa | Landmark |  | fn_1-default
 UNKNOWN_TYPE | bb | Landmarks: |  | fn_1-default
 UNKNOWN_TYPE | cc | Land-mark: |  | fn_1-default

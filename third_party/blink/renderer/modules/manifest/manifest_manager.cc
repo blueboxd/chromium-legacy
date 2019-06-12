@@ -28,9 +28,11 @@ namespace blink {
 const char ManifestManager::kSupplementName[] = "ManifestManager";
 
 // static
-WebManifestManager* WebManifestManager::FromFrame(WebLocalFrame* web_frame) {
+void WebManifestManager::RequestManifestForTesting(WebLocalFrame* web_frame,
+                                                   Callback callback) {
   LocalFrame* frame = To<WebLocalFrameImpl>(web_frame)->GetFrame();
-  return ManifestManager::From(*frame);
+  ManifestManager* manifest_manager = ManifestManager::From(*frame);
+  manifest_manager->RequestManifestForTesting(std::move(callback));
 }
 
 // static
@@ -85,9 +87,10 @@ void ManifestManager::RequestManifestDebugInfo(
       std::move(callback)));
 }
 
-void ManifestManager::RequestManifest(WebCallback callback) {
+void ManifestManager::RequestManifestForTesting(
+    WebManifestManager::Callback callback) {
   RequestManifestImpl(WTF::Bind(
-      [](WebCallback callback, const KURL& manifest_url,
+      [](WebManifestManager::Callback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
         std::move(callback).Run(manifest_url, manifest.To<Manifest>());

@@ -91,7 +91,7 @@ static_library("test_support") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//media/base:test_support",
-    "//services/ws/public/cpp/gpu",
+    "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//ui/gfx",
   ]

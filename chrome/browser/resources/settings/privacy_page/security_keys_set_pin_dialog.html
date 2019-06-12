@@ -2,6 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
@@ -15,8 +17,11 @@
     <style include="settings-shared">
       cr-input {
         display: inline-block;
-        padding-inline-end: 2em;
         --cr-input-width: 8em;
+      }
+
+      #newPIN {
+        padding-inline-end: 2em;
       }
 
       #newPINRow {
@@ -45,30 +50,57 @@
           </div>
 
           <div id="pinPrompt">
-            <div id="currentPINEntry">
+            <div id="currentPINEntry" hidden="[[!showCurrentEntry_]]">
               <p>$i18nRaw{securityKeysCurrentPINIntro}</p>
 
-              <cr-input id="currentPIN" value="{{currentPIN_}}" minLength="4"
-                  maxLength="255" spellcheck="false"
-                  on-input="validateCurrentPIN_" invalid="[[!currentPINValid_]]"
-                  label="$i18n{securityKeysCurrentPIN}" tabindex="0"
-                  type="password"
-                  error-message="[[mismatchErrorText_(mismatchErrorVisible_, retries_)]]">
-              </cr-input>
+              <div id="currentPINRow">
+                <cr-input id="currentPIN" value="{{currentPIN_}}" minLength="4"
+                    maxLength="255" spellcheck="false"
+                    on-input="onCurrentPINInput_"
+                    invalid="[[isNonEmpty_(currentPINError_)]]"
+                    label="$i18n{securityKeysCurrentPIN}" tabindex="0"
+                    type$="[[inputType_(pinsVisible_)]]"
+                    error-message="[[currentPINError_]]">
+                  <cr-icon-button slot="suffix" id="showPINsButton"
+                      class$="[[showPINsClass_(pinsVisible_)]]"
+                      title="[[showPINsTitle_(pinsVisible_)]]"
+                      focus-row-control focus-type="showPassword"
+                      on-click="showPINsClick_"></cr-icon-button>
+                </cr-input>
+
+              </div>
             </div>
 
             <p>$i18n{securityKeysNewPIN}</p>
 
             <div id="newPINRow">
               <cr-input id="newPIN" value="{{newPIN_}}" minLength="4"
-                  maxLength="255" spellcheck="false" on-input="validateNewPIN_"
-                  invalid="[[!newPINValid_]]" label="$i18n{securityKeysPIN}"
-                  tabindex="0" type="password"></cr-input>
+                  maxLength="255" spellcheck="false" on-input="onNewPINInput_"
+                  label="$i18n{securityKeysPIN}"
+                  tabindex="0" type$="[[inputType_(pinsVisible_)]]"
+                  invalid="[[isNonEmpty_(newPINError_)]]"
+                  error-message="[[newPINError_]]">
+                <!-- If a show/hide icon is included in this row, this div is
+                     needed to ensure that the cr-input is the same height
+                     as the one to the right. Otherwise they don't vertically
+                     align -->
+                <div style="height: 36px" slot="suffix"
+                     hidden="[[showCurrentEntry_]]"></div>
+              </cr-input>
               <cr-input id="confirmPIN" value="{{confirmPIN_}}" minLength="4"
                   maxLength="255" spellcheck="false"
-                  on-input="validateConfirmPIN_" invalid="[[!confirmPINValid_]]"
+                  on-input="onConfirmPINInput_"
                   label="$i18n{securityKeysConfirmPIN}" tabindex="0"
-                  type="password"></cr-input>
+                  invalid="[[isNonEmpty_(confirmPINError_)]]"
+                  type$="[[inputType_(pinsVisible_)]]"
+                  error-message="[[confirmPINError_]]">
+                <cr-icon-button slot="suffix"
+                    class$="[[showPINsClass_(pinsVisible_)]]"
+                    title="[[showPINsTitle_(pinsVisible_)]]"
+                    hidden="[[showCurrentEntry_]]"
+                    focus-row-control focus-type="showPassword"
+                    on-click="showPINsClick_"></cr-icon-button>
+              </cr-input>
             </div>
           </div>
 

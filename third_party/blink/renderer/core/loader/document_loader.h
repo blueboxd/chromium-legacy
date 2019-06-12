@@ -147,6 +147,7 @@ class CORE_EXPORT DocumentLoader
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
   EncodedFormData* HttpBody() const;
+  const base::UnguessableToken& AppcacheHostId() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -401,6 +402,7 @@ class CORE_EXPORT DocumentLoader
   KURL unreachable_url_;
   int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
+  base::UnguessableToken appcache_host_id_;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.

@@ -85,6 +85,9 @@ Polymer({
   },
 
   showAndHoldDown: function() {
+    if (this.holdDown) {
+      return;
+    }
     this.ripples.forEach(ripple => {
       ripple.remove();
     });

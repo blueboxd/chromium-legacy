@@ -80,11 +80,14 @@
 
 namespace blink {
 
-WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
+WebSharedWorkerImpl::WebSharedWorkerImpl(
+    WebSharedWorkerClient* client,
+    const base::UnguessableToken& appcache_host_id)
     : client_(client),
       creation_address_space_(mojom::IPAddressSpace::kPublic),
       parent_execution_context_task_runners_(
           ParentExecutionContextTaskRunners::Create()),
+      appcache_host_id_(appcache_host_id),
       weak_ptr_factory_(this) {
   DCHECK(IsMainThread());
 }
@@ -121,13 +124,6 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
                                           worker_thread_.get());
   }
-}
-
-std::unique_ptr<WebApplicationCacheHost>
-WebSharedWorkerImpl::CreateApplicationCacheHost(
-    WebApplicationCacheHostClient* appcache_host_client) {
-  DCHECK(IsMainThread());
-  return client_->CreateApplicationCacheHost(appcache_host_client);
 }
 
 void WebSharedWorkerImpl::OnShadowPageInitialized() {
@@ -182,9 +178,16 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 
 void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
   DCHECK(IsMainThread());
-  client_->SelectAppCacheID(app_cache_id,
-                            WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  Document* document = shadow_page_->GetDocument();
+  ApplicationCacheHost* host = document->Loader()->GetApplicationCacheHost();
+  if (host) {
+    host->SelectCacheForSharedWorker(
+        app_cache_id, WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
+                                weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    OnAppCacheSelected();
+  }
+
   client_->WorkerScriptLoaded();
 }
 
@@ -259,9 +262,9 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // |shadow_page_| must be created after |devtools_worker_token_| because it
   // triggers creation of a InspectorNetworkAgent that tries to access the
   // token.
-  shadow_page_ =
-      std::make_unique<WorkerShadowPage>(this, std::move(loader_factory),
-                                         std::move(privacy_preferences));
+  shadow_page_ = std::make_unique<WorkerShadowPage>(
+      this, std::move(loader_factory), std::move(privacy_preferences),
+      appcache_host_id_);
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
@@ -500,8 +503,9 @@ scoped_refptr<base::SingleThreadTaskRunner> WebSharedWorkerImpl::GetTaskRunner(
 }
 
 std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(
-    WebSharedWorkerClient* client) {
-  return base::WrapUnique(new WebSharedWorkerImpl(client));
+    WebSharedWorkerClient* client,
+    const base::UnguessableToken& appcache_host_id) {
+  return base::WrapUnique(new WebSharedWorkerImpl(client, appcache_host_id));
 }
 
 }  // namespace blink

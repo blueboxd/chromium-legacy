@@ -399,9 +399,7 @@ void ArCoreGl::GetFrameData(
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
 
   if (options && options->include_plane_data) {
-    frame_data->detected_planes = arcore_->GetDetectedPlanes();
-    DVLOG(3) << __func__ << ": detected planes size="
-             << frame_data->detected_planes.value().size();
+    frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
 
   fps_meter_.AddFrame(base::TimeTicks::Now());

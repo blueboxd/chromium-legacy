@@ -4,6 +4,10 @@
 
 #include "ui/views/examples/button_sticker_sheet.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -50,24 +54,24 @@ std::unique_ptr<View> MakePlainLabel(const std::string& text) {
 // Add a row containing a label whose text is |label_text| and then all the
 // views in |views| to the supplied GridLayout, with padding between rows.
 template <typename T>
-void AddLabelledRowToGridLayout(GridLayout* layout,
-                                const std::string& label_text,
-                                std::vector<std::unique_ptr<T>> views) {
+void AddLabeledRowToGridLayout(GridLayout* layout,
+                               const std::string& label_text,
+                               std::vector<std::unique_ptr<T>> views) {
   const float kRowDoesNotResizeVertically = 0.0;
   const int kPaddingRowHeight = 8;
   layout->StartRow(kRowDoesNotResizeVertically, kStretchyGridColumnSetId);
-  layout->AddView(MakePlainLabel(label_text).release());
+  layout->AddView(MakePlainLabel(label_text));
   for (auto& view : views)
-    layout->AddView(view.release());
+    layout->AddView(std::move(view));
   // This gets added extraneously after the last row, but it doesn't hurt and
   // means there's no need to keep track of whether to add it or not.
   layout->AddPaddingRow(kRowDoesNotResizeVertically, kPaddingRowHeight);
 }
 
 // Constructs a pair of MdTextButtons in the specified |state| with the
-// specified |listener|, and returns them in |primary| and |secondary|. The
-// button in |primary| is a call-to-action button, and the button in
-// |secondary| is a regular button.
+// specified |listener|, and returns them in |*primary| and |*secondary|. The
+// button in |*primary| is a call-to-action button, and the button in
+// |*secondary| is a regular button.
 std::vector<std::unique_ptr<MdTextButton>> MakeButtonsInState(
     ButtonListener* listener,
     Button::ButtonState state) {
@@ -98,18 +102,18 @@ void ButtonStickerSheet::CreateExampleView(View* container) {
   std::vector<std::unique_ptr<View>> plainLabel;
   plainLabel.push_back(MakePlainLabel("Primary"));
   plainLabel.push_back(MakePlainLabel("Secondary"));
-  AddLabelledRowToGridLayout(layout, std::string(), std::move(plainLabel));
+  AddLabeledRowToGridLayout(layout, std::string(), std::move(plainLabel));
 
-  AddLabelledRowToGridLayout(layout, "Default",
-                             MakeButtonsInState(this, Button::STATE_NORMAL));
-  AddLabelledRowToGridLayout(layout, "Normal",
-                             MakeButtonsInState(this, Button::STATE_NORMAL));
-  AddLabelledRowToGridLayout(layout, "Hovered",
-                             MakeButtonsInState(this, Button::STATE_HOVERED));
-  AddLabelledRowToGridLayout(layout, "Pressed",
-                             MakeButtonsInState(this, Button::STATE_PRESSED));
-  AddLabelledRowToGridLayout(layout, "Disabled",
-                             MakeButtonsInState(this, Button::STATE_DISABLED));
+  AddLabeledRowToGridLayout(layout, "Default",
+                            MakeButtonsInState(this, Button::STATE_NORMAL));
+  AddLabeledRowToGridLayout(layout, "Normal",
+                            MakeButtonsInState(this, Button::STATE_NORMAL));
+  AddLabeledRowToGridLayout(layout, "Hovered",
+                            MakeButtonsInState(this, Button::STATE_HOVERED));
+  AddLabeledRowToGridLayout(layout, "Pressed",
+                            MakeButtonsInState(this, Button::STATE_PRESSED));
+  AddLabeledRowToGridLayout(layout, "Disabled",
+                            MakeButtonsInState(this, Button::STATE_DISABLED));
 }
 
 void ButtonStickerSheet::ButtonPressed(Button* button, const ui::Event& event) {

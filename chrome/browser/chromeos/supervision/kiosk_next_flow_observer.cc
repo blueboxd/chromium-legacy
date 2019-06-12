@@ -5,9 +5,12 @@
 #include "chrome/browser/chromeos/supervision/kiosk_next_flow_observer.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/browser/extension_system.h"
 
 namespace chromeos {
 namespace supervision {
@@ -32,7 +35,16 @@ void KioskNextFlowObserver::WillExitFlow(
     OnboardingFlowModel::Step step,
     OnboardingFlowModel::ExitReason reason) {
   if (reason == OnboardingFlowModel::ExitReason::kUserReachedEnd)
-    profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEnabled, true);
+    EnableKioskNext();
+}
+
+void KioskNextFlowObserver::EnableKioskNext() {
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEnabled, true);
+
+  extensions::ExtensionSystem::Get(profile_)
+      ->extension_service()
+      ->component_loader()
+      ->AddKioskNextExtension();
 }
 
 }  // namespace supervision

@@ -706,21 +706,22 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnCount {
-  if (!ui::IsTableLike(owner_->GetRole()))
+  if (![self instanceActive])
     return nil;
-  DCHECK(owner_->node());
-  base::Optional<int32_t> aria_col_count =
-      owner_->node()->GetTableAriaColCount();
+  base::Optional<int> aria_col_count = owner_->node()->GetTableAriaColCount();
   if (!aria_col_count)
     return nil;
-  return [NSNumber numberWithInt:aria_col_count.value()];
+  return [NSNumber numberWithInt:*aria_col_count];
 }
 
 - (NSNumber*)ariaColumnIndex {
-  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
+  if (![self instanceActive])
     return nil;
-  DCHECK(owner_->node());
-  return [NSNumber numberWithInt:owner_->node()->GetTableCellAriaColIndex()];
+  base::Optional<int> aria_col_index =
+      owner_->node()->GetTableCellAriaColIndex();
+  if (!aria_col_index)
+    return nil;
+  return [NSNumber numberWithInt:*aria_col_index];
 }
 
 - (NSString*)ariaLive {
@@ -733,7 +734,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaPosInSet {
   if (![self instanceActive])
     return nil;
-  return [NSNumber numberWithInt:owner_->node()->GetPosInSet()];
+  base::Optional<int> pos_in_set = owner_->node()->GetPosInSet();
+  if (!pos_in_set)
+    return nil;
+  return [NSNumber numberWithInt:*pos_in_set];
 }
 
 - (NSString*)ariaRelevant {
@@ -744,27 +748,31 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowCount {
-  if (!ui::IsTableLike(owner_->GetRole()))
+  if (![self instanceActive])
     return nil;
-  DCHECK(owner_->node());
-  base::Optional<int32_t> aria_row_count =
-      owner_->node()->GetTableAriaRowCount();
+  base::Optional<int> aria_row_count = owner_->node()->GetTableAriaRowCount();
   if (!aria_row_count)
     return nil;
-  return [NSNumber numberWithInt:aria_row_count.value()];
+  return [NSNumber numberWithInt:*aria_row_count];
 }
 
 - (NSNumber*)ariaRowIndex {
-  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
+  if (![self instanceActive])
     return nil;
-  DCHECK(owner_->node());
-  return [NSNumber numberWithInt:owner_->node()->GetTableCellAriaRowIndex()];
+  base::Optional<int> aria_row_index =
+      owner_->node()->GetTableCellAriaRowIndex();
+  if (!aria_row_index)
+    return nil;
+  return [NSNumber numberWithInt:*aria_row_index];
 }
 
 - (NSNumber*)ariaSetSize {
   if (![self instanceActive])
     return nil;
-  return [NSNumber numberWithInt:owner_->node()->GetSetSize()];
+  base::Optional<int> set_size = owner_->node()->GetSetSize();
+  if (!set_size)
+    return nil;
+  return [NSNumber numberWithInt:*set_size];
 }
 
 - (NSString*)autocompleteValue {
@@ -853,11 +861,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-
   if (is_table_like) {
     // If this is a table, return all column headers.
     std::set<int32_t> headerIds;
-    for (int i = 0; i < table->GetTableColCount(); i++) {
+    for (int i = 0; i < *owner_->GetTableColCount(); i++) {
       std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(i);
       std::copy(colHeaderIds.begin(), colHeaderIds.end(),
                 std::inserter(headerIds, headerIds.end()));
@@ -869,7 +876,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   } else {
     // Otherwise this is a cell, return the column headers for this cell.
-    int column = owner_->node()->GetTableCellColIndex();
+    int column = *owner_->GetTableCellColIndex();
 
     std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(column);
     for (int32_t id : colHeaderIds) {
@@ -888,8 +895,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
-  int column = owner_->node()->GetTableCellColIndex();
-  int colspan = owner_->node()->GetTableCellColSpan();
+  int column = *owner_->node()->GetTableCellColIndex();
+  int colspan = *owner_->node()->GetTableCellColSpan();
   if (column >= 0 && colspan >= 1)
     return [NSValue valueWithRange:NSMakeRange(column, colspan)];
   return nil;
@@ -1269,10 +1276,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   if ([self internalRole] == ax::mojom::Role::kColumn) {
     DCHECK(owner_->node());
-    return @(owner_->node()->GetTableColColIndex());
+    return @(*owner_->node()->GetTableColColIndex());
   } else if ([self internalRole] == ax::mojom::Role::kRow) {
     DCHECK(owner_->node());
-    return @(owner_->node()->GetTableRowRowIndex());
+    return @(*owner_->node()->GetTableRowRowIndex());
   }
 
   return nil;
@@ -1847,7 +1854,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (is_table_like) {
     // If this is a table, return all row headers.
     std::set<int32_t> headerIds;
-    for (int i = 0; i < table->GetTableRowCount(); i++) {
+    for (int i = 0; i < *table->GetTableRowCount(); i++) {
       std::vector<int32_t> rowHeaderIds = table->GetRowHeaderNodeIds(i);
       for (int32_t id : rowHeaderIds)
         headerIds.insert(id);
@@ -1877,8 +1884,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
-  int row = owner_->node()->GetTableCellRowIndex();
-  int rowspan = owner_->node()->GetTableCellRowSpan();
+  int row = *owner_->node()->GetTableCellRowIndex();
+  int rowspan = *owner_->node()->GetTableCellRowSpan();
   if (row >= 0 && rowspan >= 1)
     return [NSValue valueWithRange:NSMakeRange(row, rowspan)];
   return nil;

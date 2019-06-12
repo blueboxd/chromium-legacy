@@ -778,9 +778,6 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_ext_pixel_format_float_supported =
       HasEGLExtension("EGL_EXT_pixel_format_float");
 
-  g_egl_angle_feature_control_supported =
-      HasEGLExtension("EGL_ANGLE_feature_control");
-
   initialized_ = true;
   return true;
 }
@@ -946,6 +943,11 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_null");
     supports_angle_vulkan =
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_vulkan");
+  }
+
+  if (client_extensions) {
+    g_egl_angle_feature_control_supported =
+        ExtensionsContain(client_extensions, "EGL_ANGLE_feature_control");
   }
 
   std::vector<DisplayType> init_displays;

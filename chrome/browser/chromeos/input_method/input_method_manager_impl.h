@@ -309,7 +309,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   bool enable_extension_loading_;
 
   // Whether the expanded IME menu is activated.
-  bool is_ime_menu_activated_;
+  bool is_ime_menu_activated_ = false;
 
   // The enabled state of keyboard features.
   uint32_t features_enabled_state_;

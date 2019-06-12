@@ -90,7 +90,7 @@ KURL ModuleScript::ResolveModuleSpecifier(const String& module_request,
   return url;
 }
 
-void ModuleScript::Trace(blink::Visitor* visitor) {
+void ModuleScript::Trace(Visitor* visitor) {
   visitor->Trace(settings_object_);
   visitor->Trace(record_.UnsafeCast<v8::Value>());
   visitor->Trace(parse_error_);

@@ -10,7 +10,7 @@ include_rules = [
   "+mojo/public/cpp/bindings/callback_helpers.h",
   "+mojo/public/cpp/system/platform_handle.h",
   "+services/device/public",
-  "+services/ws/public/cpp/gpu/context_provider_command_buffer.h",
+  "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
   "+skia/ext",
   "+third_party/dav1d",
   "+third_party/ffmpeg",

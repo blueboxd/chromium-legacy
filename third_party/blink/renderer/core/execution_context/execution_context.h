@@ -298,6 +298,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   v8::Isolate* GetIsolate() const { return isolate_; }
   Agent* GetAgent() const { return agent_; }
 
+  v8::MicrotaskQueue* GetMicrotaskQueue() const;
+
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
 
  protected:

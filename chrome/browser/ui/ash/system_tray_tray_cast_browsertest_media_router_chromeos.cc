@@ -8,9 +8,6 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/cast_config_controller.h"
 #include "ash/public/cpp/system_tray_test_api.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom-test-utils.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -19,9 +16,8 @@
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "ui/message_center/message_center.h"
 #include "url/gurl.h"
 
 using testing::_;
@@ -63,13 +59,11 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   }
 
   base::string16 GetNotificationString() {
-    ash::mojom::AshMessageCenterControllerAsyncWaiter wait_for(
-        ash_message_center_controller_.get());
-    std::vector<message_center::Notification> notifications;
-    wait_for.GetActiveNotifications(&notifications);
-    for (const auto& notification : notifications) {
-      if (notification.id() == kNotificationId)
-        return notification.title();
+    message_center::NotificationList::Notifications notification_set =
+        message_center::MessageCenter::Get()->GetVisibleNotifications();
+    for (auto* notification : notification_set) {
+      if (notification->id() == kNotificationId)
+        return notification->title();
     }
     return base::string16();
   }
@@ -108,11 +102,6 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     tray_test_api_ = ash::SystemTrayTestApi::Create();
-    // Connect to ash message center interface.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName,
-                        &ash_message_center_controller_);
   }
 
   void PostRunTestOnMainThread() override {
@@ -133,7 +122,6 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   media_router::MediaSinksObserver* media_sinks_observer_ = nullptr;
   media_router::MediaRoutesObserver* media_routes_observer_ = nullptr;
   std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
-  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayTrayCastMediaRouterChromeOSTest);
 };

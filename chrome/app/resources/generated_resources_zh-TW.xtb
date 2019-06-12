@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">檔案資訊</translation>
 <translation id="2246549592927364792">要取得 Google 提供的圖片說明嗎？</translation>
 <translation id="2249269794707377949">這個頁面可讓你管理所有用於單一登入特定應用程式、網站和檔案共用區的 Kerberos 帳戶。</translation>
-<translation id="224940702122312781">這個網頁會耗用許多數據流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
 <translation id="225163402930830576">重新整理網路</translation>
@@ -1911,7 +1910,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">移開手指，然後再次輕觸感應器</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />：已暫停同步處理</translation>
-<translation id="3861241522664181545">已暫停載入頁面。</translation>
 <translation id="3862134173397075045">歡迎在 Chrome 中體驗 Cast 服務！</translation>
 <translation id="3862693525629180217">透過內建感應器進行驗證</translation>
 <translation id="3862788408946266506">含有「kiosk_only」資訊清單屬性的應用程式只能在 Chrome 作業系統 Kiosk 模式中安裝</translation>
@@ -3858,7 +3856,6 @@
 <translation id="6920989436227028121">在一般分頁中開啟</translation>
 <translation id="6921104647315081813">清除活動</translation>
 <translation id="692114467174262153">無法開啟 <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">停止這個網頁使用數據流量</translation>
 <translation id="6922128026973287222">使用 Google Data Saver 不僅能節約數據流量，還可讓您享有更快速的瀏覽體驗。按一下即可瞭解詳情。</translation>
 <translation id="6922745772873733498">如要列印，請輸入 PIN 碼</translation>
 <translation id="6923132443355966645">捲動/點選</translation>

@@ -1504,6 +1504,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowDescription) {
     ScopedBstr name;
     EXPECT_EQ(S_FALSE, result->get_rowDescription(0, name.Receive()));
   }
+
   {
     ScopedBstr name;
     EXPECT_EQ(S_OK, result->get_rowDescription(1, name.Receive()));
@@ -1530,7 +1531,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowExtentAt) {
 
   LONG rows_spanned;
   EXPECT_EQ(S_OK, result->get_rowExtentAt(0, 1, &rows_spanned));
-  EXPECT_EQ(rows_spanned, 0);
+  EXPECT_EQ(1, rows_spanned);
 
   EXPECT_EQ(E_INVALIDARG, result->get_columnExtentAt(-1, -1, &rows_spanned));
 }
@@ -1546,9 +1547,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowIndex) {
 
   LONG index;
   EXPECT_EQ(S_OK, result->get_rowIndex(2, &index));
-  EXPECT_EQ(index, 0);
+  EXPECT_EQ(0, index);
   EXPECT_EQ(S_OK, result->get_rowIndex(3, &index));
-  EXPECT_EQ(index, 1);
+  EXPECT_EQ(1, index);
 
   EXPECT_EQ(E_INVALIDARG, result->get_rowIndex(-1, &index));
 }
@@ -1563,15 +1564,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowColumnExtentsAtIndex) {
   ASSERT_NE(nullptr, result.Get());
 
   LONG row, column, row_extents, column_extents;
-  boolean is_selected;
+  BOOLEAN is_selected = false;
   EXPECT_EQ(S_OK,
             result->get_rowColumnExtentsAtIndex(0, &row, &column, &row_extents,
                                                 &column_extents, &is_selected));
 
-  EXPECT_EQ(row, 0);
-  EXPECT_EQ(column, 0);
-  EXPECT_EQ(row_extents, 0);
-  EXPECT_EQ(column_extents, 0);
+  EXPECT_EQ(0, row);
+  EXPECT_EQ(0, column);
+  EXPECT_EQ(1, row_extents);
+  EXPECT_EQ(1, column_extents);
+  EXPECT_FALSE(is_selected);
 
   EXPECT_EQ(E_INVALIDARG,
             result->get_rowColumnExtentsAtIndex(-1, &row, &column, &row_extents,
@@ -1607,7 +1609,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetColumnExtent) {
 
   LONG column_spanned;
   EXPECT_EQ(S_OK, cell->get_columnExtent(&column_spanned));
-  EXPECT_EQ(column_spanned, 1);
+  EXPECT_EQ(1, column_spanned);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetColumnHeaderCells) {
@@ -1621,7 +1623,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetColumnHeaderCells) {
   LONG number_cells;
   EXPECT_EQ(S_OK,
             cell->get_columnHeaderCells(&cell_accessibles, &number_cells));
-  EXPECT_EQ(number_cells, 1);
+  EXPECT_EQ(1, number_cells);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetColumnIndex) {
@@ -1677,13 +1679,14 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowColumnExtent) {
   ASSERT_NE(nullptr, cell.Get());
 
   LONG row, column, row_extents, column_extents;
-  boolean is_selected;
+  BOOLEAN is_selected = false;
   EXPECT_EQ(S_OK, cell->get_rowColumnExtents(&row, &column, &row_extents,
                                              &column_extents, &is_selected));
-  EXPECT_EQ(row, 1);
-  EXPECT_EQ(column, 1);
-  EXPECT_EQ(row_extents, 1);
-  EXPECT_EQ(column_extents, 1);
+  EXPECT_EQ(1, row);
+  EXPECT_EQ(1, column);
+  EXPECT_EQ(1, row_extents);
+  EXPECT_EQ(1, column_extents);
+  EXPECT_FALSE(is_selected);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetTable) {
@@ -2393,7 +2396,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsColumnSelected) {
   table.CopyTo(result.GetAddressOf());
   ASSERT_NE(nullptr, result.Get());
 
-  boolean selected;
+  BOOLEAN selected = false;
   EXPECT_EQ(S_OK, result->get_isColumnSelected(0, &selected));
   EXPECT_FALSE(selected);
 
@@ -2403,8 +2406,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsColumnSelected) {
   EXPECT_EQ(S_OK, result->get_isColumnSelected(2, &selected));
   EXPECT_FALSE(selected);
 
-  EXPECT_EQ(S_FALSE, result->get_isColumnSelected(3, &selected));
-  EXPECT_EQ(S_FALSE, result->get_isColumnSelected(-3, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isColumnSelected(3, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isColumnSelected(-3, &selected));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
@@ -2429,7 +2432,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
   table.CopyTo(result.GetAddressOf());
   ASSERT_NE(nullptr, result.Get());
 
-  boolean selected;
+  BOOLEAN selected;
   EXPECT_EQ(S_OK, result->get_isRowSelected(0, &selected));
   EXPECT_FALSE(selected);
 
@@ -2439,8 +2442,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
   EXPECT_EQ(S_OK, result->get_isRowSelected(2, &selected));
   EXPECT_FALSE(selected);
 
-  EXPECT_EQ(S_FALSE, result->get_isRowSelected(3, &selected));
-  EXPECT_EQ(S_FALSE, result->get_isRowSelected(-3, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isRowSelected(3, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isRowSelected(-3, &selected));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
@@ -2465,8 +2468,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   table.CopyTo(result.GetAddressOf());
   ASSERT_NE(nullptr, result.Get());
 
-  boolean selected;
-
+  BOOLEAN selected = false;
   EXPECT_EQ(S_OK, result->get_isSelected(0, 0, &selected));
   EXPECT_FALSE(selected);
 
@@ -2476,7 +2478,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   EXPECT_EQ(S_OK, result->get_isSelected(0, 2, &selected));
   EXPECT_FALSE(selected);
 
-  EXPECT_EQ(S_FALSE, result->get_isSelected(0, 4, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isSelected(0, 4, &selected));
 
   EXPECT_EQ(S_OK, result->get_isSelected(1, 0, &selected));
   EXPECT_TRUE(selected);
@@ -2487,7 +2489,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   EXPECT_EQ(S_OK, result->get_isSelected(1, 2, &selected));
   EXPECT_TRUE(selected);
 
-  EXPECT_EQ(S_FALSE, result->get_isSelected(1, 4, &selected));
+  EXPECT_EQ(E_INVALIDARG, result->get_isSelected(1, 4, &selected));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildrenZero) {

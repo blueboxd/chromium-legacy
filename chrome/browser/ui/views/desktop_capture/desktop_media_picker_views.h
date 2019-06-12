@@ -51,7 +51,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   views::View* GetInitiallyFocusedView() override;
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;
   bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
@@ -67,11 +67,13 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   DesktopMediaPickerViews* parent_;
   ui::ModalType modality_;
 
-  views::Label* description_label_;
+  views::Label* description_label_ = nullptr;
 
-  views::Checkbox* audio_share_checkbox_;
+  bool request_audio_;
+  bool approve_audio_by_default_;
+  views::Checkbox* audio_share_checkbox_ = nullptr;
 
-  views::TabbedPane* tabbed_pane_;
+  views::TabbedPane* tabbed_pane_ = nullptr;
   std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
   std::vector<content::DesktopMediaID::Type> source_types_;
 

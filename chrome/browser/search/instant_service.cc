@@ -236,6 +236,8 @@ InstantService::InstantService(Profile* profile)
   }
 
   most_visited_info_->use_most_visited = !IsCustomLinksEnabled();
+  most_visited_info_->is_visible =
+      pref_service_->GetBoolean(prefs::kNtpShortcutsVisible);
 
   if (profile_) {
     DeleteThumbnailDataIfExists(profile_->GetPath(), base::nullopt);
@@ -331,21 +333,6 @@ void InstantService::UndoAllMostVisitedDeletions() {
   }
 }
 
-bool InstantService::ToggleMostVisitedOrCustomLinks() {
-  // Non-Google NTPs are not supported.
-  if (!most_visited_sites_ || !search_provider_observer_ ||
-      !search_provider_observer_->is_google()) {
-    return false;
-  }
-  bool use_most_visited =
-      !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
-  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, use_most_visited);
-  most_visited_info_->use_most_visited = use_most_visited;
-
-  most_visited_sites_->EnableCustomLinks(use_most_visited);
-  return true;
-}
-
 bool InstantService::AddCustomLink(const GURL& url, const std::string& title) {
   return most_visited_sites_ &&
          most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
@@ -387,6 +374,35 @@ bool InstantService::ResetCustomLinks() {
   return true;
 }
 
+bool InstantService::ToggleMostVisitedOrCustomLinks() {
+  // Non-Google NTPs are not supported.
+  if (!most_visited_sites_ || !search_provider_observer_ ||
+      !search_provider_observer_->is_google()) {
+    return false;
+  }
+  bool use_most_visited =
+      !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
+  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, use_most_visited);
+  most_visited_info_->use_most_visited = use_most_visited;
+
+  most_visited_sites_->EnableCustomLinks(use_most_visited);
+  return true;
+}
+
+bool InstantService::ToggleShortcutsVisibility() {
+  // Non-Google NTPs are not supported.
+  if (!most_visited_sites_ || !search_provider_observer_ ||
+      !search_provider_observer_->is_google()) {
+    return false;
+  }
+  bool is_visible = !pref_service_->GetBoolean(prefs::kNtpShortcutsVisible);
+  pref_service_->SetBoolean(prefs::kNtpShortcutsVisible, is_visible);
+  most_visited_info_->is_visible = is_visible;
+
+  NotifyAboutMostVisitedInfo();
+  return true;
+}
+
 void InstantService::UpdateThemeInfo() {
   ApplyOrResetCustomBackgroundThemeInfo();
 
@@ -399,8 +415,8 @@ void InstantService::UpdateBackgroundFromSync() {
   UpdateThemeInfo();
 }
 
-void InstantService::UpdateMostVisitedItemsInfo() {
-  NotifyAboutMostVisitedItems();
+void InstantService::UpdateMostVisitedInfo() {
+  NotifyAboutMostVisitedInfo();
 }
 
 void InstantService::SendNewTabPageURLToRenderer(
@@ -569,14 +585,14 @@ void InstantService::OnURLsAvailable(
   most_visited_info_->items_are_custom_links =
       (most_visited_sites_ && most_visited_sites_->IsCustomLinksInitialized());
 
-  NotifyAboutMostVisitedItems();
+  NotifyAboutMostVisitedInfo();
 }
 
 void InstantService::OnIconMadeAvailable(const GURL& site_url) {}
 
-void InstantService::NotifyAboutMostVisitedItems() {
+void InstantService::NotifyAboutMostVisitedInfo() {
   for (InstantServiceObserver& observer : observers_)
-    observer.MostVisitedItemsChanged(*most_visited_info_);
+    observer.MostVisitedInfoChanged(*most_visited_info_);
 }
 
 void InstantService::NotifyAboutThemeInfo() {
@@ -764,6 +780,8 @@ bool InstantService::IsCustomBackgroundSet() {
 void InstantService::ResetToDefault() {
   ResetCustomLinks();
   ResetCustomBackgroundThemeInfo();
+  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, false);
+  pref_service_->SetBoolean(prefs::kNtpShortcutsVisible, true);
 }
 
 void InstantService::UpdateCustomBackgroundColorAsync(
@@ -865,6 +883,7 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kNtpCustomBackgroundLocalToDevice,
                                 false);
   registry->RegisterBooleanPref(prefs::kNtpUseMostVisitedTiles, false);
+  registry->RegisterBooleanPref(prefs::kNtpShortcutsVisible, true);
 }
 
 void InstantService::UpdateCustomBackgroundPrefsWithColor(const GURL& image_url,

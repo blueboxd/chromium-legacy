@@ -87,8 +87,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-      override;
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool has_user_gesture) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                          bool proceed,
                          const base::TimeTicks& proceed_time) override;

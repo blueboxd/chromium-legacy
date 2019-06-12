@@ -29,7 +29,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
@@ -106,7 +105,8 @@ const char* PushUnregistrationStatusToString(
 
 // Returns whether |application_server_key| contains a valid application server
 // key, that is, a NIST P-256 public key in uncompressed format.
-bool IsApplicationServerKey(const std::string& application_server_key) {
+bool IsApplicationServerKey(
+    const std::vector<uint8_t>& application_server_key) {
   return application_server_key.size() == 65 &&
          application_server_key[0] == 0x04;
 }
@@ -143,7 +143,7 @@ struct PushMessagingManager::RegisterData {
   GURL requesting_origin;
   int64_t service_worker_registration_id;
   base::Optional<std::string> existing_subscription_id;
-  blink::WebPushSubscriptionOptions options;
+  blink::mojom::PushSubscriptionOptionsPtr options;
   SubscribeCallback callback;
 
   // True if the call to register was made with a user gesture.
@@ -303,16 +303,18 @@ void PushMessagingManager::BindRequest(
 
 void PushMessagingManager::Subscribe(
     int64_t service_worker_registration_id,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     bool user_gesture,
     SubscribeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(options);
+
   // TODO(mvanouwerkerk): Validate arguments?
   RegisterData data;
 
   data.service_worker_registration_id = service_worker_registration_id;
   data.callback = std::move(callback);
-  data.options = options;
+  data.options = std::move(options);
   data.user_gesture = user_gesture;
 
   ServiceWorkerRegistration* service_worker_registration =
@@ -327,7 +329,7 @@ void PushMessagingManager::Subscribe(
   }
   data.requesting_origin = service_worker_registration->scope().GetOrigin();
 
-  DCHECK(!(data.options.application_server_key.empty() &&
+  DCHECK(!(data.options->application_server_key.empty() &&
            IsRequestFromDocument(render_frame_id_)));
 
   int64_t registration_id = data.service_worker_registration_id;
@@ -352,8 +354,12 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     const std::string& subscription_id = subscription_id_and_sender_id[0];
     const std::string& stored_sender_id = subscription_id_and_sender_id[1];
 
-    std::string fixed_sender_id =
-        FixSenderInfo(data.options.application_server_key, stored_sender_id);
+    const std::string application_server_key_string(
+        data.options->application_server_key.begin(),
+        data.options->application_server_key.end());
+
+    std::string fixed_sender_id(
+        FixSenderInfo(application_server_key_string, stored_sender_id));
     if (fixed_sender_id.empty()) {
       SendSubscriptionError(std::move(data),
                             blink::mojom::PushRegistrationStatus::NO_SENDER_ID);
@@ -374,7 +380,7 @@ void PushMessagingManager::DidCheckForExistingRegistration(
   // blink::ServiceWorkerStatusCode::kErrorNotFound by rejecting
   // the subscription algorithm instead of trying to subscribe.
 
-  if (!data.options.application_server_key.empty()) {
+  if (!data.options->application_server_key.empty()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
@@ -402,15 +408,20 @@ void PushMessagingManager::DidGetSenderIdFromStorage(
   }
   DCHECK_EQ(1u, stored_sender_id.size());
   // We should only be here because no sender info was supplied to subscribe().
-  DCHECK(data.options.application_server_key.empty());
-  std::string fixed_sender_id =
-      FixSenderInfo(data.options.application_server_key, stored_sender_id[0]);
+  DCHECK(data.options->application_server_key.empty());
+
+  const std::string application_server_key_string(
+      std::string(data.options->application_server_key.begin(),
+                  data.options->application_server_key.end()));
+  std::string fixed_sender_id(
+      FixSenderInfo(application_server_key_string, stored_sender_id[0]));
   if (fixed_sender_id.empty()) {
     SendSubscriptionError(std::move(data),
                           blink::mojom::PushRegistrationStatus::NO_SENDER_ID);
     return;
   }
-  data.options.application_server_key = fixed_sender_id;
+  data.options->application_server_key =
+      std::vector<uint8_t>(fixed_sender_id.begin(), fixed_sender_id.end());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
@@ -435,7 +446,7 @@ void PushMessagingManager::Core::RegisterOnUI(
       // Prevent websites from detecting incognito mode, by emulating what would
       // have happened if we had a PushMessagingService available.
       if (!IsRequestFromDocument(render_frame_id_) ||
-          !data.options.user_visible_only) {
+          !data.options->user_visible_only) {
         // Throw a permission denied error under the same circumstances.
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::IO},
@@ -474,16 +485,17 @@ void PushMessagingManager::Core::RegisterOnUI(
 
   int64_t registration_id = data.service_worker_registration_id;
   GURL requesting_origin = data.requesting_origin;
-  blink::WebPushSubscriptionOptions options = data.options;
+
+  auto options = data.options->Clone();
   if (IsRequestFromDocument(render_frame_id_)) {
     push_service->SubscribeFromDocument(
         requesting_origin, registration_id, render_process_id_,
-        render_frame_id_, options, data.user_gesture,
+        render_frame_id_, std::move(options), data.user_gesture,
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    base::Passed(&data)));
   } else {
     push_service->SubscribeFromWorker(
-        requesting_origin, registration_id, options,
+        requesting_origin, registration_id, std::move(options),
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    base::Passed(&data)));
   }
@@ -547,7 +559,9 @@ void PushMessagingManager::PersistRegistrationOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GURL requesting_origin = data.requesting_origin;
   int64_t registration_id = data.service_worker_registration_id;
-  std::string application_server_key = data.options.application_server_key;
+  std::string application_server_key(
+      std::string(data.options->application_server_key.begin(),
+                  data.options->application_server_key.end()));
 
   service_worker_context_->StoreRegistrationUserData(
       registration_id, requesting_origin,
@@ -581,7 +595,7 @@ void PushMessagingManager::SendSubscriptionError(
     blink::mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(data.callback)
-      .Run(status, base::nullopt /* endpoint */, base::nullopt /* options */,
+      .Run(status, base::nullopt /* endpoint */, nullptr /* options */,
            base::nullopt /* p256dh */, base::nullopt /* auth */);
   RecordRegistrationStatus(status);
 }
@@ -604,10 +618,11 @@ void PushMessagingManager::SendSubscriptionSuccess(
   }
 
   const GURL endpoint = CreateEndpoint(
-      IsApplicationServerKey(data.options.application_server_key),
+      IsApplicationServerKey(data.options->application_server_key),
       push_subscription_id);
 
-  std::move(data.callback).Run(status, endpoint, data.options, p256dh, auth);
+  std::move(data.callback)
+      .Run(status, endpoint, std::move(data.options), p256dh, auth);
 
   RecordRegistrationStatus(status);
 }
@@ -785,7 +800,8 @@ void PushMessagingManager::DidGetSubscription(
       const GURL origin = registration->scope().GetOrigin();
 
       const bool uses_standard_protocol =
-          IsApplicationServerKey(application_server_key);
+          IsApplicationServerKey(std::vector<uint8_t>(
+              application_server_key.begin(), application_server_key.end()));
       const GURL endpoint =
           CreateEndpoint(uses_standard_protocol, push_subscription_id);
 
@@ -836,8 +852,8 @@ void PushMessagingManager::DidGetSubscription(
     }
   }
   std::move(callback).Run(get_status, base::nullopt /* endpoint */,
-                          base::nullopt /* options */,
-                          base::nullopt /* p256dh */, base::nullopt /* auth */);
+                          nullptr /* options */, base::nullopt /* p256dh */,
+                          base::nullopt /* auth */);
   RecordGetRegistrationStatus(get_status);
 }
 
@@ -852,20 +868,23 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_valid) {
-    blink::WebPushSubscriptionOptions options;
+    auto options = blink::mojom::PushSubscriptionOptions::New();
+
     // Chrome rejects subscription requests with userVisibleOnly false, so it
     // must have been true. TODO(harkness): If Chrome starts accepting silent
     // push subscriptions with userVisibleOnly false, the bool will need to be
     // stored.
-    options.user_visible_only = true;
-    options.application_server_key = application_server_key;
+    options->user_visible_only = true;
+    options->application_server_key = std::vector<uint8_t>(
+        application_server_key.begin(), application_server_key.end());
 
     blink::mojom::PushGetRegistrationStatus status =
         blink::mojom::PushGetRegistrationStatus::SUCCESS;
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), status,
-                                            endpoint, options, p256dh, auth));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(std::move(callback), status, endpoint,
+                       std::move(options), p256dh, auth));
 
     RecordGetRegistrationStatus(status);
   } else {
@@ -879,7 +898,7 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
           base::BindOnce(
               std::move(callback),
               blink::mojom::PushGetRegistrationStatus::RENDERER_SHUTDOWN,
-              base::nullopt /* endpoint */, base::nullopt /* options */,
+              base::nullopt /* endpoint */, nullptr /* options */,
               base::nullopt /* p256dh */, base::nullopt /* auth */));
       return;
     }
@@ -911,7 +930,7 @@ void PushMessagingManager::Core::GetSubscriptionDidUnsubscribe(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), get_status,
-                     base::nullopt /* endpoint */, base::nullopt /* options */,
+                     base::nullopt /* endpoint */, nullptr /* options */,
                      base::nullopt /* p256dh */, base::nullopt /* auth */));
 }
 

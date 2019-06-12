@@ -146,6 +146,8 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -741,11 +743,21 @@ Document::Document(const DocumentInit& initializer,
   }
 
   InitSecurityContext(initializer);
-  if (frame_)
+  if (frame_) {
     frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(), {});
 
-  // TODO(tzik): Set up Agent for the current SecurityOrigin, and store it
-  // with SetAgent().
+    bool has_potential_universal_access_privilege = false;
+    if (Settings* settings = GetSettings()) {
+      // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+      // dynamically change.
+      if (!settings->GetWebSecurityEnabled() ||
+          settings->GetAllowUniversalAccessFromFileURLs())
+        has_potential_universal_access_privilege = true;
+    }
+    SetAgent(frame_->window_agent_factory().GetAgentForOrigin(
+        has_potential_universal_access_privilege, GetIsolate(),
+        GetSecurityOrigin()));
+  }
 
   InitDNSPrefetch();
 
@@ -2217,15 +2229,12 @@ void Document::UpdateStyleAndLayoutTree() {
     return;
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
-    int assigned_nodes_in_slot_count = 0;
-    int nodes_which_have_assigned_slot_count = 0;
-    FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
-        *this, assigned_nodes_in_slot_count,
-        nodes_which_have_assigned_slot_count);
-    DCHECK_EQ(assigned_nodes_in_slot_count,
-              nodes_which_have_assigned_slot_count);
-  }
+  int assigned_nodes_in_slot_count = 0;
+  int nodes_which_have_assigned_slot_count = 0;
+  FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
+      *this, assigned_nodes_in_slot_count,
+      nodes_which_have_assigned_slot_count);
+  DCHECK_EQ(assigned_nodes_in_slot_count, nodes_which_have_assigned_slot_count);
 #endif
 
   // Entering here from inside layout, paint etc. would be catastrophic since

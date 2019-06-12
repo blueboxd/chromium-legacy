@@ -117,14 +117,15 @@ class ScopedBundleSwizzlerMac;
 class InProcessBrowserTest : public content::BrowserTestBase {
  public:
   InProcessBrowserTest();
+
 #if defined(TOOLKIT_VIEWS)
-  using DelegateCallback =
-      base::OnceCallback<std::unique_ptr<views::ViewsDelegate>()>;
-  // |viewsDelegateCallback| is used for tests that want to use a derived class
-  // of ViewsDelegate to observe or modify things like window placement and
-  // Widget params.
-  explicit InProcessBrowserTest(DelegateCallback viewsDelegateCallback);
-#endif  // defined(TOOLKIT_VIEWS)
+  // |views_delegate| is used for tests that want to use a derived class of
+  // ViewsDelegate to observe or modify things like window placement and Widget
+  // params.
+  explicit InProcessBrowserTest(
+      std::unique_ptr<views::ViewsDelegate> views_delegate);
+#endif
+
   ~InProcessBrowserTest() override;
 
   // Configures everything for an in process browser test, then invokes
@@ -255,6 +256,8 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   }
 
  private:
+  void Initialize();
+
   // Creates a user data directory for the test if one is needed. Returns true
   // if successful.
   virtual bool CreateUserDataDirectory() WARN_UNUSED_RESULT;
@@ -265,7 +268,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   static SetUpBrowserFunction* global_browser_set_up_function_;
 
   // Browser created in BrowserMain().
-  Browser* browser_;
+  Browser* browser_ = nullptr;
 
   // Used to run the process until the BrowserProcess signals the test to quit.
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -275,10 +278,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   base::ScopedTempDir temp_user_data_dir_;
 
   // True if we should exit the tests after the last browser instance closes.
-  bool exit_when_last_browser_closes_;
+  bool exit_when_last_browser_closes_ = true;
 
   // True if the about:blank tab should be opened when the browser is launched.
-  bool open_about_blank_on_browser_launch_;
+  bool open_about_blank_on_browser_launch_ = true;
 
   // We use hardcoded quota settings to have a consistent testing environment.
   storage::QuotaSettings quota_settings_;
@@ -290,7 +293,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
 
 #if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
   std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 
   // Enable fake full keyboard access by default, so that tests don't depend on

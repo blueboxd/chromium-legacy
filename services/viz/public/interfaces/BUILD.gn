@@ -17,6 +17,7 @@ mojom("interfaces") {
     "compositing/filter_operations.mojom",
     "compositing/frame_deadline.mojom",
     "compositing/frame_sink_id.mojom",
+    "compositing/frame_timing_details.mojom",
     "compositing/local_surface_id.mojom",
     "compositing/local_surface_id_allocation.mojom",
     "compositing/paint_filter.mojom",
@@ -32,6 +33,7 @@ mojom("interfaces") {
     "compositing/texture_releaser.mojom",
     "compositing/transferable_resource.mojom",
     "compositing/video_detector_observer.mojom",
+    "gpu.mojom",
     "hit_test/aggregated_hit_test_region.mojom",
     "hit_test/hit_test_region_list.mojom",
     "hit_test/input_target_client.mojom",
@@ -40,12 +42,17 @@ mojom("interfaces") {
   public_deps = [
     ":constants",
     "//gpu/ipc/common:interfaces",
+    "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
     "//ui/latency/mojo:interfaces",
   ]
+
+  if (is_chromeos) {
+    public_deps += [ "//components/chromeos_camera/common" ]
+  }
 }
 
 mojom("constants") {

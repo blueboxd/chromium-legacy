@@ -74,8 +74,6 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   //   this to |target_color_space| (if non-null).
   //
   // Returns true if the entry can be built, false otherwise.
-  //
-  // TODO(andrescj): actually generate the mipmaps when |needs_mips| is true.
   bool BuildFromHardwareDecodedImage(GrContext* context,
                                      std::vector<sk_sp<SkImage>> plane_images,
                                      size_t buffer_byte_size,

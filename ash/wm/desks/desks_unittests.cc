@@ -4,7 +4,10 @@
 
 #include <vector>
 
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/multi_user_window_manager.h"
+#include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
@@ -1373,6 +1376,120 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   EXPECT_EQ(IndicatorState::kNone,
             overview_session->split_view_drag_indicators()
                 ->current_indicator_state());
+}
+
+namespace {
+
+constexpr char kUser1Email[] = "user1@desks";
+constexpr char kUser2Email[] = "user2@desks";
+
+}  // namespace
+
+class DesksMultiUserTest : public NoSessionAshTestBase,
+                           public MultiUserWindowManagerDelegate {
+ public:
+  DesksMultiUserTest() = default;
+  ~DesksMultiUserTest() override = default;
+
+  MultiUserWindowManager* multi_user_window_manager() {
+    return multi_user_window_manager_.get();
+  }
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
+
+    NoSessionAshTestBase::SetUp();
+    TestSessionControllerClient* session_controller =
+        GetSessionControllerClient();
+    session_controller->Reset();
+    session_controller->AddUserSession(kUser1Email);
+    session_controller->AddUserSession(kUser2Email);
+
+    // Simulate user 1 login.
+    SwitchActiveUser(GetUser1AccountId());
+    multi_user_window_manager_ =
+        MultiUserWindowManager::Create(this, GetUser1AccountId());
+    MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
+        MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
+  }
+
+  void TearDown() override {
+    multi_user_window_manager_.reset();
+    NoSessionAshTestBase::TearDown();
+  }
+
+  // MultiUserWindowManagerDelegate:
+  void OnWindowOwnerEntryChanged(aura::Window* window,
+                                 const AccountId& account_id,
+                                 bool was_minimized,
+                                 bool teleported) override {}
+  void OnTransitionUserShelfToNewAccount() override {}
+
+  AccountId GetUser1AccountId() const {
+    return AccountId::FromUserEmail(kUser1Email);
+  }
+
+  AccountId GetUser2AccountId() const {
+    return AccountId::FromUserEmail(kUser2Email);
+  }
+
+  void SwitchActiveUser(const AccountId& account_id) {
+    GetSessionControllerClient()->SwitchActiveUser(account_id);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MultiUserWindowManager> multi_user_window_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesksMultiUserTest);
+};
+
+TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
+  // Create two desks with two windows on each, one window that belongs to the
+  // first user, and the other belongs to the second.
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  multi_user_window_manager()->SetWindowOwner(win0.get(), GetUser1AccountId());
+  EXPECT_TRUE(win0->IsVisible());
+  ActivateDesk(desk_2);
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  multi_user_window_manager()->SetWindowOwner(win1.get(), GetUser1AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_TRUE(win1->IsVisible());
+
+  // Switch to user_2 and expect no windows from user_1 is visible regardless of
+  // the desk.
+  SwitchActiveUser(GetUser2AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 200));
+  multi_user_window_manager()->SetWindowOwner(win2.get(), GetUser2AccountId());
+  EXPECT_TRUE(win2->IsVisible());
+  ActivateDesk(desk_1);
+  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 200));
+  multi_user_window_manager()->SetWindowOwner(win3.get(), GetUser2AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_TRUE(win3->IsVisible());
+
+  // Similarly when switching back to user_1.
+  SwitchActiveUser(GetUser1AccountId());
+  EXPECT_TRUE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_FALSE(win3->IsVisible());
+  ActivateDesk(desk_2);
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_TRUE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_FALSE(win3->IsVisible());
 }
 
 // TODO(afakhry): Add more tests:

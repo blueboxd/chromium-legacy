@@ -793,7 +793,7 @@ void MTPDeviceDelegateImplLinux::AddWatcher(
   const auto it = subscribers_.find(file_path);
   if (it != subscribers_.end()) {
     // Adds to existing origin callback map.
-    if (ContainsKey(it->second, origin)) {
+    if (base::Contains(it->second, origin)) {
       callback.Run(base::File::FILE_ERROR_EXISTS);
       return;
     }

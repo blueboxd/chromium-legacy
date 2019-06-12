@@ -427,12 +427,12 @@ function renderTheme() {
 
   if (info.customBackgroundConfigured) {
     const imageWithOverlay = [
-      customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
+      customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
     ].join(',').trim();
 
     if (imageWithOverlay != $(IDS.CUSTOM_BG).style.backgroundImage) {
-      customBackgrounds.closeCustomizationDialog();
-      customBackgrounds.clearAttribution();
+      customize.closeCustomizationDialog();
+      customize.clearAttribution();
     }
 
     // |image| and |imageWithOverlay| use the same url as their source. Waiting
@@ -445,32 +445,31 @@ function renderTheme() {
     };
     image.src = info.imageUrl;
 
-    customBackgrounds.setAttribution(
+    customize.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
   } else {
     $(IDS.CUSTOM_BG).style.opacity = '0';
     window.setTimeout(function() {
       $(IDS.CUSTOM_BG).style.backgroundImage = '';
     }, 1000);
-    customBackgrounds.clearAttribution();
+    customize.clearAttribution();
   }
 
-  $(customBackgrounds.IDS.RESTORE_DEFAULT)
+  $(customize.IDS.RESTORE_DEFAULT)
       .classList.toggle(
-          customBackgrounds.CLASSES.OPTION_DISABLED,
-          !info.customBackgroundConfigured);
-  $(customBackgrounds.IDS.RESTORE_DEFAULT).tabIndex =
+          customize.CLASSES.OPTION_DISABLED, !info.customBackgroundConfigured);
+  $(customize.IDS.RESTORE_DEFAULT).tabIndex =
       (info.customBackgroundConfigured ? 0 : -1);
 
-  $(customBackgrounds.IDS.EDIT_BG)
+  $(customize.IDS.EDIT_BG)
       .classList.toggle(
-          customBackgrounds.CLASSES.ENTRY_POINT_ENHANCED,
+          customize.CLASSES.ENTRY_POINT_ENHANCED,
           !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
     // disabled.
-    customBackgrounds.setMenuVisibility();
+    customize.setMenuVisibility();
   }
 }
 
@@ -1013,11 +1012,10 @@ function handlePostMessage(event) {
         $(IDS.PROMO).classList.add(CLASSES.SHOW_ELEMENT);
       }
       if (!configData.hideShortcuts) {
-        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
+        $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
             .classList.toggle(
-                customBackgrounds.CLASSES.OPTION_DISABLED,
-                !args.showRestoreDefault);
-        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
+                customize.CLASSES.OPTION_DISABLED, !args.showRestoreDefault);
+        $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
             (args.showRestoreDefault ? 0 : -1);
       }
       $(IDS.OGB).classList.add(CLASSES.SHOW_ELEMENT);
@@ -1148,7 +1146,7 @@ function init() {
     ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
     ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
 
-    customBackgrounds.init(showErrorNotification, hideNotification);
+    customize.init(showErrorNotification, hideNotification);
 
     if (configData.alternateFakebox) {
       document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX);
@@ -1234,7 +1232,7 @@ function init() {
 
     doodles.init();
 
-    $(customBackgrounds.IDS.EDIT_BG_TEXT).textContent =
+    $(customize.IDS.EDIT_BG_TEXT).textContent =
         configData.translatedStrings.customizeButtonLabel;
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
@@ -1256,7 +1254,7 @@ function init() {
   }
 
   utils.setPlatformClass(document.body);
-  utils.disableOutlineOnMouseClick($(customBackgrounds.IDS.EDIT_BG));
+  utils.disableOutlineOnMouseClick($(customize.IDS.EDIT_BG));
   document.body.classList.add(CLASSES.INITED);
 }
 
@@ -1404,6 +1402,11 @@ function injectPromo(promo) {
     links[0].onclick = function() {
       ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
     };
+  }
+
+  // The the MV tiles are already loaded show the promo immediately.
+  if (tilesAreLoaded) {
+    promoContainer.classList.add(CLASSES.SHOW_ELEMENT);
   }
 }
 

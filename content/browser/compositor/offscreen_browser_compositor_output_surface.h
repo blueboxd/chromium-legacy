@@ -17,7 +17,7 @@
 #include "ui/latency/latency_info.h"
 #include "ui/latency/latency_tracker.h"
 
-namespace ws {
+namespace viz {
 class ContextProviderCommandBuffer;
 }
 
@@ -28,7 +28,7 @@ class OffscreenBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   OffscreenBrowserCompositorOutputSurface(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context,
+      scoped_refptr<viz::ContextProviderCommandBuffer> context,
       std::unique_ptr<viz::OverlayCandidateValidator>
           overlay_candidate_validator);
 

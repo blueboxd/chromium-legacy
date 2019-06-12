@@ -157,7 +157,8 @@ def main(arch, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl, *flags):
   # Copy checked-in outputs to final location.
   THIS_DIR = os.path.abspath(os.path.dirname(__file__))
   source = os.path.join(THIS_DIR, '..', '..', '..',
-      'third_party', 'win_build_output', outdir.replace('gen/', 'midl/'))
+      'third_party', 'win_build_output',
+      re.sub(r'(^[^/]+/)?gen/', 'midl/', outdir))
   if os.path.isdir(os.path.join(source, os.path.basename(idl))):
     source = os.path.join(source, os.path.basename(idl))
   source = os.path.join(source, arch.split('.')[1])  # Append 'x86' or 'x64'.

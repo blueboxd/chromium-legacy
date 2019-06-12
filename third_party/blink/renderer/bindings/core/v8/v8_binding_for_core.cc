@@ -931,8 +931,7 @@ Vector<String> GetOwnPropertyNames(v8::Isolate* isolate,
 v8::MicrotaskQueue* ToMicrotaskQueue(ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
-  Agent* agent = execution_context->GetAgent();
-  return agent ? agent->event_loop()->microtask_queue() : nullptr;
+  return execution_context->GetMicrotaskQueue();
 }
 
 v8::MicrotaskQueue* ToMicrotaskQueue(ScriptState* script_state) {

@@ -235,7 +235,7 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                                     uint32_t port_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (ContainsKey(devices_by_path_, device_path)) {
+  if (base::Contains(devices_by_path_, device_path)) {
     USB_LOG(ERROR) << "Got duplicate add event for path: " << device_path;
     return;
   }

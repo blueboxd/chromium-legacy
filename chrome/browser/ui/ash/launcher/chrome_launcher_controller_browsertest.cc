@@ -53,8 +53,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -224,7 +222,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
 
-    OpenApplication(AppLaunchParams(profile(), extension, container,
+    OpenApplication(AppLaunchParams(profile(), extension->id(), container,
                                     disposition, extensions::SOURCE_TEST));
     return extension;
   }
@@ -1176,13 +1174,14 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   const Extension* extension =
       LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
                              WindowOpenDisposition::NEW_WINDOW);
+  ASSERT_TRUE(extension);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
   OpenApplication(AppLaunchParams(
-      profile(), extension, extensions::LAUNCH_CONTAINER_TAB,
+      profile(), extension->id(), extensions::LAUNCH_CONTAINER_TAB,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   // A new browser should get detected and one more should be running.
@@ -1732,10 +1731,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
 
 // Ensure opening settings and task manager windows create new shelf items.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
-  // Install the Settings App.
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
 

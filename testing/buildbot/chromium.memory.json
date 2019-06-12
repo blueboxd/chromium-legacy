@@ -14866,7 +14866,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 9
+          "shards": 18
         },
         "test": "content_browsertests"
       },
@@ -15439,7 +15439,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "ipc_tests"
       },
@@ -15835,7 +15836,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "mojo_unittests"
       },

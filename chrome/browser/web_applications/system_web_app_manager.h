@@ -57,11 +57,8 @@ class SystemWebAppManager {
   static bool IsEnabled();
 
   // The SystemWebAppManager is disabled in browser tests by default because it
-  // pollutes the startup state (several tests expect the Extensions state to be
-  // clean).
-  //
-  // Call this to install apps for SystemWebApp specific tests, e.g if a test
-  // needs to open OS Settings.
+  // pollutes the startup state. Call this to enable them for SystemWebApp
+  // specific tests.
   void InstallSystemAppsForTesting();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

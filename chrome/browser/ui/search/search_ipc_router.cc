@@ -123,12 +123,12 @@ void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
   embedded_search_client()->FocusChanged(state, reason);
 }
 
-void SearchIPCRouter::SendMostVisitedItems(
+void SearchIPCRouter::SendMostVisitedInfo(
     const InstantMostVisitedInfo& most_visited_info) {
-  if (!policy_->ShouldSendMostVisitedItems())
+  if (!policy_->ShouldSendMostVisitedInfo())
     return;
 
-  embedded_search_client()->MostVisitedChanged(most_visited_info);
+  embedded_search_client()->MostVisitedInfoChanged(most_visited_info);
 }
 
 void SearchIPCRouter::SendThemeBackgroundInfo(
@@ -186,16 +186,6 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
     return;
 
   delegate_->OnUndoAllMostVisitedDeletions();
-}
-
-void SearchIPCRouter::ToggleMostVisitedOrCustomLinks(int page_seq_no) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessToggleMostVisitedOrCustomLinks())
-    return;
-
-  delegate_->OnToggleMostVisitedOrCustomLinks();
 }
 
 void SearchIPCRouter::AddCustomLink(int page_seq_no,
@@ -266,6 +256,26 @@ void SearchIPCRouter::ResetCustomLinks(int page_seq_no) {
     return;
 
   delegate_->OnResetCustomLinks();
+}
+
+void SearchIPCRouter::ToggleMostVisitedOrCustomLinks(int page_seq_no) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessToggleMostVisitedOrCustomLinks())
+    return;
+
+  delegate_->OnToggleMostVisitedOrCustomLinks();
+}
+
+void SearchIPCRouter::ToggleShortcutsVisibility(int page_seq_no) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessToggleShortcutsVisibility())
+    return;
+
+  delegate_->OnToggleShortcutsVisibility();
 }
 
 void SearchIPCRouter::LogEvent(int page_seq_no,

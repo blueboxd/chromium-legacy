@@ -173,15 +173,6 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
 Node* FlatTreeTraversal::TraverseSiblingsForV1HostChild(
     const Node& node,
     TraversalDirection direction) {
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
-    HTMLSlotElement* slot = node.AssignedSlot();
-    if (!slot)
-      return nullptr;
-    return direction == kTraversalDirectionForward
-               ? slot->AssignedNodeNextTo(node)
-               : slot->AssignedNodePreviousTo(node);
-  }
-
   ShadowRoot* shadow_root = node.ParentElementShadowRoot();
   DCHECK(shadow_root);
   if (!shadow_root->HasSlotAssignment()) {

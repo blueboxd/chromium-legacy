@@ -38,18 +38,19 @@ void SkiaOutputDevice::StartSwapBuffers(
   feedback_ = std::move(feedback);
   params_.emplace();
   params_->swap_response.swap_id = ++swap_id_;
-  params_->swap_response.swap_start = base::TimeTicks::Now();
+  params_->swap_response.timings.swap_start = base::TimeTicks::Now();
 }
 
 gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
   DCHECK(params_);
 
   params_->swap_response.result = result;
-  params_->swap_response.swap_end = base::TimeTicks::Now();
+  params_->swap_response.timings.swap_end = base::TimeTicks::Now();
   if (feedback_) {
     std::move(*feedback_)
         .Run(gfx::PresentationFeedback(
-            params_->swap_response.swap_start, base::TimeDelta() /* interval */,
+            params_->swap_response.timings.swap_start,
+            base::TimeDelta() /* interval */,
             params_->swap_response.result == gfx::SwapResult::SWAP_ACK
                 ? 0
                 : gfx::PresentationFeedback::Flags::kFailure));

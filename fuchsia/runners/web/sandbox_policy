@@ -6,6 +6,7 @@
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
+      "fuchsia.media.drm.WidevineContentDecryptionModule",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",

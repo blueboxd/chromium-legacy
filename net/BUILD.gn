@@ -212,6 +212,8 @@ component("net") {
     "cert/internal/certificate_policies.h",
     "cert/internal/common_cert_errors.cc",
     "cert/internal/common_cert_errors.h",
+    "cert/internal/crl.cc",
+    "cert/internal/crl.h",
     "cert/internal/extended_key_usage.cc",
     "cert/internal/extended_key_usage.h",
     "cert/internal/general_names.cc",
@@ -3716,6 +3718,51 @@ bundle_data("net_unittests_bundle_data") {
     "data/certificate_policies_unittest/policy_1_2_3_and_1_2_4_with_qualifiers.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_custom_qualifier.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_qualifier.pem",
+    "data/crl_unittest/bad_crldp_has_crlissuer.pem",
+    "data/crl_unittest/bad_fake_critical_crlentryextension.pem",
+    "data/crl_unittest/bad_fake_critical_extension.pem",
+    "data/crl_unittest/bad_nextupdate_too_old.pem",
+    "data/crl_unittest/bad_signature.pem",
+    "data/crl_unittest/bad_thisupdate_in_future.pem",
+    "data/crl_unittest/bad_thisupdate_too_old.pem",
+    "data/crl_unittest/bad_wrong_issuer.pem",
+    "data/crl_unittest/good.pem",
+    "data/crl_unittest/good_fake_extension.pem",
+    "data/crl_unittest/good_fake_extension_no_nextupdate.pem",
+    "data/crl_unittest/good_generalizedtime.pem",
+    "data/crl_unittest/good_issuer_name_normalization.pem",
+    "data/crl_unittest/good_issuer_no_keyusage.pem",
+    "data/crl_unittest/good_no_crldp.pem",
+    "data/crl_unittest/good_no_nextupdate.pem",
+    "data/crl_unittest/good_no_version.pem",
+    "data/crl_unittest/invalid_garbage_after_crlentryextensions.pem",
+    "data/crl_unittest/invalid_garbage_after_extensions.pem",
+    "data/crl_unittest/invalid_garbage_after_nextupdate.pem",
+    "data/crl_unittest/invalid_garbage_after_revocationdate.pem",
+    "data/crl_unittest/invalid_garbage_after_revokedcerts.pem",
+    "data/crl_unittest/invalid_garbage_after_signaturevalue.pem",
+    "data/crl_unittest/invalid_garbage_after_thisupdate.pem",
+    "data/crl_unittest/invalid_garbage_crlentry.pem",
+    "data/crl_unittest/invalid_garbage_issuer_name.pem",
+    "data/crl_unittest/invalid_garbage_revocationdate.pem",
+    "data/crl_unittest/invalid_garbage_revoked_serial_number.pem",
+    "data/crl_unittest/invalid_garbage_signaturealgorithm.pem",
+    "data/crl_unittest/invalid_garbage_signaturevalue.pem",
+    "data/crl_unittest/invalid_garbage_tbs_signature_algorithm.pem",
+    "data/crl_unittest/invalid_garbage_tbscertlist.pem",
+    "data/crl_unittest/invalid_garbage_thisupdate.pem",
+    "data/crl_unittest/invalid_garbage_version.pem",
+    "data/crl_unittest/invalid_issuer_keyusage_no_crlsign.pem",
+    "data/crl_unittest/invalid_mismatched_signature_algorithm.pem",
+    "data/crl_unittest/invalid_revoked_empty_sequence.pem",
+    "data/crl_unittest/invalid_v1_explicit.pem",
+    "data/crl_unittest/invalid_v1_with_crlentryextension.pem",
+    "data/crl_unittest/invalid_v1_with_extension.pem",
+    "data/crl_unittest/invalid_v3.pem",
+    "data/crl_unittest/revoked.pem",
+    "data/crl_unittest/revoked_fake_crlentryextension.pem",
+    "data/crl_unittest/revoked_generalized_revocationdate.pem",
+    "data/crl_unittest/revoked_no_nextupdate.pem",
     "data/embedded_test_server/mock-headers-without-crlf.html",
     "data/embedded_test_server/mock-headers-without-crlf.html.mock-http-headers",
     "data/filter_unittests/google.br",
@@ -4996,6 +5043,7 @@ test("net_unittests") {
     "cert/internal/cert_issuer_source_static_unittest.cc",
     "cert/internal/cert_issuer_source_sync_unittest.h",
     "cert/internal/certificate_policies_unittest.cc",
+    "cert/internal/crl_unittest.cc",
     "cert/internal/extended_key_usage_unittest.cc",
     "cert/internal/general_names_unittest.cc",
     "cert/internal/name_constraints_unittest.cc",
@@ -6253,6 +6301,39 @@ fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
   ]
   deps = [
     ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_parse_crl_certificatelist_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_crl_certificatelist_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_crl_certificatelist_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_parse_crl_tbscertlist_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_crl_tbscertlist_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_crl_tbscertlist_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_getcrlstatusforcert_fuzzer") {
+  sources = [
+    "cert/internal/crl_getcrlstatusforcert_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_getcrlstatusforcert_fuzzer"
+  deps = [
     "//base",
     "//net",
   ]

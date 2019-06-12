@@ -314,16 +314,16 @@ void BrowserViewRenderer::OnParentDrawDataUpdated(
 
 bool BrowserViewRenderer::DoUpdateParentDrawData() {
   ParentCompositorDrawConstraints new_constraints;
-  viz::PresentationFeedbackMap new_presentation_feedbacks;
+  viz::FrameTimingDetailsMap new_timing_details;
   CompositorID id;
   uint32_t frame_token = 0u;
   current_compositor_frame_consumer_->TakeParentDrawDataOnUI(
-      &new_constraints, &id, &new_presentation_feedbacks, &frame_token);
+      &new_constraints, &id, &new_timing_details, &frame_token);
 
   content::SynchronousCompositor* compositor = FindCompositor(id);
   if (compositor) {
-    compositor_->DidPresentCompositorFrames(
-        std::move(new_presentation_feedbacks), frame_token);
+    compositor_->DidPresentCompositorFrames(std::move(new_timing_details),
+                                            frame_token);
   }
 
   if (external_draw_constraints_ == new_constraints)

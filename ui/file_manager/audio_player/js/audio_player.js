@@ -123,6 +123,8 @@ function AudioPlayer(container) {
         unmute: strings['MEDIA_PLAYER_UNMUTE_BUTTON_LABEL'],
         volumeSlider: strings['MEDIA_PLAYER_VOLUME_SLIDER_LABEL']
       };
+      this.player_.ariaExpandArtworkLabel =
+          strings['AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL'];
     }.bind(this));
 
     this.volumeManager_.addEventListener('externally-unmounted',

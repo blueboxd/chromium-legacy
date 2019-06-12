@@ -47,8 +47,7 @@ void WallpaperControllerTestApi::StartWallpaperPreview() {
       base::BindOnce(&WallpaperControllerImpl::SetWallpaperFromInfo,
                      controller_->weak_factory_.GetWeakPtr(),
                      AccountId::FromUserEmail("user@test.com"),
-                     user_manager::USER_TYPE_REGULAR, kTestWallpaperInfo,
-                     /*show_wallpaper=*/true);
+                     kTestWallpaperInfo, /*show_wallpaper=*/true);
   controller_->reload_preview_wallpaper_callback_ = base::BindRepeating(
       &WallpaperControllerImpl::ShowWallpaperImage,
       controller_->weak_factory_.GetWeakPtr(),

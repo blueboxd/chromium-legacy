@@ -33,12 +33,22 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return baselines_.Offset(request);
   }
 
-  const NGPhysicalBoxStrut Borders() const { return borders_; }
+  const NGPhysicalBoxStrut Borders() const {
+    if (!has_borders_)
+      return NGPhysicalBoxStrut();
+    return *ComputeBordersAddress();
+  }
 
-  const NGPhysicalBoxStrut Padding() const { return padding_; }
+  const NGPhysicalBoxStrut Padding() const {
+    if (!has_padding_)
+      return NGPhysicalBoxStrut();
+    return *ComputePaddingAddress();
+  }
 
   NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
-    return padding_.SnapToDevicePixels();
+    if (!has_padding_)
+      return NGPixelSnappedPhysicalBoxStrut();
+    return ComputePaddingAddress()->SnapToDevicePixels();
   }
 
   bool HasSelfPaintingLayer() const;
@@ -77,12 +87,27 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
+                        const NGPhysicalBoxStrut& borders,
+                        const NGPhysicalBoxStrut& padding,
                         WritingMode block_or_line_writing_mode);
 
+  const NGPhysicalBoxStrut* ComputeBordersAddress() const {
+    DCHECK(has_borders_);
+    return reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
+                                                       Children().size());
+  }
+
+  const NGPhysicalBoxStrut* ComputePaddingAddress() const {
+    DCHECK(has_padding_);
+    const NGPhysicalBoxStrut* address =
+        reinterpret_cast<const NGPhysicalBoxStrut*>(children_ +
+                                                    Children().size());
+    return has_borders_ ? address + 1 : address;
+  }
+
   NGBaselineList baselines_;
-  NGPhysicalBoxStrut borders_;
-  NGPhysicalBoxStrut padding_;
   NGLink children_[];
+  // borders and padding come from after |children_| if they are not zero.
 };
 
 template <>

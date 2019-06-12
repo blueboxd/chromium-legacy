@@ -19,7 +19,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
@@ -31,7 +30,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;
@@ -447,18 +445,11 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
 void DownloadProtectionService::OnDangerousDownloadOpened(
     const download::DownloadItem* item,
     Profile* profile) {
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfileIfExists(profile);
-  std::string username = identity_manager
-                             ? identity_manager->GetPrimaryAccountInfo().email
-                             : std::string();
-
   std::string raw_digest_sha256 = item->GetHash();
   extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
       ->OnDangerousDownloadOpened(
           item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
-          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-          username);
+          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()));
 }
 
 bool DownloadProtectionService::MaybeBeginFeedbackForDownload(

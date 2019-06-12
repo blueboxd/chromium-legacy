@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -47,6 +48,8 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -116,6 +119,12 @@ bool PersonalizedServiceShouldFallBackToMostVisited(
 }
 
 }  // namespace
+
+// static
+const char ZeroSuggestProvider::kNoneVariant[] = "None";
+const char ZeroSuggestProvider::kRemoteNoUrlVariant[] = "RemoteNoUrl";
+const char ZeroSuggestProvider::kRemoteSendUrlVariant[] = "RemoteSendUrl";
+const char ZeroSuggestProvider::kMostVisitedVariant[] = "MostVisited";
 
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
@@ -230,8 +239,8 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
 }
 
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
-  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-          current_page_classification_)) {
+  if (OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_) ==
+      kRemoteNoUrlVariant) {
     // Remove the deleted match from the cache, so it is not shown to the user
     // again. Since we cannot remove just one result, blow away the cache.
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
@@ -607,42 +616,46 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
-  if (base::FeatureList::IsEnabled(
+  std::string field_trial_variant =
+      OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_);
+
+  if (field_trial_variant == kNoneVariant ||
+      base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
     return NONE;
   }
 
-  if (current_page_classification_ ==
-      metrics::OmniboxEventProto::CHROMEOS_APP_LIST) {
+  // TODO(tommycli): Since this can be configured via ZeroSuggestVariant, we
+  // should eliminate this special case and use a field trial configuration.
+  if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
-  }
 
-  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-          current_page_classification_)) {
+  if (field_trial_variant == kRemoteNoUrlVariant) {
     return PersonalizedServiceShouldFallBackToMostVisited(client(),
                                                           template_url_service)
                ? MOST_VISITED
                : REMOTE_NO_URL;
   }
 
-  if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-          current_page_classification_) &&
-      client()
-          ->GetTemplateURLService()
-          ->IsSearchResultsPageFromDefaultSearchProvider(current_url)) {
-    return NONE;
-  }
+  if (field_trial_variant == kRemoteSendUrlVariant && can_send_current_url)
+    return REMOTE_SEND_URL;
 
-  if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-          current_page_classification_)) {
+  if (field_trial_variant == kMostVisitedVariant)
+    return MOST_VISITED;
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // For Android and iOS, default to MOST_VISITED so long as:
+  //  - There is no configured variant for |page_classification| AND
+  //  - The user is not on the search results page of the default search
+  //    provider.
+  if (field_trial_variant.empty() &&
+      current_page_classification_ !=
+          OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT &&
+      current_page_classification_ !=
+          OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT) {
     return MOST_VISITED;
   }
-
-  if (can_send_current_url &&
-      OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
-          current_page_classification_)) {
-    return REMOTE_SEND_URL;
-  }
+#endif
 
   return NONE;
 }

@@ -18,6 +18,7 @@ typemaps = [
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/net_log.typemap",
   "//services/network/public/cpp/network_interface.typemap",
+  "//services/network/public/cpp/network_isolation_key.typemap",
   "//services/network/public/cpp/network_param.typemap",
   "//services/network/public/cpp/network_types.typemap",
   "//services/network/public/cpp/p2p.typemap",

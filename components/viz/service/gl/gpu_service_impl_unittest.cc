@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {

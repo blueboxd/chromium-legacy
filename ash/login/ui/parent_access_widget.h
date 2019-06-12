@@ -20,6 +20,8 @@ class Widget;
 
 namespace ash {
 
+enum class ParentAccessRequestReason;
+
 // Widget to display the Parent Access View in a standalone container.
 class ParentAccessWidget {
  public:
@@ -29,9 +31,13 @@ class ParentAccessWidget {
   // access code is validated using the configuration for the provided account,
   // when it is empty it tries to validate the access code to any child signed
   // in the device. The |callback| is called when (a) the validation is
-  // successful or (b) the back button is pressed.
+  // successful or (b) the back button is pressed. |reason| contains information
+  // about why the parent access view is necessary, it is used to modify the
+  // widget appearance by changing the title and description strings and
+  // background color
   ParentAccessWidget(const AccountId& account_id,
-                     const OnExitCallback& callback);
+                     const OnExitCallback& callback,
+                     ParentAccessRequestReason reason);
 
   ~ParentAccessWidget();
 

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/util/generate_wrapper.gni")
+if (is_mac) {
+  import("//build/config/mac/mac_sdk.gni")
+}
 
 template("sizes_test") {
   generate_wrapper(target_name) {
@@ -24,6 +27,12 @@ template("sizes_test") {
     ]
     if (defined(invoker.executable_args)) {
       executable_args += invoker.executable_args
+    }
+    if (is_mac) {
+      executable_args += [
+        "--size-path",
+        mac_bin_path + "size",
+      ]
     }
   }
 }

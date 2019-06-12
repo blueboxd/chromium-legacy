@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Información del archivo</translation>
 <translation id="2246549592927364792">¿Quieres obtener descripciones de imágenes de Google?</translation>
 <translation id="2249269794707377949">En esta página puedes gestionar todas las cuentas de Kerberos que permiten el inicio de sesión único en algunos sitios web, aplicaciones y sistemas de archivos compartidos.</translation>
-<translation id="224940702122312781">Esta página consumirá una gran cantidad de datos.</translation>
 <translation id="2249605167705922988">p. ej. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Abrir con visor del sistema</translation>
 <translation id="225163402930830576">Actualizar redes</translation>
@@ -1910,7 +1909,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Levanta el dedo y toca de nuevo</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sincronización en pausa</translation>
-<translation id="3861241522664181545">Se ha pausado la página.</translation>
 <translation id="3862134173397075045">Te damos la bienvenida a la experiencia Cast en Chrome</translation>
 <translation id="3862693525629180217">Verificar mediante sensor integrado</translation>
 <translation id="3862788408946266506">La aplicación con el atributo del archivo de manifiesto "kiosk_only" se debe instalar en el modo kiosco de Chrome OS</translation>
@@ -3857,7 +3855,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6920989436227028121">Abrir como pestaña normal</translation>
 <translation id="6921104647315081813">Borrar actividades</translation>
 <translation id="692114467174262153">No se ha podido abrir <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">Detener el consumo de datos en esta página</translation>
 <translation id="6922128026973287222">Ahorra datos y navega más rápido con Ahorro de Datos de Google. Haz clic para obtener más información.</translation>
 <translation id="6922745772873733498">Introduce un PIN para imprimir</translation>
 <translation id="6923132443355966645">Desplazarse/Hacer clic</translation>

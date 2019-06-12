@@ -140,6 +140,9 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // Show the help app for when users have trouble signing in to their account.
   virtual void ShowAccountAccessHelpApp() = 0;
 
+  // Show the lockscreen notification settings page.
+  virtual void ShowLockScreenNotificationSettings() = 0;
+
   // Called when the keyboard focus is about to leave from the system tray in
   // the login screen / OOBE. |reverse| is true when the focus moves in the
   // reversed direction.

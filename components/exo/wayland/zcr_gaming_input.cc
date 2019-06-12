@@ -24,7 +24,7 @@ namespace {
 // Expose raw gamepad device information to the client.
 // TODO(tetsui): Remove when the change becomes default.
 const base::Feature kRawGamepadInfoFeature{"ExoRawGamepadInfo",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 unsigned int GetGamepadBusType(ui::InputDeviceType type) {
   switch (type) {

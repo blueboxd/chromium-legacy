@@ -216,13 +216,13 @@ void PassThroughImageTransportSurface::StartSwapBuffers(
   // client.
   response->swap_id = 0;
 
-  response->swap_start = base::TimeTicks::Now();
+  response->timings.swap_start = base::TimeTicks::Now();
 }
 
 void PassThroughImageTransportSurface::FinishSwapBuffers(
     gfx::SwapResponse response,
     uint64_t local_swap_id) {
-  response.swap_end = base::TimeTicks::Now();
+  response.timings.swap_end = base::TimeTicks::Now();
 
 #if DCHECK_IS_ON()
   // After the swap is completed, the local swap id is removed from the queue,

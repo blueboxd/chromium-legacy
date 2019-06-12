@@ -91,7 +91,6 @@ specific_include_rules = {
     "+chrome/services/file_util/public",
     "+chrome/services/isolated_xr_device/manifest.h",
     "+chrome/services/media_gallery_util/public",
-    "+chrome/services/noop/public",
     "+chrome/services/printing/public",
     "+chrome/services/removable_storage_writer/public",
     "+chrome/services/util_win/public",

@@ -88,9 +88,9 @@ if (is_chromeos) {
     ]
   }
 
-  # Media related mojo interfaces. There are used by //services/ws/public/mojom.
-  # We have this separate mojom target to avoid pulling in unnecessary
-  # interfaces.
+  # Media related mojo interfaces. These are used by
+  # //services/viz/public/interfaces. We have this separate mojom target to
+  # avoid pulling in unnecessary interfaces.
   mojom("media") {
     sources = [
       "gfx.mojom",

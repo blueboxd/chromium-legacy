@@ -10,7 +10,6 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/ble_scan_parser/public/cpp/manifest.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
-#include "chrome/services/noop/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
 #include "components/services/unzip/public/cpp/manifest.h"
@@ -138,7 +137,6 @@ GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
       GetFileUtilManifest(),
-      GetNoopManifest(),
       patch::GetManifest(),
       unzip::GetManifest(),
       proxy_resolver::GetManifest(),

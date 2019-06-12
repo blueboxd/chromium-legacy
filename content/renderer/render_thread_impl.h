@@ -105,14 +105,11 @@ class Extension;
 
 namespace viz {
 class BeginFrameSource;
-class RasterContextProvider;
-class SyntheticBeginFrameSource;
-}
-
-namespace ws {
 class ContextProviderCommandBuffer;
 class Gpu;
-}  // namespace ws
+class RasterContextProvider;
+class SyntheticBeginFrameSource;
+}  // namespace viz
 
 namespace content {
 class AecDumpMessageFilter;
@@ -361,7 +358,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<ws::ContextProviderCommandBuffer>
+  scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
@@ -373,6 +370,30 @@ class CONTENT_EXPORT RenderThreadImpl
   void PreCacheFontCharacters(const LOGFONT& log_font,
                               const base::string16& str);
 #endif
+
+  class UnfreezableMessageFilter : public IPC::MessageFilter {
+   public:
+    explicit UnfreezableMessageFilter(RenderThreadImpl* render_thread_impl);
+    bool OnMessageReceived(const IPC::Message& message) override;
+
+    // Adds |unfreezable_task_runner| for the task to be executed later.
+    void AddListenerUnfreezableTaskRunner(
+        int32_t routing_id,
+        scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner);
+
+    // Called on the I/O thread.
+    // Returns the unfreezable task runner associated with |routing_id|.
+    scoped_refptr<base::SingleThreadTaskRunner> GetUnfreezableTaskRunner(
+        int32_t routing_id);
+
+   private:
+    ~UnfreezableMessageFilter() override;
+    RenderThreadImpl* render_thread_impl_;
+    base::Lock unfreezable_task_runners_lock_;
+    // Map of routing_id and listener's thread unfreezable task runner.
+    std::map<int32_t, scoped_refptr<base::SingleThreadTaskRunner>>
+        unfreezable_task_runners_ GUARDED_BY(unfreezable_task_runners_lock_);
+  };
 
   // For producing custom V8 histograms. Custom histograms are produced if all
   // RenderViews share the same host, and the host is in the pre-specified set
@@ -400,6 +421,7 @@ class CONTENT_EXPORT RenderThreadImpl
     FRIEND_TEST_ALL_PREFIXES(RenderThreadImplUnittest,
                              IdentifyAlexaTop10NonGoogleSite);
     friend class RenderThreadImplUnittest;
+    friend class UnfreezableMessageFilter;
 
     // Converts a host name to a suffix for histograms
     std::string HostToCustomHistogramSuffix(const std::string& host);
@@ -577,6 +599,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 
+  // Filter out unfreezable messages and pass it to unfreezable task runners.
+  scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;
+
   // Provides AudioInputIPC objects for audio input devices. Initialized in
   // Init.
   base::Optional<AudioInputIPCFactory> audio_input_ipc_factory_;
@@ -627,7 +652,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
@@ -646,7 +671,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // memory saving mode.
   std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
-  std::unique_ptr<ws::Gpu> gpu_;
+  std::unique_ptr<viz::Gpu> gpu_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

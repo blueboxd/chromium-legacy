@@ -938,9 +938,9 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     }
 
     scroll_view_ = new views::ScrollView();
-    scroll_view_->set_hide_horizontal_scrollbar(true);
+    scroll_view_->SetHideHorizontalScrollBar(true);
     body_container_ = scroll_view_->SetContents(std::move(body_container));
-    scroll_view_->set_draw_overflow_indicator(false);
+    scroll_view_->SetDrawOverflowIndicator(false);
     scroll_view_->ClipHeightTo(0, body_container_->GetPreferredSize().height());
 
     // Use an additional container to apply padding outside the scroll view, so

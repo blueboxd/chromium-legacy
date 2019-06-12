@@ -51,7 +51,7 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
                              ConsentCallback callback);
 
   // views::DialogDelegate:
-  View* CreateExtraView() override;
+  std::unique_ptr<View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

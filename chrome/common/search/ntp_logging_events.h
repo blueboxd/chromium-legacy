@@ -22,17 +22,11 @@ enum NTPLoggingEventType {
   // Deleted: NTP_EXTERNAL_TILE_FALLBACK = 8,
   // Deleted: NTP_MOUSEOVER = 9
   // Deleted: NTP_TILE_LOADED = 10,
+  // Deleted: NTP_ALL_TILES_RECEIVED = 12,
 
   // All NTP tiles have finished loading (successfully or failing). Logged only
   // by the single-iframe version of the NTP.
   NTP_ALL_TILES_LOADED = 11,
-
-  // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
-  // has been received by the most visited iframe. In contrast to
-  // NTP_ALL_TILES_LOADED, this is recorded before the actual DOM elements have
-  // loaded (in particular the thumbnail images). Logged only by the
-  // single-iframe version of the NTP.
-  NTP_ALL_TILES_RECEIVED = 12,
 
   // Activated by clicking on the fakebox icon. Logged by Voice Search.
   NTP_VOICE_ACTION_ACTIVATE_FAKEBOX = 13,

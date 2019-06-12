@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #include "components/remote_cocoa/browser/window.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -73,35 +74,33 @@ void SelectFileDialogImpl::SelectFileImpl(
     const FileTypeInfo* file_types,
     int file_type_index,
     const base::FilePath::StringType& default_extension,
-    gfx::NativeWindow owning_native_window,
+    gfx::NativeWindow gfx_window,
     void* params) {
   DCHECK(type == SELECT_FOLDER || type == SELECT_UPLOAD_FOLDER ||
          type == SELECT_EXISTING_FOLDER || type == SELECT_OPEN_FILE ||
          type == SELECT_OPEN_MULTI_FILE || type == SELECT_SAVEAS_FILE);
-  NSWindow* owning_window = owning_native_window.GetNativeNSWindow();
-  // TODO(https://crbug.com/913303): The select file dialog's interface to
-  // Cocoa should be wrapped in a mojo interface in order to allow instantiating
-  // across processes. As a temporary solution, raise the remote windows'
-  // transparent in-process window to the front.
-  if (remote_cocoa::IsWindowRemote(owning_window)) {
-    [owning_window makeKeyAndOrderFront:nil];
-    [owning_window setLevel:NSModalPanelWindowLevel];
-  }
 
   hasMultipleFileTypeChoices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
   // Add a new DialogData to the list. Note that it is safe to pass
-  // |dialog_data| by a pointer because it will only be removed from the list
-  // when the callback is made or after the callback has been cancelled by
+  // |dialog_data| by pointer because it will only be removed from the list when
+  // the callback is made or after the callback has been cancelled by
   // |weak_factory_|.
-  dialog_data_list_.emplace_back(owning_window, params);
+  dialog_data_list_.emplace_back(gfx_window, params);
   DialogData& dialog_data = dialog_data_list_.back();
 
   // Create a NSSavePanel for it.
-  mojo::MakeStrongBinding(
-      std::make_unique<remote_cocoa::SelectFileDialogBridge>(owning_window),
-      mojo::MakeRequest(&dialog_data.select_file_dialog));
+  auto* mojo_window = remote_cocoa::GetWindowMojoInterface(gfx_window);
+  auto request = mojo::MakeRequest(&dialog_data.select_file_dialog);
+  if (mojo_window) {
+    mojo_window->CreateSelectFileDialog(std::move(request));
+  } else {
+    NSWindow* ns_window = gfx_window.GetNativeNSWindow();
+    mojo::MakeStrongBinding(
+        std::make_unique<remote_cocoa::SelectFileDialogBridge>(ns_window),
+        std::move(request));
+  }
 
   // Show the panel.
   SelectFileDialogType mojo_type = SelectFileDialogType::kFolder;

@@ -13,17 +13,23 @@ source_set("cpp") {
     "type_conversions.h",
   ]
 
+  deps = [
+    "//base",
+  ]
+
   if (use_cups) {
     configs += [ "//printing:cups" ]
     sources += [
       "cups_util.cc",
       "cups_util.h",
+      "ipp_messages.cc",
+      "ipp_messages.h",
+    ]
+    public_deps = [
+      "//chrome/services/cups_ipp_parser/public/cpp",
+      "//printing",
     ]
   }
-
-  deps = [
-    "//base",
-  ]
 }
 
 source_set("manifest") {

@@ -46,6 +46,10 @@ const base::Feature kEnableVizHitTestSurfaceLayer{
 const base::Feature kEnableVizHitTest{"VizHitTest",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use Skia's readback API instead of GLRendererCopier.
+const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -110,6 +114,10 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
           GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
                                            kProvider) != kDrawQuad &&
           base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer));
+}
+
+bool IsUsingSkiaForGLReadback() {
+  return base::FeatureList::IsEnabled(kUseSkiaForGLReadback);
 }
 
 bool IsUsingSkiaRenderer() {

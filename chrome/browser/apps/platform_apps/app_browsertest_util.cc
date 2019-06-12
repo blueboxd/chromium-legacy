@@ -155,7 +155,7 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 }
 

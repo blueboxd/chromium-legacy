@@ -416,11 +416,6 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
 
   if (supported_method == "basic-card") {
     SetBasicCardMethodData(input, output, exception_state);
-    if (exception_state.HadException()) {
-      UseCounter::Count(&execution_context,
-                        WebFeature::kInvalidBasicCardMethodData);
-      exception_state.ClearException();
-    }
   }
 }
 

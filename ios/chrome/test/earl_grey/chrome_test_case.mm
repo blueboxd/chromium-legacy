@@ -16,6 +16,7 @@
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -218,8 +219,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 - (net::EmbeddedTestServer*)testServer {
   if (!_testServer) {
     _testServer = std::make_unique<net::EmbeddedTestServer>();
-    _testServer->AddDefaultHandlers(base::FilePath(
-        FILE_PATH_LITERAL("ios/testing/data/http_server_files/")));
+    NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
+    _testServer->ServeFilesFromDirectory(
+        base::FilePath(base::SysNSStringToUTF8(bundlePath))
+            .AppendASCII("ios/testing/data/http_server_files/"));
+    net::test_server::RegisterDefaultHandlers(_testServer.get());
   }
   return _testServer.get();
 }
@@ -341,7 +345,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
 + (void)startHTTPServer {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.StartOrDie();
+  NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
+  server.StartOrDie(base::FilePath(base::SysNSStringToUTF8(bundlePath)));
 }
 
 + (NSArray*)flakyTestNames {

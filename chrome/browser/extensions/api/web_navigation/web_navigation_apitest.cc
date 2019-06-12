@@ -43,6 +43,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
@@ -571,6 +572,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
 // TODO(jam): http://crbug.com/350550
 #if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.

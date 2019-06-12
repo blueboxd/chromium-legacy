@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Tus dispositivos funcionan incluso mejor juntos</translation>
 <translation id="112308213915226829">Ocultar la biblioteca automáticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
+<translation id="1175572348579024023">Desplazamiento</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1195412055398077112">desajuste de dimensiones</translation>
 <translation id="119944043368869598">Borrar todo</translation>
@@ -251,6 +252,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en la sesión de demostración.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
+<translation id="4831034276697007977">¿Confirmas que quieres desactivar los clics automáticos?</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el enfoque del teclado</translation>
 <translation id="485592688953820832">No es necesaria ninguna acción (pausa)</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
@@ -403,7 +405,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7378594059915113390">Controles de contenido multimedia</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Se cambió la conexión de red</translation>
-<translation id="7405710164030118432">Para desbloquear el dispositivo, ingresa el código de acceso parental de Family Link</translation>
+<translation id="7405710164030118432">Para desbloquear el dispositivo, ingresa el código de acceso para padres de Family Link</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
 <translation id="7497767806359279797">Elegir idioma y teclado</translation>
@@ -414,6 +416,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. La resolución se cambió a <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado. Es posible que las próximas notificaciones, ventanas y cuadros de diálogo se dividan entre los escritorios.</translation>
+<translation id="7568294522609223312">Desactivar los clics automáticos</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario/a)</translation>

@@ -77,7 +77,7 @@ bool OpenExtensionApplicationWindow(Profile* profile,
 
   RecordCmdLineAppHistogram(app->GetType());
 
-  ::AppLaunchParams params(profile, app, launch_container,
+  ::AppLaunchParams params(profile, app_id, launch_container,
                            WindowOpenDisposition::NEW_WINDOW,
                            extensions::SOURCE_COMMAND_LINE);
   params.command_line = command_line;
@@ -101,7 +101,7 @@ bool OpenExtensionApplicationTab(Profile* profile, const std::string& app_id) {
   RecordCmdLineAppHistogram(app->GetType());
 
   content::WebContents* app_tab = ::OpenApplication(
-      ::AppLaunchParams(profile, app, extensions::LAUNCH_CONTAINER_TAB,
+      ::AppLaunchParams(profile, app_id, extensions::LAUNCH_CONTAINER_TAB,
                         WindowOpenDisposition::NEW_FOREGROUND_TAB,
                         extensions::SOURCE_COMMAND_LINE));
   return app_tab != nullptr;
@@ -112,12 +112,11 @@ bool OpenExtensionApplicationWithReenablePrompt(
     const std::string& app_id,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory) {
-  const extensions::Extension* app = GetPlatformApp(profile, app_id);
-  if (!app)
+  if (!GetPlatformApp(profile, app_id))
     return false;
 
   RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
-  ::AppLaunchParams params(profile, app, extensions::LAUNCH_CONTAINER_NONE,
+  ::AppLaunchParams params(profile, app_id, extensions::LAUNCH_CONTAINER_NONE,
                            WindowOpenDisposition::NEW_WINDOW,
                            extensions::SOURCE_COMMAND_LINE);
   params.command_line = command_line;

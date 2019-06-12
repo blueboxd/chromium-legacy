@@ -124,12 +124,12 @@ class XRSession final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(
-      double timestamp,
-      std::unique_ptr<TransformationMatrix>,
-      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-      const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-          detected_planes);
+  void OnFrame(double timestamp,
+               std::unique_ptr<TransformationMatrix>,
+               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+               const device::mojom::blink::XRPlaneDetectionDataPtr&
+                   detected_planes_data);
+
   void OnInputStateChange(
       int16_t frame_id,
       const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);

@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_TEST_HELPER_H_
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 
 class TestingProfile;
+
+namespace user_manager {
+class ScopedUserManager;
+}  // namespace user_manager
 
 namespace plugin_vm {
 
@@ -39,7 +42,7 @@ class PluginVmTestHelper {
 
  private:
   TestingProfile* testing_profile_;
-  chromeos::MockUserManager user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmTestHelper);

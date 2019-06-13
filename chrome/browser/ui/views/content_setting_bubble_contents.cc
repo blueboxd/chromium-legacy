@@ -540,7 +540,7 @@ void ContentSettingBubbleContents::Init() {
   content_setting_bubble_model_->set_owner(this);
 }
 
-views::View* ContentSettingBubbleContents::CreateExtraView() {
+std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
   DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
@@ -573,8 +573,8 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
-    return extra_views.front().release();
-  views::View* container = new views::View();
+    return std::move(extra_views.front());
+  auto container = std::make_unique<views::View>();
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       layout->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));

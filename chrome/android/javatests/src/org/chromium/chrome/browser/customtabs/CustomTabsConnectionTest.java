@@ -462,6 +462,19 @@ public class CustomTabsConnectionTest {
     }
 
     /**
+     * Tests that whether we can detect access rights to /proc/pid/.
+     */
+    @Test
+    @SmallTest
+    public void testCanGetSchedulerGroup() {
+        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
+        // self is always accessible.
+        Assert.assertTrue(CustomTabsConnection.canGetSchedulerGroup(Process.myPid()));
+        // PID 1 always exists, yet should never be accessible by regular apps.
+        Assert.assertFalse(CustomTabsConnection.canGetSchedulerGroup(1));
+    }
+
+    /**
      * Tests that CPU cgroups exist and have the expected values for background and foreground.
      *
      * To make testing easier the test assumes that the Android Framework uses

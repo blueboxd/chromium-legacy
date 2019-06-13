@@ -20,7 +20,7 @@ std::unique_ptr<TransformationMatrix> XRTargetRaySpace::GetPointerPoseForScreen(
   // If the pointer origin is the screen we need the head's base pose and
   // the pointer transform matrix to continue. The pointer transform will
   // represent the point the canvas was clicked as an offset from the view.
-  if (!input_source_->pointer_transform_matrix_) {
+  if (!input_source_->PointerTransform()) {
     return nullptr;
   }
 
@@ -31,27 +31,27 @@ std::unique_ptr<TransformationMatrix> XRTargetRaySpace::GetPointerPoseForScreen(
     return nullptr;
   }
 
-  pointer_pose->Multiply(*(input_source_->pointer_transform_matrix_));
+  pointer_pose->Multiply(*(input_source_->PointerTransform()));
   return pointer_pose;
 }
 
 std::unique_ptr<TransformationMatrix> XRTargetRaySpace::GetTrackedPointerPose(
     XRSpace* other_space,
     const TransformationMatrix& base_pose_matrix) {
-  if (!input_source_->base_pose_matrix_) {
+  if (!input_source_->BasePose()) {
     return nullptr;
   }
 
   std::unique_ptr<TransformationMatrix> grip_pose =
-      other_space->TransformBaseInputPose(*(input_source_->base_pose_matrix_),
+      other_space->TransformBaseInputPose(*(input_source_->BasePose()),
                                           base_pose_matrix);
 
   if (!grip_pose) {
     return nullptr;
   }
 
-  if (input_source_->pointer_transform_matrix_) {
-    grip_pose->Multiply(*(input_source_->pointer_transform_matrix_));
+  if (input_source_->PointerTransform()) {
+    grip_pose->Multiply(*(input_source_->PointerTransform()));
   }
 
   return grip_pose;
@@ -67,7 +67,7 @@ XRPose* XRTargetRaySpace::getPose(
   }
 
   std::unique_ptr<TransformationMatrix> pointer_pose = nullptr;
-  switch (input_source_->target_ray_mode_) {
+  switch (input_source_->TargetRayMode()) {
     case device::mojom::XRTargetRayMode::TAPPING: {
       pointer_pose = GetPointerPoseForScreen(other_space, *base_pose_matrix);
       break;

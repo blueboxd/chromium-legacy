@@ -87,11 +87,13 @@ gfx::Size AuthenticatorRequestDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-views::View* AuthenticatorRequestDialogView::CreateExtraView() {
-  other_transports_button_ = new views::MdTextButtonWithDownArrow(
-      this, l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
+std::unique_ptr<views::View> AuthenticatorRequestDialogView::CreateExtraView() {
+  auto other_transports_button =
+      std::make_unique<views::MdTextButtonWithDownArrow>(
+          this, l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
+  other_transports_button_ = other_transports_button.get();
   ToggleOtherTransportsButtonVisibility();
-  return other_transports_button_;
+  return other_transports_button;
 }
 
 bool AuthenticatorRequestDialogView::Accept() {

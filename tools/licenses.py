@@ -103,8 +103,8 @@ PRUNE_DIRS = (VCS_METADATA_DIRS +
                'layout_tests'))            # lots of subdirs
 
 # A third_party directory can define this file, containing a list of
-# subdirectories to process instead of itself. Intended for directories that
-# contain multiple others as transitive dependencies.
+# subdirectories to process in addition to itself. Intended for directories
+# that contain multiple others as transitive dependencies.
 ADDITIONAL_PATHS_FILENAME = 'additional_readme_paths.json'
 
 ADDITIONAL_PATHS = (
@@ -474,13 +474,13 @@ def FindThirdPartyDirs(prune_paths, root):
                 dirpath = os.path.join(path, dir)
                 additional_paths_file = os.path.join(
                     root, dirpath, ADDITIONAL_PATHS_FILENAME)
+                if dirpath not in prune_paths:
+                    third_party_dirs.add(dirpath)
                 if os.path.exists(additional_paths_file):
                     with open(additional_paths_file) as paths_file:
                         extra_paths = json.load(paths_file)
                         third_party_dirs.update([
                                 os.path.join(dirpath, p) for p in extra_paths])
-                elif dirpath not in prune_paths:
-                    third_party_dirs.add(dirpath)
 
             # Don't recurse into any subdirs from here.
             dirs[:] = []

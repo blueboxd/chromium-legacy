@@ -50,6 +50,8 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // This should only be deleted by the creator (TabletModeController).
   ~TabletModeWindowManager() override;
 
+  static aura::Window* GetTopWindow();
+
   void Init();
 
   // Stops tracking windows and returns them to their clamshell mode state. Work
@@ -71,8 +73,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
-
-  aura::Window* GetTopWindow();
 
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;

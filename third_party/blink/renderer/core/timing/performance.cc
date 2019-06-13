@@ -742,8 +742,7 @@ PerformanceMeasure* Performance::MeasureInternal(
     if (start_or_options.IsPerformanceMeasureOptions()) {
       // measure("name", {}, *)
       if (end) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kSyntaxError,
+        exception_state.ThrowTypeError(
             "If a PerformanceMeasureOptions object was passed, |end| must be "
             "null.");
         return nullptr;

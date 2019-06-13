@@ -208,8 +208,8 @@ void SessionService::SetTabGroup(const SessionID& window_id,
 
   // Tabs get ungrouped as they close. However, if the whole window is closing
   // tabs should stay in their groups. So, ignore this call in that case.
-  if (base::ContainsKey(pending_window_close_ids_, window_id) ||
-      base::ContainsKey(window_closing_ids_, window_id))
+  if (base::Contains(pending_window_close_ids_, window_id) ||
+      base::Contains(window_closing_ids_, window_id))
     return;
 
   ScheduleCommand(sessions::CreateTabGroupCommand(tab_id, group));

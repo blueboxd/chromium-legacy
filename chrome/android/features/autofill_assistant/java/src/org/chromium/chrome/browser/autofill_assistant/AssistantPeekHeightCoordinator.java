@@ -61,6 +61,7 @@ class AssistantPeekHeightCoordinator {
     private final int mDefaultToolbarPaddingBottom;
     private final int mProgressBarHeight;
     private final int mChildrenVerticalSpacing;
+    private final int mSuggestionsVerticalInset;
 
     private int mPeekHeight;
     private @PeekMode int mPeekMode = PeekMode.UNDEFINED;
@@ -87,6 +88,8 @@ class AssistantPeekHeightCoordinator {
                 R.dimen.autofill_assistant_progress_bar_height);
         mChildrenVerticalSpacing = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
+        mSuggestionsVerticalInset = context.getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.chip_bg_vertical_inset);
 
         // Show only actions if we are in the peek state and peek mode is HANDLE_HEADER_CAROUSELS.
         bottomSheet.addObserver(new EmptyBottomSheetObserver() {
@@ -178,7 +181,8 @@ class AssistantPeekHeightCoordinator {
             case PeekMode.HANDLE_HEADER_CAROUSELS:
                 mToolbarPaddingBottom = mHeaderHeight + mProgressBarHeight;
                 if (mSuggestionsHeight > 0) {
-                    mToolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing;
+                    mToolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing
+                            - 2 * mSuggestionsVerticalInset;
                 }
 
                 if (mActionsHeight > 0) {

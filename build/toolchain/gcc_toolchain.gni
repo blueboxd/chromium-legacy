@@ -535,15 +535,6 @@ template("gcc_toolchain") {
         unstripped_outfile = "{{root_out_dir}}/exe.unstripped/$exename"
       }
 
-      # Generate a map file to be used for binary size analysis.
-      # Map file adds ~10% to the link time on a z620.
-      # With target_os="android", libchrome.so.map.gz is ~20MB.
-      map_switch = ""
-      if (enable_linker_map && is_official_build) {
-        map_file = "$unstripped_outfile.map.gz"
-        map_switch = " --map-file \"$map_file\""
-      }
-
       start_group_flag = ""
       end_group_flag = ""
       if (current_os != "aix") {
@@ -553,15 +544,28 @@ template("gcc_toolchain") {
       }
       link_command = "$ld {{ldflags}}${extra_ldflags} -o \"$unstripped_outfile\" $start_group_flag @\"$rspfile\" {{solibs}} $end_group_flag $libs_section_prefix {{libs}} $libs_section_postfix"
 
-      strip_switch = ""
+      # Generate a map file to be used for binary size analysis.
+      # Map file adds ~10% to the link time on a z620.
+      # With target_os="android", libchrome.so.map.gz is ~20MB.
+      map_switch = ""
+      if (enable_linker_map && is_official_build) {
+        map_file = "$unstripped_outfile.map.gz"
+        map_switch = " --map-file \"$map_file\""
+      }
 
+      strip_switch = ""
       if (defined(invoker.strip)) {
         strip_switch = " --strip=\"${invoker.strip}\" --unstripped-file=\"$unstripped_outfile\""
       }
 
-      link_wrapper =
-          rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
-      command = "$python_path \"$link_wrapper\" --output=\"$outfile\"$strip_switch$map_switch -- $link_command"
+      if (strip_switch != "" || map_switch != "") {
+        link_wrapper =
+            rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
+        command = "$python_path \"$link_wrapper\" --output=\"$outfile\"$strip_switch$map_switch -- $link_command"
+      } else {
+        command = link_command
+      }
+
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
       outputs = [

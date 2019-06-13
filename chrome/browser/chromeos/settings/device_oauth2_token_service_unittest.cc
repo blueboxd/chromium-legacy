@@ -152,7 +152,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
     return static_cast<DeviceOAuth2TokenServiceDelegate*>(
                oauth2_service_->GetDelegate())
-        ->GetRefreshToken(oauth2_service_->GetRobotAccountId());
+        ->GetRefreshToken();
   }
 
   // A utility method to return fake URL results, for testing the refresh token

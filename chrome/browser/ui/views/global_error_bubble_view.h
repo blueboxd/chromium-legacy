@@ -40,7 +40,7 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

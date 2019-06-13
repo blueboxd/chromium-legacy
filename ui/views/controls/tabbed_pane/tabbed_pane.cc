@@ -385,10 +385,8 @@ void MdTab::OnFocus() {
   // Do not draw focus ring in kHighlight mode.
   if (tabbed_pane()->GetStyle() != TabbedPane::TabStripStyle::kHighlight) {
     SetBorder(CreateSolidBorder(
-        GetInsets().top(),
-        SkColorSetA(GetNativeTheme()->GetSystemColor(
-                        ui::NativeTheme::kColorId_FocusedBorderColor),
-                    0x66)));
+        GetInsets().top(), GetNativeTheme()->GetSystemColor(
+                               ui::NativeTheme::kColorId_FocusedBorderColor)));
   }
 
   // When the tab gains focus, send an accessibility event indicating that the
@@ -670,8 +668,10 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
     rect = gfx::Rect(max_cross_axis - kSelectedBorderThickness, min_main_axis,
                      kSelectedBorderThickness, max_main_axis - min_main_axis);
   }
-  canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
-                             ui::NativeTheme::kColorId_FocusedBorderColor));
+  canvas->FillRect(
+      rect, SkColorSetA(GetNativeTheme()->GetSystemColor(
+                            ui::NativeTheme::kColorId_FocusedBorderColor),
+                        SK_AlphaOPAQUE));
 }
 
 void MdTabStrip::AnimationProgressed(const gfx::Animation* animation) {

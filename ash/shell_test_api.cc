@@ -182,6 +182,7 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
 
 void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
   AccelerometerReader::GetInstance()->DisableForTest();
+  TabletModeController::SetForceNoScreenshotForTest();
   shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 

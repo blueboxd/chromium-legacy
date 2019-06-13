@@ -4,10 +4,9 @@
 
 import("//build/config/android/rules.gni")
 import("current_version/current_version.gni")
+import("generate_manifest_for_upload_outputs.gni")
 import("mustache_pass.gni")
 
-webapk_manifest_to_upload_output =
-    "${target_gen_dir}/webapk_manifest_to_upload/AndroidManifest.xml"
 h2o_junit_manifest_output =
     "${target_gen_dir}/junit_manifest/AndroidManifest.xml"
 
@@ -19,6 +18,24 @@ h2o_junit_manifest_target_name = "h2o_j_unit_manifest_target"
 android_library("compiled_in_runtime_library_java") {
   chromium_code = false
   java_files = [ "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java" ]
+}
+
+mustache_pass("generate_old_style_manifest_for_upload") {
+  input = "AndroidManifest.xml"
+  output = generate_old_style_manifest_for_upload_output
+  extra_variables = [
+    "shell_apk_version=$current_shell_apk_version",
+    "use_new_splash=false",
+  ]
+}
+
+mustache_pass("generate_new_style_manifest_for_upload") {
+  input = "AndroidManifest.xml"
+  output = generate_new_style_manifest_for_upload_output
+  extra_variables = [
+    "shell_apk_version=$current_shell_apk_version",
+    "use_new_splash=true",
+  ]
 }
 
 # |webapk_java| is split from |webapk_with_service_java| for the sake of instrumentation tests.
@@ -78,9 +95,7 @@ template("webapk_with_service_java") {
 }
 
 template("webapk_tmpl") {
-  _manifest_to_upload_target_name = "${target_name}_manifest_to_upload"
-  _manifest_to_upload_output =
-      "${target_gen_dir}/${_manifest_to_upload_target_name}/AndroidManifest.xml"
+  _manifest_to_upload_dep = invoker.manifest_to_upload_dep
   _manifest_target_name = "${target_name}_generate_manifest"
   _manifest_output =
       "${target_gen_dir}/${_manifest_target_name}/AndroidManifest.xml"
@@ -93,30 +108,11 @@ template("webapk_tmpl") {
       "${target_gen_dir}/${_generate_res_background_xml_target_name}/res"
   _resources_target_name = "${target_name}_resources"
 
-  _use_new_splash = false
-  if (defined(invoker.use_new_splash)) {
-    _use_new_splash = invoker.use_new_splash
-  }
-
-  if (defined(invoker.manifest_to_upload_output)) {
-    _manifest_to_upload_output = invoker.manifest_to_upload_output
-  }
   if (defined(invoker.manifest_output)) {
     _manifest_output = invoker.manifest_output
   }
   if (defined(invoker.manifest_target_name)) {
     _manifest_target_name = invoker.manifest_target_name
-  }
-
-  # Generate manifest to upload to WebAPK server. Fills in all of the fields
-  # that the server cannot customize on a per-site basis.
-  mustache_pass(_manifest_to_upload_target_name) {
-    input = "AndroidManifest.xml"
-    output = _manifest_to_upload_output
-    extra_variables = [
-      "shell_apk_version=$current_shell_apk_version",
-      "use_new_splash=$_use_new_splash",
-    ]
   }
 
   # Generate manifest with test values.
@@ -128,11 +124,12 @@ template("webapk_tmpl") {
                              "delta_config_file",
                            ])
 
-    input = _manifest_to_upload_output
+    input = get_target_outputs(_manifest_to_upload_dep)
+    input = input[0]
     output = _manifest_output
     extra_variables = [ "manifest_package=$apk_package_name" ]
     deps = [
-      ":$_manifest_to_upload_target_name",
+      _manifest_to_upload_dep,
     ]
   }
 
@@ -265,26 +262,28 @@ java_strings_grd("webapk_strings_grd") {
 # - App icon is extracted from the website and added to the APK's resources.
 webapk_tmpl("webapk") {
   config_file = "manifest/bound_manifest_config.json"
+  manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   apk_name = "WebApk"
   apk_package_name = "org.chromium.webapk"
-  manifest_to_upload_output = webapk_manifest_to_upload_output
 }
 
 webapk_tmpl("maps_go_webapk") {
   config_file = "manifest/maps_go_manifest_config.json"
+  manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   apk_name = "MapsWebApk"
   apk_package_name = "org.chromium.maps_go_webapk"
 }
 
 webapk_tmpl("unbound_webapk") {
   config_file = "manifest/unbound_manifest_config.json"
+  manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   apk_name = "UnboundWebApk"
   apk_package_name = "org.chromium.arbitrarypackage"
 }
 
 webapk_tmpl("new_splash_webapk") {
-  use_new_splash = true
   config_file = "manifest/bound_manifest_config.json"
+  manifest_to_upload_dep = ":generate_new_style_manifest_for_upload"
   apk_name = "NewSplashWebApk"
   apk_package_name = "org.chromium.webapk.new.splash"
 }
@@ -292,6 +291,7 @@ webapk_tmpl("new_splash_webapk") {
 # Used by javatests
 webapk_tmpl("javatests_webapk") {
   config_file = "manifest/bound_manifest_config.json"
+  manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   delta_config_file = "manifest/javatest_manifest_config_delta.json"
   apk_name = "JavatestsWebApk"
   apk_package_name = "org.chromium.webapk.test"
@@ -299,8 +299,8 @@ webapk_tmpl("javatests_webapk") {
 
 # Used by webapk_shell_apk_h2o_junit_tests
 webapk_tmpl("h2o_j_unit_webapk") {
-  use_new_splash = true
   config_file = "manifest/bound_manifest_config.json"
+  manifest_to_upload_dep = ":generate_new_style_manifest_for_upload"
   apk_name = "H2OJUnitWebApk"
   apk_package_name = "org.chromium.webapk.h2o.junit_webapk"
   manifest_output = h2o_junit_manifest_output

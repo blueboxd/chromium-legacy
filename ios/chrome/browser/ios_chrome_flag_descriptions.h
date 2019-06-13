@@ -291,10 +291,6 @@ extern const char kOnlyNewPasswordFormParsingDescription[];
 extern const char kPasswordGenerationName[];
 extern const char kPasswordGenerationDescription[];
 
-// Title and description for the flag to enable Physical Web in the omnibox.
-extern const char kPhysicalWeb[];
-extern const char kPhysicalWebDescription[];
-
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];

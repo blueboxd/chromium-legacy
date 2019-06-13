@@ -107,7 +107,6 @@
     {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
-      depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "DocumentWrite",

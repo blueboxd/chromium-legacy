@@ -64,6 +64,7 @@ class AppServiceProxyImpl : public KeyedService,
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
+  void FlushMojoCallsForTesting();
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
   void ReInitializeCrostiniForTesting(Profile* profile);

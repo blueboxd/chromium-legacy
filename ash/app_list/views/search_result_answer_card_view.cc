@@ -262,6 +262,10 @@ class SearchResultAnswerCardView::AnswerCardResultView
     OnVisibilityChanged(true /* is_visible */);
     views::View* content_view = contents_->GetView()->view();
     if (children().empty()) {
+      // Focusability is handled on SearchResultAnswerCardView so we explicitly
+      // disable it on the embedded view (for which it is enabled by default).
+      content_view->SetFocusBehavior(FocusBehavior::NEVER);
+
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
 

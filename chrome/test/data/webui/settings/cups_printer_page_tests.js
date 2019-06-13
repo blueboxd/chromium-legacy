@@ -297,8 +297,6 @@ suite('CupsAddPrinterDialogTests', function() {
 
     addDialog.$$('.action-button').click();
     Polymer.dom.flush();
-    // Configure is shown until getPrinterInfo is rejected.
-    assertTrue(!!dialog.$$('add-printer-configuring-dialog'));
 
     // Upon rejection, show model.
     return cupsPrintersBrowserProxy
@@ -494,38 +492,60 @@ suite('CupsAddPrinterDialogTests', function() {
    * Test that the close button exists on the configure dialog.
    */
   test('ConfigureDialogCancelDisabled', function() {
-    // Starts in discovery dialog, select add manually button.
-    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
-    assertTrue(!!discoveryDialog);
-    discoveryDialog.$.manuallyAddPrinterButton.click();
-    Polymer.dom.flush();
+    const newPrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'EEAADDAA',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'printerId',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'usb',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+      printerUsbInfo: '',
+    };
 
-    // Now we should be in the manually add dialog.
-    const addDialog = dialog.$$('add-printer-manually-dialog');
-    assertTrue(!!addDialog);
-    fillAddManuallyDialog(addDialog);
+    dialog.fire('open-discovery-printers-dialog');
 
-    // Advance to the configure dialog.
-    addDialog.$$('.action-button').click();
-    Polymer.dom.flush();
+    return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
+        .then(function() {
+          // Select the printer.
+          let discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+          assertTrue(!!discoveryDialog, 'Cannot find discovery dialog');
+          discoveryDialog.selectedPrinter = newPrinter;
+          // Run printer setup.
+          clickAddButton(discoveryDialog);
+          return cupsPrintersBrowserProxy.whenCalled('addDiscoveredPrinter');
+        })
+        .then(function(printerId) {
+          const configureDialog = dialog.$$('add-printer-configuring-dialog');
+          assertTrue(!!configureDialog);
 
-    // Configure is shown.
-    const configureDialog = dialog.$$('add-printer-configuring-dialog');
-    assertTrue(!!configureDialog);
+          const closeButton = configureDialog.$$('.cancel-button');
+          assertTrue(!!closeButton);
+          assertFalse(closeButton.disabled);
 
-    const closeButton = configureDialog.$$('.cancel-button');
-    assertTrue(!!closeButton);
-    assertFalse(closeButton.disabled);
+          const waitForClose =
+              test_util.eventToPromise('close', configureDialog);
 
-    const waitForClose = test_util.eventToPromise('close', configureDialog);
+          closeButton.click();
+          Polymer.dom.flush();
 
-    closeButton.click();
-    Polymer.dom.flush();
-
-    return waitForClose.then(() => {
-      dialog = page.$$('settings-cups-add-printer-dialog');
-      assertFalse(dialog.showConfiguringDialog_);
-    });
+          return waitForClose.then(() => {
+            dialog = page.$$('settings-cups-add-printer-dialog');
+            assertFalse(dialog.showConfiguringDialog_);
+          });
+        });
   });
 
   /**

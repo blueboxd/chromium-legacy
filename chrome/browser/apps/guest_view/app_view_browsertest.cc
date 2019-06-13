@@ -19,6 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -75,6 +76,7 @@ class RenderProcessHostObserverForExit
   content::RenderProcessHost* observed_host_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   base::TerminationStatus status_;
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostObserverForExit);
 };

@@ -94,10 +94,10 @@ interface DisplayClient {
   [EnableIf=use_x11]
   DidCompleteSwapWithNewSize(gfx.mojom.Size size);
 
-  // Notifies that context creation failed. On Android we can't fall back to
-  // SW in these cases, so we need to handle this specifically.
+  // Notifies the client of the result of context creation attempt. On Android we can't
+  // fall back to SW in failure cases, so we need to handle this specifically.
   [EnableIf=is_android]
-  OnFatalOrSurfaceContextCreationFailure(gpu.mojom.ContextResult result);
+  OnContextCreationResult(gpu.mojom.ContextResult result);
 
   [EnableIf=is_android]
   SetPreferredRefreshRate(float refresh_rate);

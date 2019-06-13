@@ -286,6 +286,16 @@ struct ASH_PUBLIC_EXPORT AuthDisabledData {
   base::TimeDelta device_used_time;
 };
 
+// Possible reasons why the parent access code is required. This corresponds to
+// actions that children can't perform on a Chromebook, but their parents can on
+// their behalf.
+enum class ParentAccessRequestReason {
+  // Unlock a Chromebook that is locked due to a Time Limit policy.
+  kUnlockTimeLimits,
+  // Change time or timezone of the Chromebook.
+  kChangeTime,
+};
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_LOGIN_TYPES_H_

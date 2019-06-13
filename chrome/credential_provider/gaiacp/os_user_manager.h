@@ -77,6 +77,9 @@ class [[clang::lto_visibility_public]] OSUserManager {
                                 DWORD username_size, wchar_t* domain,
                                 DWORD domain_size);
 
+  // Verify if a user with provided sid is domain joined.
+  virtual bool IsUserDomainJoined(const base::string16& sid);
+
   // Removes the user from the machine.
   virtual HRESULT RemoveUser(const wchar_t* username, const wchar_t* password);
 

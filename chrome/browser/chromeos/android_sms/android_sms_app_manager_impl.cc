@@ -232,8 +232,9 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
                   << "Launching Messages PWA.";
   pwa_delegate_->OpenApp(AppLaunchParams(
       profile_,
-      setup_controller_->GetPwa(
-          GetAndroidMessagesURL(true /* use_install_url */, *domain)),
+      setup_controller_
+          ->GetPwa(GetAndroidMessagesURL(true /* use_install_url */, *domain))
+          ->id(),
       extensions::LAUNCH_CONTAINER_WINDOW, WindowOpenDisposition::NEW_WINDOW,
       extensions::SOURCE_CHROME_INTERNAL));
 }

@@ -130,8 +130,7 @@ MessageType GetStatusLabelsImpl(
   }
 
   // Then check for an auth error.
-  if (auth_error.state() != GoogleServiceAuthError::NONE &&
-      auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
+  if (auth_error.state() != GoogleServiceAuthError::NONE) {
     GetStatusForAuthError(auth_error, status_label, link_label, action_type);
     return SYNC_ERROR;
   }

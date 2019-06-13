@@ -424,7 +424,7 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
   content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
-  AppLaunchParams params(profile(), app, LAUNCH_CONTAINER_NONE,
+  AppLaunchParams params(profile(), app->id(), LAUNCH_CONTAINER_NONE,
                          WindowOpenDisposition::NEW_WINDOW, SOURCE_TEST);
   params.command_line = *base::CommandLine::ForCurrentProcess();
   OpenApplication(params);

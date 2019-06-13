@@ -85,6 +85,7 @@ class FrameTreeNode;
 class InterstitialPage;
 class NavigationHandle;
 class NavigationHandleImpl;
+class RenderFrameMetadataProviderImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContents;
@@ -1115,7 +1116,7 @@ class RenderFrameSubmissionObserver
     : public RenderFrameMetadataProvider::Observer {
  public:
   explicit RenderFrameSubmissionObserver(
-      RenderFrameMetadataProvider* render_frame_metadata_provider);
+      RenderFrameMetadataProviderImpl* render_frame_metadata_provider);
   explicit RenderFrameSubmissionObserver(FrameTreeNode* node);
   explicit RenderFrameSubmissionObserver(WebContents* web_contents);
   ~RenderFrameSubmissionObserver() override;
@@ -1173,7 +1174,7 @@ class RenderFrameSubmissionObserver
   // OnRenderFrameMetadataChangedAfterActivation.
   bool break_on_any_frame_ = false;
 
-  RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
+  RenderFrameMetadataProviderImpl* render_frame_metadata_provider_ = nullptr;
   base::OnceClosure quit_closure_;
   int render_frame_count_ = 0;
 };

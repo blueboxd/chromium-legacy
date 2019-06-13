@@ -556,16 +556,16 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
 
   // Now check author rules, beginning first with presentational attributes
   // mapped from HTML.
-  if (state.GetElement()->IsStyledElement()) {
+  if (state.GetElement().IsStyledElement()) {
     collector.AddElementStyleProperties(
-        state.GetElement()->PresentationAttributeStyle());
+        state.GetElement().PresentationAttributeStyle());
 
     // Now we check additional mapped declarations.
     // Tables and table cells share an additional mapped rule that must be
     // applied after all attributes, since their mapped style depends on the
     // values of multiple attributes.
     collector.AddElementStyleProperties(
-        state.GetElement()->AdditionalPresentationAttributeStyle());
+        state.GetElement().AdditionalPresentationAttributeStyle());
 
     if (auto* html_element = DynamicTo<HTMLElement>(state.GetElement())) {
       bool is_auto;
@@ -580,18 +580,18 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
     }
   }
 
-  MatchAuthorRules(*state.GetElement(), collector);
+  MatchAuthorRules(state.GetElement(), collector);
 
-  if (state.GetElement()->IsStyledElement()) {
+  if (state.GetElement().IsStyledElement()) {
     // For Shadow DOM V1, inline style is already collected in
     // matchScopedRules().
     if (GetDocument().GetShadowCascadeOrder() ==
             ShadowCascadeOrder::kShadowCascadeV0 &&
-        state.GetElement()->InlineStyle()) {
+        state.GetElement().InlineStyle()) {
       // Inline style is immutable as long as there is no CSSOM wrapper.
       bool is_inline_style_cacheable =
-          !state.GetElement()->InlineStyle()->IsMutable();
-      collector.AddElementStyleProperties(state.GetElement()->InlineStyle(),
+          !state.GetElement().InlineStyle()->IsMutable();
+      collector.AddElementStyleProperties(state.GetElement().InlineStyle(),
                                           is_inline_style_cacheable);
     }
 
@@ -861,7 +861,7 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     const CSSValue* value) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  StyleResolverState state(element.GetDocument(), &element,
+  StyleResolverState state(element.GetDocument(), element,
                            nullptr /* pseudo_element */, parent_style,
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
@@ -916,7 +916,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
     MatchUARules(collector);
     MatchUserRules(collector);
-    MatchAuthorRules(*state.GetElement(), collector);
+    MatchAuthorRules(state.GetElement(), collector);
     collector.FinishAddingAuthorRulesForTreeScope();
 
     if (tracker_)
@@ -965,7 +965,7 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
     return nullptr;
 
   StyleResolverState state(
-      GetDocument(), element,
+      GetDocument(), *element,
       element->GetPseudoElement(pseudo_style_request.pseudo_id), parent_style,
       parent_layout_object_style);
   if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
@@ -985,7 +985,10 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
 scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   scoped_refptr<const ComputedStyle> initial_style =
       InitialStyleForElement(GetDocument());
-  StyleResolverState state(GetDocument(), GetDocument().documentElement(),
+  if (!GetDocument().documentElement())
+    return initial_style;
+
+  StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
                            nullptr /* pseudo_element */, initial_style.get(),
                            initial_style.get());
 
@@ -1082,7 +1085,7 @@ void StyleResolver::AddMatchedRulesToTracker(
 StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
                                                    unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), element,
+  StyleResolverState state(GetDocument(), *element,
                            nullptr /* pseudo_element */);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
@@ -1097,7 +1100,7 @@ CSSRuleList* StyleResolver::PseudoCSSRulesForElement(
     PseudoId pseudo_id,
     unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), element,
+  StyleResolverState state(GetDocument(), *element,
                            nullptr /* pseudo_element */);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
@@ -1137,14 +1140,13 @@ void StyleResolver::CollectPseudoRulesForElement(
 bool StyleResolver::ApplyAnimatedStandardProperties(
     StyleResolverState& state,
     const Element* animating_element) {
-  Element* element = state.GetElement();
-  DCHECK(element);
+  Element& element = state.GetElement();
 
   // The animating element may be this element, the pseudo element we are
   // resolving style for, or null if we are resolving style for a pseudo
   // element which is not represented by a PseudoElement like scrollbar pseudo
   // elements.
-  DCHECK(animating_element == element || !animating_element ||
+  DCHECK(animating_element == &element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
   if (state.Style()->Animations() ||
@@ -1156,14 +1158,14 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   }
 
   CSSAnimations::CalculateCompositorAnimationUpdate(
-      state.AnimationUpdate(), animating_element, *element, *state.Style(),
+      state.AnimationUpdate(), animating_element, element, *state.Style(),
       state.ParentStyle(), WasViewportResized());
   CSSAnimations::CalculateTransitionUpdate(
       state.AnimationUpdate(), CSSAnimations::PropertyPass::kStandard,
       animating_element, *state.Style());
 
   CSSAnimations::SnapshotCompositorKeyframes(
-      *element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
+      element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
 
   if (state.AnimationUpdate().IsEmpty())
     return false;
@@ -1520,6 +1522,12 @@ inline void ApplyProperty<kResolveVariables>(
   StyleBuilder::ApplyProperty(ref.GetProperty(), state, reference.Value());
 }
 
+static bool WillApplyToVisitedLink(StyleResolverState& state,
+                                   const CSSProperty& property) {
+  return state.ApplyPropertyToVisitedLinkStyle() &&
+         (property.IsValidForVisitedLink() || property.GetVisitedProperty());
+}
+
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyProperties(StyleResolverState& state,
@@ -1563,8 +1571,7 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
       // inherited properties to be cached.
       DCHECK(!current.Value().IsInheritedValue() ||
              (!state.ApplyPropertyToRegularStyle() &&
-              (!state.ApplyPropertyToVisitedLinkStyle() ||
-               !current.Property().IsValidForVisitedLink())));
+              !WillApplyToVisitedLink(state, current.Property())));
       continue;
     }
 
@@ -1642,8 +1649,7 @@ void StyleResolver::ClearResizedForViewportUnits() {
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     StyleResolverState& state,
     const MatchResult& match_result) {
-  const Element* element = state.GetElement();
-  DCHECK(element);
+  const Element& element = state.GetElement();
 
   unsigned cache_hash = match_result.IsCacheable()
                             ? ComputeMatchedPropertiesHash(
@@ -1669,8 +1675,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
         *cached_matched_properties->computed_style);
     if (state.ParentStyle()->InheritedDataShared(
             *cached_matched_properties->parent_computed_style) &&
-        !IsAtShadowBoundary(element) &&
-        (!state.DistributedToV0InsertionPoint() || element->AssignedSlot() ||
+        !IsAtShadowBoundary(&element) &&
+        (!state.DistributedToV0InsertionPoint() || element.AssignedSlot() ||
          state.Style()->UserModify() == EUserModify::kReadOnly)) {
       INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                     matched_property_cache_inherited_hit, 1);
@@ -1742,7 +1748,7 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state,
   DCHECK(!state.IsAnimationInterpolationMapReady());
 
   CSSAnimations::CalculateAnimationUpdate(
-      state.AnimationUpdate(), animating_element, *state.GetElement(),
+      state.AnimationUpdate(), animating_element, state.GetElement(),
       *state.Style(), state.ParentStyle(), this);
   CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
                                            CSSAnimations::PropertyPass::kCustom,
@@ -1977,7 +1983,8 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
 // Font properties are also handled by FontStyleResolver outside the main
 // thread. If you add/remove properties here, make sure they are also properly
 // handled by FontStyleResolver.
-void StyleResolver::ComputeFont(ComputedStyle* style,
+void StyleResolver::ComputeFont(Element& element,
+                                ComputedStyle* style,
                                 const CSSPropertyValueSet& property_set) {
   static const CSSProperty* properties[7] = {
       &GetCSSPropertyFontSize(),        &GetCSSPropertyFontFamily(),
@@ -1987,8 +1994,8 @@ void StyleResolver::ComputeFont(ComputedStyle* style,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(GetDocument(), nullptr /* element */,
-                           nullptr /* pseudo_element */, style, style);
+  StyleResolverState state(GetDocument(), element, nullptr /* pseudo_element */,
+                           style, style);
   state.SetStyle(style);
 
   for (const CSSProperty* property : properties) {

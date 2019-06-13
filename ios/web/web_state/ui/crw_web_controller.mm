@@ -106,6 +106,7 @@
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_web_request_controller.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
@@ -160,19 +161,6 @@ NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
-// Values for the histogram that counts slow/fast back/forward navigations.
-enum class BackForwardNavigationType {
-  // Fast back navigation through WKWebView back-forward list.
-  FAST_BACK = 0,
-  // Slow back navigation when back-forward list navigation is not possible.
-  SLOW_BACK = 1,
-  // Fast forward navigation through WKWebView back-forward list.
-  FAST_FORWARD = 2,
-  // Slow forward navigation when back-forward list navigation is not possible.
-  SLOW_FORWARD = 3,
-  BACK_FORWARD_NAVIGATION_TYPE_COUNT
-};
-
 // URLs that are fed into UIWebView as history push/replace get escaped,
 // potentially changing their format. Code that attempts to determine whether a
 // URL hasn't changed can be confused by those differences though, so method
@@ -195,6 +183,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                                 CRWSSLStatusUpdaterDelegate,
                                 CRWWebControllerContainerViewDelegate,
                                 CRWWebViewNavigationObserverDelegate,
+                                CRWWebRequestControllerDelegate,
                                 CRWWebViewScrollViewProxyObserver,
                                 CRWWKNavigationHandlerDelegate,
                                 CRWWKUIHandlerDelegate,
@@ -277,6 +266,10 @@ GURL URLEscapedForHistory(const GURL& url) {
 // changed.
 @property(weak, nonatomic, readonly) NSDictionary* WKWebViewObservers;
 
+// Url request controller.
+@property(nonatomic, strong, readonly)
+    CRWWebRequestController* requestController;
+
 // The web view's view of the current URL. During page transitions
 // this may not be the same as the session history's view of the current URL.
 // This method can change the state of the CRWWebController, as it will display
@@ -315,20 +308,12 @@ GURL URLEscapedForHistory(const GURL& url) {
 // appropriate NavigationItem getters.
 // Returns the navigation item for the current page.
 @property(nonatomic, readonly) web::NavigationItemImpl* currentNavItem;
-// Returns the current transition type.
-@property(nonatomic, readonly) ui::PageTransition currentTransition;
 // Returns the referrer for current navigation item. May be empty.
 @property(nonatomic, readonly) web::Referrer currentNavItemReferrer;
-// The HTTP headers associated with the current navigation item. These are nil
-// unless the request was a POST.
-@property(weak, nonatomic, readonly) NSDictionary* currentHTTPHeaders;
 
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
-
-// Returns a NSMutableURLRequest that represents the current NavigationItem.
-- (NSMutableURLRequest*)requestForCurrentNavigationItem;
 
 // Called following navigation completion to generate final navigation lifecycle
 // events. Navigation is considered complete when the document has finished
@@ -390,24 +375,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
-// Returns YES if the given WKBackForwardListItem is valid to use for
-// navigation.
-- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
-// Loads request for the URL of the current navigation item. Subclasses may
-// choose to build a new NSURLRequest and call |loadRequest| on the underlying
-// web view, or use native web view navigation where possible (for example,
-// going back and forward through the history stack).
-- (void)loadRequestForCurrentNavigationItem;
-// Reports Navigation.IOSWKWebViewSlowFastBackForward UMA. No-op if pending
-// navigation is not back forward navigation.
-- (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast;
-
 // Clears WebUI, if one exists.
 - (void)clearWebUI;
 
@@ -433,6 +406,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // Content area is lazily instantiated.
     _defaultURL = GURL(url::kAboutBlankURL);
     _jsInjector = [[CRWJSInjector alloc] initWithDelegate:self];
+    _requestController =
+        [[CRWWebRequestController alloc] initWithWebState:_webStateImpl];
+    _requestController.delegate = self;
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
     [[_webViewProxy scrollViewProxy] addObserver:self];
     _pendingLoadCompleteActions = [[NSMutableArray alloc] init];
@@ -453,6 +429,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] init];
     _navigationHandler.delegate = self;
+    _requestController.navigationHandler = _navigationHandler;
 
     _UIHandler = [[CRWWKUIHandler alloc] init];
     _UIHandler.delegate = self;
@@ -690,21 +667,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              : nullptr;
 }
 
-- (ui::PageTransition)currentTransition {
-  if (self.currentNavItem)
-    return self.currentNavItem->GetTransitionType();
-  else
-    return ui::PageTransitionFromInt(0);
-}
-
 - (web::Referrer)currentNavItemReferrer {
   web::NavigationItem* currentItem = self.currentNavItem;
   return currentItem ? currentItem->GetReferrer() : web::Referrer();
-}
-
-- (NSDictionary*)currentHTTPHeaders {
-  web::NavigationItem* currentItem = self.currentNavItem;
-  return currentItem ? currentItem->GetHttpRequestHeaders() : nil;
 }
 
 #pragma mark - ** Public Methods **
@@ -1296,15 +1261,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
-- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
-  // The current back-forward list item MUST be in the WKWebView's back-forward
-  // list to be valid.
-  WKBackForwardList* list = self.webView.backForwardList;
-  return list.currentItem == item ||
-         [list.forwardList indexOfObject:item] != NSNotFound ||
-         [list.backList indexOfObject:item] != NSNotFound;
-}
-
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
@@ -1491,253 +1447,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   [self ensureWebViewCreated];
 
-  [self loadRequestForCurrentNavigationItem];
-}
-
-- (void)loadRequestForCurrentNavigationItem {
-  DCHECK(self.webView);
-  DCHECK(self.currentNavItem);
-  // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
-  // that has a negative dimension for a size, rendering issues occur that
-  // manifest in erroneous scrolling and tap handling (crbug.com/574996,
-  // crbug.com/577793).
-  DCHECK_GT(CGRectGetWidth(self.webView.frame), 0.0);
-  DCHECK_GT(CGRectGetHeight(self.webView.frame), 0.0);
-
-  // If the current item uses a different user agent from that is currently used
-  // in the web view, update |customUserAgent| property, which will be used by
-  // the next request sent by this web view.
-  web::UserAgentType itemUserAgentType =
-      self.currentNavItem->GetUserAgentType();
-  if (itemUserAgentType != web::UserAgentType::NONE) {
-    NSString* userAgentString = base::SysUTF8ToNSString(
-        web::GetWebClient()->GetUserAgent(itemUserAgentType));
-    if (![self.webView.customUserAgent isEqualToString:userAgentString]) {
-      self.webView.customUserAgent = userAgentString;
-    }
-  }
-
   web::WKBackForwardListItemHolder* holder =
       self.navigationHandler.currentBackForwardListItemHolder;
-  BOOL repostedForm =
-      [holder->http_method() isEqual:@"POST"] &&
-      (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
-       holder->navigation_type() == WKNavigationTypeFormSubmitted);
-  web::NavigationItemImpl* currentItem = self.currentNavItem;
-  NSData* POSTData = currentItem->GetPostData();
-  NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
-
-  BOOL sameDocumentNavigation = currentItem->IsCreatedFromPushState() ||
-                                currentItem->IsCreatedFromHashChange();
-
-  if (holder->back_forward_list_item()) {
-    // Check if holder's WKBackForwardListItem still correctly represents
-    // navigation item. With LegacyNavigationManager, replaceState operation
-    // creates a new navigation item, leaving the old item committed. That
-    // old committed item will be associated with WKBackForwardListItem whose
-    // state was replaced. So old item won't have correct WKBackForwardListItem.
-    if (net::GURLWithNSURL(holder->back_forward_list_item().URL) !=
-        currentItem->GetURL()) {
-      // The state was replaced for this item. The item should not be a part of
-      // committed items, but it's too late to remove the item. Cleaup
-      // WKBackForwardListItem and mark item with "state replaced" flag.
-      currentItem->SetHasStateBeenReplaced(true);
-      holder->set_back_forward_list_item(nil);
-    }
-  }
-
-  // If the request has POST data and is not a repost form, configure the POST
-  // request.
-  if (POSTData.length && !repostedForm) {
-    [request setHTTPMethod:@"POST"];
-    [request setHTTPBody:POSTData];
-    [request setAllHTTPHeaderFields:self.currentHTTPHeaders];
-  }
-
-  ProceduralBlock defaultNavigationBlock = ^{
-    web::NavigationItem* item = self.currentNavItem;
-    GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
-    GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
-    // Set |item| to nullptr here to avoid any use-after-free issues, as it can
-    // be cleared by the call to -registerLoadRequestForURL below.
-    item = nullptr;
-    GURL contextURL = IsPlaceholderUrl(navigationURL)
-                          ? ExtractUrlFromPlaceholderUrl(navigationURL)
-                          : navigationURL;
-    std::unique_ptr<web::NavigationContextImpl> navigationContext =
-        [self registerLoadRequestForURL:contextURL
-                               referrer:self.currentNavItemReferrer
-                             transition:self.currentTransition
-                 sameDocumentNavigation:sameDocumentNavigation
-                         hasUserGesture:YES
-                      rendererInitiated:NO
-                  placeholderNavigation:IsPlaceholderUrl(navigationURL)];
-
-    // Disable |allowsBackForwardNavigationGestures| during restore. Otherwise,
-    // WebKit will trigger a snapshot for each (blank) page, and quickly
-    // overload system memory.  Also disables the scroll proxy during session
-    // restoration.
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-        self.navigationManagerImpl->IsRestoreSessionInProgress()) {
-      _webView.allowsBackForwardNavigationGestures = NO;
-      if (base::FeatureList::IsEnabled(
-              web::features::kDisconnectScrollProxyDuringRestore))
-        [_containerView disconnectScrollProxy];
-    }
-
-    WKNavigation* navigation = nil;
-    if (navigationURL.SchemeIsFile() &&
-        web::GetWebClient()->IsAppSpecificURL(virtualURL)) {
-      // file:// URL navigations are allowed for app-specific URLs, which
-      // already have elevated privileges.
-      NSURL* navigationNSURL = net::NSURLWithGURL(navigationURL);
-      navigation = [self.webView loadFileURL:navigationNSURL
-                     allowingReadAccessToURL:navigationNSURL];
-    } else {
-      navigation = [self.webView loadRequest:request];
-    }
-    [self.navigationHandler.navigationStates
-             setState:web::WKNavigationState::REQUESTED
-        forNavigation:navigation];
-    [self.navigationHandler.navigationStates
-           setContext:std::move(navigationContext)
-        forNavigation:navigation];
-    [self reportBackForwardNavigationTypeForFastNavigation:NO];
-  };
-
-  // When navigating via WKBackForwardListItem to pages created or updated by
-  // calls to pushState() and replaceState(), sometimes web_bundle.js is not
-  // injected correctly.  This means that calling window.history navigation
-  // functions will invoke WKWebView's non-overridden implementations, causing a
-  // mismatch between the WKBackForwardList and NavigationManager.
-  // TODO(crbug.com/659816): Figure out how to prevent web_bundle.js injection
-  // flake.
-  if (currentItem->HasStateBeenReplaced() ||
-      currentItem->IsCreatedFromPushState()) {
-    defaultNavigationBlock();
-    return;
-  }
-
-  // If there is no corresponding WKBackForwardListItem, or the item is not in
-  // the current WKWebView's back-forward list, navigating using WKWebView API
-  // is not possible. In this case, fall back to the default navigation
-  // mechanism.
-  if (!holder->back_forward_list_item() ||
-      ![self isBackForwardListItemValid:holder->back_forward_list_item()]) {
-    defaultNavigationBlock();
-    return;
-  }
-
-  ProceduralBlock webViewNavigationBlock = ^{
-    // If the current navigation URL is the same as the URL of the visible
-    // page, that means the user requested a reload. |goToBackForwardListItem|
-    // will be a no-op when it is passed the current back forward list item,
-    // so |reload| must be explicitly called.
-    web::NavigationItem* item = self.currentNavItem;
-    GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
-    std::unique_ptr<web::NavigationContextImpl> navigationContext =
-        [self registerLoadRequestForURL:navigationURL
-                               referrer:self.currentNavItemReferrer
-                             transition:self.currentTransition
-                 sameDocumentNavigation:sameDocumentNavigation
-                         hasUserGesture:YES
-                      rendererInitiated:NO
-                  placeholderNavigation:NO];
-    WKNavigation* navigation = nil;
-    if (navigationURL == net::GURLWithNSURL(self.webView.URL)) {
-      navigation = [self.webView reload];
-    } else {
-      // |didCommitNavigation:| may not be called for fast navigation, so update
-      // the navigation type now as it is already known.
-      navigationContext->SetWKNavigationType(WKNavigationTypeBackForward);
-      navigationContext->SetMimeType(holder->mime_type());
-      holder->set_navigation_type(WKNavigationTypeBackForward);
-      navigation = [self.webView
-          goToBackForwardListItem:holder->back_forward_list_item()];
-      [self reportBackForwardNavigationTypeForFastNavigation:YES];
-    }
-    [self.navigationHandler.navigationStates
-             setState:web::WKNavigationState::REQUESTED
-        forNavigation:navigation];
-    [self.navigationHandler.navigationStates
-           setContext:std::move(navigationContext)
-        forNavigation:navigation];
-  };
-
-  // If the request is not a form submission or resubmission, or the user
-  // doesn't need to confirm the load, then continue right away.
-
-  if (!repostedForm || currentItem->ShouldSkipRepostFormConfirmation()) {
-    webViewNavigationBlock();
-    return;
-  }
-
-  // If the request is form submission or resubmission, then prompt the
-  // user before proceeding.
-  DCHECK(repostedForm);
-  DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
-  self.webStateImpl->ShowRepostFormWarningDialog(
-      base::BindOnce(^(bool shouldContinue) {
-        if (_isBeingDestroyed)
-          return;
-
-        if (shouldContinue)
-          webViewNavigationBlock();
-        else
-          [self stopLoading];
-      }));
-}
-
-- (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast {
-  NavigationManager* navigationManager = self.navigationManagerImpl;
-  int pendingIndex = navigationManager->GetPendingItemIndex();
-  if (pendingIndex == -1) {
-    // Pending navigation is not a back forward navigation.
-    return;
-  }
-
-  BOOL isBack = pendingIndex < navigationManager->GetLastCommittedItemIndex();
-  BackForwardNavigationType type = BackForwardNavigationType::FAST_BACK;
-  if (isBack) {
-    type = isFast ? BackForwardNavigationType::FAST_BACK
-                  : BackForwardNavigationType::SLOW_BACK;
-  } else {
-    type = isFast ? BackForwardNavigationType::FAST_FORWARD
-                  : BackForwardNavigationType::SLOW_FORWARD;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Navigation.IOSWKWebViewSlowFastBackForward", type,
-      BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
-}
-
-- (NSMutableURLRequest*)requestForCurrentNavigationItem {
-  web::NavigationItem* item = self.currentNavItem;
-  const GURL currentNavigationURL = item ? item->GetURL() : GURL::EmptyGURL();
-  NSMutableURLRequest* request = [NSMutableURLRequest
-      requestWithURL:net::NSURLWithGURL(currentNavigationURL)];
-  const web::Referrer referrer(self.currentNavItemReferrer);
-  if (referrer.url.is_valid()) {
-    std::string referrerValue =
-        web::ReferrerHeaderValueForNavigation(currentNavigationURL, referrer);
-    if (!referrerValue.empty()) {
-      [request setValue:base::SysUTF8ToNSString(referrerValue)
-          forHTTPHeaderField:kReferrerHeaderName];
-    }
-  }
-
-  // If there are headers in the current session entry add them to |request|.
-  // Headers that would overwrite fields already present in |request| are
-  // skipped.
-  NSDictionary* headers = self.currentHTTPHeaders;
-  for (NSString* headerName in headers) {
-    if (![request valueForHTTPHeaderField:headerName]) {
-      [request setValue:[headers objectForKey:headerName]
-          forHTTPHeaderField:headerName];
-    }
-  }
-
-  return request;
+  [_requestController loadRequestForCurrentNavigationItemInWebView:self.webView
+                                                        itemHolder:holder];
 }
 
 #pragma mark - End of loading
@@ -3467,6 +3180,49 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (CRWWKNavigationHandler*)navigationHandler {
   [self ensureWebViewCreated];
   return self.webView;
+}
+
+#pragma mark - CRWWebRequestControllerDelegate
+
+- (BOOL)webRequestControllerIsBeingDestroyed:
+    (CRWWebRequestController*)requestController {
+  return _isBeingDestroyed;
+}
+
+- (void)webRequestControllerStopLoading:
+    (CRWWebRequestController*)requestController {
+  [self stopLoading];
+}
+
+- (std::unique_ptr<web::NavigationContextImpl>)
+         webRequestController:(CRWWebRequestController*)requestController
+    registerLoadRequestForURL:(const GURL&)requestURL
+                     referrer:(const web::Referrer&)referrer
+                   transition:(ui::PageTransition)transition
+       sameDocumentNavigation:(BOOL)sameDocumentNavigation
+               hasUserGesture:(BOOL)hasUserGesture
+            rendererInitiated:(BOOL)rendererInitiated
+        placeholderNavigation:(BOOL)placeholderNavigation {
+  return [self registerLoadRequestForURL:requestURL
+                                referrer:referrer
+                              transition:transition
+                  sameDocumentNavigation:sameDocumentNavigation
+                          hasUserGesture:hasUserGesture
+                       rendererInitiated:rendererInitiated
+                   placeholderNavigation:placeholderNavigation];
+}
+
+- (void)webRequestControllerDisconnectScrollViewProxy:
+    (CRWWebRequestController*)requestController {
+  // Disable |allowsBackForwardNavigationGestures| during restore. Otherwise,
+  // WebKit will trigger a snapshot for each (blank) page, and quickly
+  // overload system memory.  Also disables the scroll proxy during session
+  // restoration.
+  self.webView.allowsBackForwardNavigationGestures = NO;
+  if (base::FeatureList::IsEnabled(
+          web::features::kDisconnectScrollProxyDuringRestore)) {
+    [_containerView disconnectScrollProxy];
+  }
 }
 
 #pragma mark - Testing-Only Methods

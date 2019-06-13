@@ -455,8 +455,8 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
 
 }  // namespace
 
-Optional<PendingTask> SequenceManagerImpl::TakeTask() {
-  Optional<PendingTask> task = TakeTaskImpl();
+Optional<Task> SequenceManagerImpl::TakeTask() {
+  Optional<Task> task = TakeTaskImpl();
   if (!task)
     return base::nullopt;
 
@@ -520,7 +520,7 @@ void SequenceManagerImpl::LogTaskDebugInfo(
 }
 #endif  // DCHECK_IS_ON() && !defined(OS_NACL)
 
-Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
+Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);

@@ -1,5 +1,7 @@
 This is a testharness.js-based test.
 FAIL measure entries' detail and start/end are customizable Failed to execute 'measure' on 'Performance': The mark '[object Object]' does not exist.
-PASS measure should throw exception when passing option object and end at the same time
+FAIL measure should throw a TypeError when passed an invalid argument combination assert_throws: measure should throw a TypeError when passed an options object and an end time function "function() {
+      self.performance.measure("wrongUsage1", {}, 12);
+    }" threw object "SyntaxError: Failed to execute 'measure' on 'Performance': The mark '[object Object]' does not exist." ("SyntaxError") expected object "TypeError" ("TypeError")
 Harness: the test ran to completion.
 

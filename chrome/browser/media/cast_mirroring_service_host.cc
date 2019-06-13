@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -41,6 +42,9 @@
 using content::BrowserThread;
 
 namespace mirroring {
+
+// Default resolution constraint.
+constexpr gfx::Size kMaxResolution(1920, 1080);
 
 namespace {
 
@@ -99,35 +103,15 @@ content::DesktopMediaID BuildMediaIdForWebContents(
   return media_id;
 }
 
-// Clamped resolution constraint to the screen size.
-gfx::Size GetCaptureResolutionConstraint() {
-  // Default resolution constraint.
-  constexpr gfx::Size kMaxResolution(1920, 1080);
+// Returns the size of the primary display in pixels, or base::nullopt if it
+// cannot be determined.
+base::Optional<gfx::Size> GetScreenResolution() {
   display::Screen* screen = display::Screen::GetScreen();
   if (!screen) {
     DVLOG(1) << "Cannot get the Screen object.";
-    return kMaxResolution;
+    return base::nullopt;
   }
-  const gfx::Size screen_resolution = screen->GetPrimaryDisplay().size();
-  const int width_step = 160;
-  const int height_step = 90;
-  int clamped_width = 0;
-  int clamped_height = 0;
-  if (kMaxResolution.height() * screen_resolution.width() <
-      kMaxResolution.width() * screen_resolution.height()) {
-    clamped_width = std::min(kMaxResolution.width(), screen_resolution.width());
-    clamped_width = clamped_width - (clamped_width % width_step);
-    clamped_height = clamped_width * height_step / width_step;
-  } else {
-    clamped_height =
-        std::min(kMaxResolution.height(), screen_resolution.height());
-    clamped_height = clamped_height - (clamped_height % height_step);
-    clamped_width = clamped_height * width_step / height_step;
-  }
-
-  clamped_width = std::max(clamped_width, width_step);
-  clamped_height = std::max(clamped_height, height_step);
-  return gfx::Size(clamped_width, clamped_height);
+  return screen->GetPrimaryDisplay().GetSizeInPixel();
 }
 
 }  // namespace
@@ -214,6 +198,45 @@ void CastMirroringServiceHost::Start(
       std::move(inbound_channel));
 
   ShowCaptureIndicator();
+}
+
+// static
+gfx::Size CastMirroringServiceHost::GetCaptureResolutionConstraint() {
+  base::Optional<gfx::Size> screen_resolution = GetScreenResolution();
+  if (screen_resolution) {
+    return GetClampedResolution(screen_resolution.value());
+  } else {
+    return kMaxResolution;
+  }
+}
+
+// static
+gfx::Size CastMirroringServiceHost::GetClampedResolution(
+    gfx::Size screen_resolution) {
+  // Use landscape mode dimensions for screens in portrait mode.
+  if (screen_resolution.height() > screen_resolution.width()) {
+    screen_resolution =
+        gfx::Size(screen_resolution.height(), screen_resolution.width());
+  }
+  const int width_step = 160;
+  const int height_step = 90;
+  int clamped_width = 0;
+  int clamped_height = 0;
+  if (kMaxResolution.height() * screen_resolution.width() <
+      kMaxResolution.width() * screen_resolution.height()) {
+    clamped_width = std::min(kMaxResolution.width(), screen_resolution.width());
+    clamped_width = clamped_width - (clamped_width % width_step);
+    clamped_height = clamped_width * height_step / width_step;
+  } else {
+    clamped_height =
+        std::min(kMaxResolution.height(), screen_resolution.height());
+    clamped_height = clamped_height - (clamped_height % height_step);
+    clamped_width = clamped_height * width_step / height_step;
+  }
+
+  clamped_width = std::max(clamped_width, width_step);
+  clamped_height = std::max(clamped_height, height_step);
+  return gfx::Size(clamped_width, clamped_height);
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(

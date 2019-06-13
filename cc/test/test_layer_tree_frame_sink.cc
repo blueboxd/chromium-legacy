@@ -230,9 +230,10 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void TestLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
-  for (const auto& pair : feedbacks)
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+    const viz::FrameTimingDetailsMap& timing_details) {
+  for (const auto& pair : timing_details)
+    client_->DidPresentCompositorFrame(pair.first,
+                                       pair.second.presentation_feedback);
   external_begin_frame_source_.OnBeginFrame(args);
 }
 

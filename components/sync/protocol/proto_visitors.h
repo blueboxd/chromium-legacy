@@ -678,7 +678,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PersistedEntityData& proto) {
-  VISIT(non_unique_name);
+  VISIT(name);
   VISIT(specifics);
 }
 

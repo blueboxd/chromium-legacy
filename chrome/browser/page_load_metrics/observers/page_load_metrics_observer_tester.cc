@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -192,25 +193,23 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
         << "Main frame resources must have a GlobalRequestID.";
   }
 
-  // For consistency with browser-side navigation, we provide a null RFH for
-  // main frame and sub frame resources.
-  content::RenderFrameHost* render_frame_host_or_null =
-      (info.resource_type == content::ResourceType::kMainFrame ||
-       info.resource_type == content::ResourceType::kSubFrame)
-          ? nullptr
-          : web_contents()->GetMainFrame();
+  content::mojom::ResourceLoadInfo resource_load_info;
+  resource_load_info.url = info.url;
+  resource_load_info.was_cached = info.was_cached;
+  resource_load_info.raw_body_bytes = info.raw_body_bytes;
+  resource_load_info.total_received_bytes =
+      info.original_network_content_length;
+  resource_load_info.resource_type = info.resource_type;
+  resource_load_info.net_error = info.net_error;
+  resource_load_info.network_info = content::mojom::CommonNetworkInfo::New();
+  resource_load_info.network_info->remote_endpoint = info.remote_endpoint;
+  if (info.load_timing_info)
+    resource_load_info.load_timing_info = *info.load_timing_info;
+  else
+    resource_load_info.load_timing_info.request_start = base::TimeTicks::Now();
 
-  observer_->OnRequestComplete(
-      info.url, info.remote_endpoint, info.frame_tree_node_id, request_id,
-      render_frame_host_or_null, info.resource_type, info.was_cached,
-      info.data_reduction_proxy_data
-          ? info.data_reduction_proxy_data->DeepCopy()
-          : nullptr,
-      info.raw_body_bytes, info.original_network_content_length,
-      base::TimeTicks::Now(), info.net_error,
-      info.load_timing_info
-          ? std::make_unique<net::LoadTimingInfo>(*info.load_timing_info)
-          : nullptr);
+  observer_->ResourceLoadComplete(web_contents()->GetMainFrame(), request_id,
+                                  resource_load_info);
 }
 
 void PageLoadMetricsObserverTester::SimulateFrameReceivedFirstUserActivation(

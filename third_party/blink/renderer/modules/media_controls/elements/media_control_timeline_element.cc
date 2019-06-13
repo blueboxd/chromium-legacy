@@ -218,7 +218,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   // Convert 6px into ratio respect to progress bar width since
   // current_position is range from 0 to 1
   double width = TrackWidth() / ZoomFactor();
-  if (width != 0 && current_position != 0) {
+  if (width != 0 && current_position != 0 && !MediaElement().ended()) {
     double offset = kThumbRadius / width;
     current_position += offset - (2 * offset * current_position);
   }

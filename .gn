@@ -276,7 +276,7 @@ check_targets = [
   "//extensions/common/*",
   "//extensions/components/javascript_dialog_extensions_client",
   "//extensions/components/native_app_window",
-  "//extensions/renderer:unit_tests",
+  "//extensions/renderer/*",
   "//extensions/shell/*",
   "//extensions/strings/*",
   "//fuchsia/*",
@@ -665,6 +665,8 @@ exec_script_whitelist =
       # with other repos. The entries in this list should be only for files
       # in the Chromium repo outside of //build.
       "//build_overrides/build.gni",
+
+      "//chrome/android/webapk/shell_apk/prepare_upload_dir/BUILD.gn",
 
       # TODO(dgn): Layer violation but breaks the build otherwise, see
       # https://crbug.com/474506.

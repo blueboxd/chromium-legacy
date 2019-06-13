@@ -182,9 +182,6 @@ int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();
 
-// The maximum number of page hints that should be loaded to memory.
-size_t GetMaxPageHintsInMemoryThreshhold();
-
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 

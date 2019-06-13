@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login/login_screen_test_api.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 
 #include <memory>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "base/run_loop.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
@@ -47,8 +47,6 @@ bool IsLoginShelfViewButtonShown(int button_view_id) {
 
 class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
  public:
-  using Callback = mojom::LoginScreenTestApi::WaitForUiUpdateCallback;
-
   // Returns instance owned by LoginShelfView. Installs instance of
   // ShelfTestUiUpdateDelegate when needed.
   static ShelfTestUiUpdateDelegate* Get(LoginShelfView* shelf) {
@@ -63,7 +61,7 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
   ShelfTestUiUpdateDelegate() = default;
   ~ShelfTestUiUpdateDelegate() override {
     for (PendingCallback& entry : heap_)
-      std::move(entry.callback).Run(false);
+      std::move(entry.callback).Run();
   }
 
   // Returns UI update count.
@@ -73,9 +71,9 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
   // |previous_update_count|. Note |callback| could be invoked synchronously
   // when the current ui update count is already greater than
   // |previous_update_count|.
-  void AddCallback(int64_t previous_update_count, Callback callback) {
+  void AddCallback(int64_t previous_update_count, base::OnceClosure callback) {
     if (previous_update_count < ui_update_count_) {
-      std::move(callback).Run(true);
+      std::move(callback).Run();
     } else {
       heap_.emplace_back(previous_update_count, std::move(callback));
       std::push_heap(heap_.begin(), heap_.end());
@@ -86,7 +84,7 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
   void OnUiUpdate() override {
     ++ui_update_count_;
     while (!heap_.empty() && heap_.front().old_count < ui_update_count_) {
-      std::move(heap_.front().callback).Run(true);
+      std::move(heap_.front().callback).Run();
       std::pop_heap(heap_.begin(), heap_.end());
       heap_.pop_back();
     }
@@ -94,7 +92,7 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
 
  private:
   struct PendingCallback {
-    PendingCallback(int64_t old_count, Callback callback)
+    PendingCallback(int64_t old_count, base::OnceClosure callback)
         : old_count(old_count), callback(std::move(callback)) {}
 
     bool operator<(const PendingCallback& right) const {
@@ -104,7 +102,7 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
     }
 
     int64_t old_count = 0;
-    Callback callback;
+    base::OnceClosure callback;
   };
 
   std::vector<PendingCallback> heap_;
@@ -115,61 +113,48 @@ class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
 };
 
 // static
-void LoginScreenTestApi::BindRequest(mojom::LoginScreenTestApiRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<LoginScreenTestApi>(),
-                          std::move(request));
+bool LoginScreenTestApi::IsLockShown() {
+  return LockScreen::HasInstance() && LockScreen::Get()->is_shown() &&
+         LockScreen::Get()->screen_type() == LockScreen::ScreenType::kLock;
 }
 
-LoginScreenTestApi::LoginScreenTestApi() = default;
-
-LoginScreenTestApi::~LoginScreenTestApi() = default;
-
-void LoginScreenTestApi::IsLockShown(IsLockShownCallback callback) {
-  std::move(callback).Run(
-      LockScreen::HasInstance() && LockScreen::Get()->is_shown() &&
-      LockScreen::Get()->screen_type() == LockScreen::ScreenType::kLock);
-}
-
-void LoginScreenTestApi::IsLoginShelfShown(IsLoginShelfShownCallback callback) {
+// static
+bool LoginScreenTestApi::IsLoginShelfShown() {
   LoginShelfView* view = GetLoginShelfView();
-  std::move(callback).Run(view && view->GetVisible());
+  return view && view->GetVisible();
 }
 
-void LoginScreenTestApi::IsRestartButtonShown(
-    IsRestartButtonShownCallback callback) {
-  std::move(callback).Run(
-      IsLoginShelfViewButtonShown(LoginShelfView::kRestart));
+// static
+bool LoginScreenTestApi::IsRestartButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kRestart);
 }
 
-void LoginScreenTestApi::IsShutdownButtonShown(
-    IsShutdownButtonShownCallback callback) {
-  std::move(callback).Run(
-      IsLoginShelfViewButtonShown(LoginShelfView::kShutdown));
+// static
+bool LoginScreenTestApi::IsShutdownButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kShutdown);
 }
 
-void LoginScreenTestApi::IsAuthErrorBubbleShown(
-    IsAuthErrorBubbleShownCallback callback) {
+// static
+bool LoginScreenTestApi::IsAuthErrorBubbleShown() {
   ash::LockScreen::TestApi lock_screen_test(ash::LockScreen::Get());
   ash::LockContentsView::TestApi lock_contents_test(
       lock_screen_test.contents_view());
-  std::move(callback).Run(lock_contents_test.auth_error_bubble()->GetVisible());
+  return lock_contents_test.auth_error_bubble()->GetVisible();
 }
 
-void LoginScreenTestApi::IsGuestButtonShown(
-    IsGuestButtonShownCallback callback) {
-  std::move(callback).Run(
-      IsLoginShelfViewButtonShown(LoginShelfView::kBrowseAsGuest));
+// static
+bool LoginScreenTestApi::IsGuestButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kBrowseAsGuest);
 }
 
-void LoginScreenTestApi::IsAddUserButtonShown(
-    IsAddUserButtonShownCallback callback) {
-  std::move(callback).Run(
-      IsLoginShelfViewButtonShown(LoginShelfView::kAddUser));
+// static
+bool LoginScreenTestApi::IsAddUserButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kAddUser);
 }
 
+// static
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
-                                        const std::string& password,
-                                        SubmitPasswordCallback callback) {
+                                        const std::string& password) {
   // It'd be better to generate keyevents dynamically and dispatch them instead
   // of reaching into the views structure, but at the time of writing I could
   // not find a good way to do this. If you know of a way feel free to change
@@ -188,46 +173,44 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
            auth_test.user_view()->current_user().basic_user_info.account_id);
 
   password_test.SubmitPassword(password);
-
-  std::move(callback).Run();
 }
 
-void LoginScreenTestApi::GetUiUpdateCount(GetUiUpdateCountCallback callback) {
+// static
+int64_t LoginScreenTestApi::GetUiUpdateCount() {
   LoginShelfView* view = GetLoginShelfView();
-
-  std::move(callback).Run(
-      view ? ShelfTestUiUpdateDelegate::Get(view)->ui_update_count() : 0);
+  return view ? ShelfTestUiUpdateDelegate::Get(view)->ui_update_count() : 0;
 }
 
-void LoginScreenTestApi::LaunchApp(const std::string& app_id,
-                                   LaunchAppCallback callback) {
+// static
+bool LoginScreenTestApi::LaunchApp(const std::string& app_id) {
   LoginShelfView* view = GetLoginShelfView();
-
-  std::move(callback).Run(view && view->LaunchAppForTesting(app_id));
+  return view && view->LaunchAppForTesting(app_id);
 }
 
-void LoginScreenTestApi::ClickAddUserButton(
-    ClickAddUserButtonCallback callback) {
+// static
+bool LoginScreenTestApi::ClickAddUserButton() {
   LoginShelfView* view = GetLoginShelfView();
-
-  std::move(callback).Run(view && view->SimulateAddUserButtonForTesting());
+  return view && view->SimulateAddUserButtonForTesting();
 }
 
-void LoginScreenTestApi::ClickGuestButton(ClickGuestButtonCallback callback) {
+// static
+bool LoginScreenTestApi::ClickGuestButton() {
   LoginShelfView* view = GetLoginShelfView();
-
-  std::move(callback).Run(view && view->SimulateGuestButtonForTesting());
+  return view && view->SimulateGuestButtonForTesting();
 }
 
-void LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count,
-                                         WaitForUiUpdateCallback callback) {
+// static
+bool LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count) {
   LoginShelfView* view = GetLoginShelfView();
   if (view) {
+    base::RunLoop run_loop;
     ShelfTestUiUpdateDelegate::Get(view)->AddCallback(previous_update_count,
-                                                      std::move(callback));
-  } else {
-    std::move(callback).Run(false);
+                                                      run_loop.QuitClosure());
+    run_loop.Run();
+    return true;
   }
+
+  return false;
 }
 
 }  // namespace ash

@@ -515,6 +515,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickView").TabletMode(),
         TestCase("openQuickViewAudio"),
         TestCase("openQuickViewImage"),
+// QuickView image EXIF test fails on MSAN, crbug.com/973397
+#if !defined(MEMORY_SANITIZER)
+        TestCase("openQuickViewImageExif"),
+#endif
         TestCase("openQuickViewVideo"),
 // QuickView PDF test fails on MSAN, crbug.com/768070
 #if !defined(MEMORY_SANITIZER)

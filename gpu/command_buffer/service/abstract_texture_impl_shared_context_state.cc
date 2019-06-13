@@ -24,8 +24,8 @@ AbstractTextureImplOnSharedContext::AbstractTextureImplOnSharedContext(
     GLint border,
     GLenum format,
     GLenum type,
-    gpu::SharedContextState* shared_context_state)
-    : shared_context_state_(shared_context_state) {
+    scoped_refptr<gpu::SharedContextState> shared_context_state)
+    : shared_context_state_(std::move(shared_context_state)) {
   DCHECK(shared_context_state_);
 
   // The calling code which wants to create this abstract texture should have
@@ -113,7 +113,7 @@ void AbstractTextureImplOnSharedContext::OnContextLost() {
   if (cleanup_cb_)
     std::move(cleanup_cb_).Run(this);
   shared_context_state_->RemoveContextLostObserver(this);
-  shared_context_state_ = nullptr;
+  shared_context_state_.reset();
 }
 
 }  // namespace gles2

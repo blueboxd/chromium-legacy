@@ -22,29 +22,17 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace web_app {
 
 namespace {
 
 base::flat_map<SystemAppType, GURL> CreateSystemWebApps() {
   base::flat_map<SystemAppType, GURL> urls;
-
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp))
-    urls[SystemAppType::DISCOVER] = GURL(chrome::kChromeUIDiscoverURL);
-
-  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    constexpr char kChromeSettingsPWAURL[] = "chrome://os-settings/pwa.html";
-    urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
-  } else {
-    constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
-    urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
-  }
+  urls[SystemAppType::DISCOVER] = GURL(chrome::kChromeUIDiscoverURL);
+  constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
+  urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
 #endif  // OS_CHROMEOS
 
   return urls;

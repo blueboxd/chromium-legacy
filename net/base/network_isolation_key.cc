@@ -45,4 +45,8 @@ bool NetworkIsolationKey::IsTransient() const {
   return top_frame_origin_->opaque();
 }
 
+bool NetworkIsolationKey::IsEmpty() const {
+  return !top_frame_origin_.has_value();
+}
+
 }  // namespace net

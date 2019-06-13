@@ -28,7 +28,7 @@ include_rules = [
     "+media/base/video_types.h",
     "+media/renderers/video_resource_updater.h",
     "+services/viz/public/interfaces",
-    "+services/ws/public/cpp/gpu/context_provider_command_buffer.h",
+    "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
     "+third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h",
     "+third_party/blink/renderer/platform/fonts",
     "+third_party/blink/renderer/platform/geometry",

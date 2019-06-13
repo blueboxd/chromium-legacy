@@ -1008,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   {
     content::WebContentsAddedObserver new_contents_observer;
     OpenApplication(AppLaunchParams(
-        browser()->profile(), app, LAUNCH_CONTAINER_NONE,
+        browser()->profile(), app->id(), LAUNCH_CONTAINER_NONE,
         WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
     app_contents = new_contents_observer.GetWebContents();
   }

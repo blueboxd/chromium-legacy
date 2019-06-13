@@ -14,6 +14,7 @@ include_rules = [
   "+components/viz/service/display/shared_bitmap_manager.h",
   "+components/viz/service/display/skia_output_surface.h",
   "+components/viz/service/display/software_output_device.h",
+  "+components/viz/common",
   "+gpu/config/gpu_feature_info.h",
   "+components/viz/service/gl/gpu_service_impl.h",
   "+gpu/GLES2",

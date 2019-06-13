@@ -34,7 +34,6 @@ class GaiaAuthConsumer {
     std::string token;
     // TODO(chron): Remove the data field later. Don't use it if possible.
     std::string data;  // Full contents of ClientLogin return.
-    bool two_factor;  // set to true if there was a TWO_FACTOR "failure".
   };
 
   struct ClientOAuthResult {

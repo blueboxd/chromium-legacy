@@ -60,6 +60,16 @@ public class PermissionUtils {
     }
 
     /**
+     * Blocks until the consent prompt is dismissed.
+     */
+    public static void waitForConsentPromptDismissal(ChromeActivity activity) {
+        CriteriaHelper.pollUiThread(()
+                                            -> { return !isConsentDialogShown(activity); },
+                "Consent prompt did not get dismissed in allotted time",
+                CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, DIALOG_POLLING_INTERVAL_MS);
+    }
+
+    /**
      * Accepts the currently displayed session consent prompt.
      */
     public static void acceptConsentPrompt(ChromeActivity activity) {

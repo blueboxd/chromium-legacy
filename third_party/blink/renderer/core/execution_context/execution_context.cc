@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -277,6 +278,14 @@ bool ExecutionContext::IsSameAgentCluster(
   if (this_id.is_empty() || other_id.is_empty())
     return false;
   return this_id == other_id;
+}
+
+v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
+  // TODO(keishi): Convert to DCHECK once we assign agents everywhere.
+  if (!agent_)
+    return nullptr;
+  DCHECK(agent_->event_loop());
+  return agent_->event_loop()->microtask_queue();
 }
 
 }  // namespace blink

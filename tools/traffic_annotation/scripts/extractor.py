@@ -149,30 +149,21 @@ def extract_annotations(file_path):
 
 
 def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      '--options-file',
-      help='optional file to read options from')
-  args, argv = parser.parse_known_args()
-  if args.options_file:
-    argv = open(args.options_file).read().split()
-
+  parser = argparse.ArgumentParser(
+      description="Network Traffic Annotation Extractor.")
   parser.add_argument(
       '--build-path',
       help='Specifies a compiled build directory, e.g. out/Debug.')
-  parser.add_argument(
-      '--generate-compdb', action='store_true',
-      help='Generate a new compile_commands.json before running')
   parser.add_argument(
       '--no-filter', action='store_true',
       help='Do not filter files based on compdb entries')
   parser.add_argument(
       'file_paths', nargs='+', help='List of files to process.')
 
-  args = parser.parse_args(argv)
+  args = parser.parse_args()
 
   tools = NetworkTrafficAnnotationTools(args.build_path)
-  compdb_files = tools.GetCompDBFiles(args.generate_compdb)
+  compdb_files = tools.GetCompDBFiles()
 
   annotation_definitions = []
 

@@ -13,6 +13,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -83,8 +84,7 @@ void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
   device_disabling_manager_delegate_.reset(
       new chromeos::system::DeviceDisablingManagerDefaultDelegate);
   device_disabling_manager_.reset(new chromeos::system::DeviceDisablingManager(
-      device_disabling_manager_delegate_.get(),
-      chromeos::CrosSettings::Get(),
+      device_disabling_manager_delegate_.get(), chromeos::CrosSettings::Get(),
       user_manager::UserManager::Get()));
   device_disabling_manager_->Init();
 }
@@ -123,6 +123,25 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
     return;
 
   cros_component_manager_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
+    const Profile* primary_profile) {
+  DCHECK(primary_profile);
+  const user_manager::User* primary_user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
+  DCHECK(primary_user);
+
+  DCHECK(!kerberos_credentials_manager_);
+  kerberos_credentials_manager_ =
+      std::make_unique<chromeos::KerberosCredentialsManager>(
+          g_browser_process->local_state(), primary_user);
+}
+
+void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
+  // Note: This might be called even if InitializePrimaryProfileServices()
+  // wasn't called, e.g. if something during initialization went wrong.
+  kerberos_credentials_manager_.reset();
 }
 
 void BrowserProcessPlatformPart::RegisterKeepAlive() {

@@ -279,13 +279,13 @@ android_library("chrome_java") {
     "//base:jni_java",
     "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/public/crypto:java",
-    "//chrome/android/public/lifecycle:java",
     "//chrome/android/public/profiles:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/common:splash_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
+    "//chrome/lib/lifecycle/public/android:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
@@ -703,6 +703,7 @@ junit_binary("chrome_junit_tests") {
 }
 
 process_version("chrome_version_constants") {
+  process_only = true
   template_file = "java/ChromeVersionConstants.java.version"
   sources = [
     branding_file_path,
@@ -1065,6 +1066,7 @@ android_resources("chrome_public_apk_resources") {
 version_resource_dir = "$target_gen_dir/templates/chrome_version_xml/res"
 verson_resource_file = "$version_resource_dir/values/strings.xml"
 process_version("version_xml") {
+  process_only = true
   template_file = "java/version_strings.xml.template"
   sources = [
     "//chrome/VERSION",
@@ -1160,7 +1162,7 @@ chrome_common_shared_library("libchrome") {
 
   # Include appropriate factories for native feature modules if necessary.
   if (enable_vr) {
-    if (modularize_vr_native) {
+    if (use_native_modules && modularize_vr_native) {
       deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
     } else {
       deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
@@ -1418,7 +1420,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (modularize_vr_native) {
+      if (use_native_modules && modularize_vr_native) {
         deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
       } else {
         deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]

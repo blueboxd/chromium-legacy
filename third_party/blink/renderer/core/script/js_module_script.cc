@@ -199,7 +199,7 @@ void JSModuleScript::ProduceCache() {
   produce_cache_data_ = nullptr;
 }
 
-void JSModuleScript::Trace(blink::Visitor* visitor) {
+void JSModuleScript::Trace(Visitor* visitor) {
   visitor->Trace(produce_cache_data_);
   ModuleScript::Trace(visitor);
 }

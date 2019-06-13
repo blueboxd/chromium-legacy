@@ -78,18 +78,12 @@ def run_process(result, command):
   return result, stdout
 
 
-def main_mac(output_directory, results_collector):
+def main_mac(output_directory, results_collector, size_path):
   """Print appropriate size information about built Mac targets.
 
   Returns the first non-zero exit status of any command it executes,
   or zero on success.
   """
-  # Set DEVELOPER_DIR to the hermetic Xcode.app so 'size' will work.
-  if not 'DEVELOPER_DIR' in os.environ:
-    xcode_path = os.path.join(SRC_DIR, 'build', 'mac_files', 'Xcode.app')
-    if os.path.exists(xcode_path):
-      os.environ['DEVELOPER_DIR'] = xcode_path
-
   result = 0
   # Work with either build type.
   base_names = ('Chromium', 'Google Chrome')
@@ -127,13 +121,13 @@ def main_mac(output_directory, results_collector):
       }
 
       # Collect the segment info out of the App
-      result, stdout = run_process(result, ['size', chromium_executable])
+      result, stdout = run_process(result, [size_path, chromium_executable])
       print_dict['app_text'], print_dict['app_data'], print_dict['app_objc'] = \
           re.search(r'(\d+)\s+(\d+)\s+(\d+)', stdout).groups()
 
       # Collect the segment info out of the Framework
       result, stdout = run_process(result,
-                                   ['size', chromium_framework_executable])
+                                   [size_path, chromium_framework_executable])
       print_dict['framework_text'], print_dict['framework_data'], \
         print_dict['framework_objc'] = \
           re.search(r'(\d+)\s+(\d+)\s+(\d+)', stdout).groups()
@@ -226,12 +220,13 @@ def check_linux_binary(binary_name, output_directory):
   return result, sizes
 
 
-def main_linux(output_directory, results_collector):
+def main_linux(output_directory, results_collector, size_path):
   """Print appropriate size information about built Linux targets.
 
   Returns the first non-zero exit status of any command it executes,
   or zero on success.
   """
+  assert size_path is None
   binaries = [
       'chrome',
       'nacl_helper',
@@ -308,12 +303,13 @@ def check_android_binaries(binaries,
   return result
 
 
-def main_android_cronet(output_directory, results_collector):
+def main_android_cronet(output_directory, results_collector, size_path):
   """Print appropriate size information about Android Cronet targets.
 
   Returns the first non-zero exit status of any command it executes,
   or zero on success.
   """
+  assert size_path is None
   # Use version in binary file name, but not in printed output.
   binaries_with_paths = glob.glob(
       os.path.join(output_directory, 'libcronet.*.so'))
@@ -327,12 +323,13 @@ def main_android_cronet(output_directory, results_collector):
                                 binaries_to_print)
 
 
-def main_win(output_directory, results_collector):
+def main_win(output_directory, results_collector, size_path):
   """Print appropriate size information about built Windows targets.
 
   Returns the first non-zero exit status of any command it executes,
   or zero on success.
   """
+  assert size_path is None
   files = [
       'chrome.dll',
       'chrome.dll.pdb',
@@ -403,6 +400,7 @@ def main():
       default=default_platform,
       help='specify platform (%s) [default: %%(default)s]' %
       ', '.join(platforms))
+  parser.add_argument('--size-path', default=None, help='Path to size binary')
 
   # Accepted to conform to the isolated script interface, but ignored.
   parser.add_argument('--isolated-script-test-filter', help=argparse.SUPPRESS)
@@ -442,7 +440,7 @@ def main():
 
   results_collector = ResultsCollector()
   try:
-    rc = real_main(args.output_directory, results_collector)
+    rc = real_main(args.output_directory, results_collector, args.size_path)
     isolated_script_output = {
         'valid': True,
         'failures': [test_name] if rc else [],

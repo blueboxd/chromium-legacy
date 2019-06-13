@@ -36,8 +36,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
-#include "third_party/blink/public/web/web_application_cache_host_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -48,11 +48,11 @@ class ApplicationCache;
 class DocumentLoader;
 class ResourceRequest;
 class ResourceResponse;
-class WebApplicationCacheHost;
+class ApplicationCacheHostHelper;
 
 class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
-      public WebApplicationCacheHostClient {
+      public ApplicationCacheHostClient {
  public:
   explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
@@ -113,6 +113,8 @@ class CORE_EXPORT ApplicationCacheHost final
   void FillResourceList(Vector<mojom::blink::AppCacheResourceInfo>*);
   CacheInfo ApplicationCacheInfo();
   const base::UnguessableToken& GetHostID() const;
+  void SelectCacheForSharedWorker(int64_t app_cache_id,
+                                  base::OnceClosure completion_callback);
 
   void Trace(blink::Visitor*);
 
@@ -120,13 +122,13 @@ class CORE_EXPORT ApplicationCacheHost final
   // WebApplicationCacheHostClient implementation
   void DidChangeCacheAssociation() final;
   void NotifyEventListener(mojom::AppCacheEventID) final;
-  void NotifyProgressEventListener(const WebURL&,
+  void NotifyProgressEventListener(const KURL&,
                                    int progress_total,
                                    int progress_done) final;
   void NotifyErrorEventListener(mojom::AppCacheErrorReason,
-                                const WebURL&,
+                                const KURL&,
                                 int status,
-                                const WebString& message) final;
+                                const String& message) final;
 
   bool IsApplicationCacheEnabled();
   DocumentLoader* GetDocumentLoader() const { return document_loader_; }
@@ -168,7 +170,7 @@ class CORE_EXPORT ApplicationCacheHost final
                         int error_status,
                         const String& error_message);
 
-  std::unique_ptr<WebApplicationCacheHost> host_;
+  Member<ApplicationCacheHostHelper> helper_;
 
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
 

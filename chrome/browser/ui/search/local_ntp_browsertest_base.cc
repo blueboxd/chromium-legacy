@@ -124,7 +124,7 @@ void TestInstantServiceObserver::ThemeInfoChanged(
   }
 }
 
-void TestInstantServiceObserver::MostVisitedItemsChanged(
+void TestInstantServiceObserver::MostVisitedInfoChanged(
     const InstantMostVisitedInfo& most_visited_info) {
   items_ = most_visited_info.items;
 

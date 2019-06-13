@@ -98,16 +98,15 @@ class FaviconLoaderTest : public PlatformTest,
 
   // Returns FaviconLoader::FaviconForPageUrl or
   // FaviconLoader::FaviconForIconUrl depending on the TEST_P param.
-  FaviconAttributes* FaviconForUrl(
-      const GURL& url,
-      FaviconLoader::FaviconAttributesCompletionBlock callback) {
+  void FaviconForUrl(const GURL& url,
+                     FaviconLoader::FaviconAttributesCompletionBlock callback) {
     if (GetParam() == TEST_PAGE_URL) {
-      return favicon_loader_.FaviconForPageUrl(
-          url, kTestFaviconSize, kTestFaviconSize,
-          /*fallback_to_google_server=*/false, callback);
+      favicon_loader_.FaviconForPageUrl(url, kTestFaviconSize, kTestFaviconSize,
+                                        /*fallback_to_google_server=*/false,
+                                        callback);
     } else {
-      return favicon_loader_.FaviconForIconUrl(url, kTestFaviconSize,
-                                               kTestFaviconSize, callback);
+      favicon_loader_.FaviconForIconUrl(url, kTestFaviconSize, kTestFaviconSize,
+                                        callback);
     }
   }
 
@@ -130,32 +129,44 @@ TEST_P(FaviconLoaderTest, FaviconForPageUrl) {
 // Tests that fallback data is provided when no favicon is retrieved from
 // LargeIconService.
 TEST_P(FaviconLoaderTest, FallbackIcon) {
-  __block bool callback_executed = false;
+  __block int callback_executed_count = 0;
   auto confirmation_block = ^(FaviconAttributes* favicon_attributes) {
-    callback_executed = true;
-    EXPECT_FALSE(favicon_attributes.faviconImage);
-    EXPECT_TRUE(favicon_attributes.monogramString);
-    EXPECT_TRUE(favicon_attributes.textColor);
-    EXPECT_TRUE(favicon_attributes.backgroundColor);
+    if (callback_executed_count == 0) {
+      // Check that a placeholder image is received.
+      EXPECT_TRUE(favicon_attributes.faviconImage);
+    } else {
+      // Check that a monogram is used as a fallback.
+      EXPECT_FALSE(favicon_attributes.faviconImage);
+      EXPECT_TRUE(favicon_attributes.monogramString);
+      EXPECT_TRUE(favicon_attributes.textColor);
+      EXPECT_TRUE(favicon_attributes.backgroundColor);
+    }
+
+    ++callback_executed_count;
   };
   FaviconForUrl(GURL(kTestFallbackURL), confirmation_block);
-  EXPECT_TRUE(callback_executed);
+  EXPECT_EQ(callback_executed_count, 2);
 }
 
-// Tests that when favicon is in cache, it is returned immediately. The callback
-// should never be executed.
+// Tests that when favicon is in cache, the callback is synchronously called.
 TEST_P(FaviconLoaderTest, Cache) {
   // Favicon retrieval that should put it in the cache.
-  FaviconForUrl(GURL(kTestFaviconURL), nil);
+  FaviconForUrl(GURL(kTestFaviconURL), ^(FaviconAttributes* attributes){
+                });
   __block bool callback_executed = false;
+  __block UIImage* faviconImage = nil;
+  __block int callback_executed_count = 0;
   auto confirmation_block = ^(FaviconAttributes* faviconAttributes) {
     callback_executed = true;
+    faviconImage = faviconAttributes.faviconImage;
+    ++callback_executed_count;
   };
-  FaviconAttributes* attributes_result =
-      FaviconForUrl(GURL(kTestFaviconURL), confirmation_block);
-  EXPECT_TRUE(attributes_result.faviconImage);
-  // Favicon should be returned by cache, so callback should never exectue.
-  EXPECT_FALSE(callback_executed);
+  FaviconForUrl(GURL(kTestFaviconURL), confirmation_block);
+  EXPECT_EQ(callback_executed_count, 1);
+  // The callback should be immediately executed.
+  EXPECT_TRUE(callback_executed);
+  // The cached image should be available immediately.
+  EXPECT_TRUE(faviconImage);
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticFaviconLoaderTest,

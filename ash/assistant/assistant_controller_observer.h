@@ -43,7 +43,9 @@ class AssistantControllerObserver : public base::CheckedObserver {
   // Invoked when the specified |url| is about to be opened by Assistant in a
   // new tab. If |from_server| is true, this event was triggered by a server
   // response. Note that this event immediately precedes |OnUrlOpened|.
-  virtual void OnOpeningUrl(const GURL& url, bool from_server) {}
+  virtual void OnOpeningUrl(const GURL& url,
+                            bool in_background,
+                            bool from_server) {}
 
   // Invoked when the specified |url| is opened by Assistant in a new tab. If
   // |from_server| is true, this event was triggered by a server response.

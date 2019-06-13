@@ -140,7 +140,10 @@
 }
 
 - (void)infobarBannerWasPresented {
-  self.passwordInfoBarDelegate->InfobarPresenting(YES /*automatic*/);
+  // There's a chance the Delegate was destroyed while the presentation was
+  // taking place e.g. User navigated away. Check if the delegate still exists.
+  if (self.passwordInfoBarDelegate)
+    self.passwordInfoBarDelegate->InfobarPresenting(YES /*automatic*/);
 }
 
 - (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {

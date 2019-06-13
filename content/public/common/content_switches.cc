@@ -419,6 +419,10 @@ const char kEnableStrictMixedContentChecking[] =
 const char kEnableStrictPowerfulFeatureRestrictions[] =
     "enable-strict-powerful-feature-restrictions";
 
+// Feature flag to enable HTTPS subresource internal redirects to compressed
+// versions.
+const char kEnableSubresourceRedirect[] = "enable-subresource-redirect";
+
 // Enabled threaded compositing for web tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
@@ -552,6 +556,10 @@ const char kJavaScriptHarmony[]             = "javascript-harmony";
 
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
+
+// Overrides the Lite Page Subresource host.
+const char kLitePagesServerSubresourceHost[] =
+    "litepage-server-subresource-host";
 
 // Logs GPU control list decisions when enforcing blacklist rules.
 const char kLogGpuControlListDecisions[]    = "log-gpu-control-list-decisions";

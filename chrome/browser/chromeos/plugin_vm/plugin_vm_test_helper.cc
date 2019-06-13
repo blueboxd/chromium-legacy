@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 
 #include "base/json/json_reader.h"
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -15,6 +16,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace plugin_vm {
@@ -99,10 +101,14 @@ void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
   // User for the profile should be affiliated with the device.
   const AccountId account_id(AccountId::FromUserEmailGaiaId(
       testing_profile_->GetProfileUserName(), "id"));
-  user_manager_.AddUserWithAffiliationAndType(account_id, true,
-                                              user_manager::USER_TYPE_REGULAR);
+  auto mock_user_manager =
+      std::make_unique<testing::NiceMock<chromeos::MockUserManager>>();
+  mock_user_manager->AddUserWithAffiliationAndType(
+      account_id, true, user_manager::USER_TYPE_REGULAR);
   chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
-      user_manager_.GetActiveUser());
+      mock_user_manager->GetActiveUser());
+  scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+      std::move(mock_user_manager));
 }
 
 void PluginVmTestHelper::EnablePluginVmFeature() {

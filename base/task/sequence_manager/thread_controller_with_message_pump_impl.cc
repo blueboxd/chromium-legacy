@@ -345,7 +345,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   DCHECK(main_thread_only().task_source);
 
   for (int i = 0; i < main_thread_only().work_batch_size; i++) {
-    Optional<PendingTask> task = main_thread_only().task_source->TakeTask();
+    Optional<Task> task = main_thread_only().task_source->TakeTask();
     if (!task)
       break;
 

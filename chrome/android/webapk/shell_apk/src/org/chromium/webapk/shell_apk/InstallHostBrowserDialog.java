@@ -24,6 +24,9 @@ public class InstallHostBrowserDialog {
         void onConfirmQuit();
     }
 
+    /** Checked prior to running the {@link DialogInterface.OnDismissListener}. */
+    private static class OnDismissListenerCanceler { public boolean canceled; }
+
     /**
      * Shows the dialog to install a host browser.
      * @param context The current context.
@@ -49,6 +52,8 @@ public class InstallHostBrowserDialog {
         WebApkUtils.setPaddingInPixel(name,
                 context.getResources().getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
+        OnDismissListenerCanceler onDismissCanceler = new OnDismissListenerCanceler();
+
         // The context theme wrapper is needed for pre-L.
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light_Dialog));
@@ -58,13 +63,14 @@ public class InstallHostBrowserDialog {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                listener.onConfirmQuit();
+                                dialog.cancel();
                             }
                         })
                 .setPositiveButton(R.string.install_host_browser_dialog_install_button,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                onDismissCanceler.canceled = true;
                                 listener.onConfirmInstall(hostBrowserPackageName);
                             }
                         });
@@ -73,6 +79,8 @@ public class InstallHostBrowserDialog {
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
+                if (onDismissCanceler.canceled) return;
+
                 listener.onConfirmQuit();
             }
         });

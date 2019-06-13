@@ -49,6 +49,7 @@ include_rules = [
   "-ipc/ipc_sync_message_filter.h",
 
   "+media/base/android",
+  "+media/mojo/buildflags.h",
 
   "+components/policy/policy_constants.h",
   "+components/embedder_support/android",

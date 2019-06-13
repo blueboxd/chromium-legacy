@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/reporting/reporting_policy.h"
@@ -202,6 +203,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   navigation_observer.Wait();
 
   // Simulate a crash on the page.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   contents->GetController().LoadURL(GURL(content::kChromeUICrashURL),
                                     content::Referrer(),
                                     ui::PAGE_TRANSITION_TYPED, std::string());
@@ -241,6 +243,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
   navigation_observer.Wait();
 
   // Simulate the page being killed due to being unresponsive.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   contents->GetMainFrame()->GetProcess()->Shutdown(content::RESULT_CODE_HUNG);
 
   upload_response()->WaitForRequest();

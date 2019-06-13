@@ -52,7 +52,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -224,7 +223,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      sync_start_util::GetFlareForSyncableService(context_path),
       base::BindRepeating(&TestProfileErrorCallback));
 }
 

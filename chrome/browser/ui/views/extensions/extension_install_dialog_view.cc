@@ -363,11 +363,11 @@ void ExtensionInstallDialogView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
-views::View* ExtensionInstallDialogView::CreateExtraView() {
+std::unique_ptr<views::View> ExtensionInstallDialogView::CreateExtraView() {
   if (!prompt_->has_webstore_data())
     return nullptr;
 
-  views::Link* store_link = new views::Link(
+  auto store_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
   store_link->set_listener(this);
   return store_link;
@@ -535,7 +535,7 @@ void ExtensionInstallDialogView::CreateContents() {
   }
 
   scroll_view_ = new views::ScrollView();
-  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetHideHorizontalScrollBar(true);
   scroll_view_->SetContents(std::move(extension_info_container));
   scroll_view_->ClipHeightTo(
       0, provider->GetDistanceMetric(

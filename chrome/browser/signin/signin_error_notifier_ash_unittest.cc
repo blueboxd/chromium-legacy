@@ -133,30 +133,25 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
   } ErrorTableEntry;
 
   ErrorTableEntry table[] = {
-    { GoogleServiceAuthError::NONE, false },
-    { GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true },
-    { GoogleServiceAuthError::USER_NOT_SIGNED_UP, true },
-    { GoogleServiceAuthError::CONNECTION_FAILED, false },
-    { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
-    { GoogleServiceAuthError::ACCOUNT_DELETED, true },
-    { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, false },
-    { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, false },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
-    { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
-    { GoogleServiceAuthError::SERVICE_ERROR, true },
-    { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
+      {GoogleServiceAuthError::NONE, false},
+      {GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true},
+      {GoogleServiceAuthError::USER_NOT_SIGNED_UP, true},
+      {GoogleServiceAuthError::CONNECTION_FAILED, false},
+      {GoogleServiceAuthError::ACCOUNT_DELETED, true},
+      {GoogleServiceAuthError::ACCOUNT_DISABLED, true},
+      {GoogleServiceAuthError::SERVICE_UNAVAILABLE, false},
+      {GoogleServiceAuthError::REQUEST_CANCELED, false},
+      {GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true},
+      {GoogleServiceAuthError::SERVICE_ERROR, true},
   };
-  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
-                "table size should match number of auth error types");
+  static_assert(
+      base::size(table) == GoogleServiceAuthError::NUM_STATES -
+                               GoogleServiceAuthError::kDeprecatedStateCount,
+      "table size should match number of auth error types");
   std::string account_id =
       identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
 
   for (size_t i = 0; i < base::size(table); ++i) {
-    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
-      continue;
-
     SetAuthError(account_id, GoogleServiceAuthError(table[i].error_state));
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(kNotificationId);

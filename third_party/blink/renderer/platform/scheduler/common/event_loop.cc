@@ -15,8 +15,9 @@ namespace scheduler {
 
 EventLoop::EventLoop(v8::Isolate* isolate)
     : isolate_(isolate),
-      microtask_queue_(
-          v8::MicrotaskQueue::New(isolate, v8::MicrotasksPolicy::kScoped)) {
+      // TODO(keishi): Create MicrotaskQueue to enable per-EventLoop microtask
+      // queue.
+      microtask_queue_(nullptr) {
   DCHECK(isolate_);
 }
 
@@ -26,12 +27,17 @@ EventLoop::~EventLoop() {
 
 void EventLoop::EnqueueMicrotask(base::OnceClosure task) {
   pending_microtasks_.push_back(std::move(task));
-  microtask_queue_->EnqueueMicrotask(isolate_, &EventLoop::RunPendingMicrotask,
-                                     this);
+  if (microtask_queue_) {
+    microtask_queue_->EnqueueMicrotask(isolate_,
+                                       &EventLoop::RunPendingMicrotask, this);
+  } else {
+    isolate_->EnqueueMicrotask(&EventLoop::RunPendingMicrotask, this);
+  }
 }
 
 void EventLoop::PerformMicrotaskCheckpoint() {
-  microtask_queue_->PerformCheckpoint(isolate_);
+  if (microtask_queue_)
+    microtask_queue_->PerformCheckpoint(isolate_);
 }
 
 // static

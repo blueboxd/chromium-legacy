@@ -275,9 +275,12 @@ void ScrollView::SetHeader(std::nullptr_t) {
 }
 
 void ScrollView::SetBackgroundColor(SkColor color) {
+  if (background_color_data_.color == color)
+    return;
   background_color_data_.color = color;
   use_color_id_ = false;
   UpdateBackground();
+  OnPropertyChanged(&background_color_data_, kPropertyEffectsPaint);
 }
 
 void ScrollView::SetBackgroundThemeColorId(ui::NativeTheme::ColorId color_id) {
@@ -292,6 +295,20 @@ gfx::Rect ScrollView::GetVisibleRect() const {
   gfx::ScrollOffset offset = CurrentOffset();
   return gfx::Rect(offset.x(), offset.y(), contents_viewport_->width(),
                    contents_viewport_->height());
+}
+
+void ScrollView::SetHideHorizontalScrollBar(bool visible) {
+  if (hide_horizontal_scrollbar_ == visible)
+    return;
+  hide_horizontal_scrollbar_ = visible;
+  OnPropertyChanged(&hide_horizontal_scrollbar_, kPropertyEffectsPaint);
+}
+
+void ScrollView::SetDrawOverflowIndicator(bool draw_overflow_indicator) {
+  if (draw_overflow_indicator_ == draw_overflow_indicator)
+    return;
+  draw_overflow_indicator_ = draw_overflow_indicator;
+  OnPropertyChanged(&draw_overflow_indicator, kPropertyEffectsPaint);
 }
 
 void ScrollView::ClipHeightTo(int min_height, int max_height) {
@@ -332,6 +349,7 @@ void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
 
     focus_ring_->SchedulePaint();
   SchedulePaint();
+  OnPropertyChanged(&has_focus_indicator, kPropertyEffectsPaint);
 }
 
 gfx::Size ScrollView::CalculatePreferredSize() const {
@@ -947,6 +965,12 @@ void ScrollView::UpdateOverflowIndicatorVisibility(
 
 BEGIN_METADATA(ScrollView)
 METADATA_PARENT_CLASS(View)
+ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MinHeight)
+ADD_READONLY_PROPERTY_METADATA(ScrollView, int, MaxHeight)
+ADD_PROPERTY_METADATA(ScrollView, SkColor, BackgroundColor)
+ADD_PROPERTY_METADATA(ScrollView, bool, DrawOverflowIndicator)
+ADD_PROPERTY_METADATA(ScrollView, bool, HasFocusIndicator)
+ADD_PROPERTY_METADATA(ScrollView, bool, HideHorizontalScrollBar)
 END_METADATA()
 
 // VariableRowHeightScrollHelper ----------------------------------------------

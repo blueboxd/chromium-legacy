@@ -46,19 +46,23 @@ class SendTabToSelfBubbleController
 
   // Handles the action when the user click on one valid device. Sends tab to
   // the target device; closes the button and hides the omnibox icon.
-  void OnDeviceSelected(const std::string& target_device_name,
-                        const std::string& target_device_guid);
+  virtual void OnDeviceSelected(const std::string& target_device_name,
+                                const std::string& target_device_guid);
   // Close the bubble when the user click on the close button.
   void OnBubbleClosed();
 
  protected:
+  SendTabToSelfBubbleController();
   explicit SendTabToSelfBubbleController(content::WebContents* web_contents);
 
  private:
   friend class content::WebContentsUserData<SendTabToSelfBubbleController>;
+  friend class SendTabToSelfBubbleViewImplTest;
+  FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, PopulateScrollView);
+  FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, DevicePressed);
+
   // Get information of valid devices.
   void FetchDeviceInfo();
-
   // The web_contents associated with this controller.
   content::WebContents* web_contents_;
   // Weak reference. Will be nullptr if no bubble is currently shown.

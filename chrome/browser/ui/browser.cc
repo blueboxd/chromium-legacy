@@ -1278,9 +1278,10 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
   }
 }
 
-gfx::Size Browser::EnterPictureInPicture(content::WebContents* web_contents,
-                                         const viz::SurfaceId& surface_id,
-                                         const gfx::Size& natural_size) {
+content::PictureInPictureResult Browser::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
   return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
       web_contents, surface_id, natural_size);
 }
@@ -2099,7 +2100,6 @@ void Browser::OnTabInsertedAt(WebContents* contents, int index) {
     if (index < new_active_index)
       session_service->SetSelectedTabInWindow(session_id(), new_active_index);
   }
-  contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 void Browser::OnTabClosing(WebContents* contents) {

@@ -34,9 +34,10 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
                                   blink::mojom::MediaStreamType type,
                                   const Extension* extension) override;
   ExtensionHostQueue* GetExtensionHostQueue() const override;
-  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                  const viz::SurfaceId& surface_id,
-                                  const gfx::Size& natural_size) override;
+  content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 
  private:

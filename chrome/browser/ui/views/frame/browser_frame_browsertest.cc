@@ -30,10 +30,7 @@ class BrowserFrameBoundsChecker : public ChromeViewsDelegate {
 class BrowserFrameTest : public InProcessBrowserTest {
  public:
   BrowserFrameTest()
-      : InProcessBrowserTest(
-            base::BindOnce([]() -> std::unique_ptr<views::ViewsDelegate> {
-              return std::make_unique<BrowserFrameBoundsChecker>();
-            })) {}
+      : InProcessBrowserTest(std::make_unique<BrowserFrameBoundsChecker>()) {}
 };
 
 // Verifies that the tools are loaded with initial bounds.

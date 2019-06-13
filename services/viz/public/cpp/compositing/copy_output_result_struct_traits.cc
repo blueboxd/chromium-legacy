@@ -169,19 +169,17 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
     return false;
   }
 
+  if (rect.IsEmpty()) {
+    // An empty rect implies an empty result.
+    *out_p = std::make_unique<viz::CopyOutputResult>(format, gfx::Rect());
+    return true;
+  }
+
   switch (format) {
     case viz::CopyOutputResult::Format::RGBA_BITMAP: {
       SkBitmap bitmap;
-      if (!data.ReadBitmap(&bitmap)) {
+      if (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw()) {
         LOG(ERROR) << "CopyOutputResult: Failed to read |bitmap|";
-        return false;
-      }
-
-      bool has_bitmap = bitmap.readyToDraw();
-
-      // The rect should be empty iff there is no bitmap.
-      if (has_bitmap == rect.IsEmpty()) {
-        LOG(ERROR) << "CopyOutputResult: has_bitmap == rect.IsEmpty()";
         return false;
       }
 
@@ -207,15 +205,7 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
         return false;
       }
 
-      bool has_mailbox = !mailbox->IsZero();
-
-      // The rect should be empty iff there is no texture.
-      if (has_mailbox == rect.IsEmpty()) {
-        LOG(ERROR) << "CopyOutputResult: has_mailbox == rect.IsEmpty()";
-        return false;
-      }
-
-      if (!has_mailbox) {
+      if (mailbox->IsZero()) {
         // Returns an empty result.
         *out_p = std::make_unique<viz::CopyOutputResult>(
             viz::CopyOutputResult::Format::RGBA_TEXTURE, gfx::Rect());

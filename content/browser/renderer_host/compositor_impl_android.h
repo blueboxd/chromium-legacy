@@ -30,7 +30,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -121,8 +121,7 @@ class CONTENT_EXPORT CompositorImpl
   void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
   }
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
+  void RecordManipulationTypeCounts(cc::ManipulationInfo args) override {}
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override {}
@@ -203,13 +202,14 @@ class CONTENT_EXPORT CompositorImpl
   // Registers the root frame sink ID.
   void RegisterRootFrameSink();
 
-  // Called when we fail to create the context for the root frame sink.
+  // Called with the result of context creation for the root frame sink.
+  void OnContextCreationResult(gpu::ContextResult context_result);
   void OnFatalOrSurfaceContextCreationFailure(
       gpu::ContextResult context_result);
 
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context_provider);
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -275,6 +275,8 @@ class CONTENT_EXPORT CompositorImpl
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>
       swap_completed_with_size_for_testing_;
+
+  size_t num_of_consecutive_surface_failures_ = 0u;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 

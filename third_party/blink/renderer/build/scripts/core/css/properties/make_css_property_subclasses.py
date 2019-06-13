@@ -95,7 +95,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         return generate_property_cpp
 
     def calculate_apply_functions_to_declare(self, property_):
-        cc_templates = ['background_layer', 'color', 'counter', 'grid', 'mask_layer']
+        cc_templates = ['background_layer', 'color', 'color_only', 'counter', 'grid', 'mask_layer', 'visited_color']
         property_['style_builder_inline'] = property_['style_builder_template'] not in cc_templates
 
         property_['style_builder_declare'] = (

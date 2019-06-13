@@ -13,9 +13,11 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "chromeos/network/onc/variable_expander.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
@@ -24,6 +26,16 @@ namespace chromeos {
 namespace {
 
 KerberosCredentialsManager* g_instance = nullptr;
+
+// Account keys for the kerberos.accounts pref.
+constexpr char kPrincipal[] = "principal";
+constexpr char kPassword[] = "password";
+constexpr char kRememberPassword[] = "remember_password";
+constexpr char kKrb5Conf[] = "krb5conf";
+
+// Principal placeholders for the KerberosAccounts policy.
+constexpr char kLoginId[] = "LOGIN_ID";
+constexpr char kLoginEmail[] = "LOGIN_EMAIL";
 
 // Default encryption with strong encryption.
 constexpr char kDefaultKerberosConfigFmt[] = R"(
@@ -70,6 +82,13 @@ std::string GetRealm(const std::string& normalized_principal) {
   return parts[1];
 }
 
+// Returns the default Kerberos configuration, with realm set based on
+// |normalized_principal|.
+std::string GetDefaultKerberosConfig(const std::string& normalized_principal) {
+  const std::string realm = GetRealm(normalized_principal);
+  return base::StringPrintf(kDefaultKerberosConfigFmt, realm.c_str());
+}
+
 // Logs an error if |error| is not |ERROR_NONE|.
 void LogError(const char* function_name, kerberos::ErrorType error) {
   LOG_IF(ERROR, error != kerberos::ERROR_NONE)
@@ -84,29 +103,36 @@ bool Succeeded(kerberos::ErrorType error) {
 }  // namespace
 
 // Encapsulates the steps to add a Kerberos account. Overview of the flow:
-// - Start up the daemon.
-// - Call daemon's AddAccount. Handle errors duplicate errors transparently,
+// - Call the daemon's AddAccount. Handle errors duplicate errors transparently,
 //   it's OK if the account is already present.
-// - If the account is new, call daemon's SetConfig with a default config.
-// - Call daemon's AcquireKerberosTgt.
+// - If |krb5_conf| is set (e.g. through policy), call daemon's SetConfig.
+//   Otherwise, if the account is new, set a default config.
+// - If |password| is set, call daemon's AcquireKerberosTgt.
 // - Call manager's OnAddAccountRunnerDone.
-// If an error happens on any step, removes account if it was added and calls
-// OnAddAccountRunnerDone with the error.
+// If an error happens on any step, removes account if it was newly added and
+// not managed by policy and calls OnAddAccountRunnerDone with the error.
 class KerberosAddAccountRunner {
  public:
   // Kicks off the flow to add (or re-authenticate) a Kerberos account.
   // |manager| is a non-owned pointer to the owning manager.
   // |normalized_principal| is the normalized user principal name, e.g.
-  // user@REALM.COM. |password| is the password of the account. |callback| is
-  // called by OnAddAccountRunnerDone() at the end of the flow, see class
-  // description.
+  // user@REALM.COM. |is_managed| is true for accounts set by admins via policy.
+  // |password| is the password of the account. If |remember_password| is true,
+  // the password is remembered by the daemon. |callback| is called by
+  // OnAddAccountRunnerDone() at the end of the flow, see class description.
   KerberosAddAccountRunner(KerberosCredentialsManager* manager,
-                           const std::string& normalized_principal,
-                           const std::string& password,
+                           std::string normalized_principal,
+                           bool is_managed,
+                           const base::Optional<std::string>& password,
+                           bool remember_password,
+                           const base::Optional<std::string>& krb5_conf,
                            KerberosCredentialsManager::ResultCallback callback)
       : manager_(manager),
         normalized_principal_(normalized_principal),
+        is_managed_(is_managed),
         password_(password),
+        remember_password_(remember_password),
+        krb5_conf_(krb5_conf),
         callback_(std::move(callback)) {
     AddAccount();
   }
@@ -121,58 +147,73 @@ class KerberosAddAccountRunner {
                                 weak_factory_.GetWeakPtr()));
   }
 
-  // If the account was added (new account), calls SetDefaultConfig().
-  // Otherwise, continues with AcquireKerberosTgt().
+  // Forwards to MaybeSetConfig() if there was no error (other than a duplicate
+  // account, which is handled transparently). Calls Done() on error.
   void OnAddAccount(const kerberos::AddAccountResponse& response) {
-    // New account, set a default config.
-    if (response.error() == kerberos::ERROR_NONE) {
-      was_added_ = true;
-      SetDefaultConfig();
+    is_new_account_ = response.error() == kerberos::ERROR_NONE;
+    const bool is_existing_account =
+        response.error() == kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME;
+
+    if (is_new_account_ || is_existing_account) {
+      MaybeSetConfig();
       return;
     }
 
-    if (response.error() == kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME) {
-      AcquireKerberosTgt();
-      return;
-    }
-
-    // In all other cases, respond with error (shouldn't happen right now).
-    NOTREACHED();
+    // Error.
     Done(response.error());
   }
 
-  // Sets a default Kerberos configuration for |normalized_principal_|.
-  void SetDefaultConfig() {
-    const std::string realm = GetRealm(normalized_principal_);
-    const std::string krb5_conf =
-        base::StringPrintf(kDefaultKerberosConfigFmt, realm.c_str());
-
+  // Figures out whether a configuration should be set and sets it:
+  //  - If |krb5_conf_| is set, use it.
+  //  - If the account is new, set a default configuration.
+  //  Otherwise, continues with MaybeAcquireKerberosTgt().
+  void MaybeSetConfig() {
     kerberos::SetConfigRequest request;
+    if (krb5_conf_) {
+      // A configuration is set, so use that.
+      request.set_krb5conf(*krb5_conf_);
+    } else if (is_new_account_) {
+      // Set default configuration for a default account.
+      request.set_krb5conf(GetDefaultKerberosConfig(normalized_principal_));
+    } else {
+      // No configuration to set (don't overwrite an existing one!), so move on.
+      MaybeAcquireKerberosTgt();
+      return;
+    }
+
     request.set_principal_name(normalized_principal_);
-    request.set_krb5conf(krb5_conf);
     KerberosClient::Get()->SetConfig(
         request, base::BindOnce(&KerberosAddAccountRunner::OnSetConfig,
                                 weak_factory_.GetWeakPtr()));
   }
 
-  // Calls AcquireKerberosTgt() if no error occurred or Done() otherwise.
+  // Calls MaybeAcquireKerberosTgt() if no error occurred or Done() otherwise.
   void OnSetConfig(const kerberos::SetConfigResponse& response) {
     if (response.error() == kerberos::ERROR_NONE) {
-      AcquireKerberosTgt();
+      MaybeAcquireKerberosTgt();
       return;
     }
 
+    // Error.
     Done(response.error());
   }
 
-  // Authenticates |normalized_principal_| using |password_|.
-  void AcquireKerberosTgt() {
+  // Authenticates |normalized_principal_| using |password_| if |password_| is
+  // set. Otherwise, continues with Done().
+  void MaybeAcquireKerberosTgt() {
+    if (!password_) {
+      Done(kerberos::ERROR_NONE);
+      return;
+    }
+
     kerberos::AcquireKerberosTgtRequest request;
     request.set_principal_name(normalized_principal_);
+    request.set_remember_password(remember_password_);
     KerberosClient::Get()->AcquireKerberosTgt(
-        request, data_pipe_utils::GetDataReadPipe(password_).get(),
+        request, data_pipe_utils::GetDataReadPipe(*password_).get(),
         base::BindOnce(&KerberosAddAccountRunner::OnAcquireKerberosTgt,
                        weak_factory_.GetWeakPtr()));
+    password_.reset();
   }
 
   // Forwards to Done().
@@ -184,7 +225,9 @@ class KerberosAddAccountRunner {
 
   // Calls back into |manager_|'s OnAddAccountRunnerDone().
   void Done(kerberos::ErrorType error) {
-    if (was_added_ && error != kerberos::ERROR_NONE) {
+    // Remove new, unmanaged accounts on error. Keep new, managed accounts on
+    // error for admin visibility.
+    if (error != kerberos::ERROR_NONE && is_new_account_ && !is_managed_) {
       // Do a best effort cleaning up the account we added before.
       kerberos::RemoveAccountRequest request;
       request.set_principal_name(normalized_principal_);
@@ -194,7 +237,8 @@ class KerberosAddAccountRunner {
     } else {
       // We're done. This call will delete us!
       manager_->OnAddAccountRunnerDone(this, std::move(normalized_principal_),
-                                       std::move(callback_), error);
+                                       is_managed_, std::move(callback_),
+                                       error);
     }
   }
 
@@ -210,17 +254,21 @@ class KerberosAddAccountRunner {
     // We're done. This call will delete us! Note that we're passing the
     // |original_error| here, not the |response.error()|.
     manager_->OnAddAccountRunnerDone(this, std::move(normalized_principal_),
-                                     std::move(callback_), original_error);
+                                     is_managed_, std::move(callback_),
+                                     original_error);
   }
 
   // Pointer to the owning manager, not owned.
-  KerberosCredentialsManager* const manager_;
+  KerberosCredentialsManager* const manager_ = nullptr;
   std::string normalized_principal_;
-  std::string password_;
+  bool is_managed_ = false;
+  base::Optional<std::string> password_;
+  bool remember_password_ = false;
+  const base::Optional<std::string> krb5_conf_;
   KerberosCredentialsManager::ResultCallback callback_;
 
   // Whether the account was newly added.
-  bool was_added_ = false;
+  bool is_new_account_ = false;
 
   base::WeakPtrFactory<KerberosAddAccountRunner> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(KerberosAddAccountRunner);
@@ -230,13 +278,25 @@ KerberosCredentialsManager::Observer::Observer() = default;
 
 KerberosCredentialsManager::Observer::~Observer() = default;
 
-KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state)
+KerberosCredentialsManager::KerberosCredentialsManager(
+    PrefService* local_state,
+    const user_manager::User* primary_user)
     : local_state_(local_state),
       kerberos_files_handler_(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
                               base::Unretained(this))) {
   DCHECK(!g_instance);
   g_instance = this;
+
+  // Set up expansions:
+  //   '${LOGIN_ID}'    -> 'user'
+  //   '${LOGIN_EMAIL}' -> 'user@EXAMPLE.COM'
+  DCHECK(primary_user);
+  std::map<std::string, std::string> substitutions;
+  substitutions[kLoginId] =
+      primary_user->GetAccountName(false /* use_display_email */);
+  substitutions[kLoginEmail] = primary_user->GetAccountId().GetUserEmail();
+  principal_expander_ = std::make_unique<VariableExpander>(substitutions);
 
   // Connect to a signal that indicates when Kerberos files change.
   // TODO(https://crbug.com/963824): Make sure no code inside this constructor
@@ -266,6 +326,8 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state)
       prefs::kKerberosAccounts,
       base::BindRepeating(&KerberosCredentialsManager::UpdateAccountsFromPref,
                           weak_factory_.GetWeakPtr()));
+
+  UpdateAccountsFromPref();
 }
 
 KerberosCredentialsManager::~KerberosCredentialsManager() {
@@ -285,7 +347,15 @@ void KerberosCredentialsManager::RegisterLocalStatePrefs(
   registry->RegisterBooleanPref(prefs::kKerberosEnabled, false);
   registry->RegisterBooleanPref(prefs::kKerberosRememberPasswordEnabled, true);
   registry->RegisterBooleanPref(prefs::kKerberosAddAccountsAllowed, true);
-  registry->RegisterDictionaryPref(prefs::kKerberosAccounts);
+  registry->RegisterListPref(prefs::kKerberosAccounts);
+}
+
+// static
+KerberosCredentialsManager::ResultCallback
+KerberosCredentialsManager::EmptyResultCallback() {
+  return base::BindOnce([](kerberos::ErrorType error) {
+    // Do nothing.
+  });
 }
 
 void KerberosCredentialsManager::AddObserver(Observer* observer) {
@@ -298,45 +368,54 @@ void KerberosCredentialsManager::RemoveObserver(const Observer* observer) {
 
 void KerberosCredentialsManager::AddAccountAndAuthenticate(
     std::string principal_name,
-    const std::string& password,
+    bool is_managed,
+    const base::Optional<std::string>& password,
+    bool remember_password,
+    const base::Optional<std::string>& krb5_conf,
     ResultCallback callback) {
   if (!NormalizePrincipalOrPostCallback(&principal_name, &callback))
     return;
 
-  // If there's a call in progress, respond with ERROR_IN_PROGRESS.
-  if (add_account_runner_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), kerberos::ERROR_IN_PROGRESS));
-    return;
-  }
-
-  add_account_runner_ = std::make_unique<KerberosAddAccountRunner>(
-      this, principal_name, password, std::move(callback));
+  add_account_runners_.push_back(std::make_unique<KerberosAddAccountRunner>(
+      this, principal_name, is_managed, password, remember_password, krb5_conf,
+      std::move(callback)));
   // The runner starts automatically and calls OnAddAccountRunnerDone when it's
   // done.
 }
 
 void KerberosCredentialsManager::OnAddAccountRunnerDone(
     KerberosAddAccountRunner* runner,
-    std::string normalized_principal,
+    std::string updated_principal,
+    bool is_managed,
     ResultCallback callback,
     kerberos::ErrorType error) {
-  // Reset the instance.
-  DCHECK(runner == add_account_runner_.get());
-  add_account_runner_.reset();
+  // Reset the |runner|. Note that |updated_principal| is passed by value,
+  // not by reference, since |runner| owns the reference.
+  auto it = std::find_if(
+      add_account_runners_.begin(), add_account_runners_.end(),
+      [runner](const auto& runner_ptr) { return runner_ptr.get() == runner; });
+  DCHECK(it != add_account_runners_.end());
+  add_account_runners_.erase(it);
 
   LogError("AddAccountAndAuthenticate", error);
+
+  // Note: For managed accounts don't change the active principal.
   if (Succeeded(error)) {
+    // Don't change the active account if an account is added by policy.
+    if (!is_managed)
+      active_principal_name_ = updated_principal;
+
     // Set active account.
     // TODO(https://crbug.com/948121): Wait until the files have been saved.
     // This is important when this code is triggered directly through a page
     // that requires Kerberos auth.
-    active_principal_name_ = normalized_principal;
-    GetKerberosFiles();
+    if (active_principal_name_ == updated_principal)
+      GetKerberosFiles();
 
-    // Bring the merry news to the observers.
-    NotifyAccountsChanged();
+    // Bring the merry news to the observers, but only if there is no
+    // outstanding query, so we don't spam observers.
+    if (add_account_runners_.empty())
+      NotifyAccountsChanged();
   }
 
   std::move(callback).Run(error);
@@ -420,6 +499,7 @@ kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
   // Kerberos credentials.
   active_principal_name_ = principal_name;
   GetKerberosFiles();
+  NotifyAccountsChanged();
   return kerberos::ERROR_NONE;
 }
 
@@ -526,7 +606,63 @@ void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {
-  // TODO(https://crbug.com/952239): Implement
+  if (!local_state_->GetBoolean(prefs::kKerberosEnabled))
+    return;
+
+  const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
+  if (!accounts)
+    return;
+
+  for (const auto& account : accounts->GetList()) {
+    // Get the principal. Should always be set.
+    const base::Value* principal_value = account.FindPath(kPrincipal);
+    DCHECK(principal_value);
+    std::string principal = principal_value->GetString();
+    if (!principal_expander_->ExpandString(&principal)) {
+      VLOG(1) << "Failed to expand principal '" << principal << "'";
+      continue;
+    }
+    if (!NormalizePrincipal(&principal)) {
+      VLOG(1) << "Ignoring bad principal '" << principal << "'";
+      continue;
+    }
+
+    // Kickstart active principal if it's not set yet.
+    if (active_principal_name_.empty())
+      active_principal_name_ = principal;
+
+    // Get the password, default to not set.
+    const std::string* password_str = account.FindStringKey(kPassword);
+    base::Optional<std::string> password;
+    if (password_str)
+      password = std::move(*password_str);
+
+    // Note: Password supports expansion of '${PASSWORD}' into the login
+    // password. This is done in the daemon, however, since Chrome forgets the
+    // password ASAP for security reasons.
+
+    // Get the remember password flag, default to false.
+    bool remember_password =
+        account.FindBoolKey(kRememberPassword).value_or(false);
+
+    // Get Kerberos configuration, default to GetDefaultKerberosConfig() to make
+    // sure it overwrites an existing unmanaged account.
+    std::string krb5_conf;
+    const base::Value* krb5_conf_value = account.FindPath(kKrb5Conf);
+    if (krb5_conf_value) {
+      // Note: The config is encoded as a list of lines.
+      for (const auto& config_line : krb5_conf_value->GetList()) {
+        krb5_conf += config_line.GetString();
+        krb5_conf += "\n";
+      }
+    } else {
+      krb5_conf = GetDefaultKerberosConfig(principal);
+    }
+
+    add_account_runners_.push_back(std::make_unique<KerberosAddAccountRunner>(
+        this, principal, true /* is_managed */, password, remember_password,
+        krb5_conf, EmptyResultCallback()));
+  }
 }
 
 }  // namespace chromeos

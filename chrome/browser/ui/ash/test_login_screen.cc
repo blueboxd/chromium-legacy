@@ -36,6 +36,7 @@ void TestLoginScreen::ShowParentAccessButton(bool show) {}
 
 void TestLoginScreen::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback) {}
+    base::RepeatingCallback<void(bool success)> callback,
+    ash::ParentAccessRequestReason reason) {}
 
 void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}

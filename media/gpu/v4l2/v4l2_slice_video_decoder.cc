@@ -33,18 +33,15 @@ constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
 constexpr size_t kNumInputPlanes = 1;
 
-// If the driver does not accept as many fds as we received from the client,
-// we have to check if the additional fds are actually duplicated fds pointing
-// to previous planes; if so, close the duplicates and return only the original
-// fd(s). If not, return an empty list.
-std::vector<base::ScopedFD> ExtractAdditionalDmabuf(
-    scoped_refptr<VideoFrame> frame,
-    size_t target_num_fds) {
+// Checks an underlying video frame buffer of |frame| is valid for VIDIOC_DQBUF
+// that requires |target_num_fds| fds.
+bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
+                                size_t target_num_fds) {
   DCHECK(frame);
   if (frame->DmabufFds().size() < target_num_fds) {
     VLOGF(1) << "The count of dmabuf fds (" << frame->DmabufFds().size()
              << ") are not enough, needs " << target_num_fds << " fds.";
-    return std::vector<base::ScopedFD>();
+    return false;
   }
 
   const std::vector<VideoFrameLayout::Plane>& planes = frame->layout().planes();
@@ -54,14 +51,11 @@ std::vector<base::ScopedFD> ExtractAdditionalDmabuf(
     // a new plane.
     if (planes[i].offset == 0) {
       VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
-      return std::vector<base::ScopedFD>();
+      return false;
     }
   }
 
-  std::vector<base::ScopedFD> dmabuf_fds = DuplicateFDs(frame->DmabufFds());
-  if (dmabuf_fds.size() > target_num_fds)
-    dmabuf_fds.erase(dmabuf_fds.begin() + target_num_fds, dmabuf_fds.end());
-  return dmabuf_fds;
+  return true;
 }
 
 }  // namespace
@@ -84,25 +78,9 @@ struct V4L2SliceVideoDecoder::OutputRecord {
   // the time the surface is created, until the buffer is enqueued into V4L2
   // device.
   V4L2WritableBufferRef output_buf;
-  // The buffer dequeued from V4L2 output queue. The value is valid from the
-  // time the output buffer is dequeued from V4L2 device, until the surface is
-  // released.
-  V4L2ReadableBufferRef decoded_output_buf;
 
   OutputRecord(scoped_refptr<VideoFrame> f, V4L2WritableBufferRef buf)
       : frame(std::move(f)), output_buf(std::move(buf)) {}
-};
-
-struct V4L2SliceVideoDecoder::DecodeRequest {
-  // The decode buffer passed from Decode().
-  scoped_refptr<DecoderBuffer> buffer;
-  // The callback function passed from Decode().
-  DecodeCB decode_cb;
-  // The identifier for the decoder buffer.
-  int32_t bitstream_id;
-
-  DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id)
-      : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
 };
 
 struct V4L2SliceVideoDecoder::OutputRequest {
@@ -120,15 +98,29 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   // The surface to be outputted.
   scoped_refptr<V4L2DecodeSurface> surface;
 
-  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
-      : type(kSurface), surface(std::move(s)) {}
-  explicit OutputRequest(OutputRequestType t) : type(t) {
-    DCHECK_NE(t, kSurface);
+  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s) {
+    return OutputRequest(std::move(s));
+  }
+
+  static OutputRequest FlushFence() { return OutputRequest(kFlushFence); }
+
+  static OutputRequest ChangeResolutionFence() {
+    return OutputRequest(kChangeResolutionFence);
   }
 
   bool IsReady() const {
     return (type != OutputRequestType::kSurface) || surface->decoded();
   }
+
+  // Allow move, but not copy.
+  OutputRequest(OutputRequest&&) = default;
+
+ private:
+  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
+      : type(kSurface), surface(std::move(s)) {}
+  explicit OutputRequest(OutputRequestType t) : type(t) {}
+
+  DISALLOW_COPY_AND_ASSIGN(OutputRequest);
 };
 
 // static
@@ -519,13 +511,13 @@ void V4L2SliceVideoDecoder::ClearPendingRequests(DecodeStatus status) {
   // Clear current_decode_request_ and decode_request_queue_.
   if (current_decode_request_) {
     RunDecodeCB(std::move(current_decode_request_->decode_cb), status);
-    current_decode_request_ = nullptr;
+    current_decode_request_ = base::nullopt;
   }
 
   while (!decode_request_queue_.empty()) {
     auto request = std::move(decode_request_queue_.front());
     decode_request_queue_.pop();
-    RunDecodeCB(std::move(request->decode_cb), status);
+    RunDecodeCB(std::move(request.decode_cb), status);
   }
 }
 
@@ -535,14 +527,12 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
-          std::make_unique<DecodeRequest>(
-              std::move(buffer), std::move(decode_cb), GetNextBitstreamId())));
+      base::BindOnce(&V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
+                     DecodeRequest(std::move(buffer), std::move(decode_cb),
+                                   GetNextBitstreamId())));
 }
 
-void V4L2SliceVideoDecoder::EnqueueDecodeTask(
-    std::unique_ptr<DecodeRequest> request) {
+void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == State::kDecoding || state_ == State::kPause);
 
@@ -565,8 +555,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
         SetState(State::kPause);
 
-        output_request_queue_.push(std::make_unique<OutputRequest>(
-            OutputRequest::kChangeResolutionFence));
+        output_request_queue_.push(OutputRequest::ChangeResolutionFence());
         PumpOutputSurfaces();
         return;
 
@@ -576,7 +565,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           DCHECK(current_decode_request_->decode_cb);
           RunDecodeCB(std::move(current_decode_request_->decode_cb),
                       DecodeStatus::OK);
-          current_decode_request_ = nullptr;
+          current_decode_request_ = base::nullopt;
         }
 
         // Process next decodee request.
@@ -598,10 +587,9 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           DCHECK(!flush_cb_);
           flush_cb_ = std::move(current_decode_request_->decode_cb);
 
-          output_request_queue_.push(
-              std::make_unique<OutputRequest>(OutputRequest::kFlushFence));
+          output_request_queue_.push(OutputRequest::FlushFence());
           PumpOutputSurfaces();
-          current_decode_request_ = nullptr;
+          current_decode_request_ = base::nullopt;
           return;
         }
 
@@ -640,15 +628,14 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
 
   bool resume_decode = false;
   while (!output_request_queue_.empty()) {
-    if (!output_request_queue_.front()->IsReady()) {
+    if (!output_request_queue_.front().IsReady()) {
       DVLOGF(3) << "The first surface is not ready yet.";
       break;
     }
 
-    std::unique_ptr<OutputRequest> request =
-        std::move(output_request_queue_.front());
+    OutputRequest request = std::move(output_request_queue_.front());
     output_request_queue_.pop();
-    switch (request->type) {
+    switch (request.type) {
       case OutputRequest::kFlushFence:
         DCHECK(output_request_queue_.empty());
         DVLOGF(2) << "Flush finished.";
@@ -666,7 +653,7 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
         break;
 
       case OutputRequest::kSurface:
-        scoped_refptr<V4L2DecodeSurface> surface = std::move(request->surface);
+        scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
         auto surface_it = output_record_map_.find(surface->output_record());
         DCHECK(surface_it != output_record_map_.end());
         OutputRecord* output_record = surface_it->second.get();
@@ -794,17 +781,15 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
       std::make_unique<OutputRecord>(std::move(frame), std::move(output_buf))));
 
   return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      input_record_id, output_record_id,
-      base::BindOnce(&V4L2SliceVideoDecoder::ReuseOutputBuffer, weak_this_,
-                     output_record_id)));
+      input_record_id, output_record_id, base::DoNothing()));
 }
 
-void V4L2SliceVideoDecoder::ReuseOutputBuffer(int index) {
+void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
-  DVLOGF(3) << "Reuse output surface #" << index;
+  DVLOGF(3) << "Reuse output surface #" << buffer->BufferId();
 
   // Release the VideoFrame and V4L2 output buffer in the output record.
-  output_record_map_.erase(index);
+  output_record_map_.erase(buffer->BufferId());
 
   // Resume decoding in case of ran out of surface.
   if (state_ == State::kDecoding) {
@@ -860,24 +845,24 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   auto surface_it = output_record_map_.find(dec_surface->output_record());
   DCHECK(surface_it != output_record_map_.end());
   OutputRecord* output_record = surface_it->second.get();
-  std::vector<base::ScopedFD> dmabuf_fds =
-      ExtractAdditionalDmabuf(output_record->frame, num_output_planes_);
-  if (dmabuf_fds.empty()) {
+  if (!IsValidFrameForQueueDMABuf(output_record->frame.get(),
+                                  num_output_planes_)) {
     SetState(State::kError);
     return;
   }
-  if (!std::move(output_record->output_buf).QueueDMABuf(dmabuf_fds)) {
+  if (!std::move(output_record->output_buf)
+           .QueueDMABuf(output_record->frame->DmabufFds())) {
     SetState(State::kError);
     return;
   }
-  surfaces_at_device_.insert(
-      std::make_pair(dec_surface->output_record(), dec_surface));
 
   if (!dec_surface->Submit()) {
     VLOGF(1) << "Error while submitting frame for decoding!";
     SetState(State::kError);
     return;
   }
+
+  surfaces_at_device_.push(std::move(dec_surface));
 
   SchedulePollTaskIfNeeded();
 }
@@ -893,7 +878,7 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   // TODO(akahuang): Update visible_rect at the output frame.
   dec_surface->SetVisibleRect(visible_rect);
 
-  output_request_queue_.push(std::make_unique<OutputRequest>(dec_surface));
+  output_request_queue_.push(OutputRequest::Surface(std::move(dec_surface)));
   PumpOutputSurfaces();
 }
 
@@ -950,7 +935,8 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   if (output_queue_->IsStreaming())
     output_queue_->Streamoff();
   output_record_map_.clear();
-  surfaces_at_device_.clear();
+  while (!surfaces_at_device_.empty())
+    surfaces_at_device_.pop();
 
   return true;
 }
@@ -1014,14 +1000,23 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
       break;
 
     // Mark the output buffer decoded, and try to output surface.
-    auto surface_it = surfaces_at_device_.find(dequeued_buffer->BufferId());
-    DCHECK(surface_it != surfaces_at_device_.end());
-    surface_it->second->SetDecoded();
-    surfaces_at_device_.erase(surface_it);
+    DCHECK(!surfaces_at_device_.empty());
+    auto surface = std::move(surfaces_at_device_.front());
+    DCHECK_EQ(static_cast<size_t>(surface->output_record()),
+              dequeued_buffer->BufferId());
+    surfaces_at_device_.pop();
 
-    auto output_it = output_record_map_.find(dequeued_buffer->BufferId());
-    DCHECK(output_it != output_record_map_.end());
-    output_it->second->decoded_output_buf = std::move(dequeued_buffer);
+    surface->SetDecoded();
+
+    // Keep a reference to the V4L2 buffer until the buffer is reused. The
+    // reason for this is that the config store uses V4L2 buffer IDs to
+    // reference frames, therefore we cannot reuse the same V4L2 buffer ID for
+    // another decode operation until all references to that frame are gone.
+    // Request API does not have this limitation, so we can probably remove this
+    // after config store is gone.
+    surface->SetReleaseCallback(
+        base::BindOnce(&V4L2SliceVideoDecoder::ReuseOutputBuffer, weak_this_,
+                       std::move(dequeued_buffer)));
 
     PumpOutputSurfaces();
   }

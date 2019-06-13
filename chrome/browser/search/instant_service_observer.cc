@@ -7,5 +7,5 @@
 void InstantServiceObserver::ThemeInfoChanged(const ThemeBackgroundInfo&) {
 }
 
-void InstantServiceObserver::MostVisitedItemsChanged(
+void InstantServiceObserver::MostVisitedInfoChanged(
     const InstantMostVisitedInfo&) {}

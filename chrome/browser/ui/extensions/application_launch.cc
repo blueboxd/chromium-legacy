@@ -105,13 +105,12 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 };
 
 const Extension* GetExtension(const AppLaunchParams& params) {
-  if (params.extension_id.empty())
+  if (params.app_id.empty())
     return NULL;
   ExtensionRegistry* registry = ExtensionRegistry::Get(params.profile);
-  return registry->GetExtensionById(params.extension_id,
-                                    ExtensionRegistry::ENABLED |
-                                        ExtensionRegistry::DISABLED |
-                                        ExtensionRegistry::TERMINATED);
+  return registry->GetExtensionById(
+      params.app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
+                         ExtensionRegistry::TERMINATED);
 }
 
 bool IsAllowedToOverrideURL(const extensions::Extension* extension,
@@ -467,7 +466,7 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
 WebContents* OpenAppShortcutWindow(Profile* profile,
                                    const GURL& url) {
   AppLaunchParams launch_params(profile,
-                                NULL,  // this is a URL app.  No extension.
+                                std::string(),  // this is a URL app. No app id.
                                 extensions::LAUNCH_CONTAINER_WINDOW,
                                 WindowOpenDisposition::NEW_WINDOW,
                                 extensions::SOURCE_COMMAND_LINE);

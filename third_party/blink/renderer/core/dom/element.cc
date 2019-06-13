@@ -2679,7 +2679,6 @@ void Element::RebuildShadowRootLayoutTree(
   DCHECK(IsShadowHost(this));
   ShadowRoot* root = GetShadowRoot();
   root->RebuildLayoutTree(whitespace_attacher);
-  RebuildNonDistributedChildren();
 }
 
 void Element::RebuildPseudoElementLayoutTree(

@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Πληροφορίες αρχείου</translation>
 <translation id="2246549592927364792">Να λαμβάνονται περιγραφές εικόνων από το Google;</translation>
 <translation id="2249269794707377949">Από εδώ μπορείτε να διαχειριστείτε όλους τους λογαριασμούς Kerberos για μοναδική σύνδεση σε ορισμένες εφαρμογές και ιστοτόπους και κοινές χρήσεις αρχείων.</translation>
-<translation id="224940702122312781">Αυτή η σελίδα θα χρησιμοποιεί πολλά δεδομένα.</translation>
 <translation id="2249605167705922988">π.χ. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Άνοιγμα με πρόγραμμα προβολής συστήματος</translation>
 <translation id="225163402930830576">Ανανέωση δικτύων</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Ανασηκώστε και αγγίξτε ξανά</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Ο συγχρονισμός τέθηκε σε παύση</translation>
-<translation id="3861241522664181545">Η σελίδα τέθηκε σε παύση.</translation>
 <translation id="3862134173397075045">Καλώς ήρθατε στην εμπειρία Μετάδοσης στο Chrome!</translation>
 <translation id="3862693525629180217">Επαλήθευση μέσω ενσωματωμένου αισθητήρα</translation>
 <translation id="3862788408946266506">Θα πρέπει να εγκατασταθεί μια εφαρμογή με χαρακτηριστικό μανιφέστου "kiosk_only" στη λειτουργία kiosk του Chrome OS</translation>
@@ -3861,7 +3859,6 @@
 <translation id="6920989436227028121">Άνοιγμα ως κανονικής καρτέλας</translation>
 <translation id="6921104647315081813">Διαγραφή δραστηριοτήτων</translation>
 <translation id="692114467174262153">Δεν ήταν δυνατό το άνοιγμα του <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">Διακοπή χρήσης δεδομένων σε αυτήν τη σελίδα</translation>
 <translation id="6922128026973287222">Εξοικονομήστε δεδομένα και περιηγηθείτε πιο γρήγορα με την Εξοικονόμηση δεδομένων Google. Κάντε κλικ για να μάθετε περισσότερα.</translation>
 <translation id="6922745772873733498">Εισαγάγετε ένα PIN για να εκτυπώσετε.</translation>
 <translation id="6923132443355966645">Κύλιση/κλικ</translation>

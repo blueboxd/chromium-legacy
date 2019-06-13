@@ -767,6 +767,12 @@ TEST_P(ThreadPoolImplTest, FileDescriptorWatcherNoOpsAfterShutdown) {
   // Give a chance for the file watcher to fire before closing the handles.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
+  // Need to join the ServiceThread before closing the pipes as the pipe
+  // becoming readable is observed on the ServiceThread and TSAN correctly
+  // identifies this as a race even though the above sleep makes it highly
+  // unlikely in practice.
+  TearDown();
+
   EXPECT_EQ(0, IGNORE_EINTR(close(pipes[0])));
   EXPECT_EQ(0, IGNORE_EINTR(close(pipes[1])));
 }

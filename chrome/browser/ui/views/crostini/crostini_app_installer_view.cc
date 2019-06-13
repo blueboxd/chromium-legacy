@@ -73,7 +73,7 @@ CrostiniAppInstallerView::CrostiniAppInstallerView(
   message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   views::ScrollView* scroll_view = new views::ScrollView;
-  scroll_view->set_draw_overflow_indicator(true);
+  scroll_view->SetDrawOverflowIndicator(true);
   scroll_view->ClipHeightTo(crostini::kMinScrollHeight,
                             crostini::kMaxScrollHeight);
   message_label_ = scroll_view->SetContents(std::move(message_label));

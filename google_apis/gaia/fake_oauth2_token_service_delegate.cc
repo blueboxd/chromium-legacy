@@ -40,7 +40,7 @@ FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() {
 
 OAuth2AccessTokenFetcher*
 FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   auto it = refresh_tokens_.find(account_id);
@@ -50,19 +50,19 @@ FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 }
 
 bool FakeOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return !GetRefreshToken(account_id).empty();
 }
 
 GoogleServiceAuthError FakeOAuth2TokenServiceDelegate::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   return (it == refresh_tokens_.end()) ? GoogleServiceAuthError::AuthErrorNone()
                                        : it->second->error;
 }
 
 std::string FakeOAuth2TokenServiceDelegate::GetRefreshToken(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   if (it != refresh_tokens_.end())
     return it->second->refresh_token;
@@ -87,19 +87,19 @@ void FakeOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 }
 
 void FakeOAuth2TokenServiceDelegate::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 
 void FakeOAuth2TokenServiceDelegate::UpdateCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& refresh_token) {
   IssueRefreshTokenForUser(account_id, refresh_token);
 }
 
 void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& token) {
   ScopedBatchChange batch(this);
   if (token.empty()) {
@@ -122,13 +122,13 @@ void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
 }
 
 void FakeOAuth2TokenServiceDelegate::RevokeCredentials(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   IssueRefreshTokenForUser(account_id, std::string());
 }
 
 void FakeOAuth2TokenServiceDelegate::ExtractCredentials(
     OAuth2TokenService* to_service,
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   auto it = refresh_tokens_.find(account_id);
   DCHECK(it != refresh_tokens_.end());
   to_service->GetDelegate()->UpdateCredentials(account_id,
@@ -146,7 +146,7 @@ bool FakeOAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
 }
 
 void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   backoff_entry_.InformOfRequest(!error.IsTransientError());
   // Drop transient errors to match OAuth2TokenService's stated contract for

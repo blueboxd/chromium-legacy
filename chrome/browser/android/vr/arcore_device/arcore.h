@@ -44,8 +44,8 @@ class ArCore {
   // when the camera image was updated successfully.
   virtual mojom::VRPosePtr Update(bool* camera_updated) = 0;
 
-  // Returns all planes detected in the current frame.
-  virtual std::vector<mojom::XRPlaneDataPtr> GetDetectedPlanes() = 0;
+  // Returns information about all planes detected in the current frame.
+  virtual mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() = 0;
 
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,

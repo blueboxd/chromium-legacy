@@ -1006,7 +1006,8 @@ html[darkmode=true] #menu-footer {
 }
 
 #backgrounds-menu .bg-sel-tile-bg,
-#backgrounds-image-menu .bg-sel-tile-bg {
+#backgrounds-image-menu .bg-sel-tile-bg,
+#colors-menu .bg-sel-tile-bg {
   border-radius: 4px;
   height: 176px;
   margin-bottom: 45px;
@@ -1016,28 +1017,33 @@ html[darkmode=true] #menu-footer {
   width: 176px;
 }
 
-#backgrounds-image-menu .bg-sel-tile-bg {
+#backgrounds-image-menu .bg-sel-tile-bg,
+#colors-menu .bg-sel-tile-bg {
   margin-bottom: 8px;
 }
 
 .selected #backgrounds-default-icon,
-#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile,
+#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile {
   height: 144px;
   margin: 16px 16px 0 16px;
   width: 144px;
 }
 
-#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
+#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
   outline: none;
 }
 
 #backgrounds-menu .bg-sel-tile,
-#backgrounds-image-menu .bg-sel-tile {
+#backgrounds-image-menu .bg-sel-tile,
+#colors-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
 }
 
-#backgrounds-menu .bg-sel-tile-title {
+#backgrounds-menu .bg-sel-tile-title,
+#colors-menu .bg-sel-tile-title {
   background-color: unset;
   color: rgb(var(--GG700-rgb));
   font-size: 13px;
@@ -1046,7 +1052,8 @@ html[darkmode=true] #menu-footer {
   padding: 8px 0 24px 0;
 }
 
-html[darkmode=true] #backgrounds-menu .bg-sel-tile-title {
+html[darkmode=true] #backgrounds-menu .bg-sel-tile-title,
+html[darkmode=true] #colors-menu .bg-sel-tile-title {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -1059,7 +1066,8 @@ html[darkmode=true] #backgrounds-menu .bg-sel-tile-title {
 }
 
 #backgrounds-default.selected,
-#backgrounds-image-menu .bg-sel-tile-bg.selected {
+#backgrounds-image-menu .bg-sel-tile-bg.selected,
+#colors-menu .bg-sel-tile-bg.selected  {
   background-color: rgba(var(--GB900-rgb), .08);
 }
 

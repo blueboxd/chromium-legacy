@@ -91,6 +91,8 @@ import java.util.Set;
 
     /** Records via UMA all modules that have been requested and are currently installed. */
     public static void recordModuleAvailability() {
+        // MUST call init before creating a SplitInstallManager.
+        ModuleInstaller.init();
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         Set<String> requestedModules = new HashSet<>();
         requestedModules.addAll(
@@ -124,6 +126,8 @@ import java.util.Set;
 
     public PlayCoreModuleInstallerBackend(OnFinishedListener listener) {
         super(listener);
+        // MUST call init before creating a SplitInstallManager.
+        ModuleInstaller.init();
         mManager = SplitInstallManagerFactory.create(ContextUtils.getApplicationContext());
         mManager.registerListener(this);
     }

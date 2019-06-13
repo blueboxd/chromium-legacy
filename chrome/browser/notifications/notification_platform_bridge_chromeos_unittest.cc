@@ -9,11 +9,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 // Regression test for https://crbug.com/840105
 TEST(NotificationPlatformBridgeChromeOsTest, Update) {
+  message_center::MessageCenter::Initialize();
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   NotificationPlatformBridgeChromeOs bridge;
@@ -57,4 +59,6 @@ TEST(NotificationPlatformBridgeChromeOsTest, Update) {
   bridge.HandleNotificationClicked(permuted_notification.notification().id());
   EXPECT_EQ(1, initial_delegate_clicks);
   EXPECT_EQ(1, updated_delegate_clicks);
+
+  message_center::MessageCenter::Shutdown();
 }

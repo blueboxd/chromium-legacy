@@ -165,7 +165,6 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest, OnCompletePingback) {
   timing()->document_timing->load_event_start = base::nullopt;
   RunTestAndNavigateToUntrackedUrl(true, false, false);
   ValidateTimes();
-  ValidateLoFiInPingback(false);
 
   ResetTest();
   // Verify that when an opt out occurs, that it is reported in the pingback.
@@ -174,34 +173,6 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest, OnCompletePingback) {
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateTimes();
-  ValidateLoFiInPingback(false);
-
-  ResetTest();
-  std::unique_ptr<DataReductionProxyData> data =
-      std::make_unique<DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_request_url(GURL(kDefaultTestUrl));
-  data->set_lofi_received(true);
-
-  // Verify LoFi is tracked when a LoFi response is received.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kResourceUrl),
-      net::IPEndPoint(),
-      -1 /* frame_tree_node_id */,
-      true /*was_cached*/,
-      1024 * 40 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      std::move(data),
-      content::ResourceType::kScript,
-      0,
-      {} /* load_timing()info */};
-
-  RunTest(true, false, false, false);
-  SimulateLoadedResource(resource);
-  NavigateToUntrackedUrl();
-  ValidateTimes();
-  ValidateLoFiInPingback(true);
-  ValidateBlackListInPingback(false);
 
   ResetTest();
   RunTest(true, false, false, true);

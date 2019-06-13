@@ -64,7 +64,7 @@ component("mirroring_service") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp:cpp",
-    "//services/ws/public/cpp/gpu",
+    "//services/viz/public/cpp/gpu",
     "//ui/base",
     "//ui/gfx",
   ]
@@ -109,7 +109,7 @@ source_set("unittests") {
     "//net",
     "//services/network:test_support",
     "//services/network/public/mojom",
-    "//services/ws/public/cpp/gpu",
+    "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
   ]

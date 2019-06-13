@@ -190,6 +190,7 @@ void AppListClientImpl::ActivateItem(int profile_id,
   requested_model_updater->ActivateChromeItem(id, event_flags);
 
   // Send a training signal to the search controller.
+  CHECK(current_model_updater_);
   const auto* item = current_model_updater_->FindItem(id);
   if (item) {
     search_controller_->Train(

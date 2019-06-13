@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/devtools/devtools_frame_metadata.h"
@@ -245,7 +245,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Used by DelegatedFrameHostClientAndroid.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
   void DidPresentCompositorFrames(
-      const viz::PresentationFeedbackMap& feedbacks);
+      const viz::FrameTimingDetailsMap& timing_details);
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources);
   void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
@@ -537,7 +537,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
 
-  viz::PresentationFeedbackMap presentation_feedbacks_;
+  viz::FrameTimingDetailsMap timing_details_;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.

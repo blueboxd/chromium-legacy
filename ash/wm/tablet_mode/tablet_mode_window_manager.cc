@@ -106,7 +106,7 @@ class ScopedObserveWindowAnimation {
       return;
 
     Shell::Get()->tablet_mode_controller()->StopObservingAnimation(
-        /*record_stats=*/false);
+        /*record_stats=*/false, /*delete_screenshot=*/true);
   }
 
  private:
@@ -116,6 +116,14 @@ class ScopedObserveWindowAnimation {
 };
 
 TabletModeWindowManager::~TabletModeWindowManager() = default;
+
+// static
+aura::Window* TabletModeWindowManager::GetTopWindow() {
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+
+  return windows.empty() ? nullptr : windows[0];
+}
 
 void TabletModeWindowManager::Init() {
   // The overview mode needs to be ended before the tablet mode is started. To
@@ -185,13 +193,6 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   auto it = window_state_map_.find(window);
   if (it != window_state_map_.end())
     window_state_map_.erase(it);
-}
-
-aura::Window* TabletModeWindowManager::GetTopWindow() {
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-
-  return windows.empty() ? nullptr : windows[0];
 }
 
 void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(

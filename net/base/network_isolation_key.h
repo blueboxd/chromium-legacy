@@ -18,7 +18,8 @@ namespace net {
 // the context on which they were made.
 class NET_EXPORT NetworkIsolationKey {
  public:
-  NetworkIsolationKey(const base::Optional<url::Origin>& top_frame_origin);
+  explicit NetworkIsolationKey(
+      const base::Optional<url::Origin>& top_frame_origin);
 
   // Construct an empty key.
   NetworkIsolationKey();
@@ -59,6 +60,13 @@ class NET_EXPORT NetworkIsolationKey {
   // Returns true if this key's lifetime is short-lived. It may not make sense
   // to persist state to disk related to it (e.g., disk cache).
   bool IsTransient() const;
+
+  // APIs for serialization to and from the mojo structure.
+  const base::Optional<url::Origin>& GetTopFrameOrigin() const {
+    return top_frame_origin_;
+  }
+  // Returns true if all parts of the key are empty.
+  bool IsEmpty() const;
 
  private:
   // The origin of the top frame of the request (if applicable).

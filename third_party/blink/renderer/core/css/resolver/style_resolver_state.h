@@ -57,7 +57,7 @@ class CORE_EXPORT StyleResolverState {
                      const ComputedStyle* parent_style,
                      const ComputedStyle* layout_parent_style);
   StyleResolverState(Document&,
-                     Element*,
+                     Element&,
                      PseudoElement* pseudo_element,
                      const ComputedStyle* parent_style = nullptr,
                      const ComputedStyle* layout_parent_style = nullptr);
@@ -68,7 +68,7 @@ class CORE_EXPORT StyleResolverState {
   // separately.
   Document& GetDocument() const { return *document_; }
   // These are all just pass-through methods to ElementResolveContext.
-  Element* GetElement() const { return element_context_.GetElement(); }
+  Element& GetElement() const { return element_context_.GetElement(); }
   TreeScope& GetTreeScope() const;
   const ContainerNode* ParentNode() const {
     return element_context_.ParentNode();

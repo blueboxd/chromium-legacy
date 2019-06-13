@@ -71,7 +71,7 @@ class AndroidSmsAppManagerImplTest : public testing::Test {
 
     // AndroidSmsAppManagerImpl::PwaDelegate:
     content::WebContents* OpenApp(const AppLaunchParams& params) override {
-      opened_app_ids_.push_back(params.extension_id);
+      opened_app_ids_.push_back(params.app_id);
       return nullptr;
     }
 

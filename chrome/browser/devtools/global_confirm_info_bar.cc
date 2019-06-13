@@ -216,7 +216,7 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
       InfoBarService::FromWebContents(web_contents);
   // WebContents from the tab strip must have the infobar service.
   DCHECK(infobar_service);
-  if (ContainsKey(proxies_, infobar_service))
+  if (base::Contains(proxies_, infobar_service))
     return;
 
   std::unique_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(

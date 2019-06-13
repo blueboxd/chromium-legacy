@@ -23,6 +23,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -74,24 +75,54 @@ void MaybeRunCookieCallback(base::OnceCallback<void(bool)> callback,
     std::move(callback).Run(result);
 }
 
+const char kSecureCookieHistogramName[] = "Android.WebView.SecureCookieAction";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SecureCookieAction {
+  kInvalidUrl = 0,
+  kAlreadySecureScheme = 1,
+  kInvalidCookie = 2,
+  kNotASecureCookie = 3,
+  kFixedUp = 4,
+  kMaxValue = kFixedUp,
+};
+
 GURL MaybeFixUpSchemeForSecureCookie(const GURL& host,
                                      const std::string& value) {
   // Log message for catching strict secure cookies related bugs.
-  // TODO(sgurun) temporary. Add UMA stats to monitor, and remove afterwards.
-  // http://crbug.com/933981.
-  if (host.is_valid() &&
-      (!host.has_scheme() || host.SchemeIs(url::kHttpScheme))) {
-    net::ParsedCookie parsed_cookie(value);
-    if (parsed_cookie.IsValid() && parsed_cookie.IsSecure()) {
-      LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
-                      "secure cookie for "
-                   << host.spec();
-      GURL::Replacements replace_host;
-      replace_host.SetSchemeStr("https");
-      return host.ReplaceComponents(replace_host);
-    }
+  // TODO(ntfschr): try to remove this, based on UMA stats
+  // (https://crbug.com/933981)
+  if (!host.is_valid()) {
+    base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                  SecureCookieAction::kInvalidUrl);
+    return host;
   }
-  return host;
+  if (host.has_scheme() && !host.SchemeIs(url::kHttpScheme)) {
+    base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                  SecureCookieAction::kAlreadySecureScheme);
+    return host;
+  }
+  net::ParsedCookie parsed_cookie(value);
+  if (!parsed_cookie.IsValid()) {
+    base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                  SecureCookieAction::kInvalidCookie);
+    return host;
+  }
+  if (!parsed_cookie.IsSecure()) {
+    base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                  SecureCookieAction::kNotASecureCookie);
+    return host;
+  }
+
+  LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
+                  "secure cookie for "
+               << host.spec();
+  base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                SecureCookieAction::kFixedUp);
+  GURL::Replacements replace_host;
+  replace_host.SetSchemeStr(url::kHttpsScheme);
+  return host.ReplaceComponents(replace_host);
 }
 
 // Construct a closure which signals a waitable event if and when the closure

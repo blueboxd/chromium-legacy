@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/sql_init_error_message_ids.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -178,7 +177,6 @@ KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
   return new WebDataServiceWrapper(
       profile_path, g_browser_process->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      sync_start_util::GetFlareForSyncableService(profile_path),
       base::BindRepeating(&ProfileErrorCallback));
 }
 

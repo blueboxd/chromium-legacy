@@ -32,12 +32,6 @@
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
-#include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -47,6 +41,8 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_shared_worker.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -54,9 +50,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -75,13 +68,13 @@ ApplicationCacheHost::ApplicationCacheHost(DocumentLoader* document_loader)
 
 ApplicationCacheHost::~ApplicationCacheHost() {
   // Verify that detachFromDocumentLoader() has been performed already.
-  DCHECK(!host_);
+  DCHECK(!helper_);
 }
 
 void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
-  if (!IsApplicationCacheEnabled() || !host_)
+  if (!IsApplicationCacheEnabled() || !helper_)
     return;
-  const base::UnguessableToken& host_id = host_->GetHostID();
+  const base::UnguessableToken& host_id = helper_->GetHostID();
   if (!host_id.is_empty())
     request.SetAppCacheHostID(host_id);
 }
@@ -97,11 +90,13 @@ void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
 
   DCHECK(document_loader_->GetFrame());
   LocalFrame& frame = *document_loader_->GetFrame();
-  host_ = frame.Client()->CreateApplicationCacheHost(loader, this);
-  if (!host_)
+
+  helper_ = ApplicationCacheHostHelper::Create(&frame, this,
+                                               loader->AppcacheHostId());
+  if (!helper_)
     return;
 
-  const WebApplicationCacheHost* spawning_host = nullptr;
+  const ApplicationCacheHostHelper* spawning_host_helper = nullptr;
   Frame* spawning_frame = frame.Tree().Parent();
   if (!spawning_frame || !IsA<LocalFrame>(spawning_frame))
     spawning_frame = frame.Loader().Opener();
@@ -109,13 +104,13 @@ void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
     spawning_frame = &frame;
   if (DocumentLoader* spawning_doc_loader =
           To<LocalFrame>(spawning_frame)->Loader().GetDocumentLoader()) {
-    spawning_host =
+    spawning_host_helper =
         spawning_doc_loader->GetApplicationCacheHost()
-            ? spawning_doc_loader->GetApplicationCacheHost()->host_.get()
+            ? spawning_doc_loader->GetApplicationCacheHost()->helper_.Get()
             : nullptr;
   }
 
-  host_->WillStartMainResourceRequest(url, method, spawning_host);
+  helper_->WillStartMainResourceRequest(url, method, spawning_host_helper);
 
   // NOTE: The semantics of this method, and others in this interface, are
   // subtly different than the method names would suggest. For example, in this
@@ -125,8 +120,8 @@ void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
 }
 
 void ApplicationCacheHost::SelectCacheWithoutManifest() {
-  if (host_)
-    host_->SelectCacheWithoutManifest();
+  if (helper_)
+    helper_->SelectCacheWithoutManifest();
 }
 
 void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
@@ -151,7 +146,7 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
         *document, HostsUsingFeatures::Feature::
                        kApplicationCacheManifestSelectInsecureHost);
   }
-  if (host_ && !host_->SelectCacheWithManifest(manifest_url)) {
+  if (helper_ && !helper_->SelectCacheWithManifest(manifest_url)) {
     // It's a foreign entry, restart the current navigation from the top of the
     // navigation algorithm. The navigation will not result in the same resource
     // being loaded, because "foreign" entries are never picked during
@@ -164,9 +159,8 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
 
 void ApplicationCacheHost::DidReceiveResponseForMainResource(
     const ResourceResponse& response) {
-  if (host_) {
-    WrappedResourceResponse wrapped(response);
-    host_->DidReceiveResponseForMainResource(wrapped);
+  if (helper_) {
+    helper_->DidReceiveResponseForMainResource(response);
   }
 }
 
@@ -178,9 +172,12 @@ void ApplicationCacheHost::SetApplicationCache(
 
 void ApplicationCacheHost::DetachFromDocumentLoader() {
   // Detach from the owning DocumentLoader and let go of
-  // WebApplicationCacheHost.
+  // ApplicationCacheHostHelper.
   SetApplicationCache(nullptr);
-  host_.reset();
+  if (helper_) {
+    helper_->DetachFromDocumentLoader();
+    helper_.Clear();
+  }
   document_loader_ = nullptr;
 }
 
@@ -208,38 +205,36 @@ void ApplicationCacheHost::NotifyApplicationCache(
 }
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
-  if (!host_)
+  if (!helper_)
     return CacheInfo(NullURL(), 0, 0, 0, 0);
 
-  WebApplicationCacheHost::CacheInfo web_info;
-  host_->GetAssociatedCacheInfo(&web_info);
-  return CacheInfo(web_info.manifest_url, web_info.creation_time,
-                   web_info.update_time, web_info.response_sizes,
-                   web_info.padding_sizes);
+  ApplicationCacheHostHelper::CacheInfo cache_info;
+  helper_->GetAssociatedCacheInfo(&cache_info);
+  return CacheInfo(cache_info.manifest_url, cache_info.creation_time,
+                   cache_info.update_time, cache_info.response_sizes,
+                   cache_info.padding_sizes);
 }
 
 const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
-  if (!host_)
+  if (!helper_)
     return base::UnguessableToken::Null();
-  return host_->GetHostID();
+  return helper_->GetHostID();
+}
+
+void ApplicationCacheHost::SelectCacheForSharedWorker(
+    int64_t app_cache_id,
+    base::OnceClosure completion_callback) {
+  helper_->SelectCacheForSharedWorker(app_cache_id,
+                                      std::move(completion_callback));
 }
 
 void ApplicationCacheHost::FillResourceList(
     Vector<mojom::blink::AppCacheResourceInfo>* resources) {
   DCHECK(resources);
-  if (!host_)
+  if (!helper_)
     return;
 
-  WebVector<WebApplicationCacheHost::ResourceInfo> web_resources;
-  host_->GetResourceList(&web_resources);
-  for (size_t i = 0; i < web_resources.size(); ++i) {
-    resources->push_back(mojom::blink::AppCacheResourceInfo(
-        web_resources[i].url, web_resources[i].response_size,
-        web_resources[i].padding_size, web_resources[i].is_master,
-        web_resources[i].is_manifest, false /*is_intercept*/,
-        web_resources[i].is_fallback, web_resources[i].is_foreign,
-        web_resources[i].is_explicit, 0 /*response_id*/));
-  }
+  helper_->GetResourceList(resources);
 }
 
 void ApplicationCacheHost::StopDeferringEvents() {
@@ -283,16 +278,16 @@ void ApplicationCacheHost::DispatchDOMEvent(
 }
 
 mojom::AppCacheStatus ApplicationCacheHost::GetStatus() const {
-  return host_ ? host_->GetStatus()
-               : mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+  return helper_ ? helper_->GetStatus()
+                 : mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 }
 
 bool ApplicationCacheHost::Update() {
-  return host_ ? host_->StartUpdate() : false;
+  return helper_ ? helper_->StartUpdate() : false;
 }
 
 bool ApplicationCacheHost::SwapCache() {
-  bool success = host_ ? host_->SwapCache() : false;
+  bool success = helper_ ? helper_->SwapCache() : false;
   if (success) {
     probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
   }
@@ -300,8 +295,6 @@ bool ApplicationCacheHost::SwapCache() {
 }
 
 void ApplicationCacheHost::Abort() {
-  if (host_)
-    host_->Abort();
 }
 
 bool ApplicationCacheHost::IsApplicationCacheEnabled() {
@@ -324,7 +317,7 @@ void ApplicationCacheHost::NotifyEventListener(
                          String(), 0, String());
 }
 
-void ApplicationCacheHost::NotifyProgressEventListener(const WebURL&,
+void ApplicationCacheHost::NotifyProgressEventListener(const KURL&,
                                                        int progress_total,
                                                        int progress_done) {
   NotifyApplicationCache(mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT,
@@ -335,9 +328,9 @@ void ApplicationCacheHost::NotifyProgressEventListener(const WebURL&,
 
 void ApplicationCacheHost::NotifyErrorEventListener(
     mojom::AppCacheErrorReason reason,
-    const WebURL& url,
+    const KURL& url,
     int status,
-    const WebString& message) {
+    const String& message) {
   NotifyApplicationCache(mojom::AppCacheEventID::APPCACHE_ERROR_EVENT, 0, 0,
                          reason, url.GetString(), status, message);
 }
@@ -345,6 +338,7 @@ void ApplicationCacheHost::NotifyErrorEventListener(
 void ApplicationCacheHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(document_loader_);
+  visitor->Trace(helper_);
 }
 
 }  // namespace blink

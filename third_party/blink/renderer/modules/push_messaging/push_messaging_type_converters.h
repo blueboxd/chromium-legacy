@@ -9,23 +9,16 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
-struct WebPushSubscriptionOptions;
+class PushSubscriptionOptions;
 }  // namespace blink
 
 namespace mojo {
 
 template <>
-struct TypeConverter<blink::WebPushSubscriptionOptions,
-                     blink::mojom::blink::PushSubscriptionOptionsPtr> {
-  static blink::WebPushSubscriptionOptions Convert(
-      const blink::mojom::blink::PushSubscriptionOptionsPtr& input);
-};
-
-template <>
 struct TypeConverter<blink::mojom::blink::PushSubscriptionOptionsPtr,
-                     const blink::WebPushSubscriptionOptions*> {
+                     blink::PushSubscriptionOptions*> {
   static blink::mojom::blink::PushSubscriptionOptionsPtr Convert(
-      const blink::WebPushSubscriptionOptions* input);
+      blink::PushSubscriptionOptions* input);
 };
 
 }  // namespace mojo

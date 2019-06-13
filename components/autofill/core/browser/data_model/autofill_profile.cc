@@ -544,8 +544,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
                      app_locale)) {
         return false;
       }
-    } else if (!comparator.MatchesAfterNormalization(
-                   value, profile.GetInfo(type, app_locale))) {
+    } else if (!comparator.Compare(value, profile.GetInfo(type, app_locale))) {
       return false;
     }
   }

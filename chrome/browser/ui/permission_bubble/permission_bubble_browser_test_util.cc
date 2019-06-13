@@ -59,7 +59,7 @@ Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
       LoadExtension(test_data_dir_.AppendASCII("app_with_panel_container/"));
   CHECK(extension);
 
-  AppLaunchParams params(browser()->profile(), extension,
+  AppLaunchParams params(browser()->profile(), extension->id(),
                          extensions::LAUNCH_CONTAINER_PANEL_DEPRECATED,
                          WindowOpenDisposition::NEW_WINDOW,
                          extensions::SOURCE_TEST);

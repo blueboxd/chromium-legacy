@@ -26,7 +26,6 @@
 #include "chrome/browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/lofi_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
@@ -99,8 +98,6 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         std::make_unique<
             data_reduction_proxy::DataReductionProxyMetricsObserver>());
     tracker->AddObserver(std::make_unique<SchemePageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<data_reduction_proxy::LoFiPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<FromGWSPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<ForegroundDurationUKMObserver>());
     tracker->AddObserver(

@@ -794,7 +794,7 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
   base::string16 text = obj->GetHypertext();
 
   start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
-  if (start_offset < 0)
+  if (start_offset < 0 || start_offset >= static_cast<int>(text.size()))
     return nullptr;
 
   if (end_offset < 0) {
@@ -1422,8 +1422,10 @@ AtkObject* RefAt(AtkTable* table, gint row, gint column) {
 
 gint GetIndexAt(AtkTable* table, gint row, gint column) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
-    if (auto* cell = obj->GetTableCell(row, column))
-      return cell->GetTableCellIndex();
+    if (const AXPlatformNodeBase* cell = obj->GetTableCell(row, column)) {
+      DCHECK(cell->GetTableCellIndex().has_value());
+      return cell->GetTableCellIndex().value();
+    }
   }
 
   return -1;
@@ -1431,8 +1433,10 @@ gint GetIndexAt(AtkTable* table, gint row, gint column) {
 
 gint GetColumnAtIndex(AtkTable* table, gint index) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
-    if (auto* cell = obj->GetTableCell(index))
-      return cell->GetTableColumn();
+    if (const AXPlatformNodeBase* cell = obj->GetTableCell(index)) {
+      DCHECK(cell->GetTableColumn().has_value());
+      return cell->GetTableColumn().value();
+    }
   }
 
   return -1;
@@ -1440,31 +1444,39 @@ gint GetColumnAtIndex(AtkTable* table, gint index) {
 
 gint GetRowAtIndex(AtkTable* table, gint index) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
-    if (auto* cell = obj->GetTableCell(index))
-      return cell->GetTableRow();
+    if (const AXPlatformNodeBase* cell = obj->GetTableCell(index)) {
+      DCHECK(cell->GetTableRow().has_value());
+      return cell->GetTableRow().value();
+    }
   }
 
   return -1;
 }
 
 gint GetNColumns(AtkTable* table) {
-  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table)))
-    return obj->GetTableColumnCount();
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    // If the object is not a table, we return 0.
+    return obj->GetTableColumnCount().value_or(0);
+  }
 
   return 0;
 }
 
 gint GetNRows(AtkTable* table) {
-  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table)))
-    return obj->GetTableRowCount();
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
+    // If the object is not a table, we return 0.
+    return obj->GetTableRowCount().value_or(0);
+  }
 
   return 0;
 }
 
 gint GetColumnExtentAt(AtkTable* table, gint row, gint column) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
-    if (auto* cell = obj->GetTableCell(row, column))
-      return cell->GetTableColumnSpan();
+    if (const AXPlatformNodeBase* cell = obj->GetTableCell(row, column)) {
+      DCHECK(cell->GetTableColumnSpan().has_value());
+      return cell->GetTableColumnSpan().value();
+    }
   }
 
   return 0;
@@ -1472,8 +1484,10 @@ gint GetColumnExtentAt(AtkTable* table, gint row, gint column) {
 
 gint GetRowExtentAt(AtkTable* table, gint row, gint column) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(table))) {
-    if (auto* cell = obj->GetTableCell(row, column))
-      return cell->GetTableRowSpan();
+    if (const AXPlatformNodeBase* cell = obj->GetTableCell(row, column)) {
+      DCHECK(cell->GetTableRowSpan().has_value());
+      return cell->GetTableRowSpan().value();
+    }
   }
 
   return 0;
@@ -1575,8 +1589,11 @@ const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
 namespace atk_table_cell {
 
 gint GetColumnSpan(AtkTableCell* cell) {
-  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell)))
-    return obj->GetTableColumnSpan();
+  if (const AXPlatformNodeBase* obj =
+          AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    // If the object is not a cell, we return 0.
+    return obj->GetTableColumnSpan().value_or(0);
+  }
 
   return 0;
 }
@@ -1591,17 +1608,19 @@ GPtrArray* GetColumnHeaderCells(AtkTableCell* cell) {
   // headers for non-header cells.
   if (atk_object_get_role(ATK_OBJECT(cell)) != ATK_ROLE_TABLE_CELL)
     return array;
+
   auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell));
   if (!obj)
     return array;
-  auto* table = obj->GetTable();
-  if (!table)
+
+  base::Optional<int> col_index = obj->GetTableColumn();
+  if (!col_index)
     return array;
 
-  std::vector<int32_t> ids =
-      table->GetDelegate()->GetColHeaderNodeIds(obj->GetTableColumn());
+  const std::vector<int32_t> ids =
+      obj->GetDelegate()->GetColHeaderNodeIds(*col_index);
   for (const auto& node_id : ids) {
-    if (AXPlatformNode* node = table->GetDelegate()->GetFromNodeID(node_id)) {
+    if (AXPlatformNode* node = obj->GetDelegate()->GetFromNodeID(node_id)) {
       if (AtkObject* atk_node = node->GetNativeViewAccessible()) {
         g_ptr_array_add(array, g_object_ref(atk_node));
       }
@@ -1613,8 +1632,13 @@ GPtrArray* GetColumnHeaderCells(AtkTableCell* cell) {
 
 gboolean GetCellPosition(AtkTableCell* cell, gint* row, gint* column) {
   if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
-    *row = obj->GetTableRow();
-    *column = obj->GetTableColumn();
+    base::Optional<int> row_index = obj->GetTableRow();
+    base::Optional<int> col_index = obj->GetTableColumn();
+    if (!row_index || !col_index)
+      return false;
+
+    *row = *row_index;
+    *column = *col_index;
     return true;
   }
 
@@ -1622,8 +1646,10 @@ gboolean GetCellPosition(AtkTableCell* cell, gint* row, gint* column) {
 }
 
 gint GetRowSpan(AtkTableCell* cell) {
-  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell)))
-    return obj->GetTableRowSpan();
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    // If the object is not a cell, we return 0.
+    return obj->GetTableRowSpan().value_or(0);
+  }
 
   return 0;
 }
@@ -1638,17 +1664,19 @@ GPtrArray* GetRowHeaderCells(AtkTableCell* cell) {
   // headers for non-header cells.
   if (atk_object_get_role(ATK_OBJECT(cell)) != ATK_ROLE_TABLE_CELL)
     return array;
+
   auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell));
   if (!obj)
     return array;
-  auto* table = obj->GetTable();
-  if (!table)
+
+  base::Optional<int> row_index = obj->GetTableRow();
+  if (!row_index)
     return array;
 
-  std::vector<int32_t> ids =
-      table->GetDelegate()->GetRowHeaderNodeIds(obj->GetTableRow());
+  const std::vector<int32_t> ids =
+      obj->GetDelegate()->GetRowHeaderNodeIds(*row_index);
   for (const auto& node_id : ids) {
-    if (AXPlatformNode* node = table->GetDelegate()->GetFromNodeID(node_id)) {
+    if (AXPlatformNode* node = obj->GetDelegate()->GetFromNodeID(node_id)) {
       if (AtkObject* atk_node = node->GetNativeViewAccessible()) {
         g_ptr_array_add(array, g_object_ref(atk_node));
       }

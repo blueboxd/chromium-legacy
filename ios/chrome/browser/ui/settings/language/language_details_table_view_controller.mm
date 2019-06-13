@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -22,9 +23,6 @@
 #endif
 
 namespace {
-
-NSString* const kLanguageDetailsTableViewAccessibilityIdentifier =
-    @"kLanguageDetailsTableViewAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierOptions = kSectionIdentifierEnumZero,
@@ -98,9 +96,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   neverTranslateItem.text =
       l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE);
   neverTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  neverTranslateItem.accessoryType = [self.languageItem isBlocked]
-                                         ? UITableViewCellAccessoryCheckmark
-                                         : UITableViewCellAccessoryNone;
+  if ([self.languageItem isBlocked]) {
+    neverTranslateItem.accessibilityTraits |= UIAccessibilityTraitSelected;
+    neverTranslateItem.accessoryType = UITableViewCellAccessoryCheckmark;
+  }
   [model addItem:neverTranslateItem
       toSectionWithIdentifier:SectionIdentifierOptions];
 
@@ -110,9 +109,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   offerTranslateItem.text = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE);
   offerTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  offerTranslateItem.accessoryType = [self.languageItem isBlocked]
-                                         ? UITableViewCellAccessoryNone
-                                         : UITableViewCellAccessoryCheckmark;
+  if (![self.languageItem isBlocked]) {
+    offerTranslateItem.accessibilityTraits |= UIAccessibilityTraitSelected;
+    offerTranslateItem.accessoryType = UITableViewCellAccessoryCheckmark;
+  }
   if (!self.languageItem.canOfferTranslate) {
     offerTranslateItem.enabled = NO;
     offerTranslateItem.textColor =

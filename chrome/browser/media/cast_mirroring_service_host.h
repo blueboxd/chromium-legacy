@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/mirroring/mojom/mirroring_service.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/gfx/geometry/size.h"
 
 // TODO(https://crbug.com/879012): Remove the build flag. OffscreenTab should
 // not only be defined when extension is enabled.
@@ -66,6 +68,12 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 
  private:
   friend class CastMirroringServiceHostBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(CastMirroringServiceHostTest,
+                           TestGetClampedResolution);
+
+  static gfx::Size GetCaptureResolutionConstraint();
+  // Clamp resolution constraint to the screen size.
+  static gfx::Size GetClampedResolution(gfx::Size screen_resolution);
 
   // ResourceProvider implementation.
   void GetVideoCaptureHost(

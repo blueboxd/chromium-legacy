@@ -46,8 +46,10 @@
         margin-top: 4px;
       }
 
-      :host-context([dark]) .explain-selected {
-        color: var(--google-green-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        .explain-selected {
+          color: var(--google-green-refresh-300);
+        }
       }
 
       cr-action-menu.complex .dropdown-item {
@@ -102,8 +104,10 @@
         margin-top: 8px;
       }
 
-      :host-context([dark]) .name-with-error-list div {
-        color: var(--settings-error-color);
+      @media (prefers-color-scheme: dark) {
+        .name-with-error-list div {
+          color: var(--settings-error-color);
+        }
       }
 
       iron-icon[icon='cr:error'] {
@@ -138,7 +142,6 @@
       .restart-button {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
-
     </style>
     <os-settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">

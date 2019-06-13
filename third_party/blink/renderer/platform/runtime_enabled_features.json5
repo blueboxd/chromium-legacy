@@ -218,12 +218,17 @@
       origin_trial_feature_name: "BuiltInModuleInfra",
       implied_by: ["ExperimentalProductivityFeatures",
                    "BuiltInModuleAll",
-                   "BuiltInModuleKvStorage"],
+                   "BuiltInModuleKvStorage",
+                   "BuiltInModuleSwitchElement"],
     },
     {
       name: "BuiltInModuleKvStorage",
       origin_trial_feature_name: "BuiltInModuleKvStorage",
       implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "BuiltInModuleSwitchElement",
+      implied_by: ["BuiltInModuleAll"],
     },
     {
       name: "CacheInlineScriptCode"
@@ -563,10 +568,6 @@
       status: "experimental",
     },
     {
-      name: "FastFlatTreeTraversal",
-      status: "stable",
-    },
-    {
       name: "FastMobileScrolling",
       status: {"Android": "stable"},
     },
@@ -758,8 +759,10 @@
       status: "experimental",
     },
     {
+      // Launched by default. TODO(mythria): cleanup virtual tests and
+      // other hooks in blink.
       name: "IsolatedCodeCache",
-      status: "experimental",
+      status: "stable",
     },
     {
       // If enabled, CSP checks use the isolated world CSP when in an isolated

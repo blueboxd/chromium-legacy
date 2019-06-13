@@ -102,8 +102,6 @@ jumbo_static_library("renderer") {
     "security_interstitials/security_interstitial_page_controller.h",
     "subresource_redirect/subresource_redirect_params.cc",
     "subresource_redirect/subresource_redirect_params.h",
-    "subresource_redirect/subresource_redirect_switches.cc",
-    "subresource_redirect/subresource_redirect_switches.h",
     "subresource_redirect/subresource_redirect_url_loader_throttle.cc",
     "subresource_redirect/subresource_redirect_url_loader_throttle.h",
     "subresource_redirect/subresource_redirect_util.cc",

@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "net/base/network_isolation_key.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -213,8 +214,12 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
                             RenderProcessHost* process) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
-    process->CreateURLLoaderFactory(origin_, std::move(no_header_client),
-                                    std::move(request));
+
+    // TODO(crbug.com/955476): Create network_isolation_key cache key using
+    // worker script's origin.
+    process->CreateURLLoaderFactory(
+        origin_, net::NetworkIsolationKey() /* network_isolation_key */,
+        std::move(no_header_client), std::move(request));
   }
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request) {

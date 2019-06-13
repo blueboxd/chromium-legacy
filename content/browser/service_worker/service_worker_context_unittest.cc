@@ -997,8 +997,8 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
     results.insert(it->GetProviderHost());
   }
   EXPECT_EQ(2u, results.size());
-  EXPECT_TRUE(ContainsKey(results, host1_raw));
-  EXPECT_TRUE(ContainsKey(results, host3_raw));
+  EXPECT_TRUE(base::Contains(results, host1_raw));
+  EXPECT_TRUE(base::Contains(results, host3_raw));
 
   // Iterate over the provider hosts that belong to kOrigin2.
   // (This should not include host4 as it's not for controllee.)
@@ -1009,7 +1009,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
     results.insert(it->GetProviderHost());
   }
   EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(ContainsKey(results, host2_raw));
+  EXPECT_TRUE(base::Contains(results, host2_raw));
 
   context()->RemoveProviderHost(host1->provider_id());
   context()->RemoveProviderHost(host2->provider_id());

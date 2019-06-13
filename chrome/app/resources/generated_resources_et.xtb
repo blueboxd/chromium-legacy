@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Faili teave</translation>
 <translation id="2246549592927364792">Kas hankida Google'ist piltide kirjeldused?</translation>
 <translation id="2249269794707377949">Siin saab hallata kõiki Kerberose kontosid, millega saab ühekordse sisselogimisega kasutada teatud rakendusi ja veebisaite.</translation>
-<translation id="224940702122312781">See leht kasutab palju andmemahtu.</translation>
 <translation id="2249605167705922988">nt 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Ava süsteemivaaturiga</translation>
 <translation id="225163402930830576">Värskenda võrke</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Tõstke sõrm andurilt ja seejärel puudutage uuesti</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sünkroonimine on peatatud</translation>
-<translation id="3861241522664181545">Leht on peatatud.</translation>
 <translation id="3862134173397075045">Tere tulemast Chrome'is Cast'i avastama!</translation>
 <translation id="3862693525629180217">Kinnitamine sisseehitatud anduri abil</translation>
 <translation id="3862788408946266506">Rakendus manifesti atribuudiga „kiosk_only” tuleb installida Chrome OS-i kioskirežiimis</translation>
@@ -3860,7 +3858,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6920989436227028121">Ava tavalise vahelehena</translation>
 <translation id="6921104647315081813">Kustuta tegevused</translation>
 <translation id="692114467174262153">Brauserit <ph name="ALTERNATIVE_BROWSER_NAME" /> ei saanud avada</translation>
-<translation id="6921709132208495314">Katkesta sel lehel andmemahu kasutamine</translation>
 <translation id="6922128026973287222">Salvestage andmeid ja sirvige kiiremini Google'i andmemahu säästjaga. Lisateabe saamiseks klõpsake.</translation>
 <translation id="6922745772873733498">Sisestage printimiseks PIN-kood</translation>
 <translation id="6923132443355966645">Kerimine/klõpsamine</translation>

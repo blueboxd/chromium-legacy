@@ -72,31 +72,6 @@ int GetIdealBadgeIconSizeInPx() {
 
 using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
-// Returns true if the overall security state of |web_contents| is sufficient to
-// be considered installable.
-bool IsContentSecure(content::WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-
-  // chrome:// URLs are considered secure.
-  const GURL& url = web_contents->GetVisibleURL();
-  if (url.scheme() == content::kChromeUIScheme)
-    return true;
-
-  // SecurityStateTabHelper ignores origins that are manually listed as secure.
-  // Check those explicitly, using the VisibleURL to match what
-  // SecurityStateTabHelper looks at.
-  if (net::IsLocalhost(url) ||
-      network::SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(
-          url::Origin::Create(url))) {
-    return true;
-  }
-
-  return security_state::IsSslCertificateValid(
-      SecurityStateTabHelper::FromWebContents(web_contents)
-          ->GetSecurityLevel());
-}
-
 // Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
 // height and width >= kMinimumPrimaryIconSizeInPx (or size "any").
 bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
@@ -200,6 +175,31 @@ int InstallableManager::GetMinimumIconSizeInPx() {
   return kMinimumPrimaryIconSizeInPx;
 }
 
+// static
+bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  // chrome:// URLs are considered secure.
+  const GURL& url = web_contents->GetLastCommittedURL();
+  if (url.scheme() == content::kChromeUIScheme)
+    return true;
+
+  if (IsOriginConsideredSecure(url))
+    return true;
+
+  return security_state::IsSslCertificateValid(
+      SecurityStateTabHelper::FromWebContents(web_contents)
+          ->GetSecurityLevel());
+}
+
+// static
+bool InstallableManager::IsOriginConsideredSecure(const GURL& url) {
+  return net::IsLocalhost(url) ||
+         network::SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(
+             url::Origin::Create(url));
+}
+
 void InstallableManager::GetData(const InstallableParams& params,
                                  InstallableCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -262,10 +262,6 @@ void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
 
 void InstallableManager::RecordAddToHomescreenInstallabilityTimeout() {
   metrics_->RecordAddToHomescreenInstallabilityTimeout();
-}
-
-bool InstallableManager::IsContentSecureForTesting() {
-  return IsContentSecure(web_contents());
 }
 
 bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {

@@ -9,10 +9,10 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
+import "services/viz/public/interfaces/compositing/frame_timing_details.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
 import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/presentation_feedback.mojom";
 import "gpu/ipc/common/mailbox.mojom";
 
 
@@ -90,7 +90,7 @@ interface CompositorFrameSinkClient {
 
   // Notification for the client to generate a CompositorFrame.
   OnBeginFrame(BeginFrameArgs args,
-               map<uint32, gfx.mojom.PresentationFeedback> presentations);
+               map<uint32, FrameTimingDetails> details);
 
   // Inform the client that OnBeginFrame may not be called for some time.
   OnBeginFramePausedChanged(bool paused);

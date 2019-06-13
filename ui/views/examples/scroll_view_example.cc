@@ -75,13 +75,8 @@ ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {
 ScrollViewExample::~ScrollViewExample() = default;
 
 void ScrollViewExample::CreateExampleView(View* container) {
-  wide_ = new LabelButton(this, ASCIIToUTF16("Wide"));
-  tall_ = new LabelButton(this, ASCIIToUTF16("Tall"));
-  big_square_ = new LabelButton(this, ASCIIToUTF16("Big Square"));
-  small_square_ = new LabelButton(this, ASCIIToUTF16("Small Square"));
-  scroll_to_ = new LabelButton(this, ASCIIToUTF16("Scroll to"));
-  scroll_view_ = new ScrollView();
-  scrollable_ = scroll_view_->SetContents(std::make_unique<ScrollableView>());
+  auto scroll_view = std::make_unique<ScrollView>();
+  scrollable_ = scroll_view->SetContents(std::make_unique<ScrollableView>());
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
@@ -93,7 +88,7 @@ void ScrollViewExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
-  layout->AddView(scroll_view_);
+  scroll_view_ = layout->AddView(std::move(scroll_view));
 
   // Add control buttons.
   column_set = layout->AddColumnSet(1);
@@ -102,11 +97,16 @@ void ScrollViewExample::CreateExampleView(View* container) {
                           GridLayout::USE_PREF, 0, 0);
   }
   layout->StartRow(0, 1);
-  layout->AddView(wide_);
-  layout->AddView(tall_);
-  layout->AddView(big_square_);
-  layout->AddView(small_square_);
-  layout->AddView(scroll_to_);
+  wide_ = layout->AddView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Wide")));
+  tall_ = layout->AddView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Tall")));
+  big_square_ = layout->AddView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Big Square")));
+  small_square_ = layout->AddView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Small Square")));
+  scroll_to_ = layout->AddView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Scroll to")));
 }
 
 void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {

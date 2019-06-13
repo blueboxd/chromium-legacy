@@ -28,8 +28,8 @@ class XRWorldInformation : public ScriptWrappable {
   // the received frame data. This will update the contents of
   // plane_ids_to_planes_.
   void ProcessPlaneInformation(
-      const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-          detected_planes);
+      const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+      double timestamp);
 
  private:
   // Signifies if we should return null from `detectedPlanes()`.

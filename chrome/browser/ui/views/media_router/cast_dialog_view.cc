@@ -134,13 +134,14 @@ int CastDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-views::View* CastDialogView::CreateExtraView() {
-  sources_button_ = new views::MdTextButtonWithDownArrow(
+std::unique_ptr<views::View> CastDialogView::CreateExtraView() {
+  auto sources_button = std::make_unique<views::MdTextButtonWithDownArrow>(
       this,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  sources_button_->SetID(kAlternativeSourceButtonId);
-  sources_button_->SetEnabled(false);
-  return sources_button_;
+  sources_button->SetID(kAlternativeSourceButtonId);
+  sources_button->SetEnabled(false);
+  sources_button_ = sources_button.get();
+  return sources_button;
 }
 
 bool CastDialogView::Close() {

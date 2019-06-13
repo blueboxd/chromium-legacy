@@ -463,6 +463,7 @@ template("grit") {
     set_sources_assignment_filter([
                                     "*.json",
                                     "*.pak",
+                                    "*.xml",
                                   ])
     sources = grit_outputs
     set_sources_assignment_filter(sources_assignment_filter)

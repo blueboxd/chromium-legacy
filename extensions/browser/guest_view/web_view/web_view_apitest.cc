@@ -28,6 +28,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -402,6 +403,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCustomElementCallbacksInaccessible) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAssignSrcAfterCrash) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RunTest("testAssignSrcAfterCrash", "web_view/apitest");
 }
 
@@ -551,6 +553,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestEventName) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RunTest("testEventName", "web_view/apitest");
 }
 
@@ -716,6 +719,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReassignSrcAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   std::string app_location = "web_view/apitest";
   StartTestServer(app_location);
 
@@ -752,6 +757,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReload) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReloadAfterTerminate) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RunTest("testReloadAfterTerminate", "web_view/apitest");
 }
 
@@ -774,6 +780,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestResizeWebviewResizesContent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestTerminateAfterExit) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RunTest("testTerminateAfterExit", "web_view/apitest");
 }
 

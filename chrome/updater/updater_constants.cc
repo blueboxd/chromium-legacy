@@ -8,6 +8,8 @@ namespace updater {
 
 const char kCrashMeSwitch[] = "crash-me";
 const char kCrashHandlerSwitch[] = "crash-handler";
+const char kInstall[] = "install";
+const char kUninstall[] = "uninstall";
 const char kTestSwitch[] = "test";
 
 const char kNoRateLimit[] = "--no-rate-limit";
@@ -17,5 +19,8 @@ const char kUpdaterJSONDefaultUrl[] =
 const char kCrashUploadURL[] = "https://clients2.google.com/cr/report";
 const char kCrashStagingUploadURL[] =
     "https://clients2.google.com/cr/staging_report";
+
+extern const char kAppsDir[] = "apps";
+extern const char kUninstallScript[] = "uninstall.cmd";
 
 }  // namespace updater

@@ -256,7 +256,7 @@ void ScriptRunner::ExecuteTask() {
 #endif
 }
 
-void ScriptRunner::Trace(blink::Visitor* visitor) {
+void ScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(pending_in_order_scripts_);
   visitor->Trace(pending_async_scripts_);

@@ -2272,3 +2272,5 @@ external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-m
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ WontFix ]
 external/wpt/web-share/share-files-manual.html [ WontFix ]
 external/wpt/web-share/share-image-manual.html [ WontFix ]
+external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ WontFix ]
+external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ WontFix ]

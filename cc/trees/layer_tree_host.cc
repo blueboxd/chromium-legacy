@@ -912,15 +912,9 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::RecordWheelAndTouchScrollingCount(
-    const ScrollAndScaleSet& info) {
-  bool has_scrolled_by_wheel = info.has_scrolled_by_wheel;
-  bool has_scrolled_by_touch = info.has_scrolled_by_touch;
-
-  if (has_scrolled_by_wheel || has_scrolled_by_touch) {
-    client_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
-  }
+void LayerTreeHost::RecordManipulationTypeCounts(
+    const ScrollAndScaleSet& scroll_info) {
+  client_->RecordManipulationTypeCounts(scroll_info.manipulation_info);
 }
 
 void LayerTreeHost::SendOverscrollAndScrollEndEventsFromImplSide(
@@ -970,7 +964,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // on the main thread.
   ApplyViewportChanges(*info);
 
-  RecordWheelAndTouchScrollingCount(*info);
+  RecordManipulationTypeCounts(*info);
 }
 
 void LayerTreeHost::RecordStartOfFrameMetrics() {

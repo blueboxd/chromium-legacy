@@ -7,8 +7,12 @@
 
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
+
+#include "base/optional.h"
 
 namespace ui {
 
@@ -147,37 +151,36 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   //
   // Tables. All of these should be called on a node that's a table-like
-  // role.
+  // role, otherwise they return nullopt.
   //
   bool IsTable() const override;
-  int32_t GetTableColCount() const override;
-  int32_t GetTableRowCount() const override;
-  base::Optional<int32_t> GetTableAriaColCount() const override;
-  base::Optional<int32_t> GetTableAriaRowCount() const override;
-  int32_t GetTableCellCount() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const override;
-  AXPlatformNode* GetTableCaption() override;
+  base::Optional<int> GetTableColCount() const override;
+  base::Optional<int> GetTableRowCount() const override;
+  base::Optional<int> GetTableAriaColCount() const override;
+  base::Optional<int> GetTableAriaRowCount() const override;
+  base::Optional<int> GetTableCellCount() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  std::vector<int32_t> GetRowHeaderNodeIds() const override;
+  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
+  AXPlatformNode* GetTableCaption() const override;
 
   // Table row-like nodes.
   bool IsTableRow() const override;
-  int32_t GetTableRowRowIndex() const override;
+  base::Optional<int> GetTableRowRowIndex() const override;
 
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const override;
-  int32_t GetTableCellIndex() const override;
-  int32_t GetTableCellColIndex() const override;
-  int32_t GetTableCellRowIndex() const override;
-  int32_t GetTableCellColSpan() const override;
-  int32_t GetTableCellRowSpan() const override;
-  int32_t GetTableCellAriaColIndex() const override;
-  int32_t GetTableCellAriaRowIndex() const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIndexToId(int32_t cell_index) const override;
+  base::Optional<int> GetTableCellIndex() const override;
+  base::Optional<int> GetTableCellColIndex() const override;
+  base::Optional<int> GetTableCellRowIndex() const override;
+  base::Optional<int> GetTableCellColSpan() const override;
+  base::Optional<int> GetTableCellRowSpan() const override;
+  base::Optional<int> GetTableCellAriaColIndex() const override;
+  base::Optional<int> GetTableCellAriaRowIndex() const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
+  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
 
   // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
   bool IsCellOrHeaderOfARIATable() const override;
@@ -186,8 +189,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Ordered-set-like and item-like nodes.
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  int32_t GetPosInSet() const override;
-  int32_t GetSetSize() const override;
+  base::Optional<int> GetPosInSet() const override;
+  base::Optional<int> GetSetSize() const override;
 
   //
   // Events.

@@ -1259,7 +1259,7 @@ bool TestLauncher::ProcessAndValidateTests() {
     std::vector<TestInfo> test_sequence;
     test_sequence.push_back(test_info);
     // Move Pre Tests prior to final test in order.
-    while (base::ContainsKey(pre_tests, test_sequence.back().GetPreName())) {
+    while (base::Contains(pre_tests, test_sequence.back().GetPreName())) {
       test_sequence.push_back(pre_tests[test_sequence.back().GetPreName()]);
       pre_tests.erase(test_sequence.back().GetDisabledStrippedName());
     }
@@ -1397,7 +1397,7 @@ bool TestLauncher::RunRetryTests() {
     // Retry all tests that depend on a failing test.
     std::vector<std::string> test_names;
     for (const TestInfo& test_info : tests_) {
-      if (base::ContainsKey(tests_to_retry_, test_info.GetPrefixStrippedName()))
+      if (base::Contains(tests_to_retry_, test_info.GetPrefixStrippedName()))
         test_names.push_back(test_info.GetFullName());
     }
     tests_to_retry_.clear();

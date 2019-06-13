@@ -29,6 +29,7 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 class Browser;
@@ -294,6 +295,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Return true if the current state is in advanced state for TAB UI.
   bool TabUiIsAdvancedState(TranslateBubbleModel::ViewState view_state);
 
+  // Handles the reset button in advanced view under Tab Ui.
+  void ResetLanguage();
+
   static TranslateBubbleView* translate_bubble_view_;
 
   views::View* before_translate_view_;
@@ -313,9 +317,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   views::Checkbox* before_always_translate_checkbox_;
   views::Checkbox* advanced_always_translate_checkbox_;
+  views::TabbedPane* tabbed_pane_;
 
   views::LabelButton* advanced_cancel_button_;
   views::LabelButton* advanced_done_button_;
+
+  // Default source/target language without user interaction.
+  int previous_source_language_index_;
+  int previous_target_language_index_;
 
   // Used to trigger the options menu in tests.
   views::Button* before_translate_options_button_;

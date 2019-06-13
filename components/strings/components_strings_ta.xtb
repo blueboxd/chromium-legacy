@@ -177,6 +177,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">கார்டு உரிமையாளரின் பெயர்</translation>
 <translation id="1821930232296380041">தவறான கோரிக்கை அல்லது கோரிக்கை அளவுருக்கள்</translation>
+<translation id="1822370876374026111">அடுத்த முறை விரைவாகப் பணம் செலுத்த கார்டு விவரங்களையும் பில்லிங் முகவரியையும் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
 <translation id="1822540298136254167">நீங்கள் பார்வையிட்ட இணையதளங்களும் அவற்றில் செலவழித்த நேரமும்</translation>
 <translation id="1826516787628120939">சரிபார்க்கிறது</translation>
 <translation id="1834321415901700177">இந்தத் தளத்தில் தீங்கிழைக்கும் நிரல்கள் உள்ளன</translation>
@@ -590,6 +591,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{மேலும் <ph name="ITEM_COUNT" /> உருப்படி}other{மேலும் <ph name="ITEM_COUNT" /> உருப்படிகள்}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">அடுத்த முறை விரைவாகப் பணம் அனுப்ப கார்டு விவரங்களையும் பில்லிங் முகவரியையும் Google கணக்கில் சேமிக்கவும்.</translation>
 <translation id="4196861286325780578">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ஃபயர்வால் மற்றும் வைரஸ் எதிர்ப்பு உள்ளமைவைச் சரிபார்த்தல்<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (என்வலப்)</translation>
@@ -1003,6 +1005,7 @@
 <translation id="6451458296329894277">படிவ மறுசமர்ப்பிப்பை உறுதிசெய்க</translation>
 <translation id="6465306955648956876">கடவுச்சொற்களை நிர்வகி...</translation>
 <translation id="647261751007945333">சாதனக் கொள்கைகள்</translation>
+<translation id="6476284679642588870">கட்டண முறைகளை நிர்வகி</translation>
 <translation id="6477321094435799029">இந்தப் பக்கத்தில் வழக்கத்திற்கு மாறான குறியீடு இருப்பதை Chrome கண்டறிந்துள்ளது, மேலும் உங்கள் தனிப்பட்ட தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள், ஃபோன் எண்கள் மற்றும் கிரெடிட் கார்டுகள்) பாதுகாக்க அதைத் தடுத்துள்ளது.</translation>
 <translation id="6489534406876378309">சிதைவுகளைப் பதிவேற்றுவதைத் தொடங்கு</translation>
 <translation id="6499038740797743453">கடவுச்சொல்லை மீட்டமைக்கவா?</translation>
@@ -1142,6 +1145,7 @@
 <translation id="7298195798382681320">பரிந்துரைத்தவை</translation>
 <translation id="7300012071106347854">அடர் நீலம்</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">அடுத்த முறை விரைவாகப் பணம் செலுத்த கார்டு விவரங்களையும் பில்லிங் முகவரியையும் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> அன்று சிதைவு அறிக்கை பெறப்பட்டது (பயனர் பதிவேற்றக் கோரியுள்ளார், இன்னும் பதிவேற்றப்படவில்லை)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />பாதுகாப்பு உலாவல்<ph name="END_LINK" /> எச்சரிக்கைகள்</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1370,6 +1374,7 @@
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8433057134996913067">இதனால் பெரும்பாலான வலைத்தளங்களில் இருந்து வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="8437238597147034694">&amp;நகர்த்தலைச் செயல்தவிர்</translation>
+<translation id="8440508849222143646">அடுத்த முறை விரைவாகப் பணம் செலுத்த கார்டு விவரங்களையும் பில்லிங் முகவரியையும் Google கணக்கில் சேமிக்கவும்.</translation>
 <translation id="8461694314515752532">ஒத்திசைக்கப்பட்ட தரவை எனது ஒத்திசைவுக் கடவுச்சொற்றொடர் மூலம் என்கிரிப்ட் செய்</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 கிரெடிட் கார்டு}other{# கிரெடிட் கார்டுகள்}}</translation>
 <translation id="8473863474539038330">முகவரிகள் மற்றும் பல</translation>
@@ -1476,6 +1481,7 @@
 <translation id="9128870381267983090">நெட்வொர்க்குடன் இணையவும்</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
 <translation id="9137248913990643158">இந்தப் பயன்பாட்டைப் பயன்படுத்தும் முன், Chromeஐத் தொடங்கி உள்நுழையவும்.</translation>
+<translation id="9141013498910525015">முகவரிகளை நிர்வகி</translation>
 <translation id="9148088599418889305">ஷிப்பிங் முறையைத் தேர்வு செய்</translation>
 <translation id="9148507642005240123">&amp;திருத்தலைச் செயல்தவிர்</translation>
 <translation id="9154194610265714752">புதுப்பிக்கப்பட்டது</translation>

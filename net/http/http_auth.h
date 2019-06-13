@@ -141,6 +141,10 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // Returns a string representation of an authentication Scheme.
   static const char* SchemeToString(Scheme scheme);
 
+  // Returns an authentication Scheme from a string which was produced by
+  // SchemeToString().
+  static Scheme StringToScheme(const std::string& str);
+
   // Returns a string representation of an authorization result.
   static const char* AuthorizationResultToString(
       AuthorizationResult authorization_result);

@@ -46,6 +46,7 @@ extern const char kKeyMdmIdToken[];
 extern const char kKeyPassword[];
 extern const char kKeyRefreshToken[];
 extern const char kKeyAccessToken[];
+extern const char kKeyMdmAccessToken[];
 extern const char kKeySID[];
 extern const char kKeyTokenHandle[];
 extern const char kKeyUsername[];
@@ -80,6 +81,7 @@ extern const char kPrefillEmailSwitch[];
 extern const char kEmailDomainsSwitch[];
 extern const char kGaiaIdSwitch[];
 extern const char kGcpwEndpointPathSwitch[];
+extern const char kGcpwAdditionalOauthScopes[];
 
 // Parameter appended to sign in URL to pass valid signin domains to the inline
 // login handler. These domains are separated by ','.

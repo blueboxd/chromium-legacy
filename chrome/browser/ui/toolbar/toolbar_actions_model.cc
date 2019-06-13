@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -542,35 +541,6 @@ void ToolbarActionsModel::Populate() {
       "ExtensionToolbarModel.BrowserActionsPermanentlyHidden", hidden);
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            action_ids_.size());
-
-  if (extension_registry_->GetExtensionById(
-          extension_misc::kDocsOfflineExtensionId,
-          extensions::ExtensionRegistry::ENABLED |
-              extensions::ExtensionRegistry::DISABLED) != nullptr) {
-    // Note: This enum is used in UMA (directly below). Don't renumber.
-    enum ExtensionState {
-      DISABLED   = 0,
-      VISIBLE    = 1,
-      OVERFLOWED = 2,
-      BOUNDARY   = 3,
-    };
-    ExtensionState doc_state = DISABLED;
-    if (extensions.GetByID(
-            extension_misc::kDocsOfflineExtensionId)) {  // In the enabled set.
-      auto current_pos = std::find_if(
-          action_ids_.begin(), action_ids_.end(),
-          [](const ActionId& action_id) {
-            return action_id == extension_misc::kDocsOfflineExtensionId;
-          });
-      doc_state = current_pos - action_ids_.begin() <
-                              static_cast<int>(visible_icon_count()) ||
-                          all_icons_visible()
-                      ? VISIBLE
-                      : OVERFLOWED;
-    }
-    UMA_HISTOGRAM_ENUMERATION("Extensions.DocsOfflineIconState", doc_state,
-                              BOUNDARY);
-  }
 
   if (!action_ids_.empty()) {
     // Visible count can be -1, meaning: 'show all'. Since UMA converts negative

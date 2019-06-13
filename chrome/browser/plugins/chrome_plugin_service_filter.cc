@@ -241,8 +241,8 @@ bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
   if (!details)
     return false;
 
-  return (ContainsKey(details->authorized_plugins, path) ||
-          ContainsKey(details->authorized_plugins, base::FilePath()));
+  return (base::Contains(details->authorized_plugins, path) ||
+          base::Contains(details->authorized_plugins, base::FilePath()));
 }
 
 ChromePluginServiceFilter::ChromePluginServiceFilter() {

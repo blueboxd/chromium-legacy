@@ -84,10 +84,10 @@
               <span>[[item.principalName]]</span>
 
               <div class="secondary" hidden$="[[!item.isSignedIn]]">
-                $i18n{kerberosAccountsSignedIn}
+                $i18n{kerberosAccountsSignedIn}[[getActiveLabel_(item.isActive)]]
               </div>
               <div class="secondary warning" hidden$="[[item.isSignedIn]]">
-                $i18n{kerberosAccountsSignedOut}
+                $i18n{kerberosAccountsSignedOut}[[getActiveLabel_(item.isActive)]]
               </div>
             </div>
           </div>
@@ -107,6 +107,9 @@
       <div class="clear settings-box"></div>
 
       <cr-action-menu>
+        <button class="dropdown-item" on-click="onSetAsActiveAccountClick_">
+          $i18n{kerberosAccountsSetAsActiveAccountLabel}
+        </button>
         <button class="dropdown-item" on-click="onRemoveAccountClick_">
           $i18n{kerberosAccountsRemoveAccountLabel}
         </button>

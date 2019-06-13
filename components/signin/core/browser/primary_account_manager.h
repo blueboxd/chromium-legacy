@@ -85,7 +85,7 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
     // Do not remove accounts.
-    kKeepAllAccounts,
+    kKeepAllAccounts = 0,
     // Remove all the accounts.
     kRemoveAllAccounts,
     // Removes the authenticated account if it is in authentication error.

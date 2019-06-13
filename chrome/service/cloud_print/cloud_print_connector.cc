@@ -407,7 +407,7 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   DCHECK(!printer_info_cloud.printer_id.empty());
   VLOG(1) << "CP_CONNECTOR: Init job handler"
           << ", printer id: " << printer_info_cloud.printer_id;
-  if (ContainsKey(job_handler_map_, printer_info_cloud.printer_id))
+  if (base::Contains(job_handler_map_, printer_info_cloud.printer_id))
     return;  // Nothing to do if we already have a job handler for this printer.
 
   printing::PrinterBasicInfo printer_info;

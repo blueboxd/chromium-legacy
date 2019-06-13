@@ -11,6 +11,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -150,7 +151,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   // AutocompleteProviderListener:
   void OnProviderUpdate(bool updated_matches) override;
 
-  void CreatePersonalizedFieldTrial();
+  void CreateRemoteNoUrlFieldTrial();
   void CreateMostVisitedFieldTrial();
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
@@ -188,12 +189,12 @@ void ZeroSuggestProviderTest::SetUp() {
 void ZeroSuggestProviderTest::OnProviderUpdate(bool updated_matches) {
 }
 
-void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
-  SetZeroSuggestVariantForAllContexts("Personalized");
+void ZeroSuggestProviderTest::CreateRemoteNoUrlFieldTrial() {
+  SetZeroSuggestVariantForAllContexts(ZeroSuggestProvider::kRemoteNoUrlVariant);
 }
 
 void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
-  SetZeroSuggestVariantForAllContexts("MostVisitedWithoutSERP");
+  SetZeroSuggestVariantForAllContexts(ZeroSuggestProvider::kMostVisitedVariant);
 }
 
 void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
@@ -206,6 +207,7 @@ void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
 }
 
 TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
+  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
   GURL current_url = GURL("https://example.com/");
   GURL suggest_url = GURL("https://www.google.com/complete/?q={searchTerms}");
 
@@ -214,6 +216,7 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
       .WillRepeatedly(testing::Return(true));
 
+  // Verify the unconfigured state returns platorm-specific defaults.
 #if defined(OS_IOS) || defined(OS_ANDROID)
   EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
             provider_->TypeOfResultToRun(current_url, suggest_url));
@@ -222,21 +225,42 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
             provider_->TypeOfResultToRun(current_url, suggest_url));
 #endif
 
-  SetZeroSuggestVariantForAllContexts("RemoteSendURL");
+  // Verify a few globally configured states work.
+  SetZeroSuggestVariantForAllContexts(
+      ZeroSuggestProvider::kRemoteSendUrlVariant);
   EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
             provider_->TypeOfResultToRun(current_url, suggest_url));
-
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
   EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
             provider_->TypeOfResultToRun(current_url, suggest_url));
-
   CreateMostVisitedFieldTrial();
   EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
             provider_->TypeOfResultToRun(current_url, suggest_url));
+
+  // Verify that a wildcard rule works in conjunction with a
+  // page-classification-specific rule.
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
+      {
+          {std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
+           ZeroSuggestProvider::kMostVisitedVariant},
+          {base::StringPrintf("%s:%d:*",
+                              OmniboxFieldTrial::kZeroSuggestVariantRule,
+                              metrics::OmniboxEventProto::NTP),
+           ZeroSuggestProvider::kNoneVariant},
+      });
+  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
+  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::NTP);
+  EXPECT_EQ(
+      ZeroSuggestProvider::ResultType::NONE,
+      provider_->TypeOfResultToRun(GURL("chrome://newtab/"), suggest_url));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
 
   std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url),
@@ -262,7 +286,7 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestStartWillStopForSomeInput) {
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
 
   std::string input_url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(input_url),
@@ -371,7 +395,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
@@ -407,7 +431,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
@@ -454,7 +478,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
-  CreatePersonalizedFieldTrial();
+  CreateRemoteNoUrlFieldTrial();
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
 
@@ -499,15 +523,15 @@ TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   // Coverage for the URL-specific page. (Regression test for a DCHECK).
   // This is exercising RemoteSuggestionsService::CreateExperimentalRequest,
   // and to do that, ZeroSuggestProvider needs to be looking for
-  // DEFAULT_SERP_FOR_URL results (which needs various personalization
-  // experiments off, IsPersonalizedUrlDataCollectionActive true), and the
-  // redirect to chrome mode on.
+  // REMOTE_SEND_URL results (which needs various personalization
+  // experiments off, IsPersonalizedDataCollectionActive true), and the
+  // custom on-focus suggestions endpoint enabled.
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeatureWithParameters(
       omnibox::kOnFocusSuggestions,
       {
           {std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
-           "RemoteSendURL"},
+           ZeroSuggestProvider::kRemoteSendUrlVariant},
           {OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
            "https://valid-but-fake-endpoint.com/fakepath"},
       });

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/wallpaper_user_info.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -36,10 +35,10 @@ class ASH_EXPORT UserSwitchAnimator {
     ANIMATION_STEP_ENDED           // The animation has ended.
   };
 
-  // Creates a UserSwitchAnimator to animate between the current user and
-  // |user_info|.
+  // Creates a UserSwitchAnimator to animate between the current user and the
+  // user associated with |new_account_id|.
   UserSwitchAnimator(MultiUserWindowManagerImpl* owner,
-                     const WallpaperUserInfo& user_info,
+                     const AccountId& new_account_id,
                      base::TimeDelta animation_speed);
   ~UserSwitchAnimator();
 
@@ -100,10 +99,6 @@ class ASH_EXPORT UserSwitchAnimator {
 
   // The owning window manager.
   MultiUserWindowManagerImpl* owner_;
-
-  // Contains the wallpaper configuration for the user switching to. This is
-  // passed to the WallpaperController at the right time.
-  WallpaperUserInfo wallpaper_user_info_;
 
   // The new user to set.
   AccountId new_account_id_;

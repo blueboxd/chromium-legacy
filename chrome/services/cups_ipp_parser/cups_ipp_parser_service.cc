@@ -9,13 +9,13 @@
 #include "chrome/services/cups_ipp_parser/ipp_parser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
+namespace cups_ipp_parser {
 namespace {
 
 void OnIppParserRequest(service_manager::ServiceKeepalive* keepalive,
-                        chrome::mojom::IppParserRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<chrome::IppParser>(keepalive->CreateRef()),
-      std::move(request));
+                        mojom::IppParserRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<IppParser>(keepalive->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace
@@ -40,3 +40,5 @@ void CupsIppParserService::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
+
+}  // namespace cups_ipp_parser

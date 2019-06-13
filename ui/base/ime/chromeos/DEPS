@@ -3,4 +3,5 @@ include_rules = [
   "+chromeos/ime",
   "+services/ws/public/cpp/input_devices",
   "+ui/chromeos/strings",
+  "+ui/ozone/public",
 ]

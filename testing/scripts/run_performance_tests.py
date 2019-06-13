@@ -479,19 +479,9 @@ def main(sys_args):
     elif options.test_shard_map_filename:
       # First determine what shard we are running on to know how to
       # index into the bot map to get list of telemetry benchmarks to run.
-      total_shards = None
       shard_index = None
       shard_map_path = os.path.join(SHARD_MAPS_DIRECTORY,
                                     options.test_shard_map_filename)
-      env = os.environ.copy()
-      if 'GTEST_TOTAL_SHARDS' in env:
-        total_shards = env['GTEST_TOTAL_SHARDS']
-      if 'GTEST_SHARD_INDEX' in env:
-        shard_index = env['GTEST_SHARD_INDEX']
-      if not total_shards or not shard_index:
-        raise Exception(
-            'Sharded Telemetry perf tests must either specify --benchmarks '
-            'list or have shard indicator environment variables present.')
       # Copy sharding map file to isolated_out_dir so that the merge script
       # can collect it later.
       # TODO(crouleau): Move this step over to merge script
@@ -501,6 +491,19 @@ def main(sys_args):
           os.path.join(isolated_out_dir, 'benchmarks_shard_map.json'))
       with open(shard_map_path) as f:
         shard_map = json.load(f)
+      env = os.environ.copy()
+      if 'GTEST_SHARD_INDEX' in env:
+        shard_index = env['GTEST_SHARD_INDEX']
+      # TODO(crbug.com/972844): shard environment variables are not specified
+      # for single-shard shard runs.
+      if not shard_index:
+        shard_map_has_multiple_shards = bool(shard_map.get('1', False))
+        if not shard_map_has_multiple_shards:
+          shard_index = '0'
+      if not shard_index:
+        raise Exception(
+            'Sharded Telemetry perf tests must either specify --benchmarks '
+            'list or have GTEST_SHARD_INDEX environment variable present.')
       benchmarks_and_stories = shard_map[shard_index]['benchmarks']
 
       for benchmark, stories in benchmarks_and_stories.iteritems():

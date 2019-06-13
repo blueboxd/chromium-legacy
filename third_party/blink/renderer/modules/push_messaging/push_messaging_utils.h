@@ -5,15 +5,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_UTILS_H_
 
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
 namespace blink {
 
 namespace mojom {
+enum class PushErrorType;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
-struct WebPushError;
+WTF::String PushRegistrationStatusToString(
+    mojom::PushRegistrationStatus status);
 
-WebPushError PushRegistrationStatusToWebPushError(
+mojom::PushErrorType PushRegistrationStatusToPushErrorType(
     mojom::PushRegistrationStatus status);
 
 }  // namespace blink

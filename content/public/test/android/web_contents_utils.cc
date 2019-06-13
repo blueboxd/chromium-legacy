@@ -26,7 +26,7 @@ void JNI_WebContentsUtils_ReportAllFrameSubmissions(
     const JavaParamRef<jobject>& jweb_contents,
     jboolean enabled) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
-  RenderFrameMetadataProvider* provider =
+  RenderFrameMetadataProviderImpl* provider =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost()->GetWidget())
           ->render_frame_metadata_provider();
   provider->ReportAllFrameSubmissionsForTesting(enabled);

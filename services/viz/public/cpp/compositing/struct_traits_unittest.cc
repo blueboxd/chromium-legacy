@@ -1197,7 +1197,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   EXPECT_EQ(protected_video_type, out_quad->protected_video_type);
 }
 
-TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
+TEST_F(StructTraitsTest, CopyOutputResult_EmptyBitmap) {
   auto input = std::make_unique<CopyOutputResult>(
       CopyOutputResult::Format::RGBA_BITMAP, gfx::Rect());
   std::unique_ptr<CopyOutputResult> output;
@@ -1207,6 +1207,22 @@ TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
   EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_BITMAP);
   EXPECT_TRUE(output->rect().IsEmpty());
   EXPECT_FALSE(output->AsSkBitmap().readyToDraw());
+  EXPECT_EQ(output->GetTextureResult(), nullptr);
+}
+
+TEST_F(StructTraitsTest, CopyOutputResult_EmptyTexture) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
+  auto input = std::make_unique<CopyOutputResult>(
+      CopyOutputResult::Format::RGBA_TEXTURE, gfx::Rect());
+  EXPECT_TRUE(input->IsEmpty());
+
+  std::unique_ptr<CopyOutputResult> output;
+  mojo::test::SerializeAndDeserialize<mojom::CopyOutputResult>(&input, &output);
+
+  EXPECT_TRUE(output->IsEmpty());
+  EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_TEXTURE);
+  EXPECT_TRUE(output->rect().IsEmpty());
   EXPECT_EQ(output->GetTextureResult(), nullptr);
 }
 

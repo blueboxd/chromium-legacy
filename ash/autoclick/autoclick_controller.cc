@@ -7,6 +7,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
+#include "ash/autoclick/autoclick_scroll_position_handler.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -19,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -46,6 +48,20 @@ base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
 }
 
+views::Widget::InitParams CreateAutoclickOverlayWidgetParams(
+    aura::Window* target) {
+  aura::Window* root_window = target->GetRootWindow();
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.accept_events = false;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
+  return params;
+}
+
 }  // namespace
 
 // static.
@@ -66,6 +82,7 @@ AutoclickController::AutoclickController()
 
 AutoclickController::~AutoclickController() {
   // Clean up UI.
+  HideScrollPosition();
   menu_bubble_controller_ = nullptr;
   CancelAutoclickAction();
 
@@ -106,6 +123,10 @@ void AutoclickController::SetEnabled(bool enabled,
     // is on.
     menu_bubble_controller_ = std::make_unique<AutoclickMenuBubbleController>();
     menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
+    if (event_type_ == mojom::AutoclickEventType::kScroll) {
+      InitializeScrollLocation();
+      UpdateScrollPosition(scroll_location_);
+    }
     enabled_ = enabled;
   } else {
     if (show_confirmation_dialog) {
@@ -160,8 +181,12 @@ void AutoclickController::SetAutoclickEventType(
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetEventType(type);
 
-  // TODO (katie): If this is a scroll, need to set the first scroll location to
-  // the active window using the automation API.
+  if (type == mojom::AutoclickEventType::kScroll) {
+    InitializeScrollLocation();
+    UpdateScrollPosition(scroll_location_);
+  } else {
+    HideScrollPosition();
+  }
 
   if (event_type_ == type)
     return;
@@ -236,21 +261,20 @@ void AutoclickController::CreateAutoclickRingWidget(
     const gfx::Point& point_in_screen) {
   aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
-  aura::Window* root_window = target->GetRootWindow();
-  widget_.reset(new views::Widget);
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.accept_events = false;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
-  widget_->Init(params);
-  widget_->SetOpacity(1.f);
+  ring_widget_.reset(new views::Widget);
+  ring_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
+  ring_widget_->SetOpacity(1.f);
 }
 
-void AutoclickController::UpdateAutoclickRingWidget(
+void AutoclickController::CreateAutoclickScrollPositionWidget(
+    const gfx::Point& point_in_screen) {
+  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  SetTapDownTarget(target);
+  scroll_position_widget_.reset(new views::Widget);
+  scroll_position_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
+}
+
+void AutoclickController::UpdateAutoclickWidgetPosition(
     views::Widget* widget,
     const gfx::Point& point_in_screen) {
   aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
@@ -293,9 +317,8 @@ void AutoclickController::DoAutoclickAction() {
     // TODO(katie): Check if the event is over the scroll bubble controller,
     // and if it is, click on the scroll bubble.
     // TODO(katie): Move the scroll bubble closer to the new scroll location.
-    // TODO(katie): Label the new scroll location with the icon per UX.
     scroll_location_ = gesture_anchor_location_;
-
+    UpdateScrollPosition(scroll_location_);
     return;
   }
 
@@ -384,7 +407,7 @@ void AutoclickController::StartAutoclickGesture() {
   anchor_location_ = gesture_anchor_location_;
   autoclick_ring_handler_->StartGesture(
       delay_ - CalculateStartGestureDelay(delay_), anchor_location_,
-      widget_.get());
+      ring_widget_.get());
   autoclick_timer_->Reset();
 }
 
@@ -436,15 +459,48 @@ void AutoclickController::InitClickTimers() {
 }
 
 void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
-  if (!widget_) {
+  if (!ring_widget_) {
     CreateAutoclickRingWidget(point_in_screen);
   } else {
-    UpdateAutoclickRingWidget(widget_.get(), point_in_screen);
+    UpdateAutoclickWidgetPosition(ring_widget_.get(), point_in_screen);
   }
 }
 
 void AutoclickController::UpdateRingSize() {
   autoclick_ring_handler_->SetSize(movement_threshold_);
+}
+
+void AutoclickController::InitializeScrollLocation() {
+  // TODO(katie): Set the first scroll location to the center of the active
+  // window or view, which will be found using the automation API. Currently
+  // just setting it to the center of the root window.
+  scroll_location_ = ash::Shell::Get()
+                         ->GetPrimaryRootWindow()
+                         ->GetBoundsInScreen()
+                         .CenterPoint();
+}
+
+void AutoclickController::UpdateScrollPosition(
+    const gfx::Point& point_in_screen) {
+  if (!scroll_position_widget_) {
+    CreateAutoclickScrollPositionWidget(point_in_screen);
+    autoclick_scroll_position_handler_ =
+        std::make_unique<AutoclickScrollPositionHandler>(
+            scroll_location_, scroll_position_widget_.get());
+  } else {
+    UpdateAutoclickWidgetPosition(scroll_position_widget_.get(),
+                                  point_in_screen);
+    autoclick_scroll_position_handler_->SetCenter(
+        scroll_location_, scroll_position_widget_.get());
+  }
+}
+
+void AutoclickController::HideScrollPosition() {
+  // Hide the scroll position UI if it exists.
+  if (autoclick_scroll_position_handler_)
+    autoclick_scroll_position_handler_.reset();
+  if (scroll_position_widget_)
+    scroll_position_widget_.reset();
 }
 
 bool AutoclickController::DragInProgress() const {
@@ -528,7 +584,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       // center with each mouse move event.
       gesture_anchor_location_ = last_mouse_location_;
       autoclick_ring_handler_->SetGestureCenter(last_mouse_location_,
-                                                widget_.get());
+                                                ring_widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_MOUSE_RELEASED ||

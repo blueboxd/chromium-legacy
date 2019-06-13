@@ -91,10 +91,6 @@ class InstantService : public KeyedService,
   void UndoMostVisitedDeletion(const GURL& url);
   // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
-  // Invoked when the Instant page wants to switch between custom links and Most
-  // Visited. Toggles between the two options each time it's called. Returns
-  // false and does nothing if the profile is using a third-party NTP.
-  bool ToggleMostVisitedOrCustomLinks();
   // Invoked when the Instant page wants to add a custom link.
   bool AddCustomLink(const GURL& url, const std::string& title);
   // Invoked when the Instant page wants to update a custom link.
@@ -113,6 +109,13 @@ class InstantService : public KeyedService,
   // Visited sites instead. Returns false and does nothing if the profile is
   // using a third-party NTP. Marked virtual for mocking in tests.
   virtual bool ResetCustomLinks();
+  // Invoked when the Instant page wants to switch between custom links and Most
+  // Visited. Toggles between the two options each time it's called. Returns
+  // false and does nothing if the profile is using a third-party NTP.
+  bool ToggleMostVisitedOrCustomLinks();
+  // Invoked when the Instant page wants to toggle visibility of the tiles.
+  // Returns false and does nothing if the profile is using a third-party NTP.
+  bool ToggleShortcutsVisibility();
 
   // Invoked to update theme information for the NTP.
   void UpdateThemeInfo();
@@ -123,7 +126,7 @@ class InstantService : public KeyedService,
 
   // Invoked by the InstantController to update most visited items details for
   // NTP.
-  void UpdateMostVisitedItemsInfo();
+  void UpdateMostVisitedInfo();
 
   // Sends the current NTP URL to a renderer process.
   void SendNewTabPageURLToRenderer(content::RenderProcessHost* rph);
@@ -179,6 +182,7 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
                            DoesToggleMostVisitedOrCustomLinks);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DoesToggleShortcutsVisibility);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, IsCustomLinksEnabled);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
 
@@ -207,7 +211,7 @@ class InstantService : public KeyedService,
           sections) override;
   void OnIconMadeAvailable(const GURL& site_url) override;
 
-  void NotifyAboutMostVisitedItems();
+  void NotifyAboutMostVisitedInfo();
   void NotifyAboutThemeInfo();
 
   // Returns true if this is a Google NTP and the user has chosen to show custom

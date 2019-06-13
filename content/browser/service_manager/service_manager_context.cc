@@ -32,7 +32,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/utility_process_host.h"
-#include "content/browser/utility_process_host_client.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/public/app/content_browser_manifest.h"
@@ -195,7 +194,7 @@ class ContentChildServiceProcessHost
     }
 
     // Start a new process for this service.
-    UtilityProcessHost* process_host = new UtilityProcessHost(nullptr, nullptr);
+    UtilityProcessHost* process_host = new UtilityProcessHost();
     process_host->SetName(display_name);
     process_host->SetMetricsName(identity.name());
     process_host->SetServiceIdentity(identity);

@@ -10,8 +10,6 @@ include_rules = [
   "+chrome/services/isolated_xr_device",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/mojom",
-  "+chrome/services/noop/noop_service.h",
-  "+chrome/services/noop/public/cpp",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
   # when Cloud print chrome/service is removed.
   "+chrome/services/printing/pdf_to_emf_converter_factory.h",

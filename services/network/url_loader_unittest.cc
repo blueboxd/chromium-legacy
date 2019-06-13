@@ -25,6 +25,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -34,6 +35,7 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -731,6 +733,47 @@ class URLLoaderTest : public testing::Test {
   bool ran_ = false;
   net::test_server::HttpRequest sent_request_;
   TestURLLoaderClient client_;
+};
+
+class URLLoaderNetworkIsolationTest : public URLLoaderTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByTopFrameOrigin);
+    URLLoaderTest::SetUp();
+  }
+
+  void LoadAndVerifyCached(const GURL& url,
+                           const net::NetworkIsolationKey& key,
+                           bool was_cached) {
+    ResourceRequest request = CreateResourceRequest("GET", url);
+    request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
+
+    TestURLLoaderClient client;
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<URLLoader> url_loader;
+    static mojom::URLLoaderFactoryParams params;
+    params.process_id = mojom::kBrowserProcessId;
+    params.is_corb_enabled = false;
+    params.network_isolation_key = key;
+    url_loader = std::make_unique<URLLoader>(
+        context(), nullptr /* network_service_client */,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), 0, request, client.CreateInterfacePtr(),
+        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
+        resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+    client.RunUntilComplete();
+    delete_run_loop.Run();
+
+    EXPECT_EQ(net::OK, client.completion_status().error_code);
+    EXPECT_EQ(was_cached, client.completion_status().exists_in_cache);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 constexpr int URLLoaderTest::kProcessId;
@@ -2778,6 +2821,22 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
+}
+
+TEST_F(URLLoaderNetworkIsolationTest, CachedUsingNetworkIsolationKey) {
+  GURL url = test_server()->GetURL("/resource");
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.test/"));
+  net::NetworkIsolationKey key_a(origin_a);
+  LoadAndVerifyCached(url, key_a, false /* was_cached */);
+
+  // Load again with a different isolation key. The cached entry should not be
+  // loaded.
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.test/"));
+  net::NetworkIsolationKey key_b(origin_b);
+  LoadAndVerifyCached(url, key_b, false /* was_cached */);
+
+  // Load again with the same isolation key. The cached entry should be loaded.
+  LoadAndVerifyCached(url, key_b, true /* was_cached */);
 }
 
 class TestSSLPrivateKey : public net::SSLPrivateKey {

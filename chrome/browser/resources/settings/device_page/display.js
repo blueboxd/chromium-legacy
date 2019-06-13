@@ -719,14 +719,17 @@ Polymer({
   /**
    * Handles the event where the display size slider is being dragged, i.e. the
    * mouse or tap has not been released.
-   * @param {!Event} e
    * @private
    */
-  onDisplaySizeSliderDrag_: function(e) {
+  onDisplaySizeSliderDrag_: function() {
     if (!this.selectedDisplay) {
       return;
     }
-    this.updateLogicalResolutionText_(/** @type {number} */ (e.detail.value));
+
+    const sliderValue = this.$.displaySizeSlider.$$('#slider').value;
+    const zoomFactor = this.$.displaySizeSlider.ticks[sliderValue].value;
+    this.updateLogicalResolutionText_(
+        /** @type {number} */ (zoomFactor));
   },
 
   /**

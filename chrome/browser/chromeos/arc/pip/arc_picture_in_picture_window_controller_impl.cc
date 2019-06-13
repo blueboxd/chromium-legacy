@@ -17,9 +17,8 @@ ArcPictureInPictureWindowControllerImpl::
   Close(false);
 }
 
-gfx::Size ArcPictureInPictureWindowControllerImpl::Show() {
+void ArcPictureInPictureWindowControllerImpl::Show() {
   // Should be a no-op on ARC. This is managed on the Android side.
-  return gfx::Size();
 }
 
 void ArcPictureInPictureWindowControllerImpl::Close(bool should_pause_video) {

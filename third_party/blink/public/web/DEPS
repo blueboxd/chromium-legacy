@@ -16,6 +16,7 @@ include_rules = [
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
     "+cc/trees/element_id.h",
+    "+cc/trees/layer_tree_host_client.h",
     "+cc/trees/viewport_layers.h",
     "+mojo/public",
     "+services/metrics/public/cpp/ukm_source_id.h",

@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebServiceWorkerNetworkProvider;
 
 // Provides an interface back to the in-page script object for a worker.
@@ -56,14 +54,6 @@ class WebSharedWorkerClient {
   virtual void WorkerScriptLoaded() = 0;
   virtual void WorkerScriptLoadFailed() = 0;
   virtual void WorkerScriptEvaluated(bool success) = 0;
-  virtual void SelectAppCacheID(int64_t app_cache_id,
-                                base::OnceClosure completion_callback) = 0;
-
-  // Called on the main webkit thread in the worker process during
-  // initialization.
-  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebApplicationCacheHostClient*) = 0;
-
   // Called on the main thread during initialization, before requesting the main
   // script resource. Creates the WebServiceWorkerNetworkProvider which is used
   // for script loading (i.e., the main script and importScripts). Other

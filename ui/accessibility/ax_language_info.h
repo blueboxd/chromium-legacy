@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/accessibility/ax_export.h"
-
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_export.h"
 
 namespace ui {
 
@@ -29,8 +29,12 @@ class AXTree;
 //   AXLanguageInfoStats represents the 'global' (tree-level) language detection
 //                       data for all nodes within an AXTree.
 //
-// Language detection is implemented as a two-pass process to reduce the
-// assignment of spurious languages.
+// Language detection is separated into two use cases: page-level and
+// inner-node-level.
+//
+//
+// Language detection at the page-level is implemented as a two-pass process to
+// reduce the assignment of spurious languages.
 //
 // After the first pass no languages have been assigned to AXNode(s), this is
 // left to the second pass so that we can take use tree-level statistics to
@@ -46,6 +50,15 @@ class AXTree;
 // subtree from a given AXNode and attempts to find an appropriate language to
 // associate with each AXNode based on a combination of the local detection
 // results (AXLanguageInfo) and the global stats (AXLanguageInfoStats).
+//
+//
+// Language detection at the inner-node level is different from that at the
+// page-level because in this case, we operate on much smaller pieces of text.
+// For this use case, we would like to detect languages that may only occur
+// once throughout the entire document. Inner-node-level language detection
+// is performed by using a language identifier constructed with a byte minimum
+// of kShortTextIdentifierMinByteLength. This way, it can potentially detect the
+// language of strings that are as short as one character in length.
 
 // An instance of AXLanguageInfo is used to record the detected and assigned
 // languages for a single AXNode, this data is entirely local to the AXNode.
@@ -80,6 +93,20 @@ struct AX_EXPORT AXLanguageInfo {
   std::vector<std::string> detected_languages;
 };
 
+// Each LanguageSpan contains a language, a probability, and start and end
+// indices. The indices are used to specify the substring that contains the
+// associated language. The string which the indices are relative to is not
+// included in this structure.
+// Also, the indices are relative to a Utf8 string.
+// See documentation on GetLanguageAnnotationForStringAttribute for details
+// on how to associate this object with a string.
+struct AX_EXPORT LanguageSpan {
+  int start_index;
+  int end_index;
+  std::string language;
+  float probability;
+};
+
 // A single AXLanguageInfoStats instance is stored on each AXTree and represents
 // the language detection statistics for every AXNode within that AXTree.
 //
@@ -104,6 +131,14 @@ class AX_EXPORT AXLanguageInfoStats {
 
   chrome_lang_id::NNetLanguageIdentifier& GetLanguageIdentifier();
 
+  // Detect and return languages for string attribute.
+  // For example, if a node has name: "My name is Fred", then calling
+  // GetLanguageAnnotationForStringAttribute(*node, ax::mojom::StringAttribute::
+  // kName) would return language detection information about "My name is Fred".
+  std::vector<LanguageSpan> GetLanguageAnnotationForStringAttribute(
+      const AXNode& node,
+      ax::mojom::StringAttribute attr);
+
  private:
   // Store a count of the occurrences of a given language.
   std::unordered_map<std::string, unsigned int> lang_counts_;
@@ -121,7 +156,15 @@ class AX_EXPORT AXLanguageInfoStats {
   // Populate top_results_.
   void GenerateTopResults();
 
+  // This language identifier is constructed with a default minimum byte length
+  // of chrome_lang_id::NNetLanguageIdentifier::kMinNumBytesToConsider and is
+  // used for detecting page-level languages.
   chrome_lang_id::NNetLanguageIdentifier language_identifier_;
+
+  // This language identifier is constructed with a minimum byte length of
+  // kShortTextIdentifierMinByteLength so it can be used for detecting languages
+  // of shorter text (e.g. one character).
+  chrome_lang_id::NNetLanguageIdentifier short_text_language_identifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
 };
@@ -141,7 +184,6 @@ AX_EXPORT void DetectLanguageForSubtree(AXNode* subtree_root,
 // returns boolean indicating success.
 AX_EXPORT bool LabelLanguageForSubtree(AXNode* subtree_root,
                                        class AXTree* tree);
-
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_LANGUAGE_INFO

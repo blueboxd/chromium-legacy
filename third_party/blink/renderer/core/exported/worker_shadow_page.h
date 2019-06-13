@@ -19,8 +19,6 @@ class SharedURLLoaderFactory;
 
 namespace blink {
 
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebSettings;
 
 // WorkerShadowPage implements the 'shadow page' concept.
@@ -42,15 +40,12 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
    public:
     ~Client() override = default;
 
-    // Called when the shadow page is requested to create an application cache
-    // host.
-    virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-        WebApplicationCacheHostClient*) = 0;
-
     // Called when Initialize() is completed.
     virtual void OnShadowPageInitialized() = 0;
 
     virtual const base::UnguessableToken& GetDevToolsWorkerToken() = 0;
+
+    virtual WebLocalFrameClient::AppCacheType GetAppCacheType() = 0;
   };
 
   // If |loader_factory| is non-null, the shadow page will use it when making
@@ -58,7 +53,8 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WorkerShadowPage(
       Client* client,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      PrivacyPreferences preferences);
+      PrivacyPreferences preferences,
+      const base::UnguessableToken& appcache_host_id);
   ~WorkerShadowPage() override;
 
   // Initializes this instance and calls Client::OnShadowPageInitialized() when
@@ -66,9 +62,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   void Initialize(const KURL& script_url);
 
   // WebLocalFrameClient overrides.
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebDocumentLoader*,
-      WebApplicationCacheHostClient*) override;
   // Note: usually WebLocalFrameClient implementations override
   // WebLocalFrameClient to call Close() on the corresponding WebLocalFrame.
   // Shadow pages are set up a bit differently and clear the WebLocalFrameClient
@@ -79,6 +72,9 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   base::UnguessableToken GetDevToolsFrameToken() override;
   void WillSendRequest(WebURLRequest&) override;
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
+  WebLocalFrameClient::AppCacheType GetAppCacheType() override {
+    return client_->GetAppCacheType();
+  }
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }
@@ -97,6 +93,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+  const base::UnguessableToken appcache_host_id_;
 
   // TODO(crbug.com/862854): Update the values when the browser process changes
   // the preferences.

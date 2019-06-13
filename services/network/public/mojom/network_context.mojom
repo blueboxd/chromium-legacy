@@ -19,6 +19,7 @@ import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
+import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/network/public/mojom/p2p.mojom";
@@ -481,6 +482,9 @@ struct URLLoaderFactoryParams {
   // in order to bind the allow patterns to the factory specific initiator
   // origin.
   array<CorsOriginPattern> factory_bound_allow_patterns;
+
+  // Key used to isolate shared network resources like the cache.
+  NetworkIsolationKey? network_isolation_key;
 };
 
 // Callback interface for NetworkContext when routing identifiers aren't
@@ -930,6 +934,13 @@ interface NetworkContext {
   // Loads an HttpAuthCache previously saved by SaveHttpAuthCache, and
   // copies its contents into this NetworkContext's HttpAuthCache.
   LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
+
+  // Adds an entry to the HttpAuthCache or FtpAuthCache (determined by whether
+  // the |challenger| field within |challenge| is an ftp:// URL). |challenge|
+  // may not necessarily contain a stateful challenge that requires a persistent
+  // connection, allowing the cache to be pre-populated.
+  AddAuthCacheEntry(AuthChallengeInfo challenge,
+                    AuthCredentials credentials) => ();
 
   // Looks up credentials in the HttpAuthCache using the origin and path from
   // |url|. Only supports basic auth scheme.

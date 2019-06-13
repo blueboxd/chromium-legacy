@@ -192,13 +192,13 @@ int GlobalErrorBubbleView::GetDefaultDialogButton() const {
   return error_->GetDefaultDialogButton();
 }
 
-views::View* GlobalErrorBubbleView::CreateExtraView() {
+std::unique_ptr<views::View> GlobalErrorBubbleView::CreateExtraView() {
   if (!error_ || error_->GetBubbleViewCancelButtonLabel().empty() ||
       !error_->ShouldUseExtraView())
     return nullptr;
   auto view = views::MdTextButton::CreateSecondaryUiButton(
       this, error_->GetBubbleViewCancelButtonLabel());
-  return view.release();
+  return view;
 }
 
 bool GlobalErrorBubbleView::Cancel() {

@@ -83,12 +83,6 @@ const base::FilePath kRunToolScript =
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("run_tool.py"));
 
-const base::FilePath kExtractorScript =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("scripts"))
-        .Append(FILE_PATH_LITERAL("extractor.py"));
-
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
 // match the file name.
@@ -182,16 +176,12 @@ base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
       .Next();
 }
 
-bool TrafficAnnotationAuditor::RunExtractor(
-    ExtractorBackend backend,
+bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
     bool rerun_on_errors,
     const base::FilePath& errors_file) {
-  DCHECK(backend == ExtractorBackend::CLANG_TOOL ||
-         backend == ExtractorBackend::PYTHON_SCRIPT);
-
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
@@ -214,41 +204,51 @@ bool TrafficAnnotationAuditor::RunExtractor(
     return false;
   }
 
-  // Write some options to the file, which depends on the backend used.
-  if (backend == ExtractorBackend::CLANG_TOOL)
-    WriteClangToolOptions(options_file, use_compile_commands);
-  else if (backend == ExtractorBackend::PYTHON_SCRIPT)
-    WritePythonScriptOptions(options_file);
+  // As the checked out clang tool may be in a directory different from the
+  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
+  // clang's library folder should be passed to the run_tool.py script.
+  fprintf(
+      options_file,
+      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
+      "--tool-path=%s "
+      "--tool-arg=--extra-arg=-resource-dir=%s ",
+      build_path_.MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
 
-  // Write the file paths regardless of backend.
+  for (const std::string& item : clang_tool_switches_)
+    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
+
+  if (use_compile_commands)
+    fprintf(options_file, "--all ");
+
   for (const std::string& file_path : file_paths)
     fprintf(options_file, "%s ", file_path.c_str());
 
   base::CloseFile(options_file);
 
-  const base::FilePath& script_path =
-      (backend == ExtractorBackend::CLANG_TOOL ? kRunToolScript
-                                               : kExtractorScript);
   base::CommandLine cmdline(
-      base::MakeAbsoluteFilePath(source_path_.Append(script_path)));
+      base::MakeAbsoluteFilePath(source_path_.Append(kRunToolScript)));
+
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
 #endif
+
   cmdline.AppendArg(base::StringPrintf(
       "--options-file=%s", options_filepath.MaybeAsASCII().c_str()));
 
-  // Change current folder to source before running the command as it expects to
+  // Change current folder to source before running run_tool.py as it expects to
   // be run from there.
   base::FilePath original_path;
   base::GetCurrentDirectory(&original_path);
   base::SetCurrentDirectory(source_path_);
-  bool result = base::GetAppOutput(cmdline, &extractor_raw_output_);
+  bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
 
-  // If the extractor had no output, it means that the script running it could
-  // not perform the task.
-  if (extractor_raw_output_.empty()) {
+  // If running clang tool had no output, it means that the script running it
+  // could not perform the task.
+  if (clang_tool_raw_output_.empty()) {
     result = false;
-  } else if (backend == ExtractorBackend::CLANG_TOOL && !result) {
+  } else if (!result) {
     // If clang tool had errors but also returned results, the errors can be
     // ignored as we do not separate platform specific files here and processing
     // them fails. This is a post-build test and if there exists any actual
@@ -258,8 +258,7 @@ bool TrafficAnnotationAuditor::RunExtractor(
   }
 
   if (!result) {
-    if (backend == ExtractorBackend::CLANG_TOOL && use_compile_commands &&
-        !extractor_raw_output_.empty()) {
+    if (use_compile_commands && !clang_tool_raw_output_.empty()) {
       printf(
           "\nWARNING: Ignoring clang tool error as it is called using "
           "compile_commands.json which will result in processing some "
@@ -304,33 +303,6 @@ bool TrafficAnnotationAuditor::RunExtractor(
   base::DeleteFile(options_filepath, false);
 
   return result;
-}
-
-void TrafficAnnotationAuditor::WriteClangToolOptions(
-    FILE* options_file,
-    bool use_compile_commands) {
-  // As the checked out clang tool may be in a directory different from the
-  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
-  // clang's library folder should be passed to the run_tool.py script.
-  fprintf(
-      options_file,
-      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
-      "--tool-path=%s "
-      "--tool-arg=--extra-arg=-resource-dir=%s ",
-      build_path_.MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
-
-  for (const std::string& item : clang_tool_switches_)
-    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
-
-  if (use_compile_commands)
-    fprintf(options_file, "--all ");
-}
-
-void TrafficAnnotationAuditor::WritePythonScriptOptions(FILE* options_file) {
-  fprintf(options_file, "--generate-compdb --build-path=%s ",
-          build_path_.MaybeAsASCII().c_str());
 }
 
 void TrafficAnnotationAuditor::GenerateFilesListForClangTool(
@@ -428,7 +400,7 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     return false;
   // Remove possible carriage return characters before splitting lines.
   std::string temp_string;
-  base::RemoveChars(extractor_raw_output_, "\r", &temp_string);
+  base::RemoveChars(clang_tool_raw_output_, "\r", &temp_string);
   std::vector<std::string> lines = base::SplitString(
       temp_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (unsigned int current = 0; current < lines.size(); current++) {

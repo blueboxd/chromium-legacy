@@ -588,4 +588,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
 }
 
++ (id<GREYMatcher>)openInButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:IDS_IOS_OPEN_IN];
+}
+
 @end

@@ -59,7 +59,6 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -90,8 +89,6 @@ enum class WebFeature : int32_t;
 
 enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
@@ -151,13 +148,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                                             WebContentDecryptionModule*,
                                             const WebString& sink_id,
                                             WebLayerTreeView*) {
-    return nullptr;
-  }
-
-  // May return null.
-  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebDocumentLoader*,
-      WebApplicationCacheHostClient*) {
     return nullptr;
   }
 
@@ -864,6 +854,14 @@ class BLINK_EXPORT WebLocalFrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+  enum class AppCacheType {
+    kAppCacheForNone = 0,
+    kAppCacheForFrame,
+    kAppCacheForSharedWorker,
+  };
+  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
+  }
 };
 
 }  // namespace blink

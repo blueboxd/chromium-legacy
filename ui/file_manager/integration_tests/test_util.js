@@ -619,6 +619,17 @@ var ENTRIES = {
     typeText: 'JPEG image'
   }),
 
+  rawImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'raw.orf',
+    // No mime type.
+    targetPath: 'raw.orf',
+    lastModifiedTime: 'May 20, 2019, 10:10 AM',
+    nameText: 'raw.orf',
+    sizeText: '214 KB',
+    typeText: 'ORF image'
+  }),
+
   beautiful: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',

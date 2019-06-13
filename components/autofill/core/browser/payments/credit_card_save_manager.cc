@@ -209,9 +209,15 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 
   // The cardholder name and expiration date fix flows cannot both be
-  // active at the same time.  If they are, abort offering upload.
-  if (should_request_name_from_user_ &&
-      should_request_expiration_date_from_user_) {
+  // active at the same time. If they are, abort offering upload.
+  // If user is signed in and has Wallet Sync Transport enabled but we still
+  // need to request expiration date from them, offering upload should be
+  // aborted as well.
+  if ((should_request_name_from_user_ &&
+       should_request_expiration_date_from_user_) ||
+      (should_request_expiration_date_from_user_ &&
+       personal_data_manager_->GetSyncSigninState() ==
+           AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled)) {
     DCHECK(base::FeatureList::IsEnabled(
         features::kAutofillUpstreamEditableExpirationDate));
     LogCardUploadDecisions(upload_decision_metrics_);

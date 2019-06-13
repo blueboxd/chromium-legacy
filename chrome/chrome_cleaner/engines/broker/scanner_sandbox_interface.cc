@@ -168,8 +168,17 @@ bool GetCommandLineUsingProcessInformation(base::ProcessId pid,
   // of null terminating characters.
   PUNICODE_STRING command_line =
       reinterpret_cast<PUNICODE_STRING>(buffer.data());
-  size_t max_data_length = bytes_read - sizeof(UNICODE_STRING);
 
+  // NtQueryInformationProcess can return a buffer filled with 0's (for example
+  // when querying LsaIso.exe, an Isolated User Mode process). When we cast a
+  // buffer of 0's to a UNICODE_STRING struct, all members including the Buffer
+  // pointer becomed 0.
+  if (command_line->Buffer == nullptr) {
+    LOG(ERROR) << "Invalid command line buffer";
+    return false;
+  }
+
+  size_t max_data_length = bytes_read - sizeof(UNICODE_STRING);
   if (command_line->Length % sizeof(WCHAR) ||
       command_line->Length > max_data_length) {
     LOG(ERROR) << "Invalid command line length";

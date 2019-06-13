@@ -61,7 +61,7 @@ void StartCrashReporter(const std::string& version) {
   base::PathService::Get(base::FILE_EXE, &handler_path);
 
   base::FilePath database_path;
-  if (!GetProductDataDirectory(&database_path)) {
+  if (!GetProductDirectory(&database_path)) {
     LOG(DFATAL) << "Failed to get the database path.";
     return;
   }

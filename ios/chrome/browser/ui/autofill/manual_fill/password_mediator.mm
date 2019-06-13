@@ -259,14 +259,12 @@ BOOL AreCredentialsAtIndexesConnected(
 
 #pragma mark - TableViewFaviconDataSource
 
-- (FaviconAttributes*)faviconForURL:(const GURL&)URL
-                         completion:(void (^)(FaviconAttributes*))completion {
+- (void)faviconForURL:(const GURL&)URL
+           completion:(void (^)(FaviconAttributes*))completion {
   DCHECK(completion);
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+  self.faviconLoader->FaviconForPageUrl(
       URL, gfx::kFaviconSize, kMinFaviconSizePt,
       /*fallback_to_google_server=*/false, completion);
-  DCHECK(cachedAttributes);
-  return cachedAttributes;
 }
 
 @end

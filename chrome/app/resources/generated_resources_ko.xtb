@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">파일 정보</translation>
 <translation id="2246549592927364792">Google에서 이미지 설명을 가져올까요?</translation>
 <translation id="2249269794707377949">특정 앱, 웹사이트, 파일 공유와 관련된 모든 Kerberos 계정의 싱글 사인온(SSO)을 여기에서 관리할 수 있습니다.</translation>
-<translation id="224940702122312781">이 페이지는 많은 양의 데이터를 사용합니다.</translation>
 <translation id="2249605167705922988">예: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">시스템 뷰어로 열기</translation>
 <translation id="225163402930830576">네트워크 새로고침</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">손가락을 뗀 후 다시 터치</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: 동기화 중지됨</translation>
-<translation id="3861241522664181545">페이지가 일시중지되었습니다.</translation>
 <translation id="3862134173397075045">Chrome의 전송 환경에 오신 것을 환영합니다.</translation>
 <translation id="3862693525629180217">내장 센서를 통해 인증</translation>
 <translation id="3862788408946266506">'kiosk_only' 매니페스트 속성을 사용하는 앱은 Chrome OS 키오스크 모드에 설치해야 합니다</translation>
@@ -3858,7 +3856,6 @@
 <translation id="6920989436227028121">일반 탭으로 열기</translation>
 <translation id="6921104647315081813">활동 삭제</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" />을(를) 열 수 없음</translation>
-<translation id="6921709132208495314">이 페이지에서 데이터 사용 중지</translation>
 <translation id="6922128026973287222">Google 데이터 절약 모드를 사용하여 더 빠르게 데이터를 저장하고 탐색하세요. 자세히 알아보려면 클릭하세요.</translation>
 <translation id="6922745772873733498">인쇄하려면 PIN을 입력하세요.</translation>
 <translation id="6923132443355966645">스크롤/클릭</translation>

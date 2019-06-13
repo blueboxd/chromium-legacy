@@ -26,7 +26,6 @@ namespace cdm {
 
 namespace {
 
-const char kMediaDrmStorage[] = "media.media_drm_storage";
 const char kTestOrigin[] = "https://www.testorigin.com:80";
 const char kTestOrigin2[] = "https://www.testorigin2.com:80";
 
@@ -124,7 +123,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
 
     // Verify the origin dictionary is created.
     const base::DictionaryValue* storage_dict =
-        pref_service_->GetDictionary(kMediaDrmStorage);
+        pref_service_->GetDictionary(prefs::kMediaDrmStorage);
     EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
 
     DCHECK(*origin_id);
@@ -292,7 +291,7 @@ TEST_F(MediaDrmStorageImplTest, OnProvisioned) {
 
   // Verify the origin dictionary is created.
   const base::DictionaryValue* storage_dict =
-      pref_service_->GetDictionary(kMediaDrmStorage);
+      pref_service_->GetDictionary(prefs::kMediaDrmStorage);
   EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
 }
 

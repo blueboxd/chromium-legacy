@@ -270,7 +270,12 @@ _CONFIG = [
             'cc::PaintHoldingCommitTrigger',
 
             # Scrolling
+            'cc::kManipulationInfoHasPinchZoomed',
+            'cc::kManipulationInfoHasScrolledByPrecisionTouchPad',
+            'cc::kManipulationInfoHasScrolledByTouch',
+            'cc::kManipulationInfoHasScrolledByWheel',
             'cc::MainThreadScrollingReason',
+            'cc::ManipulationInfo',
             'cc::ScrollSnapAlign',
             'cc::ScrollSnapType',
             'cc::ScrollOffsetAnimationCurve',
@@ -306,6 +311,7 @@ _CONFIG = [
             'inspector_async_task::.+',
             'inspector_set_layer_tree_id::.+',
             'inspector_tracing_started_in_frame::.+',
+            'layered_api::.+',
             'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
@@ -725,9 +731,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/modules/manifest/'],
         'allowed': [
-            # TODO(https://crbug.com/704441) : Added temporarily.
-            'base::.+',
-
+            'base::NullableString16',
             'net::ParseMimeTypeWithoutParameter',
         ],
     }

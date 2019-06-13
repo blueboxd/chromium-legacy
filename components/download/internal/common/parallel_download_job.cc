@@ -35,6 +35,7 @@ ParallelDownloadJob::ParallelDownloadJob(
       content_length_(create_info.total_bytes),
       requests_sent_(false),
       is_canceled_(false),
+      range_support_(create_info.accept_range),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       url_request_context_getter_(url_request_context_getter),
       connector_(connector) {}
@@ -134,7 +135,9 @@ void ParallelDownloadJob::OnInputStreamReady(
     success = DownloadJob::AddInputStream(std::move(input_stream),
                                           worker->offset(), worker->length());
   }
-  RecordParallelDownloadAddStreamSuccess(success);
+
+  RecordParallelDownloadAddStreamSuccess(
+      success, range_support_ == RangeRequestSupportType::kSupport);
 
   // Destroy the request if the sink is gone.
   if (!success) {

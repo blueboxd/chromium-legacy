@@ -276,6 +276,10 @@ class NET_EXPORT URLRequestJob {
   // Notifies the job that headers have been received.
   void NotifyHeadersComplete();
 
+  // Called when the final set headers have been received (no more redirects to
+  // follow, and no more auth challenges that will be responded to).
+  void NotifyFinalHeadersReceived();
+
   // Notifies the request that a start error has occurred.
   void NotifyStartError(const URLRequestStatus& status);
 

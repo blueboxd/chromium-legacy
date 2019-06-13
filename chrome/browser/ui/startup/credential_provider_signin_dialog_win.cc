@@ -90,6 +90,7 @@ void HandleAllGcpwInfoFetched(
 void HandleSigninCompleteForGcpwLogin(
     std::unique_ptr<ScopedKeepAlive> keep_alive,
     base::Value signin_result,
+    const std::string& additional_mdm_oauth_scopes,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK(signin_result.is_dict());
   DCHECK(!signin_result.DictEmpty());
@@ -125,7 +126,7 @@ void HandleSigninCompleteForGcpwLogin(
     auto fetcher = std::make_unique<CredentialProviderSigninInfoFetcher>(
         refresh_token, url_loader_factory);
     fetcher->SetCompletionCallbackAndStart(
-        access_token,
+        access_token, additional_mdm_oauth_scopes,
         base::BindOnce(&HandleAllGcpwInfoFetched, std::move(keep_alive),
                        std::move(fetcher), std::move(signin_result)));
   }
@@ -140,8 +141,10 @@ class CredentialProviderWebUIMessageHandler
     : public content::WebUIMessageHandler {
  public:
   explicit CredentialProviderWebUIMessageHandler(
-      HandleGcpwSigninCompleteResult signin_callback)
-      : signin_callback_(std::move(signin_callback)) {}
+      HandleGcpwSigninCompleteResult signin_callback,
+      const std::string& additional_mdm_oauth_scopes)
+      : signin_callback_(std::move(signin_callback)),
+        additional_mdm_oauth_scopes_(additional_mdm_oauth_scopes) {}
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
@@ -240,11 +243,12 @@ class CredentialProviderWebUIMessageHandler
     // (like the keep_alive in HandleSigninCompleteForGCPWLogin) or perform
     // possible error handling.
     std::move(signin_callback_)
-        .Run(std::move(signin_result),
+        .Run(std::move(signin_result), additional_mdm_oauth_scopes_,
              partition->GetURLLoaderFactoryForBrowserProcess());
   }
 
   HandleGcpwSigninCompleteResult signin_callback_;
+  const std::string additional_mdm_oauth_scopes_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialProviderWebUIMessageHandler);
 };
@@ -265,11 +269,13 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       const std::string& reauth_gaia_id,
       const std::string& email_domains,
       const std::string& gcpw_endpoint_path,
+      const std::string& additional_mdm_oauth_scopes,
       HandleGcpwSigninCompleteResult signin_callback)
       : reauth_email_(reauth_email),
         reauth_gaia_id_(reauth_gaia_id),
         email_domains_(email_domains),
         gcpw_endpoint_path_(gcpw_endpoint_path),
+        additional_mdm_oauth_scopes(additional_mdm_oauth_scopes),
         signin_callback_(std::move(signin_callback)) {}
 
   GURL GetDialogContentURL() const override {
@@ -323,8 +329,8 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       std::vector<content::WebUIMessageHandler*>* handlers) const override {
     // The WebDialogUI will own and delete this message handler.
     DCHECK(!handler_);
-    handler_ =
-        new CredentialProviderWebUIMessageHandler(std::move(signin_callback_));
+    handler_ = new CredentialProviderWebUIMessageHandler(
+        std::move(signin_callback_), additional_mdm_oauth_scopes);
     handlers->push_back(handler_);
   }
 
@@ -378,6 +384,9 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
 
   // Specific gaia endpoint path to use for signin page.
   const std::string gcpw_endpoint_path_;
+
+  // Additional mdm oauth scopes flag value.
+  const std::string additional_mdm_oauth_scopes;
 
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
@@ -457,12 +466,14 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       credential_provider::kEmailDomainsSwitch);
   std::string gcpw_endpoint_path = command_line.GetSwitchValueASCII(
       credential_provider::kGcpwEndpointPathSwitch);
+  std::string additional_mdm_oauth_scopes = command_line.GetSwitchValueASCII(
+      credential_provider::kGcpwAdditionalOauthScopes);
 
   // Delegate to handle the result of the sign in request. This will
   // delete itself eventually when it receives the OnDialogClosed call.
   auto delegate = std::make_unique<CredentialProviderWebDialogDelegate>(
       reauth_email, reauth_gaia_id, email_domains, gcpw_endpoint_path,
-      std::move(signin_complete_handler));
+      additional_mdm_oauth_scopes, std::move(signin_complete_handler));
 
   // The web dialog view that will contain the web ui for the login screen.
   // This view will be automatically deleted by the widget that owns it when it

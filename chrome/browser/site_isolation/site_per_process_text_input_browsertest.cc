@@ -527,8 +527,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   std::unique_ptr<content::TestRenderWidgetHostViewDestructionObserver>
       destruction_observer(
           new content::TestRenderWidgetHostViewDestructionObserver(first_view));
-  frames[0]->GetProcess()->Shutdown(0);
-  destruction_observer->Wait();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    frames[0]->GetProcess()->Shutdown(0);
+    destruction_observer->Wait();
+  }
 
   // Verify that the TextInputManager is no longer tracking TextInputState for
   // |first_view|.
@@ -540,8 +543,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   destruction_observer.reset(
       new content::TestRenderWidgetHostViewDestructionObserver(
           frames[1]->GetView()));
-  frames[1]->GetProcess()->Shutdown(0);
-  destruction_observer->Wait();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    frames[1]->GetProcess()->Shutdown(0);
+    destruction_observer->Wait();
+  }
 
   EXPECT_EQ(
       registered_views_count - 2U,

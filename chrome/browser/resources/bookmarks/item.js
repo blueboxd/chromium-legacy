@@ -66,6 +66,10 @@ Polymer({
     this.updateFromStore();
   },
 
+  focusMenuButton: function() {
+    this.$.menuButton.focus();
+  },
+
   /** @return {BookmarksItemElement} */
   getDropTarget: function() {
     return this;

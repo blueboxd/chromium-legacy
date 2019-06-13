@@ -37,7 +37,8 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
   options.priority = params.thread_priority;
   thread_ = std::make_unique<SimpleThreadImpl>(
       params.name ? params.name : std::string(), options,
-      std::move(non_main_thread_scheduler_factory));
+      std::move(non_main_thread_scheduler_factory), supports_gc_,
+      const_cast<scheduler::WorkerThread*>(this));
   if (supports_gc_) {
     MemoryPressureListenerRegistry::Instance().RegisterThread(
         const_cast<scheduler::WorkerThread*>(this));
@@ -81,12 +82,21 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerThread::GetTaskRunner()
   return thread_->GetDefaultTaskRunner();
 }
 
+void WorkerThread::ShutdownOnThread() {
+  thread_->ShutdownOnThread();
+  Scheduler()->Shutdown();
+}
+
 WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
     const std::string& name_prefix,
     const base::SimpleThread ::Options& options,
-    NonMainThreadSchedulerFactory factory)
+    NonMainThreadSchedulerFactory factory,
+    bool supports_gc,
+    WorkerThread* worker_thread)
     : SimpleThread(name_prefix, options),
-      scheduler_factory_(std::move(factory)) {
+      thread_(worker_thread),
+      scheduler_factory_(std::move(factory)),
+      supports_gc_(supports_gc) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the main
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
@@ -108,6 +118,25 @@ void WorkerThread::SimpleThreadImpl::WaitForInit() {
       FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                 base::Unretained(&initialized)));
   initialized.Wait();
+}
+
+WorkerThread::GCSupport::GCSupport(WorkerThread* thread) {
+  ThreadState::AttachCurrentThread();
+  gc_task_runner_ = std::make_unique<GCTaskRunner>(thread);
+}
+
+WorkerThread::GCSupport::~GCSupport() {
+#if defined(LEAK_SANITIZER)
+  ThreadState::Current()->ReleaseStaticPersistentNodes();
+#endif
+  // Ensure no posted tasks will run from this point on.
+  gc_task_runner_.reset();
+
+  ThreadState::DetachCurrentThread();
+}
+
+void WorkerThread::SimpleThreadImpl::ShutdownOnThread() {
+  gc_support_.reset();
 }
 
 void WorkerThread::SimpleThreadImpl::Run() {

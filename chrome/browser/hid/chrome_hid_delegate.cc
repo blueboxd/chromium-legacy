@@ -23,6 +23,7 @@ ChromeHidDelegate::~ChromeHidDelegate() = default;
 
 std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
     content::RenderFrameHost* frame,
+    std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     content::HidChooser::Callback callback) {
   Browser* browser = chrome::FindBrowserWithWebContents(
       content::WebContents::FromRenderFrameHost(frame));
@@ -31,8 +32,8 @@ std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
     return nullptr;
   }
 
-  auto chooser_controller =
-      std::make_unique<HidChooserController>(frame, std::move(callback));
+  auto chooser_controller = std::make_unique<HidChooserController>(
+      frame, std::move(filters), std::move(callback));
   auto chooser_bubble_delegate = std::make_unique<ChooserBubbleDelegate>(
       frame, std::move(chooser_controller));
   BubbleReference bubble_reference = browser->GetBubbleManager()->ShowBubble(

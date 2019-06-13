@@ -11,22 +11,26 @@
 namespace blink {
 
 XRPlane::XRPlane(XRSession* session,
-                 const device::mojom::blink::XRPlaneDataPtr& plane_data)
+                 const device::mojom::blink::XRPlaneDataPtr& plane_data,
+                 double timestamp)
     : XRPlane(session,
               mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
                   plane_data->orientation),
               mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose),
               mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
-                  plane_data->polygon)) {}
+                  plane_data->polygon),
+              timestamp) {}
 
 XRPlane::XRPlane(XRSession* session,
                  const base::Optional<Orientation>& orientation,
                  const TransformationMatrix& pose_matrix,
-                 const HeapVector<Member<DOMPointReadOnly>>& polygon)
+                 const HeapVector<Member<DOMPointReadOnly>>& polygon,
+                 double timestamp)
     : polygon_(polygon),
       orientation_(orientation),
       pose_matrix_(std::make_unique<TransformationMatrix>(pose_matrix)),
-      session_(session) {
+      session_(session),
+      last_changed_time_(timestamp) {
   DVLOG(3) << __func__;
 }
 
@@ -49,6 +53,10 @@ String XRPlane::orientation() const {
   return "";
 }
 
+double XRPlane::lastChangedTime() const {
+  return last_changed_time_;
+}
+
 HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
   // Returns copy of a vector - by design. This way, JavaScript code could
   // store the state of the plane's polygon in frame N just by storing the
@@ -57,8 +65,11 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
   return polygon_;
 }
 
-void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data) {
+void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
+                     double timestamp) {
   DVLOG(3) << __func__;
+
+  last_changed_time_ = timestamp;
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
       plane_data->orientation);

@@ -304,11 +304,9 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         return;
       }
 
-      storage::FileSystemURL file_system_url;
-      storage::IsolatedContext::ScopedFSHandle file_system;
-      std::tie(file_system_url, file_system) =
+      FileSystemURLAndHandle isolated_file_system_url_and_handle =
           CreateIsolatedURLFromVirtualPath(*context_, origin, virtual_path);
-      const GURL url = file_system_url.ToGURL();
+      const GURL url = isolated_file_system_url_and_handle.url.ToGURL();
       if (!url.is_valid()) {
         NotifyError(std::move(lifetime));
         return;
@@ -317,7 +315,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       // Increase ref count of file system to keep it alive after |file_system|
       // goes out of scope. Our destructor will eventually revoke the file
       // system.
-      storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
+      storage::IsolatedContext::GetInstance()->AddReference(
+          isolated_file_system_url_and_handle.handle.id());
 
       auto fs_info = FileSystemFileInfo::New();
       fs_info->url = url;
@@ -635,10 +634,10 @@ void GetMetadataForPath(
                      google_apis::CreateRelayCallback(std::move(callback))));
 }
 
-std::pair<storage::FileSystemURL, storage::IsolatedContext::ScopedFSHandle>
-CreateIsolatedURLFromVirtualPath(const storage::FileSystemContext& context,
-                                 const GURL& origin,
-                                 const base::FilePath& virtual_path) {
+FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
+    const storage::FileSystemContext& context,
+    const GURL& origin,
+    const base::FilePath& virtual_path) {
   const storage::FileSystemURL original_url =
       context.CreateCrackedFileSystemURL(
           origin, storage::kFileSystemTypeExternal, virtual_path);

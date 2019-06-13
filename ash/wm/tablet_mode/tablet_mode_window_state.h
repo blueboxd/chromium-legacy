@@ -79,9 +79,6 @@ class TabletModeWindowState : public wm::WindowState::State {
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(wm::WindowState* window_state, bool animated);
 
-  // True if |window| is the top window in BuildWindowForCycleList.
-  bool IsTopWindow(aura::Window* window);
-
   // The original state object of the window.
   std::unique_ptr<wm::WindowState::State> old_state_;
 

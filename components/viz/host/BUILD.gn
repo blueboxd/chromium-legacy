@@ -58,7 +58,6 @@ viz_component("host") {
     "//gpu/ipc/host",
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/public/interfaces",
-    "//services/ws/public/mojom",
     "//ui/gfx/geometry",
   ]
 

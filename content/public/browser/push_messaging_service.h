@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -20,7 +21,6 @@ enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
-struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -53,7 +53,7 @@ class CONTENT_EXPORT PushMessagingService {
   // Protocol when |standard_protocol| is true.
   virtual GURL GetEndpoint(bool standard_protocol) = 0;
 
-  // Subscribe the given |options.sender_info| with the push messaging service
+  // Subscribes the given |options->sender_info| with the push messaging service
   // in a document context. The frame is known and a permission UI may be
   // displayed to the user. It's safe to call this method multiple times for
   // the same registration information, in which case the existing subscription
@@ -63,19 +63,19 @@ class CONTENT_EXPORT PushMessagingService {
       int64_t service_worker_registration_id,
       int renderer_id,
       int render_frame_id,
-      const blink::WebPushSubscriptionOptions& options,
+      blink::mojom::PushSubscriptionOptionsPtr options,
       bool user_gesture,
       RegisterCallback callback) = 0;
 
-  // Subscribe the given |options.sender_info| with the push messaging service.
-  // The frame is not known so if permission was not previously granted by the
-  // user this request should fail. It's safe to call this method multiple times
-  // for the same registration information, in which case the existing
-  // subscription will be returned by the server.
+  // Subscribes the given |options->sender_info| with the push messaging
+  // service. The frame is not known so if permission was not previously granted
+  // by the user this request should fail. It's safe to call this method
+  // multiple times for the same registration information, in which case the
+  // existing subscription will be returned by the server.
   virtual void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const blink::WebPushSubscriptionOptions& options,
+      blink::mojom::PushSubscriptionOptionsPtr options,
       RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and

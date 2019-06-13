@@ -43,6 +43,17 @@ class AdsPageLoadMetricsObserver
 
   using ResourceMimeType = FrameData::ResourceMimeType;
 
+  // Aggregates high level summary statistics across FrameData objects.
+  struct AggregateFrameInfo {
+    AggregateFrameInfo();
+    size_t bytes;
+    size_t network_bytes;
+    size_t num_frames;
+    base::TimeDelta cpu_time;
+
+    DISALLOW_COPY_AND_ASSIGN(AggregateFrameInfo);
+  };
+
   explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr);
   ~AdsPageLoadMetricsObserver() override;
 
@@ -88,6 +99,7 @@ class AdsPageLoadMetricsObserver
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
+  void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
  private:
   // subresource_filter::SubresourceFilterObserver:
@@ -123,29 +135,37 @@ class AdsPageLoadMetricsObserver
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id,
-                                 const FrameData& frame_data);
   void RecordAdFrameUkm(ukm::SourceId source_id);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
-  void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);
-  void RecordHistogramsForCpuUsage(FrameData::FrameVisibility visibility);
+  void RecordAggregateHistogramsForAdTagging(
+      FrameData::FrameVisibility visibility);
+  void RecordAggregateHistogramsForCpuUsage();
+  void RecordPerFrameHistogramsForAdTagging(const FrameData& ad_frame_data);
+  void RecordPerFrameHistogramsForCpuUsage(const FrameData& ad_frame_data);
 
   // Checks to see if a resource is waiting for a navigation in the given
   // RenderFrameHost to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
   void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
 
+  // Find the FrameData object associated with a given FrameTreeNodeId in
+  // |ad_frames_data_storage_|.
+  FrameData* FindFrameData(FrameTreeNodeId id);
+
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
-  // data structure that won't move the data around.
+  // data structure that won't move the data around. This only stores ad frames
+  // that are actively on the page. When a frame is destroyed, so should its
+  // FrameData.
   std::list<FrameData> ad_frames_data_storage_;
 
-  // Maps a frame (by id) to the FrameData responsible for the frame.
-  // Multiple frame ids can point to the same FrameData. The responsible
-  // frame is the top-most frame labeled as an ad in the frame's ancestry,
-  // which may be itself. If no responsible frame is found, the data is
-  // nullptr.
-  std::map<FrameTreeNodeId, FrameData*> ad_frames_data_;
+  // Maps a frame (by id) to the corresponding iterator of
+  // |ad_frames_data_storage_| responsible for the frame. Multiple frame ids can
+  // point to the same FrameData. The responsible frame is the top-most frame
+  // labeled as an ad in the frame's ancestry, which may be itself. If no
+  // responsible frame is found, the data is an iterator to the end of
+  // |ad_frames_data_storage_|.
+  std::map<FrameTreeNodeId, std::list<FrameData>::iterator> ad_frames_data_;
 
   // The set of frames that have yet to finish but that the SubresourceFilter
   // has reported are ads. Once DetectSubresourceFilterAd is called the id is
@@ -163,6 +183,11 @@ class AdsPageLoadMetricsObserver
 
   // Tracks aggregate counts across all frames on the page.
   std::unique_ptr<FrameData> aggregate_frame_data_;
+
+  // Tracks aggregate counts across all ad frames on the page by visibility
+  // type.
+  AggregateFrameInfo aggregate_ad_info_by_visibility_
+      [static_cast<size_t>(FrameData::FrameVisibility::kMaxValue) + 1];
 
   // Flag denoting that this observer should no longer monitor changes in
   // display state for frames. This prevents us from receiving the updates when

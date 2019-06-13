@@ -125,9 +125,8 @@ Optional<syncer::ModelError> AutofillProfileSyncBridge::MergeSyncData(
 
   RETURN_IF_ERROR(
       initial_sync_tracker.MergeSimilarEntriesForInitialSync(app_locale_));
-  RETURN_IF_ERROR(FlushSyncTracker(std::move(metadata_change_list),
-                                   &initial_sync_tracker,
-                                   AutofillProfileSyncChangeOrigin::kInitial));
+  RETURN_IF_ERROR(
+      FlushSyncTracker(std::move(metadata_change_list), &initial_sync_tracker));
 
   web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL_PROFILE);
@@ -159,9 +158,7 @@ Optional<ModelError> AutofillProfileSyncBridge::ApplySyncChanges(
     }
   }
 
-  RETURN_IF_ERROR(
-      FlushSyncTracker(std::move(metadata_change_list), &tracker,
-                       AutofillProfileSyncChangeOrigin::kIncrementalRemote));
+  RETURN_IF_ERROR(FlushSyncTracker(std::move(metadata_change_list), &tracker));
 
   web_data_backend_->CommitChanges();
   return base::nullopt;
@@ -219,12 +216,6 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
       std::make_unique<syncer::SyncMetadataStoreChangeList>(
           GetAutofillTable(), syncer::AUTOFILL_PROFILE);
 
-  // TODO(crbug.com/904390): Remove when the investigation is over.
-  std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
-  GetAutofillTable()->GetServerProfiles(&server_profiles);
-  bool is_converted_from_server = IsLocalProfileEqualToServerProfile(
-      server_profiles, *change.data_model(), app_locale_);
-
   switch (change.type()) {
     case AutofillProfileChange::ADD:
     case AutofillProfileChange::UPDATE:
@@ -232,21 +223,9 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
           change.key(),
           CreateEntityDataFromAutofillProfile(*change.data_model()),
           metadata_change_list.get());
-
-      // TODO(crbug.com/904390): Remove when the investigation is over.
-      ReportAutofillProfileAddOrUpdateOrigin(
-          is_converted_from_server
-              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
-              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::REMOVE:
       change_processor()->Delete(change.key(), metadata_change_list.get());
-
-      // TODO(crbug.com/904390): Remove when the investigation is over.
-      ReportAutofillProfileDeleteOrigin(
-          is_converted_from_server
-              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
-              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::EXPIRE:
       // EXPIRE changes are not being issued for profiles.
@@ -266,8 +245,7 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
 
 base::Optional<syncer::ModelError> AutofillProfileSyncBridge::FlushSyncTracker(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
-    AutofillProfileSyncDifferenceTracker* tracker,
-    AutofillProfileSyncChangeOrigin origin) {
+    AutofillProfileSyncDifferenceTracker* tracker) {
   DCHECK(tracker);
 
   RETURN_IF_ERROR(tracker->FlushToLocal(
@@ -281,9 +259,6 @@ base::Optional<syncer::ModelError> AutofillProfileSyncBridge::FlushSyncTracker(
     change_processor()->Put(GetStorageKeyFromAutofillProfile(*entry),
                             CreateEntityDataFromAutofillProfile(*entry),
                             metadata_change_list.get());
-
-    // TODO(crbug.com/904390): Remove when the investigation is over.
-    ReportAutofillProfileAddOrUpdateOrigin(origin);
   }
 
   return static_cast<syncer::SyncMetadataStoreChangeList*>(

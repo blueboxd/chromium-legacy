@@ -103,7 +103,9 @@ class ASH_EXPORT AssistantController
 
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.
-  void OpenUrl(const GURL& url, bool from_server = false);
+  void OpenUrl(const GURL& url,
+               bool in_background = false,
+               bool from_server = false);
 
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.
@@ -146,7 +148,7 @@ class ASH_EXPORT AssistantController
   void NotifyConstructed();
   void NotifyDestroying();
   void NotifyDeepLinkReceived(const GURL& deep_link);
-  void NotifyOpeningUrl(const GURL& url, bool from_server);
+  void NotifyOpeningUrl(const GURL& url, bool in_background, bool from_server);
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // mojom::VoiceInteractionObserver:

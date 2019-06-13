@@ -82,7 +82,7 @@ class BookmarkEditorView : public BookmarkEditor,
   // views::DialogDelegateView:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   ui::ModalType GetModalType() const override;
   bool CanResize() const override;
   bool ShouldShowCloseButton() const override;

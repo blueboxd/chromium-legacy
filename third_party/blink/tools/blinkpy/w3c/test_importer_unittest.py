@@ -496,6 +496,13 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual('external@example.com', importer.tbr_reviewer())
         self.assertLog([])
 
+    def test_tbr_reviewer_skips_non_committer(self):
+        host = MockHost()
+        importer = TestImporter(host)
+        importer._fetch_ecosystem_infra_sheriff_username = lambda: 'kyleju'
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        self.assertLog(['WARNING: Cannot TBR by kyleju: not a committer\n'])
+
     def test_generate_manifest_successful_run(self):
         # This test doesn't test any aspect of the real manifest script, it just
         # asserts that TestImporter._generate_manifest would invoke the script.

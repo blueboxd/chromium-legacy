@@ -322,8 +322,6 @@ void RenderFrameProxyHost::OnOpenURL(
       frame_tree_node_->navigator()->GetController()->GetWebContents(),
       current_rfh, params.user_gesture, &download_policy);
 
-  // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
-  // passed in as well.
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
   // RequestTransferURL method once both RenderFrameProxyHost and
   // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
@@ -335,7 +333,8 @@ void RenderFrameProxyHost::OnOpenURL(
       params.referrer, ui::PAGE_TRANSITION_LINK,
       params.should_replace_current_entry, download_policy,
       params.uses_post ? "POST" : "GET", params.resource_request_body,
-      params.extra_headers, std::move(blob_url_loader_factory));
+      params.extra_headers, std::move(blob_url_loader_factory),
+      params.user_gesture);
 }
 
 void RenderFrameProxyHost::OnCheckCompleted() {

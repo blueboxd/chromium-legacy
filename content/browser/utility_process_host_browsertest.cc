@@ -8,7 +8,6 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
-#include "content/browser/utility_process_host_client.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,9 +63,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
 
   void RunUtilityProcessOnIOThread(bool elevated, bool crash) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    UtilityProcessHost* host =
-        new UtilityProcessHost(/*client=*/nullptr,
-                               /*client_task_runner=*/nullptr);
+    UtilityProcessHost* host = new UtilityProcessHost();
     host->SetName(base::ASCIIToUTF16("TestProcess"));
     host->SetMetricsName(kTestProcessName);
 #if defined(OS_WIN)

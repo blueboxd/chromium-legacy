@@ -745,7 +745,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
 
   NSString* itemIdentifier = URLItem.uniqueIdentifier;
-  FaviconAttributes* cachedAttributes = [self.imageDataSource
+  [self.imageDataSource
       faviconForURL:URLItem.URL
          completion:^(FaviconAttributes* attributes) {
            // Only set favicon if the cell hasn't been reused.
@@ -754,8 +754,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
              [URLCell.faviconView configureWithAttributes:attributes];
            }
          }];
-  DCHECK(cachedAttributes);
-  [URLCell.faviconView configureWithAttributes:cachedAttributes];
 }
 
 #pragma mark - Distant Sessions helpers

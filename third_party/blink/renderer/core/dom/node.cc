@@ -2809,10 +2809,6 @@ HTMLSlotElement* Node::AssignedSlot() const {
   ShadowRoot* root = V1ShadowRootOfParent();
   if (!root)
     return nullptr;
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
-    // Don't recalc assignment in this case.
-    return root->AssignedSlotFor(*this);
-  }
 
   if (!root->HasSlotAssignment())
     return nullptr;

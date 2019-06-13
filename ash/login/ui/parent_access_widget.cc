@@ -16,7 +16,8 @@
 namespace ash {
 
 ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
-                                       const OnExitCallback& callback)
+                                       const OnExitCallback& callback,
+                                       ParentAccessRequestReason reason)
     : callback_(callback) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
@@ -43,7 +44,7 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,
                                               weak_factory_.GetWeakPtr());
 
-  widget_->SetContentsView(new ParentAccessView(account_id, callbacks));
+  widget_->SetContentsView(new ParentAccessView(account_id, callbacks, reason));
   widget_->CenterWindow(widget_->GetContentsView()->GetPreferredSize());
   widget_->Show();
   widget_->GetContentsView()->RequestFocus();

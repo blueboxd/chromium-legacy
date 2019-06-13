@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -177,18 +178,25 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
     if (url.is_empty())
       return false;
 
-    if (url.scheme_piece() != secure_page_scheme)
-      return true;
+    // Page URLs that are not within scope
+    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+    // corresponding to |launch_url| show the toolbar.
+    bool out_of_scope =
+        !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+
+    if (url.scheme_piece() != secure_page_scheme) {
+      // Some origins are (such as localhost) are considered secure even when
+      // served over non-secure schemes. However, in order to hide the toolbar,
+      // the 'considered secure' origin must also be in the app's scope.
+      return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
+    }
 
     if (IsForSystemWebApp()) {
       DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
       return false;
     }
 
-    // Page URLs that are not within scope
-    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-    // corresponding to |launch_url| show the toolbar.
-    return !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+    return out_of_scope;
   };
 
   GURL visible_url = web_contents->GetVisibleURL();
@@ -203,9 +211,9 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   }
 
   // Insecure external web sites show the toolbar.
-  // Note: IsSiteSecure is false until a url is committed.
+  // Note: IsContentSecure is false until a navigation is committed.
   if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
-      !IsSiteSecure(web_contents)) {
+      !InstallableManager::IsContentSecure(web_contents)) {
     return true;
   }
 

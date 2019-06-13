@@ -56,6 +56,14 @@ class FakeHidManager : public mojom::HidManager {
                                              const std::string& product_name,
                                              const std::string& serial_number,
                                              mojom::HidBusType bus_type);
+  mojom::HidDeviceInfoPtr CreateAndAddDeviceWithTopLevelUsage(
+      uint16_t vendor_id,
+      uint16_t product_id,
+      const std::string& product_name,
+      const std::string& serial_number,
+      mojom::HidBusType bus_type,
+      uint16_t usage_page,
+      uint16_t usage);
   void AddDevice(mojom::HidDeviceInfoPtr device);
   void RemoveDevice(const std::string& guid);
 

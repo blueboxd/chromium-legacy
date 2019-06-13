@@ -204,6 +204,8 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
            left == other.left;
   }
 
+  bool IsZero() const { return !top && !right && !bottom && !left; }
+
   LayoutUnit top;
   LayoutUnit right;
   LayoutUnit bottom;

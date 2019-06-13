@@ -75,9 +75,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   // WorkerShadowPage::Client overrides.
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebApplicationCacheHostClient*) override;
   void OnShadowPageInitialized() override;
+  WebLocalFrameClient::AppCacheType GetAppCacheType() override {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
+  }
 
   static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
       WebServiceWorkerContextClient*,

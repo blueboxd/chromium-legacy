@@ -372,6 +372,17 @@
       }
     }
   },
+  'chrome_sizes': {
+    'modifications': {
+      # TODO(crbug.com/961548): Swarm this if/when there's available Mac
+      # capacity in chrome-swarming's general test pool.
+      'mac-google-rel': {
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    },
+  },
   'chromedriver_py_tests': {
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).
@@ -405,6 +416,11 @@
     ],
     'modifications': {
       # chromium.android
+      'android-asan': {
+        'swarming': {
+          'shards': 18,
+        },
+      },
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 13,
@@ -743,6 +759,24 @@
         'args': [
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
+      },
+    },
+  },
+  'ipc_tests': {
+    'modifications': {
+      'android-asan': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+  },
+  'mojo_unittests': {
+    'modifications': {
+      'android-asan': {
+        'swarming': {
+          'shards': 2,
+        },
       },
     },
   },

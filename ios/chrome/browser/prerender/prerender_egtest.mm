@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -69,28 +68,26 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   NSString* pageString = base::SysUTF8ToNSString(pageURL.GetContent());
 
   // Go to the page a couple of time so it shows as suggestion.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
-                          chrome_test_util::Omnibox()]);
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
+  [ChromeEarlGrey waitForPageToFinishLoading];
   [[self class] closeAllTabs];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
 
   // Type the begining of the address to have the autocomplete suggestion.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
-                          chrome_test_util::Omnibox()]);
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(
                         [pageString substringToIndex:[pageString length] - 6])];

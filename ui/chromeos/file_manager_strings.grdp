@@ -1395,6 +1395,9 @@
   <message name="IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL" desc="Label for a button which is used to open play list in audio player.">
     Open play list
   </message>
+  <message name="IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL" desc="Label for an expand button which is used to show/hide artwork.">
+    Artwork
+  </message>
 
 <!-- Video Player -->
   <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="In the video player app, message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">

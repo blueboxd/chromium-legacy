@@ -43,6 +43,12 @@ class CrostiniTestHelper {
       vm_tools::apps::App& app,
       const std::map<std::string, std::set<std::string>>& keywords);
 
+  // When the App Service is enabled, the timing of when Profile-related and
+  // Profile-creation-triggered initialization occurs means that the App
+  // Service has to be re-initialized with Crostini's testing fakes. This
+  // method does that re-initialization.
+  void ReInitializeAppServiceIntegration();
+
   // Set/unset the the CrostiniEnabled pref
   static void EnableCrostini(Profile* profile);
   static void DisableCrostini(Profile* profile);
@@ -69,6 +75,7 @@ class CrostiniTestHelper {
   void UpdateRegistry();
 
   Profile* profile_;
+  bool initialized_dbus_;
   vm_tools::apps::ApplicationList current_apps_;
 
   // This are used to allow Crostini.

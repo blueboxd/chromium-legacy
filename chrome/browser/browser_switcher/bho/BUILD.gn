@@ -2,11 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
 import("//build/toolchain/win/midl.gni")
 
 assert(is_win)
+assert(target_cpu == "x86" || target_cpu == "x64")
 
 shared_library("browser_switcher_bho") {
+  if (current_cpu == "x64") {
+    # Name the 32-bit and 64-bit output differently, since they'll be copied to
+    # the same directory.
+    output_name = "browser_switcher_bho_64"
+  }
+
+  visibility = [
+    ":browser_switcher_dlls",
+    ":copy_browser_switcher_binaries",
+  ]
+
   # TODO(nicolaso): Reduce binary size as much as possible.
   #
   # TODO(nicolaso): Use ie_bho.def and ie_bho.rc.
@@ -25,6 +38,56 @@ shared_library("browser_switcher_bho") {
   ]
   deps = [
     ":ie_bho_idl",
+  ]
+}
+
+if (is_clang) {
+  browser_switcher_x64_toolchain = "//build/toolchain/win:win_clang_x64"
+  browser_switcher_x86_toolchain = "//build/toolchain/win:win_clang_x86"
+} else {
+  browser_switcher_x64_toolchain = "//build/toolchain/win:x64"
+  browser_switcher_x86_toolchain = "//build/toolchain/win:x86"
+}
+
+browser_switcher_x64_label =
+    ":browser_switcher_bho($browser_switcher_x64_toolchain)"
+browser_switcher_x86_label =
+    ":browser_switcher_bho($browser_switcher_x86_toolchain)"
+
+copy("copy_browser_switcher_binaries") {
+  # Make sure we have both bitnesses in the root out directory.
+  if (target_cpu == "x86") {
+    cross_build_label = browser_switcher_x64_label
+    cross_build_dll = "browser_switcher_bho_64.dll"
+  } else if (target_cpu == "x64") {
+    cross_build_label = browser_switcher_x86_label
+    cross_build_dll = "browser_switcher_bho.dll"
+  }
+
+  cross_build_out_dir = get_label_info(cross_build_label, "root_out_dir")
+
+  sources = [
+    "$cross_build_out_dir/$cross_build_dll",
+  ]
+  if (symbol_level > 0) {
+    sources += [ "$cross_build_out_dir/$cross_build_dll.pdb" ]
+  }
+
+  outputs = [
+    "$root_out_dir/{{source_file_part}}",
+  ]
+  deps = [
+    browser_switcher_x64_label,
+    browser_switcher_x86_label,
+  ]
+}
+
+group("browser_switcher_dlls") {
+  # Build a DLL for each bitness, and put them in the root out dir.
+  deps = [
+    ":copy_browser_switcher_binaries",
+    browser_switcher_x64_label,
+    browser_switcher_x86_label,
   ]
 }
 

@@ -371,6 +371,11 @@ class UnmaskCardRequest : public PaymentsRequest {
     if (base::StringToInt(request_details_.user_response.exp_year, &value))
       request_dict.SetKey("expiration_year", base::Value(value));
 
+    if (request_details_.fido_assertion_info.is_dict()) {
+      request_dict.SetKey("fido_assertion_info",
+                          std::move(request_details_.fido_assertion_info));
+    }
+
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
     std::string request_content = base::StringPrintf(
@@ -835,7 +840,13 @@ const char PaymentsClient::kPhoneNumber[] = "phone_number";
 
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() {}
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
-    const UnmaskRequestDetails& other) = default;
+    const UnmaskRequestDetails& other) {
+  billing_customer_number = other.billing_customer_number;
+  card = other.card;
+  risk_data = other.risk_data;
+  user_response = other.user_response;
+  fido_assertion_info = other.fido_assertion_info.Clone();
+}
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
 PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}

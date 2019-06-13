@@ -42,7 +42,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
-#include "services/ws/public/cpp/gpu/gpu.h"
+#include "services/viz/public/cpp/gpu/gpu.h"
 
 using media::cast::FrameSenderConfig;
 using media::cast::RtpPayloadType;
@@ -378,7 +378,7 @@ Session::Session(mojom::SessionParametersPtr session_params,
                  mojom::ResourceProviderPtr resource_provider,
                  mojom::CastMessageChannelPtr outbound_channel,
                  mojom::CastMessageChannelRequest inbound_channel,
-                 std::unique_ptr<ws::Gpu> gpu)
+                 std::unique_ptr<viz::Gpu> gpu)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),

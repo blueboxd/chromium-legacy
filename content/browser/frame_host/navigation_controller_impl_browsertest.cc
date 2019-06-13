@@ -9839,4 +9839,65 @@ IN_PROC_BROWSER_TEST_F(
               ElementsAre(1, 1, 2, 1));
 }
 
+// When running OpenURL to an invalid URL on a frame proxy it should not spoof
+// the url by canceling a main frame navigation.
+// See https://crbug.com/966914.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+  const GURL main_frame_url(embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts,sandbox-allow-"
+      "top-navigation}())"));
+  const GURL main_frame_url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  // Load the initial page, containing a fully scriptable cross-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  // Setup the message trigger on the main frame and the handler on the iframe.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  std::string script =
+      "var messageUnloadEventSent = false;"
+      "window.addEventListener(\"beforeunload\", function "
+      "onBeforeUnload(event) {"
+      "if(messageUnloadEventSent) {"
+      "return;"
+      "}"
+      "messageUnloadEventSent = true;"
+      "var iframe = document.getElementById(\"child-0\");"
+      "iframe.contentWindow.postMessage(\"\", \"*\");"
+      "});";
+  EXPECT_TRUE(ExecJs(root, script));
+
+  script =
+      "window.addEventListener(\"message\", function (event) {"
+      "parent.location.href = \"chrome-guest://1234\";"
+      "});";
+  EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+  // This navigation will be raced by a navigation started in the iframe.
+  // It should still be prevalent compared to a non user-initiated render frame
+  // navigation.
+  // TODO(ahemery): Remove first block when https://crbug.com/973415 is fixed.
+  // The navigation started in the iframe should be canceled. When we are not
+  // cross process, this does not happen because has_user_gesture is true. The
+  // navigation is automatic and it should not be the case. This causes no spoof
+  // however, as verified below.
+  GURL check_url;
+  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+    EXPECT_FALSE(NavigateToURL(shell(), main_frame_url_2));
+    check_url = main_frame_url;
+  } else {
+    EXPECT_TRUE(NavigateToURL(shell(), main_frame_url_2));
+    check_url = main_frame_url_2;
+  }
+
+  // Check that no spoof happened.
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(check_url, shell()->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(check_url, controller.GetVisibleEntry()->GetVirtualURL());
+}
+
 }  // namespace content

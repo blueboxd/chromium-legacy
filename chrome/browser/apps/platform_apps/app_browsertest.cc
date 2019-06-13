@@ -224,9 +224,10 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
       return false;
     }
 
-    AppLaunchParams params(
-        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension->id(),
+                           extensions::LAUNCH_CONTAINER_NONE,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           extensions::SOURCE_TEST);
     params.command_line = command_line;
     params.current_directory = test_data_dir_;
     OpenApplication(params);
@@ -864,7 +865,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(const char* name,
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     OpenApplication(AppLaunchParams(
-        browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+        browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
         WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
     app_loaded_observer.Wait();
     window = GetFirstAppWindow();
@@ -1010,7 +1011,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -1032,7 +1033,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PRE_ComponentAppBackgroundPage) {
 
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -1070,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
 
   ExtensionTestMessageListener launched_listener("Launched", false);
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -1095,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   {
     ExtensionTestMessageListener launched_listener("Launched", false);
     OpenApplication(AppLaunchParams(
-        browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
+        browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
         WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   }

@@ -38,7 +38,7 @@ class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   int GetDialogButtons() const override;
   bool Accept() override;
 
@@ -83,9 +83,9 @@ void NetworkProfileBubbleView::Init() {
   AddChildView(label);
 }
 
-views::View* NetworkProfileBubbleView::CreateExtraView() {
-  views::Link* learn_more =
-      new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+std::unique_ptr<views::View> NetworkProfileBubbleView::CreateExtraView() {
+  auto learn_more =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more->set_listener(this);
   return learn_more;
 }

@@ -10,7 +10,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.BitmapCache;
+import org.chromium.chrome.browser.util.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;

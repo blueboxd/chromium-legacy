@@ -12,9 +12,12 @@ if (use_cups) {
       "ipp_converter.h",
     ]
 
+    public_deps = [
+      "//chrome/services/cups_ipp_parser/public/mojom",
+    ]
+
     deps = [
       "//base",
-      "//chrome/services/cups_ipp_parser/public/mojom",
       "//net",
       "//printing",
     ]

@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फाइल</translation>
 <translation id="457386861538956877">अधिक...</translation>
 <translation id="4582497162516204941">Linux (बीटा) इंस्टॉल करा</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" /> साठी परिणाम दाखवत आहे.</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4656293982926141856">हा कॉंप्युटर</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' च्या सदस्यांशी हे आयटम शेअर केले जात नाही तोवर त्यांना अॅक्सेस असणार नाही.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">बल्गेरियन कीबोर्ड</translation>
 <translation id="5418923334382419584">म्यानमार कीबोर्ड</translation>
 <translation id="5428105026674456456">स्पॅनिश</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" /> साठी कोणतेही परिणाम नाहीत.</translation>
 <translation id="5464696796438641524">पोलिश कीबोर्ड</translation>
 <translation id="5465122519792752163">नेपाळी कीबोर्ड (InScript)</translation>
 <translation id="5469868506864199649">इटालियन</translation>
 <translation id="5494920125229734069">सर्व निवडा</translation>
 <translation id="5500122897333236901">आइसलँडिक</translation>
 <translation id="5508696409934741614">बिंदू</translation>
+<translation id="5522908512596376669">फाइल सूची सूची दृश्यमध्ये बदलली गेली आहे.</translation>
 <translation id="5524517123096967210">फाइल वाचली जाऊ शकली नाही.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> इमेज</translation>
 <translation id="5533555070048896610">लिप्यंतरण (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6054173164583630569">फ्रेंच कीबोर्ड</translation>
 <translation id="6074825444536523002">Google फॉर्म</translation>
+<translation id="6096979789310008754">शोध मजकूर साफ केला, सर्व फायली आणि फोल्डर दाखवत आहे.</translation>
 <translation id="6111770213269631447">लिप्यंतरण (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> हलवित आहे...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">हत्ती</translation>
 <translation id="8569764466147087991">उघडण्यासाठी फाइल निवडा</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> आयटम संकालित करीत आहे...</translation>
+<translation id="8600173386174225982">फाइल सूची थंबनेल व्ह्यूमध्ये बदलली गेली आहे.</translation>
 <translation id="8669949407341943408">हलवत आहे...</translation>
 <translation id="8671210955687109937">टिप्पणी देऊ शकत नाही</translation>
 <translation id="8686213429977032554">ही ड्राइव्ह फाईल अद्याप शेअर केलेली नाही</translation>

@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
@@ -25,9 +26,11 @@ class ContentVerifier;
 class Extension;
 
 // Contains extension data that needs to be accessed on the IO thread. It can
-// be created/destroyed on any thread, but all other methods must be called on
-// the IO thread.
-class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
+// be created on any thread, but all other methods and destructor must be called
+// on the IO thread.
+class InfoMap : public base::RefCountedThreadSafe<
+                    InfoMap,
+                    content::BrowserThread::DeleteOnIOThread> {
  public:
   InfoMap();
 
@@ -95,7 +98,9 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   void SetIsLockScreenContext(bool is_lock_screen_context);
 
  private:
-  friend class base::RefCountedThreadSafe<InfoMap>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<InfoMap>;
 
   // Extra dynamic data related to an extension.
   struct ExtraData;

@@ -428,7 +428,7 @@ void StartupAppLauncher::LaunchApp() {
 
   // Always open the app in a window.
   OpenApplication(AppLaunchParams(
-      profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      profile_, extension->id(), extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_KIOSK));
 
   KioskAppManager::Get()->InitSession(profile_, app_id_);

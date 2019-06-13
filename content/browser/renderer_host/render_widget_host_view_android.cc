@@ -121,10 +121,8 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
   config.hide_active_handle =
-      base::FeatureList::IsEnabled(
-          content::android::kEnhancedSelectionInsertionHandle) &&
       base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_P;
+      base::android::SDK_VERSION_P;
   return std::make_unique<ui::TouchSelectionController>(client, config);
 }
 
@@ -954,9 +952,9 @@ void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck(
 }
 
 void RenderWidgetHostViewAndroid::DidPresentCompositorFrames(
-    const viz::PresentationFeedbackMap& feedbacks) {
-  presentation_feedbacks_ = feedbacks;
-  if (!presentation_feedbacks_.empty())
+    const viz::FrameTimingDetailsMap& timing_details) {
+  timing_details_ = timing_details;
+  if (!timing_details_.empty())
     AddBeginFrameRequest(BEGIN_FRAME);
 }
 
@@ -1573,12 +1571,11 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   : args.frame_time + (args.interval * 0.6);
   if (sync_compositor_) {
     sync_compositor_->BeginFrame(view_.GetWindowAndroid(), args,
-                                 presentation_feedbacks_);
+                                 timing_details_);
   } else if (renderer_compositor_frame_sink_) {
-    renderer_compositor_frame_sink_->OnBeginFrame(args,
-                                                  presentation_feedbacks_);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details_);
   }
-  presentation_feedbacks_.clear();
+  timing_details_.clear();
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {

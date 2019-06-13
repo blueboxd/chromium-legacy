@@ -49,15 +49,10 @@ class ASH_EXPORT MessageCenterController
       mojom::AshMessageCenterClientAssociatedPtrInfo client) override;
   void SetArcNotificationsInstance(
       arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
-  void ShowClientNotification(
-      const message_center::Notification& notification,
-      const base::UnguessableToken& display_token) override;
-  void CloseClientNotification(const std::string& id) override;
   void UpdateNotifierIcon(const message_center::NotifierId& notifier_id,
                           const gfx::ImageSkia& icon) override;
   void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                               bool enabled) override;
-  void GetActiveNotifications(GetActiveNotificationsCallback callback) override;
   void SetQuietMode(bool enabled) override;
 
   // Handles get app id calls from ArcNotificationManager.
@@ -65,9 +60,6 @@ class ASH_EXPORT MessageCenterController
       base::OnceCallback<void(const std::string& app_id)>;
   void GetArcAppIdByPackageName(const std::string& package_name,
                                 GetAppIdByPackageNameCallback callback);
-
-  // Shows the lock screen notification settings in Chrome OS setting.
-  void ShowLockScreenNotificationSettings();
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {

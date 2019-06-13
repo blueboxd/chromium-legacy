@@ -181,9 +181,8 @@ ScrollAndScaleSet::ScrollAndScaleSet()
       top_controls_delta(0.f),
       browser_controls_constraint(BrowserControlsState::kBoth),
       browser_controls_constraint_changed(false),
-      has_scrolled_by_wheel(false),
-      has_scrolled_by_touch(false),
-      scroll_gesture_did_end(false) {}
+      scroll_gesture_did_end(false),
+      manipulation_info(kManipulationInfoNone) {}
 
 ScrollAndScaleSet::~ScrollAndScaleSet() = default;
 

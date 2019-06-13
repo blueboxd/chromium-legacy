@@ -136,7 +136,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
 
   scroller_ = new views::ScrollView();
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->set_draw_overflow_indicator(false);
+  scroller_->SetDrawOverflowIndicator(false);
   scroller_->ClipHeightTo(kMenuItemHeightDp, kMenuItemHeightDp * 5);
   AddChildView(scroller_);
 

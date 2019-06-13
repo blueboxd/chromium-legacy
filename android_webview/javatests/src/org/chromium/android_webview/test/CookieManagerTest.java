@@ -24,6 +24,7 @@ import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.CookieUtils.TestCallback;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
@@ -68,6 +69,8 @@ public class CookieManagerTest {
     private AwCookieManager mCookieManager;
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
+
+    private final static String SECURE_COOKIE_HISTOGRAM_NAME = "Android.WebView.SecureCookieAction";
 
     @Before
     public void setUp() throws Exception {
@@ -305,10 +308,17 @@ public class CookieManagerTest {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetCookie() throws Throwable {
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
         String url = "http://www.example.com";
         String cookie = "name=test";
         mCookieManager.setCookie(url, cookie);
         assertCookieEquals(cookie, url);
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SECURE_COOKIE_HISTOGRAM_NAME, 3 /* kNotASecureCookie */));
     }
 
     @Test
@@ -355,11 +365,35 @@ public class CookieManagerTest {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetSecureCookieForHttpUrl() throws Throwable {
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
         String url = "http://www.example.com";
         String secureUrl = "https://www.example.com";
         String cookie = "name=test";
         mCookieManager.setCookie(url, cookie + ";secure");
         assertCookieEquals(cookie, secureUrl);
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SECURE_COOKIE_HISTOGRAM_NAME, 4 /* kFixedUp */));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testSetSecureCookieForHttpsUrl() throws Throwable {
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        String secureUrl = "https://www.example.com";
+        String cookie = "name=test";
+        mCookieManager.setCookie(secureUrl, cookie + ";secure");
+        assertCookieEquals(cookie, secureUrl);
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SECURE_COOKIE_HISTOGRAM_NAME, 1 /* kAlreadySecureScheme */));
     }
 
     @Test
@@ -401,6 +435,11 @@ public class CookieManagerTest {
         callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertFalse("Cookie should not be set for bad URLs", callback.getValue());
         assertNoCookies(brokenUrl);
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SECURE_COOKIE_HISTOGRAM_NAME, 0 /* kInvalidUrl */));
     }
 
     @Test

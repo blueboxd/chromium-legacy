@@ -28,7 +28,7 @@ class WidgetDialogExample : public DialogDelegateView {
   WidgetDialogExample();
   ~WidgetDialogExample() override;
   base::string16 GetWindowTitle() const override;
-  View* CreateExtraView() override;
+  std::unique_ptr<View> CreateExtraView() override;
   View* CreateFootnoteView() override;
 };
 
@@ -56,11 +56,10 @@ base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
 }
 
-// TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
-View* WidgetDialogExample::CreateExtraView() {
+std::unique_ptr<View> WidgetDialogExample::CreateExtraView() {
   auto view = MdTextButton::CreateSecondaryUiButton(
       nullptr, ASCIIToUTF16("Extra button!"));
-  return view.release();
+  return view;
 }
 
 View* WidgetDialogExample::CreateFootnoteView() {

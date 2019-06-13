@@ -172,7 +172,7 @@ ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetJavaObject() {
 }
 
 bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable"
            << " account= " << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
@@ -192,14 +192,14 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
 }
 
 GoogleServiceAuthError OAuth2TokenServiceDelegateAndroid::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = errors_.find(account_id);
   return (it == errors_.end()) ? GoogleServiceAuthError::AuthErrorNone()
                                : it->second;
 }
 
 void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAuthError"
            << " account=" << account_id << " error=" << error.ToString();
@@ -274,7 +274,7 @@ void OAuth2TokenServiceDelegateAndroid::SetAccounts(
 
 OAuth2AccessTokenFetcher*
 OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher"
@@ -287,7 +287,7 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
 }
 
 void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {
@@ -442,7 +442,7 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 }
 
 void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
   set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
   if (primary_account_id.empty() &&
@@ -459,7 +459,7 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
 }
 
 void OAuth2TokenServiceDelegateAndroid::ReloadAccountsFromSystem(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   // UpdateAccountList() effectively synchronizes the accounts in the Token
   // Service with those present at the system level.
   UpdateAccountList(primary_account_id, GetValidAccounts(),

@@ -21,6 +21,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -29,10 +30,16 @@
 #include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/media_switches.h"
 
 namespace system_media_permissions {
 
 namespace {
+
+bool UsingFakeMediaDevices() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream);
+}
 
 // Pointer to OS call wrapper that tests can set.
 MediaAuthorizationWrapper* g_media_authorization_wrapper_for_tests = nullptr;
@@ -109,6 +116,9 @@ NSInteger MediaAuthorizationStatus(NSString* media_type) {
 }
 
 SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
+  if (UsingFakeMediaDevices())
+    return SystemPermission::kAllowed;
+
   if (@available(macOS 10.14, *)) {
     NSInteger auth_status = MediaAuthorizationStatus(media_type);
     switch (auth_status) {
@@ -135,6 +145,11 @@ SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
 void RequestSystemMediaCapturePermission(NSString* media_type,
                                          base::RepeatingClosure callback,
                                          const base::TaskTraits& traits) {
+  if (UsingFakeMediaDevices()) {
+    base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+    return;
+  }
+
   if (@available(macOS 10.14, *)) {
     GetMediaAuthorizationWrapper().RequestAccessForMediaType(
         media_type, std::move(callback), traits);

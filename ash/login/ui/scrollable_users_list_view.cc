@@ -332,7 +332,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));
   SetBackgroundColor(SK_ColorTRANSPARENT);
-  set_draw_overflow_indicator(false);
+  SetDrawOverflowIndicator(false);
 
   SetVerticalScrollBar(new UsersListScrollBar(false));
   SetHorizontalScrollBar(new UsersListScrollBar(true));

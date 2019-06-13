@@ -60,54 +60,6 @@ class PopupNotificationBlocker : public message_center::NotificationBlocker {
   DISALLOW_COPY_AND_ASSIGN(PopupNotificationBlocker);
 };
 
-// This notification delegate passes actions back to the client that asked for
-// the notification (Chrome).
-class AshClientNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  AshClientNotificationDelegate(const std::string& notification_id,
-                                const base::UnguessableToken& display_token,
-                                mojom::AshMessageCenterClient* client)
-      : notification_id_(notification_id),
-        display_token_(display_token),
-        client_(client) {}
-
-  void Close(bool by_user) override {
-    client_->HandleNotificationClosed(display_token_, by_user);
-  }
-
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override {
-    if (button_index) {
-      client_->HandleNotificationButtonClicked(notification_id_, *button_index,
-                                               reply);
-    } else {
-      client_->HandleNotificationClicked(notification_id_);
-    }
-  }
-
-  void SettingsClick() override {
-    client_->HandleNotificationSettingsButtonClicked(notification_id_);
-  }
-
-  void DisableNotification() override {
-    client_->DisableNotification(notification_id_);
-  }
-
- private:
-  ~AshClientNotificationDelegate() override = default;
-
-  // The ID of the notification.
-  const std::string notification_id_;
-
-  // The token that was generated for the ShowClientNotification() call.
-  const base::UnguessableToken display_token_;
-
-  mojom::AshMessageCenterClient* client_;
-
-  DISALLOW_COPY_AND_ASSIGN(AshClientNotificationDelegate);
-};
-
 }  // namespace
 
 MessageCenterController::MessageCenterController() {
@@ -201,22 +153,6 @@ void MessageCenterController::SetArcNotificationsInstance(
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
 
-void MessageCenterController::ShowClientNotification(
-    const message_center::Notification& notification,
-    const base::UnguessableToken& display_token) {
-  DCHECK(client_.is_bound());
-  auto message_center_notification =
-      std::make_unique<message_center::Notification>(notification);
-  message_center_notification->set_delegate(
-      base::WrapRefCounted(new AshClientNotificationDelegate(
-          notification.id(), display_token, client_.get())));
-  MessageCenter::Get()->AddNotification(std::move(message_center_notification));
-}
-
-void MessageCenterController::CloseClientNotification(const std::string& id) {
-  MessageCenter::Get()->RemoveNotification(id, false /* by_user */);
-}
-
 void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
                                                  const gfx::ImageSkia& icon) {
   for (auto& listener : notifier_settings_listeners_)
@@ -230,21 +166,6 @@ void MessageCenterController::NotifierEnabledChanged(
     MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
 }
 
-void MessageCenterController::GetActiveNotifications(
-    GetActiveNotificationsCallback callback) {
-  message_center::NotificationList::Notifications notification_set =
-      MessageCenter::Get()->GetVisibleNotifications();
-  std::vector<message_center::Notification> notification_vector;
-  notification_vector.reserve(notification_set.size());
-  for (auto* notification : notification_set) {
-    notification_vector.emplace_back(*notification);
-    // The client doesn't know how to de-serialize vector icons,
-    // nor does it need to.
-    notification_vector.back().set_vector_small_image(gfx::kNoneIcon);
-  }
-  std::move(callback).Run(notification_vector);
-}
-
 void MessageCenterController::SetQuietMode(bool enabled) {
   MessageCenter::Get()->SetQuietMode(enabled);
 }
@@ -254,11 +175,6 @@ void MessageCenterController::GetArcAppIdByPackageName(
     GetAppIdByPackageNameCallback callback) {
   DCHECK(client_.is_bound());
   client_->GetArcAppIdByPackageName(package_name, std::move(callback));
-}
-
-void MessageCenterController::ShowLockScreenNotificationSettings() {
-  DCHECK(client_.is_bound());
-  client_->ShowLockScreenNotificationSettings();
 }
 
 void MessageCenterController::AddNotifierSettingsListener(

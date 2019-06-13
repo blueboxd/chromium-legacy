@@ -152,6 +152,8 @@ class AwBrowserContext : public content::BrowserContext,
   // Constructs HttpAuthDynamicParams based on |user_pref_service_|.
   network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
 
+  PrefService* GetPrefService() const { return user_pref_service_.get(); }
+
  private:
   void OnAuthPrefsChanged();
 

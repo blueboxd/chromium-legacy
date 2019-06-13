@@ -674,6 +674,9 @@ datalist {
 
 area {
     display: inline;
+}
+
+area:-webkit-any-link {
     cursor: pointer;
 }
 

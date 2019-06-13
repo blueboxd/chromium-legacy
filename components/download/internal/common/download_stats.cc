@@ -1054,8 +1054,16 @@ void RecordParallelDownloadRequestCount(int request_count) {
                               request_count, 1, 10, 11);
 }
 
-void RecordParallelDownloadAddStreamSuccess(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Download.ParallelDownloadAddStreamSuccess", success);
+void RecordParallelDownloadAddStreamSuccess(bool success,
+                                            bool support_range_request) {
+  if (support_range_request) {
+    base::UmaHistogramBoolean("Download.ParallelDownloadAddStreamSuccess",
+                              success);
+  } else {
+    base::UmaHistogramBoolean(
+        "Download.ParallelDownloadAddStreamSuccess.NoAcceptRangesHeader",
+        success);
+  }
 }
 
 void RecordParallelizableContentLength(int64_t content_length) {

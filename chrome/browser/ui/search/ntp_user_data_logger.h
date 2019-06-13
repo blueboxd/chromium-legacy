@@ -115,9 +115,6 @@ class NTPUserDataLogger
              ntp_tiles::kMaxNumTiles>
       logged_impressions_;
 
-  // The time we received the NTP_ALL_TILES_RECEIVED event.
-  base::TimeDelta tiles_received_time_;
-
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;
 

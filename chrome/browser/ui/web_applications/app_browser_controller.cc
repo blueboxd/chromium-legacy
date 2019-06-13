@@ -40,29 +40,6 @@ base::string16 AppBrowserController::FormatUrlOrigin(const GURL& url) {
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
-// static
-bool AppBrowserController::IsSiteSecure(
-    const content::WebContents* web_contents) {
-  const SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    switch (helper->GetSecurityLevel()) {
-      case security_state::SECURITY_LEVEL_COUNT:
-        NOTREACHED();
-        return false;
-      case security_state::EV_SECURE:
-      case security_state::SECURE:
-      case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-        return true;
-      case security_state::NONE:
-      case security_state::HTTP_SHOW_WARNING:
-      case security_state::DANGEROUS:
-        return false;
-    }
-  }
-  return false;
-}
-
 AppBrowserController::AppBrowserController(Browser* browser)
     : content::WebContentsObserver(nullptr), browser_(browser) {
   browser->tab_strip_model()->AddObserver(this);

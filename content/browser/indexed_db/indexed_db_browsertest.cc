@@ -44,6 +44,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -963,6 +964,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalWebFeatures,
 
   // Crashes the tab to cause the database set up above to force close with the
   // blocked transactions still open.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
 
   // Reopens the same page that was just crashed and inspects the database to

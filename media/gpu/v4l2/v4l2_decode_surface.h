@@ -23,10 +23,6 @@ namespace media {
 // platform-specific metadata (e.g. {input,output}_record).
 class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  public:
-  // Callback function that releases the according output record.
-  // |output_record_| will be passed to the callback function as argument.
-  using ReleaseCB = base::OnceClosure;
-
   // V4L2DecodeSurfaceHandler maintains a list of InputRecords, which records
   // the status and metadata of input buffers.
   // |input_record| is the index of the input record that corresponds to this
@@ -35,7 +31,9 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // that corresponds to this instance.
   // |release_cb| is the callback function that will be called when the instance
   // is destroyed.
-  V4L2DecodeSurface(int input_record, int output_record, ReleaseCB release_cb);
+  V4L2DecodeSurface(int input_record,
+                    int output_record,
+                    base::OnceClosure release_cb);
 
   // Mark the surface as decoded. This will also release all surfaces used for
   // reference, as they are not needed anymore and execute the done callback,
@@ -50,6 +48,7 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // decoding into this surface is finished. The callback is reset afterwards,
   // so it needs to be set again before each decode operation.
   void SetDecodeDoneCallback(base::OnceClosure done_cb);
+  void SetReleaseCallback(base::OnceClosure release_cb);
 
   // Update the passed v4l2_ext_controls structure to add the request or
   // config store information.
@@ -87,7 +86,7 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // Indicate whether the surface is decoded or not.
   bool decoded_;
   // Callback function which is called when the instance is destroyed.
-  ReleaseCB release_cb_;
+  base::OnceClosure release_cb_;
   // Callback function which is called after the surface has been decoded.
   base::OnceClosure done_cb_;
 
@@ -104,7 +103,7 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
  public:
   V4L2ConfigStoreDecodeSurface(int input_record,
                                int output_record,
-                               ReleaseCB release_cb)
+                               base::OnceClosure release_cb)
       : V4L2DecodeSurface(input_record, output_record, std::move(release_cb)),
         config_store_(input_record + 1) {}
 

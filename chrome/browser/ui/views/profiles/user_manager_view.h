@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/macros.h"

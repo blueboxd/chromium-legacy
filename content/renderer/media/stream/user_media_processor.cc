@@ -22,7 +22,6 @@
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -672,10 +672,11 @@ void UserMediaProcessor::SelectVideoContentSettings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   gfx::Size screen_size = GetScreenSize();
-  blink::VideoCaptureSettings settings = SelectSettingsVideoContentCapture(
-      current_request_info_->web_request().VideoConstraints(),
-      current_request_info_->stream_controls()->video.stream_type,
-      screen_size.width(), screen_size.height());
+  blink::VideoCaptureSettings settings =
+      blink::SelectSettingsVideoContentCapture(
+          current_request_info_->web_request().VideoConstraints(),
+          current_request_info_->stream_controls()->video.stream_type,
+          screen_size.width(), screen_size.height());
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());
@@ -797,7 +798,8 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
 }
 
 gfx::Size UserMediaProcessor::GetScreenSize() {
-  gfx::Size screen_size(kDefaultScreenCastWidth, kDefaultScreenCastHeight);
+  gfx::Size screen_size(blink::kDefaultScreenCastWidth,
+                        blink::kDefaultScreenCastHeight);
   if (render_frame_) {  // Can be null in tests.
     blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
     screen_size = gfx::Size(info.rect.width, info.rect.height);

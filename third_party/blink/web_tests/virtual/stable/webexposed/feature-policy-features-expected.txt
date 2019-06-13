@@ -5,6 +5,7 @@ accelerometer
 ambient-light-sensor
 autoplay
 camera
+document-domain
 encrypted-media
 fullscreen
 geolocation

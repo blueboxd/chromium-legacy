@@ -96,6 +96,16 @@ Polymer({
   },
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onIronSelect_: function(e) {
+    // Prevent this event from bubbling since it is unnecessarily triggering the
+    // listener within settings-animated-pages.
+    e.stopPropagation();
+  },
+
+  /**
      @param {number} code CTAP error code.
      @return {string} Contents of the error string that may be displayed
           to the user. Used automatically by Polymer.

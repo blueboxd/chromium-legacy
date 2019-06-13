@@ -85,6 +85,7 @@ class PaymentsClient {
     CreditCard card;
     std::string risk_data;
     CardUnmaskDelegate::UnmaskResponse user_response;
+    base::Value fido_assertion_info;
   };
 
   // A collection of the information required to make a credit card upload

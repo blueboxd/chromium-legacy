@@ -19,7 +19,6 @@ if (is_win) {
   executable("setup") {
     sources = [
       "setup.rc",
-      "setup_exe_version.rc.version",
       "setup_main.cc",
       "setup_main.h",
       "setup_resource.h",

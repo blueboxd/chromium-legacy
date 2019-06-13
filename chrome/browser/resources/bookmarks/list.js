@@ -124,6 +124,11 @@ Polymer({
     if (selectIndex > -1) {
       setTimeout(() => {
         this.$.list.focusItem(selectIndex);
+        // Focus menu button so 'Undo' is only one tab stop away on delete.
+        const item = getDeepActiveElement();
+        if (item) {
+          item.focusMenuButton();
+        }
       });
     }
   },

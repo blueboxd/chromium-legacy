@@ -399,10 +399,10 @@ void XRFrameProvider::ProcessScheduledFrame(
     if (frame_data) {
       immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
                                   buffer_mailbox_holder_,
-                                  frame_data->detected_planes);
+                                  frame_data->detected_planes_data);
     } else {
       immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
-                                  buffer_mailbox_holder_, base::nullopt);
+                                  buffer_mailbox_holder_, nullptr);
     }
   } else {
     // In the process of fulfilling the frame requests for each session they are
@@ -428,10 +428,10 @@ void XRFrameProvider::ProcessScheduledFrame(
           getPoseMatrix(frame_pose_);
       if (frame_data) {
         session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
-                         frame_data->detected_planes);
+                         frame_data->detected_planes_data);
       } else {
         session->OnFrame(high_res_now_ms, std::move(pose_matrix), base::nullopt,
-                         base::nullopt);
+                         nullptr);
       }
     }
 

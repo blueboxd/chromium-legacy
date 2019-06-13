@@ -93,15 +93,19 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   __weak __typeof(self) weakSelf = self;
-  [self.baseViewController presentViewController:self.bannerViewController
-                                        animated:animated
-                                      completion:^{
-                                        weakSelf.presentingInfobarBanner = YES;
-                                        weakSelf.bannerWasPresented = YES;
-                                        [weakSelf infobarBannerWasPresented];
-                                        if (completion)
-                                          completion();
-                                      }];
+  [self.baseViewController
+      presentViewController:self.bannerViewController
+                   animated:animated
+                 completion:^{
+                   [weakSelf
+                       configureBannerAccessibilityUsingPresentingViewController:
+                           weakSelf.baseViewController];
+                   weakSelf.presentingInfobarBanner = YES;
+                   weakSelf.bannerWasPresented = YES;
+                   [weakSelf infobarBannerWasPresented];
+                   if (completion)
+                     completion();
+                 }];
 }
 
 - (void)presentInfobarModal {
@@ -327,6 +331,26 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                                          animated:YES
                                        completion:nil];
   [self.badgeDelegate infobarModalWasPresented];
+}
+
+// Configures the Banner Accessibility in order to give VoiceOver users the
+// ability to select other elements while the banner is presented. Call this
+// method after the Banner has been presented.
+- (void)configureBannerAccessibilityUsingPresentingViewController:
+    (UIViewController*)presentingViewController {
+  // Set the banner's superview accessibilityViewIsModal property to NO. This
+  // will allow the selection of the banner sibling views e.g. the
+  // presentingViewController views.
+  self.bannerViewController.view.superview.accessibilityViewIsModal = NO;
+
+  // Make sure the banner is an accessibility element of the
+  // PresentingViewController.
+  self.baseViewController.accessibilityElements =
+      @[ self.bannerViewController.view, presentingViewController.view ];
+
+  // Finally, focus the banner.
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  self.bannerViewController.view);
 }
 
 @end

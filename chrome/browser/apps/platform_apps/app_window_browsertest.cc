@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   EXPECT_TRUE(extension);
 
   OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
+      browser()->profile(), extension->id(), extensions::LAUNCH_CONTAINER_NONE,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   ExtensionTestMessageListener geometry_listener("ListenGeometryChange", true);

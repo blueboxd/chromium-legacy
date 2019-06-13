@@ -193,23 +193,18 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
       GoogleServiceAuthError::USER_NOT_SIGNED_UP,
       GoogleServiceAuthError::CONNECTION_FAILED,
-      GoogleServiceAuthError::CAPTCHA_REQUIRED,
       GoogleServiceAuthError::ACCOUNT_DELETED,
       GoogleServiceAuthError::ACCOUNT_DISABLED,
       GoogleServiceAuthError::SERVICE_UNAVAILABLE,
-      GoogleServiceAuthError::TWO_FACTOR,
       GoogleServiceAuthError::REQUEST_CANCELED,
-      GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED,
       GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE,
-      GoogleServiceAuthError::SERVICE_ERROR,
-      GoogleServiceAuthError::WEB_LOGIN_REQUIRED};
-  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
-                "table array does not match the number of auth error types");
+      GoogleServiceAuthError::SERVICE_ERROR};
+  static_assert(
+      base::size(table) == GoogleServiceAuthError::NUM_STATES -
+                               GoogleServiceAuthError::kDeprecatedStateCount,
+      "table array does not match the number of auth error types");
 
   for (GoogleServiceAuthError::State state : table) {
-    if (GoogleServiceAuthError::IsDeprecated(state))
-      continue;
-
     GoogleServiceAuthError error(state);
 
     if (error.IsTransientError())

@@ -22,7 +22,7 @@ namespace {
 
 struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
   NGBaselineList baselines;
-  NGPhysicalBoxStrut box_struts[2];
+  NGLink children[];
 };
 
 static_assert(sizeof(NGPhysicalBoxFragment) ==
@@ -43,21 +43,32 @@ LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
 scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
     NGBoxFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode) {
+  const NGPhysicalBoxStrut borders =
+      builder->initial_fragment_geometry_->border.ConvertToPhysical(
+          builder->GetWritingMode(), builder->Direction());
+  const NGPhysicalBoxStrut padding =
+      builder->initial_fragment_geometry_->padding.ConvertToPhysical(
+          builder->GetWritingMode(), builder->Direction());
+  const size_t byte_size = sizeof(NGPhysicalBoxFragment) +
+                           sizeof(NGLink) * builder->children_.size() +
+                           (borders.IsZero() ? 0 : sizeof(borders)) +
+                           (padding.IsZero() ? 0 : sizeof(padding));
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.
   // The initialization of the array is done by NGPhysicalContainerFragment;
   // we pass the buffer as a constructor argument.
   void* data = ::WTF::Partitions::FastMalloc(
-      sizeof(NGPhysicalBoxFragment) +
-          builder->children_.size() * sizeof(NGLink),
-      ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
-  new (data) NGPhysicalBoxFragment(builder, block_or_line_writing_mode);
+      byte_size, ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
+  new (data) NGPhysicalBoxFragment(builder, borders, padding,
+                                   block_or_line_writing_mode);
   return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
 }
 
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGBoxFragmentBuilder* builder,
+    const NGPhysicalBoxStrut& borders,
+    const NGPhysicalBoxStrut& padding,
     WritingMode block_or_line_writing_mode)
     : NGPhysicalContainerFragment(
           builder,
@@ -67,14 +78,14 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               ? kFragmentRenderedLegend
               : kFragmentBox,
           builder->BoxType()),
-      baselines_(builder->baselines_),
-      borders_(builder->initial_fragment_geometry_->border.ConvertToPhysical(
-          builder->GetWritingMode(),
-          builder->Direction())),
-      padding_(builder->initial_fragment_geometry_->padding.ConvertToPhysical(
-          builder->GetWritingMode(),
-          builder->Direction())) {
+      baselines_(builder->baselines_) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  has_borders_ = !borders.IsZero();
+  if (has_borders_)
+    *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) = borders;
+  has_padding_ = !padding.IsZero();
+  if (has_padding_)
+    *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
@@ -278,8 +289,8 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   // Legacy layout can (incorrectly) shift baseline position(s) during
   // "simplified" layout.
   DCHECK(IsLegacyLayoutRoot() || baselines_ == other.baselines_);
-  DCHECK(borders_ == other.borders_);
-  DCHECK(padding_ == other.padding_);
+  DCHECK(Borders() == other.Borders());
+  DCHECK(Padding() == other.Padding());
 }
 #endif
 

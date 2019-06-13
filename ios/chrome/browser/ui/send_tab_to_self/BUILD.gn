@@ -19,5 +19,12 @@ source_set("send_tab_to_self_ui") {
   sources = [
     "send_tab_to_self_modal_presentation_controller.h",
     "send_tab_to_self_modal_presentation_controller.mm",
+    "send_tab_to_self_table_view_controller.h",
+    "send_tab_to_self_table_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view/cells",
   ]
 }

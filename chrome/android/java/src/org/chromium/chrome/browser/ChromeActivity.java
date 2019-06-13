@@ -201,8 +201,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
                    ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate,
-                   AppMenuBlocker {
+                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
+                   MenuOrKeyboardActionController {
     /**
      * No control container to inflate during initialization.
      */
@@ -221,22 +221,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         int WEBAPP = 3;
         int NO_TOUCH = 4;
         int DINO = 5;
-    }
-
-    /**
-     * A handler for menu or keyboard actions. Register via
-     * {@link #registerMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler)}.
-     */
-    public interface MenuOrKeyboardActionHandler {
-        /**
-         * Handles menu item selection and keyboard shortcuts.
-         *
-         * @param id The ID of the selected menu item (defined in main_menu.xml) or
-         *           keyboard shortcut (defined in values.xml).
-         * @param fromMenu Whether this was triggered from the menu.
-         * @return Whether the action was handled.
-         */
-        boolean onMenuOrKeyboardAction(int id, boolean fromMenu);
     }
 
     /**
@@ -357,7 +341,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private TouchlessUiCoordinator mTouchlessUiCoordinator;
 
-    private List<MenuOrKeyboardActionHandler> mMenuActionHandlers = new ArrayList<>();
+    // TODO(972867): Pull MenuOrKeyboardActionController out of ChromeActivity.
+    private List<MenuOrKeyboardActionController.MenuOrKeyboardActionHandler> mMenuActionHandlers =
+            new ArrayList<>();
 
     @Override
     protected ActivityWindowAndroid createWindowAndroid() {
@@ -2093,15 +2079,19 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @param handler A new {@link MenuOrKeyboardActionHandler} to register.
+     * @return The {@link MenuOrKeyboardActionController} for registering menu or keyboard action
+     *         handler for this activity.
      */
+    public MenuOrKeyboardActionController getMenuOrKeyboardActionController() {
+        return this;
+    }
+
+    @Override
     public void registerMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler handler) {
         mMenuActionHandlers.add(handler);
     }
 
-    /**
-     * @param handler A {@link MenuOrKeyboardActionHandler} to unregister.
-     */
+    @Override
     public void unregisterMenuOrKeyboardActionHandler(MenuOrKeyboardActionHandler handler) {
         mMenuActionHandlers.remove(handler);
     }
@@ -2115,7 +2105,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether the action was handled.
      */
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
-        for (MenuOrKeyboardActionHandler handler : mMenuActionHandlers) {
+        for (MenuOrKeyboardActionController.MenuOrKeyboardActionHandler handler :
+                mMenuActionHandlers) {
             if (handler.onMenuOrKeyboardAction(id, fromMenu)) return true;
         }
 

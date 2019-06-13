@@ -14,9 +14,9 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -172,16 +172,17 @@ void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
 
 void VideoFrameSubmitter::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>
-        feedbacks) {
+    WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>
+        timing_details) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
 
-  for (const auto& pair : feedbacks) {
+  for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
-    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
-                                          pair.key, pair.value->timestamp);
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+        "media", "VideoFrameSubmitter", pair.key,
+        pair.value->presentation_feedback->timestamp);
   }
 
   // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it

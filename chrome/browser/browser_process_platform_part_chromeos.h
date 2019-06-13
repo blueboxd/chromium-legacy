@@ -14,11 +14,13 @@
 #include "chrome/browser/browser_process_platform_part_base.h"
 
 class BrowserProcessPlatformPartTestApi;
+class Profile;
 
 namespace chromeos {
 class AccountManagerFactory;
 class ChromeSessionManager;
 class ChromeUserManager;
+class KerberosCredentialsManager;
 class ProfileHelper;
 class TimeZoneResolver;
 
@@ -64,6 +66,16 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   void InitializeCrosComponentManager();
   void ShutdownCrosComponentManager();
+
+  // Initializes all services that need the primary profile. Gets called as soon
+  // as the primary profile is available, which implies that the primary user
+  // has logged in.
+  // Use this for simple 'leaf-type' services with no or negligible inter-
+  // dependencies. If your service has more complex dependencies, consider using
+  // a BrowserContextKeyedService and restricting service creation to the
+  // primary profile.
+  void InitializePrimaryProfileServices(const Profile* primary_profile);
+  void ShutdownPrimaryProfileServices();
 
   // Disable the offline interstitial easter egg if the device is enterprise
   // enrolled.
@@ -151,6 +163,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
       cros_component_manager_;
 
   std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;
+
+  std::unique_ptr<chromeos::KerberosCredentialsManager>
+      kerberos_credentials_manager_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ws::InputDeviceControllerClient>

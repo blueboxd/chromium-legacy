@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/build_time.h"
@@ -135,7 +136,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     ash::LoginScreen::Get()->ShowParentAccessWidget(
         account_id,
         base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
-                            weak_factory_.GetWeakPtr()));
+                            weak_factory_.GetWeakPtr()),
+        ash::ParentAccessRequestReason::kChangeTime);
   }
 
   void OnParentAccessValidation(bool success) {

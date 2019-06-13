@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -54,6 +55,7 @@ class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 class DeviceWilcoDtcConfigurationHandler;
 class TPMAutoUpdateModePolicyHandler;
+class DeviceScheduledUpdateChecker;
 
 // Extends ChromeBrowserPolicyConnector with the setup specific to Chrome OS.
 class BrowserPolicyConnectorChromeOS
@@ -243,6 +245,8 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<DeviceWiFiAllowedHandler> device_wifi_allowed_handler_;
   std::unique_ptr<TPMAutoUpdateModePolicyHandler>
       tpm_auto_update_mode_policy_handler_;
+  std::unique_ptr<DeviceScheduledUpdateChecker>
+      device_scheduled_update_checker_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

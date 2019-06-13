@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -64,7 +64,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
                VideoEncodeAccelerator::SupportedProfiles());
   MOCK_METHOD0(GetMediaContextProvider,
-               scoped_refptr<ws::ContextProviderCommandBuffer>());
+               scoped_refptr<viz::ContextProviderCommandBuffer>());
   MOCK_METHOD0(GetMediaContextProviderContextSupport, gpu::ContextSupport*());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 

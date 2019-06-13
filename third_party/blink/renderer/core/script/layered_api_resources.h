@@ -29,6 +29,9 @@ struct LayeredAPIResource {
 const LayeredAPIResource kLayeredAPIResources[] = {
     {"blank/index.mjs", IDR_LAYERED_API_BLANK_INDEX_MJS, Module::kBlank},
 
+    {"elements/switch/index.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS,
+     Module::kElementsSwitch},
+
     {"kv-storage/async_iterator.mjs",
      IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_MJS, Module::kKvStorage},
     {"kv-storage/idb_utils.mjs", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_MJS,

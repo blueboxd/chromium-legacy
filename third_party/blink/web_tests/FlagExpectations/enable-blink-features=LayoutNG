@@ -25,6 +25,10 @@ crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Fa
 
 # rightsizing-grid.html is truly flaky, show flakiness on reload
 
+# CSS Text 3 test that pass in legacy layout
+crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
+
+
 # Needs rebaselining.
 
 # Features that do not have active plans to support or turn on.

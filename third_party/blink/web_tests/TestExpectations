@@ -1551,6 +1551,7 @@ crbug.com/336604 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/layout-algorithm_algo-cross-line-002.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
+crbug.com/972227 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-auto-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order_value.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-000.html [ Failure ]
@@ -1852,9 +1853,7 @@ crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.ht
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
-crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/008.html [ Skip ]
 crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Skip ]
-crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/010.html [ Skip ]
 crbug.com/490511 external/wpt/html/browsers/offline/application-cache-api/api_update.https.html [ Failure Pass ]
 crbug.com/108417 external/wpt/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
 crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure ]
@@ -2837,6 +2836,11 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
+crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -2849,9 +2853,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-s
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-004.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-004.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-004.tentative.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-font-size-clamping-002.tentative.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-font-size-clamping-002.tentative.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-font-size-clamping-002.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
@@ -3126,7 +3127,6 @@ crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/
 crbug.com/626703 external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
 crbug.com/626703 external/wpt/css/css-values/vh-support-atviewport.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-nowrap-attribute-001.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-intrinsic-size-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-1.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
@@ -3203,8 +3203,6 @@ crbug.com/626703 external/wpt/css/css-text/white-space/trailing-ideographic-spac
 crbug.com/626703 external/wpt/css/css-text/white-space/trailing-ideographic-space-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/variations/font-descriptor-range-reversed.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-002.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/replaced-elements/the-select-element/select-1-line-height.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
@@ -4265,7 +4263,8 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failu
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
 
 # [css-logical]
-crbug.com/913458 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
+crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
+crbug.com/865579 external/wpt/css/css-logical/animation-002.html [ Failure Pass ]
 
 # [selectors-4]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]
@@ -4824,19 +4823,19 @@ crbug.com/667560 http/tests/devtools/elements/styles-4/inline-style-sourcemap.js
 
 # Double tap on modern media controls is a bit more complicated on Mac but
 # since we are not targeting Mac yet we can come back and fix this later.
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-forwards.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-on-play-button.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-backwards.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-forwards.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-forwards-too-short.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-on-play-button.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-toggle-fullscreen.html [ Skip ]
 crbug.com/783154 [ Mac ] media/controls/click-anywhere-to-play-pause.html [ Skip ]
 
 # Seen flaky on Linux, suppressing on Windows as well
-crbug.com/831720 [ Win ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Mac ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Win ] media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Mac ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
@@ -4846,7 +4845,7 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Does not work on Mac
-crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
+crbug.com/793771 [ Mac ] media/controls/scrubbing.html [ Skip ]
 crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
@@ -5255,7 +5254,7 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 
 # Sheriff 2018-10-29
 crbug.com/899710 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
-crbug.com/766357 [ Win ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
+crbug.com/766357 [ Win ] virtual/threaded/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
 crbug.com/899222 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]

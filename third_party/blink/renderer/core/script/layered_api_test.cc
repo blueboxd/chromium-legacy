@@ -16,9 +16,7 @@ namespace {
 class LayeredAPITestModulator final : public DummyModulator {
  public:
   bool BuiltInModuleInfraEnabled() const override { return true; }
-  bool BuiltInModuleEnabled(blink::layered_api::Module) const override {
-    return true;
-  }
+  bool BuiltInModuleEnabled(layered_api::Module) const override { return true; }
 };
 
 class LayeredAPITest : public testing::Test {

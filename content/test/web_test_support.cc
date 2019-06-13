@@ -151,10 +151,9 @@ void EnableWebTestProxyCreation() {
 }
 
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
-  blink::WebManifestManager* manifest_manager =
-      blink::WebManifestManager::FromFrame(
-          RenderFrameImpl::FromWebFrame(view->MainFrame())->GetWebFrame());
-  manifest_manager->RequestManifest(std::move(callback));
+  blink::WebManifestManager::RequestManifestForTesting(
+      RenderFrameImpl::FromWebFrame(view->MainFrame())->GetWebFrame(),
+      std::move(callback));
 }
 
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {

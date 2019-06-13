@@ -11,6 +11,8 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
+namespace cups_ipp_parser {
+
 // CupsIppParser Service Implementation.
 //
 // This service's sole purpose is parsing CUPS IPP printing requests. It accepts
@@ -42,5 +44,7 @@ class CupsIppParserService : public service_manager::Service {
 
   DISALLOW_COPY_AND_ASSIGN(CupsIppParserService);
 };
+
+}  // namespace cups_ipp_parser
 
 #endif  // CHROME_SERVICES_CUPS_IPP_PARSER_CUPS_IPP_PARSER_SERVICE_H_

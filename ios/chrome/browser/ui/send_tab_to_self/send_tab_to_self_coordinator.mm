@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_presentation_controller.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,8 +25,8 @@
 #pragma mark - ChromeCoordinator Methods
 
 - (void)start {
-  UITableViewController* tableViewController =
-      [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+  SendTabToSelfTableViewController* tableViewController =
+      [[SendTabToSelfTableViewController alloc] init];
   UINavigationController* navigationController = [[UINavigationController alloc]
       initWithRootViewController:tableViewController];
 

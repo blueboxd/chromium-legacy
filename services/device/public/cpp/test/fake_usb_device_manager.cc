@@ -132,7 +132,7 @@ void FakeUsbDeviceManager::RemoveDevice(
 }
 
 void FakeUsbDeviceManager::RemoveDevice(const std::string& guid) {
-  DCHECK(ContainsKey(devices_, guid));
+  DCHECK(base::Contains(devices_, guid));
 
   RemoveDevice(devices_[guid]);
 }

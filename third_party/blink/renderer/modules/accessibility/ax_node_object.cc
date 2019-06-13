@@ -1437,8 +1437,10 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   if (!IsAnchor() || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  Element* anchor = AnchorElement();
-  DCHECK(anchor);
+  const Element* anchor = AnchorElement();
+  if (!anchor)
+    return AXObject::InPageLinkTarget();
+
   KURL link_url = anchor->HrefURL();
   if (!link_url.IsValid())
     return AXObject::InPageLinkTarget();

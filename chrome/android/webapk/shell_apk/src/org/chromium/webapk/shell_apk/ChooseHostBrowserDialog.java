@@ -44,6 +44,9 @@ public class ChooseHostBrowserDialog {
         void onQuit();
     }
 
+    /** Checked prior to running the {@link DialogInterface.OnDismissListener}. */
+    private static class OnDismissListenerCanceler { public boolean canceled; }
+
     /** Stores information about a potential host browser for the WebAPK. */
     public static class BrowserItem {
         private String mPackageName;
@@ -107,6 +110,8 @@ public class ChooseHostBrowserDialog {
         ListView browserList = (ListView) view.findViewById(R.id.browser_list);
         browserList.setAdapter(new BrowserArrayAdapter(context, browserItems));
 
+        OnDismissListenerCanceler onDismissCanceler = new OnDismissListenerCanceler();
+
         // The context theme wrapper is needed for pre-L.
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light_Dialog));
@@ -114,7 +119,7 @@ public class ChooseHostBrowserDialog {
                 R.string.choose_host_browser_dialog_quit, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        listener.onQuit();
+                        dialog.cancel();
                     }
                 });
 
@@ -124,6 +129,7 @@ public class ChooseHostBrowserDialog {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 BrowserItem browserItem = browserItems.get(position);
                 if (browserItem.supportsWebApks()) {
+                    onDismissCanceler.canceled = true;
                     listener.onHostBrowserSelected(browserItem.getPackageName());
                     dialog.cancel();
                 }
@@ -133,6 +139,8 @@ public class ChooseHostBrowserDialog {
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
+                if (onDismissCanceler.canceled) return;
+
                 listener.onQuit();
             }
         });

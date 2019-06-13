@@ -222,12 +222,11 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
     window_open_disposition = WindowOpenDisposition::NEW_WINDOW;
   }
 
-  OpenApplication(AppLaunchParams(browser()->profile(), extension_,
-                                  is_platform_app()
-                                      ? extensions::LAUNCH_CONTAINER_NONE
-                                      : extensions::LAUNCH_CONTAINER_TAB,
-                                  window_open_disposition,
-                                  extensions::SOURCE_TEST));
+  OpenApplication(
+      AppLaunchParams(browser()->profile(), extension_->id(),
+                      is_platform_app() ? extensions::LAUNCH_CONTAINER_NONE
+                                        : extensions::LAUNCH_CONTAINER_TAB,
+                      window_open_disposition, extensions::SOURCE_TEST));
 
   observer.Wait();
 

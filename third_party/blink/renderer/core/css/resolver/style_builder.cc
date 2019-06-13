@@ -98,12 +98,30 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   // isInherit => (state.parentNode() && state.parentStyle())
   DCHECK(!is_inherit || (state.ParentNode() && state.ParentStyle()));
 
-  if (!state.ApplyPropertyToRegularStyle() &&
-      (!state.ApplyPropertyToVisitedLinkStyle() ||
-       !property.IsValidForVisitedLink())) {
-    // Limit the properties that can be applied to only the ones honored by
-    // :visited.
-    return;
+  if (!property.IsVisited()) {
+    if (state.ApplyPropertyToVisitedLinkStyle()) {
+      if (const CSSProperty* visited = property.GetVisitedProperty()) {
+        ApplyProperty(*visited, state, value);
+        // Properties that support GetVisitedProperty() don't take the
+        // ApplyPropertyTo[Regular, VisitedLink]Style flags into account, so
+        // we can't proceed unless we _also_ want to apply the value to the
+        // regular style.
+        //
+        // TODO(andruud): Simplify this when all properties support
+        // GetVisitedProperty().
+        if (!state.ApplyPropertyToRegularStyle())
+          return;
+      }
+    }
+    // TODO(andruud): Simplify this when all properties support
+    // GetVisitedProperty().
+    if (!state.ApplyPropertyToRegularStyle() &&
+        (!state.ApplyPropertyToVisitedLinkStyle() ||
+         !property.IsValidForVisitedLink())) {
+      // Limit the properties that can be applied to only the ones honored by
+      // :visited.
+      return;
+    }
   }
 
   if (is_inherit && !state.ParentStyle()->HasExplicitlyInheritedProperties() &&

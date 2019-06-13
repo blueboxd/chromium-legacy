@@ -84,6 +84,12 @@ Notification::Notification(NotificationType type,
       serial_number_(g_next_serial_number++),
       delegate_(std::move(delegate)) {}
 
+Notification::Notification(scoped_refptr<NotificationDelegate> delegate,
+                           const Notification& other)
+    : Notification(other) {
+  delegate_ = delegate;
+}
+
 Notification::Notification(const std::string& id, const Notification& other)
     : Notification(other) {
   id_ = id;

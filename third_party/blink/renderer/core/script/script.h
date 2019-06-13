@@ -21,7 +21,7 @@ class WorkerGlobalScope;
 // https://html.spec.whatwg.org/C/#concept-script
 class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
  public:
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
   virtual ~Script() {}
 

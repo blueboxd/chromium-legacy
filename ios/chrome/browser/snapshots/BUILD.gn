@@ -35,6 +35,7 @@ source_set("snapshots") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/util",

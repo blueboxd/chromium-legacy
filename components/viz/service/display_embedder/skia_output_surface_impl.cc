@@ -452,8 +452,8 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
   image_contexts.reserve(ids.size());
   for (const auto id : ids) {
     auto it = render_pass_image_cache_.find(id);
-    // TODO(sgilhuly): This is a speculative fix for https://crbug.com/926194.
-    // Find out the cause of the crash and create a test that would repro it.
+    // If the render pass was only used for a copy request, there won't be a
+    // matching entry in |render_pass_image_cache_|.
     if (it != render_pass_image_cache_.end()) {
       it->second->image = nullptr;
       image_contexts.push_back(std::move(it->second));

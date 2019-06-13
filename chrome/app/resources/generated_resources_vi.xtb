@@ -830,7 +830,6 @@
 <translation id="2242687258748107519">Thông tin tệp</translation>
 <translation id="2246549592927364792">Tải nội dung mô tả hình ảnh từ Google?</translation>
 <translation id="2249269794707377949">Bạn có thể quản lý tất cả các Tài khoản Kerberos dùng để đăng nhập một lần vào một số ứng dụng và trang web, cũng như các mục chia sẻ tệp tại đây.</translation>
-<translation id="224940702122312781">Trang này sẽ sử dụng nhiều dữ liệu.</translation>
 <translation id="2249605167705922988">ví dụ: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mở bằng trình xem hệ thống</translation>
 <translation id="225163402930830576">Làm mới mạng</translation>
@@ -1912,7 +1911,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Nhấc ngón tay lên rồi chạm lại</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Đã tạm dừng đồng bộ hóa</translation>
-<translation id="3861241522664181545">Đã tạm dừng trang.</translation>
 <translation id="3862134173397075045">Chào mừng bạn đến với trải nghiệm Truyền trong Chrome!</translation>
 <translation id="3862693525629180217">Xác minh qua cảm biến tích hợp</translation>
 <translation id="3862788408946266506">Phải cài đặt ứng dụng có thuộc tính tệp kê khai 'kiosk_only' ở chế độ kiosk Chrome OS</translation>
@@ -3860,7 +3858,6 @@
 <translation id="6920989436227028121">Mở dưới dạng tab thông thường</translation>
 <translation id="6921104647315081813">Xóa hoạt động</translation>
 <translation id="692114467174262153">Không mở được <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">Ngừng sử dụng dữ liệu trên trang này</translation>
 <translation id="6922128026973287222">Tiết kiệm dữ liệu và duyệt web nhanh hơn với Trình tiết kiệm dữ liệu của Google. Nhấp để tìm hiểu thêm.</translation>
 <translation id="6922745772873733498">Nhập một mã pin để in</translation>
 <translation id="6923132443355966645">Cuộn / Nhấp</translation>

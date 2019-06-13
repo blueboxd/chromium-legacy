@@ -12,6 +12,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
@@ -40,6 +41,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   KioskNextShellControllerImpl::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
+  MediaControllerImpl::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
   PaletteTray::RegisterProfilePrefs(registry);

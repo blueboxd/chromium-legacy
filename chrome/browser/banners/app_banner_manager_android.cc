@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
@@ -31,6 +32,8 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
 namespace {
+
+constexpr char kPlatformPlay[] = "play";
 
 // Returns a pointer to the InstallableAmbientBadgeInfoBar if it is currently
 // showing. Otherwise returns nullptr.
@@ -264,18 +267,24 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
 }
 
 bool AppBannerManagerAndroid::ShouldPerformInstallableNativeAppCheck() {
-  return manifest_.prefer_related_applications &&
-         manifest_.related_applications.size() &&
-         !java_banner_manager_.is_null();
+  if (!manifest_.prefer_related_applications || java_banner_manager_.is_null())
+    return false;
+
+  // Ensure there is at least one related app specified that is supported on the
+  // current platform.
+  for (const auto& application : manifest_.related_applications) {
+    if (base::EqualsASCII(application.platform.string(), kPlatformPlay))
+      return true;
+  }
+  return false;
 }
 
 void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
   DCHECK(ShouldPerformInstallableNativeAppCheck());
   InstallableStatusCode code = NO_ERROR_DETECTED;
   for (const auto& application : manifest_.related_applications) {
-    std::string platform = base::UTF16ToUTF8(application.platform.string());
     std::string id = base::UTF16ToUTF8(application.id.string());
-    code = QueryNativeApp(platform, application.url, id);
+    code = QueryNativeApp(application.platform.string(), application.url, id);
     if (code == NO_ERROR_DETECTED)
       return;
   }
@@ -285,10 +294,10 @@ void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
-    const std::string& platform,
+    const base::string16& platform,
     const GURL& url,
     const std::string& id) {
-  if (platform != "play")
+  if (!base::EqualsASCII(platform, kPlatformPlay))
     return PLATFORM_NOT_SUPPORTED_ON_ANDROID;
 
   if (id.empty())

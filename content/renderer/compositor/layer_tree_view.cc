@@ -301,11 +301,8 @@ void LayerTreeView::ApplyViewportChanges(
   delegate_->ApplyViewportChanges(args);
 }
 
-void LayerTreeView::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
-  delegate_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
+void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+  delegate_->RecordManipulationTypeCounts(info);
 }
 
 void LayerTreeView::SendOverscrollEventFromImplSide(

@@ -16,7 +16,7 @@ class BrowserGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
   explicit BrowserGpuVideoAcceleratorFactories(
-      scoped_refptr<ws::ContextProviderCommandBuffer>);
+      scoped_refptr<viz::ContextProviderCommandBuffer>);
   ~BrowserGpuVideoAcceleratorFactories() override;
 
  private:
@@ -60,12 +60,12 @@ class BrowserGpuVideoAcceleratorFactories
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   media::VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() override;
-  scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()
+  scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
   gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;
   base::UnguessableToken channel_token_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserGpuVideoAcceleratorFactories);

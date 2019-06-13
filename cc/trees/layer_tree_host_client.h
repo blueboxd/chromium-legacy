@@ -53,6 +53,14 @@ struct ApplyViewportChangesArgs {
   bool scroll_gesture_did_end;
 };
 
+using ManipulationInfo = uint32_t;
+constexpr ManipulationInfo kManipulationInfoNone = 0;
+constexpr ManipulationInfo kManipulationInfoHasScrolledByWheel = 1 << 0;
+constexpr ManipulationInfo kManipulationInfoHasScrolledByTouch = 1 << 1;
+constexpr ManipulationInfo kManipulationInfoHasScrolledByPrecisionTouchPad =
+    1 << 2;
+constexpr ManipulationInfo kManipulationInfoHasPinchZoomed = 1 << 3;
+
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering
 // loop (in ProxyMain or SingleThreadProxy) calls methods on the
 // LayerTreeHost, which then handles them and also calls into the equivalent
@@ -104,9 +112,9 @@ class LayerTreeHostClient {
   // related to pinch-zoom, browser controls (aka URL bar), overscroll, etc.
   virtual void ApplyViewportChanges(const ApplyViewportChangesArgs& args) = 0;
 
-  virtual void RecordWheelAndTouchScrollingCount(
-      bool has_scrolled_by_wheel,
-      bool has_scrolled_by_touch) = 0;
+  // Record use counts of different methods of scrolling (e.g. wheel, touch,
+  // precision touchpad, etc.).
+  virtual void RecordManipulationTypeCounts(ManipulationInfo info) = 0;
 
   // Notifies the client when an overscroll has happened.
   virtual void SendOverscrollEventFromImplSide(

@@ -140,16 +140,30 @@ void InternalAppWindowShelfController::RegisterAppWindow(
   // Prevent InternalAppWindow from showing up after user switch.
   // Keyboard Shortcut Viewer has a global instance so it can be shared with
   // different users.
+  const user_manager::User* window_owner = nullptr;
   if (shelf_id.app_id != app_list::kInternalAppIdKeyboardShortcutViewer) {
+    // Plugin VM is only allowed on the primary profile. If the user switches
+    // profile while it is launching, we associate it with the primary profile,
+    // which hides the window, and don't show it on the shelf.
+    if (shelf_id.app_id == plugin_vm::kPluginVmAppId)
+      window_owner = user_manager::UserManager::Get()->GetPrimaryUser();
+    else
+      window_owner = user_manager::UserManager::Get()->GetActiveUser();
+
     MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
-        window,
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+        window, window_owner->GetAccountId());
   }
 
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   auto app_window_ptr = std::make_unique<AppWindowBase>(shelf_id, widget);
   AppWindowBase* app_window = app_window_ptr.get();
   aura_window_to_app_window_[window] = std::move(app_window_ptr);
+
+  if (window_owner &&
+      window_owner != user_manager::UserManager::Get()->GetActiveUser()) {
+    return;
+  }
+
   AddToShelf(app_window);
 }
 

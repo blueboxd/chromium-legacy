@@ -46,6 +46,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsShorthand() const { return flags_ & kShorthand; }
   bool IsLonghand() const { return flags_ & kLonghand; }
   bool IsInherited() const { return flags_ & kInherited; }
+  bool IsVisited() const { return flags_ & kVisited; }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -80,6 +81,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
                                                            WritingMode) const {
     return *this;
   }
+  virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }
   static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,
                                                    Vector<const CSSProperty*>&);
@@ -94,7 +96,12 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     kValidForVisitedLink = 1 << 5,
     kShorthand = 1 << 6,
     kLonghand = 1 << 7,
-    kInherited = 1 << 8
+    kInherited = 1 << 8,
+    // Visited properties are internal counterparts to properties that
+    // are permitted in :visited styles. They are used to handle and store the
+    // computed value as seen by painting (as opposed to the computed value
+    // seen by CSSOM, which is represented by the unvisited property).
+    kVisited = 1 << 9,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

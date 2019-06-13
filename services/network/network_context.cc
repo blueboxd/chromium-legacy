@@ -99,6 +99,10 @@
 #include "services/network/expect_ct_reporter.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+#include "net/ftp/ftp_auth_cache.h"
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
 #if defined(OS_CHROMEOS)
 #include "crypto/nss_util_internal.h"
 #include "net/cert/caching_cert_verifier.h"
@@ -1654,6 +1658,28 @@ void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
           ->http_auth_cache();
   network_service_->http_auth_cache_copier()->LoadHttpAuthCache(
       cache_key, http_auth_cache);
+  std::move(callback).Run();
+}
+
+void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                                       const net::AuthCredentials& credentials,
+                                       AddAuthCacheEntryCallback callback) {
+  if (challenge.challenger.scheme() == url::kFtpScheme) {
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+    net::FtpAuthCache* auth_cache = url_request_context_->ftp_auth_cache();
+    auth_cache->Add(challenge.challenger.GetURL(), credentials);
+#else
+    NOTREACHED();
+#endif  // BUILDFLAG(DISABLE_FTP_SUPPORT)
+  } else {
+    net::HttpAuthCache* http_auth_cache =
+        url_request_context_->http_transaction_factory()
+            ->GetSession()
+            ->http_auth_cache();
+    http_auth_cache->Add(challenge.challenger.GetURL(), challenge.realm,
+                         net::HttpAuth::StringToScheme(challenge.scheme),
+                         challenge.challenge, credentials, challenge.path);
+  }
   std::move(callback).Run();
 }
 

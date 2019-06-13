@@ -30,7 +30,7 @@ class ArcPictureInPictureWindowControllerImpl
   ~ArcPictureInPictureWindowControllerImpl() override;
 
   // PictureInPictureWindowController:
-  gfx::Size Show() override;
+  void Show() override;
   void Close(bool should_pause_video) override;
   void CloseAndFocusInitiator() override;
   void OnWindowDestroyed() override;

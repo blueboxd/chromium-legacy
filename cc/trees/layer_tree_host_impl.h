@@ -907,7 +907,8 @@ class CC_EXPORT LayerTreeHostImpl
   // thread side to keep track of the frequency of scrolling with different
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
-  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type);
+  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type,
+                              ScrollState* scroll_state);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -1135,10 +1136,12 @@ class CC_EXPORT LayerTreeHostImpl
   // success) state.
   std::vector<std::pair<int, bool>> completed_image_decode_requests_;
 
-  // These are used to transfer usage of touch and wheel scrolls to the main
-  // thread.
+  // These are used to transfer usage of different types of scrolling to the
+  // main thread.
   bool has_scrolled_by_wheel_ = false;
   bool has_scrolled_by_touch_ = false;
+  bool has_scrolled_by_precisiontouchpad_ = false;
+  bool has_pinch_zoomed_ = false;
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 

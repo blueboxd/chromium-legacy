@@ -67,7 +67,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  View* CreateExtraView() override;
+  std::unique_ptr<View> CreateExtraView() override;
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;

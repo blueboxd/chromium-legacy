@@ -394,9 +394,9 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
 
   // Create a scroll view to hold contents view.
   auto scroll_view = std::make_unique<views::ScrollView>();
-  scroll_view->set_hide_horizontal_scrollbar(true);
+  scroll_view->SetHideHorizontalScrollBar(true);
   // TODO(https://crbug.com/871762): it's a workaround for the crash.
-  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->SetDrawOverflowIndicator(false);
   scroll_view->ClipHeightTo(0, GetMaxHeight());
   scroll_view->SetContents(std::move(contents_view));
 

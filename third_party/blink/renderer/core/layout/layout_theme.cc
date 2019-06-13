@@ -378,7 +378,7 @@ bool LayoutTheme::IsSpinUpButtonPartPressed(const Node* node) {
   if (!node || !node->IsActive() || !node->IsElementNode() ||
       !ToElement(node)->IsSpinButtonElement())
     return false;
-  const SpinButtonElement* element = ToSpinButtonElement(node);
+  const auto* element = To<SpinButtonElement>(node);
   return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
@@ -395,7 +395,7 @@ bool LayoutTheme::IsHovered(const Node* node) {
     return false;
   if (!node->IsElementNode() || !ToElement(node)->IsSpinButtonElement())
     return node->IsHovered();
-  const SpinButtonElement* element = ToSpinButtonElement(node);
+  const auto* element = To<SpinButtonElement>(node);
   return element->IsHovered() &&
          element->GetUpDownState() != SpinButtonElement::kIndeterminate;
 }
@@ -404,7 +404,7 @@ bool LayoutTheme::IsSpinUpButtonPartHovered(const Node* node) {
   if (!node || !node->IsElementNode() ||
       !ToElement(node)->IsSpinButtonElement())
     return false;
-  const SpinButtonElement* element = ToSpinButtonElement(node);
+  const auto* element = To<SpinButtonElement>(node);
   return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 

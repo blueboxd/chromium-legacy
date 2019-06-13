@@ -239,18 +239,15 @@ void MessagePopupCollection::TransitionFromAnimation() {
     // If the animation is finished, transition to IDLE.
     state_ = State::IDLE;
   } else if (state_ == State::FADE_OUT && !popup_items_.empty()) {
-    if ((HasAddedPopup() && CollapseAllPopups()) || !inverse_) {
-      // If FADE_OUT animation is finished and we still have remaining popups,
-      // we have to MOVE_DOWN them.
       // If we're going to add a new popup after this MOVE_DOWN, do the collapse
       // animation at the same time. Otherwise it will take another MOVE_DOWN.
+      if (HasAddedPopup())
+        CollapseAllPopups();
+
+      // If FADE_OUT animation is finished and we still have remaining popups,
+      // we have to MOVE_DOWN them.
       state_ = State::MOVE_DOWN;
       MoveDownPopups();
-    } else {
-      // If there's no collapsable popups and |inverse_| is on, there's nothing
-      // to do after FADE_OUT.
-      state_ = State::IDLE;
-    }
   } else if (state_ == State::MOVE_UP_FOR_INVERSE) {
     for (auto& item : popup_items_)
       item.is_animating = item.will_fade_in;

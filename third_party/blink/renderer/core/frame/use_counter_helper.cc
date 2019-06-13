@@ -1250,6 +1250,19 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // value.
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
+    case CSSPropertyID::kInternalVisitedBackgroundColor:
+    case CSSPropertyID::kInternalVisitedBorderBlockEndColor:
+    case CSSPropertyID::kInternalVisitedBorderBlockStartColor:
+    case CSSPropertyID::kInternalVisitedBorderBottomColor:
+    case CSSPropertyID::kInternalVisitedBorderInlineEndColor:
+    case CSSPropertyID::kInternalVisitedBorderInlineStartColor:
+    case CSSPropertyID::kInternalVisitedBorderLeftColor:
+    case CSSPropertyID::kInternalVisitedBorderRightColor:
+    case CSSPropertyID::kInternalVisitedBorderTopColor:
+    case CSSPropertyID::kInternalVisitedColor:
+    case CSSPropertyID::kInternalVisitedTextEmphasisColor:
+    case CSSPropertyID::kInternalVisitedTextFillColor:
+    case CSSPropertyID::kInternalVisitedTextStrokeColor:
     case CSSPropertyID::kInvalid:
       NOTREACHED();
       return 0;

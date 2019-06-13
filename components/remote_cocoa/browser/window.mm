@@ -5,27 +5,64 @@
 #include "components/remote_cocoa/browser/window.h"
 
 #import <Cocoa/Cocoa.h>
+#include <map>
 
-// An NSWindow is using RemoteMacViews if it has no NativeWidgetNSWindowBridge.
-// This is the most expedient method of determining if an NSWindow uses
-// RemoteMacViews.
-namespace remote_cocoa {
-class NativeWidgetNSWindowBridge;
-}  // namespace remote_cocoa
-
-@interface NSWindow (Private)
-- (remote_cocoa::NativeWidgetNSWindowBridge*)bridge;
-@end
+#include "base/no_destructor.h"
 
 namespace remote_cocoa {
+namespace {
+
+using NativeWindowMap = std::map<gfx::NativeWindow, ScopedNativeWindowMapping*>;
+NativeWindowMap& GetMap() {
+  static base::NoDestructor<NativeWindowMap> map;
+  return *map.get();
+}
+
+ScopedNativeWindowMapping* GetMapping(gfx::NativeWindow native_window) {
+  auto found = GetMap().find(native_window);
+  if (found == GetMap().end())
+    return nullptr;
+  return found->second;
+}
+
+}  // namespace
+
+ScopedNativeWindowMapping::ScopedNativeWindowMapping(
+    gfx::NativeWindow native_window,
+    ApplicationHost* app_host,
+    NativeWidgetNSWindowBridge* in_process_window_bridge,
+    mojom::NativeWidgetNSWindow* mojo_interface)
+    : native_window_(native_window),
+      application_host_(app_host),
+      in_process_window_bridge_(in_process_window_bridge),
+      mojo_interface_(mojo_interface) {
+  GetMap().insert(std::make_pair(native_window, this));
+}
+
+ScopedNativeWindowMapping::~ScopedNativeWindowMapping() {
+  GetMap().erase(native_window_);
+}
 
 bool IsWindowRemote(gfx::NativeWindow gfx_window) {
-  NSWindow* ns_window = gfx_window.GetNativeNSWindow();
-  if ([ns_window respondsToSelector:@selector(bridge)]) {
-    if (![ns_window bridge])
-      return true;
-  }
+  auto* scoped_mapping = GetMapping(gfx_window);
+  if (scoped_mapping)
+    return !scoped_mapping->in_process_window_bridge();
   return false;
+}
+
+ApplicationHost* GetWindowApplicationHost(gfx::NativeWindow gfx_window) {
+  auto* scoped_mapping = GetMapping(gfx_window);
+  if (scoped_mapping)
+    return scoped_mapping->application_host();
+  return nullptr;
+}
+
+mojom::NativeWidgetNSWindow* GetWindowMojoInterface(
+    gfx::NativeWindow gfx_window) {
+  auto* scoped_mapping = GetMapping(gfx_window);
+  if (scoped_mapping)
+    return scoped_mapping->mojo_interface();
+  return nullptr;
 }
 
 NSWindow* CreateInProcessTransparentClone(gfx::NativeWindow remote_window) {

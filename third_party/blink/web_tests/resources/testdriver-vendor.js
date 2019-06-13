@@ -86,40 +86,42 @@
       var first_pointer_down = false;
       for (let j = 0; j < actions[i].actions.length; j++) {
         if ('origin' in actions[i].actions[j]) {
-          if (actions[i].actions[j].origin == "viewport") {
-            last_x_position = actions[i].actions[j].x;
-            last_y_position = actions[i].actions[j].y;
-            continue;
+          if (typeof(actions[i].actions[j].origin) === 'string') {
+             if (actions[i].actions[j].origin == "viewport") {
+               last_x_position = actions[i].actions[j].x;
+               last_y_position = actions[i].actions[j].y;
+             } else if (actions[i].actions[j].origin == "pointer") {
+               return Promise.reject(new Error("pointer origin is not supported right now"));
+             } else {
+               return Promise.reject(new Error("pointer origin is not given correctly"));
+             }
+          } else {
+            let element = actions[i].actions[j].origin;
+            if (!window.document.contains(element)) {
+              return Promise.reject(new Error("element in different document or shadow tree"));
+            }
+
+            if (!inView(element)) {
+              if (didScrollIntoView)
+                return Promise.reject(new Error("already scrolled into view, the element is not found"));
+
+              element.scrollIntoView({behavior: "instant",
+                                      block: "end",
+                                      inline: "nearest"});
+              didScrollIntoView = true;
+            }
+
+            var pointerInteractablePaintTree = getPointerInteractablePaintTree(element);
+            if (pointerInteractablePaintTree.length === 0 ||
+                !element.contains(pointerInteractablePaintTree[0])) {
+              return Promise.reject(new Error("element click intercepted error"));
+            }
+
+            var rect = element.getClientRects()[0];
+            var centerPoint = getInViewCenterPoint(rect);
+            last_x_position = actions[i].actions[j].x + centerPoint[0];
+            last_y_position = actions[i].actions[j].y + centerPoint[1];
           }
-
-          if (actions[i].actions[j].origin == "pointer")
-            return Promise.reject(new Error("pointer origin is not supported right now"));
-
-          let element = actions[i].actions[j].origin;
-          if (!window.document.contains(element)) {
-            return Promise.reject(new Error("element in different document or shadow tree"));
-          }
-
-          if (!inView(element)) {
-            if (didScrollIntoView)
-              return Promise.reject(new Error("already scrolled into view, the element is not found"));
-
-            element.scrollIntoView({behavior: "instant",
-                                    block: "end",
-                                    inline: "nearest"});
-            didScrollIntoView = true;
-          }
-
-          var pointerInteractablePaintTree = getPointerInteractablePaintTree(element);
-          if (pointerInteractablePaintTree.length === 0 ||
-              !element.contains(pointerInteractablePaintTree[0])) {
-            return Promise.reject(new Error("element click intercepted error"));
-          }
-
-          var rect = element.getClientRects()[0];
-          var centerPoint = getInViewCenterPoint(rect);
-          last_x_position = actions[i].actions[j].x + centerPoint[0];
-          last_y_position = actions[i].actions[j].y + centerPoint[1];
         }
 
         if (actions[i].actions[j].type == "pointerDown" || actions[i].actions[j].type == "pointerMove") {

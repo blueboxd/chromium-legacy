@@ -205,7 +205,6 @@ shared_library("gaia1_0") {
     "dllmain.cc",
     "dllmain.h",
     "gaia_credential_provider.def",
-    "gaia_credential_provider.rgs",
   ]
   deps = [
     ":common",

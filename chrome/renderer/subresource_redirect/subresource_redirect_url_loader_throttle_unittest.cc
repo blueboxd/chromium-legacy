@@ -29,16 +29,6 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
           static_cast<int>(content::ResourceType::kImage),
           GetSubresourceURLForURL(GURL("https://www.test.com/test.jpg#test")),
       },
-      {
-          GURL("https://www.test.com/test.css"),
-          static_cast<int>(content::ResourceType::kStylesheet),
-          GURL("https://www.test.com/test.css"),
-      },
-      {
-          GURL("http://www.insecure.com/test.jpg"),
-          static_cast<int>(content::ResourceType::kImage),
-          GURL("http://www.insecure.com/test.jpg"),
-      },
   };
 
   for (const TestCase& test_case : kTestCases) {

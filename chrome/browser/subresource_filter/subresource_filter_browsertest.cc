@@ -61,6 +61,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -654,6 +655,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        RendererDebugURL_NoLeakedThrottlePtrs) {
+  // Allow crashes caused by the navigation to kChromeUICrashURL below.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   // We have checks in the throttle manager that we don't improperly leak
   // activation state throttles. It would be nice to test things directly but it
   // isn't very feasible right now without exposing a bunch of internal guts of

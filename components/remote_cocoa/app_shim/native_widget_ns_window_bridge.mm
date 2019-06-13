@@ -24,9 +24,11 @@
 #import "components/remote_cocoa/app_shim/native_widget_mac_frameless_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
+#include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 #import "components/remote_cocoa/app_shim/window_move_loop.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
@@ -384,6 +386,13 @@ void NativeWidgetNSWindowBridge::SetParent(uint64_t new_parent_id) {
   // As in OnVisibilityChanged, do not set a parent for sheets.
   if (window_visible_ && ![window_ isSheet])
     [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
+}
+
+void NativeWidgetNSWindowBridge::CreateSelectFileDialog(
+    mojom::SelectFileDialogRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<remote_cocoa::SelectFileDialogBridge>(window_),
+      std::move(request));
 }
 
 void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {

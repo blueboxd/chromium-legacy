@@ -50,6 +50,10 @@ namespace views {
 class Widget;
 }
 
+namespace viz {
+class CopyOutputResult;
+}
+
 namespace ash {
 
 class InternalInputDevicesEventBlocker;
@@ -87,6 +91,10 @@ class ASH_EXPORT TabletModeController
   TabletModeController();
   ~TabletModeController() override;
 
+  // Disables taking screenshots for testing as it makes the initialization flow
+  // async.
+  static void SetForceNoScreenshotForTest();
+
   // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
   // separate for several reasons: there is no internal display when running
   // unittests; the event blocker prevents keyboard input when running ChromeOS
@@ -121,14 +129,14 @@ class ASH_EXPORT TabletModeController
   // Starts observing |window| for animation changes.
   void MaybeObserveBoundsAnimation(aura::Window* window);
 
+  // Stops observing the window which is being animated from tablet <->
+  // clamshell.
+  void StopObservingAnimation(bool record_stats, bool delete_screenshot);
+
   // TabletMode:
   void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
   bool IsEnabled() const override;
   void SetEnabledForTest(bool enabled) override;
-
-  // Stops observing the window which is being animated from tablet <->
-  // clamshell.
-  void StopObservingAnimation(bool record_stats);
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -271,6 +279,24 @@ class ASH_EXPORT TabletModeController
   // Resets |occlusion_tracker_pauser_|.
   void ResetPauser();
 
+  // Deletes the enter tablet mode screenshot and associated callbacks.
+  void DeleteScreenshot();
+
+  // Finishes initializing for tablet mode. May be called async if a screenshot
+  // was requested while starting initializing.
+  void FinishInitTabletMode();
+
+  // Takes a screenshot of everything in the rotation container, except for
+  // |top_window|.
+  void TakeScreenshot(aura::Window* top_window,
+                      base::OnceClosure on_screenshot_taken);
+
+  // Called when a screenshot is taken. Creates |screenshot_widget_| which holds
+  // the screenshot results and stacks it under |top_window|.
+  void OnScreenshotTaken(aura::Window* top_window,
+                         base::OnceClosure on_screenshot_taken,
+                         std::unique_ptr<viz::CopyOutputResult> copy_result);
+
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -372,6 +398,17 @@ class ASH_EXPORT TabletModeController
   ui::Layer* observed_layer_ = nullptr;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
+
+  base::CancelableOnceCallback<void(std::unique_ptr<viz::CopyOutputResult>)>
+      screenshot_taken_callback_;
+  base::CancelableOnceClosure screenshot_set_callback_;
+
+  // A layer that is created before an enter tablet mode animations is started,
+  // and destroyed when the animation is ended. It contains a screenshot of
+  // everything in the screen rotation container except the top window. It helps
+  // with animation performance because it fully occludes all windows except the
+  // animating window for the duration of the animation.
+  std::unique_ptr<ui::Layer> screenshot_layer_;
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 

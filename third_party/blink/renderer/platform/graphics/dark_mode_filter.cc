@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
@@ -65,7 +66,9 @@ sk_sp<SkColorFilter> MakeGrayscaleFilter(float grayscale_percent) {
 }  // namespace
 
 DarkModeFilter::DarkModeFilter()
-    : color_filter_(nullptr), image_filter_(nullptr) {
+    : text_classifier_(nullptr),
+      color_filter_(nullptr),
+      image_filter_(nullptr) {
   DarkModeSettings default_settings;
   default_settings.mode = DarkMode::kOff;
   UpdateSettings(default_settings);
@@ -96,6 +99,9 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
     image_filter_ = MakeGrayscaleFilter(settings_.image_grayscale_percent);
   else
     image_filter_ = color_filter_->ToSkColorFilter();
+
+  text_classifier_ =
+      DarkModeColorClassifier::MakeTextColorClassifier(settings_);
 }
 
 Color DarkModeFilter::InvertColorIfNeeded(const Color& color) {
@@ -134,19 +140,11 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
 }
 
 bool DarkModeFilter::ShouldInvertTextColor(const Color& color) const {
-  if (!IsDarkModeActive())
-    return false;
-
-  if (settings_.text_policy == DarkModeTextPolicy::kInvertAll)
-    return true;
-
-  // Throw an error in debug mode if new values are added to the enum without
-  // updating this method.
-  DCHECK_EQ(settings_.text_policy, DarkModeTextPolicy::kInvertDarkOnly);
-  if (color == Color::kWhite) {
-    return false;
+  if (IsDarkModeActive()) {
+    DCHECK(text_classifier_);
+    return text_classifier_->ShouldInvertColor(color);
   }
-  return true;
+  return false;
 }
 
 bool DarkModeFilter::IsDarkModeActive() const {

@@ -44,7 +44,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/ime_keyboard_mus.h"
+#include "ui/base/ime/chromeos/ime_keyboard_impl.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
@@ -909,19 +909,14 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     bool enable_extension_loading)
     : delegate_(std::move(delegate)),
       ui_session_(STATE_LOGIN_SCREEN),
-      state_(NULL),
       util_(delegate_.get()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
-      is_ime_menu_activated_(false),
       features_enabled_state_(InputMethodManager::FEATURE_ALL) {
-  if (IsRunningAsSystemCompositor()) {
-    keyboard_ = std::make_unique<ImeKeyboardMus>(
-        g_browser_process->platform_part()->GetInputDeviceControllerClient());
-  } else {
-    keyboard_.reset(new FakeImeKeyboard());
-  }
-
+  if (IsRunningAsSystemCompositor())
+    keyboard_ = std::make_unique<ImeKeyboardImpl>();
+  else
+    keyboard_ = std::make_unique<FakeImeKeyboard>();
   // Initializes the system IME list.
   std::unique_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
       new ComponentExtensionIMEManagerImpl());

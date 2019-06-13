@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -68,6 +69,88 @@
 #endif
 
 namespace viz {
+
+namespace {
+
+struct ReadPixelsContext {
+  ReadPixelsContext(std::unique_ptr<CopyOutputRequest> request,
+                    const gfx::Rect& result_rect)
+      : request(std::move(request)), result_rect(result_rect) {}
+
+  std::unique_ptr<CopyOutputRequest> request;
+  gfx::Rect result_rect;
+};
+
+class CopyOutputResultYUV : public CopyOutputResult {
+ public:
+  CopyOutputResultYUV(const gfx::Rect& rect,
+                      const void* data[3],
+                      size_t row_bytes[3])
+      : CopyOutputResult(Format::I420_PLANES, rect) {
+    DCHECK_EQ(0, size().width() % 2);
+    DCHECK_EQ(0, size().height() % 2);
+    for (int i = 0; i < 3; ++i) {
+      data_[i] = std::make_unique<uint8_t[]>(row_bytes[i] * height(i));
+      memcpy(data_[i].get(), data[i], row_bytes[i] * height(i));
+      row_bytes_[i] = row_bytes[i];
+    }
+  }
+
+  // CopyOutputResult implementation.
+  bool ReadI420Planes(uint8_t* y_out,
+                      int y_out_stride,
+                      uint8_t* u_out,
+                      int u_out_stride,
+                      uint8_t* v_out,
+                      int v_out_stride) const override {
+    const auto CopyPlane = [](const uint8_t* src, int src_stride, int width,
+                              int height, uint8_t* out, int out_stride) {
+      for (int i = 0; i < height; ++i, src += src_stride, out += out_stride) {
+        memcpy(out, src, width);
+      }
+    };
+    CopyPlane(data_[0].get(), row_bytes_[0], width(0), height(0), y_out,
+              y_out_stride);
+    CopyPlane(data_[1].get(), row_bytes_[1], width(1), height(1), u_out,
+              u_out_stride);
+    CopyPlane(data_[2].get(), row_bytes_[2], width(2), height(2), v_out,
+              v_out_stride);
+    return true;
+  }
+
+ private:
+  uint32_t width(int plane) const {
+    if (plane == 0)
+      return size().width();
+    else
+      return size().width() / 2;
+  }
+
+  uint32_t height(int plane) const {
+    if (plane == 0)
+      return size().height();
+    else
+      return size().height() / 2;
+  }
+
+  std::unique_ptr<uint8_t[]> data_[3];
+  size_t row_bytes_[3];
+};
+
+void OnYUVReadbackDone(void* c, const void* data[3], size_t row_bytes[3]) {
+  std::unique_ptr<ReadPixelsContext> context(
+      static_cast<ReadPixelsContext*>(c));
+  if (!data) {
+    // This will automatically send an empty result.
+    return;
+  }
+  std::unique_ptr<CopyOutputResult> result =
+      std::make_unique<CopyOutputResultYUV>(context->result_rect, data,
+                                            row_bytes);
+  context->request->SendResult(std::move(result));
+}
+
+}  // namespace
 
 class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
  public:
@@ -649,9 +732,11 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.swap_start, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.timings.swap_start,
+        1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, response.swap_end, 1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, response.timings.swap_end,
+        1);
   }
   latency_tracker_.OnGpuSwapBuffersCompleted(frame.latency_info);
 }
@@ -743,7 +828,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   auto* surface =
       from_fbo0 ? output_sk_surface() : offscreen_surfaces_[id].surface();
 
-  if (!is_using_vulkan()) {
+  if (!is_using_vulkan() && !features::IsUsingSkiaForGLReadback()) {
     // Lazy initialize GLRendererCopier.
     if (!copier_) {
       auto client = std::make_unique<DirectContextProviderDelegateImpl>(
@@ -790,6 +875,35 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries())
       ScheduleDelayedWork();
 
+    return;
+  }
+
+  if (request->result_format() ==
+      CopyOutputRequest::ResultFormat::I420_PLANES) {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
+    // For downscaling, use the GOOD quality setting (appropriate for
+    // thumbnailing); and, for upscaling, use the BEST quality.
+    bool is_downscale_in_both_dimensions =
+        request->scale_to().x() < request->scale_from().x() &&
+        request->scale_to().y() < request->scale_from().y();
+    SkFilterQuality filter_quality = is_downscale_in_both_dimensions
+                                         ? kMedium_SkFilterQuality
+                                         : kHigh_SkFilterQuality;
+    SkIRect srcRect = SkIRect::MakeXYWH(
+        geometry.sampling_bounds.x(), geometry.sampling_bounds.y(),
+        geometry.sampling_bounds.width(), geometry.sampling_bounds.height());
+    std::unique_ptr<ReadPixelsContext> context =
+        std::make_unique<ReadPixelsContext>(std::move(request),
+                                            geometry.result_bounds);
+    surface->asyncRescaleAndReadPixelsYUV420(
+        kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), srcRect,
+        geometry.result_bounds.width(), geometry.result_bounds.height(),
+        SkSurface::RescaleGamma::kSrc, filter_quality, OnYUVReadbackDone,
+        context.release());
     return;
   }
 

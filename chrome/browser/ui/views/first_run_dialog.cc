@@ -101,9 +101,9 @@ void FirstRunDialog::Done() {
   quit_runloop_.Run();
 }
 
-views::View* FirstRunDialog::CreateExtraView() {
-  views::Link* link = new views::Link(l10n_util::GetStringUTF16(
-      IDS_LEARN_MORE));
+std::unique_ptr<views::View> FirstRunDialog::CreateExtraView() {
+  auto link =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   link->set_listener(this);
   return link;
 }

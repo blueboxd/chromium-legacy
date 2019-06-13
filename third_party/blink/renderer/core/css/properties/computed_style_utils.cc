@@ -125,7 +125,7 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
                         border_style == EBorderStyle::kRidge ||
                         border_style == EBorderStyle::kGroove))
     return blink::Color(238, 238, 238);
-  return visited_link ? style.VisitedLinkColor() : style.GetColor();
+  return visited_link ? style.InternalVisitedColor() : style.GetColor();
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(

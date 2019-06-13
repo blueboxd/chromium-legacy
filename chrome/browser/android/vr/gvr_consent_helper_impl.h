@@ -29,6 +29,7 @@ class GvrConsentHelperImpl : public GvrConsentHelper {
 
  private:
   OnUserConsentCallback on_user_consent_callback_;
+  base::android::ScopedJavaGlobalRef<jobject> jdelegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrConsentHelperImpl);
 };

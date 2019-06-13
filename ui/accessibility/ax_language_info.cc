@@ -7,6 +7,8 @@
 #include <functional>
 
 #include "base/command_line.h"
+#include "base/i18n/unicodestring.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"
@@ -22,12 +24,20 @@ const auto kMaxDetectedLanguagesPerPage = 3;
 // input we give it, 3 was recommended to us by the ML team as a good
 // starting point.
 const auto kMaxDetectedLanguagesPerSpan = 3;
+
+const auto kShortTextIdentifierMinByteLength = 1;
+// TODO(https://bugs.chromium.org/p/chromium/issues/detail?id=971360):
+// Determine appropriate value for kShortTextIdentifierMaxByteLength.
+const auto kShortTextIdentifierMaxByteLength = 1000;
 }  // namespace
 
 AXLanguageInfo::AXLanguageInfo() {}
 AXLanguageInfo::~AXLanguageInfo() {}
 
-AXLanguageInfoStats::AXLanguageInfoStats() : top_results_valid_(false) {}
+AXLanguageInfoStats::AXLanguageInfoStats()
+    : top_results_valid_(false),
+      short_text_language_identifier_(kShortTextIdentifierMinByteLength,
+                                      kShortTextIdentifierMaxByteLength) {}
 AXLanguageInfoStats::~AXLanguageInfoStats() = default;
 
 chrome_lang_id::NNetLanguageIdentifier&
@@ -98,7 +108,6 @@ static void DetectLanguageForSubtreeInternal(AXNode* node, class AXTree* tree);
 // Detect language for a subtree rooted at the given node.
 void DetectLanguageForSubtree(AXNode* subtree_root, class AXTree* tree) {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguageForSubtree");
-
   DCHECK(subtree_root);
   DCHECK(tree);
   if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
@@ -250,6 +259,58 @@ static void LabelLanguageForSubtreeInternal(AXNode* node, class AXTree* tree) {
   for (AXNode* child : node->children()) {
     LabelLanguageForSubtreeInternal(child, tree);
   }
+}
+
+std::vector<LanguageSpan>
+AXLanguageInfoStats::GetLanguageAnnotationForStringAttribute(
+    const AXNode& node,
+    ax::mojom::StringAttribute attr) {
+  std::vector<LanguageSpan> language_annotation;
+  if (!node.HasStringAttribute(attr))
+    return language_annotation;
+
+  std::string attr_value = node.GetStringAttribute(attr);
+
+  // Use author-provided language if present.
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
+    // Use author-provided language if present.
+    language_annotation.push_back(
+        LanguageSpan{0 /* start_index */, attr_value.length() /* end_index */,
+                     node.GetStringAttribute(
+                         ax::mojom::StringAttribute::kLanguage) /* language */,
+                     1 /* probability */});
+    return language_annotation;
+  }
+  // Calculate top 3 languages.
+  // TODO(akihiroota): What's a reasonable number of languages to have
+  // cld_3 find? Should vary.
+  std::vector<chrome_lang_id::NNetLanguageIdentifier::Result> top_languages =
+      short_text_language_identifier_.FindTopNMostFreqLangs(
+          attr_value, kMaxDetectedLanguagesPerPage);
+  // Create vector of LanguageSpans.
+  for (const auto& result : top_languages) {
+    std::vector<chrome_lang_id::NNetLanguageIdentifier::SpanInfo> ranges =
+        result.byte_ranges;
+    for (const auto& span_info : ranges) {
+      language_annotation.push_back(
+          LanguageSpan{span_info.start_index, span_info.end_index,
+                       result.language, span_info.probability});
+    }
+  }
+  // Sort Language Annotations by increasing start index. LanguageAnnotations
+  // with lower start index should appear earlier in the vector.
+  std::sort(language_annotation.begin(), language_annotation.end(),
+            [](const LanguageSpan& left, const LanguageSpan& right) -> bool {
+              return left.start_index <= right.start_index;
+            });
+  // Ensure that LanguageSpans do not overlap.
+  for (size_t i = 0; i < language_annotation.size(); ++i) {
+    if (i > 0) {
+      DCHECK(language_annotation[i].start_index <=
+             language_annotation[i - 1].end_index);
+    }
+  }
+  return language_annotation;
 }
 
 }  // namespace ui

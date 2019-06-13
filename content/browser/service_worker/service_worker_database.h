@@ -102,6 +102,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       // code.
       kStartedCaching = -2,
       kFinishedCachingNoBytesWritten = -3,
+      kFinishedCachingNoContext = -4,
     };
 
     int64_t resource_id;

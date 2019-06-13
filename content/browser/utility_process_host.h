@@ -27,14 +27,12 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
-class SequencedTaskRunner;
 class Thread;
 }  // namespace base
 
 namespace content {
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
-class UtilityProcessHostClient;
 struct ChildProcessData;
 
 typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
@@ -60,13 +58,7 @@ class CONTENT_EXPORT UtilityProcessHost
   static void RegisterUtilityMainThreadFactory(
       UtilityMainThreadFactoryFunction create);
 
-  // |client| is optional. If supplied it will be notified of incoming messages
-  // from the utility process.
-  // |client_task_runner| is required if |client| is supplied and is the task
-  // runner upon which |client| will be invoked.
-  UtilityProcessHost(
-      const scoped_refptr<UtilityProcessHostClient>& client,
-      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
+  UtilityProcessHost();
   ~UtilityProcessHost() override;
 
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
@@ -123,12 +115,6 @@ class CONTENT_EXPORT UtilityProcessHost
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
-
-  // Pointer to our client interface used for progress notifications.
-  scoped_refptr<UtilityProcessHostClient> client_;
-
-  // Task runner used for posting progess notifications to |client_|.
-  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
 
   // Launch the child process with switches that will setup this sandbox type.
   service_manager::SandboxType sandbox_type_;

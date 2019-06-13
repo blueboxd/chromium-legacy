@@ -72,11 +72,6 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
     hid_manager_.Bind(mojo::MakeRequest(&hid_manager_ptr));
     HidChooserContextFactory::GetForProfile(profile())->SetHidManagerForTesting(
         std::move(hid_manager_ptr));
-
-    hid_chooser_controller_ = std::make_unique<HidChooserController>(
-        main_rfh(), content::HidChooser::Callback());
-    fake_hid_chooser_view_ = std::make_unique<FakeHidChooserView>();
-    hid_chooser_controller_->set_view(fake_hid_chooser_view_.get());
   }
 
   void OverrideChooserStrings() {
@@ -100,64 +95,262 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
         base::ASCIIToUTF16("$1 (Vendor: $2, Product: $3)"));
   }
 
+  std::unique_ptr<HidChooserController> CreateHidChooserController(
+      std::vector<blink::mojom::HidDeviceFilterPtr>& filters) {
+    auto hid_chooser_controller = std::make_unique<HidChooserController>(
+        main_rfh(), std::move(filters), content::HidChooser::Callback());
+    hid_chooser_controller->set_view(&fake_hid_chooser_view_);
+    return hid_chooser_controller;
+  }
+
+  std::unique_ptr<HidChooserController>
+  CreateHidChooserControllerWithoutFilters() {
+    std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+    return CreateHidChooserController(filters);
+  }
+
   device::mojom::HidDeviceInfoPtr CreateAndAddFakeHidDevice(
       uint32_t vendor_id,
       uint16_t product_id,
       const std::string& product_string,
-      const std::string& serial_number) {
-    return hid_manager_.CreateAndAddDevice(
+      const std::string& serial_number,
+      uint16_t usage_page = device::mojom::kPageGenericDesktop,
+      uint16_t usage = device::mojom::kGenericDesktopGamePad) {
+    return hid_manager_.CreateAndAddDeviceWithTopLevelUsage(
         vendor_id, product_id, product_string, serial_number,
-        device::mojom::HidBusType::kHIDBusTypeUSB);
+        device::mojom::HidBusType::kHIDBusTypeUSB, usage_page, usage);
+  }
+
+  blink::mojom::DeviceIdFilterPtr CreateVendorFilter(uint16_t vendor_id) {
+    return blink::mojom::DeviceIdFilter::NewVendor(vendor_id);
+  }
+
+  blink::mojom::DeviceIdFilterPtr CreateVendorAndProductFilter(
+      uint16_t vendor_id,
+      uint16_t product_id) {
+    return blink::mojom::DeviceIdFilter::NewVendorAndProduct(
+        blink::mojom::VendorAndProduct::New(vendor_id, product_id));
+  }
+
+  blink::mojom::UsageFilterPtr CreatePageFilter(uint16_t usage_page) {
+    return blink::mojom::UsageFilter::NewPage(usage_page);
+  }
+
+  blink::mojom::UsageFilterPtr CreateUsageAndPageFilter(uint16_t usage_page,
+                                                        uint16_t usage) {
+    return blink::mojom::UsageFilter::NewUsageAndPage(
+        device::mojom::HidUsageAndPage::New(usage, usage_page));
   }
 
  protected:
   device::FakeHidManager hid_manager_;
-  std::unique_ptr<HidChooserController> hid_chooser_controller_;
-  std::unique_ptr<FakeHidChooserView> fake_hid_chooser_view_;
+  FakeHidChooserView fake_hid_chooser_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HidChooserControllerTest);
 };
 
 TEST_F(HidChooserControllerTest, EmptyChooser) {
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
   base::RunLoop run_loop;
-  fake_hid_chooser_view_->set_options_initialized_quit_closure(
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_EQ(0u, hid_chooser_controller_->NumOptions());
+  EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
 }
 
 TEST_F(HidChooserControllerTest, AddBlockedFidoDevice) {
   // FIDO U2F devices (and other devices on the USB blocklist) should be
   // excluded from the device chooser.
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
   base::RunLoop run_loop;
-  fake_hid_chooser_view_->set_options_initialized_quit_closure(
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
   CreateAndAddFakeHidDevice(kYubicoVendorId, kYubicoGnubbyProductId, "gnubby",
                             "001");
   run_loop.Run();
-  EXPECT_EQ(0u, hid_chooser_controller_->NumOptions());
+  EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
+}
+
+TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
+  // Devices that expose a top-level collection with the FIDO usage page should
+  // be blocked even if they aren't on the USB blocklist.
+  const uint16_t kFidoU2fHidUsage = 1;
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "fido", "001", device::mojom::kPageFido,
+                            kFidoU2fHidUsage);
+  CreateAndAddFakeHidDevice(2, 2, "fido", "002", device::mojom::kPageFido, 0);
+  run_loop.Run();
+  EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
 }
 
 TEST_F(HidChooserControllerTest, AddNamedDevice) {
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
   base::RunLoop run_loop;
-  fake_hid_chooser_view_->set_options_initialized_quit_closure(
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
   CreateAndAddFakeHidDevice(1, 1, "a", "001");
   run_loop.Run();
-  EXPECT_EQ(1u, hid_chooser_controller_->NumOptions());
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller_->GetOption(0));
+            hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, AddUnnamedDevice) {
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
   base::RunLoop run_loop;
-  fake_hid_chooser_view_->set_options_initialized_quit_closure(
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
   CreateAndAddFakeHidDevice(1, 1, "", "001");
   run_loop.Run();
-  EXPECT_EQ(1u, hid_chooser_controller_->NumOptions());
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
   EXPECT_EQ(
       base::ASCIIToUTF16("Unknown Device (Vendor: 0x0001, Product: 0x0001)"),
-      hid_chooser_controller_->GetOption(0));
+      hid_chooser_controller->GetOption(0));
+}
+
+TEST_F(HidChooserControllerTest, DeviceIdFilterVendorOnly) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(
+      blink::mojom::HidDeviceFilter::New(CreateVendorFilter(1), nullptr));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001");
+  CreateAndAddFakeHidDevice(1, 2, "b", "002");
+  CreateAndAddFakeHidDevice(2, 2, "c", "003");
+  run_loop.Run();
+
+  EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+
+  std::set<base::string16> options;
+  options.insert(hid_chooser_controller->GetOption(0));
+  options.insert(hid_chooser_controller->GetOption(1));
+  EXPECT_EQ(1u, options.count(
+                    base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)")));
+  EXPECT_EQ(1u, options.count(
+                    base::ASCIIToUTF16("b (Vendor: 0x0001, Product: 0x0002)")));
+}
+
+TEST_F(HidChooserControllerTest, DeviceIdFilterVendorAndProduct) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      CreateVendorAndProductFilter(1, 1), nullptr));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001");
+  CreateAndAddFakeHidDevice(1, 2, "b", "002");
+  CreateAndAddFakeHidDevice(2, 2, "c", "003");
+  run_loop.Run();
+
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(0));
+}
+
+TEST_F(HidChooserControllerTest, UsageFilterUsagePageOnly) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      nullptr, CreatePageFilter(device::mojom::kPageGenericDesktop)));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(2, 2, "b", "002", device::mojom::kPageSimulation,
+                            5);
+  run_loop.Run();
+
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(0));
+}
+
+TEST_F(HidChooserControllerTest, UsageFilterUsageAndPage) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      nullptr,
+      CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
+                               device::mojom::kGenericDesktopGamePad)));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopKeyboard);
+  CreateAndAddFakeHidDevice(3, 3, "c", "003", device::mojom::kPageSimulation,
+                            5);
+  run_loop.Run();
+
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(0));
+}
+
+TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterIntersection) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      CreateVendorAndProductFilter(1, 1),
+      CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
+                               device::mojom::kGenericDesktopGamePad)));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(1, 1, "c", "003", device::mojom::kPageSimulation,
+                            5);
+  run_loop.Run();
+
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
+            hid_chooser_controller->GetOption(0));
+}
+
+TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      CreateVendorAndProductFilter(1, 1), nullptr));
+  filters.push_back(blink::mojom::HidDeviceFilter::New(
+      nullptr,
+      CreateUsageAndPageFilter(device::mojom::kPageGenericDesktop,
+                               device::mojom::kGenericDesktopGamePad)));
+  auto hid_chooser_controller = CreateHidChooserController(filters);
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(1, 1, "c", "003", device::mojom::kPageSimulation,
+                            5);
+  run_loop.Run();
+
+  EXPECT_EQ(3u, hid_chooser_controller->NumOptions());
 }

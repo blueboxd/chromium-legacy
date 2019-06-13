@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -28,10 +28,10 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
-class ToastManagerTest : public AshTestBase {
+class ToastManagerImplTest : public AshTestBase {
  public:
-  ToastManagerTest() = default;
-  ~ToastManagerTest() override = default;
+  ToastManagerImplTest() = default;
+  ~ToastManagerImplTest() override = default;
 
  private:
   void SetUp() override {
@@ -47,7 +47,7 @@ class ToastManagerTest : public AshTestBase {
   }
 
  protected:
-  ToastManager* manager() { return manager_; }
+  ToastManagerImpl* manager() { return manager_; }
 
   int GetToastSerial() { return manager_->serial_for_testing(); }
 
@@ -115,13 +115,13 @@ class ToastManagerTest : public AshTestBase {
   }
 
  private:
-  ToastManager* manager_ = nullptr;
+  ToastManagerImpl* manager_ = nullptr;
   unsigned int serial_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ToastManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ToastManagerImplTest);
 };
 
-TEST_F(ToastManagerTest, ShowAndCloseAutomatically) {
+TEST_F(ToastManagerImplTest, ShowAndCloseAutomatically) {
   ShowToast("DUMMY", 10);
 
   EXPECT_EQ(1, GetToastSerial());
@@ -130,7 +130,7 @@ TEST_F(ToastManagerTest, ShowAndCloseAutomatically) {
     base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ToastManagerTest, ShowAndCloseManually) {
+TEST_F(ToastManagerImplTest, ShowAndCloseManually) {
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
 
   EXPECT_EQ(1, GetToastSerial());
@@ -143,7 +143,7 @@ TEST_F(ToastManagerTest, ShowAndCloseManually) {
 }
 
 // TODO(crbug.com/959781): Test is flaky.
-TEST_F(ToastManagerTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
+TEST_F(ToastManagerImplTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 
@@ -165,14 +165,14 @@ TEST_F(ToastManagerTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
 }
 
 // TODO(crbug.com/959781): Test is flaky.
-TEST_F(ToastManagerTest, DISABLED_NullMessageHasNoDismissButton) {
+TEST_F(ToastManagerImplTest, DISABLED_NullMessageHasNoDismissButton) {
   ShowToastWithDismiss("DUMMY", 10, base::Optional<std::string>());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetDismissButton());
 }
 
 // TODO(crbug.com/959781): Test is flaky.
-TEST_F(ToastManagerTest, DISABLED_QueueMessage) {
+TEST_F(ToastManagerImplTest, DISABLED_QueueMessage) {
   ShowToast("DUMMY1", 10);
   ShowToast("DUMMY2", 10);
   ShowToast("DUMMY3", 10);
@@ -191,7 +191,7 @@ TEST_F(ToastManagerTest, DISABLED_QueueMessage) {
   EXPECT_EQ(base::ASCIIToUTF16("DUMMY3"), GetCurrentText());
 }
 
-TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
+TEST_F(ToastManagerImplTest, PositionWithVisibleBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -215,7 +215,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
       toast_bounds.bottom());
 }
 
-TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
+TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
 
@@ -239,7 +239,7 @@ TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
             toast_bounds.bottom());
 }
 
-TEST_F(ToastManagerTest, PositionWithHiddenBottomShelf) {
+TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
@@ -259,7 +259,7 @@ TEST_F(ToastManagerTest, PositionWithHiddenBottomShelf) {
             toast_bounds.bottom());
 }
 
-TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
+TEST_F(ToastManagerImplTest, PositionWithVisibleLeftShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
@@ -284,7 +284,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
       precise_toast_bounds.CenterPoint().x(), 1.f /* accepted error */);
 }
 
-TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
+TEST_F(ToastManagerImplTest, PositionWithUnifiedDesktop) {
   display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("1000x500,0+600-100x500");
 
@@ -312,7 +312,7 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
       toast_bounds.bottom());
 }
 
-TEST_F(ToastManagerTest, CancelToast) {
+TEST_F(ToastManagerImplTest, CancelToast) {
   std::string id1 = ShowToast("TEXT1", ToastData::kInfiniteDuration);
   std::string id2 = ShowToast("TEXT2", ToastData::kInfiniteDuration);
   std::string id3 = ShowToast("TEXT3", ToastData::kInfiniteDuration);
@@ -335,7 +335,7 @@ TEST_F(ToastManagerTest, CancelToast) {
   EXPECT_EQ(2, GetToastSerial());
 }
 
-TEST_F(ToastManagerTest, ShowToastOnLockScreen) {
+TEST_F(ToastManagerImplTest, ShowToastOnLockScreen) {
   // Simulate device lock.
   ChangeLockState(true);
 
@@ -350,7 +350,7 @@ TEST_F(ToastManagerTest, ShowToastOnLockScreen) {
   EXPECT_EQ(base::ASCIIToUTF16("TEXT1"), GetCurrentText());
 }
 
-TEST_F(ToastManagerTest, ShowSupportedToastOnLockScreen) {
+TEST_F(ToastManagerImplTest, ShowSupportedToastOnLockScreen) {
   // Simulate device lock.
   ChangeLockState(true);
 
@@ -368,7 +368,7 @@ TEST_F(ToastManagerTest, ShowSupportedToastOnLockScreen) {
   EXPECT_EQ(base::ASCIIToUTF16("TEXT1"), GetCurrentText());
 }
 
-TEST_F(ToastManagerTest, DeferToastByLockScreen) {
+TEST_F(ToastManagerImplTest, DeferToastByLockScreen) {
   // Show a toast.
   std::string id1 = ShowToast("TEXT1", ToastData::kInfiniteDuration,
                               /*visible_on_lock_screen=*/true);
@@ -388,7 +388,7 @@ TEST_F(ToastManagerTest, DeferToastByLockScreen) {
   EXPECT_EQ(base::ASCIIToUTF16("TEXT1"), GetCurrentText());
 }
 
-TEST_F(ToastManagerTest, NotDeferToastForLockScreen) {
+TEST_F(ToastManagerImplTest, NotDeferToastForLockScreen) {
   // Show a toast.
   std::string id1 = ShowToast("TEXT1", ToastData::kInfiniteDuration,
                               /*visible_on_lock_screen=*/false);

@@ -27,7 +27,8 @@ mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
 WorkerShadowPage::WorkerShadowPage(
     Client* client,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    PrivacyPreferences preferences)
+    PrivacyPreferences preferences,
+    const base::UnguessableToken& appcache_host_id)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
                                     /*is_hidden=*/false,
@@ -43,6 +44,7 @@ WorkerShadowPage::WorkerShadowPage(
           WebSandboxFlags::kNone,
           FeaturePolicy::FeatureState())),
       loader_factory_(std::move(loader_factory)),
+      appcache_host_id_(appcache_host_id),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
 
@@ -65,24 +67,18 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.
   std::string content("");
-  main_frame_->GetFrame()->Loader().CommitNavigation(
+  std::unique_ptr<WebNavigationParams> params =
       WebNavigationParams::CreateWithHTMLBuffer(
-          SharedBuffer::Create(content.c_str(), content.length()), script_url),
-      nullptr /* extra_data */);
+          SharedBuffer::Create(content.c_str(), content.length()), script_url);
+  params->appcache_host_id = appcache_host_id_;
+  main_frame_->GetFrame()->Loader().CommitNavigation(std::move(params),
+                                                     nullptr /* extra_data */);
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {
   DCHECK(IsMainThread());
   AdvanceState(State::kInitialized);
   client_->OnShadowPageInitialized();
-}
-
-std::unique_ptr<WebApplicationCacheHost>
-WorkerShadowPage::CreateApplicationCacheHost(
-    WebDocumentLoader*,
-    WebApplicationCacheHostClient* appcache_host_client) {
-  DCHECK(IsMainThread());
-  return client_->CreateApplicationCacheHost(appcache_host_client);
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>

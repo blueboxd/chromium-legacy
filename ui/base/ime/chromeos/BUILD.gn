@@ -19,9 +19,8 @@ jumbo_component("chromeos") {
     "fake_input_method_delegate.cc",
     "fake_input_method_delegate.h",
     "ime_keyboard.cc",
-    "ime_keyboard.h",
-    "ime_keyboard_mus.cc",
-    "ime_keyboard_mus.h",
+    "ime_keyboard_impl.cc",
+    "ime_keyboard_impl.h",
     "ime_keymap.cc",
     "ime_keymap.h",
     "input_method_chromeos.cc",
@@ -55,10 +54,9 @@ jumbo_component("chromeos") {
     "//chromeos/constants",
     "//chromeos/ime:gencode",
     "//chromeos/system",
-    "//services/ws/public/cpp/input_devices",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime/mojo",
     "//ui/chromeos/strings",
+    "//ui/ozone",
   ]
 }

@@ -15,7 +15,7 @@
 const service_manager::Manifest& GetCupsIppParserManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
-          .WithServiceName(chrome::mojom::kCupsIppParserServiceName)
+          .WithServiceName(cups_ipp_parser::mojom::kCupsIppParserServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME)
           .WithOptions(
               service_manager::ManifestOptionsBuilder()
@@ -28,7 +28,7 @@ const service_manager::Manifest& GetCupsIppParserManifest() {
                   .Build())
           .ExposeCapability("ipp_parser",
                             service_manager::Manifest::InterfaceList<
-                                chrome::mojom::IppParser>())
+                                cups_ipp_parser::mojom::IppParser>())
           .Build()};
   return *manifest;
 }

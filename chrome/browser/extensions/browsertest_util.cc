@@ -98,7 +98,7 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
 
 Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   EXPECT_TRUE(OpenApplication(
-      AppLaunchParams(profile, extension_app, LAUNCH_CONTAINER_WINDOW,
+      AppLaunchParams(profile, extension_app->id(), LAUNCH_CONTAINER_WINDOW,
                       WindowOpenDisposition::CURRENT_TAB, SOURCE_TEST)));
 
   Browser* browser = chrome::FindLastActive();
@@ -113,7 +113,7 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
 Browser* LaunchBrowserForAppInTab(Profile* profile,
                                   const Extension* extension_app) {
   content::WebContents* web_contents = OpenApplication(
-      AppLaunchParams(profile, extension_app, LAUNCH_CONTAINER_TAB,
+      AppLaunchParams(profile, extension_app->id(), LAUNCH_CONTAINER_TAB,
                       WindowOpenDisposition::NEW_FOREGROUND_TAB, SOURCE_TEST));
   DCHECK(web_contents);
 

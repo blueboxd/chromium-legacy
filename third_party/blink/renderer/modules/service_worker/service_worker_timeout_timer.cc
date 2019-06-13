@@ -108,7 +108,7 @@ int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
       inflight_events_.emplace(event_id, tick_clock_->NowTicks() + timeout,
                                WTF::Bind(std::move(abort_callback), event_id));
   DCHECK(is_inserted);
-  id_event_map_.emplace(event_id, iter);
+  id_event_map_.insert(event_id, iter);
   return event_id;
 }
 
@@ -116,7 +116,7 @@ void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
   DCHECK(HasEvent(event_id));
 
   auto iter = id_event_map_.find(event_id);
-  inflight_events_.erase(iter->second);
+  inflight_events_.erase(iter->value);
   id_event_map_.erase(iter);
 
   if (!HasInflightEvent())

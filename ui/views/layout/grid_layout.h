@@ -145,31 +145,50 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // contain any views.
   void SkipColumns(int col_count);
 
-  // Adds a view using the default alignment from the column. The added
-  // view has a column and row span of 1.
-  // As a convenience this adds the view to the host. The view becomes owned
-  // by the host, and NOT this GridLayout.
-  void AddView(View* view);
-
   // Adds a view using the default alignment from the column.
   // As a convenience this adds the view to the host. The view becomes owned
   // by the host, and NOT this GridLayout.
-  void AddView(View* view, int col_span, int row_span);
+  template <typename T>
+  T* AddView(std::unique_ptr<T> view, int col_span = 1, int row_span = 1) {
+    T* result = view.get();
+    AddViewImpl(std::move(view), col_span, row_span);
+    return result;
+  }
 
-  // Adds a view with the specified alignment and spans.
-  // As a convenience this adds the view to the host. The view becomes owned
-  // by the host, and NOT this GridLayout.
-  void AddView(View* view, int col_span, int row_span, Alignment h_align,
-               Alignment v_align);
+  // Adds a view to the layout using the default alignment from the column.
+  void AddView(View* view, int col_span = 1, int row_span = 1);
 
   // Adds a view with the specified alignment and spans. If
   // pref_width/pref_height is > 0 then the preferred width/height of the view
   // is fixed to the specified value.
   // As a convenience this adds the view to the host. The view becomes owned
   // by the host, and NOT this GridLayout.
-  void AddView(View* view, int col_span, int row_span,
-               Alignment h_align, Alignment v_align,
-               int pref_width, int pref_height);
+  template <typename T>
+  T* AddView(std::unique_ptr<T> view,
+             int col_span,
+             int row_span,
+             Alignment h_align,
+             Alignment v_align,
+             int pref_width = 0,
+             int pref_height = 0) {
+    T* result = view.get();
+    AddViewImpl(std::move(view), col_span, row_span, h_align, v_align,
+                pref_width, pref_height);
+    return result;
+  }
+
+  // Adds a view to the layout with the specified alignment and spans. If
+  // pref_width/pref_height is > 0 then the preferred width/height of the view
+  // is fixed to the specified value.
+  // TODO: Rename to AddViewToLayout() once call sites are refactored to prefer
+  //       the AddView<T> version above.
+  void AddView(View* view,
+               int col_span,
+               int row_span,
+               Alignment h_align,
+               Alignment v_align,
+               int pref_width = 0,
+               int pref_height = 0);
 
   // Notification we've been installed on a particular host. Checks that host
   // is the same as the View supplied in the constructor.
@@ -205,8 +224,20 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // a description of what a master column is.
   void CalculateMasterColumnsIfNecessary() const;
 
-  // This is called internally from AddView. It adds the ViewState to the
-  // appropriate structures, and updates internal fields such as next_column_.
+  // These are called internally from AddView<T>.
+  void AddViewImpl(std::unique_ptr<View> view, int col_span, int row_span);
+
+  void AddViewImpl(std::unique_ptr<View> view,
+                   int col_span,
+                   int row_span,
+                   Alignment h_align,
+                   Alignment v_align,
+                   int pref_width,
+                   int pref_height);
+
+  // This is called internally from AddView & AddViewState above. It adds the
+  // ViewState to the appropriate structures and updates the internal fields
+  // such as next_column_.
   void AddViewState(std::unique_ptr<ViewState> view_state);
 
   // Adds the Row to rows_, as well as updating next_column_,

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/user_manager.h"
 
@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(GuestLoginTest, PRE_Login) {
   FakeSessionManagerClient::Get()->set_restart_job_callback(
       restart_job_waiter.QuitClosure());
 
-  ASSERT_TRUE(test::LoginScreenTester().ClickGuestButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickGuestButton());
 
   restart_job_waiter.Run();
   EXPECT_TRUE(FakeSessionManagerClient::Get()->restart_job_argv().has_value());
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(GuestLoginWithLoginSwitchesTest, PRE_Login) {
   FakeSessionManagerClient::Get()->set_restart_job_callback(
       restart_job_waiter.QuitClosure());
 
-  ASSERT_TRUE(test::LoginScreenTester().ClickGuestButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickGuestButton());
 
   restart_job_waiter.Run();
   EXPECT_TRUE(FakeSessionManagerClient::Get()->restart_job_argv().has_value());

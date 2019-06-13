@@ -14,6 +14,7 @@ cr.exportPath('settings');
  * @typedef {{
  *   principalName: string,
  *   isSignedIn: boolean,
+ *   isActive: boolean,
  *   pic: string,
  * }}
  */
@@ -69,6 +70,13 @@ cr.define('settings', function() {
      * @param {!settings.KerberosAccount} account
      */
     removeAccount(account) {}
+
+    /**
+     * Sets |account| as currently active account. Kerberos credentials are
+     * consumed from this account.
+     * @param {!settings.KerberosAccount} account
+     */
+    setAsActiveAccount(account) {}
   }
 
   /**
@@ -88,6 +96,11 @@ cr.define('settings', function() {
     /** @override */
     removeAccount(account) {
       chrome.send('removeKerberosAccount', [account.principalName]);
+    }
+
+    /** @override */
+    setAsActiveAccount(account) {
+      chrome.send('setAsActiveKerberosAccount', [account.principalName]);
     }
   }
 

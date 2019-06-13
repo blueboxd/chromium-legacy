@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
@@ -253,8 +254,10 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
   base::AutoLock locker(validator_lock_);
 
-  if (block_deny_access_update_)
+  if (block_deny_access_update_) {
+    LOGFN(INFO) << "Block the deny access update";
     return false;
+  }
 
   if (!IsUserAccessBlockingEnforced(cpus))
     return false;
@@ -268,12 +271,15 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
 
   bool user_denied_signin = false;
+  OSUserManager* manager = OSUserManager::Get();
   for (const auto& user_info : user_to_token_handle_info_) {
     const base::string16& sid = user_info.first;
     if (locked_user_sids_.find(sid) != locked_user_sids_.end())
       continue;
 
-    if (!IsTokenHandleValidForUserInternal(sid)) {
+    // Note that logon hours cannot be changed on domain joined AD user account.
+    if (!IsTokenHandleValidForUserInternal(sid) &&
+        !manager->IsUserDomainJoined(sid)) {
       LOGFN(INFO) << "Revoking access for sid=" << sid;
       HRESULT hr = ModifyUserAccess(policy, sid, false);
       if (FAILED(hr)) {
@@ -282,6 +288,9 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
         locked_user_sids_.insert(sid);
         user_denied_signin = true;
       }
+    } else if (manager->IsUserDomainJoined(sid)) {
+      // TODO(crbug.com/973160): Description provided in the bug.
+      LOGFN(INFO) << "Not denying signin for AD user accounts.";
     }
   }
 

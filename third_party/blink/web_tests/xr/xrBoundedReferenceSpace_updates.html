@@ -36,8 +36,11 @@ let testFunction = function(session, t, fakeDeviceController) {
       projectionMatrix: VALID_PROJECTION_MATRIX,
       viewMatrix: VALID_VIEW_MATRIX
     }]);
-  
+
   return new Promise((resolve, reject) => {
+
+    // Need to request one animation frame to allow the stage setup to propagate
+    // before we can request the reference space, otherwise we won't have bounds.
     session.requestAnimationFrame(() => {
       session.requestReferenceSpace('bounded-floor')
         .then((referenceSpace) => {

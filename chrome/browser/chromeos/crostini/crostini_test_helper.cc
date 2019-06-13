@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 
+#include "base/feature_list.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -21,7 +25,7 @@ using vm_tools::apps::ApplicationList;
 namespace crostini {
 
 CrostiniTestHelper::CrostiniTestHelper(Profile* profile, bool enable_crostini)
-    : profile_(profile) {
+    : profile_(profile), initialized_dbus_(false) {
   scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
 
   chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
@@ -42,6 +46,14 @@ CrostiniTestHelper::CrostiniTestHelper(Profile* profile, bool enable_crostini)
 CrostiniTestHelper::~CrostiniTestHelper() {
   chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
   DisableCrostini(profile_);
+  if (initialized_dbus_) {
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(profile_);
+    if (crostini_manager) {
+      crostini_manager->OnDBusShuttingDownForTesting();
+    }
+    chromeos::DBusThreadManager::Shutdown();
+  }
 }
 
 void CrostiniTestHelper::SetupDummyApps() {
@@ -70,6 +82,43 @@ void CrostiniTestHelper::RemoveApp(int i) {
   auto* apps = current_apps_.mutable_apps();
   apps->erase(apps->begin() + i);
   UpdateRegistry();
+}
+
+void CrostiniTestHelper::ReInitializeAppServiceIntegration() {
+  // Some Crostini-related tests add apps to the registry, which queues
+  // (asynchronous) icon loading requests, which depends on D-Bus. These
+  // requests are merely queued, not executed, so without further action, D-Bus
+  // can be ignored.
+  //
+  // Separately, the App Service is a Mojo IPC service, and explicit
+  // RunUntilIdle or FlushMojoCallsForTesting calls are required to pump the
+  // IPCs, not just during this method, but also during the actual test code.
+  // Those calls have a side effect of executing those icon loading requests.
+  //
+  // It is simpler if those RunUntilIdle calls are unconditional, so we also
+  // initialize D-Bus (if it wasn't already initialized) regardless of
+  // whether the App Service is enabled.
+  initialized_dbus_ = !chromeos::DBusThreadManager::IsInitialized();
+  if (initialized_dbus_) {
+    chromeos::DBusThreadManager::Initialize();
+  }
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+    // The App Service is originally initialized when the Profile is created,
+    // but this class' constructor takes the Profile* as an argument, which
+    // means that the fake user (created during that constructor) is
+    // necessarily configured after the App Service's initialization.
+    //
+    // Without further action, in tests (but not in production which looks at
+    // real users, not fakes), the App Service serves no Crostini apps, as at
+    // the time it looked, the profile/user doesn't have Crostini enabled.
+    //
+    // We therefore manually have the App Service re-examine whether Crostini
+    // is enabled for this profile.
+    auto* proxy = apps::AppServiceProxyImpl::GetImplForTesting(profile_);
+    proxy->ReInitializeCrostiniForTesting(profile_);
+    proxy->FlushMojoCallsForTesting();
+  }
 }
 
 void CrostiniTestHelper::UpdateAppKeywords(

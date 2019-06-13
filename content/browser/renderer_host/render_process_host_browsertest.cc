@@ -27,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -224,6 +225,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostNotTaken) {
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostKilled) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RenderProcessHost::WarmupSpareRenderProcessHost(
       ShellContentBrowserClient::Get()->browser_context());
 
@@ -614,6 +616,7 @@ class ObserverLogger : public RenderProcessHostObserver {
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
@@ -652,6 +655,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
@@ -710,6 +714,8 @@ class AudioStartObserver : public WebContentsObserver {
 #define KillProcessZerosAudioStreams DISABLED_KillProcessZerosAudioStreams
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   // TODO(maxmorin): This test only uses an output stream. There should be a
   // similar test for input streams.
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -827,6 +833,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 // terminations.
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosVideoCaptureStreams) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -891,6 +898,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 // terminations for audio only streams.
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosAudioCaptureStreams) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/media/getusermedia.html"));

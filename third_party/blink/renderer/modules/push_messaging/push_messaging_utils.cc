@@ -4,49 +4,49 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 
-#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
 
 namespace blink {
 
-namespace {
-
-const char* PushRegistrationStatusToString(
-    mojom::PushRegistrationStatus status) {
+String PushRegistrationStatusToString(mojom::PushRegistrationStatus status) {
   switch (status) {
     case mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE:
     case mojom::PushRegistrationStatus::
         SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE:
-      return "Registration successful - from push service";
+      return String::FromUTF8("Registration successful - from push service");
 
     case mojom::PushRegistrationStatus::NO_SERVICE_WORKER:
-      return "Registration failed - no Service Worker";
+      return String::FromUTF8("Registration failed - no Service Worker");
 
     case mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE:
-      return "Registration failed - push service not available";
+      return String::FromUTF8(
+          "Registration failed - push service not available");
 
     case mojom::PushRegistrationStatus::LIMIT_REACHED:
-      return "Registration failed - registration limit has been reached";
+      return String::FromUTF8(
+          "Registration failed - registration limit has been reached");
 
     case mojom::PushRegistrationStatus::PERMISSION_DENIED:
-      return "Registration failed - permission denied";
+      return String::FromUTF8("Registration failed - permission denied");
 
     case mojom::PushRegistrationStatus::SERVICE_ERROR:
-      return "Registration failed - push service error";
+      return String::FromUTF8("Registration failed - push service error");
 
     case mojom::PushRegistrationStatus::NO_SENDER_ID:
-      return "Registration failed - missing applicationServerKey, and "
-             "gcm_sender_id not found in manifest";
+      return String::FromUTF8(
+          "Registration failed - missing applicationServerKey, and "
+          "gcm_sender_id not found in manifest");
 
     case mojom::PushRegistrationStatus::STORAGE_ERROR:
-      return "Registration failed - storage error";
+      return String::FromUTF8("Registration failed - storage error");
 
     case mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE:
-      return "Registration successful - from cache";
+      return String::FromUTF8("Registration successful - from cache");
 
     case mojom::PushRegistrationStatus::NETWORK_ERROR:
-      return "Registration failed - could not connect to push server";
+      return String::FromUTF8(
+          "Registration failed - could not connect to push server");
 
     case mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED:
       // We split this out for UMA, but it must be indistinguishable to JS.
@@ -54,38 +54,39 @@ const char* PushRegistrationStatusToString(
           mojom::PushRegistrationStatus::PERMISSION_DENIED);
 
     case mojom::PushRegistrationStatus::PUBLIC_KEY_UNAVAILABLE:
-      return "Registration failed - could not retrieve the public key";
+      return String::FromUTF8(
+          "Registration failed - could not retrieve the public key");
 
     case mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING:
-      return "Registration failed - missing applicationServerKey, and manifest "
-             "empty or missing";
+      return String::FromUTF8(
+          "Registration failed - missing applicationServerKey, and manifest "
+          "empty or missing");
 
     case mojom::PushRegistrationStatus::SENDER_ID_MISMATCH:
-      return "Registration failed - A subscription with a different "
-             "applicationServerKey (or gcm_sender_id) already exists; to "
-             "change the applicationServerKey, unsubscribe then resubscribe.";
+      return String::FromUTF8(
+          "Registration failed - A subscription with a different "
+          "applicationServerKey (or gcm_sender_id) already exists; to "
+          "change the applicationServerKey, unsubscribe then resubscribe.");
 
     case mojom::PushRegistrationStatus::STORAGE_CORRUPT:
-      return "Registration failed - storage corrupt";
+      return String::FromUTF8("Registration failed - storage corrupt");
 
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
-      return "Registration failed - renderer shutdown";
+      return String::FromUTF8("Registration failed - renderer shutdown");
   }
   NOTREACHED();
-  return "";
+  return String();
 }
 
-}  // namespace
-
-WebPushError PushRegistrationStatusToWebPushError(
+mojom::PushErrorType PushRegistrationStatusToPushErrorType(
     mojom::PushRegistrationStatus status) {
-  WebPushError::ErrorType error_type = WebPushError::kErrorTypeAbort;
+  mojom::PushErrorType error_type = mojom::PushErrorType::ABORT;
   switch (status) {
     case mojom::PushRegistrationStatus::PERMISSION_DENIED:
-      error_type = WebPushError::kErrorTypeNotAllowed;
+      error_type = mojom::PushErrorType::NOT_ALLOWED;
       break;
     case mojom::PushRegistrationStatus::SENDER_ID_MISMATCH:
-      error_type = WebPushError::kErrorTypeInvalidState;
+      error_type = mojom::PushErrorType::INVALID_STATE;
       break;
     case mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE:
     case mojom::PushRegistrationStatus::
@@ -103,11 +104,10 @@ WebPushError PushRegistrationStatusToWebPushError(
     case mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING:
     case mojom::PushRegistrationStatus::STORAGE_CORRUPT:
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
-      error_type = WebPushError::kErrorTypeAbort;
+      error_type = mojom::PushErrorType::ABORT;
       break;
   }
-  return WebPushError(
-      error_type, WebString::FromUTF8(PushRegistrationStatusToString(status)));
+  return error_type;
 }
 
 }  // namespace blink

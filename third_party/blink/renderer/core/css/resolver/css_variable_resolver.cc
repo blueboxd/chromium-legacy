@@ -357,8 +357,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 
   if (id == CSSPropertyID::kFontSize) {
     bool is_root =
-        state_.GetElement() &&
-        state_.GetElement() == state_.GetDocument().documentElement();
+        &state_.GetElement() == state_.GetDocument().documentElement();
     options.disallow_registered_font_units = true;
     options.disallow_registered_root_font_units = is_root;
   }

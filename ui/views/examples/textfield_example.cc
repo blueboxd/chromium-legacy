@@ -23,34 +23,41 @@ using base::UTF16ToUTF8;
 namespace views {
 namespace examples {
 
+namespace {
+
+template <class K, class T>
+T* MakeRow(GridLayout* layout,
+           std::unique_ptr<K> view1,
+           std::unique_ptr<T> view2) {
+  layout->StartRowWithPadding(0, 0, 0, 5);
+  if (view1)
+    layout->AddView(std::move(view1));
+  return layout->AddView(std::move(view2));
+}
+
+}  // namespace
+
 TextfieldExample::TextfieldExample() : ExampleBase("Textfield") {}
 
 TextfieldExample::~TextfieldExample() = default;
 
 void TextfieldExample::CreateExampleView(View* container) {
-  name_ = new Textfield();
-  password_ = new Textfield();
-  password_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  password_->set_placeholder_text(ASCIIToUTF16("password"));
-  disabled_ = new Textfield();
-  disabled_->SetEnabled(false);
-  disabled_->SetText(ASCIIToUTF16("disabled"));
-  read_only_ = new Textfield();
-  read_only_->SetReadOnly(true);
-  read_only_->SetText(ASCIIToUTF16("read only"));
-  invalid_ = new Textfield();
-  invalid_->SetInvalid(true);
-  rtl_ = new Textfield();
-  rtl_->ChangeTextDirectionAndLayoutAlignment(base::i18n::RIGHT_TO_LEFT);
-  show_password_ = new LabelButton(this, ASCIIToUTF16("Show password"));
-  set_background_ =
-      new LabelButton(this, ASCIIToUTF16("Set non-default background"));
-  clear_all_ = new LabelButton(this, ASCIIToUTF16("Clear All"));
-  append_ = new LabelButton(this, ASCIIToUTF16("Append"));
-  set_ = new LabelButton(this, ASCIIToUTF16("Set"));
-  set_style_ = new LabelButton(this, ASCIIToUTF16("Set Styles"));
-  name_->set_controller(this);
-  password_->set_controller(this);
+  auto name = std::make_unique<Textfield>();
+  name->set_controller(this);
+  auto password = std::make_unique<Textfield>();
+  password->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  password->set_placeholder_text(ASCIIToUTF16("password"));
+  password->set_controller(this);
+  auto disabled = std::make_unique<Textfield>();
+  disabled->SetEnabled(false);
+  disabled->SetText(ASCIIToUTF16("disabled"));
+  auto read_only = std::make_unique<Textfield>();
+  read_only->SetReadOnly(true);
+  read_only->SetText(ASCIIToUTF16("read only"));
+  auto invalid = std::make_unique<Textfield>();
+  invalid->SetInvalid(true);
+  auto rtl = std::make_unique<Textfield>();
+  rtl->ChangeTextDirectionAndLayoutAlignment(base::i18n::RIGHT_TO_LEFT);
 
   GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
@@ -61,25 +68,42 @@ void TextfieldExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         0.8f, GridLayout::USE_PREF, 0, 0);
 
-  auto MakeRow = [layout](View* view1, View* view2) {
-    layout->StartRowWithPadding(0, 0, 0, 5);
-    layout->AddView(view1);
-    if (view2)
-      layout->AddView(view2);
-  };
-  MakeRow(new Label(ASCIIToUTF16("Name:")), name_);
-  MakeRow(new Label(ASCIIToUTF16("Password:")), password_);
-  MakeRow(new Label(ASCIIToUTF16("Disabled:")), disabled_);
-  MakeRow(new Label(ASCIIToUTF16("Read Only:")), read_only_);
-  MakeRow(new Label(ASCIIToUTF16("Invalid:")), invalid_);
-  MakeRow(new Label(ASCIIToUTF16("RTL:")), rtl_);
-  MakeRow(new Label(ASCIIToUTF16("Name:")), nullptr);
-  MakeRow(show_password_, nullptr);
-  MakeRow(set_background_, nullptr);
-  MakeRow(clear_all_, nullptr);
-  MakeRow(append_, nullptr);
-  MakeRow(set_, nullptr);
-  MakeRow(set_style_, nullptr);
+  name_ = MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("Name:")),
+                  std::move(name));
+  password_ =
+      MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("Password:")),
+              std::move(password));
+  disabled_ =
+      MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("Disabled:")),
+              std::move(disabled));
+  read_only_ =
+      MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("Read Only:")),
+              std::move(read_only));
+  invalid_ = MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("Invalid:")),
+                     std::move(invalid));
+  rtl_ = MakeRow(layout, std::make_unique<Label>(ASCIIToUTF16("RTL:")),
+                 std::move(rtl));
+  MakeRow<View, Label>(layout, nullptr,
+                       std::make_unique<Label>(ASCIIToUTF16("Name:")));
+  show_password_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Show password")));
+  set_background_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(
+          this, ASCIIToUTF16("Set non-default background")));
+  clear_all_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Clear All")));
+  append_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Append")));
+  set_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Set")));
+  set_style_ = MakeRow<View, LabelButton>(
+      layout, nullptr,
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Set Styles")));
 }
 
 void TextfieldExample::ContentsChanged(Textfield* sender,

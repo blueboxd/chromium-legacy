@@ -104,14 +104,18 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
         descendant_box->GetLayoutObject();
     DCHECK(descendant_layout_object);
 
+    // TODO(layoutng): Explain this check. I assume we need it because layers
+    // may have transforms and so we have to go through LocalToAncestorRects?
     if (descendant_box->HasLayer()) {
       Vector<PhysicalRect> layer_outline_rects;
       descendant_box->AddSelfOutlineRects(&layer_outline_rects,
                                           PhysicalOffset(), outline_type);
 
+      // Don't pass additional_offset because LocalToAncestorRects will itself
+      // apply it.
       descendant_layout_object->LocalToAncestorRects(
           layer_outline_rects, containing_block, PhysicalOffset(),
-          additional_offset);
+          PhysicalOffset());
       outline_rects->AppendVector(layer_outline_rects);
       return;
     }

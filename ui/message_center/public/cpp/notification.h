@@ -224,6 +224,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // will be replaced by the given value.
   Notification(const std::string& id, const Notification& other);
 
+  // Creates a copy of the |other| notification. The delegate will be replaced
+  // by |delegate|.
+  Notification(scoped_refptr<NotificationDelegate> delegate,
+               const Notification& other);
+
   // Creates a copy of the |other| notification. The delegate, if any, will be
   // identical for both the Notification instances.
   Notification(const Notification& other);

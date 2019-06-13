@@ -337,7 +337,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     filter_style->SetFont(font_for_filter_);
 
     StyleResolverState resolver_state(
-        style_resolution_host->GetDocument(), style_resolution_host,
+        style_resolution_host->GetDocument(), *style_resolution_host,
         nullptr /* pseudo_element */, filter_style.get(), filter_style.get());
     resolver_state.SetStyle(filter_style);
 

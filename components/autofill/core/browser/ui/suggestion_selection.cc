@@ -163,8 +163,7 @@ std::vector<Suggestion> GetUniqueSuggestions(
       AutofillProfile* profile_b = matched_profiles[j];
       // Check if profile A is a subset of profile B. If not, continue.
       if (i == j ||
-          !comparator.MatchesAfterNormalization(suggestions[i].value,
-                                                suggestions[j].value) ||
+          !comparator.Compare(suggestions[i].value, suggestions[j].value) ||
           !profile_a->IsSubsetOfForFieldSet(comparator, *profile_b, app_locale,
                                             types)) {
         continue;

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,16 +28,13 @@ import org.chromium.ui.widget.Toast;
  * chosen to share it with themselves through the SendTabToSelfFeature.
  */
 public class DevicePickerBottomSheetContent implements BottomSheetContent, OnItemClickListener {
-    Context mContext;
-    ChromeActivity mActivity;
-    ViewGroup mToolbarView;
-    ViewGroup mContentView;
-    DevicePickerBottomSheetAdapter mAdapter;
-    NavigationEntry mEntry;
+    private ChromeActivity mActivity;
+    private ViewGroup mToolbarView;
+    private ViewGroup mContentView;
+    private DevicePickerBottomSheetAdapter mAdapter;
+    private NavigationEntry mEntry;
 
-    public DevicePickerBottomSheetContent(
-            Context context, ChromeActivity activity, NavigationEntry entry) {
-        mContext = context;
+    public DevicePickerBottomSheetContent(ChromeActivity activity, NavigationEntry entry) {
         mActivity = activity;
         mAdapter = new DevicePickerBottomSheetAdapter(
                 activity.getActivityTabProvider().get().getProfile());
@@ -56,14 +52,14 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createToolbarView() {
-        mToolbarView = (ViewGroup) LayoutInflater.from(mContext).inflate(
+        mToolbarView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
                 R.layout.send_tab_to_self_device_picker_toolbar, null);
         TextView toolbarText = mToolbarView.findViewById(R.id.device_picker_toolbar);
         toolbarText.setText(R.string.send_tab_to_self_sheet_toolbar);
     }
 
     private void createContentView() {
-        mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
+        mContentView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
                 R.layout.send_tab_to_self_device_picker_list, null);
         ListView listView = mContentView.findViewById(R.id.device_picker_list);
 
@@ -144,7 +140,7 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), mEntry.getUrl(), mEntry.getTitle(),
                 mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
 
-        Resources res = mContext.getResources();
+        Resources res = mActivity.getResources();
         String toastMessage =
                 res.getString(R.string.send_tab_to_self_toast, targetDeviceInfo.deviceName);
         Toast.makeText(mActivity, toastMessage, Toast.LENGTH_SHORT).show();

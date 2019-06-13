@@ -353,12 +353,6 @@ int DeferAllScriptPreviewsVersion() {
                                           kVersion, 0);
 }
 
-size_t GetMaxPageHintsInMemoryThreshhold() {
-  return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
-                                          "max_page_hints_in_memory_threshold",
-                                          500);
-}
-
 bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHints);
 }

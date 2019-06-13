@@ -396,7 +396,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
 ShapeResult::~ShapeResult() = default;
 
 size_t ShapeResult::ByteSize() const {
-  size_t self_byte_size = sizeof(this);
+  size_t self_byte_size = sizeof(*this);
   for (unsigned i = 0; i < runs_.size(); ++i) {
     self_byte_size += runs_[i]->ByteSize();
   }

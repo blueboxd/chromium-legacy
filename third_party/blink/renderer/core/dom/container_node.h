@@ -291,7 +291,6 @@ class CORE_EXPORT ContainerNode : public Node {
   void RecalcDescendantStyles(const StyleRecalcChange);
   void RebuildChildrenLayoutTrees(WhitespaceAttacher&);
   void RebuildLayoutTreeForChild(Node* child, WhitespaceAttacher&);
-  void RebuildNonDistributedChildren();
 
   // -----------------------------------------------------------------------------
   // Notification of document structure changes (see core/dom/node.h for more

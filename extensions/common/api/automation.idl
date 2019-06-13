@@ -506,6 +506,22 @@
     DOMString description;
   };
 
+  // The string which the indices are relative to is not included in this
+  // structure. See documentation on $(ref:languageAnnotationForStringAttribute)
+  // for details on how to associate this object with a string.
+  // Also, the start and end indices always point to the first code unit of a
+  // valid code-point.
+  dictionary LanguageSpan {
+    // Inclusive start index of substring that contains language.
+    long startIndex;
+    // Exclusive end index of substring that contains language.
+    long endIndex;
+    // Detected language for substring.
+    DOMString language;
+    // Probability that language is correct.
+    double probability;
+  };
+
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
@@ -1127,5 +1143,16 @@
     // the value where the selection starts or ends, respectively.
     [nocompile] static void setDocumentSelection(
         SetDocumentSelectionParams params);
+
+    // Returns the detected languages for the provided string attribute as an
+    // array of LanguageSpan objects. There are several guarantees about the
+    // format of the LanguageSpan array:
+    // 1. Is either empty or contains LanguageSpans that cover all indices in
+    // the associated string attribute value.
+    // 2. Is sorted by increasing startIndex (those with smaller startIndex
+    // appear first).
+    // 3. LanguageSpans are non-overlapping and contain exactly one language.
+    [nocompile] LanguageSpan[] languageAnnotationForStringAttribute(
+        DOMString attribute);
   };
 };

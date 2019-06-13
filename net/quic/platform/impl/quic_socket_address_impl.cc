@@ -31,11 +31,12 @@ QuicSocketAddressImpl::QuicSocketAddressImpl(
   }
 }
 
-QuicSocketAddressImpl::QuicSocketAddressImpl(const struct sockaddr& saddr) {
-  if (saddr.sa_family == AF_INET) {
-    CHECK(socket_address_.FromSockAddr(&saddr, sizeof(struct sockaddr_in)));
-  } else if (saddr.sa_family == AF_INET6) {
-    CHECK(socket_address_.FromSockAddr(&saddr, sizeof(struct sockaddr_in6)));
+QuicSocketAddressImpl::QuicSocketAddressImpl(const sockaddr* saddr,
+                                             socklen_t len) {
+  if (saddr->sa_family == AF_INET) {
+    CHECK(socket_address_.FromSockAddr(saddr, len));
+  } else if (saddr->sa_family == AF_INET6) {
+    CHECK(socket_address_.FromSockAddr(saddr, len));
   }
 }
 

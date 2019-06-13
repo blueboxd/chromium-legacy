@@ -61,6 +61,11 @@
         "background_layer",
         "border_image",
         "color",
+        // The "color" template takes into account ApplyPropertyToRegularStyle
+        // and ApplyPropertyToVisitedStyle, whereas "color_only" unconditionally
+        // applies to the regular style.
+        // TODO(andruud): Remove those flags and rename this to just "color".
+        "color_only",
         "counter",
         "empty",
         "grid",
@@ -72,6 +77,7 @@
         "mask_layer",
         "svg_paint",
         "transition",
+        "visited_color",
       ],
     },
 
@@ -349,7 +355,8 @@
         valid_type: "str",
         valid_values: ["border", "border-color", "border-style", "border-width",
                        "inset", "margin", "max-size", "min-size", "overflow",
-                       "padding", "scroll-margin", "scroll-padding", "size"],
+                       "padding", "scroll-margin", "scroll-padding", "size",
+                       "visited-border-color"],
       }
     },
 
@@ -373,6 +380,20 @@
     layout_dependent: {
       default: false,
       valid_type: "bool",
+    },
+
+    // - visited_property_for: "other-property"
+    // CSS properties that are allowed in :visited selectors each have an
+    // internal "companion" property with the visited value. For privacy reasons
+    // CSSOM APIs must return computed values as if links aren't visited, but
+    // for rendering purposes we need the value with the :visited rules applied.
+    //
+    // This means that the regular property (e.g. background-color) represents
+    // the value as seen by CSSOM, and the -internal-visited counterpart (e.g.
+    // -internal-visited-background-color) represents the same property as seen
+    // by painting.
+    visited_property_for: {
+      valid_type: "str",
     },
 
     // - valid_for_visited_link
@@ -968,7 +989,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
@@ -1064,7 +1085,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -1190,7 +1211,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -1233,7 +1254,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -1276,7 +1297,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -3924,7 +3945,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -3955,7 +3976,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -3980,7 +4001,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -5119,6 +5140,177 @@
       name: "-webkit-text-stroke",
       longhands: ["-webkit-text-stroke-width", "-webkit-text-stroke-color"],
       property_methods: ["ParseShorthand"],
+    },
+
+    // Visited properties.
+    {
+      name: "-internal-visited-color",
+      visited_property_for: "color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "inherited",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color::kBlack",
+      type_name: "Color",
+      computed_style_custom_functions: ["getter", "setter"],
+      style_builder_custom_functions: ['value'],
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "ComputedStyleInitialValues::InitialColor",
+      },
+      priority: "High",
+    },
+    {
+      name: "-internal-visited-background-color",
+      visited_property_for: "background-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor(Color::kTransparent)",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
+      },
+    },
+    {
+      name: "-internal-visited-border-left-color",
+      visited_property_for: "border-left-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
+      name: "-internal-visited-border-right-color",
+      visited_property_for: "border-right-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
+      name: "-internal-visited-border-top-color",
+      visited_property_for: "border-top-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
+      name: "-internal-visited-border-bottom-color",
+      visited_property_for: "border-bottom-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
+      name: "-internal-visited-border-inline-start-color",
+      visited_property_for: "border-inline-start-color",
+      direction_aware_options: {
+        resolver: "inline-start",
+        physical_group: "visited-border-color",
+      },
+    },
+    {
+      name: "-internal-visited-border-inline-end-color",
+      visited_property_for: "border-inline-end-color",
+      direction_aware_options: {
+        resolver: "inline-end",
+        physical_group: "visited-border-color",
+      },
+    },
+    {
+      name: "-internal-visited-border-block-start-color",
+      visited_property_for: "border-block-start-color",
+      direction_aware_options: {
+        resolver: "block-start",
+        physical_group: "visited-border-color",
+      },
+    },
+    {
+      name: "-internal-visited-border-block-end-color",
+      visited_property_for: "border-block-end-color",
+      direction_aware_options: {
+        resolver: "block-end",
+        physical_group: "visited-border-color",
+      },
+    },
+    {
+      name: "-internal-visited-text-emphasis-color",
+      visited_property_for: "-webkit-text-emphasis-color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "blink::Color",
+      },
+    },
+    {
+      name: "-internal-visited-text-fill-color",
+      visited_property_for: "-webkit-text-fill-color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "blink::Color",
+      },
+    },
+    {
+      name: "-internal-visited-text-stroke-color",
+      visited_property_for: "-webkit-text-stroke-color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "blink::Color",
+      },
     },
 
     // Aliases; these map to the same CSSPropertyID

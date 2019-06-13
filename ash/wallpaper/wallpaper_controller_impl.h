@@ -16,7 +16,6 @@
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/cpp/wallpaper_user_info.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
@@ -26,7 +25,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "components/user_manager/user_type.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -107,7 +105,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // wallpaper immediately. Must run on wallpaper sequenced worker thread.
   static void SetWallpaperFromPath(
       const AccountId& account_id,
-      const user_manager::UserType& user_type,
       const WallpaperInfo& info,
       const base::FilePath& wallpaper_path,
       bool show_wallpaper,
@@ -159,7 +156,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Returns whether a wallpaper policy is enforced for |account_id| (not
   // including device policy).
-  bool IsPolicyControlled(const AccountId& account_id, bool is_ephemeral) const;
+  bool IsPolicyControlled(const AccountId& account_id) const;
 
   // Update the blurred state of the current wallpaper. Applies blur if |blur|
   // is true and blur is allowed by the controller, otherwise any existing blur
@@ -178,18 +175,16 @@ class ASH_EXPORT WallpaperControllerImpl
   // |HasShownAnyWallpaper| if there's need to distinguish.
   bool IsWallpaperBlurred() const;
 
-  // Sets wallpaper info for |account_id| and saves it to local state if
-  // |is_ephemeral| is false. Returns false if it fails (which happens if local
+  // Sets wallpaper info for |account_id| and saves it to local state if the
+  // user is not ephemeral. Returns false if it fails (which happens if local
   // state is not available).
   bool SetUserWallpaperInfo(const AccountId& account_id,
-                            const WallpaperInfo& info,
-                            bool is_ephemeral);
+                            const WallpaperInfo& info);
 
-  // Gets wallpaper info of |account_id| from local state, or memory if
-  // |is_ephemeral| is true. Returns false if wallpaper info is not found.
+  // Gets wallpaper info of |account_id| from local state, or memory if the user
+  // is ephemeral. Returns false if wallpaper info is not found.
   bool GetUserWallpaperInfo(const AccountId& account_id,
-                            WallpaperInfo* info,
-                            bool is_ephemeral) const;
+                            WallpaperInfo* info) const;
 
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const AccountId& account_id,
@@ -205,7 +200,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // A wrapper of |ReadAndDecodeWallpaper| used in |SetWallpaperFromPath|.
   void StartDecodeFromPath(const AccountId& account_id,
-                           const user_manager::UserType& user_type,
                            const base::FilePath& wallpaper_path,
                            const WallpaperInfo& info,
                            bool show_wallpaper);
@@ -216,53 +210,53 @@ class ASH_EXPORT WallpaperControllerImpl
             const base::FilePath& wallpapers,
             const base::FilePath& custom_wallpapers,
             const base::FilePath& device_policy_wallpaper) override;
-  void SetCustomWallpaper(const WallpaperUserInfo& user_info,
+  void SetCustomWallpaper(const AccountId& account_id,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaperIfExists(
-      const WallpaperUserInfo& user_info,
+      const AccountId& account_id,
       const std::string& url,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperIfExistsCallback callback) override;
   void SetOnlineWallpaperFromData(
-      const WallpaperUserInfo& user_info,
+      const AccountId& account_id,
       const std::string& image_data,
       const std::string& url,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperFromDataCallback callback) override;
-  void SetDefaultWallpaper(const WallpaperUserInfo& user_info,
+  void SetDefaultWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
-  void SetPolicyWallpaper(const WallpaperUserInfo& user_info,
+  void SetPolicyWallpaper(const AccountId& account_id,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDevicePolicyWallpaperPath(
       const base::FilePath& device_policy_wallpaper_path) override;
-  bool SetThirdPartyWallpaper(const WallpaperUserInfo& user_info,
+  bool SetThirdPartyWallpaper(const AccountId& account_id,
                               const std::string& wallpaper_files_id,
                               const std::string& file_name,
                               WallpaperLayout layout,
                               const gfx::ImageSkia& image) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
-  void UpdateCustomWallpaperLayout(const WallpaperUserInfo& user_info,
+  void UpdateCustomWallpaperLayout(const AccountId& account_id,
                                    WallpaperLayout layout) override;
-  void ShowUserWallpaper(const WallpaperUserInfo& user_info) override;
+  void ShowUserWallpaper(const AccountId& account_id) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(const WallpaperUserInfo& user_info,
+  void RemoveUserWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id) override;
-  void RemovePolicyWallpaper(const WallpaperUserInfo& user_info,
+  void RemovePolicyWallpaper(const AccountId& account_id,
                              const std::string& wallpaper_files_id) override;
   void GetOfflineWallpaperList(
       GetOfflineWallpaperListCallback callback) override;
@@ -336,7 +330,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   struct OnlineWallpaperParams {
     AccountId account_id;
-    bool is_ephemeral;
     std::string url;
     WallpaperLayout layout;
     bool preview_mode;
@@ -356,7 +349,7 @@ class ASH_EXPORT WallpaperControllerImpl
   int GetWallpaperContainerId(bool locked);
 
   // Removes |account_id|'s wallpaper info and color cache if it exists.
-  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_ephemeral);
+  void RemoveUserWallpaperInfo(const AccountId& account_id);
 
   // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
   // custom wallpapers and directories.
@@ -365,16 +358,13 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Implementation of |SetDefaultWallpaper|. Sets wallpaper to default if
   // |show_wallpaper| is true. Otherwise just save the defaut wallpaper to
-  // cache. |user_type| is the type of the user initiating the wallpaper
-  // request; may be different from the active user.
+  // cache.
   void SetDefaultWallpaperImpl(const AccountId& account_id,
-                               const user_manager::UserType& user_type,
                                bool show_wallpaper);
 
   // When kiosk app is running or policy is enforced, setting a user wallpaper
   // is not allowed.
-  bool CanSetUserWallpaper(const AccountId& account_id,
-                           bool is_ephemeral) const;
+  bool CanSetUserWallpaper(const AccountId& account_id) const;
 
   // Returns true if the specified wallpaper is already stored in
   // |current_wallpaper_|. If |compare_layouts| is false, layout is ignored.
@@ -390,9 +380,8 @@ class ASH_EXPORT WallpaperControllerImpl
       const base::FilePath& file_path);
 
   // Initializes wallpaper info for the user to default and saves it to local
-  // state if |is_ephemeral| is false. Returns false if initialization fails.
-  bool InitializeUserWallpaperInfo(const AccountId& account_id,
-                                   bool is_ephemeral);
+  // state the user is not ephemeral. Returns false if initialization fails.
+  bool InitializeUserWallpaperInfo(const AccountId& account_id);
 
   // Used as the callback of checking ONLINE wallpaper existence in
   // |SetOnlineWallpaperIfExists|. Initiates reading and decoding the wallpaper
@@ -418,7 +407,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // Decodes |account_id|'s wallpaper. Shows the decoded wallpaper if
   // |show_wallpaper| is true.
   void SetWallpaperFromInfo(const AccountId& account_id,
-                            const user_manager::UserType& user_type,
                             const WallpaperInfo& info,
                             bool show_wallpaper);
 
@@ -430,11 +418,11 @@ class ASH_EXPORT WallpaperControllerImpl
                                  bool show_wallpaper,
                                  const gfx::ImageSkia& image);
 
-  // Saves |image| to disk if |user_info->is_ephemeral| is false, or if it is a
+  // Saves |image| to disk if the user's data is not ephemeral, or if it is a
   // policy wallpaper for public accounts. Shows the wallpaper immediately if
   // |show_wallpaper| is true, otherwise only sets the wallpaper info and
   // updates the cache.
-  void SaveAndSetWallpaper(const WallpaperUserInfo& user_info,
+  void SaveAndSetWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id,
                            const std::string& file_name,
                            WallpaperType type,
@@ -447,7 +435,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // types should use this.) Shows the wallpaper immediately if |show_wallpaper|
   // is true. Otherwise, only updates the cache.
   void OnWallpaperDecoded(const AccountId& account_id,
-                          const user_manager::UserType& user_type,
                           const base::FilePath& path,
                           const WallpaperInfo& info,
                           bool show_wallpaper,
@@ -553,11 +540,11 @@ class ASH_EXPORT WallpaperControllerImpl
   const std::vector<color_utils::ColorProfile> color_profiles_;
 
   // The wallpaper info for ephemeral users, which is not stored to local state.
-  // See |WallpaperUserInfo::is_ephemeral| for details.
+  // See |UserInfo::is_ephemeral| for details.
   std::map<AccountId, WallpaperInfo> ephemeral_users_wallpaper_info_;
 
-  // Cached user info of the current user.
-  WallpaperUserInfo current_user_;
+  // Account id of the current user.
+  AccountId current_user_;
 
   // Cached wallpapers of users.
   CustomWallpaperMap wallpaper_cache_map_;

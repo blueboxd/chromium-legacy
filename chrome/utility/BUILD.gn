@@ -30,8 +30,6 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//chrome/services/noop:lib",
-    "//chrome/services/noop/public/cpp",
     "//components/mirroring/mojom:constants",
     "//components/mirroring/service:mirroring_service",
     "//components/search_engines",

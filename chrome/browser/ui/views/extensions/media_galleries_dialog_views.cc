@@ -251,15 +251,16 @@ ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-views::View* MediaGalleriesDialogViews::CreateExtraView() {
+std::unique_ptr<views::View> MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!auxiliary_button_);
   base::string16 button_label = controller_->GetAuxiliaryButtonText();
+  std::unique_ptr<views::LabelButton> auxiliary_button;
   if (!button_label.empty()) {
-    auto auxiliary_button =
+    auxiliary_button =
         views::MdTextButton::CreateSecondaryUiButton(this, button_label);
-    auxiliary_button_ = auxiliary_button.release();
+    auxiliary_button_ = auxiliary_button.get();
   }
-  return auxiliary_button_;
+  return auxiliary_button;
 }
 
 bool MediaGalleriesDialogViews::Cancel() {

@@ -62,36 +62,6 @@ void UserPolicySigninService::PrepareForUserCloudPolicyManagerShutdown() {
   UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown();
 }
 
-void UserPolicySigninService::RegisterForPolicyWithLoginToken(
-    const std::string& username,
-    const std::string& oauth2_refresh_token,
-    const PolicyRegistrationCallback& callback) {
-  DCHECK(!oauth2_refresh_token.empty());
-
-  // Create a new CloudPolicyClient for fetching the DMToken.
-  std::unique_ptr<CloudPolicyClient> policy_client =
-      CreateClientForRegistrationOnly(username);
-  if (!policy_client) {
-    callback.Run(std::string(), std::string());
-    return;
-  }
-
-  // Fire off the registration process. Callback keeps the CloudPolicyClient
-  // alive for the length of the registration process. Use the system
-  // request context because the user is not signed in to this profile yet
-  // (we are just doing a test registration to see if policy is supported for
-  // this user).
-  registration_helper_ = std::make_unique<CloudPolicyClientRegistrationHelper>(
-      policy_client.get(),
-      enterprise_management::DeviceRegisterRequest::BROWSER);
-  registration_helper_->StartRegistrationWithLoginToken(
-      oauth2_refresh_token,
-      base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                 base::Unretained(this),
-                 base::Passed(&policy_client),
-                 callback));
-}
-
 void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
     const std::string& account_id,

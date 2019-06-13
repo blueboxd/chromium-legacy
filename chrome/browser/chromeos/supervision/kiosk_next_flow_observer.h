@@ -28,6 +28,10 @@ class KioskNextFlowObserver : public OnboardingFlowModel::Observer {
   void WillExitFlow(OnboardingFlowModel::Step step,
                     OnboardingFlowModel::ExitReason reason) override;
 
+  // Enables Kiosk Next by loading its extension and setting the relevant
+  // prefs.
+  void EnableKioskNext();
+
   Profile* profile_;
   OnboardingFlowModel* flow_model_;
 

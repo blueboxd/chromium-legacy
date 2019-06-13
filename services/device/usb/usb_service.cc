@@ -102,7 +102,7 @@ void UsbService::RemoveObserver(Observer* observer) {
 
 void UsbService::AddDeviceForTesting(scoped_refptr<UsbDevice> device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!ContainsKey(devices_, device->guid()));
+  DCHECK(!base::Contains(devices_, device->guid()));
   devices_[device->guid()] = device;
   testing_devices_.insert(device->guid());
   NotifyDeviceAdded(device);

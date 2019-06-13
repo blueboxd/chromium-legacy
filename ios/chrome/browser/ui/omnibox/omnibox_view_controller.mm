@@ -123,6 +123,8 @@ const CGFloat kClearButtonSize = 28.0f;
          selector:@selector(textFieldDidBeginEditing)
              name:UITextFieldTextDidBeginEditingNotification
            object:self.textField];
+
+  [self updateLeadingImageVisibility];
 }
 
 - (void)viewDidAppear:(BOOL)animated {

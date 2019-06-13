@@ -693,12 +693,16 @@
   {
     "prefix" : "autoupgrade-optionally-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/optionally",
-    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
+    "args": ["--enable-features=AutoupgradeMixedContent<AU",
+             "--force-fieldtrials=AU/G1",
+             "--force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
   },
   {
     "prefix" : "autoupgrade-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/blockable",
-    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/blockable"]
+    "args": ["--enable-features=AutoupgradeMixedContent<AU",
+             "--force-fieldtrials=AU/G1",
+	     "--force-fieldtrial-params=AU.G1:mode/blockable"]
   },
   {
     "prefix" : "autoupgrade-all-mixed-content",

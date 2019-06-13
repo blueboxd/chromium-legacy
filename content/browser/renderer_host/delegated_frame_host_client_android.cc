@@ -26,8 +26,8 @@ void DelegatedFrameHostClientAndroid::DidReceiveCompositorFrameAck(
 }
 
 void DelegatedFrameHostClientAndroid::DidPresentCompositorFrames(
-    const viz::PresentationFeedbackMap& feedbacks) {
-  render_widget_host_view_->DidPresentCompositorFrames(feedbacks);
+    const viz::FrameTimingDetailsMap& timing_details) {
+  render_widget_host_view_->DidPresentCompositorFrames(timing_details);
 }
 
 void DelegatedFrameHostClientAndroid::ReclaimResources(

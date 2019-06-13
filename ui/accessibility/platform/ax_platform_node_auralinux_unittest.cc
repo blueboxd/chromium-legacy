@@ -994,6 +994,40 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkHyperlink) {
 // AtkText interface
 //
 //
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextGetText) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTextField;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kValue, "A string.");
+  Init(root);
+
+  AtkObject* root_obj(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
+  g_object_ref(root_obj);
+
+  ASSERT_TRUE(ATK_IS_TEXT(root_obj));
+  AtkText* atk_text = ATK_TEXT(root_obj);
+
+  auto verify_text = [&](const char* expected, int start, int end) {
+    char* actual = atk_text_get_text(atk_text, start, end);
+    EXPECT_STREQ(expected, actual);
+    g_free(actual);
+  };
+
+  verify_text("A string.", 0, -1);
+  verify_text("A string.", 0, 20);
+  verify_text("A string", 0, 8);
+  verify_text("str", 2, 5);
+  verify_text(".", 8, 9);
+  verify_text("", 0, 0);
+  verify_text(nullptr, -1, -1);
+  verify_text(nullptr, 5, 2);
+  verify_text(nullptr, 10, 20);
+
+  g_object_unref(root_obj);
+}
+
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   AXNodeData root;
   root.id = 1;

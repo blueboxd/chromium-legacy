@@ -299,7 +299,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     element->DispatchLoadEvent();
 }
 
-void PendingScript::Trace(blink::Visitor* visitor) {
+void PendingScript::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(client_);
   visitor->Trace(original_context_document_);

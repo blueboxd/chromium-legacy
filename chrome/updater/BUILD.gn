@@ -78,6 +78,7 @@ if (is_win || is_mac) {
     ]
 
     deps = [
+      ":common",
       ":updater",
       "//base/test:test_support",
       "//testing/gtest",

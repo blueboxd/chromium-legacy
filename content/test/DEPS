@@ -45,10 +45,10 @@ specific_include_rules = {
   "web_test_support.cc": [
     "+content/shell/test_runner",
     "+content/shell/common/shell_switches.h",
-    "+services/ws/public/cpp/gpu",
+    "+services/viz/public/cpp/gpu",
   ],
   "gpu_browsertest_helpers.cc": [
-    "+services/ws/public/cpp/gpu/command_buffer_metrics.h",
-    "+services/ws/public/cpp/gpu/context_provider_command_buffer.h",
+    "+services/viz/public/cpp/gpu/command_buffer_metrics.h",
+    "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
   ],
 }

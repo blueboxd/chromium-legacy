@@ -489,7 +489,7 @@ NotifierSettingsView::NotifierSettingsView()
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
-  scroller->set_draw_overflow_indicator(false);
+  scroller->SetDrawOverflowIndicator(false);
   scroller_ = AddChildView(std::move(scroller));
 
   no_notifiers_view_ = AddChildView(std::make_unique<EmptyNotifierView>());

@@ -120,6 +120,7 @@ void PositionView(UIView* view, CGPoint point) {
 #pragma mark - UIView
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
   BOOL isPreviousAccessibilityCategory =
       UIContentSizeCategoryIsAccessibilityCategory(
           previousTraitCollection.preferredContentSizeCategory);

@@ -37,7 +37,7 @@ class TestInstantServiceObserver : public InstantServiceObserver {
  private:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
 
-  void MostVisitedItemsChanged(
+  void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
 
   InstantService* const service_;

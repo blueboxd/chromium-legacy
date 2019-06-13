@@ -38,6 +38,7 @@ enum ShareExtensionItemReceived {
   CANCELLED_ENTRY,
   READINGLIST_ENTRY,
   BOOKMARK_ENTRY,
+  OPEN_IN_CHROME_ENTRY,
   SHARE_EXTENSION_ITEM_RECEIVED_COUNT
 };
 
@@ -267,6 +268,12 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
         LogHistogramReceivedItem(BOOKMARK_ENTRY);
         _bookmarkModel->AddURL(_bookmarkModel->mobile_node(), 0,
                                base::UTF8ToUTF16(entryTitle), entryURL);
+        break;
+      }
+      case app_group::OPEN_IN_CHROME_ITEM: {
+        LogHistogramReceivedItem(OPEN_IN_CHROME_ENTRY);
+        // Open URL command is sent directly by the extension. No processing is
+        // needed here.
         break;
       }
     }

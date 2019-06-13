@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
 
-#include <map>
 #include <set>
 
 #include "base/callback.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace base {
 
@@ -152,7 +152,7 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
 
   // For long standing event timeouts. This is used to look up an event in
   // |inflight_events_| by its id.
-  std::map<int /* event_id */, std::set<EventInfo>::iterator> id_event_map_;
+  HashMap<int /* event_id */, std::set<EventInfo>::iterator> id_event_map_;
 
   // For idle timeouts. The time the service worker started being considered
   // idle. This time is null if there are any inflight events.

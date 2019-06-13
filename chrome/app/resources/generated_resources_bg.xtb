@@ -827,7 +827,6 @@
 <translation id="2242687258748107519">Информация за файла</translation>
 <translation id="2246549592927364792">Да се изтеглят ли от Google описания за изображенията?</translation>
 <translation id="2249269794707377949">Оттук можете да управлявате всички профили за Kerberos, осигуряващи централизиран вход в определени приложения, уебсайтове и споделени хранилища.</translation>
-<translation id="224940702122312781">Тази страница ще използва много данни.</translation>
 <translation id="2249605167705922988">напр. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Отваряне със системния визуализатор</translation>
 <translation id="225163402930830576">Опресняване на мрежите</translation>
@@ -1911,7 +1910,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Вдигнете пръст и докоснете отново</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: синхронизирането е на пауза</translation>
-<translation id="3861241522664181545">Страницата е поставена на пауза.</translation>
 <translation id="3862134173397075045">Представяме ви функцията за предаване в Chrome!</translation>
 <translation id="3862693525629180217">Потвърждаване чрез вградения сензор</translation>
 <translation id="3862788408946266506">Приложенията с атрибут „kiosk_only“ в манифеста трябва да бъдат инсталирани в павилионния режим на Chrome OS</translation>
@@ -3860,7 +3858,6 @@
 <translation id="6920989436227028121">Отваряне като нормален раздел</translation>
 <translation id="6921104647315081813">Изчистване на активностите</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> не можа да се отвори</translation>
-<translation id="6921709132208495314">Спиране на използването на данни на тази страница</translation>
 <translation id="6922128026973287222">Използвайте по-малко данни и сърфирайте по-бързо посредством Google Икономия на данни. Кликнете, за да научите повече.</translation>
 <translation id="6922745772873733498">Въведете ПИН, за да отпечатате</translation>
 <translation id="6923132443355966645">Превъртане/кликване</translation>

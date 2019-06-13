@@ -23,7 +23,7 @@ class InstantServiceObserver {
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo&);
 
   // Indicates that the most visited items have changed in some way.
-  virtual void MostVisitedItemsChanged(const InstantMostVisitedInfo&);
+  virtual void MostVisitedInfoChanged(const InstantMostVisitedInfo&);
 
  protected:
   virtual ~InstantServiceObserver() {}

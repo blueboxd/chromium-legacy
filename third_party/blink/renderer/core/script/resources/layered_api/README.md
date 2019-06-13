@@ -22,11 +22,9 @@ and commit these files together with the changes under resources/layered_api/.
 
 ## Which files are bundled
 
-All files under this directory will be included in the grdp and thus bundled
-in the Chromium binary, except for
-
-- Files directly under `core/script/resources/layered_api`, or
-- Files starting with '.', 'README', or 'OWNERS'.
+All files under sub-directories which have 'index.mjs' will be included
+in the grdp and thus bundled in the Chromium binary, except for files
+starting with '.', 'README', or 'OWNERS'.
 
 So be careful about binary size increase when you add new files or add more
 contents to existing files.

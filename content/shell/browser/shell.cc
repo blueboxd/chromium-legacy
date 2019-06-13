@@ -25,6 +25,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -618,13 +619,20 @@ bool Shell::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs || allowed_by_test;
 }
 
-gfx::Size Shell::EnterPictureInPicture(content::WebContents* web_contents,
-                                       const viz::SurfaceId& surface_id,
-                                       const gfx::Size& natural_size) {
-  // During tests, returning a fake window size (same aspect ratio) to pretend
-  // the window was created and allow tests to run accordingly.
-  return switches::IsRunWebTestsSwitchPresent() ? natural_size
-                                                : gfx::Size(0, 0);
+PictureInPictureResult Shell::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  // During tests, returning success to pretend the window was created and allow
+  // tests to run accordingly.
+  if (!switches::IsRunWebTestsSwitchPresent())
+    return PictureInPictureResult::kNotSupported;
+
+  auto* controller =
+      PictureInPictureWindowController::GetOrCreateForWebContents(web_contents);
+  controller->EmbedSurface(surface_id, natural_size);
+
+  return PictureInPictureResult::kSuccess;
 }
 
 bool Shell::ShouldResumeRequestsForCreatedWindow() {

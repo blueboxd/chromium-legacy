@@ -18,7 +18,6 @@
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class FilePath;

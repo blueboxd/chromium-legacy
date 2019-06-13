@@ -73,8 +73,8 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -92,6 +92,11 @@ namespace content {
 namespace {
 
 static const char* kBrowser = "Browser";
+
+// NOINLINE to make sure crashes use this for magic signature.
+NOINLINE void FatalSurfaceFailure() {
+  LOG(FATAL) << "Fatal surface initialization failure";
+}
 
 gfx::OverlayTransform RotationToDisplayTransform(
     display::Display::Rotation rotation) {
@@ -203,20 +208,20 @@ void CreateContextProviderAfterGpuChannelEstablished(
   constexpr bool support_grcontext = false;
 
   auto context_provider =
-      base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, support_grcontext,
           shared_memory_limits, attributes,
-          ws::command_buffer_metrics::ContextType::UNKNOWN);
+          viz::command_buffer_metrics::ContextType::UNKNOWN);
   callback.Run(std::move(context_provider));
 }
 
 class AndroidOutputSurface : public viz::OutputSurface {
  public:
   AndroidOutputSurface(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider,
+      scoped_refptr<viz::ContextProviderCommandBuffer> context_provider,
       base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
@@ -290,7 +295,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl =
-        static_cast<ws::ContextProviderCommandBuffer*>(context_provider());
+        static_cast<viz::ContextProviderCommandBuffer*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
 
@@ -306,8 +311,9 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
-    ws::ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<ws::ContextProviderCommandBuffer*>(context_provider_.get());
+    viz::ContextProviderCommandBuffer* provider_command_buffer =
+        static_cast<viz::ContextProviderCommandBuffer*>(
+            context_provider_.get());
     gpu::CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
@@ -351,9 +357,8 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
     compositor_->DidSwapBuffers(pixel_size);
   }
-  void OnFatalOrSurfaceContextCreationFailure(
-      gpu::ContextResult context_result) override {
-    compositor_->OnFatalOrSurfaceContextCreationFailure(context_result);
+  void OnContextCreationResult(gpu::ContextResult context_result) override {
+    compositor_->OnContextCreationResult(context_result);
   }
   void SetPreferredRefreshRate(float refresh_rate) override {
     if (compositor_->root_window_)
@@ -559,13 +564,6 @@ void CompositorImpl::CreateLayerTreeHost() {
     settings.initial_debug_state.show_debug_borders.set();
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
-
-  if (features::IsSurfaceSynchronizationEnabled()) {
-    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plan to disable more widely once
-    // viz launches.
-    settings.enable_latency_recovery = false;
-  }
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
@@ -786,7 +784,7 @@ void CompositorImpl::OnGpuChannelEstablished(
   gpu::SurfaceHandle surface_handle =
       enable_viz_ ? gpu::kNullSurfaceHandle : surface_handle_;
   auto context_provider =
-      base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, surface_handle,
           GURL(std::string("chrome://gpu/CompositorImpl::") +
@@ -795,11 +793,19 @@ void CompositorImpl::OnGpuChannelEstablished(
           GetCompositorContextSharedMemoryLimits(root_window_),
           GetCompositorContextAttributes(display_color_space_,
                                          requires_alpha_channel_),
-          ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
+          viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
+
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    // Only use OnContextCreationResult for onscreen contexts, where recovering
+    // from a surface initialization failure is possible by re-creating the
+    // native window.
+    OnContextCreationResult(result);
+  } else if (result == gpu::ContextResult::kFatalFailure) {
+    LOG(FATAL) << "Fatal failure in creating offscreen context";
+  }
+
   if (result != gpu::ContextResult::kSuccess) {
-    if (gpu::IsFatalOrSurfaceFailure(result))
-      OnFatalOrSurfaceContextCreationFailure(result);
     HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
@@ -1023,7 +1029,7 @@ void CompositorImpl::OnUpdateSupportedRefreshRates(
 }
 
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
-    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
+    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
   DCHECK(root_window_);
 
@@ -1106,11 +1112,25 @@ viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
   return viz::LocalSurfaceIdAllocation();
 }
 
+void CompositorImpl::OnContextCreationResult(
+    gpu::ContextResult context_result) {
+  if (!gpu::IsFatalOrSurfaceFailure(context_result)) {
+    num_of_consecutive_surface_failures_ = 0u;
+    return;
+  }
+
+  OnFatalOrSurfaceContextCreationFailure(context_result);
+}
+
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     gpu::ContextResult context_result) {
   DCHECK(gpu::IsFatalOrSurfaceFailure(context_result));
   LOG_IF(FATAL, context_result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
+
+  constexpr size_t kMaxConsecutiveSurfaceFailures = 10u;
+  if (++num_of_consecutive_surface_failures_ > kMaxConsecutiveSurfaceFailures)
+    FatalSurfaceFailure();
 
   if (context_result == gpu::ContextResult::kSurfaceFailure) {
     SetSurface(nullptr, false);

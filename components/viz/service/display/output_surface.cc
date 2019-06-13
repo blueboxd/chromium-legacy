@@ -44,9 +44,11 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
     std::vector<ui::LatencyInfo>* latency_info) {
   for (auto& latency : *latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.swap_start, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.timings.swap_start,
+        1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, response.swap_end, 1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, response.timings.swap_end,
+        1);
   }
 }
 

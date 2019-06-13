@@ -92,7 +92,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
-  void OnToggleMostVisitedOrCustomLinks() override;
   bool OnAddCustomLink(const GURL& url, const std::string& title) override;
   bool OnUpdateCustomLink(const GURL& url,
                           const GURL& new_url,
@@ -101,6 +100,8 @@ class SearchTabHelper : public content::WebContentsObserver,
   bool OnDeleteCustomLink(const GURL& url) override;
   void OnUndoCustomLinkAction() override;
   void OnResetCustomLinks() override;
+  void OnToggleMostVisitedOrCustomLinks() override;
+  void OnToggleShortcutsVisibility() override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
   void OnLogSuggestionEventWithValue(NTPSuggestionsLoggingEventType event,
                                      int data,
@@ -131,7 +132,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
-  void MostVisitedItemsChanged(
+  void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
 
   // Overridden from SelectFileDialog::Listener:

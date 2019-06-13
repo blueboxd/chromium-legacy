@@ -19,7 +19,7 @@ class WebViewJavaScriptDialogPresenter final
  public:
   WebViewJavaScriptDialogPresenter(CWVWebView* web_view,
                                    id<CWVUIDelegate> ui_delegate);
-  ~WebViewJavaScriptDialogPresenter();
+  ~WebViewJavaScriptDialogPresenter() override;
 
   void SetUIDelegate(id<CWVUIDelegate> ui_delegate);
 

@@ -1251,6 +1251,7 @@ class MetaBuildWrapper(object):
         './' + str(executable) + executable_suffix,
         '--test-launcher-bot-mode',
         '--asan=%d' % asan,
+        '--lsan=%d' % asan,  # Enable lsan when asan is enabled.
         '--msan=%d' % msan,
         '--tsan=%d' % tsan,
         '--cfi-diag=%d' % cfi_diag,
@@ -1261,6 +1262,7 @@ class MetaBuildWrapper(object):
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
           '--asan=%d' % asan,
+          '--lsan=%d' % asan,  # Enable lsan when asan is enabled.
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,

@@ -13,8 +13,8 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -43,7 +43,7 @@ class MockDelegatedFrameHostAndroidClient
   MOCK_METHOD1(ReclaimResources,
                void(const std::vector<viz::ReturnedResource>&));
   MOCK_METHOD1(DidPresentCompositorFrames,
-               void(const viz::PresentationFeedbackMap&));
+               void(const viz::FrameTimingDetailsMap&));
   MOCK_METHOD1(OnFrameTokenChanged, void(uint32_t));
   MOCK_METHOD0(WasEvicted, void());
 };

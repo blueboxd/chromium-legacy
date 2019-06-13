@@ -20,7 +20,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -74,7 +74,6 @@ class SynchronousLayerTreeFrameSinkClient {
 // to a fixed thread when BindToClient is called.
 class SynchronousLayerTreeFrameSink
     : public cc::LayerTreeFrameSink,
-      public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient {
  public:
   SynchronousLayerTreeFrameSink(
@@ -111,20 +110,11 @@ class SynchronousLayerTreeFrameSink
   void DemandDrawSw(SkCanvas* canvas);
   void WillSkipDraw();
 
-  // viz::mojom::CompositorFrameSinkClient implementation.
-  void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void OnBeginFramePausedChanged(bool paused) override;
-
   // viz::ExternalBeginFrameSourceClient overrides.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   void DidPresentCompositorFrame(
-      const viz::PresentationFeedbackMap& presentation_feedbacks);
+      const viz::FrameTimingDetailsMap& timing_details);
   void BeginFrame(const viz::BeginFrameArgs& args);
   void SetBeginFrameSourcePaused(bool paused);
   void SetMemoryPolicy(size_t bytes_limit);
@@ -192,6 +182,8 @@ class SynchronousLayerTreeFrameSink
   gfx::Size child_size_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
+  std::unique_ptr<viz::mojom::CompositorFrameSinkClient>
+      software_frame_sink_client_;
   // Uses frame_sink_manager_.
   std::unique_ptr<viz::CompositorFrameSinkSupport> root_support_;
   // Uses frame_sink_manager_.

@@ -68,6 +68,8 @@ component("printing") {
     "printing_context.cc",
     "printing_context.h",
     "printing_export.h",
+    "printing_features.cc",
+    "printing_features.h",
     "printing_utils.cc",
     "printing_utils.h",
     "pwg_raster_settings.h",

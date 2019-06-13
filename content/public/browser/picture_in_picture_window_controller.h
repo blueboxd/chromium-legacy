@@ -34,8 +34,7 @@ class PictureInPictureWindowController {
   virtual ~PictureInPictureWindowController() = default;
 
   // Shows the Picture-in-Picture window.
-  // Returns the size of the window in pixels.
-  virtual gfx::Size Show() = 0;
+  virtual void Show() = 0;
 
   // Called to notify the controller that the window was requested to be closed
   // by the user or the content.

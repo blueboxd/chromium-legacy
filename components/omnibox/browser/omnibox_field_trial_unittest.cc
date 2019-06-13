@@ -179,62 +179,6 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
   }
 }
 
-// Test if InZeroSuggestFieldTrial*() properly parses various field trial
-// group names.
-TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
-  OmniboxEventProto::PageClassification page_classification =
-      OmniboxEventProto::OTHER;
-
-  // Verify the behavior with no parameters set on the feature.
-  ResetFieldTrialList();
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-      page_classification));
-#else
-  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-      page_classification));
-#endif
-
-  // Verify that a wildcard ZeroSuggestVariant rule works.
-  {
-    ResetFieldTrialList();
-    // ScopedFeatureList reuses the global field trial list already defined
-    // within ResetFieldTrialList.
-    std::map<std::string, std::string> params;
-    base::test::ScopedFeatureList feature_list;
-    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*"] =
-        "MostVisited";
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kOnFocusSuggestions, params);
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-        page_classification));
-  }
-
-  // Sanity check that enabling MostVisited only on the NTP doesn't affect pages
-  // classified as OTHER.
-  {
-    ResetFieldTrialList();
-    // ScopedFeatureList reuses the global field trial list already defined
-    // within ResetFieldTrialList.
-    std::map<std::string, std::string> params;
-    base::test::ScopedFeatureList feature_list;
-
-    std::string ntp_param_name = base::StringPrintf(
-        "%s:%d:*", OmniboxFieldTrial::kZeroSuggestVariantRule,
-        OmniboxEventProto::NTP);
-    params[ntp_param_name] = "MostVisited";
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kOnFocusSuggestions, params);
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-        page_classification));
-#else
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
-        page_classification));
-#endif
-  }
-}
-
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
   {
     std::map<std::string, std::string> params;

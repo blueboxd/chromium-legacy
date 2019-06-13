@@ -54,10 +54,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
 
-    // Called when the EmbeddedSearch wants to switch between custom links and
-    // Most Visited.
-    virtual void OnToggleMostVisitedOrCustomLinks() = 0;
-
     // Called when the EmbeddedSearch wants to add a custom link.
     virtual bool OnAddCustomLink(const GURL& url, const std::string& title) = 0;
 
@@ -79,6 +75,14 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to delete all custom links and
     // use Most Visited sites instead.
     virtual void OnResetCustomLinks() = 0;
+
+    // Called when the EmbeddedSearch wants to switch between custom links and
+    // Most Visited.
+    virtual void OnToggleMostVisitedOrCustomLinks() = 0;
+
+    // Called when the EmbeddedSearch wants to toggle visibility of the
+    // shortcuts.
+    virtual void OnToggleShortcutsVisibility() = 0;
 
     // Called to signal that an event has occurred on the New Tab Page at a
     // particular time since navigation start.
@@ -164,19 +168,20 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
-    virtual bool ShouldProcessToggleMostVisitedOrCustomLinks() = 0;
     virtual bool ShouldProcessAddCustomLink() = 0;
     virtual bool ShouldProcessUpdateCustomLink() = 0;
     virtual bool ShouldProcessReorderCustomLink() = 0;
     virtual bool ShouldProcessDeleteCustomLink() = 0;
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
+    virtual bool ShouldProcessToggleMostVisitedOrCustomLinks() = 0;
+    virtual bool ShouldProcessToggleShortcutsVisibility() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessLogSuggestionEventWithValue() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
-    virtual bool ShouldSendMostVisitedItems() = 0;
+    virtual bool ShouldSendMostVisitedInfo() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
@@ -216,7 +221,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
                            OmniboxFocusChangeReason reason);
 
   // Tells the renderer about the most visited items.
-  void SendMostVisitedItems(const InstantMostVisitedInfo& most_visited_info);
+  void SendMostVisitedInfo(const InstantMostVisitedInfo& most_visited_info);
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
@@ -232,7 +237,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
   void UndoAllMostVisitedDeletions(int page_seq_no) override;
-  void ToggleMostVisitedOrCustomLinks(int page_seq_no) override;
   void AddCustomLink(int page_seq_no,
                      const GURL& url,
                      const std::string& title,
@@ -250,6 +254,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
                         DeleteCustomLinkCallback callback) override;
   void UndoCustomLinkAction(int page_seq_no) override;
   void ResetCustomLinks(int page_seq_no) override;
+  void ToggleMostVisitedOrCustomLinks(int page_seq_no) override;
+  void ToggleShortcutsVisibility(int page_seq_no) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

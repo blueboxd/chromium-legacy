@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -189,8 +188,6 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsStayInWindow},
-                                          {});
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Everything should be redirected to the http server.
@@ -243,7 +240,6 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
     DCHECK(app_controller_);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService.

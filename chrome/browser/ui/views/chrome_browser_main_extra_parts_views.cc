@@ -26,7 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
+#include "services/viz/public/cpp/gpu/gpu.h"  // nogncheck
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"

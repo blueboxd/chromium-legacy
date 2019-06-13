@@ -325,11 +325,11 @@ bool CollectedCookiesViews::ShouldShowCloseButton() const {
   return false;
 }
 
-views::View* CollectedCookiesViews::CreateExtraView() {
+std::unique_ptr<views::View> CollectedCookiesViews::CreateExtraView() {
   // The code in |Init|, which runs before this does, needs the button pane to
   // already exist, so it is created there and this class holds ownership until
   // this method is called.
-  return buttons_pane_.release();
+  return std::move(buttons_pane_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

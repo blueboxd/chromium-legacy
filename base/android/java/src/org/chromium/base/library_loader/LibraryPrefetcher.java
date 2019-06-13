@@ -100,14 +100,13 @@ public class LibraryPrefetcher {
             }
             // Removes a dead flag, don't remove the removal code before M77 at least.
             ContextUtils.getAppSharedPreferences().edit().remove("dont_prefetch_libraries").apply();
-
-            pinOrderedCodeInMemory();
         });
     }
 
+    // May pin Chrome's code to memory, on platforms that support it.
     @SuppressLint("WrongConstant")
-    public static void pinOrderedCodeInMemory() {
-        try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::pinOrderedCodeInMemory")) {
+    public static void maybePinOrderedCodeInMemory() {
+        try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::maybePinOrderedCodeInMemory")) {
             OrderedCodeInfo info = nativeGetOrderedCodeInfo();
             if (info == null) return;
             TraceEvent.instant("pinOrderedCodeInMemory", info.toString());

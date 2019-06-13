@@ -73,8 +73,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void WillRecalcAssignedNodes() { ClearAssignedNodes(); }
   void DidRecalcAssignedNodes() {
-    if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
-      UpdateFlatTreeNodeDataForAssignedNodes();
+    UpdateFlatTreeNodeDataForAssignedNodes();
     RecalcFlatTreeChildren();
   }
 
@@ -143,7 +142,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void ClearAssignedNodesAndFlatTreeChildren();
 
   HeapVector<Member<Node>> assigned_nodes_;
-  HeapHashMap<Member<const Node>, unsigned> assigned_nodes_index_;
   HeapVector<Member<Node>> flat_tree_children_;
 
   bool slotchange_event_enqueued_ = false;

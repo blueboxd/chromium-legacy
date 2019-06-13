@@ -8,10 +8,13 @@
  * list, add and delete Kerberos Accounts.
  */
 
+'use strict';
+
 Polymer({
   is: 'settings-kerberos-accounts',
 
   behaviors: [
+    I18nBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -122,12 +125,32 @@ Polymer({
   },
 
   /**
-   * Removes the account being pointed to by |this.actionMenuAccount_|.
+   * Removes |this.actionMenuAccount_|.
    * @private
    */
   onRemoveAccountClick_: function() {
     this.browserProxy_.removeAccount(
         /** @type {!settings.KerberosAccount} */ (this.actionMenuAccount_));
     this.closeActionMenu_();
+  },
+
+  /**
+   * Sets |this.actionMenuAccount_| as active Kerberos account.
+   * @private
+   */
+  onSetAsActiveAccountClick_: function() {
+    this.browserProxy_.setAsActiveAccount(
+        /** @type {!settings.KerberosAccount} */ (this.actionMenuAccount_));
+    this.closeActionMenu_();
+  },
+
+  /**
+   * @param {boolean} isActive Whether a Kerberos account is active.
+   * @return {string} Localized label for the active/inactive state.
+   * @private
+   */
+  getActiveLabel_: function(isActive) {
+    // TODO(https://crbug.com/969850): Localize.
+    return isActive ? ', active' : '';
   }
 });

@@ -128,7 +128,8 @@ void PasswordGenerationControllerImpl::OnAutomaticGenerationAvailable(
 void PasswordGenerationControllerImpl::ShowManualGenerationDialog(
     const password_manager::PasswordManagerDriver* target_frame_driver,
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
-  if (!IsActiveFrameDriver(target_frame_driver))
+  if (!IsActiveFrameDriver(target_frame_driver) ||
+      !manual_generation_requested_)
     return;
   generation_element_data_ = std::make_unique<GenerationElementData>(ui_data);
   ShowDialog(true /* manual */);
@@ -144,6 +145,7 @@ void PasswordGenerationControllerImpl::FocusedInputChanged(
 
 void PasswordGenerationControllerImpl::OnGenerationRequested(bool manual) {
   if (manual) {
+    manual_generation_requested_ = true;
     ChromePasswordManagerClient::FromWebContents(web_contents_)
         ->GeneratePassword();
   } else {
@@ -241,6 +243,7 @@ void PasswordGenerationControllerImpl::ResetState() {
   active_frame_driver_.reset();
   generation_element_data_.reset();
   dialog_view_.reset();
+  manual_generation_requested_ = false;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordGenerationControllerImpl)

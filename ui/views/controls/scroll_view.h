@@ -77,6 +77,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   }
   void SetHeader(std::nullptr_t);
 
+  int GetMaxHeight() const { return max_height_; }
+
+  int GetMinHeight() const { return min_height_; }
+
   // The background color can be configured in two distinct ways:
   // . By way of SetBackgroundThemeColorId(). This is the default and when
   //   called the background color comes from the theme (and changes if the
@@ -84,19 +88,21 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // . By way of setting an explicit color, i.e. SetBackgroundColor(). Use
   //   SK_ColorTRANSPARENT if you don't want any color, but be warned this
   //   produces awful results when layers are used with subpixel rendering.
+  SkColor GetBackgroundColor() const;
   void SetBackgroundColor(SkColor color);
+
   void SetBackgroundThemeColorId(ui::NativeTheme::ColorId color_id);
 
   // Returns the visible region of the content View.
   gfx::Rect GetVisibleRect() const;
 
-  void set_hide_horizontal_scrollbar(bool visible) {
-    hide_horizontal_scrollbar_ = visible;
-  }
+  bool GetUseColorId() const { return use_color_id_; }
 
-  void set_draw_overflow_indicator(bool draw_overflow_indicator) {
-    draw_overflow_indicator_ = draw_overflow_indicator;
-  }
+  bool GetHideHorizontalScrollBar() const { return hide_horizontal_scrollbar_; }
+  void SetHideHorizontalScrollBar(bool visible);
+
+  bool GetDrawOverflowIndicator() const { return draw_overflow_indicator_; }
+  void SetDrawOverflowIndicator(bool draw_overflow_indicator);
 
   // Turns this scroll view into a bounded scroll view, with a fixed height.
   // By default, a ScrollView will stretch to fill its outer container.
@@ -119,7 +125,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetHorizontalScrollBar(ScrollBar* horiz_sb);
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
-  // Sets whether this ScrollView has a focus indicator or not.
+  // Gets/Sets whether this ScrollView has a focus indicator or not.
+  bool GetHasFocusIndicator() const { return draw_focus_indicator_; }
   void SetHasFocusIndicator(bool has_focus_indicator);
 
   // View overrides:
@@ -207,7 +214,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void UpdateBorder();
 
   void UpdateBackground();
-  SkColor GetBackgroundColor() const;
 
   // Positions each overflow indicator against their respective content edge.
   void PositionOverflowIndicators();

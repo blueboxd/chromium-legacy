@@ -21,7 +21,7 @@ namespace {
 scoped_refptr<base::SingleThreadTaskRunner> CreateDialogTaskRunner() {
   return CreateCOMSTATaskRunnerWithTraits(
       {base::TaskPriority::USER_BLOCKING,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 }
 

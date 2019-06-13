@@ -5,12 +5,11 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {
@@ -28,7 +27,7 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
     0xA8, 0xC1, 0xCF, 0xED, 0x20, 0xF7, 0x1F, 0xD1, 0x7F, 0xF2, 0x76,
     0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xDF};
 
-void IsApplicationServerKeyValid(WebPushSubscriptionOptions output) {
+void IsApplicationServerKeyValid(PushSubscriptionOptions* output) {
   // Copy the key into a size+1 buffer so that it can be treated as a null
   // terminated string for the purposes of EXPECT_EQ.
   uint8_t sender_key[kApplicationServerKeyLength + 1];
@@ -36,11 +35,15 @@ void IsApplicationServerKeyValid(WebPushSubscriptionOptions output) {
     sender_key[i] = kApplicationServerKey[i];
   sender_key[kApplicationServerKeyLength] = 0x0;
 
-  ASSERT_EQ(output.application_server_key.length(),
+  String application_server_key(
+      reinterpret_cast<const char*>(output->applicationServerKey()->Data()),
+      output->applicationServerKey()->ByteLength());
+
+  ASSERT_EQ(output->applicationServerKey()->ByteLength(),
             kApplicationServerKeyLength);
 
   ASSERT_EQ(reinterpret_cast<const char*>(sender_key),
-            output.application_server_key);
+            application_server_key.Latin1());
 }
 
 TEST(PushManagerTest, ValidSenderKey) {
@@ -51,10 +54,10 @@ TEST(PushManagerTest, ValidSenderKey) {
                                  kApplicationServerKeyLength)));
 
   DummyExceptionStateForTesting exception_state;
-  WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* output =
+      PushSubscriptionOptions::FromOptionsInit(options, exception_state);
+  ASSERT_TRUE(output);
   ASSERT_FALSE(exception_state.HadException());
-
   ASSERT_NO_FATAL_FAILURE(IsApplicationServerKeyValid(output));
 }
 
@@ -75,9 +78,9 @@ TEST(PushManagerTest, ValidBase64URLWithoutPaddingSenderKey) {
       ArrayBufferOrArrayBufferViewOrString::FromString(base64_url));
 
   DummyExceptionStateForTesting exception_state;
-  WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
-
+  PushSubscriptionOptions* output =
+      PushSubscriptionOptions::FromOptionsInit(options, exception_state);
+  ASSERT_TRUE(output);
   ASSERT_FALSE(exception_state.HadException());
   ASSERT_NO_FATAL_FAILURE(IsApplicationServerKeyValid(output));
 }
@@ -91,8 +94,9 @@ TEST(PushManagerTest, InvalidSenderKeyLength) {
           DOMArrayBuffer::Create(sender_key, kMaxKeyLength + 1)));
 
   DummyExceptionStateForTesting exception_state;
-  WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* output =
+      PushSubscriptionOptions::FromOptionsInit(options, exception_state);
+  ASSERT_TRUE(output);
   ASSERT_TRUE(exception_state.HadException());
   ASSERT_EQ(exception_state.Message(),
             "The provided applicationServerKey is not valid.");
@@ -107,8 +111,9 @@ TEST(PushManagerTest, InvalidBase64SenderKey) {
           kApplicationServerKeyLength)));
 
   DummyExceptionStateForTesting exception_state;
-  WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* output =
+      PushSubscriptionOptions::FromOptionsInit(options, exception_state);
+  ASSERT_TRUE(output);
   ASSERT_TRUE(exception_state.HadException());
   ASSERT_EQ(exception_state.Message(),
             "The provided applicationServerKey is not encoded as base64url "
@@ -124,8 +129,9 @@ TEST(PushManagerTest, InvalidBase64URLWithPaddingSenderKey) {
           kApplicationServerKeyLength)));
 
   DummyExceptionStateForTesting exception_state;
-  WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* output =
+      PushSubscriptionOptions::FromOptionsInit(options, exception_state);
+  ASSERT_TRUE(output);
   ASSERT_TRUE(exception_state.HadException());
   ASSERT_EQ(exception_state.Message(),
             "The provided applicationServerKey is not encoded as base64url "

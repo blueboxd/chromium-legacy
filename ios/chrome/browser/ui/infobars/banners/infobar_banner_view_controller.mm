@@ -23,8 +23,10 @@ const CGFloat kBannerViewShadowRadius = 9.0;
 const CGFloat kBannerViewShadowOpacity = 0.23;
 
 // Banner View selected constants.
+const CGFloat kTappedBannerViewScale = 0.98;
 const CGFloat kSelectedBannerViewScale = 1.02;
 const CGFloat kSelectBannerAnimationDurationInSeconds = 0.2;
+const CGFloat kTappedBannerAnimationDurationInSeconds = 0.1;
 const CGFloat kSelectedBannerViewYShadowOffset = 8.0;
 
 // Bottom Grip constants.
@@ -226,6 +228,11 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   longPressGestureRecognizer.minimumPressDuration =
       kLongPressTimeDurationInSeconds;
   [self.view addGestureRecognizer:longPressGestureRecognizer];
+
+  UITapGestureRecognizer* tapGestureRecognizer = [[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(animateBannerTappedAndPresentModal)];
+  [self.view addGestureRecognizer:tapGestureRecognizer];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -289,7 +296,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   }
 
   if (gesture.state == UIGestureRecognizerStateEnded) {
-    [self animateBannerToOriginalState];
+    [self animateBannerToOriginalStateWithDuration:
+              kSelectBannerAnimationDurationInSeconds
+                                        completion:nil];
     // If dragged up by more than kChangeInPositionForDismissal at the time
     // the gesture ended, OR |self.shouldDismissAfterTouchesEnded| is YES.
     // Dismiss the banner.
@@ -333,15 +342,18 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 // Animate the Banner back to its original size and styling.
-- (void)animateBannerToOriginalState {
-  [UIView
-      animateWithDuration:kSelectBannerAnimationDurationInSeconds
-               animations:^{
-                 self.view.superview.transform = CGAffineTransformIdentity;
-                 [self.view.layer
-                     setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
-               }
-               completion:nil];
+- (void)animateBannerToOriginalStateWithDuration:(NSTimeInterval)duration
+                                      completion:(ProceduralBlock)completion {
+  [UIView animateWithDuration:duration
+      animations:^{
+        self.view.superview.transform = CGAffineTransformIdentity;
+        [self.view.layer
+            setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
+      }
+      completion:^(BOOL finished) {
+        if (completion)
+          completion();
+      }];
 }
 
 // Animate the banner back to its original position.
@@ -351,6 +363,32 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                      self.view.center = self.originalCenter;
                    }
                    completion:nil];
+}
+
+// Animate the Banner being tapped by scaling it down and then to its original
+// state. After the animation it presentd the Infobar Modal.
+- (void)animateBannerTappedAndPresentModal {
+  [UIView animateWithDuration:kTappedBannerAnimationDurationInSeconds
+      animations:^{
+        self.view.superview.transform = CGAffineTransformMakeScale(
+            kTappedBannerViewScale, kTappedBannerViewScale);
+        [self.view.layer
+            setShadowOffset:CGSizeMake(0.0, kSelectedBannerViewYShadowOffset)];
+      }
+      completion:^(BOOL finished) {
+        [self
+            animateBannerToOriginalStateWithDuration:
+                kTappedBannerAnimationDurationInSeconds
+                                          completion:^{
+                                            [self presentInfobarModalAfterTap];
+                                          }];
+      }];
+}
+
+- (void)presentInfobarModalAfterTap {
+  [self.metricsRecorder
+      recordBannerDismissType:MobileMessagesBannerDismissType::TappedToModal];
+  [self.delegate presentInfobarModalFromBanner];
 }
 
 #pragma mark - Accessibility
@@ -369,14 +407,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                 target:self
               selector:@selector(dismiss)];
 
-  UIAccessibilityCustomAction* expandAction =
+  UIAccessibilityCustomAction* modalAction =
       [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(
                            IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT)
                 target:self
-              selector:@selector(presentInfobarModal)];
+              selector:@selector(triggerInfobarModal)];
 
-  return @[ acceptAction, dismissAction, expandAction ];
+  return @[ acceptAction, dismissAction, modalAction ];
 }
 
 // A11y Custom actions selectors need to return a BOOL.
@@ -384,12 +422,12 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self bannerInfobarButtonWasPressed:nil];
   return NO;
 }
-- (BOOL)presentInfobarModal {
-  [self.metricsRecorder
-      recordBannerDismissType:MobileMessagesBannerDismissType::ExpandedToModal];
-  [self.delegate presentInfobarModalFromBanner];
+
+- (BOOL)triggerInfobarModal {
+  [self presentInfobarModalAfterTap];
   return NO;
 }
+
 - (BOOL)dismiss {
   [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
   return NO;

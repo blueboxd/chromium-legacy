@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, MAYBE_CustomBackgroundsTests) {
   // Run the tests.
   bool success = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('customBackgrounds')", &success));
+      active_tab, "!!runSimpleTests('customize')", &success));
   EXPECT_TRUE(success);
 }
 

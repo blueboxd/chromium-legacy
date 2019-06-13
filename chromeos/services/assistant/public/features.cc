@@ -23,7 +23,7 @@ const base::Feature kAssistantWarmerWelcomeFeature{
     "AssistantWarmerWelcome", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

@@ -260,7 +260,7 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   close_button_->SetVisible(
       started_in_scope &&
       !extensions::IsSameScope(app_controller->GetAppLaunchURL(),
-                               contents->GetVisibleURL(),
+                               contents->GetLastCommittedURL(),
                                contents->GetBrowserContext()));
 
   Layout();

@@ -81,7 +81,9 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // list.
   bool QueueUserPtr(const std::vector<void*>& ptrs) &&;
   // Queue a DMABUF buffer, assigning |fds| as file descriptors for each plane.
-  // The size of |fds| must be equal to the number of planes of this buffer.
+  // It is allowed the number of |fds| might be greater than the number of
+  // planes of this buffer. It happens when the v4l2 pixel format is single
+  // planar. The fd of the first plane is only used in that case.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free

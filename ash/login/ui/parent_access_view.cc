@@ -12,7 +12,9 @@
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -102,6 +104,32 @@ gfx::Size GetParentAccessViewSize() {
   return gfx::Size(kParentAccessViewWidthDp,
                    IsTabletMode() ? kParentAccessViewTabletModeHeightDp
                                   : kParentAccessViewHeightDp);
+}
+
+base::string16 GetTitle(ParentAccessRequestReason reason) {
+  int title_id;
+  switch (reason) {
+    case ParentAccessRequestReason::kUnlockTimeLimits:
+      title_id = IDS_ASH_LOGIN_PARENT_ACCESS_TITLE;
+      break;
+    case ParentAccessRequestReason::kChangeTime:
+      title_id = IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME;
+      break;
+  }
+  return l10n_util::GetStringUTF16(title_id);
+}
+
+base::string16 GetDescription(ParentAccessRequestReason reason) {
+  int description_id;
+  switch (reason) {
+    case ParentAccessRequestReason::kUnlockTimeLimits:
+      description_id = IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION;
+      break;
+    case ParentAccessRequestReason::kChangeTime:
+      description_id = IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION;
+      break;
+  }
+  return l10n_util::GetStringUTF16(description_id);
 }
 
 // Accessible input field. Customizes field description and focus behavior.
@@ -392,7 +420,8 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 ParentAccessView::Callbacks::~Callbacks() = default;
 
 ParentAccessView::ParentAccessView(const AccountId& account_id,
-                                   const Callbacks& callbacks)
+                                   const Callbacks& callbacks,
+                                   ParentAccessRequestReason reason)
     : NonAccessibleView(kParentAccessViewClassName),
       callbacks_(callbacks),
       account_id_(account_id) {
@@ -463,9 +492,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   };
 
   // Main view title.
-  title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE),
-      views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+  title_label_ = new views::Label(GetTitle(reason), views::style::CONTEXT_LABEL,
+                                  views::style::STYLE_PRIMARY);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   decorate_label(title_label_);
@@ -474,9 +502,10 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   add_spacer(kTitleToDescriptionDistanceDp);
 
   // Main view description.
-  description_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION),
-      views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+  // TODO(crbug.com/970223): Add learn more link after description.
+  description_label_ =
+      new views::Label(GetDescription(reason), views::style::CONTEXT_LABEL,
+                       views::style::STYLE_PRIMARY);
   description_label_->SetMultiLine(true);
   description_label_->SetLineHeight(kDescriptionTextLineHeightDp);
   description_label_->SetFontList(
@@ -566,13 +595,21 @@ ParentAccessView::~ParentAccessView() = default;
 void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
+  SkColor color = gfx::kGoogleGrey900;
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    SkColor extracted_color =
+        Shell::Get()->wallpaper_controller()->GetProminentColor(
+            color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                      color_utils::SaturationRange::MUTED));
+    if (extracted_color != kInvalidWallpaperColor &&
+        extracted_color != SK_ColorTRANSPARENT) {
+      color = extracted_color;
+    }
+  }
+
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  SkColor color = Shell::Get()->wallpaper_controller()->GetProminentColor(
-      color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                color_utils::SaturationRange::MUTED));
-  if (color == kInvalidWallpaperColor || color == SK_ColorTRANSPARENT)
-    color = gfx::kGoogleGrey900;
   flags.setColor(color);
   canvas->DrawRoundRect(GetContentsBounds(),
                         kParentAccessViewRoundedCornerRadiusDp, flags);

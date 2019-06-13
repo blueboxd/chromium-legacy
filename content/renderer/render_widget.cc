@@ -1059,13 +1059,10 @@ void RenderWidget::ApplyViewportChanges(
   GetWebWidget()->ApplyViewportChanges(args);
 }
 
-void RenderWidget::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
+void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!GetWebWidget())
     return;
-  GetWebWidget()->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                                    has_scrolled_by_touch);
+  GetWebWidget()->RecordManipulationTypeCounts(info);
 }
 
 void RenderWidget::SendOverscrollEventFromImplSide(
@@ -3144,7 +3141,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 #if defined(OS_ANDROID)
   if (features::IsSurfaceSynchronizationEnabled()) {
     // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plan to disable more widely once
+    // Disable in viz mode for now, with plant o disable more widely once
     // viz launches.
     settings.enable_latency_recovery = false;
   }

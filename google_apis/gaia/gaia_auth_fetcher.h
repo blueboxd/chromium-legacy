@@ -72,14 +72,6 @@ class GaiaAuthFetcher {
     }
   };
 
-  // Magic string indicating that, while a second factor is still
-  // needed to complete authentication, the user provided the right password.
-  static const char kSecondFactor[];
-
-  // Magic string indicating that though the user does not have Less Secure
-  // Apps enabled, the user provided the right password.
-  static const char kWebLoginRequired[];
-
   // This will later be hidden behind an auth service which caches tokens.
   GaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
@@ -246,19 +238,10 @@ class GaiaAuthFetcher {
   static const char kAccountDisabledErrorCode[];
   static const char kBadAuthenticationError[];
   static const char kBadAuthenticationErrorCode[];
-  static const char kCaptchaError[];
-  static const char kCaptchaErrorCode[];
   static const char kServiceUnavailableError[];
   static const char kServiceUnavailableErrorCode[];
   static const char kErrorParam[];
   static const char kErrorUrlParam[];
-  static const char kCaptchaUrlParam[];
-  static const char kCaptchaTokenParam[];
-
-  // Constants for parsing ClientOAuth errors.
-  static const char kNeedsAdditional[];
-  static const char kCaptcha[];
-  static const char kTwoFactor[];
 
   // Constants for request/response for OAuth2 requests.
   static const char kAuthHeaderFormat[];
@@ -316,15 +299,7 @@ class GaiaAuthFetcher {
 
   static void ParseClientLoginFailure(const std::string& data,
                                       std::string* error,
-                                      std::string* error_url,
-                                      std::string* captcha_url,
-                                      std::string* captcha_token);
-
-  // Is this a special case Gaia error for TwoFactor auth?
-  static bool IsSecondFactorSuccess(const std::string& alleged_error);
-
-  // Is this a special case Gaia error for Less Secure Apps?
-  static bool IsWebLoginRequiredSuccess(const std::string& alleged_error);
+                                      std::string* error_url);
 
   // Supply the sid / lsid returned from ClientLogin in order to
   // request a long lived auth token for a service.

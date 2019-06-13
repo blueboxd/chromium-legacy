@@ -312,8 +312,7 @@ void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
   auto scroll_content = std::make_unique<ScrollContentsView>(delegate_);
   scroller_ = new views::ScrollView;
-  scroller_->set_draw_overflow_indicator(
-      delegate_->IsOverflowIndicatorEnabled());
+  scroller_->SetDrawOverflowIndicator(delegate_->IsOverflowIndicatorEnabled());
   scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(

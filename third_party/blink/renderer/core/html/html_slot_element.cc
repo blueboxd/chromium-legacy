@@ -184,15 +184,11 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
   DCHECK(host_child.IsSlotable());
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
-    assigned_nodes_index_.insert(&host_child, assigned_nodes_.size());
   assigned_nodes_.push_back(&host_child);
 }
 
 void HTMLSlotElement::ClearAssignedNodes() {
   assigned_nodes_.clear();
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
-    assigned_nodes_index_.clear();
 }
 
 void HTMLSlotElement::ClearAssignedNodesAndFlatTreeChildren() {
@@ -249,32 +245,6 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
   DispatchScopedEvent(*event);
 }
 
-Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
-  DCHECK(!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled());
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-
-  auto it = assigned_nodes_index_.find(&node);
-  DCHECK(it != assigned_nodes_index_.end());
-  unsigned index = it->value;
-  if (index + 1 == assigned_nodes_.size())
-    return nullptr;
-  return assigned_nodes_[index + 1].Get();
-}
-
-Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
-  DCHECK(!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled());
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-
-  auto it = assigned_nodes_index_.find(&node);
-  DCHECK(it != assigned_nodes_index_.end());
-  unsigned index = it->value;
-  if (index == 0)
-    return nullptr;
-  return assigned_nodes_[index - 1].Get();
-}
-
 AtomicString HTMLSlotElement::GetName() const {
   return NormalizeSlotName(FastGetAttribute(kNameAttr));
 }
@@ -303,14 +273,12 @@ void HTMLSlotElement::DetachLayoutTree(bool performing_reattach) {
 
 void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
-  if (!SupportsAssignment())
-    return;
-
-  const HeapVector<Member<Node>>& assigned_nodes = AssignedNodes();
+  DCHECK(SupportsAssignment());
 
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (auto it = assigned_nodes.rbegin(); it != assigned_nodes.rend(); ++it) {
+  for (auto it = flat_tree_children_.rbegin(); it != flat_tree_children_.rend();
+       ++it) {
     RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
 }
@@ -570,7 +538,6 @@ int HTMLSlotElement::tabIndex() const {
 
 void HTMLSlotElement::Trace(Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
-  visitor->Trace(assigned_nodes_index_);
   visitor->Trace(flat_tree_children_);
   visitor->Trace(assigned_nodes_candidates_);
   HTMLElement::Trace(visitor);

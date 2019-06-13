@@ -38,23 +38,11 @@ interface AshMessageCenterController {
   // Sets the ARC notification instance.
   SetArcNotificationsInstance(arc.mojom.NotificationsInstance instance);
 
-  // Shows a notification. |display_token| will be used to reference this
-  // notification for AshMessageCenterClient::Close().
-  ShowClientNotification(message_center.mojom.Notification notification,
-                         mojo_base.mojom.UnguessableToken display_token);
-
-  // Closes a notification by the notification ID.
-  CloseClientNotification(string id);
-
   UpdateNotifierIcon(message_center.mojom.NotifierId notifier_id,
                      gfx.mojom.ImageSkia icon);
 
   NotifierEnabledChanged(message_center.mojom.NotifierId notifier_id,
                          bool enabled);
-
-  // Gets a list of all the notifications in the message center.
-  GetActiveNotifications() =>
-      (array<message_center.mojom.Notification> notifications);
 
   // Changes the quiet mode state in the message center.
   SetQuietMode(bool enabled);
@@ -65,26 +53,6 @@ interface AshMessageCenterController {
 // |notification| in ShowClientNotification and the format of the ID is up to
 // the client.
 interface AshMessageCenterClient {
-  // Called when a notification previously displayed by the client is closed.
-  HandleNotificationClosed(mojo_base.mojom.UnguessableToken display_token,
-                           bool by_user);
-
-  // Called when the body of a notification is clicked.
-  HandleNotificationClicked(string id);
-
-  // Called when a notification that has buttons (e.g., "Learn more") receives a
-  // click on one of the buttons. |reply| is a user-provided string for cases
-  // where the button had a text input field attached to it.
-  HandleNotificationButtonClicked(string id, int32 button_index,
-                                  mojo_base.mojom.String16? reply);
-
-  // Called when a notification's settings button has been pressed (and the
-  // handler is SettingsButtonHandler::DELEGATE).
-  HandleNotificationSettingsButtonClicked(string id);
-
-  // Called when a notification has been disabled (via inline settings).
-  DisableNotification(string id);
-
   // Called when a user enables or disables notifications from the given
   // notifier.
   SetNotifierEnabled(message_center.mojom.NotifierId notifier_id, bool enabled);
@@ -95,7 +63,4 @@ interface AshMessageCenterClient {
 
   // Gets ARC app id from a given package name.
   GetArcAppIdByPackageName(string package_name) => (string app_id);
-
-  // Show the lockscreen notification setting on the Chrome OS setting.
-  ShowLockScreenNotificationSettings();
 };

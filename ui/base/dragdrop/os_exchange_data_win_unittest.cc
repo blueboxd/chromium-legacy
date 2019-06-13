@@ -343,10 +343,10 @@ TEST_F(OSExchangeDataWinTest, FileContents) {
 }
 
 TEST_F(OSExchangeDataWinTest, VirtualFiles) {
-  const base::FilePath path_placeholder(FILE_PATH_LITERAL("temp.tmp"));
+  const base::FilePath kPathPlaceholder(FILE_PATH_LITERAL("temp.tmp"));
 
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
+      kTestFilenamesAndContents = {
           {base::FilePath(FILE_PATH_LITERAL("filename.txt")),
            std::string("just some data")},
           {base::FilePath(FILE_PATH_LITERAL("another filename.txt")),
@@ -357,17 +357,16 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
 
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
     std::vector<FileInfo> file_infos;
     EXPECT_TRUE(copy.GetVirtualFilenames(&file_infos));
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < file_infos.size(); i++) {
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first,
-                file_infos[i].display_name);
-      EXPECT_EQ(path_placeholder, file_infos[i].path);
+      EXPECT_EQ(kTestFilenamesAndContents[i].first, file_infos[i].display_name);
+      EXPECT_EQ(kPathPlaceholder, file_infos[i].path);
     }
 
     base::FilePath temp_dir;
@@ -384,10 +383,10 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
     // RunUntilIdle assures all async tasks are run.
     scoped_task_environment_.RunUntilIdle();
 
-    EXPECT_EQ(kTestFilenames_and_Contents.size(),
+    EXPECT_EQ(kTestFilenamesAndContents.size(),
               retrieved_virtual_files_.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first,
+      EXPECT_EQ(kTestFilenamesAndContents[i].first,
                 retrieved_virtual_files_[i].display_name);
       // Check if the temp files that back the virtual files are actually
       // created in the temp directory. Need to compare long file paths here
@@ -396,17 +395,17 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
       EXPECT_EQ(
           base::MakeLongFilePath(temp_dir),
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
+      EXPECT_EQ(kTestFilenamesAndContents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
-        EXPECT_EQ(kTestFilenames_and_Contents[i].second, read_contents);
+        EXPECT_EQ(kTestFilenamesAndContents[i].second, read_contents);
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenames_and_Contents[i].second) !=
+        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
                     std::string::npos);
       }
     }
@@ -423,7 +422,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesRealFilesPreferred) {
   };
 
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
+      kTestFilenamesAndContents = {
           {base::FilePath(FILE_PATH_LITERAL("filename.txt")),
            std::string("just some data")},
           {base::FilePath(FILE_PATH_LITERAL("another filename.txt")),
@@ -435,8 +434,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesRealFilesPreferred) {
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
     data.SetFilenames(kTestFilenames);
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
 
@@ -466,7 +465,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesRealFilesPreferred) {
 
 TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
+      kTestFilenamesAndContents = {
           {base::FilePath(FILE_PATH_LITERAL("A (1) (2).txt")),
            std::string("just some data")},
           {base::FilePath(FILE_PATH_LITERAL("A.txt")),
@@ -479,13 +478,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
 
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
     std::vector<FileInfo> file_infos;
     EXPECT_TRUE(copy.GetVirtualFilenames(&file_infos));
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < file_infos.size(); i++) {
       // Check that display name is unique.
       for (size_t j = 0; j < i; j++) {
@@ -509,7 +508,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
     // RunUntilIdle assures all async tasks are run.
     scoped_task_environment_.RunUntilIdle();
 
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
       // Check that display name is unique.
       for (size_t j = 0; j < i; j++) {
@@ -532,17 +531,17 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
       EXPECT_EQ(
           base::MakeLongFilePath(temp_dir),
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
+      EXPECT_EQ(kTestFilenamesAndContents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
-        EXPECT_EQ(kTestFilenames_and_Contents[i].second, read_contents);
+        EXPECT_EQ(kTestFilenamesAndContents[i].second, read_contents);
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenames_and_Contents[i].second) !=
+        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
                     std::string::npos);
       }
     }
@@ -551,7 +550,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
 
 TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
+      kTestFilenamesAndContents = {
           {base::FilePath(FILE_PATH_LITERAL("a.txt")),
            std::string("just some data")},
           {base::FilePath(FILE_PATH_LITERAL("B.txt")),
@@ -562,13 +561,13 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
 
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
     std::vector<FileInfo> file_infos;
     EXPECT_TRUE(copy.GetVirtualFilenames(&file_infos));
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < file_infos.size(); i++) {
       // Check that display name is unique.
       for (size_t j = 0; j < i; j++) {
@@ -592,7 +591,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
     // RunUntilIdle assures all async tasks are run.
     scoped_task_environment_.RunUntilIdle();
 
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
       // Check that display name is unique.
       for (size_t j = 0; j < i; j++) {
@@ -615,17 +614,17 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
       EXPECT_EQ(
           base::MakeLongFilePath(temp_dir),
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
+      EXPECT_EQ(kTestFilenamesAndContents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
-        EXPECT_EQ(kTestFilenames_and_Contents[i].second, read_contents);
+        EXPECT_EQ(kTestFilenamesAndContents[i].second, read_contents);
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenames_and_Contents[i].second) !=
+        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
                     std::string::npos);
       }
     }
@@ -637,45 +636,45 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       FILE_PATH_LITERAL("\\/:*?\"<>|"));
   const base::string16 kInvalidFilePathCharacters(
       FILE_PATH_LITERAL("/*?\"<>|"));
-  const base::FilePath pathWithInvalidFileNameCharacters =
+  const base::FilePath kPathWithInvalidFileNameCharacters =
       base::FilePath(kInvalidFileNameCharacters)
           .AddExtension(FILE_PATH_LITERAL("txt"));
-  const base::FilePath empty_display_name(FILE_PATH_LITERAL(""));
-  const base::FilePath maxpath_display_name =
+  const base::FilePath kEmptyDisplayName(FILE_PATH_LITERAL(""));
+  const base::FilePath kMaxPathDisplayName =
       base::FilePath(base::string16(MAX_PATH - 5, L'a'))
           .AddExtension(FILE_PATH_LITERAL("txt"));
 
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
-          {pathWithInvalidFileNameCharacters, std::string("just some data")},
-          {pathWithInvalidFileNameCharacters,
+      kTestFilenamesAndContents = {
+          {kPathWithInvalidFileNameCharacters, std::string("just some data")},
+          {kPathWithInvalidFileNameCharacters,
            std::string("just some data\0with\0nulls", 25)},
           {// Test that still get a unique name if a previous uniquified
            // name is a duplicate of this one.
-           pathWithInvalidFileNameCharacters.InsertBeforeExtension(
+           kPathWithInvalidFileNameCharacters.InsertBeforeExtension(
                FILE_PATH_LITERAL(" (1)")),
            std::string("just some more data")},
           // Expect a default display name to be generated ("download" if it
           // matters).
-          {empty_display_name, std::string("data for an empty display name")},
-          {empty_display_name,
+          {kEmptyDisplayName, std::string("data for an empty display name")},
+          {kEmptyDisplayName,
            std::string("data for another empty display name")},
           // Expect good behavior if the display name length exceeds MAX_PATH.
-          {maxpath_display_name,
+          {kMaxPathDisplayName,
            std::string("data for a >MAX_PATH display name")},
-          {maxpath_display_name,
+          {kMaxPathDisplayName,
            std::string("data for another >MAX_PATH display name")},
       };
 
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
     std::vector<FileInfo> file_infos;
     EXPECT_TRUE(copy.GetVirtualFilenames(&file_infos));
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < file_infos.size(); i++) {
       // Check that display name does not contain invalid characters.
       EXPECT_EQ(std::string::npos,
@@ -703,7 +702,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
     // RunUntilIdle assures all async tasks are run.
     scoped_task_environment_.RunUntilIdle();
 
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
       // Check that display name does not contain invalid characters.
       EXPECT_EQ(std::string::npos,
@@ -734,7 +733,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       EXPECT_EQ(
           base::MakeLongFilePath(temp_dir),
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
+      EXPECT_EQ(kTestFilenamesAndContents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       std::string read_contents;
       // Ability to read the contents implies a temp file was successfully
@@ -743,11 +742,11 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
-        EXPECT_EQ(kTestFilenames_and_Contents[i].second, read_contents);
+        EXPECT_EQ(kTestFilenamesAndContents[i].second, read_contents);
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenames_and_Contents[i].second) !=
+        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
                     std::string::npos);
       }
     }
@@ -756,23 +755,22 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
 
 TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
   const std::vector<std::pair<base::FilePath, std::string>>
-      kTestFilenames_and_Contents = {
+      kTestFilenamesAndContents = {
           {base::FilePath(FILE_PATH_LITERAL("file_with_no_contents.txt")),
            std::string()},
       };
 
   for (const auto& tymed : kStorageMediaTypesForVirtualFiles) {
     OSExchangeData data;
-    data.provider().SetVirtualFileContentsForTesting(
-        kTestFilenames_and_Contents, tymed);
+    data.provider().SetVirtualFileContentsForTesting(kTestFilenamesAndContents,
+                                                     tymed);
 
     OSExchangeData copy(data.provider().Clone());
     std::vector<FileInfo> file_infos;
     EXPECT_TRUE(copy.GetVirtualFilenames(&file_infos));
-    EXPECT_EQ(kTestFilenames_and_Contents.size(), file_infos.size());
+    EXPECT_EQ(kTestFilenamesAndContents.size(), file_infos.size());
     for (size_t i = 0; i < file_infos.size(); i++) {
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first,
-                file_infos[i].display_name);
+      EXPECT_EQ(kTestFilenamesAndContents[i].first, file_infos[i].display_name);
     }
 
     base::FilePath temp_dir;
@@ -789,10 +787,10 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
     // RunUntilIdle assures all async tasks are run.
     scoped_task_environment_.RunUntilIdle();
 
-    EXPECT_EQ(kTestFilenames_and_Contents.size(),
+    EXPECT_EQ(kTestFilenamesAndContents.size(),
               retrieved_virtual_files_.size());
     for (size_t i = 0; i < retrieved_virtual_files_.size(); i++) {
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first,
+      EXPECT_EQ(kTestFilenamesAndContents[i].first,
                 retrieved_virtual_files_[i].display_name);
 
       // Check if the temp files that back the virtual files are actually
@@ -802,7 +800,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
       EXPECT_EQ(
           base::MakeLongFilePath(temp_dir),
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
-      EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
+      EXPECT_EQ(kTestFilenamesAndContents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
       std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
@@ -810,7 +808,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
       // IStorage uses compound files, so temp files won't be flat text files.
       // Just make sure the original contents appear in the compound files.
       if (tymed != TYMED_ISTORAGE) {
-        EXPECT_EQ(kTestFilenames_and_Contents[i].second, read_contents);
+        EXPECT_EQ(kTestFilenamesAndContents[i].second, read_contents);
         EXPECT_EQ(static_cast<size_t>(0), read_contents.length());
       }
     }

@@ -827,7 +827,6 @@
 <translation id="2242687258748107519">文件信息</translation>
 <translation id="2246549592927364792">要从 Google 获取图片说明吗？</translation>
 <translation id="2249269794707377949">您可以在此处集中管理用于单点登录特定应用和网站以及文件共享操作的所有 Kerberos 帐号。</translation>
-<translation id="224940702122312781">此网页会消耗很多网络数据流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系统查看器打开</translation>
 <translation id="225163402930830576">刷新网络</translation>
@@ -1905,7 +1904,6 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">移开手指，然后再次触摸传感器</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />：已暂停同步</translation>
-<translation id="3861241522664181545">已暂停加载网页资源。</translation>
 <translation id="3862134173397075045">欢迎体验 Chrome 中的投射功能！</translation>
 <translation id="3862693525629180217">通过内置传感器进行验证</translation>
 <translation id="3862788408946266506">具有“kiosk_only”这项清单属性的应用必须在 Chrome 操作系统自助服务终端模式下进行安装</translation>
@@ -3852,7 +3850,6 @@
 <translation id="6920989436227028121">在常规标签页中打开</translation>
 <translation id="6921104647315081813">清除活动</translation>
 <translation id="692114467174262153">无法打开<ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6921709132208495314">停止在此网页上消耗数据流量</translation>
 <translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加快加载速度。点击此处即可了解详情。</translation>
 <translation id="6922745772873733498">请输入 PIN 码以进行打印</translation>
 <translation id="6923132443355966645">滚动/点击</translation>

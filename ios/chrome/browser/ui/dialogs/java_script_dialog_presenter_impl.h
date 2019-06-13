@@ -17,7 +17,7 @@ class JavaScriptDialogPresenterImpl final
     : public web::JavaScriptDialogPresenter {
  public:
   explicit JavaScriptDialogPresenterImpl(DialogPresenter* dialogPresenter);
-  ~JavaScriptDialogPresenterImpl();
+  ~JavaScriptDialogPresenterImpl() override;
 
   void RunJavaScriptDialog(web::WebState* web_state,
                            const GURL& origin_url,

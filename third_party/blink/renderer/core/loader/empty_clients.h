@@ -386,9 +386,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebContentSettingsClient* GetContentSettingsClient() override {
     return nullptr;
   }
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) override;
 
   void SetTextCheckerClientForTesting(WebTextCheckClient*);
   WebTextCheckClient* GetTextCheckerClient() const override;

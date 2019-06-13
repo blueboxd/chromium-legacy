@@ -66,7 +66,7 @@ class AuthenticatorRequestDialogView
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;

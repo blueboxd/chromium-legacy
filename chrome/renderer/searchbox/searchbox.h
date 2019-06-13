@@ -113,8 +113,8 @@ class SearchBox : public content::RenderFrameObserver,
   // Returns true if most visited is enabled instead of custom links.
   bool IsUsingMostVisited() const;
 
-  // Sends ToggleMostVisitedOrCustomLinks to the browser.
-  void ToggleMostVisitedOrCustomLinks();
+  // Returns true if the shortcuts are visible and not hidden by the user.
+  bool AreShortcutsVisible() const;
 
   // Sends AddCustomLink to the browser.
   void AddCustomLink(const GURL& url, const std::string& title);
@@ -135,6 +135,12 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Sends ResetCustomLinks to the browser.
   void ResetCustomLinks();
+
+  // Sends ToggleMostVisitedOrCustomLinks to the browser.
+  void ToggleMostVisitedOrCustomLinks();
+
+  // Sends ToggleShortcutsVisibility to the browser.
+  void ToggleShortcutsVisibility();
 
   // Attempts to fix obviously invalid URLs. Uses the "https" scheme unless
   // otherwise specified. Returns the fixed URL if valid, otherwise returns an
@@ -195,7 +201,7 @@ class SearchBox : public content::RenderFrameObserver,
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
-  void MostVisitedChanged(
+  void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
   void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
@@ -229,11 +235,10 @@ class SearchBox : public content::RenderFrameObserver,
   bool is_input_in_progress_;
   bool is_key_capture_enabled_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
+  // Use |most_visited_items_cache_| instead of |most_visited_info_.items| when
+  // comparing most visited items.
+  InstantMostVisitedInfo most_visited_info_;
   bool has_received_most_visited_;
-  // True if the most visited items are custom links.
-  bool items_are_custom_links_ = false;
-  // True if most visited functionality is enabled instead of custom links.
-  bool use_most_visited_ = false;
   ThemeBackgroundInfo theme_info_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_;

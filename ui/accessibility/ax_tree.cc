@@ -160,10 +160,14 @@ AXTree::AXTree() {
   initial_state.root_id = -1;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
+  DCHECK(!language_info_stats);
+  language_info_stats.reset(new AXLanguageInfoStats());
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
+  DCHECK(!language_info_stats);
+  language_info_stats.reset(new AXLanguageInfoStats());
 }
 
 AXTree::~AXTree() {

@@ -20,12 +20,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/screenshot_grabber.h"
-
-namespace message_center {
-class Notification;
-}
 
 namespace crostini {
 enum class CrostiniResult;
@@ -199,9 +194,6 @@ class AutotestPrivateGetVisibleNotificationsFunction
  private:
   ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
-
-  void OnGotNotifications(
-      const std::vector<message_center::Notification>& notifications);
 
   ash::mojom::AshMessageCenterControllerPtr controller_;
 };
@@ -515,7 +507,7 @@ class AutotestPrivateSendAssistantTextQueryFunction
   void OnInteractionStarted(bool is_voice_interaction) override {}
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override {}
-  void OnOpenUrlResponse(const GURL& url) override {}
+  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
   void OnSpeechRecognitionStarted() override {}
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,

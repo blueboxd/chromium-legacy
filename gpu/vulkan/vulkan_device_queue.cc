@@ -148,16 +148,26 @@ bool VulkanDeviceQueue::Initialize(
                           &owned_vk_device_);
   if (VK_SUCCESS != result)
     return false;
-  vk_device_ = owned_vk_device_;
 
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
 
-  gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(vk_device_,
-                                                               use_swiftshader);
+  if (!gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
+          owned_vk_device_, use_swiftshader)) {
+    vkDestroyDevice(owned_vk_device_, nullptr);
+    owned_vk_device_ = VK_NULL_HANDLE;
+    return false;
+  }
 
-  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME))
-    gpu::GetVulkanFunctionPointers()->BindSwapchainFunctionPointers(vk_device_);
+  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME) &&
+      !gpu::GetVulkanFunctionPointers()->BindSwapchainFunctionPointers(
+          owned_vk_device_)) {
+    vkDestroyDevice(owned_vk_device_, nullptr);
+    owned_vk_device_ = VK_NULL_HANDLE;
+    return false;
+  }
+
+  vk_device_ = owned_vk_device_;
 
   vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
 
@@ -188,8 +198,10 @@ bool VulkanDeviceQueue::InitializeForWevbView(
 }
 
 void VulkanDeviceQueue::Destroy() {
-  cleanup_helper_->Destroy();
-  cleanup_helper_.reset();
+  if (cleanup_helper_) {
+    cleanup_helper_->Destroy();
+    cleanup_helper_.reset();
+  }
 
   if (VK_NULL_HANDLE != owned_vk_device_) {
     vkDestroyDevice(owned_vk_device_, nullptr);

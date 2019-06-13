@@ -32,7 +32,6 @@ class ResourceResponse;
 // Consumers should use the mojo ManifestManager interface to use this class.
 class MODULES_EXPORT ManifestManager
     : public GarbageCollectedFinalized<ManifestManager>,
-      public WebManifestManager,
       public Supplement<LocalFrame>,
       public mojom::blink::ManifestManager,
       public ContextLifecycleObserver {
@@ -55,8 +54,7 @@ class MODULES_EXPORT ManifestManager
   KURL ManifestURL() const;
   bool ManifestUseCredentials() const;
 
-  // WebManifestManager
-  void RequestManifest(WebCallback callback) override;
+  void RequestManifestForTesting(WebManifestManager::Callback callback);
 
   // mojom::blink::ManifestManager implementation.
   void RequestManifest(RequestManifestCallback callback) override;

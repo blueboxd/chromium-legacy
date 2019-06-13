@@ -23,12 +23,9 @@ class GLES2Interface;
 }  // namespace gpu
 
 namespace viz {
+class ContextProviderCommandBuffer;
 class GLHelper;
 }  // namespace viz
-
-namespace ws {
-class ContextProviderCommandBuffer;
-}  // namespace ws
 
 namespace content {
 
@@ -37,7 +34,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
       public viz::ContextLostObserver {
  public:
   WebGraphicsContext3DProviderImpl(
-      scoped_refptr<ws::ContextProviderCommandBuffer> provider);
+      scoped_refptr<viz::ContextProviderCommandBuffer> provider);
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
@@ -55,7 +52,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override;
   gpu::SharedImageInterface* SharedImageInterface() override;
 
-  ws::ContextProviderCommandBuffer* context_provider() const {
+  viz::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();
   }
 
@@ -63,7 +60,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> provider_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   base::RepeatingClosure context_lost_callback_;
   base::flat_map<SkColorType, std::unique_ptr<cc::ImageDecodeCache>>

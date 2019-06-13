@@ -76,6 +76,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -1234,6 +1235,20 @@ public class CustomTabsConnection {
     }
 
     /**
+     * Returns whether /proc/PID/ is accessible.
+     *
+     * On devices where /proc is mounted with the "hidepid=2" option, cannot get access to the
+     * scheduler group, as this is under this directory, which is hidden unless PID == self (or
+     * its numeric value).
+     */
+    @VisibleForTesting
+    static boolean canGetSchedulerGroup(int pid) {
+        String cgroupFilename = "/proc/" + pid;
+        File f = new File(cgroupFilename);
+        return f.exists() && f.isDirectory() && f.canExecute();
+    }
+
+    /**
      * @return the CPU cgroup of a given process, identified by its PID, or null.
      */
     @VisibleForTesting
@@ -1270,14 +1285,15 @@ public class CustomTabsConnection {
     private boolean isCallerForegroundOrSelf() {
         int uid = Binder.getCallingUid();
         if (uid == Process.myUid()) return true;
+
         // Starting with L MR1, AM.getRunningAppProcesses doesn't return all the
         // processes. We use a workaround in this case.
         boolean useWorkaround = true;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
             do {
+                Context context = ContextUtils.getApplicationContext();
                 ActivityManager am =
-                        (ActivityManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.ACTIVITY_SERVICE);
+                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
                 // Extra paranoia here and below, some L 5.0.x devices seem to throw NPE somewhere
                 // in this code.
                 // See https://crbug.com/654705.
@@ -1294,7 +1310,16 @@ public class CustomTabsConnection {
                 }
             } while (false);
         }
-        return useWorkaround ? !isBackgroundProcess(Binder.getCallingPid()) : false;
+        if (useWorkaround) {
+            int pid = Binder.getCallingPid();
+            boolean workaroundAvailable = canGetSchedulerGroup(pid);
+            // If we have no way to find out whether the calling process is in the foreground,
+            // optimistically assume it is. Otherwise we would effectively disable CCT warmup
+            // on these devices.
+            if (!workaroundAvailable) return true;
+            return isBackgroundProcess(pid);
+        }
+        return false;
     }
 
     @VisibleForTesting

@@ -186,7 +186,8 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // rather than the shadow page's loader.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, nullptr /* loader_factory */,
-      std::move(worker_start_data_.privacy_preferences));
+      std::move(worker_start_data_.privacy_preferences),
+      base::UnguessableToken());
 
   // If we were asked to wait for debugger then now is a good time to do that.
   worker_context_client_->WorkerReadyForInspectionOnMainThread();
@@ -264,12 +265,6 @@ void WebEmbeddedWorkerImpl::BindDevToolsAgent(
           mojom::blink::DevToolsAgentHost::Version_),
       mojom::blink::DevToolsAgentAssociatedRequest(
           std::move(devtools_agent_request)));
-}
-
-std::unique_ptr<WebApplicationCacheHost>
-WebEmbeddedWorkerImpl::CreateApplicationCacheHost(
-    WebApplicationCacheHostClient*) {
-  return nullptr;
 }
 
 void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {

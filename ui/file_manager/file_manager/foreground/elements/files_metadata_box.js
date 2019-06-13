@@ -50,9 +50,11 @@ var FilesMetadataBox = Polymer({
       type: String,
       observer: 'metadataUpdated_',
     },
+
     /**
-     * Exif information parsed by exif_parser.js or null if there is no
-     * information.
+     * Exif parsed by exif_parser.js or extracted from RAW files, or null if
+     * there is no Exif information. For RAW files, the Exif data resides in
+     * the object |ifd.raw| field.
      * @type {?Object}
      */
     ifd: {
@@ -180,8 +182,15 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   deviceModel_: function(ifd) {
+    if (!ifd) {
+      return '';
+    }
+
+    // TODO(noel): add ifd.raw cameraModel support.
+
     const id = 272;
-    return (ifd && ifd.image && ifd.image[id] && ifd.image[id].value) || '';
+    const model = (ifd.image && ifd.image[id] && ifd.image[id].value) || '';
+    return model.replace(/\0+$/, '').trim();
   },
 
   /**
@@ -226,40 +235,86 @@ var FilesMetadataBox = Polymer({
   },
 
   /**
-   * Returns device settings as a string in the form of
-   * 'FNumber exposureTime focalLength isoSpeedRating'.
-   * Example: 'f/2 1/120 4.67mm ISO108'.
+   * Returns device settings as a string containing the fNumber, exposureTime,
+   * focalLength, and isoSpeed. Example: 'f/2.8 0.008 23mm ISO4000'.
    * @param {?Object} ifd
    * @return {string}
    *
    * @private
    */
   deviceSettings_: function(ifd) {
-    const exif = ifd && ifd.exif;
+    let result = '';
+
+    // TODO(noel): add ifd.raw device settings support.
+
+    if (ifd) {
+      result = this.ifdDeviceSettings_(ifd);
+    }
+
+    return result;
+  },
+
+  /**
+   * @param {Object} ifd
+   * @return {string}
+   *
+   * @private
+   */
+  ifdDeviceSettings_: function(ifd) {
+    const exif = ifd['exif'];
     if (!exif) {
       return '';
     }
 
-    const f = exif[33437] ? this.parseRational_(exif[33437].value) : 0;
-    let fNumber = '';
-    if (f) {
-      fNumber = 'f/' + (Number.isInteger(f) ? f : Number(f).toFixed(1));
-    }
-    const exposureTime =
-        exif[33434] ? exif[33434].value[0] + '/' + exif[33434].value[1] : '';
-    const focalLength = exif[37386] ?
-        Number(this.parseRational_(exif[37386].value)).toFixed(2) + 'mm' :
-        '';
-    const iso = exif[34855] ? 'ISO' + exif[34855].value : '';
+    /**
+     * @param {Object} field Exif field to be parsed as a number.
+     * @return {number}
+     */
+    function parseExifNumber(field) {
+      let number = 0;
 
-    const values = [fNumber, exposureTime, focalLength, iso];
+      if (field && field.value) {
+        if (Array.isArray(field.value)) {
+          const denominator = parseInt(field.value[1], 10);
+          if (denominator) {
+            number = parseInt(field.value[0], 10) / denominator;
+          }
+        } else {
+          number = parseInt(field.value, 10);
+        }
+
+        if (Number.isNaN(number)) {
+          number = 0;
+        } else if (!Number.isInteger(number)) {
+          number = Number(number.toFixed(3).replace(/0+$/, ''));
+        }
+      }
+
+      return number;
+    }
 
     let result = '';
-    for (let i = 0; i < values.length; i++) {
-      if (values[i]) {
-        result += (result ? ' ' : '') + values[i];
-      }
+
+    const aperture = parseExifNumber(exif[33437]);
+    if (aperture) {
+      result += 'f/' + aperture + ' ';
     }
-    return result;
+
+    const exposureTime = parseExifNumber(exif[33434]);
+    if (exposureTime) {
+      result += exposureTime + ' ';
+    }
+
+    const focalLength = parseExifNumber(exif[37386]);
+    if (focalLength) {
+      result += focalLength + 'mm ';
+    }
+
+    const isoSpeed = parseExifNumber(exif[34855]);
+    if (isoSpeed) {
+      result += 'ISO' + isoSpeed + ' ';
+    }
+
+    return result.trimEnd();
   },
 });

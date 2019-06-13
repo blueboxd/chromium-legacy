@@ -5,11 +5,14 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -594,6 +597,38 @@ const PrefetchedSignedExchangeCache::EntryMap&
 PrefetchedSignedExchangeCache::GetExchanges() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return exchanges_;
+}
+
+void PrefetchedSignedExchangeCache::RecordHistograms() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&PrefetchedSignedExchangeCache::RecordHistograms, this));
+    return;
+  }
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (exchanges_.empty())
+    return;
+  UMA_HISTOGRAM_COUNTS_100("PrefetchedSignedExchangeCache.Count",
+                           exchanges_.size());
+  int64_t body_size_total = 0u;
+  int64_t headers_size_total = 0u;
+  for (const auto& exchanges_it : exchanges_) {
+    const std::unique_ptr<const Entry>& exchange = exchanges_it.second;
+    const uint64_t body_size = exchange->blob_data_handle()->size();
+    body_size_total += body_size;
+    UMA_HISTOGRAM_COUNTS_10M("PrefetchedSignedExchangeCache.BodySize",
+                             body_size);
+    DCHECK(exchange->outer_response()->headers);
+    DCHECK(exchange->inner_response()->headers);
+    headers_size_total +=
+        exchange->outer_response()->headers->raw_headers().size() +
+        exchange->inner_response()->headers->raw_headers().size();
+  }
+  UMA_HISTOGRAM_COUNTS_10M("PrefetchedSignedExchangeCache.BodySizeTotal",
+                           body_size_total);
+  UMA_HISTOGRAM_COUNTS_10M("PrefetchedSignedExchangeCache.HeadersSizeTotal",
+                           headers_size_total);
 }
 
 std::vector<PrefetchedSignedExchangeInfo>

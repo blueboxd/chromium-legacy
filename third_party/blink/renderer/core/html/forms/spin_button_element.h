@@ -102,16 +102,11 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   TaskRunnerTimer<SpinButtonElement> repeating_timer_;
 };
 
-DEFINE_TYPE_CASTS(SpinButtonElement,
-                  Node,
-                  node,
-                  To<Element>(node)->IsSpinButtonElement(),
-                  To<Element>(node).IsSpinButtonElement());
-
 template <>
 struct DowncastTraits<SpinButtonElement> {
   static bool AllowFrom(const Node& node) {
-    return ToElement(node).IsSpinButtonElement();
+    auto* element = DynamicTo<Element>(node);
+    return element && element->IsSpinButtonElement();
   }
 };
 

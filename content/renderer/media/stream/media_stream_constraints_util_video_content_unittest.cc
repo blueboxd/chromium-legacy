@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 
 #include <cmath>
 #include <string>
@@ -19,10 +19,11 @@ namespace content {
 namespace {
 
 const double kDefaultScreenCastAspectRatio =
-    static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
+    static_cast<double>(blink::kDefaultScreenCastWidth) /
+    blink::kDefaultScreenCastHeight;
 
 void CheckNonResolutionDefaults(const blink::VideoCaptureSettings& result) {
-  EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+  EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<double>(), result.min_frame_rate());
   EXPECT_EQ(base::Optional<double>(), result.max_frame_rate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
@@ -31,8 +32,8 @@ void CheckNonResolutionDefaults(const blink::VideoCaptureSettings& result) {
 }
 
 void CheckNonFrameRateDefaults(const blink::VideoCaptureSettings& result) {
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
 }
@@ -49,12 +50,12 @@ void CheckTrackAdapterSettingsEqualsFormat(
 
 void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
     const blink::VideoCaptureSettings& result) {
-  EXPECT_EQ(
-      static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-      result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(
-      static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) /
+                blink::kMaxScreenCastDimension,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                blink::kMinScreenCastDimension,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -67,9 +68,9 @@ class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
           blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsVideoContentCapture(constraints, stream_type,
-                                             kDefaultScreenCastWidth,
-                                             kDefaultScreenCastHeight);
+    return blink::SelectSettingsVideoContentCapture(
+        constraints, stream_type, blink::kDefaultScreenCastWidth,
+        blink::kDefaultScreenCastHeight);
   }
 
   MockConstraintFactory constraint_factory_;
@@ -82,8 +83,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, Unconstrained) {
 
   // All settings should have default values.
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
@@ -92,21 +93,22 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, Unconstrained) {
 // constraint results in failure to select a candidate.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnHeight) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.SetExact(kMaxScreenCastDimension + 1);
+  constraint_factory_.basic().height.SetExact(blink::kMaxScreenCastDimension +
+                                              1);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.SetMin(kMaxScreenCastDimension + 1);
+  constraint_factory_.basic().height.SetMin(blink::kMaxScreenCastDimension + 1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.SetMax(kMinScreenCastDimension - 1);
+  constraint_factory_.basic().height.SetMax(blink::kMinScreenCastDimension - 1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().height.GetName(),
@@ -115,21 +117,22 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnHeight) {
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnWidth) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.SetExact(kMaxScreenCastDimension + 1);
+  constraint_factory_.basic().width.SetExact(blink::kMaxScreenCastDimension +
+                                             1);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.SetMin(kMaxScreenCastDimension + 1);
+  constraint_factory_.basic().width.SetMin(blink::kMaxScreenCastDimension + 1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.SetMax(kMinScreenCastDimension - 1);
+  constraint_factory_.basic().width.SetMax(blink::kMinScreenCastDimension - 1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().width.GetName(),
@@ -162,15 +165,16 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().frame_rate.SetExact(kMaxScreenCastFrameRate +
-                                                  0.1);
+  constraint_factory_.basic().frame_rate.SetExact(
+      blink::kMaxScreenCastFrameRate + 0.1);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().frame_rate.SetMin(kMaxScreenCastFrameRate + 0.1);
+  constraint_factory_.basic().frame_rate.SetMin(blink::kMaxScreenCastFrameRate +
+                                                0.1);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
@@ -217,9 +221,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryDeviceID) {
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kDeviceID, result.device_id());
   // Other settings should have default values.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-  EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
@@ -241,9 +245,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealDeviceID) {
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kIdealID, result.device_id());
   // Other settings should have default values.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-  EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
@@ -257,9 +261,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryNoiseReduction) {
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(noise_reduction, result.noise_reduction());
     // Other settings should have default values.
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     EXPECT_EQ(std::string(), result.device_id());
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
   }
@@ -274,9 +278,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealNoiseReduction) {
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(noise_reduction, result.noise_reduction());
     // Other settings should have default values.
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     EXPECT_EQ(std::string(), result.device_id());
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
   }
@@ -294,7 +298,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactHeight) {
             result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(1.0 / kHeight, result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kHeight,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -310,9 +314,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
   EXPECT_EQ(std::round(kHeight * kDefaultScreenCastAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+  EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kHeight,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
@@ -321,12 +325,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallHeight is less that the default, so expect the default.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+  EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kSmallHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kSmallHeight,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -335,7 +339,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   // kMaxHeight smaller than the default.
   {
     constraint_factory_.Reset();
-    const int kMaxHeight = kDefaultScreenCastHeight - 100;
+    const int kMaxHeight = blink::kDefaultScreenCastHeight - 100;
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -345,7 +349,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension,
+    EXPECT_EQ(blink::kMaxScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -353,7 +357,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   // kMaxHeight greater than the default.
   {
     constraint_factory_.Reset();
-    const int kMaxHeight = kDefaultScreenCastHeight + 100;
+    const int kMaxHeight = blink::kDefaultScreenCastHeight + 100;
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -363,7 +367,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension,
+    EXPECT_EQ(blink::kMaxScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -371,17 +375,18 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   // kMaxHeight greater than the maximum allowed.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.SetMax(kMaxScreenCastDimension + 1);
+    constraint_factory_.basic().height.SetMax(blink::kMaxScreenCastDimension +
+                                              1);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(
-        std::round(kDefaultScreenCastHeight * kDefaultScreenCastAspectRatio),
-        result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight *
+                         kDefaultScreenCastAspectRatio),
+              result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension,
+    EXPECT_EQ(blink::kMaxScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -389,18 +394,18 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   // kMaxHeight equal to the maximum allowed.
   {
     constraint_factory_.Reset();
-    const int kMaxHeight = kMaxScreenCastDimension;
+    const int kMaxHeight = blink::kMaxScreenCastDimension;
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
     // Since the given max is too large, the default aspect ratio cannot be
     // used and the width is clamped to the maximum.
-    EXPECT_EQ(kMaxScreenCastDimension, result.Width());
+    EXPECT_EQ(blink::kMaxScreenCastDimension, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension,
+    EXPECT_EQ(blink::kMaxScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -410,8 +415,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
   // Range includes the default.
   {
     constraint_factory_.Reset();
-    const int kMinHeight = kDefaultScreenCastHeight - 100;
-    const int kMaxHeight = kDefaultScreenCastHeight + 100;
+    const int kMinHeight = blink::kDefaultScreenCastHeight - 100;
+    const int kMaxHeight = blink::kDefaultScreenCastHeight + 100;
     constraint_factory_.basic().height.SetMin(kMinHeight);
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
@@ -422,7 +427,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -430,8 +435,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
   // The whole range is greater than the default.
   {
     constraint_factory_.Reset();
-    const int kMinHeight = kDefaultScreenCastHeight + 100;
-    const int kMaxHeight = kDefaultScreenCastHeight + 200;
+    const int kMinHeight = blink::kDefaultScreenCastHeight + 100;
+    const int kMaxHeight = blink::kDefaultScreenCastHeight + 200;
     constraint_factory_.basic().height.SetMin(kMinHeight);
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
@@ -442,7 +447,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -450,8 +455,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
   // The whole range is less than the default.
   {
     constraint_factory_.Reset();
-    const int kMinHeight = kDefaultScreenCastHeight - 200;
-    const int kMaxHeight = kDefaultScreenCastHeight - 100;
+    const int kMinHeight = blink::kDefaultScreenCastHeight - 200;
+    const int kMaxHeight = blink::kDefaultScreenCastHeight - 100;
     constraint_factory_.basic().height.SetMin(kMinHeight);
     constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
@@ -462,7 +467,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -502,7 +507,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension,
+    EXPECT_EQ(blink::kMaxScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -522,9 +527,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     EXPECT_EQ(std::round(kMinHeight * kDefaultScreenCastAspectRatio),
               result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -610,9 +615,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactWidth) {
   EXPECT_EQ(std::round(kWidth / kDefaultScreenCastAspectRatio),
             result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(static_cast<double>(kWidth) / kMaxScreenCastDimension,
+  EXPECT_EQ(static_cast<double>(kWidth) / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kWidth) / kMinScreenCastDimension,
+  EXPECT_EQ(static_cast<double>(kWidth) / blink::kMinScreenCastDimension,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -628,11 +633,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
   EXPECT_EQ(std::round(kWidth / kDefaultScreenCastAspectRatio),
             result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(static_cast<double>(kWidth) / kMaxScreenCastDimension,
+  EXPECT_EQ(static_cast<double>(kWidth) / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(
-      static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                blink::kMinScreenCastDimension,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const int kSmallWidth = 100;
@@ -640,14 +645,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallWidth is less that the default, so expect the default.
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(static_cast<double>(kSmallWidth) / kMaxScreenCastDimension,
+  EXPECT_EQ(static_cast<double>(kSmallWidth) / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(
-      static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                blink::kMinScreenCastDimension,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -655,7 +660,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   // kMaxWidth less than the default.
   {
     constraint_factory_.Reset();
-    const int kMaxWidth = kDefaultScreenCastWidth - 100;
+    const int kMaxWidth = blink::kDefaultScreenCastWidth - 100;
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -664,9 +669,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -674,7 +679,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   // kMaxWidth greater than the default.
   {
     constraint_factory_.Reset();
-    const int kMaxWidth = kDefaultScreenCastWidth + 100;
+    const int kMaxWidth = blink::kDefaultScreenCastWidth + 100;
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -683,9 +688,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -693,27 +698,28 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   // kMaxWidth greater than the maximum allowed (gets ignored).
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.SetMax(kMaxScreenCastDimension + 1);
+    constraint_factory_.basic().width.SetMax(blink::kMaxScreenCastDimension +
+                                             1);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Expect the default, since the given max value cannot be used as default.
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-    EXPECT_EQ(
-        std::round(kDefaultScreenCastWidth / kDefaultScreenCastAspectRatio),
-        result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastWidth /
+                         kDefaultScreenCastAspectRatio),
+              result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(
-        static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio());
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                  blink::kMinScreenCastDimension,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
   // kMaxWidth equal to the maximum allowed.
   {
     constraint_factory_.Reset();
-    const int kMaxWidth = kMaxScreenCastDimension;
+    const int kMaxWidth = blink::kMaxScreenCastDimension;
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -721,9 +727,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -733,8 +739,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
   // The whole range is less than the default.
   {
     constraint_factory_.Reset();
-    const int kMinWidth = kDefaultScreenCastWidth - 200;
-    const int kMaxWidth = kDefaultScreenCastWidth - 100;
+    const int kMinWidth = blink::kDefaultScreenCastWidth - 200;
+    const int kMaxWidth = blink::kDefaultScreenCastWidth - 100;
     constraint_factory_.basic().width.SetMin(kMinWidth);
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
@@ -743,9 +749,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMinWidth) / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -753,8 +759,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
   // The range includes the default.
   {
     constraint_factory_.Reset();
-    const int kMinWidth = kDefaultScreenCastWidth - 100;
-    const int kMaxWidth = kDefaultScreenCastWidth + 100;
+    const int kMinWidth = blink::kDefaultScreenCastWidth - 100;
+    const int kMaxWidth = blink::kDefaultScreenCastWidth + 100;
     constraint_factory_.basic().width.SetMin(kMinWidth);
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
@@ -763,9 +769,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMinWidth) / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -773,8 +779,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
   // The whole range is greater than the default.
   {
     constraint_factory_.Reset();
-    const int kMinWidth = kDefaultScreenCastWidth + 100;
-    const int kMaxWidth = kDefaultScreenCastWidth + 200;
+    const int kMinWidth = blink::kDefaultScreenCastWidth + 100;
+    const int kMaxWidth = blink::kDefaultScreenCastWidth + 200;
     constraint_factory_.basic().width.SetMin(kMinWidth);
     constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
@@ -783,9 +789,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMinWidth) / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -822,9 +828,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(1.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -843,11 +849,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     EXPECT_EQ(std::round(kMinWidth / kDefaultScreenCastAspectRatio),
               result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
+    EXPECT_EQ(static_cast<double>(kMinWidth) / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(
-        static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio());
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                  blink::kMinScreenCastDimension,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -931,8 +937,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactAspectRatio) {
   // Given that the default aspect ratio cannot be preserved, the algorithm
   // tries to preserve, among the default height or width, the one that leads
   // to highest area. In this case, height is preserved.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(std::round(kDefaultScreenCastHeight * kAspectRatio),
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
@@ -947,13 +953,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kAspectRatio is greater that the default, so expect kAspectRatio.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(std::round(kDefaultScreenCastHeight * kAspectRatio),
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) /
-                static_cast<double>(kMinScreenCastDimension),
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                static_cast<double>(blink::kMinScreenCastDimension),
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
@@ -962,13 +968,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallAspectRatio is less that the default, so expect the default.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kSmallAspectRatio,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) /
-                static_cast<double>(kMinScreenCastDimension),
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                static_cast<double>(blink::kMinScreenCastDimension),
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -980,11 +986,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kAspectRatio is greater that the default, so expect the default.
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) /
-                static_cast<double>(kMaxScreenCastDimension),
+  EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) /
+                static_cast<double>(blink::kMaxScreenCastDimension),
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
@@ -996,12 +1002,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   // kSmallAspectRatio is less that the default, so expect kSmallAspectRatio.
   // Prefer to preserve default width since that leads to larger area than
   // preserving default height.
-  EXPECT_EQ(std::round(kDefaultScreenCastWidth / kSmallAspectRatio),
+  EXPECT_EQ(std::round(blink::kDefaultScreenCastWidth / kSmallAspectRatio),
             result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) /
-                static_cast<double>(kMaxScreenCastDimension),
+  EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) /
+                static_cast<double>(blink::kMaxScreenCastDimension),
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(kSmallAspectRatio,
             result.track_adapter_settings().max_aspect_ratio());
@@ -1018,8 +1024,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Range includes default, so expect the default.
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio());
@@ -1036,8 +1042,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is greater than the default. Expect the minimum.
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(std::round(kDefaultScreenCastHeight * kMinAspectRatio),
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kMinAspectRatio),
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
@@ -1055,9 +1061,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is less than the default. Expect the maximum.
-    EXPECT_EQ(std::round(kDefaultScreenCastWidth / kMaxAspectRatio),
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastWidth / kMaxAspectRatio),
               result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio());
@@ -1075,8 +1081,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(std::round(kDefaultScreenCastHeight * kIdealAspectRatio),
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kIdealAspectRatio),
               result.Width());
     CheckNonResolutionDefaults(result);
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
@@ -1092,13 +1098,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect ratio is greater than the maximum, expect maximum.
-    EXPECT_EQ(std::round(kDefaultScreenCastWidth / kMaxAspectRatio),
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastWidth / kMaxAspectRatio),
               result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(
-        static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-        result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) /
+                  blink::kMaxScreenCastDimension,
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
@@ -1114,15 +1120,15 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect ratio is less than the maximum, expect minimum.
-    EXPECT_EQ(std::round(kDefaultScreenCastWidth / kMinAspectRatio),
+    EXPECT_EQ(std::round(blink::kDefaultScreenCastWidth / kMinAspectRatio),
               result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(
-        static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio());
+    EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                  blink::kMinScreenCastDimension,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1177,12 +1183,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect-ratio is included in the bounding box. Preserving default
     // height leads to larger area than preserving default width.
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(kDefaultScreenCastHeight * kIdealAspectRatio, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight * kIdealAspectRatio,
+              result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(250.0 / kMaxScreenCastDimension,
+    EXPECT_EQ(250.0 / blink::kMaxScreenCastDimension,
               result.track_adapter_settings().min_aspect_ratio());
-    EXPECT_EQ(kMaxScreenCastDimension / 250.0,
+    EXPECT_EQ(blink::kMaxScreenCastDimension / 250.0,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -1325,7 +1332,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // No ideal or maximum frame rate given, expect default.
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     EXPECT_TRUE(result.min_frame_rate().has_value());
     EXPECT_EQ(kMinFrameRate, result.min_frame_rate());
     EXPECT_FALSE(result.max_frame_rate().has_value());
@@ -1340,7 +1347,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // No ideal or maximum frame rate given, expect default.
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     // kMinFrameRate should be ignored.
     EXPECT_FALSE(result.min_frame_rate().has_value());
     EXPECT_FALSE(result.max_frame_rate().has_value());
@@ -1355,7 +1362,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // No ideal or maximum frame rate given, expect default.
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     EXPECT_TRUE(result.min_frame_rate().has_value());
     EXPECT_EQ(kMinFrameRate, result.min_frame_rate());
     EXPECT_FALSE(result.max_frame_rate().has_value());
@@ -1396,12 +1403,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxFrameRate) {
 
   // kMaxFrameRate greater than the maximum allowed
   {
-    const double kMaxFrameRate = kMaxScreenCastFrameRate + 0.1;
+    const double kMaxFrameRate = blink::kMaxScreenCastFrameRate + 0.1;
     constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Expect the default, since the given maximum is invalid.
-    EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
+    EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
     EXPECT_EQ(base::Optional<double>(), result.min_frame_rate());
     EXPECT_EQ(base::Optional<double>(), result.max_frame_rate());
     CheckNonFrameRateDefaults(result);
@@ -1410,7 +1417,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxFrameRate) {
 
   // kMaxFrameRate equal to the maximum allowed
   {
-    const double kMaxFrameRate = kMaxScreenCastFrameRate;
+    const double kMaxFrameRate = blink::kMaxScreenCastFrameRate;
     constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -1576,8 +1583,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   // In this case, default settings must be selected.
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 
@@ -1676,8 +1683,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
     // None of the constraint sets can be satisfied. Default resolution should
     // be selected.
     EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 
@@ -1772,9 +1779,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedNoiseReduction) {
                 std::round(result.Width() / kDefaultScreenCastAspectRatio)),
             result.Height());
   EXPECT_TRUE(result.noise_reduction() && !*result.noise_reduction());
-  EXPECT_EQ(kMinWidth / static_cast<double>(kMaxScreenCastDimension),
+  EXPECT_EQ(kMinWidth / static_cast<double>(blink::kMaxScreenCastDimension),
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -1842,10 +1849,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
   // Resolution cannot exceed the requested resolution.
-  EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
-  EXPECT_EQ(kMinScreenCastDimension / 480.0,
+  EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
+  EXPECT_EQ(blink::kMinScreenCastDimension / 480.0,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(640.0 / kMinScreenCastDimension,
+  EXPECT_EQ(640.0 / blink::kMinScreenCastDimension,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -1869,10 +1876,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(std::round(kMinHeight * kDefaultScreenCastAspectRatio),
             result.Width());
   EXPECT_EQ(kMinHeight, result.Height());
-  EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
-  EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
+  EXPECT_EQ(blink::kDefaultScreenCastFrameRate, result.FrameRate());
+  EXPECT_EQ(static_cast<double>(kMinWidth) / blink::kMaxScreenCastDimension,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) / kMinHeight,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -1889,9 +1896,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   advanced2.aspect_ratio.SetExact(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(std::round(kDefaultScreenCastHeight * kMinAspectRatio),
+  EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kMinAspectRatio),
             result.Width());
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kMinAspectRatio,
             result.track_adapter_settings().min_aspect_ratio());
@@ -1912,15 +1919,15 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   advanced2.aspect_ratio.SetMax(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  EXPECT_EQ(std::round(kDefaultScreenCastHeight * kMinAspectRatio),
+  EXPECT_EQ(std::round(blink::kDefaultScreenCastHeight * kMinAspectRatio),
             result.Width());
-  EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+  EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kMinAspectRatio,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(
-      kMaxScreenCastDimension / static_cast<double>(kMinScreenCastDimension),
-      result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(blink::kMaxScreenCastDimension /
+                static_cast<double>(blink::kMinScreenCastDimension),
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1976,10 +1983,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(std::round(kMaxWidth / kDefaultScreenCastAspectRatio),
             result.Height());
   EXPECT_EQ(90.0, result.FrameRate());
-  EXPECT_EQ(
-      static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-      result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
+  EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) /
+                blink::kMaxScreenCastDimension,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(kMaxWidth) / blink::kMinScreenCastDimension,
             result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
@@ -2004,11 +2011,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   // Height defaults to explicitly given max constraint.
   EXPECT_EQ(kMaxHeight, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
-  EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) / kMaxHeight,
+  EXPECT_EQ(static_cast<double>(blink::kMinScreenCastDimension) / kMaxHeight,
             result.track_adapter_settings().min_aspect_ratio());
-  EXPECT_EQ(
-      static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(static_cast<double>(blink::kMaxScreenCastDimension) /
+                blink::kMinScreenCastDimension,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -2124,8 +2131,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   {
     constraint_factory_.Reset();
     auto result = SelectSettings();
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
     // Resolution can be adjusted.
     EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
@@ -2135,8 +2142,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     constraint_factory_.Reset();
     auto result =
         SelectSettings(blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE);
-    EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
-    EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
+    EXPECT_EQ(blink::kDefaultScreenCastWidth, result.Width());
+    EXPECT_EQ(blink::kDefaultScreenCastHeight, result.Height());
     // Default policy for tab capture is fixed resolution.
     EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());

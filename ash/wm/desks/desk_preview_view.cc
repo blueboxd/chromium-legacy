@@ -4,6 +4,7 @@
 
 #include "ash/wm/desks/desk_preview_view.h"
 
+#include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -42,6 +43,24 @@ struct LayerData {
   // overview mode is inactive.
   bool should_reset_transform = false;
 };
+
+// Returns true if |window| can be shown in the desk's preview according to its
+// multi-profile ownership status (i.e. can only be shown if it belongs to the
+// active user).
+bool CanShowWindowForMultiProfile(aura::Window* window) {
+  MultiUserWindowManager* multi_user_window_manager =
+      MultiUserWindowManagerImpl::Get();
+  if (!multi_user_window_manager)
+    return true;
+
+  const AccountId account_id =
+      multi_user_window_manager->GetUserPresentingWindow(window);
+  // An empty account ID is returned if the window is presented for all users.
+  if (!account_id.is_valid())
+    return true;
+
+  return account_id == multi_user_window_manager->CurrentAccountId();
+}
 
 // Recursively mirrors |source_layer| and its children and adds them as children
 // of |parent|, taking into account the given |layers_data|.
@@ -89,6 +108,11 @@ void GetLayersData(aura::Window* window,
   // Minimized windows should not show up in the mini_view.
   auto* window_state = wm::GetWindowState(window);
   if (window_state && window_state->IsMinimized()) {
+    layer_data.should_skip_layer = true;
+    return;
+  }
+
+  if (!CanShowWindowForMultiProfile(window)) {
     layer_data.should_skip_layer = true;
     return;
   }

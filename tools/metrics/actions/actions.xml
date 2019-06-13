@@ -11242,7 +11242,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarHomeButton">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     The user tapped on the bottom toolbar's home button.
@@ -11250,7 +11250,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarNewTabButton">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     The user tapped on the bottom toolbar's new tab button.
@@ -11258,7 +11258,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarShareButton">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     The user tapped on the bottom toolbar's share button.
@@ -11266,13 +11266,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarShowMenu">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>The bottom toolbar's overflow menu was shown.</description>
 </action>
 
 <action name="MobileBottomToolbarTabSwitcherButtonInBrowsingView">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     The user tapped on the bottom toolbar's tab switcher button.
@@ -12856,8 +12856,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarCloseAllIncognitoTabsButtonTap">
-  <owner>amaralp@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
   <description>
     User tapped the close all incognito tabs button in the tab switcher bottom
     toolbar.
@@ -12865,8 +12865,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarCloseAllRegularTabsButtonTap">
-  <owner>amaralp@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
   <description>
     User tapped the close all regular tabs button in the tab switcher bottom
     toolbar.
@@ -12893,7 +12893,7 @@ should be able to be added at any place in this file.
 
 <action name="MobileToolbarOmniboxAcceleratorTap">
   <owner>mdjones@chromium.org</owner>
-  <owner>amaralp@chromium.org</owner>
+  <owner>chrome-android-apps@chromium.org</owner>
   <description>
     User tapped the omnibox accelerator button in the bottom toolbar.
   </description>
@@ -12956,7 +12956,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarStackViewButtonInBrowsingView">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     User in the Android browsing mode tapped the tab switcher button on the
@@ -12995,13 +12995,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTopToolbarHomeButton">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>The user tapped on the top toolbar's home button.</description>
 </action>
 
 <action name="MobileTopToolbarNewTabButton">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     The user tapped on the top toolbar's new tab button.
@@ -13009,7 +13009,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTopToolbarShowMenu">
-  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>
     Action indicating the top toolbar's overflow menu was shown.

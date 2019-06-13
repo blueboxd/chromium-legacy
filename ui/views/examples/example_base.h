@@ -28,8 +28,6 @@ class VIEWS_EXAMPLES_EXPORT ExampleBase {
  protected:
   explicit ExampleBase(const char* title);
 
-  View* container() { return container_; }
-
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);
 

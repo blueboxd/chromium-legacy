@@ -141,6 +141,9 @@ struct InstantMostVisitedInfo {
   // True if Most Visited functionality is enabled instead of customizable
   // shortcuts.
   bool use_most_visited;
+
+  // True if the items are visible and not hidden by the user.
+  bool is_visible;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

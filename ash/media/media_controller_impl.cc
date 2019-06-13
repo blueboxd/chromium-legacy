@@ -4,12 +4,14 @@
 
 #include "ash/media/media_controller_impl.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -39,6 +41,12 @@ MediaControllerImpl::MediaControllerImpl(service_manager::Connector* connector)
 }
 
 MediaControllerImpl::~MediaControllerImpl() = default;
+
+// static
+void MediaControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kLockScreenMediaKeysEnabled, true,
+                                PrefRegistry::PUBLIC);
+}
 
 void MediaControllerImpl::AddObserver(MediaCaptureObserver* observer) {
   observers_.AddObserver(observer);

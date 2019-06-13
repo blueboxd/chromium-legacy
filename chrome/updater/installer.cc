@@ -23,6 +23,17 @@ namespace {
 // Version "0" corresponds to no installed version.
 const char kNullVersion[] = "0.0.0.0";
 
+// Returns the full path to the installation directory for the application
+// identified by the |crx_id|.
+base::FilePath GetAppInstallDir(const std::string& crx_id) {
+  base::FilePath app_install_dir;
+  if (GetProductDirectory(&app_install_dir)) {
+    app_install_dir = app_install_dir.AppendASCII(kAppsDir);
+    app_install_dir = app_install_dir.AppendASCII(crx_id);
+  }
+  return app_install_dir;
+}
+
 }  // namespace
 
 Installer::InstallInfo::InstallInfo() : version(kNullVersion) {}
@@ -51,13 +62,8 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
 void Installer::FindInstallOfApp() {
   VLOG(1) << __func__ << " for " << crx_id_;
 
-  base::FilePath root_install_path;
-  if (!GetProductDataDirectory(&root_install_path)) {
-    install_info_ = std::make_unique<InstallInfo>();
-    return;
-  }
-  root_install_path = root_install_path.AppendASCII(crx_id_);
-  if (!base::PathExists(root_install_path)) {
+  const base::FilePath app_install_dir = GetAppInstallDir(crx_id_);
+  if (app_install_dir.empty() || !base::PathExists(app_install_dir)) {
     install_info_ = std::make_unique<InstallInfo>();
     return;
   }
@@ -65,7 +71,7 @@ void Installer::FindInstallOfApp() {
   base::Version latest_version(kNullVersion);
   base::FilePath latest_path;
   std::vector<base::FilePath> older_paths;
-  base::FileEnumerator file_enumerator(root_install_path, false,
+  base::FileEnumerator file_enumerator(app_install_dir, false,
                                        base::FileEnumerator::DIRECTORIES);
   for (auto path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
@@ -118,40 +124,38 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
   if (install_info_->version.CompareTo(manifest_version) > 0)
     return Result(update_client::InstallError::VERSION_NOT_UPGRADED);
 
-  base::FilePath root_install_path;
-  if (!GetProductDataDirectory(&root_install_path))
+  const base::FilePath app_install_dir = GetAppInstallDir(crx_id_);
+  if (app_install_dir.empty())
     return Result(update_client::InstallError::NO_DIR_COMPONENT_USER);
-
-  root_install_path = root_install_path.AppendASCII(crx_id_);
-  if (!base::CreateDirectory(root_install_path)) {
+  if (!base::CreateDirectory(app_install_dir)) {
     return Result(
         static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE) +
         kCustomInstallErrorCreateAppInstallDirectory);
   }
 
-  const auto versioned_install_path =
-      root_install_path.AppendASCII(manifest_version.GetString());
-  if (base::PathExists(versioned_install_path)) {
-    if (!base::DeleteFile(versioned_install_path, true))
+  const auto versioned_install_dir =
+      app_install_dir.AppendASCII(manifest_version.GetString());
+  if (base::PathExists(versioned_install_dir)) {
+    if (!base::DeleteFile(versioned_install_dir, true))
       return Result(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
-  VLOG(1) << "Install_path=" << versioned_install_path.AsUTF8Unsafe();
+  VLOG(1) << "Install_path=" << versioned_install_dir.AsUTF8Unsafe();
 
-  if (!base::Move(unpack_path, versioned_install_path)) {
+  if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFile(versioned_install_path, true);
+    base::DeleteFile(versioned_install_dir, true);
     return Result(update_client::InstallError::MOVE_FILES_ERROR);
   }
 
   DCHECK(!base::PathExists(unpack_path));
-  DCHECK(base::PathExists(versioned_install_path));
+  DCHECK(base::PathExists(versioned_install_dir));
 
   install_info_->manifest = std::move(local_manifest);
   install_info_->version = manifest_version;
-  install_info_->install_dir = versioned_install_path;
+  install_info_->install_dir = versioned_install_dir;
   base::ReadFileToString(
-      versioned_install_path.AppendASCII("manifest.fingerprint"),
+      versioned_install_dir.AppendASCII("manifest.fingerprint"),
       &install_info_->fingerprint);
 
   return Result(update_client::InstallError::NONE);

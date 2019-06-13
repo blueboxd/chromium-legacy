@@ -223,7 +223,7 @@ class PLATFORM_EXPORT ThreadHeap {
   //
   // When compaction moves the object pointed to by |*slot| to |newAddress|,
   // |*slot| must be updated to hold |newAddress| instead.
-  void RegisterMovingObjectReference(MovableReference*);
+  void RegisterMovingObjectReference(const char*, MovableReference*);
 
   // Register a callback to be invoked upon moving the object starting at
   // |reference|; see |MovingObjectCallback| documentation for details.

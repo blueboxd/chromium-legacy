@@ -42,6 +42,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
+class AppCacheNavigationHandle;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -325,12 +326,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   int navigation_entry_offset() { return navigation_entry_offset_; }
 
-  // TODO(zetamoo): Remove once |handle_state_| is modified exclusively from
-  //                NavigationRequest.
-  void set_handle_state(const NavigationHandleState state) {
-    handle_state_ = state;
-  }
-
   NavigationHandleState handle_state() { return handle_state_; }
 
   NavigationUIData* navigation_ui_data() const {
@@ -441,6 +436,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // MHTML document. In this case, the navigation will commit in the main frame
   // process without needing any network requests.
   bool IsForMhtmlSubframe() const;
+
+  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
+
+  bool is_same_process() {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return is_same_process_;
+  }
 
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
@@ -700,6 +703,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   //          NavigationThrottle.
   bool NeedsUrlLoader() const;
 
+  // Called when the navigation is ready to be committed. This will update the
+  // |handle_state_| and inform the delegate.
+  void ReadyToCommitNavigation(bool is_error);
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -885,6 +892,17 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // (where all prefetched resources are stored and shared in http cache).
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
+
+  // The time this navigation was ready to commit.
+  base::TimeTicks ready_to_commit_time_;
+
+  // Manages the lifetime of a pre-created AppCacheHost until a browser side
+  // navigation is ready to be committed, i.e we have a renderer process ready
+  // to service the navigation request.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
+
+  // Set in ReadyToCommitNavigation.
+  bool is_same_process_ = true;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

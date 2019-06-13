@@ -133,57 +133,53 @@ bool AXPlatformNodeDelegateBase::IsTable() const {
   return ui::IsTableLike(GetData().role);
 }
 
-int AXPlatformNodeDelegateBase::GetTableRowCount() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableRowCount() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount);
 }
 
-int AXPlatformNodeDelegateBase::GetTableColCount() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableColCount() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount);
 }
 
-base::Optional<int32_t> AXPlatformNodeDelegateBase::GetTableAriaColCount()
-    const {
-  int32_t aria_column_count =
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableAriaColCount() const {
+  int aria_column_count =
       GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount);
   if (aria_column_count == ax::mojom::kUnknownAriaColumnOrRowCount)
     return base::nullopt;
   return aria_column_count;
 }
 
-base::Optional<int32_t> AXPlatformNodeDelegateBase::GetTableAriaRowCount()
-    const {
-  int32_t aria_row_count =
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableAriaRowCount() const {
+  int aria_row_count =
       GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount);
   if (aria_row_count == ax::mojom::kUnknownAriaColumnOrRowCount)
     return base::nullopt;
   return aria_row_count;
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellCount() const {
-  return 0;
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellCount() const {
+  return base::nullopt;
 }
 
-const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds()
-    const {
+std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds() const {
   return {};
 }
 
-const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds(
-    int32_t col_index) const {
+std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds(
+    int col_index) const {
   return {};
 }
 
-const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds()
-    const {
+std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds() const {
   return {};
 }
 
-const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
-    int32_t row_index) const {
+std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
+    int row_index) const {
   return {};
 }
 
-AXPlatformNode* AXPlatformNodeDelegateBase::GetTableCaption() {
+AXPlatformNode* AXPlatformNodeDelegateBase::GetTableCaption() const {
   return nullptr;
 }
 
@@ -191,7 +187,7 @@ bool AXPlatformNodeDelegateBase::IsTableRow() const {
   return ui::IsTableRow(GetData().role);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableRowRowIndex() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableRowRowIndex() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex);
 }
 
@@ -199,44 +195,48 @@ bool AXPlatformNodeDelegateBase::IsTableCellOrHeader() const {
   return ui::IsCellOrTableHeader(GetData().role);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellColIndex() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellColIndex() const {
   return GetData().GetIntAttribute(
       ax::mojom::IntAttribute::kTableCellColumnIndex);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellRowIndex() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellRowIndex() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellColSpan() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellColSpan() const {
   return GetData().GetIntAttribute(
       ax::mojom::IntAttribute::kTableCellColumnSpan);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellRowSpan() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellRowSpan() const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellAriaColIndex() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellAriaColIndex()
+    const {
   return GetData().GetIntAttribute(
       ax::mojom::IntAttribute::kAriaCellColumnIndex);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellAriaRowIndex() const {
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellAriaRowIndex()
+    const {
   return GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex);
 }
 
-int32_t AXPlatformNodeDelegateBase::GetCellId(int32_t row_index,
-                                              int32_t col_index) const {
-  return -1;
+base::Optional<int32_t> AXPlatformNodeDelegateBase::GetCellId(
+    int row_index,
+    int col_index) const {
+  return base::nullopt;
 }
 
-int32_t AXPlatformNodeDelegateBase::GetTableCellIndex() const {
-  return -1;
+base::Optional<int> AXPlatformNodeDelegateBase::GetTableCellIndex() const {
+  return base::nullopt;
 }
 
-int32_t AXPlatformNodeDelegateBase::CellIndexToId(int32_t cell_index) const {
-  return -1;
+base::Optional<int32_t> AXPlatformNodeDelegateBase::CellIndexToId(
+    int cell_index) const {
+  return base::nullopt;
 }
 
 bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIATable() const {
@@ -245,6 +245,22 @@ bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIATable() const {
 
 bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIAGrid() const {
   return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsOrderedSet() const {
+  return false;
+}
+
+base::Optional<int> AXPlatformNodeDelegateBase::GetPosInSet() const {
+  return base::nullopt;
+}
+
+base::Optional<int> AXPlatformNodeDelegateBase::GetSetSize() const {
+  return base::nullopt;
 }
 
 bool AXPlatformNodeDelegateBase::AccessibilityPerformAction(
@@ -353,22 +369,6 @@ base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
 const std::vector<gfx::NativeViewAccessible>
 AXPlatformNodeDelegateBase::GetDescendants() const {
   return {};
-}
-
-bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
-  return false;
-}
-
-bool AXPlatformNodeDelegateBase::IsOrderedSet() const {
-  return false;
-}
-
-int32_t AXPlatformNodeDelegateBase::GetPosInSet() const {
-  return 0;
-}
-
-int32_t AXPlatformNodeDelegateBase::GetSetSize() const {
-  return 0;
 }
 
 }  // namespace ui

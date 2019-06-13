@@ -223,48 +223,15 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
   return base::TimeDelta::FromMilliseconds(1500);
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+// static
+std::string OmniboxFieldTrial::GetZeroSuggestVariant(
     OmniboxEventProto::PageClassification page_classification) {
-  return InZeroSuggestMostVisitedWithoutSerpFieldTrial(page_classification) ||
-         internal::GetValueForRuleInContextByFeature(
-             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-             page_classification) == "MostVisited";
-}
-
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-    OmniboxEventProto::PageClassification page_classification) {
-  std::string variant = internal::GetValueForRuleInContextByFeature(
+  return internal::GetValueForRuleInContextByFeature(
       omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
       page_classification);
-  if (variant == "MostVisitedWithoutSERP")
-    return true;
-#if defined(OS_ANDROID)
-  // Android defaults to MostVisitedWithoutSERP
-  return variant.empty();
-#elif defined(OS_IOS)
-  // iOS defaults to MostVisitedWithoutSERP
-  return variant.empty();
-#else
-  return false;
-#endif
 }
 
 // static
-bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-    OmniboxEventProto::PageClassification page_classification) {
-  return internal::GetValueForRuleInContextByFeature(
-             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-             page_classification) == "Personalized";
-}
-
-// static
-bool OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification) {
-  return internal::GetValueForRuleInContextByFeature(
-             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-             page_classification) == "RemoteSendURL";
-}
-
 // static
 std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
   return base::GetFieldTrialParamValueByFeature(

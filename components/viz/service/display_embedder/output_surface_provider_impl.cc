@@ -167,17 +167,18 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           image_factory_, gpu_channel_manager_delegate_, renderer_settings);
       context_result = context_provider->BindToCurrentThread();
 
-      if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_ANDROID)
-        display_client->OnFatalOrSurfaceContextCreationFailure(context_result);
-#elif defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+      display_client->OnContextCreationResult(context_result);
+#endif
+
+      if (IsFatalOrSurfaceFailure(context_result)) {
+#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
         // TODO(kylechar): Chrome OS can't disable GPU compositing. This needs
         // to be handled similar to Android.
         CHECK(false);
-#else
+#elif !defined(OS_ANDROID)
         gpu_service_impl_->DisableGpuCompositing();
 #endif
-
         return nullptr;
       }
     }

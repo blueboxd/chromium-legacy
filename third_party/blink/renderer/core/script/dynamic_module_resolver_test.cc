@@ -47,7 +47,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
   bool fetch_tree_was_called() const { return fetch_tree_was_called_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implements Modulator:
@@ -101,7 +101,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   bool fetch_tree_was_called_ = false;
 };
 
-void DynamicModuleResolverTestModulator::Trace(blink::Visitor* visitor) {
+void DynamicModuleResolverTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(pending_client_);
   DummyModulator::Trace(visitor);
@@ -110,7 +110,7 @@ void DynamicModuleResolverTestModulator::Trace(blink::Visitor* visitor) {
 // CaptureExportedStringFunction implements a javascript function
 // with a single argument of type module namespace.
 // CaptureExportedStringFunction captures the exported string value
-// from the module namespace as a blink::String, exposed via CapturedValue().
+// from the module namespace as a WTF::String, exposed via CapturedValue().
 class CaptureExportedStringFunction final : public ScriptFunction {
  public:
   CaptureExportedStringFunction(ScriptState* script_state,

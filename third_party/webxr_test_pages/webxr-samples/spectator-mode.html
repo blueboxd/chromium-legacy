@@ -155,10 +155,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           spectatorButton.innerHTML = 'Enable spectator mode';
           spectatorButton.addEventListener('click', onEnableSpectatorMode);
           mainElement.appendChild(spectatorButton);
-
-          // Hide the inline session's canvas so that we can see
-          // the button.
-          gl.canvas.style.display = 'none';
         });
       }
 
@@ -167,7 +163,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        // In order for an inline session to be used we must set the GL layer's
+        // compositionDisabled option to "true", which indicates that WebGL
+        // commands will draw to the canvas like normal.
+        session.updateRenderState({
+          baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
+        });
 
         session.requestReferenceSpace('local-floor').then((refSpace) => {
           return refSpace;

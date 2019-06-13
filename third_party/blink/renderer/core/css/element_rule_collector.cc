@@ -130,7 +130,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
   init.part_names = part_names;
   SelectorChecker checker(init);
   SelectorChecker::SelectorCheckingContext context(
-      context_.GetElement(), SelectorChecker::kVisitedMatchEnabled);
+      &context_.GetElement(), SelectorChecker::kVisitedMatchEnabled);
   context.scope = match_request.scope;
   context.pseudo_id = pseudo_style_request_.pseudo_id;
 
@@ -175,7 +175,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
   }
 
   StyleEngine& style_engine =
-      context_.GetElement()->GetDocument().GetStyleEngine();
+      context_.GetElement().GetDocument().GetStyleEngine();
   if (!style_engine.Stats())
     return;
 
@@ -191,9 +191,8 @@ void ElementRuleCollector::CollectMatchingRules(
     ShadowV0CascadeOrder cascade_order,
     bool matching_tree_boundary_rules) {
   DCHECK(match_request.rule_set);
-  DCHECK(context_.GetElement());
 
-  Element& element = *context_.GetElement();
+  Element& element = context_.GetElement();
   const AtomicString& pseudo_id = element.ShadowPseudoId();
   if (!pseudo_id.IsEmpty()) {
     DCHECK(element.IsStyledElement());

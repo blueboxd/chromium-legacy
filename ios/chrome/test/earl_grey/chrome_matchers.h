@@ -283,6 +283,9 @@ id<GREYMatcher> WebStateScrollViewMatcher();
 
 // Returns a matcher for the Clear Browsing Data button in the History UI.
 id<GREYMatcher> HistoryClearBrowsingDataButton();
+
+// Returns a matcher for "Open In..." button.
+id<GREYMatcher> OpenInButton();
 }
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

@@ -36,9 +36,6 @@ class AppBrowserController : public TabStripModelObserver,
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
 
-  // Returns whether the site is secure based on content's security level.
-  static bool IsSiteSecure(const content::WebContents* web_contents);
-
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;
 

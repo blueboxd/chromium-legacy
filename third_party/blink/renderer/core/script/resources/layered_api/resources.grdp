@@ -7,6 +7,7 @@
        third_party/blink/public/blink_resources.grd.
     -->
   <include name="IDR_LAYERED_API_BLANK_INDEX_MJS" file="../renderer/core/script/resources/layered_api/blank/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
+  <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_MJS" file="../renderer/core/script/resources/layered_api/kv-storage/async_iterator.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_MJS" file="../renderer/core/script/resources/layered_api/kv-storage/idb_utils.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_KV_STORAGE_INDEX_MJS" file="../renderer/core/script/resources/layered_api/kv-storage/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>

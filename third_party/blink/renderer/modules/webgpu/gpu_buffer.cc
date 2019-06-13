@@ -29,7 +29,6 @@ namespace {
 constexpr size_t kLargestMappableSize = v8::TypedArray::kMaxLength;
 
 bool ValidateMapSize(uint64_t buffer_size,
-                     ScriptPromiseResolver* resolver,
                      ExceptionState& exception_state) {
   if (buffer_size > kLargestMappableSize) {
     WTF::StringBuilder message_builder;
@@ -40,12 +39,36 @@ bool ValidateMapSize(uint64_t buffer_size,
     WTF::String message = message_builder.ToString();
 
     exception_state.ThrowRangeError(message);
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError, message));
-
     return false;
   }
   return true;
+}
+
+DawnBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
+  DCHECK(webgpu_desc);
+
+  DawnBufferDescriptor dawn_desc;
+  dawn_desc.nextInChain = nullptr;
+  dawn_desc.usage = AsDawnEnum<DawnBufferUsageBit>(webgpu_desc->usage());
+  dawn_desc.size = webgpu_desc->size();
+
+  return dawn_desc;
+}
+
+DOMArrayBuffer* CreateArrayBufferForMappedData(void* data, size_t data_length) {
+  DCHECK(data);
+
+  WTF::ArrayBufferContents::DataHandle handle(
+      data, data_length,
+      [](void* data, size_t length, void* info) {
+        // DataDeleter does nothing because Dawn wire owns the memory.
+      },
+      nullptr);
+
+  WTF::ArrayBufferContents contents(
+      std::move(handle), WTF::ArrayBufferContents::SharingType::kNotShared);
+
+  return DOMArrayBuffer::Create(contents);
 }
 
 }  // namespace
@@ -54,16 +77,39 @@ bool ValidateMapSize(uint64_t buffer_size,
 GPUBuffer* GPUBuffer::Create(GPUDevice* device,
                              const GPUBufferDescriptor* webgpu_desc) {
   DCHECK(device);
-  DCHECK(webgpu_desc);
 
-  DawnBufferDescriptor dawn_desc;
-  dawn_desc.nextInChain = nullptr;
-  dawn_desc.usage = AsDawnEnum<DawnBufferUsageBit>(webgpu_desc->usage());
-  dawn_desc.size = webgpu_desc->size();
-
+  DawnBufferDescriptor dawn_desc = AsDawnType(webgpu_desc);
   return MakeGarbageCollected<GPUBuffer>(
       device, dawn_desc.size,
       device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc));
+}
+
+// static
+std::pair<GPUBuffer*, DOMArrayBuffer*> GPUBuffer::CreateMapped(
+    GPUDevice* device,
+    const GPUBufferDescriptor* webgpu_desc,
+    ExceptionState& exception_state) {
+  DCHECK(device);
+
+  DawnBufferDescriptor dawn_desc = AsDawnType(webgpu_desc);
+
+  if (!ValidateMapSize(dawn_desc.size, exception_state)) {
+    return std::make_pair(nullptr, nullptr);
+  }
+
+  DawnCreateBufferMappedResult result =
+      device->GetProcs().deviceCreateBufferMapped(device->GetHandle(),
+                                                  &dawn_desc);
+
+  GPUBuffer* gpu_buffer =
+      MakeGarbageCollected<GPUBuffer>(device, dawn_desc.size, result.buffer);
+
+  DCHECK_LE(result.dataLength, kLargestMappableSize);
+  DCHECK(result.data);
+  gpu_buffer->mapped_buffer_ = CreateArrayBufferForMappedData(
+      result.data, static_cast<size_t>(result.dataLength));
+
+  return std::make_pair(gpu_buffer, gpu_buffer->mapped_buffer_);
 }
 
 GPUBuffer::GPUBuffer(GPUDevice* device, uint64_t size, DawnBuffer buffer)
@@ -114,21 +160,9 @@ void GPUBuffer::OnMapAsyncCallback(ScriptPromiseResolver* resolver,
     case DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS:
       DCHECK(data);
       DCHECK_LE(data_length, kLargestMappableSize);
-      {
-        WTF::ArrayBufferContents::DataHandle handle(
-            data, static_cast<size_t>(data_length),
-            [](void* data, size_t length, void* info) {
-              // DataDeleter does nothing because Dawn wire owns the memory.
-            },
-            nullptr);
-
-        WTF::ArrayBufferContents contents(
-            std::move(handle),
-            WTF::ArrayBufferContents::SharingType::kNotShared);
-
-        mapped_buffer_ = DOMArrayBuffer::Create(contents);
-        resolver->Resolve(mapped_buffer_);
-      }
+      mapped_buffer_ = CreateArrayBufferForMappedData(
+          data, static_cast<size_t>(data_length));
+      resolver->Resolve(mapped_buffer_);
       break;
     case DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR:
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -153,7 +187,8 @@ ScriptPromise GPUBuffer::mapReadAsync(ScriptState* script_state,
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!ValidateMapSize(size_, resolver, exception_state)) {
+  if (!ValidateMapSize(size_, exception_state)) {
+    resolver->Reject(exception_state);
     return promise;
   }
 
@@ -187,7 +222,8 @@ ScriptPromise GPUBuffer::mapWriteAsync(ScriptState* script_state,
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!ValidateMapSize(size_, resolver, exception_state)) {
+  if (!ValidateMapSize(size_, exception_state)) {
+    resolver->Reject(exception_state);
     return promise;
   }
 

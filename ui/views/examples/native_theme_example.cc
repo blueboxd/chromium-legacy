@@ -56,8 +56,8 @@ void InsertColorRow(GridLayout* layout,
   color_view->SetSelectable(true);
 
   layout->StartRow(GridLayout::kFixedSize, 0);
-  layout->AddView(label_view.release());
-  layout->AddView(color_view.release());
+  layout->AddView(std::move(label_view));
+  layout->AddView(std::move(color_view));
 }
 
 // Returns a view of two columns where the first contains the identifier names

@@ -35,6 +35,8 @@ class BrowserXRRuntime;
 // APIs like poses and presentation.
 class XRDeviceImpl : public device::mojom::XRDevice {
  public:
+  static bool IsXrDeviceConsentPromptDisabledForTesting();
+
   XRDeviceImpl(content::RenderFrameHost* render_frame_host,
                device::mojom::XRDeviceRequest device_request);
   ~XRDeviceImpl() override;

@@ -168,10 +168,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/927330
     "race:net::(anonymous namespace)::g_network_change_notifier\n"
 
-    // https://crbug.com/965717
-    "race:base::internal::ThreadPoolImplTest_"
-    "FileDescriptorWatcherNoOpsAfterShutdown_Test::TestBody\n"
-
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 

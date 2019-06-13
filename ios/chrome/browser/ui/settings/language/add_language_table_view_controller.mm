@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -22,13 +23,6 @@
 #endif
 
 namespace {
-
-NSString* const kAddLanguageTableViewAccessibilityIdentifier =
-    @"kAddLanguageTableViewAccessibilityIdentifier";
-NSString* const kAddLanguageSearchControllerAccessibilityIdentifier =
-    @"kAddLanguageSearchControllerAccessibilityIdentifier";
-NSString* const kAddLanguageSearchScrimAccessibilityIdentifier =
-    @"kAddLanguageSearchScrimAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierLanguages = kSectionIdentifierEnumZero,

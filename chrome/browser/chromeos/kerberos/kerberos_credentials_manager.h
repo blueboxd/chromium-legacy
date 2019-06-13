@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_KERBEROS_KERBEROS_CREDENTIALS_MANAGER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 
@@ -18,9 +20,14 @@ class PrefRegistrySimple;
 class PrefService;
 class PrefChangeRegistrar;
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 
 class KerberosAddAccountRunner;
+class VariableExpander;
 
 class KerberosCredentialsManager final {
  public:
@@ -41,14 +48,19 @@ class KerberosCredentialsManager final {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  explicit KerberosCredentialsManager(PrefService* local_state);
+  KerberosCredentialsManager(PrefService* local_state,
+                             const user_manager::User* primary_user);
   ~KerberosCredentialsManager();
 
-  // Singleton accessor. DCHECKs if the instance has not been created yet.
+  // Singleton accessor. Available once the primary profile is available.
+  // DCHECKs if the instance has not been created yet.
   static KerberosCredentialsManager& Get();
 
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Helper method for ignoring the results of method calls.
+  static ResultCallback EmptyResultCallback();
 
   // Start observing this object. |observer| is not owned.
   void AddObserver(Observer* observer);
@@ -56,11 +68,19 @@ class KerberosCredentialsManager final {
   // Stop observing this object. |observer| is not owned.
   void RemoveObserver(const Observer* observer);
 
-  // Adds an account for the given |principal_name| and authenticates it using
-  // the given |password|. On success, sets |principal_name| as active principal
-  // and calls OnAccountsChanged() for observers.
+  // Adds an account for the given |principal_name|. If |is_managed| is true,
+  // the account is assumed to be managed by an admin and it overwrites any
+  // existing unmanaged account. If |password| is given, authenticates the
+  // account. If |remember_password| is true and a |password| is given, the
+  // Kerberos daemon remembers the password. |krb5_conf| is set as configuration
+  // if given. Sets a default configuration for new accounts if |krb5_conf| is
+  // not given. On success, sets |principal_name| as active principal and calls
+  // OnAccountsChanged() for observers.
   void AddAccountAndAuthenticate(std::string principal_name,
-                                 const std::string& password,
+                                 bool is_managed,
+                                 const base::Optional<std::string>& password,
+                                 bool remember_password,
+                                 const base::Optional<std::string>& krb5_conf,
                                  ResultCallback callback);
 
   // Removes the Kerberos account for the account with given |principal_name|.
@@ -90,12 +110,16 @@ class KerberosCredentialsManager final {
   // Sets the currently active account.
   kerberos::ErrorType SetActiveAccount(std::string principal_name);
 
+  // Returns the currently active account or an empty string if there is none.
+  const std::string& GetActiveAccount() { return active_principal_name_; }
+
  private:
   friend class KerberosAddAccountRunner;
 
   // Callback on KerberosAddAccountRunner::Done.
   void OnAddAccountRunnerDone(KerberosAddAccountRunner* runner,
                               std::string principal_name,
+                              bool is_managed,
                               ResultCallback callback,
                               kerberos::ErrorType error);
 
@@ -149,11 +173,14 @@ class KerberosCredentialsManager final {
   // Observer for Kerberos-related prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  // Handles the steps to add a Kerberos account.
-  std::unique_ptr<KerberosAddAccountRunner> add_account_runner_;
+  // Keeps track of accounts currently being added.
+  std::vector<std::unique_ptr<KerberosAddAccountRunner>> add_account_runners_;
 
   // Currently active principal.
   std::string active_principal_name_;
+
+  // Variable expander for the principal name (replaces ${LOGIN_ID} etc.).
+  std::unique_ptr<VariableExpander> principal_expander_;
 
   // List of objects that observe this instance.
   base::ObserverList<Observer, true /* check_empty */> observers_;

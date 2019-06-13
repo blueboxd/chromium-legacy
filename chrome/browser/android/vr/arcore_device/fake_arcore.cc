@@ -218,7 +218,7 @@ bool FakeArCore::RequestHitTest(
   return true;
 }
 
-std::vector<mojom::XRPlaneDataPtr> FakeArCore::GetDetectedPlanes() {
+mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
   std::vector<mojom::XRPlaneDataPtr> result;
 
   // 1m ahead of the origin, neutral orientation facing forward.
@@ -242,7 +242,9 @@ std::vector<mojom::XRPlaneDataPtr> FakeArCore::GetDetectedPlanes() {
   result.push_back(
       mojom::XRPlaneData::New(1, device::mojom::XRPlaneOrientation::HORIZONTAL,
                               std::move(pose), std::move(vertices)));
-  return result;
+
+  return mojom::XRPlaneDetectionData::New(std::vector<int32_t>{1},
+                                          std::move(result));
 }
 
 void FakeArCore::Pause() {

@@ -314,10 +314,12 @@ ZoomBubbleView::~ZoomBubbleView() {
 
 base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser)
+    return {};
   OmniboxPageActionIconContainerView* page_action_icon_container_view =
       GetAnchorViewForBrowser(browser);
   if (!page_action_icon_container_view)
-    return base::string16();
+    return {};
 
   PageActionIconView* zoom_view =
       page_action_icon_container_view->GetPageActionIconView(
@@ -505,6 +507,7 @@ void ZoomBubbleView::ButtonPressed(views::Button* sender,
   if (sender == image_button_) {
     DCHECK(extension_info_.icon_image) << "Invalid button press.";
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    DCHECK(browser);
     chrome::AddSelectedTabWithURL(
         browser, GURL(base::StringPrintf("chrome://extensions?id=%s",
                                          extension_info_.id.c_str())),

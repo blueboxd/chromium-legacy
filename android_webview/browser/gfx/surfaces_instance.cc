@@ -442,7 +442,7 @@ std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
 
 void SurfacesInstance::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {}
+    const viz::FrameTimingDetailsMap& timing_details) {}
 
 void SurfacesInstance::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {

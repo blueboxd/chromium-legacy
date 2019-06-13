@@ -63,7 +63,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest,
     if (!EnableSystemWebApps())
       return;
 
-    // Install the Settings App.
     web_app::WebAppProvider::Get(browser()->profile())
         ->system_web_app_manager()
         .InstallSystemAppsForTesting();

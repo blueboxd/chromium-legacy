@@ -99,7 +99,7 @@ void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
   record_to_module_script_map_.clear();
 }
 
-void ModuleRecordResolverImpl::Trace(blink::Visitor* visitor) {
+void ModuleRecordResolverImpl::Trace(Visitor* visitor) {
   ModuleRecordResolver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);

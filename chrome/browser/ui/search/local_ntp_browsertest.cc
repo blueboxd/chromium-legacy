@@ -118,7 +118,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     TestInstantServiceObserver mv_observer(instant_service);
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
-    instant_service->UpdateMostVisitedItemsInfo();
+    instant_service->UpdateMostVisitedInfo();
     const int numDefaultMVItems =
         kDefaultMostVisitedItemCount +
         (base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut) ? 1
@@ -405,9 +405,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Google", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
   // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).
@@ -457,9 +454,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Other", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
   // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).

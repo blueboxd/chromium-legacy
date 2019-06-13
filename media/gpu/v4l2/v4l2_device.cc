@@ -466,13 +466,13 @@ bool V4L2WritableBufferRef::QueueDMABuf(
     return false;
   }
 
-  if (fds.size() != self.PlanesCount()) {
-    VLOGF(1) << "Provided " << fds.size() << " FDs while we require "
-             << self.buffer_data_->v4l2_buffer_.length << ".";
+  size_t num_planes = self.PlanesCount();
+  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
+  if (fds.size() < num_planes) {
+    VLOGF(1) << "The given number of fds is less than required one";
     return false;
   }
-
-  for (size_t i = 0; i < fds.size(); i++)
+  for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
 
   return std::move(self).DoQueue();

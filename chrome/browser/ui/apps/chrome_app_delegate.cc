@@ -375,7 +375,7 @@ bool ChromeAppDelegate::TakeFocus(content::WebContents* web_contents,
 #endif
 }
 
-gfx::Size ChromeAppDelegate::EnterPictureInPicture(
+content::PictureInPictureResult ChromeAppDelegate::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {

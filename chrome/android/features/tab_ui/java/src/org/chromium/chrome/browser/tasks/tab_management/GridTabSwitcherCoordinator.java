@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -36,16 +37,31 @@ public class GridTabSwitcherCoordinator
     final static String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private final TabListCoordinator mTabGridCoordinator;
     private final GridTabSwitcherMediator mMediator;
     private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
+    private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+
+    private final MenuOrKeyboardActionController
+            .MenuOrKeyboardActionHandler mGridTabSwitcherMenuActionHandler =
+            new MenuOrKeyboardActionController.MenuOrKeyboardActionHandler() {
+                @Override
+                public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+                    if (id == R.id.menu_group_tabs) {
+                        mTabSelectionEditorCoordinator.getController().show();
+                        return true;
+                    }
+                    return false;
+                }
+            };
 
     public GridTabSwitcherCoordinator(Context context,
             ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, CompositorViewHolder compositorViewHolder,
             ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
-            Runnable backPress) {
+            MenuOrKeyboardActionController menuOrKeyboardActionController, Runnable backPress) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
@@ -93,6 +109,13 @@ public class GridTabSwitcherCoordinator
                 context, backPress, tabModelSelector::getCurrentTab));
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
+
+        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                context, compositorViewHolder, tabModelSelector, tabContentManager);
+
+        mMenuOrKeyboardActionController = menuOrKeyboardActionController;
+        mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(
+                mGridTabSwitcherMenuActionHandler);
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
@@ -159,6 +182,8 @@ public class GridTabSwitcherCoordinator
     // ResetHandler implementation.
     @Override
     public void destroy() {
+        mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(
+                mGridTabSwitcherMenuActionHandler);
         mTabGridCoordinator.destroy();
         mContainerViewChangeProcessor.destroy();
         mMediator.destroy();

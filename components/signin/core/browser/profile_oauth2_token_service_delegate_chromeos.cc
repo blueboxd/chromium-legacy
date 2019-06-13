@@ -89,7 +89,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::
 
 OAuth2AccessTokenFetcher*
 ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -132,7 +132,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
 // both |GetAccounts| and |RefreshTokenIsAvailable| use
 // |GetOAuthAccountIdsFromAccountKeys|.
 bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
   }
@@ -145,7 +145,7 @@ bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -172,7 +172,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
 }
 
 GoogleServiceAuthError ProfileOAuth2TokenServiceDelegateChromeOS::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = errors_.find(account_id);
   if (it != errors_.end()) {
     return it->second.last_auth_error;
@@ -198,7 +198,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::GetAccounts() {
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (load_credentials_state() != LOAD_CREDENTIALS_NOT_STARTED) {
@@ -226,7 +226,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& refresh_token) {
   // This API could have been called for upserting the Device/Primary
   // |account_id| or a Secondary |account_id|.
@@ -376,7 +376,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeCredentials(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   // Signing out of Chrome is not possible on Chrome OS.
   NOTREACHED();
 }

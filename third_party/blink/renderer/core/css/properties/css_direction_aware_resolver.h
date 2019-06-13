@@ -44,6 +44,7 @@ class CSSDirectionAwareResolver {
   static PhysicalGroup<4> ScrollMarginGroup();
   static PhysicalGroup<4> ScrollPaddingGroup();
   static PhysicalGroup<2> SizeGroup();
+  static PhysicalGroup<4> VisitedBorderColorGroup();
 
   // These resolvers expect a PhysicalGroup with box sides, in the following
   // order: top, right, bottom, left.

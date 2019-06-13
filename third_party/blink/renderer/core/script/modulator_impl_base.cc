@@ -52,33 +52,39 @@ bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
       GetExecutionContext());
 }
 
-bool ModulatorImplBase::BuiltInModuleEnabled(
-    blink::layered_api::Module module) const {
+bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
+  if (RuntimeEnabledFeatures::BuiltInModuleAllEnabled())
+    return true;
   switch (module) {
-    case blink::layered_api::Module::kBlank:
+    case layered_api::Module::kBlank:
       return true;
-    case blink::layered_api::Module::kVirtualScroller:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
-    case blink::layered_api::Module::kKvStorage:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
-             RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
-                 GetExecutionContext());
+    case layered_api::Module::kVirtualScroller:
+      return false;
+    case layered_api::Module::kKvStorage:
+      return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
+          GetExecutionContext());
+    case layered_api::Module::kElementsSwitch:
+      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
   }
 }
 
 void ModulatorImplBase::BuiltInModuleUseCount(
-    blink::layered_api::Module module) const {
+    layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
-    case blink::layered_api::Module::kBlank:
+    case layered_api::Module::kBlank:
       break;
-    case blink::layered_api::Module::kVirtualScroller:
+    case layered_api::Module::kElementsSwitch:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kBuiltInModuleSwitchImported);
+      break;
+    case layered_api::Module::kVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleVirtualScroller);
       break;
-    case blink::layered_api::Module::kKvStorage:
+    case layered_api::Module::kKvStorage:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleKvStorage);
       break;
@@ -416,7 +422,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   return ScriptValue();
 }
 
-void ModulatorImplBase::Trace(blink::Visitor* visitor) {
+void ModulatorImplBase::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);

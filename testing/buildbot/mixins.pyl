@@ -380,6 +380,14 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
+        'os': 'Mac-10.13.6',
+      },
+    },
+  },
+  'mac_mini_intel_gpu_10.12': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
         'os': 'Mac-10.12.6',
       },
     },
@@ -487,20 +495,6 @@
         'gpu': '10de:0fe9',
       },
     },
-  },
-  'optional_mac_gpu_slicing': {
-    'swarming': {
-      'optional_dimensions': {
-        # Wait 10 minutes for 10.13 and then fall back to the specified
-        # dimensions (usually 10.12).  The format for optional dimensions
-        # is: expiration: [{key, value}, ..].
-        600: [
-          {
-            'os': 'Mac-10.13.6',
-          }
-        ],
-      },
-    }
   },
   'pie': {
     'swarming': {

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -1100,7 +1100,7 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
       "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
-  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -1129,7 +1129,7 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
 
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
-  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
 
   std::string message;
   do {

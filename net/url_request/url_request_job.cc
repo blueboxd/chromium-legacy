@@ -433,6 +433,22 @@ void URLRequestJob::NotifyHeadersComplete() {
     }
   }
 
+  NotifyFinalHeadersReceived();
+  // |this| may be destroyed at this point.
+}
+
+void URLRequestJob::NotifyFinalHeadersReceived() {
+  DCHECK(!NeedsAuth() || !GetAuthChallengeInfo());
+
+  if (has_handled_response_)
+    return;
+
+  // While the request's status is normally updated in NotifyHeadersComplete(),
+  // URLRequestHttpJob::CancelAuth() posts a task to invoke this method
+  // directly, which bypasses that logic.
+  if (request_->status().is_io_pending())
+    request_->set_status(URLRequestStatus());
+
   has_handled_response_ = true;
   if (request_->status().is_success()) {
     DCHECK(!source_stream_);
@@ -463,7 +479,6 @@ void URLRequestJob::NotifyHeadersComplete() {
   }
 
   request_->NotifyResponseStarted(URLRequestStatus());
-
   // |this| may be destroyed at this point.
 }
 

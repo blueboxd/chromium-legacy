@@ -231,9 +231,8 @@ const char kUmaSelectDefaultSearchEngine[] =
     TableViewURLCell* urlCell =
         base::mac::ObjCCastStrict<TableViewURLCell>(cell);
 
-    FaviconAttributes* cachedAttributes = nil;
     if (item.type == ItemTypePrepopulatedEngine) {
-      cachedAttributes = _faviconLoader->FaviconForPageUrl(
+      _faviconLoader->FaviconForPageUrl(
           engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
           /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
             // Only set favicon if the cell hasn't been reused.
@@ -243,7 +242,7 @@ const char kUmaSelectDefaultSearchEngine[] =
             }
           });
     } else {
-      cachedAttributes = _faviconLoader->FaviconForIconUrl(
+      _faviconLoader->FaviconForIconUrl(
           engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
           ^(FaviconAttributes* attributes) {
             // Only set favicon if the cell hasn't been reused.
@@ -253,8 +252,6 @@ const char kUmaSelectDefaultSearchEngine[] =
             }
           });
     }
-    DCHECK(cachedAttributes);
-    [urlCell.faviconView configureWithAttributes:cachedAttributes];
   }
   return cell;
 }

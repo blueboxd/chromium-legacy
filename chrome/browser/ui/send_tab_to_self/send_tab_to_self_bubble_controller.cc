@@ -86,6 +86,8 @@ void SendTabToSelfBubbleController::OnBubbleClosed() {
   send_tab_to_self_bubble_view_ = nullptr;
 }
 
+SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;
+
 SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {

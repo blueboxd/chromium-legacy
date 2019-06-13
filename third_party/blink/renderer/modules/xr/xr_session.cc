@@ -632,8 +632,7 @@ void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-        detected_planes) {
+    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -645,7 +644,7 @@ void XRSession::OnFrame(
   // If there are pending render state changes, apply them now.
   ApplyPendingRenderState();
 
-  world_information_->ProcessPlaneInformation(detected_planes);
+  world_information_->ProcessPlaneInformation(detected_planes_data, timestamp);
 
   if (pending_frame_) {
     pending_frame_ = false;

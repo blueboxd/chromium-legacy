@@ -818,10 +818,6 @@ void GridLayout::SkipColumns(int col_count) {
   SkipPaddingColumns();
 }
 
-void GridLayout::AddView(View* view) {
-  AddView(view, 1, 1);
-}
-
 void GridLayout::AddView(View* view, int col_span, int row_span) {
   DCHECK(current_row_col_set_ &&
          next_column_ < current_row_col_set_->num_columns());
@@ -829,19 +825,24 @@ void GridLayout::AddView(View* view, int col_span, int row_span) {
   AddView(view, col_span, row_span, column->h_align(), column->v_align());
 }
 
-void GridLayout::AddView(View* view, int col_span, int row_span,
-                         Alignment h_align, Alignment v_align) {
-  AddView(view, col_span, row_span, h_align, v_align, 0, 0);
-}
-
-void GridLayout::AddView(View* view, int col_span, int row_span,
-                         Alignment h_align, Alignment v_align,
-                         int pref_width, int pref_height) {
+void GridLayout::AddView(View* view,
+                         int col_span,
+                         int row_span,
+                         Alignment h_align,
+                         Alignment v_align,
+                         int pref_width,
+                         int pref_height) {
   DCHECK(current_row_col_set_ && col_span > 0 && row_span > 0 &&
          (next_column_ + col_span) <= current_row_col_set_->num_columns());
   // We don't support baseline alignment of views spanning rows. Please add if
   // you need it.
   DCHECK(v_align != BASELINE || row_span == 1);
+  DCHECK(view && (view->parent() == nullptr || view->parent() == host_));
+  if (!view->parent()) {
+    adding_view_ = true;
+    host_->AddChildView(view);
+    adding_view_ = false;
+  }
   AddViewState(std::make_unique<ViewState>(
       current_row_col_set_, view, next_column_, current_row_, col_span,
       row_span, h_align, v_align, pref_width, pref_height));
@@ -1046,14 +1047,39 @@ void GridLayout::CalculateMasterColumnsIfNecessary() const {
   }
 }
 
+void GridLayout::AddViewImpl(std::unique_ptr<View> view,
+                             int col_span,
+                             int row_span) {
+  DCHECK(current_row_col_set_ &&
+         next_column_ < current_row_col_set_->num_columns());
+  Column* column = current_row_col_set_->columns_[next_column_].get();
+  AddViewImpl(std::move(view), col_span, row_span, column->h_align(),
+              column->v_align(), 0, 0);
+}
+
+void GridLayout::AddViewImpl(std::unique_ptr<View> view,
+                             int col_span,
+                             int row_span,
+                             Alignment h_align,
+                             Alignment v_align,
+                             int pref_width,
+                             int pref_height) {
+  DCHECK(current_row_col_set_ && col_span > 0 && row_span > 0 &&
+         (next_column_ + col_span) <= current_row_col_set_->num_columns());
+  // We don't support baseline alignment of views spanning rows. Please add if
+  // you need it.
+  DCHECK(v_align != BASELINE || row_span == 1);
+  DCHECK(view && view->parent() == nullptr);
+  adding_view_ = true;
+  View* view_ptr = host_->AddChildView(std::move(view));
+  adding_view_ = false;
+  AddViewState(std::make_unique<ViewState>(
+      current_row_col_set_, view_ptr, next_column_, current_row_, col_span,
+      row_span, h_align, v_align, pref_width, pref_height));
+}
+
 void GridLayout::AddViewState(std::unique_ptr<ViewState> view_state) {
-  DCHECK(view_state->view && (view_state->view->parent() == nullptr ||
-                              view_state->view->parent() == host_));
-  if (!view_state->view->parent()) {
-    adding_view_ = true;
-    host_->AddChildView(view_state->view);
-    adding_view_ = false;
-  }
+  DCHECK(view_state->view && view_state->view->parent() == host_);
   remaining_row_span_ = std::max(remaining_row_span_, view_state->row_span);
   next_column_ += view_state->col_span;
   current_row_col_set_->AddViewState(view_state.get());

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #define UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -68,7 +70,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
-  virtual View* CreateExtraView();
+  virtual std::unique_ptr<View> CreateExtraView();
 
   // Override this function to adjust the padding between the extra view and
   // the confirm/cancel buttons. Note that if there are no buttons, this will

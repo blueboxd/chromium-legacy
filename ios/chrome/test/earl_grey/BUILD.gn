@@ -67,6 +67,7 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
     "//ios/chrome/browser/ui/settings/autofill:eg_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:eg_tests",
     "//ios/chrome/browser/ui/settings/google_services:eg_tests",
+    "//ios/chrome/browser/ui/settings/language:eg_tests",
     "//ios/chrome/browser/ui/settings/password:eg_tests",
   ]
 }
@@ -392,6 +393,7 @@ source_set("eg_test_support+eg2") {
     "//components/sync/base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/testing:http_server_bundle_data",
     "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

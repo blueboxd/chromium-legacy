@@ -84,6 +84,7 @@ mojom("mojom") {
     "network_change_manager.mojom",
     "network_context.mojom",
     "network_interface.mojom",
+    "network_isolation_key.mojom",
     "network_quality_estimator_manager.mojom",
     "network_service.mojom",
     "network_service_test.mojom",

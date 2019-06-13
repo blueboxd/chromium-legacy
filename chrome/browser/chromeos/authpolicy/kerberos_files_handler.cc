@@ -103,7 +103,7 @@ KerberosFilesHandler::KerberosFilesHandler(
   // Set environment variables for GSSAPI library.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath path;
-  base::PathService::Get(base::DIR_HOME, &path);
+  CHECK(base::PathService::Get(base::DIR_HOME, &path));
   path = path.Append(kKrb5Directory);
   std::string krb5cc_env_value =
       kKrb5CCFilePrefix + path.Append(kKrb5CCFile).value();

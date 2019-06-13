@@ -461,15 +461,43 @@ void LoginHandler::MaybeSetUpLoginPrompt(
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  prompt_started_ = true;
 
   // When committed interstitials are enabled, a login prompt is triggered once
   // the interstitial commits (that is, when |mode| is POST_COMMIT).
-  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials) &&
-      mode == POST_COMMIT) {
-    ShowLoginPrompt(request_url);
-    return;
+  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials)) {
+    if (mode == POST_COMMIT) {
+      prompt_started_ = true;
+      ShowLoginPrompt(request_url);
+      return;
+    }
+
+    // In PRE_COMMIT mode, always cancel main frame requests that receive auth
+    // challenges. An interstitial will be committed as the result of the
+    // cancellation, and the login prompt will be shown on top of it in
+    // POST_COMMIT mode once the interstitial commits.
+    //
+    // Strictly speaking, it is not necessary to show an interstitial for all
+    // main-frame navigations, just cross-origin ones. However, we show an
+    // interstitial for all main-frame navigations for simplicity. Otherwise,
+    // it's difficult to prevent repeated prompts on cancellation. For example,
+    // imagine that we navigate from http://a.com/1 to http://a.com/2 and show a
+    // login prompt without committing an interstitial. If the prompt is
+    // cancelled, the request will then be resumed to read the 401 body and
+    // commit the navigation. But the committed 401 error looks
+    // indistinguishable from what we commit in the case of a cross-origin
+    // navigation, so LoginHandler will run in POST_COMMIT mode and show another
+    // login prompt. For simplicity, and because same-origin auth prompts should
+    // be relatively rare due to credential caching, we commit an interstitial
+    // for all main-frame navigations.
+    if (is_request_for_main_frame) {
+      DCHECK(mode == PRE_COMMIT);
+      RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
+      CancelAuth();
+      return;
+    }
   }
+
+  prompt_started_ = true;
 
   // Check if this is a main frame navigation and
   // (a) if the request is cross origin or
@@ -505,18 +533,9 @@ void LoginHandler::MaybeSetUpLoginPrompt(
        auth_info().is_proxy) &&
       web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
           blink::kWebDisplayModeStandalone) {
+    DCHECK(!base::FeatureList::IsEnabled(
+        features::kHTTPAuthCommittedInterstitials));
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
-
-    // When committed interstitials are enabled, cancel the request in order to
-    // commit an interstitial; the login prompt will be shown in POST_COMMIT
-    // mode once the interstitial commits.
-    if (base::FeatureList::IsEnabled(
-            features::kHTTPAuthCommittedInterstitials) &&
-        mode == PRE_COMMIT) {
-      prompt_started_ = false;
-      CancelAuth();
-      return;
-    }
 
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.

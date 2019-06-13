@@ -888,9 +888,6 @@ MediaDrmBridge::MediaDrmBridge(
       ConvertUTF8ToJavaString(env, security_level_str);
 
   bool use_origin_isolated_storage =
-      // TODO(yucliu): Remove the check once persistent storage is fully
-      // supported and check if origin is valid.
-      base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
       // Per-origin provisioning must be supported for origin isolated storage.
       IsPerOriginProvisioningSupported() &&
       // origin id can be empty when MediaDrmBridge is created by

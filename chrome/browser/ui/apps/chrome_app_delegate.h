@@ -75,9 +75,10 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   void OnHide() override;
   void OnShow() override;
   bool TakeFocus(content::WebContents* web_contents, bool reverse) override;
-  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                  const viz::SurfaceId& surface_id,
-                                  const gfx::Size& natural_size) override;
+  content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 
   // content::NotificationObserver:

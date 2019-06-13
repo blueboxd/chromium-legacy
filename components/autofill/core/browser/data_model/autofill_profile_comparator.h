@@ -26,6 +26,24 @@ class AutofillProfileComparator {
 
   enum WhitespaceSpec { RETAIN_WHITESPACE, DISCARD_WHITESPACE };
 
+  // Returns true if |text1| matches |text2|. The following normalization
+  // techniques are applied to the given texts before comparing.
+  //
+  // (1) Diacritics are removed, e.g. حَ to ح, ビ to ヒ, and é to e;
+  // (2) Leading and trailing whitespace and punctuation are ignored; and
+  // (3) Characters are converted to lowercase.
+  //
+  // If |whitespace_spec| is DISCARD_WHITESPACE, then punctuation and whitespace
+  // are discarded. For example, the postal codes "B15 3TR" and "B153TR" and
+  // street addresses "16 Bridge St."" and "16 Bridge St" are considered equal.
+  //
+  // If |whitespace_spec| is RETAIN_WHITESPACE, then the postal codes "B15 3TR"
+  // and "B153TR" are not considered equal, but "16 Bridge St."" and "16 Bridge
+  // St" are because trailing whitespace and punctuation are ignored.
+  bool Compare(base::StringPiece16 text1,
+               base::StringPiece16 text2,
+               WhitespaceSpec whitespace_spec = DISCARD_WHITESPACE) const;
+
   // Returns a copy of |text| with uppercase converted to lowercase and
   // diacritics removed.
   //
@@ -38,12 +56,6 @@ class AutofillProfileComparator {
   base::string16 NormalizeForComparison(
       base::StringPiece16 text,
       WhitespaceSpec whitespace_spec = RETAIN_WHITESPACE) const;
-
-  // Returns true if |text1| matches |text2| when the texts are normalized and
-  // white space and punctuation are removed. For example, if |text1| is H3B 2Y5
-  // and |text2| is H3B2Y5, then returns true.
-  bool MatchesAfterNormalization(base::StringPiece16 text1,
-                                 base::StringPiece16 text2) const;
 
   // Returns true if |p1| and |p2| are viable merge candidates. This means that
   // their names, addresses, email addreses, company names, and phone numbers

@@ -116,6 +116,10 @@ class PasswordGenerationControllerImpl
   // Creation callback for the modal dialog view meant to facilitate testing.
   CreateDialogFactory create_dialog_factory_;
 
+  // Whether manual generation was requested from the UI. Used to filter out
+  // unexpected or delayed manual generation responses from the renderer.
+  bool manual_generation_requested_ = false;
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationControllerImpl);

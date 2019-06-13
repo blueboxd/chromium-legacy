@@ -21,9 +21,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 using ash::mojom::NotifierUiDataPtr;
+using message_center::MessageCenter;
 using message_center::NotifierId;
 
 namespace {
@@ -55,6 +57,49 @@ class NotifierComparator {
 
  private:
   icu::Collator* collator_;
+};
+
+// This delegate forwards NotificationDelegate methods to their equivalent in
+// NotificationPlatformBridgeDelegate.
+class ForwardingNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  ForwardingNotificationDelegate(const std::string& notification_id,
+                                 NotificationPlatformBridgeDelegate* delegate)
+      : notification_id_(notification_id), delegate_(delegate) {}
+
+  // message_center::NotificationDelegate:
+  void Close(bool by_user) override {
+    delegate_->HandleNotificationClosed(notification_id_, by_user);
+  }
+
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override {
+    if (button_index) {
+      delegate_->HandleNotificationButtonClicked(notification_id_,
+                                                 *button_index, reply);
+    } else {
+      delegate_->HandleNotificationClicked(notification_id_);
+    }
+  }
+
+  void SettingsClick() override {
+    delegate_->HandleNotificationSettingsButtonClicked(notification_id_);
+  }
+
+  void DisableNotification() override {
+    delegate_->DisableNotification(notification_id_);
+  }
+
+ private:
+  ~ForwardingNotificationDelegate() override = default;
+
+  // The ID of the notification.
+  const std::string notification_id_;
+
+  NotificationPlatformBridgeDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingNotificationDelegate);
 };
 
 }  // namespace
@@ -101,57 +146,21 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
 
 void ChromeAshMessageCenterClient::Display(
     const message_center::Notification& notification) {
-  // Null in unit tests.
-  if (!controller_)
-    return;
-
-  // Remove any previous mapping to |notification.id()| before inserting a new
-  // one.
-  base::EraseIf(
-      displayed_notifications_,
-      [notification](
-          const std::pair<base::UnguessableToken, std::string>& pair) {
-        return pair.second == notification.id();
-      });
-
-  base::UnguessableToken token = base::UnguessableToken::Create();
-  displayed_notifications_[token] = notification.id();
-  controller_->ShowClientNotification(notification, token);
+  auto message_center_notification =
+      std::make_unique<message_center::Notification>(
+          base::WrapRefCounted(
+              new ForwardingNotificationDelegate(notification.id(), delegate_)),
+          notification);
+  MessageCenter::Get()->AddNotification(std::move(message_center_notification));
 }
 
 void ChromeAshMessageCenterClient::Close(const std::string& notification_id) {
-  controller_->CloseClientNotification(notification_id);
-}
-
-void ChromeAshMessageCenterClient::HandleNotificationClosed(
-    const base::UnguessableToken& display_token,
-    bool by_user) {
-  auto entry = displayed_notifications_.find(display_token);
-  if (entry != displayed_notifications_.end()) {
-    delegate_->HandleNotificationClosed(entry->second, by_user);
-    displayed_notifications_.erase(entry);
+  // During shutdown, Ash is destroyed before |this|, taking the MessageCenter
+  // with it.
+  if (MessageCenter::Get()) {
+    MessageCenter::Get()->RemoveNotification(notification_id,
+                                             false /* by_user */);
   }
-}
-
-void ChromeAshMessageCenterClient::HandleNotificationClicked(
-    const std::string& id) {
-  delegate_->HandleNotificationClicked(id);
-}
-
-void ChromeAshMessageCenterClient::HandleNotificationButtonClicked(
-    const std::string& id,
-    int button_index,
-    const base::Optional<base::string16>& reply) {
-  delegate_->HandleNotificationButtonClicked(id, button_index, reply);
-}
-
-void ChromeAshMessageCenterClient::HandleNotificationSettingsButtonClicked(
-    const std::string& id) {
-  delegate_->HandleNotificationSettingsButtonClicked(id);
-}
-
-void ChromeAshMessageCenterClient::DisableNotification(const std::string& id) {
-  delegate_->DisableNotification(id);
 }
 
 void ChromeAshMessageCenterClient::SetNotifierEnabled(
@@ -227,11 +236,6 @@ void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
   std::move(callback).Run(
       ArcAppListPrefs::Get(arc::ArcSessionManager::Get()->profile())
           ->GetAppIdByPackageName(package_name));
-}
-
-void ChromeAshMessageCenterClient::ShowLockScreenNotificationSettings() {
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
 }
 
 void ChromeAshMessageCenterClient::OnIconImageUpdated(

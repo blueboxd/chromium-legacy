@@ -97,7 +97,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
 
 ScriptLoader::~ScriptLoader() {}
 
-void ScriptLoader::Trace(blink::Visitor* visitor) {
+void ScriptLoader::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);

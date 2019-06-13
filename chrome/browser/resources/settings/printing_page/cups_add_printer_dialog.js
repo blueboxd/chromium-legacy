@@ -178,14 +178,65 @@ Polymer({
     this.$$('add-printer-dialog').close();
   },
 
+  /**
+   * Handler for getPrinterInfo success.
+   * @param {!PrinterMakeModel} info
+   * @private
+   * */
+  onPrinterFound_: function(info) {
+    const newPrinter =
+        /** @type {CupsPrinterInfo}  */ (Object.assign({}, this.newPrinter));
+
+    newPrinter.printerManufacturer = info.manufacturer;
+    newPrinter.printerModel = info.model;
+    newPrinter.printerMakeAndModel = info.makeAndModel;
+    newPrinter.printerPpdReference.userSuppliedPpdUrl =
+        info.ppdRefUserSuppliedPpdUrl;
+    newPrinter.printerPpdReference.effectiveMakeAndModel =
+        info.ppdRefEffectiveMakeAndModel;
+    newPrinter.printerPpdReference.autoconf = info.autoconf;
+    newPrinter.printerPpdReferenceResolved = info.ppdReferenceResolved;
+
+    this.newPrinter = newPrinter;
+
+
+    // Add the printer if it's configurable. Otherwise, forward to the
+    // manufacturer dialog.
+    this.$$('add-printer-dialog').close();
+    if (this.newPrinter.printerPpdReferenceResolved) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
+          this.newPrinter);
+    } else {
+      this.fire('open-manufacturer-model-dialog');
+    }
+  },
+
+  /**
+   * Handler for getPrinterInfo failure.
+   * @param {*} rejected
+   * @private
+   */
+  infoFailed_: function(rejected) {
+    this.$$('add-printer-dialog').close();
+    this.fire('open-manufacturer-model-dialog');
+  },
+
   /** @private */
   addPressed_: function() {
     // Set the default printer queue to be "ipp/print".
     if (!this.newPrinter.printerQueue) {
       this.set('newPrinter.printerQueue', 'ipp/print');
     }
-    this.$$('add-printer-dialog').close();
-    this.fire('open-configuring-printer-dialog');
+
+    if (this.newPrinter.printerProtocol == 'ipp' ||
+        this.newPrinter.printerProtocol == 'ipps') {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getPrinterInfo(this.newPrinter)
+          .then(this.onPrinterFound_.bind(this), this.infoFailed_.bind(this));
+    } else {
+      this.$$('add-printer-dialog').close();
+      this.fire('open-manufacturer-model-dialog');
+    }
   },
 
   /**
@@ -515,41 +566,7 @@ Polymer({
   /** @private */
   switchToManufacturerDialog_: function() {
     this.$$('add-printer-configuring-dialog').close();
-    this.fire('open-manufacturer-model-dialog');
-  },
-
-  /**
-   * Handler for getPrinterInfo success.
-   * @param {!PrinterMakeModel} info
-   * @private
-   * */
-  onPrinterFound_: function(info) {
-    this.newPrinter.printerManufacturer = info.manufacturer;
-    this.newPrinter.printerModel = info.model;
-    this.newPrinter.printerMakeAndModel = info.makeAndModel;
-    this.newPrinter.printerPpdReference.userSuppliedPpdUrl =
-        info.ppdRefUserSuppliedPpdUrl;
-    this.newPrinter.printerPpdReference.effectiveMakeAndModel =
-        info.ppdRefEffectiveMakeAndModel;
-    this.newPrinter.printerPpdReference.autoconf = info.autoconf;
-    this.newPrinter.printerPpdReferenceResolved = info.ppdReferenceResolved;
-
-    // Add the printer if it's configurable. Otherwise, forward to the
-    // manufacturer dialog.
-    if (this.newPrinter.printerPpdReferenceResolved) {
-      this.addPrinter_();
-    } else {
-      this.switchToManufacturerDialog_();
-    }
-  },
-
-  /**
-   * Handler for getPrinterInfo failure.
-   * @param {*} rejected
-   * @private
-   */
-  infoFailed_: function(rejected) {
-    this.switchToManufacturerDialog_();
+    this.openManufacturerModelDialog_();
   },
 
   /** @private */
@@ -566,18 +583,8 @@ Polymer({
       this.configuringDialogTitle =
           loadTimeData.getString('manufacturerAndModelDialogTitle');
       this.addPrinter_();
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
-      this.configuringDialogTitle =
-          loadTimeData.getString('addPrintersManuallyTitle');
-      if (this.newPrinter.printerProtocol == 'ipp' ||
-          this.newPrinter.printerProtocol == 'ipps') {
-        settings.CupsPrintersBrowserProxyImpl.getInstance()
-            .getPrinterInfo(this.newPrinter)
-            .then(this.onPrinterFound_.bind(this), this.infoFailed_.bind(this));
-      } else {
-        // Defer the switch until all the elements are drawn.
-        this.async(this.switchToManufacturerDialog_.bind(this));
-      }
+    } else {
+      assertNotReached('Opening configuring dialog from invalid place');
     }
   },
 

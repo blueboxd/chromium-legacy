@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -987,9 +987,10 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
 
   EXPECT_TRUE(video_capture_settings.HasValue());
-  EXPECT_EQ(video_capture_settings.Width(), kDefaultScreenCastWidth);
-  EXPECT_EQ(video_capture_settings.Height(), kDefaultScreenCastHeight);
-  EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
+  EXPECT_EQ(video_capture_settings.Width(), blink::kDefaultScreenCastWidth);
+  EXPECT_EQ(video_capture_settings.Height(), blink::kDefaultScreenCastHeight);
+  EXPECT_EQ(video_capture_settings.FrameRate(),
+            blink::kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
@@ -998,10 +999,11 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
 
   const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
-  EXPECT_EQ(track_settings.target_width(), kDefaultScreenCastWidth);
-  EXPECT_EQ(track_settings.target_height(), kDefaultScreenCastHeight);
-  EXPECT_EQ(track_settings.min_aspect_ratio(), 1.0 / kMaxScreenCastDimension);
-  EXPECT_EQ(track_settings.max_aspect_ratio(), kMaxScreenCastDimension);
+  EXPECT_EQ(track_settings.target_width(), blink::kDefaultScreenCastWidth);
+  EXPECT_EQ(track_settings.target_height(), blink::kDefaultScreenCastHeight);
+  EXPECT_EQ(track_settings.min_aspect_ratio(),
+            1.0 / blink::kMaxScreenCastDimension);
+  EXPECT_EQ(track_settings.max_aspect_ratio(), blink::kMaxScreenCastDimension);
   // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
   EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
 }
@@ -1044,9 +1046,10 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
 
   EXPECT_TRUE(video_capture_settings.HasValue());
-  EXPECT_EQ(video_capture_settings.Width(), kDefaultScreenCastWidth);
-  EXPECT_EQ(video_capture_settings.Height(), kDefaultScreenCastHeight);
-  EXPECT_EQ(video_capture_settings.FrameRate(), kDefaultScreenCastFrameRate);
+  EXPECT_EQ(video_capture_settings.Width(), blink::kDefaultScreenCastWidth);
+  EXPECT_EQ(video_capture_settings.Height(), blink::kDefaultScreenCastHeight);
+  EXPECT_EQ(video_capture_settings.FrameRate(),
+            blink::kDefaultScreenCastFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::ANY_WITHIN_LIMIT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
@@ -1055,10 +1058,11 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
 
   const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
-  EXPECT_EQ(track_settings.target_width(), kDefaultScreenCastWidth);
-  EXPECT_EQ(track_settings.target_height(), kDefaultScreenCastHeight);
-  EXPECT_EQ(track_settings.min_aspect_ratio(), 1.0 / kMaxScreenCastDimension);
-  EXPECT_EQ(track_settings.max_aspect_ratio(), kMaxScreenCastDimension);
+  EXPECT_EQ(track_settings.target_width(), blink::kDefaultScreenCastWidth);
+  EXPECT_EQ(track_settings.target_height(), blink::kDefaultScreenCastHeight);
+  EXPECT_EQ(track_settings.min_aspect_ratio(),
+            1.0 / blink::kMaxScreenCastDimension);
+  EXPECT_EQ(track_settings.max_aspect_ratio(), blink::kMaxScreenCastDimension);
   // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
   EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
 }

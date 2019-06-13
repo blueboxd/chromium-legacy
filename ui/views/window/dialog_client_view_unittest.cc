@@ -68,7 +68,9 @@ class DialogClientViewTest : public test::WidgetTest,
     // DialogDelegateView would delete this, but |this| is owned by the test.
   }
 
-  View* CreateExtraView() override { return next_extra_view_.release(); }
+  std::unique_ptr<View> CreateExtraView() override {
+    return std::move(next_extra_view_);
+  }
 
   bool GetExtraViewPadding(int* padding) override {
     if (extra_view_padding_)

@@ -65,7 +65,7 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
   DCHECK(window_) << "Picture in Picture requires a valid window.";
 }
 
-gfx::Size PictureInPictureWindowControllerImpl::Show() {
+void PictureInPictureWindowControllerImpl::Show() {
   DCHECK(window_);
   DCHECK(surface_id_.is_valid());
 
@@ -90,8 +90,6 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
       media_session_action_previous_track_handled_);
   window_->ShowInactive();
   initiator_->SetHasPictureInPictureVideo(true);
-
-  return window_->GetBounds().size();
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
@@ -303,6 +301,10 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
       media_session_action_next_track_handled_);
   window_->SetPreviousTrackButtonVisibility(
       media_session_action_previous_track_handled_);
+}
+
+gfx::Size PictureInPictureWindowControllerImpl::GetSize() {
+  return window_->GetBounds().size();
 }
 
 void PictureInPictureWindowControllerImpl::MediaStartedPlaying(

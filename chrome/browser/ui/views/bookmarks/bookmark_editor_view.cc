@@ -95,8 +95,8 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-views::View* BookmarkEditorView::CreateExtraView() {
-  return new_folder_button_.get();
+std::unique_ptr<views::View> BookmarkEditorView::CreateExtraView() {
+  return std::move(new_folder_button_);
 }
 
 ui::ModalType BookmarkEditorView::GetModalType() const {

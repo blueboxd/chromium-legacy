@@ -74,20 +74,17 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // Notifies listeners that the user just opened a dangerous download.
   void OnDangerousDownloadOpened(const GURL& url,
                                  const std::string& file_name,
-                                 const std::string& download_digest_sha256,
-                                 const std::string& user_name);
+                                 const std::string& download_digest_sha256);
 
   // Notifies listeners that the user saw a security interstitial.
   void OnSecurityInterstitialShown(const GURL& url,
                                    const std::string& reason,
-                                   int net_error_code,
-                                   const std::string& user_name);
+                                   int net_error_code);
 
   // Notifies listeners that the user clicked-through a security interstitial.
   void OnSecurityInterstitialProceeded(const GURL& url,
                                        const std::string& reason,
-                                       int net_error_code,
-                                       const std::string& user_name);
+                                       int net_error_code);
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
@@ -100,6 +97,10 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
 
   // Report safe browsing event through real-time reporting channel, if enabled.
   void ReportRealtimeEvent(const char* name, base::Value event);
+
+  // Returns the Gaia email address of the account signed in to the profile or
+  // an empty string if the profile is not signed in.
+  std::string GetProfileUserName();
 
   content::BrowserContext* context_;
   identity::IdentityManager* identity_manager_ = nullptr;

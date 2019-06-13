@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -56,7 +57,8 @@ unsigned CanvasFontCache::HardMaxFonts() {
                                     : CanvasFontCacheHardMaxFonts);
 }
 
-bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
+bool CanvasFontCache::GetFontUsingDefaultStyle(HTMLCanvasElement& element,
+                                               const String& font_string,
                                                Font& resolved_font) {
   HashMap<String, Font>::iterator i =
       fonts_resolved_using_default_style_.find(font_string);
@@ -74,7 +76,8 @@ bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
 
   scoped_refptr<ComputedStyle> font_style =
       ComputedStyle::Clone(*default_font_style_.get());
-  document_->EnsureStyleResolver().ComputeFont(font_style.get(), *parsed_style);
+  document_->EnsureStyleResolver().ComputeFont(element, font_style.get(),
+                                               *parsed_style);
   fonts_resolved_using_default_style_.insert(font_string,
                                              font_style->GetFont());
   resolved_font = fonts_resolved_using_default_style_.find(font_string)->value;

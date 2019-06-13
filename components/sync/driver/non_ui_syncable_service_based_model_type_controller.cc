@@ -77,6 +77,35 @@ class BridgeBuilder {
   DISALLOW_COPY_AND_ASSIGN(BridgeBuilder);
 };
 
+// This is a slightly adapted version of base::OnTaskRunnerDeleter: The one
+// difference is that if the destruction request already happens on the target
+// sequence, then this avoids posting a task, and instead deletes the given
+// object immediately. See https://crbug.com/970354#c19.
+struct CustomOnTaskRunnerDeleter {
+  explicit CustomOnTaskRunnerDeleter(
+      scoped_refptr<base::SequencedTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {}
+  ~CustomOnTaskRunnerDeleter() = default;
+
+  CustomOnTaskRunnerDeleter(CustomOnTaskRunnerDeleter&&) = default;
+  CustomOnTaskRunnerDeleter& operator=(CustomOnTaskRunnerDeleter&&) = default;
+
+  // For compatibility with std:: deleters.
+  template <typename T>
+  void operator()(const T* ptr) {
+    if (!ptr)
+      return;
+
+    if (task_runner_->RunsTasksInCurrentSequence()) {
+      delete ptr;
+    } else {
+      task_runner_->DeleteSoon(FROM_HERE, ptr);
+    }
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+};
+
 ProxyModelTypeControllerDelegate::DelegateProvider BuildDelegateProvider(
     ModelType type,
     OnceModelTypeStoreFactory store_factory,
@@ -86,11 +115,11 @@ ProxyModelTypeControllerDelegate::DelegateProvider BuildDelegateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   // Can't use std::make_unique or base::WrapUnique because of custom deleter.
   auto bridge_builder =
-      std::unique_ptr<BridgeBuilder, base::OnTaskRunnerDeleter>(
+      std::unique_ptr<BridgeBuilder, CustomOnTaskRunnerDeleter>(
           new BridgeBuilder(type, std::move(store_factory),
                             std::move(syncable_service_provider), dump_stack,
                             task_runner),
-          base::OnTaskRunnerDeleter(task_runner));
+          CustomOnTaskRunnerDeleter(task_runner));
   return base::BindRepeating(&BridgeBuilder::GetBridgeDelegate,
                              std::move(bridge_builder));
 }

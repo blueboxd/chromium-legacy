@@ -309,7 +309,7 @@ component("vr_common") {
       "win/vr_browser_renderer_thread_win.h",
     ]
 
-    deps += [ "//services/ws/public/cpp/gpu" ]
+    deps += [ "//services/viz/public/cpp/gpu" ]
 
     # Windows doesn't have app bundles, so include the UI directly.
     deps += [ ":vr_ui" ]

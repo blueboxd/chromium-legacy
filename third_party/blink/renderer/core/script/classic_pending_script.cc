@@ -277,7 +277,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
 
-void ClassicPendingScript::Trace(blink::Visitor* visitor) {
+void ClassicPendingScript::Trace(Visitor* visitor) {
   ResourceClient::Trace(visitor);
   MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);

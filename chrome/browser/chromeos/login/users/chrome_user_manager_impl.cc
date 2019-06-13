@@ -404,6 +404,8 @@ ChromeUserManagerImpl::~ChromeUserManagerImpl() {
 
 void ChromeUserManagerImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  g_browser_process->platform_part()->ShutdownPrimaryProfileServices();
   ChromeUserManager::Shutdown();
 
   if (GetMinimumVersionPolicyHandler()) {

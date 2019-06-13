@@ -198,9 +198,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
       LoadExtension(test_data_dir_.AppendASCII("app/"));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
+                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  extensions::SOURCE_TEST));
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.

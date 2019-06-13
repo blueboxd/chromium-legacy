@@ -5,8 +5,8 @@
 #include "chrome/browser/policy/cloud/remote_commands_invalidator.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/mock_ack_handler.h"
@@ -138,7 +138,7 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
   const invalidation::ObjectId kTestingObjectId1;
   const invalidation::ObjectId kTestingObjectId2;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   invalidation::FakeInvalidationService invalidation_service_;
   StrictMock<MockRemoteCommandInvalidator> invalidator_;

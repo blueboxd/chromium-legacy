@@ -289,7 +289,7 @@ void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
   DCHECK_LE(0, index);
   DCHECK_GT(static_cast<int>(command_targets_.size()), index);
   WebContents* web_contents = command_targets_[index];
-  if (ContainsKey(usage_map_, web_contents))
+  if (base::Contains(usage_map_, web_contents))
     web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 

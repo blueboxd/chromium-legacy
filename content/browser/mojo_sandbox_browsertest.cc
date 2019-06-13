@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "content/browser/utility_process_host.h"
-#include "content/browser/utility_process_host_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/bind_interface_helpers.h"
@@ -53,7 +52,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
  private:
   void StartUtilityProcessOnIoThread() {
-    host_.reset(new UtilityProcessHost(nullptr, nullptr));
+    host_.reset(new UtilityProcessHost());
     host_->SetMetricsName("mojo_sandbox_test_process");
     ASSERT_TRUE(host_->Start());
   }

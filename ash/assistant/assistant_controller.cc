@@ -229,7 +229,9 @@ void AssistantController::OnAccessibilityStatusChanged() {
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
-void AssistantController::OpenUrl(const GURL& url, bool from_server) {
+void AssistantController::OpenUrl(const GURL& url,
+                                  bool in_background,
+                                  bool from_server) {
   auto* android_helper = AndroidIntentHelper::GetInstance();
   if (url.SchemeIs(kAndroidIntentScheme) && android_helper) {
     android_helper->LaunchAndroidIntent(url.spec());
@@ -243,10 +245,14 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 
   // Give observers an opportunity to perform any necessary handling before we
   // open the specified |url| in a new browser tab.
-  NotifyOpeningUrl(url, from_server);
+  NotifyOpeningUrl(url, in_background, from_server);
 
   // The new tab should be opened with a user activation since the user
-  // interacted with the Assistant to open the url.
+  // interacted with the Assistant to open the url. |in_background| describes
+  // the relationship between |url| and Assistant UI, not the browser. As such,
+  // the browser will always be instructed to open |url| in a new browser tab
+  // and Assistant UI state will be updated downstream to respect
+  // |in_background|.
   NewWindowDelegate::GetInstance()->NewTabWithUrl(
       url, /*from_user_interaction=*/true);
   NotifyUrlOpened(url, from_server);
@@ -304,9 +310,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
-void AssistantController::NotifyOpeningUrl(const GURL& url, bool from_server) {
+void AssistantController::NotifyOpeningUrl(const GURL& url,
+                                           bool in_background,
+                                           bool from_server) {
   for (AssistantControllerObserver& observer : observers_)
-    observer.OnOpeningUrl(url, from_server);
+    observer.OnOpeningUrl(url, in_background, from_server);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {

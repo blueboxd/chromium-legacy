@@ -85,7 +85,10 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 namespace extensions {
 namespace {
@@ -576,22 +579,12 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetVisibleNotificationsFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetVisibleNotificationsFunction";
 
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                            &controller_);
-  controller_->GetActiveNotifications(base::BindOnce(
-      &AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications,
-      this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications(
-    const std::vector<message_center::Notification>& notifications) {
+  message_center::NotificationList::Notifications notification_set =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
   auto values = std::make_unique<base::ListValue>();
-  for (const auto& notification : notifications) {
-    values->Append(MakeDictionaryFromNotification(notification));
-  }
-  Respond(OneArgument(std::move(values)));
+  for (auto* notification : notification_set)
+    values->Append(MakeDictionaryFromNotification(*notification));
+  return RespondNow(OneArgument(std::move(values)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1039,6 +1039,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
         true /* is_frame_being_destroyed */, approx_renderer_start_time,
         base::TimeTicks::Now());
   }
+
+  if (prefetched_signed_exchange_cache_)
+    prefetched_signed_exchange_cache_->RecordHistograms();
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -3406,7 +3409,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
        node = node->parent()) {
     SiteInstance* parent_site_instance =
         node->parent()->current_frame_host()->GetSiteInstance();
-    if (ContainsKey(notified_instances, parent_site_instance))
+    if (base::Contains(notified_instances, parent_site_instance))
       continue;
 
     RenderFrameProxyHost* child_proxy =
@@ -4756,6 +4759,21 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_same_document =
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
+  // Network isolation key should be filled before the URLLoaderFactory for
+  // sub-resources is created. Only update for cross document navigations since
+  // for opaque origin same document navigations, a new origin should not be
+  // created as that would be different from the original.
+  // TODO(crbug.com/971796): For about:blank and other such urls,
+  // common_params.url currently leads to an opaque origin to be created. Once
+  // this is fixed, the origin which these navigations eventually get committed
+  // to will be available here as well.
+  if (!is_same_document) {
+    base::Optional<url::Origin> top_frame_origin =
+        frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)
+                                        : frame_tree_->root()->current_origin();
+    network_isolation_key_ = net::NetworkIsolationKey(top_frame_origin);
+  }
+
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
@@ -4959,6 +4977,13 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     if (factory_bundle_for_prefetch) {
+      if (prefetched_signed_exchange_cache_) {
+        prefetched_signed_exchange_cache_->RecordHistograms();
+        // Reset |prefetched_signed_exchange_cache_|, not to reuse the cached
+        // signed exchange which was prefetched in the previous page.
+        prefetched_signed_exchange_cache_.reset();
+      }
+
       // Also set-up URLLoaderFactory for prefetch using the same loader
       // factories. TODO(kinuko): Consider setting this up only when prefetch
       // is used. Currently we have this here to make sure we have non-racy
@@ -5658,11 +5683,13 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
   if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
-    GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
+    GetProcess()->CreateURLLoaderFactory(origin, network_isolation_key_,
+                                         std::move(header_client),
                                          std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
+    GetProcess()->CreateURLLoaderFactory(origin, network_isolation_key_,
+                                         std::move(header_client),
                                          mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForRenderFrame().Run(
         std::move(default_factory_request), GetProcess()->GetID(),
@@ -6677,8 +6704,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
        navigation_request->GetMimeType() == "message/rfc822");
 
   accessibility_reset_count_ = 0;
-  appcache_handle_ =
-      navigation_request->navigation_handle()->TakeAppCacheHandle();
+  appcache_handle_ = navigation_request->TakeAppCacheHandle();
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);

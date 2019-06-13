@@ -1007,7 +1007,7 @@ void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  const bool group_exists = base::ContainsKey(group_data_, group);
+  const bool group_exists = base::Contains(group_data_, group);
   if (group_exists)
     AddToExistingGroupImpl(indices, group);
   else

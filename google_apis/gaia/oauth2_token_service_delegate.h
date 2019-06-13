@@ -44,7 +44,7 @@ class OAuth2TokenServiceDelegate {
   virtual ~OAuth2TokenServiceDelegate();
 
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) = 0;
 
@@ -53,10 +53,11 @@ class OAuth2TokenServiceDelegate {
   // Note: Implementations must make sure that |RefreshTokenIsAvailable| returns
   // |true| if and only if |account_id| is contained in the list of accounts
   // returned by |GetAccounts|.
-  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const = 0;
+  virtual bool RefreshTokenIsAvailable(
+      const CoreAccountId& account_id) const = 0;
   virtual GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const;
-  virtual void UpdateAuthError(const std::string& account_id,
+      const CoreAccountId& account_id) const;
+  virtual void UpdateAuthError(const CoreAccountId& account_id,
                                const GoogleServiceAuthError& error) {}
 
   // Returns a list of accounts for which a refresh token is maintained by
@@ -66,7 +67,7 @@ class OAuth2TokenServiceDelegate {
   virtual std::vector<std::string> GetAccounts();
   virtual void RevokeAllCredentials() {}
 
-  virtual void InvalidateAccessToken(const std::string& account_id,
+  virtual void InvalidateAccessToken(const CoreAccountId& account_id,
                                      const std::string& client_id,
                                      const std::set<std::string>& scopes,
                                      const std::string& access_token) {}
@@ -74,13 +75,13 @@ class OAuth2TokenServiceDelegate {
   // If refresh token is accessible (on Desktop) sets error for it to
   // INVALID_GAIA_CREDENTIALS and notifies the observers. Otherwise
   // does nothing.
-  virtual void InvalidateTokenForMultilogin(const std::string& failed_account) {
-  }
+  virtual void InvalidateTokenForMultilogin(
+      const CoreAccountId& failed_account) {}
 
   virtual void Shutdown() {}
-  virtual void UpdateCredentials(const std::string& account_id,
+  virtual void UpdateCredentials(const CoreAccountId& account_id,
                                  const std::string& refresh_token) {}
-  virtual void RevokeCredentials(const std::string& account_id) {}
+  virtual void RevokeCredentials(const CoreAccountId& account_id) {}
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const;
 
@@ -88,9 +89,9 @@ class OAuth2TokenServiceDelegate {
   // available and doesn't have error. Otherwise returns empty string (for iOS
   // and Android).
   virtual std::string GetTokenForMultilogin(
-      const std::string& account_id) const;
+      const CoreAccountId& account_id) const;
 
-  bool ValidateAccountId(const std::string& account_id) const;
+  bool ValidateAccountId(const CoreAccountId& account_id) const;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -108,7 +109,7 @@ class OAuth2TokenServiceDelegate {
   // is initialized. Default implementation is NOTREACHED - subsclasses that
   // are used by the ProfileOAuth2TokenService must provide an implementation
   // for this method.
-  virtual void LoadCredentials(const std::string& primary_account_id);
+  virtual void LoadCredentials(const CoreAccountId& primary_account_id);
 
   // Returns the state of the load credentials operation.
   LoadCredentialsState load_credentials_state() const {
@@ -120,7 +121,7 @@ class OAuth2TokenServiceDelegate {
   // server, but the OnRefreshTokenRevoked() notification is sent to the
   // observers.
   virtual void ExtractCredentials(OAuth2TokenService* to_service,
-                                  const std::string& account_id);
+                                  const CoreAccountId& account_id);
 
   // Attempts to fix the error if possible.  Returns true if the error was fixed
   // and false otherwise.
@@ -129,14 +130,14 @@ class OAuth2TokenServiceDelegate {
 #if defined(OS_IOS)
   // Triggers platform specific implementation for IOS to add a given account
   // to the token service from a system account.
-  virtual void AddAccountFromSystem(const std::string& account_id) {}
+  virtual void AddAccountFromSystem(const CoreAccountId& account_id) {}
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // Triggers platform specific implementation for Android and IOS to reload
   // accounts from system.
-  virtual void ReloadAccountsFromSystem(const std::string& primary_account_id) {
-  }
+  virtual void ReloadAccountsFromSystem(
+      const CoreAccountId& primary_account_id) {}
 #endif
 
   // -----------------------------------------------------------------------
@@ -149,12 +150,12 @@ class OAuth2TokenServiceDelegate {
   }
 
   // Called by subclasses to notify observers.
-  void FireRefreshTokenAvailable(const std::string& account_id);
-  void FireRefreshTokenRevoked(const std::string& account_id);
+  void FireRefreshTokenAvailable(const CoreAccountId& account_id);
+  void FireRefreshTokenRevoked(const CoreAccountId& account_id);
   // FireRefreshTokensLoaded is virtual and overridden in android implementation
   // where additional actions are required.
   virtual void FireRefreshTokensLoaded();
-  void FireAuthErrorChanged(const std::string& account_id,
+  void FireAuthErrorChanged(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error);
 
   // Helper class to scope batch changes.

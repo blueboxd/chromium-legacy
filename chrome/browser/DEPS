@@ -14,7 +14,6 @@ include_rules = [
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
-  "+chrome/services/noop/public",
   "+chrome/services/printing/public",
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
@@ -92,8 +91,8 @@ include_rules = [
   "+services/strings",
   "+services/tracing/public/cpp",
   "+services/video_capture/public",
+  "+services/viz/public",
   "+services/viz/privileged",
-  "+services/viz/public/interfaces",
   "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
@@ -113,7 +112,8 @@ include_rules = [
   "+ash/keyboard/ui/resources",
   "+ash/components/shortcut_viewer",
 
-  # The message center may not exist, or may run out of process (in mash).
+  # The message center should only be accessed through
+  # //chrome/browser/notifications.
   "-ui/message_center",
   "+ui/message_center/public",
 

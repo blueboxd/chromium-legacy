@@ -259,7 +259,7 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   OpenApplication(AppLaunchParams(Profile::FromBrowserContext(context),
-                                  extension, launch_container,
+                                  extension->id(), launch_container,
                                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                   extensions::SOURCE_MANAGEMENT_API));
 

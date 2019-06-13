@@ -216,6 +216,9 @@ config("compiler") {
     configs += [ "//build/config/android:compiler" ]
   } else if (is_linux) {
     configs += [ "//build/config/linux:compiler" ]
+    if (is_chromeos) {
+      configs += [ "//build/config/chromeos:compiler" ]
+    }
   } else if (is_nacl) {
     configs += [ "//build/config/nacl:compiler" ]
   } else if (is_mac) {

@@ -142,6 +142,20 @@ class FakeOSUserManager : public OSUserManager {
                            const base::string16& email,
                            BSTR* sid);
 
+  // Creates a fake user with the given |username|, |password|, |fullname|,
+  // |comment| and |domain|. If |gaia_id| is non-empty, also associates the
+  // user with the given gaia id. If |email| is non-empty, sets the email to
+  // use for reauth to be this one.
+  // |sid| is allocated and filled with the SID of the new user.
+  HRESULT CreateTestOSUser(const base::string16& username,
+                           const base::string16& password,
+                           const base::string16& fullname,
+                           const base::string16& comment,
+                           const base::string16& gaia_id,
+                           const base::string16& email,
+                           const base::string16& domain,
+                           BSTR* sid);
+
   size_t GetUserCount() const { return username_to_info_.size(); }
   std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
@@ -150,6 +164,16 @@ class FakeOSUserManager : public OSUserManager {
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
   bool should_fail_user_creation_ = false;
+
+  // Add a user to the OS with domain associated with it.
+  HRESULT AddUser(const wchar_t* username,
+                  const wchar_t* password,
+                  const wchar_t* fullname,
+                  const wchar_t* comment,
+                  bool add_to_users_group,
+                  const wchar_t* domain,
+                  BSTR* sid,
+                  DWORD* error);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

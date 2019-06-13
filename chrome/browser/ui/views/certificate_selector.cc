@@ -281,12 +281,12 @@ views::View* CertificateSelector::GetInitiallyFocusedView() {
   return table_;
 }
 
-views::View* CertificateSelector::CreateExtraView() {
+std::unique_ptr<views::View> CertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
   auto view_cert_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON));
-  view_cert_button_ = view_cert_button.release();
-  return view_cert_button_;
+  view_cert_button_ = view_cert_button.get();
+  return view_cert_button;
 }
 
 ui::ModalType CertificateSelector::GetModalType() const {

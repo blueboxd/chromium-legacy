@@ -573,13 +573,13 @@ importer.RuntimeCommandWidget = class {
 
     /** @private @const {!HTMLElement} */
     this.importButton_ =
-        queryRequiredElement('#cloud-import-details paper-button.import');
+        queryRequiredElement('#cloud-import-details cr-button.import');
     this.importButton_.onclick =
         this.onButtonClicked_.bind(this, importer.ClickSource.IMPORT);
 
     /** @private @const {!HTMLElement} */
     this.cancelButton_ =
-        queryRequiredElement('#cloud-import-details paper-button.cancel');
+        queryRequiredElement('#cloud-import-details cr-button.cancel');
     this.cancelButton_.onclick =
         this.onButtonClicked_.bind(this, importer.ClickSource.CANCEL);
 

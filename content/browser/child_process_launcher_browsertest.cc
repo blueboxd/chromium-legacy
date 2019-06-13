@@ -12,6 +12,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 
@@ -49,6 +50,8 @@ namespace content {
 class ChildProcessLauncherBrowserTest : public ContentBrowserTest {};
 
 IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   GURL url("about:blank");
   Shell* window = shell();
   MockChildProcessLauncherClient* client(nullptr);

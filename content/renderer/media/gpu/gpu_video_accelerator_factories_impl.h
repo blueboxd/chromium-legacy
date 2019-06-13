@@ -59,7 +59,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ws::ContextProviderCommandBuffer>& context_provider,
+      const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
@@ -126,7 +126,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()
+  scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
   gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
 
@@ -145,7 +145,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ws::ContextProviderCommandBuffer>& context_provider,
+      const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
@@ -169,7 +169,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // Shared pointer to a shared context provider. It is initially set on main
   // thread, but all subsequent access and destruction should happen only on the
   // media thread.
-  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;
   // Signals if |context_provider_| is alive on the media thread. For use on the
   // main thread.
   bool context_provider_lost_ = false;

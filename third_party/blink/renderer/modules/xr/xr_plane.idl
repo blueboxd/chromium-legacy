@@ -18,4 +18,5 @@ interface XRPlane {
     XRPose getPose(XRReferenceSpace referenceSpace);
     readonly attribute FrozenArray<DOMPointReadOnly> polygon;
     readonly attribute XRPlaneOrientation? orientation;
+    readonly attribute DOMHighResTimeStamp lastChangedTime;
 };

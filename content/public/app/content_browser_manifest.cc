@@ -38,7 +38,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "plugin",
               std::set<const char*>{
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "ws.mojom.Gpu",
+                  "viz.mojom.Gpu",
               })
           .ExposeCapability(
               "app",
@@ -91,11 +91,11 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "network.mojom.URLLoaderFactory",
                   "resource_coordinator.mojom.ProcessCoordinationUnit",
                   "viz.mojom.CompositingModeReporter",
-                  "ws.mojom.Gpu",
+                  "viz.mojom.Gpu",
               })
           .ExposeCapability("gpu_client",
                             std::set<const char*>{
-                                "ws.mojom.Gpu",
+                                "viz.mojom.Gpu",
                             })
           .ExposeCapability(
               "gpu",
@@ -144,7 +144,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("unzip_service", "unzip_file")
           .RequireCapability("tracing", "tracing")
           .RequireCapability("patch_service", "patch_file")
-          .RequireCapability("ui", "arc_manager")
           .RequireCapability("audio", "info")
           .RequireCapability("audio", "debug_recording")
           .RequireCapability("audio", "device_notifier")
@@ -268,7 +267,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",
                   "shape_detection.mojom.TextDetection",
-                  "ws.mojom.Gpu"})
+                  "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())

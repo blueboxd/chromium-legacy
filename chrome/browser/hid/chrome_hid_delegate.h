@@ -17,6 +17,7 @@ class ChromeHidDelegate : public content::HidDelegate {
 
   std::unique_ptr<content::HidChooser> RunChooser(
       content::RenderFrameHost* frame,
+      std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       content::HidChooser::Callback callback) override;
   bool CanRequestDevicePermission(content::RenderFrameHost* frame) override;
   bool HasDevicePermission(content::RenderFrameHost* frame,

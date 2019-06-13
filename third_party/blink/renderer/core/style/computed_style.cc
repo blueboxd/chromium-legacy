@@ -2037,24 +2037,35 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   if (TextStrokeWidth()) {
     // Prefer stroke color if possible, but not if it's fully transparent.
     StyleColor text_stroke_style_color =
-        visited_link ? VisitedLinkTextStrokeColor() : TextStrokeColor();
+        visited_link ? InternalVisitedTextStrokeColor() : TextStrokeColor();
     if (!text_stroke_style_color.IsCurrentColor() &&
         text_stroke_style_color.GetColor().Alpha())
       return text_stroke_style_color;
   }
 
-  return visited_link ? VisitedLinkTextFillColor() : TextFillColor();
+  return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
 Color ComputedStyle::VisitedDependentColor(
     const CSSProperty& color_property) const {
+  DCHECK(!color_property.IsVisited());
+
   Color unvisited_color =
       To<Longhand>(color_property).ColorIncludingFallback(false, *this);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
+  // Properties that provide a GetVisitedProperty() must use the
+  // ColorIncludingFallback function on that property.
+  //
+  // TODO(andruud): Simplify this when all properties support
+  // GetVisitedProperty.
+  const CSSProperty* visited_property = &color_property;
+  if (const CSSProperty* visited = color_property.GetVisitedProperty())
+    visited_property = visited;
+
   Color visited_color =
-      To<Longhand>(color_property).ColorIncludingFallback(true, *this);
+      To<Longhand>(*visited_property).ColorIncludingFallback(true, *this);
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.

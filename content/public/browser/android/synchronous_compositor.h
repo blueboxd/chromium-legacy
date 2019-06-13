@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -92,7 +92,7 @@ class CONTENT_EXPORT SynchronousCompositor {
       const std::vector<viz::ReturnedResource>& resources) = 0;
 
   virtual void DidPresentCompositorFrames(
-      viz::PresentationFeedbackMap feedbacks,
+      viz::FrameTimingDetailsMap timing_details,
       uint32_t frame_token) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform

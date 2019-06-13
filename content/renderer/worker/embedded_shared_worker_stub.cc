@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/origin.h"
@@ -67,8 +66,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       name_(info->name),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
-      preference_watcher_request_(std::move(preference_watcher_request)),
-      appcache_host_id_(appcache_host_id) {
+      preference_watcher_request_(std::move(preference_watcher_request)) {
   DCHECK(subresource_loader_factory_bundle_info);
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
@@ -87,7 +85,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         main_script_load_params->redirect_infos;
   }
 
-  impl_ = blink::WebSharedWorker::Create(this);
+  impl_ = blink::WebSharedWorker::Create(this, appcache_host_id);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
     // is attached or explicit resume notification is received.
@@ -171,30 +169,6 @@ void EmbeddedSharedWorkerStub::WorkerContextClosed() {
 
 void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
   delete this;
-}
-
-void EmbeddedSharedWorkerStub::SelectAppCacheID(
-    int64_t app_cache_id,
-    base::OnceClosure completion_callback) {
-  if (app_cache_host_) {
-    // app_cache_host_ could become stale as it's owned by blink's
-    // DocumentLoader. This method is assumed to be called while it's valid.
-    app_cache_host_->SelectCacheForSharedWorker(app_cache_id,
-                                                std::move(completion_callback));
-  } else {
-    std::move(completion_callback).Run();
-  }
-}
-
-std::unique_ptr<blink::WebApplicationCacheHost>
-EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
-    blink::WebApplicationCacheHostClient* client) {
-  auto host = blink::WebApplicationCacheHost::
-      CreateWebApplicationCacheHostForSharedWorker(
-          client, appcache_host_id_,
-          impl_->GetTaskRunner(blink::TaskType::kNetworking));
-  app_cache_host_ = host.get();
-  return host;
 }
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

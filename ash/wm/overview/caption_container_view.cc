@@ -264,6 +264,7 @@ void CaptionContainerView::Layout() {
   if (preview_view_) {
     gfx::Rect preview_bounds = bounds;
     preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }
 

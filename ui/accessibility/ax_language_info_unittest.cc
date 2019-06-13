@@ -679,4 +679,130 @@ TEST(AXLanguageInfoTest, StatsBasic) {
   EXPECT_FALSE(stats.CheckLanguageWithinTop("zz"));
 }
 
+TEST(AXLanguageInfoTest, ShortLanguageDetectorLabeledTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            "Hello");
+  initial_state.nodes[1].AddStringAttribute(
+      ax::mojom::StringAttribute::kLanguage, "en");
+  AXTree tree(initial_state);
+
+  AXNode* item = tree.GetFromId(2);
+  std::vector<LanguageSpan> annotation;
+  // Empty output.
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kInnerHtml);
+  ASSERT_EQ(0, (int)annotation.size());
+  // Returns single LanguageSpan.
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
+  ASSERT_EQ(1, (int)annotation.size());
+  LanguageSpan* lang_span = &annotation[0];
+  ASSERT_EQ("en", lang_span->language);
+  std::string name =
+      item->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  ASSERT_EQ("Hello",
+            name.substr(lang_span->start_index,
+                        lang_span->end_index - lang_span->start_index));
+}
+
+TEST(AXLanguageInfoTest, ShortLanguageDetectorCharacterTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            "δ");
+  AXTree tree(initial_state);
+
+  AXNode* item = tree.GetFromId(2);
+  std::vector<LanguageSpan> annotation;
+  // Returns single LanguageSpan.
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
+  ASSERT_EQ(1, (int)annotation.size());
+  LanguageSpan* lang_span = &annotation[0];
+  ASSERT_EQ("el", lang_span->language);
+  std::string name =
+      item->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  ASSERT_EQ("δ", name.substr(lang_span->start_index,
+                             lang_span->end_index - lang_span->start_index));
+}
+
+TEST(AXLanguageInfoTest, ShortLanguageDetectorMultipleLanguagesTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(2);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddStringAttribute(
+      ax::mojom::StringAttribute::kName,
+      "This text should be read in English. 차에 한하여 중임할 수. Followed "
+      "by English.");
+  AXTree tree(initial_state);
+
+  AXNode* item = tree.GetFromId(2);
+  std::vector<LanguageSpan> annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
+  ASSERT_EQ(3, (int)annotation.size());
+  std::string name =
+      item->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  LanguageSpan* lang_span = &annotation[0];
+  ASSERT_EQ("This text should be read in English. ",
+            name.substr(lang_span->start_index,
+                        lang_span->end_index - lang_span->start_index));
+  lang_span = &annotation[1];
+  ASSERT_EQ("차에 한하여 중임할 수. ",
+            name.substr(lang_span->start_index,
+                        lang_span->end_index - lang_span->start_index));
+  lang_span = &annotation[2];
+  ASSERT_EQ("Followed by English.",
+            name.substr(lang_span->start_index,
+                        lang_span->end_index - lang_span->start_index));
+}
+
+// Assert that GetLanguageAnnotationForStringAttribute works for attributes
+// other than kName.
+TEST(AXLanguageInfoTest, DetectLanguageForRoleTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                            "どうぞよろしくお願いします.");
+  AXTree tree(initial_state);
+
+  AXNode* item = tree.GetFromId(1);
+  std::vector<LanguageSpan> annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kValue);
+  ASSERT_EQ(1, (int)annotation.size());
+  std::string value =
+      item->GetStringAttribute(ax::mojom::StringAttribute::kValue);
+  LanguageSpan* lang_span = &annotation[0];
+  ASSERT_EQ("どうぞよろしくお願いします.",
+            value.substr(lang_span->start_index,
+                         lang_span->end_index - lang_span->start_index));
+}
+
 }  // namespace ui

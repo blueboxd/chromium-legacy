@@ -109,6 +109,7 @@ class LoginScreenClient : public ash::LoginScreenClient {
   void ShowFeedback() override;
   void ShowResetScreen() override;
   void ShowAccountAccessHelpApp() override;
+  void ShowLockScreenNotificationSettings() override;
   void OnFocusLeavingSystemTray(bool reverse) override;
   void OnUserActivity() override;
 

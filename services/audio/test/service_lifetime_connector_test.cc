@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "services/audio/in_process_audio_manager_accessor.h"
@@ -65,6 +66,51 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioServiceLifetimeConnectorTest);
 };
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// For platforms where the standalone audio service has been launched, the
+// service should terminate after a default timeout if no specific timeout has
+// been set.
+TEST_F(AudioServiceLifetimeConnectorTest,
+       StandaloneServiceTerminatesWhenNoTimeoutIsSet) {
+  service_.reset();
+  audio_manager_->Shutdown();
+  audio_manager_.reset();
+  service_manager::TestConnectorFactory connector_factory;
+  service_ = audio::CreateStandaloneService(
+      std::make_unique<service_manager::BinderMap>(),
+      connector_factory.RegisterInstance(mojom::kServiceName));
+  service_->set_termination_closure(quit_request_.Get());
+  connector_ = connector_factory.CreateConnector();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  mojom::SystemInfoPtr info;
+  connector_->BindInterface(mojom::kServiceName, &info);
+
+  // Make sure |info| is connected.
+  base::RunLoop loop;
+  info->HasOutputDevices(
+      base::BindOnce([](base::OnceClosure cl, bool) { std::move(cl).Run(); },
+                     loop.QuitClosure()));
+  loop.Run();
+
+  const base::TimeDelta default_timeout = base::TimeDelta::FromMinutes(15);
+  {
+    // Make sure the service does not disconnect before a timeout.
+    EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
+    info.reset();
+    scoped_task_environment_.FastForwardBy(default_timeout / 2);
+  }
+
+  // Now wait for what is left from of the timeout: the service should
+  // disconnect.
+  EXPECT_CALL(quit_request_, Run()).Times(Exactly(1));
+  scoped_task_environment_.FastForwardBy(default_timeout / 2);
+
+  service_.reset();
+}
+#else
+// For platforms where the standalone audio service has not been launched, the
+// service should never terminate if no specific timeout has been set.
 TEST_F(AudioServiceLifetimeConnectorTest,
        StandaloneServiceNeverTerminatesWhenNoTimeoutIsSet) {
   service_.reset();
@@ -94,6 +140,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
   service_.reset();
 }
+#endif
 
 TEST_F(AudioServiceLifetimeConnectorTest,
        EmbeddedServiceNeverTerminatesWhenNoTimeoutIsSet) {

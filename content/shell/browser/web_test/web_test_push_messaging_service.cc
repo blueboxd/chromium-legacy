@@ -13,7 +13,6 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -59,17 +58,17 @@ void WebTestPushMessagingService::SubscribeFromDocument(
     int64_t service_worker_registration_id,
     int renderer_id,
     int render_frame_id,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     bool user_gesture,
     RegisterCallback callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
-                      options, std::move(callback));
+                      std::move(options), std::move(callback));
 }
 
 void WebTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const blink::WebPushSubscriptionOptions& options,
+    blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback callback) {
   blink::mojom::PermissionStatus permission_status =
       WebTestContentBrowserClient::Get()
@@ -79,7 +78,7 @@ void WebTestPushMessagingService::SubscribeFromWorker(
                                 requesting_origin, requesting_origin);
 
   // The `userVisibleOnly` option is still required when subscribing.
-  if (!options.user_visible_only)
+  if (!options->user_visible_only)
     permission_status = blink::mojom::PermissionStatus::DENIED;
 
   if (permission_status == blink::mojom::PermissionStatus::GRANTED) {

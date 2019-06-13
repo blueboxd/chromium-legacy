@@ -103,8 +103,6 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebContentCaptureClient;
 class WebCookieJar;
 class WebDedicatedWorkerHostFactoryClient;
@@ -377,10 +375,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
 
-  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) = 0;
-
   virtual void DispatchDidChangeManifest() {}
 
   unsigned BackForwardLength() override { return 0; }
@@ -527,6 +521,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns whether we are associated with a print context who suggests to use
   // printing layout.
   virtual bool UsePrintingLayout() const { return false; }
+
+  // AppCache ------------------------------------------------------------
+  virtual void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
+  }
 };
 
 }  // namespace blink

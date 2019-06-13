@@ -75,8 +75,6 @@ BubbleExample::BubbleExample() : ExampleBase("Bubble") {}
 BubbleExample::~BubbleExample() = default;
 
 void BubbleExample::CreateExampleView(View* container) {
-  PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
-     "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
   container->SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(), 10));
   no_shadow_ = new LabelButton(this, ASCIIToUTF16("No Shadow"));
@@ -123,6 +121,8 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   BubbleDialogDelegateView::CreateBubble(bubble);
 
   bubble->GetWidget()->Show();
+  PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
+     "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
 }
 
 }  // namespace examples

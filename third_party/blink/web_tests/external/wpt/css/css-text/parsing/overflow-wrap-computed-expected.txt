@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Property overflow-wrap value 'normal' computes to 'normal'
+PASS Property overflow-wrap value 'break-word' computes to 'break-word'
+FAIL Property overflow-wrap value 'anywhere' computes to 'anywhere' assert_equals: expected "anywhere" but got "normal"
+Harness: the test ran to completion.
+

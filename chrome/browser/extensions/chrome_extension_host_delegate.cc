@@ -109,7 +109,8 @@ ExtensionHostQueue* ChromeExtensionHostDelegate::GetExtensionHostQueue() const {
   return g_queue.Get().queue.get();
 }
 
-gfx::Size ChromeExtensionHostDelegate::EnterPictureInPicture(
+content::PictureInPictureResult
+ChromeExtensionHostDelegate::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {

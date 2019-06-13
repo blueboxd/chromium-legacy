@@ -36,9 +36,9 @@ namespace gpu {
 class GpuChannelHost;
 }  // namespace gpu
 
-namespace ws {
+namespace viz {
 class Gpu;
-}  // namespace ws
+}  // namespace viz
 
 namespace mirroring {
 
@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
           mojom::ResourceProviderPtr resource_provider,
           mojom::CastMessageChannelPtr outbound_channel,
           mojom::CastMessageChannelRequest inbound_channel,
-          std::unique_ptr<ws::Gpu> gpu);
+          std::unique_ptr<viz::Gpu> gpu);
 
   ~Session() override;
 
@@ -173,7 +173,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   std::unique_ptr<AudioCapturingCallback> audio_capturing_callback_;
   scoped_refptr<media::AudioInputDevice> audio_input_device_;
   std::unique_ptr<MediaRemoter> media_remoter_;
-  std::unique_ptr<ws::Gpu> gpu_;
+  std::unique_ptr<viz::Gpu> gpu_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
   gpu::VideoEncodeAcceleratorSupportedProfiles supported_profiles_;
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;

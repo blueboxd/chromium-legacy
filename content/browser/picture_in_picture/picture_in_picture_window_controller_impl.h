@@ -46,7 +46,7 @@ class PictureInPictureWindowControllerImpl
   using MutedMediaPlayerMap = std::map<RenderFrameHost*, PlayerSet>;
 
   // PictureInPictureWindowController:
-  CONTENT_EXPORT gfx::Size Show() override;
+  CONTENT_EXPORT void Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video) override;
   CONTENT_EXPORT void CloseAndFocusInitiator() override;
   CONTENT_EXPORT void OnWindowDestroyed() override;
@@ -70,6 +70,8 @@ class PictureInPictureWindowControllerImpl
 
   CONTENT_EXPORT void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
+
+  gfx::Size GetSize();
 
   // WebContentsObserver:
   void MediaStartedPlaying(const MediaPlayerInfo&,

@@ -387,8 +387,8 @@ void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
 
 void DelegatedFrameHostAndroid::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
-  client_->DidPresentCompositorFrames(feedbacks);
+    const viz::FrameTimingDetailsMap& timing_details) {
+  client_->DidPresentCompositorFrames(timing_details);
   if (enable_viz_) {
     NOTREACHED();
     return;

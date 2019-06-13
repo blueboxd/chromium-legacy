@@ -199,8 +199,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   base::TimeDelta PreCommitTimeout() override;
 
   // remote_cocoa::mojom::NativeWidgetNSWindow:
-  void CreateWindow(remote_cocoa::mojom::CreateWindowParamsPtr params) override;
+  void CreateWindow(mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
+  void CreateSelectFileDialog(mojom::SelectFileDialogRequest request) override;
   void StackAbove(uint64_t sibling_id) override;
   void StackAtTop() override;
   void ShowEmojiPanel() override;

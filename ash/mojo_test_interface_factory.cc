@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "ash/login/login_screen_test_api.h"
-#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "base/bind.h"
@@ -20,11 +18,6 @@ namespace {
 // These functions aren't strictly necessary, but exist to make threading and
 // arguments clearer.
 
-void BindLoginScreenTestApiOnMainThread(
-    mojom::LoginScreenTestApiRequest request) {
-  LoginScreenTestApi::BindRequest(std::move(request));
-}
-
 void BindStatusAreaWidgetTestApiOnMainThread(
     mojom::StatusAreaWidgetTestApiRequest request) {
   StatusAreaWidgetTestApi::BindRequest(std::move(request));
@@ -35,8 +28,6 @@ void BindStatusAreaWidgetTestApiOnMainThread(
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
-                         main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
                          main_thread_task_runner);
 }

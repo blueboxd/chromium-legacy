@@ -21,7 +21,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
@@ -350,9 +350,10 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback) {
-  parent_access_widget_ =
-      std::make_unique<ash::ParentAccessWidget>(child_account_id, callback);
+    base::RepeatingCallback<void(bool success)> callback,
+    ParentAccessRequestReason reason) {
+  parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
+      child_account_id, callback, reason);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
@@ -395,6 +396,10 @@ void LoginScreenController::ShowResetScreen() {
 
 void LoginScreenController::ShowAccountAccessHelpApp() {
   client_->ShowAccountAccessHelpApp();
+}
+
+void LoginScreenController::ShowLockScreenNotificationSettings() {
+  client_->ShowLockScreenNotificationSettings();
 }
 
 void LoginScreenController::FocusOobeDialog() {

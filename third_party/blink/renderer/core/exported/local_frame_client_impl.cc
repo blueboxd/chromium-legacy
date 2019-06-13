@@ -47,7 +47,6 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
@@ -1012,16 +1011,6 @@ WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
   return web_frame_->GetContentSettingsClient();
 }
 
-std::unique_ptr<WebApplicationCacheHost>
-LocalFrameClientImpl::CreateApplicationCacheHost(
-    DocumentLoader* loader,
-    WebApplicationCacheHostClient* client) {
-  if (!web_frame_->Client())
-    return nullptr;
-  return web_frame_->Client()->CreateApplicationCacheHost(
-      WebDocumentLoaderImpl::FromDocumentLoader(loader), client);
-}
-
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
   CoreInitializer::GetInstance().DidChangeManifest(*web_frame_->GetFrame());
 }
@@ -1262,6 +1251,17 @@ void LocalFrameClientImpl::TransferUserActivationFrom(
     LocalFrame* source_frame) {
   web_frame_->Client()->TransferUserActivationFrom(
       WebLocalFrameImpl::FromFrame(source_frame));
+}
+
+void LocalFrameClientImpl::UpdateSubresourceFactory(
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
+}
+
+WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->GetAppCacheType();
 }
 
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,

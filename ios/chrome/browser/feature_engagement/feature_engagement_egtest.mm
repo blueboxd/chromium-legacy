@@ -25,7 +25,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -420,8 +419,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start");
 
   // Load a URL with french text so that language detection is performed.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kFrenchPageURLPath)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kFrenchPageURLPath)];
 
   base::test::ScopedFeatureList scoped_feature_list;
   EnableBadgedTranslateManualTrigger(scoped_feature_list);
@@ -466,7 +464,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 
   // Navigate to a page other than the NTP to allow for the New Tab Tip to
   // appear.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Open and close the tab switcher to trigger the New Tab tip.
   OpenAndCloseTabSwitcher();

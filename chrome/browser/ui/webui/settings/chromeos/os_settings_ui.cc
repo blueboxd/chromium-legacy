@@ -114,7 +114,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-    html_source->AddResourcePath("manifest.json", IDR_OS_SETTINGS_MANIFEST);
   }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
@@ -124,6 +123,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("chromeos/lazy_load.html",
                                IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
+  html_source->AddResourcePath("manifest.json", IDR_OS_SETTINGS_MANIFEST);
 #else
   // Add all settings resources.
   for (size_t i = 0; i < kOsSettingsResourcesSize; ++i) {

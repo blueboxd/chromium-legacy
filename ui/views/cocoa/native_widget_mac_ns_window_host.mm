@@ -12,6 +12,7 @@
 #include "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
+#include "components/remote_cocoa/browser/window.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -306,6 +307,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
 
 NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   DCHECK(children_.empty());
+  native_window_mapping_.reset();
   if (application_host_) {
     remote_ns_window_ptr_.reset();
     application_host_->RemoveObserver(this);
@@ -413,6 +415,11 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
 }
 
 void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
+  native_window_mapping_ =
+      std::make_unique<remote_cocoa::ScopedNativeWindowMapping>(
+          gfx::NativeWindow(in_process_ns_window_.get()), application_host_,
+          in_process_ns_window_bridge_.get(), GetNSWindowMojo());
+
   Widget* widget = native_widget_mac_->GetWidget();
   // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
   // native on Mac, so nothing should ever want one in Widget form.

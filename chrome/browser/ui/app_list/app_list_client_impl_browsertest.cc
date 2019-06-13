@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsExtensionAppOpen) {
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     OpenApplication(AppLaunchParams(
-        profile(), extension_app, extensions::LAUNCH_CONTAINER_WINDOW,
+        profile(), extension_app->id(), extensions::LAUNCH_CONTAINER_WINDOW,
         WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
     app_loaded_observer.Wait();
   }

@@ -128,13 +128,14 @@ void OneClickSigninDialogView::WindowClosing() {
   dialog_view_ = NULL;
 }
 
-views::View* OneClickSigninDialogView::CreateExtraView() {
-  advanced_link_ = new views::Link(
+std::unique_ptr<views::View> OneClickSigninDialogView::CreateExtraView() {
+  auto advanced_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
 
-  advanced_link_->set_listener(this);
-  advanced_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return advanced_link_;
+  advanced_link->set_listener(this);
+  advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  advanced_link_ = advanced_link.get();
+  return advanced_link;
 }
 
 base::string16 OneClickSigninDialogView::GetDialogButtonLabel(

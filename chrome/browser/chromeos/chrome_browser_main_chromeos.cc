@@ -63,7 +63,6 @@
 #include "chrome/browser/chromeos/extensions/login_screen_ui/login_screen_extension_ui_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
@@ -967,9 +966,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   user_removal_manager::RemoveUsersIfNeeded();
 
-  kerberos_credentials_manager_ = std::make_unique<KerberosCredentialsManager>(
-      g_browser_process->local_state());
-
   // This observer cannot be created earlier because it requires the shell to be
   // available.
   idle_action_warning_observer_ = std::make_unique<IdleActionWarningObserver>();
@@ -1119,7 +1115,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
   gnubby_notification_.reset();
-  kerberos_credentials_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

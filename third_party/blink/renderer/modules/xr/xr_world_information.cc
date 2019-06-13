@@ -35,10 +35,12 @@ HeapVector<Member<XRPlane>> XRWorldInformation::detectedPlanes(
 }
 
 void XRWorldInformation::ProcessPlaneInformation(
-    const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-        detected_planes) {
-  if (!detected_planes.has_value()) {
-    DVLOG(3) << __func__ << ": detected_planes is null";
+    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data,
+    double timestamp) {
+  TRACE_EVENT0("xr", __FUNCTION__);
+
+  if (!detected_planes_data) {
+    DVLOG(3) << __func__ << ": detected_planes_data is null";
 
     // We have received a nullopt - plane detection is not supported or
     // disabled. Mark detected_planes as null & clear stored planes.
@@ -47,19 +49,42 @@ void XRWorldInformation::ProcessPlaneInformation(
     return;
   }
 
-  DVLOG(3) << __func__ << ": detected_planes size=" << detected_planes->size();
+  TRACE_COUNTER2("xr", "Plane statistics", "All planes",
+                 detected_planes_data->all_planes_ids.size(), "Updated planes",
+                 detected_planes_data->updated_planes_data.size());
+
+  DVLOG(3) << __func__ << ": updated planes size="
+           << detected_planes_data->updated_planes_data.size()
+           << ", all planes size="
+           << detected_planes_data->all_planes_ids.size();
 
   is_detected_planes_null_ = false;
 
   HeapHashMap<int32_t, Member<XRPlane>> updated_planes;
-  for (const auto& plane : *detected_planes) {
+
+  // First, process all planes that had their information updated (new planes
+  // are also processed here).
+  for (const auto& plane : detected_planes_data->updated_planes_data) {
     auto it = plane_ids_to_planes_.find(plane->id);
     if (it != plane_ids_to_planes_.end()) {
       updated_planes.insert(plane->id, it->value);
-      it->value->Update(plane);
+      it->value->Update(plane, timestamp);
     } else {
-      updated_planes.insert(plane->id,
-                            MakeGarbageCollected<XRPlane>(session_, plane));
+      updated_planes.insert(
+          plane->id, MakeGarbageCollected<XRPlane>(session_, plane, timestamp));
+    }
+  }
+
+  // Then, copy over the planes that were not updated but are still present.
+  for (const auto& plane_id : detected_planes_data->all_planes_ids) {
+    auto it_updated = updated_planes.find(plane_id);
+
+    // If the plane was already updated, there is nothing to do as it was
+    // already moved to |updated_planes|. Otherwise just copy it over as-is.
+    if (it_updated == updated_planes.end()) {
+      auto it = plane_ids_to_planes_.find(plane_id);
+      DCHECK(it != plane_ids_to_planes_.end());
+      updated_planes.insert(plane_id, it->value);
     }
   }
 

@@ -6,8 +6,8 @@
 
 #include <initializer_list>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -127,7 +127,7 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
           ".innerText.trim()",
       autocomplete_realm_);
 
-  EXPECT_TRUE(LoginShelfTestHelper().IsLoginShelfShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
 }
 
 // Checks if Active Directory password change screen is shown.

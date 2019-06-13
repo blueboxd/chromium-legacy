@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/test_manifest.h"
 
-#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -14,10 +13,8 @@ namespace ash {
 const service_manager::Manifest& GetManifestOverlayForTesting() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
-          .ExposeCapability(
-              "test",
-              service_manager::Manifest::InterfaceList<
-                  mojom::LoginScreenTestApi, mojom::StatusAreaWidgetTestApi>())
+          .ExposeCapability("test", service_manager::Manifest::InterfaceList<
+                                        mojom::StatusAreaWidgetTestApi>())
           .Build()};
   return *manifest;
 }

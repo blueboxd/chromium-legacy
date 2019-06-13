@@ -495,10 +495,15 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 
   CustomizedScroll(*scroll_state);
 
-  if (gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen)
-    UseCounter::Count(frame_->GetDocument(), WebFeature::kScrollByTouch);
-  else
-    UseCounter::Count(frame_->GetDocument(), WebFeature::kScrollByWheel);
+  if (gesture_event.SourceDevice() == WebGestureDevice::kTouchpad &&
+      gesture_event.data.scroll_begin.delta_hint_units ==
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+    UseCounter::Count(document, WebFeature::kScrollByPrecisionTouchPad);
+  } else if (gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen) {
+    UseCounter::Count(document, WebFeature::kScrollByTouch);
+  } else {
+    UseCounter::Count(document, WebFeature::kScrollByWheel);
+  }
 
   return WebInputEventResult::kHandledSystem;
 }

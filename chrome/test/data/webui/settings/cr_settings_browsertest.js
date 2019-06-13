@@ -209,6 +209,7 @@ CrSettingsAboutPageTest.prototype = {
     'test_util.js',
     '../test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
+    'test_about_page_browser_proxy.js',
     'about_page_tests.js',
   ]),
 };

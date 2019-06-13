@@ -541,17 +541,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddZipArchiverExtension();
 #endif  // BUILDFLAG(ENABLE_NACL)
 
-#if defined(KIOSK_NEXT)
-    if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-      // Always install KioskNextHome for testing if the feature is enabled.
-      if (enable_background_extensions_during_testing ||
-          profile_->GetPrefs()->GetBoolean(
-              ash::prefs::kKioskNextShellEnabled)) {
-        Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
-            base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
-      }
-    }
-#endif  // defined(KIOSK_NEXT)
+    AddKioskNextExtension();
 
 #if defined(GOOGLE_CHROME_BUILD)
     std::string id = Add(IDR_QUICKOFFICE_MANIFEST,
@@ -666,6 +656,19 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
       base::BindRepeating(&ComponentLoader::FinishLoadSpeechSynthesisExtension,
                           weak_factory_.GetWeakPtr(),
                           extension_misc::kEspeakSpeechSynthesisExtensionId));
+}
+
+void ComponentLoader::AddKioskNextExtension() {
+#if defined(KIOSK_NEXT)
+  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
+    // Always install KioskNextHome for testing if the feature is enabled.
+    if (enable_background_extensions_during_testing ||
+        profile_->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEnabled)) {
+      Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
+    }
+  }
+#endif  // defined(KIOSK_NEXT)
 }
 
 void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {

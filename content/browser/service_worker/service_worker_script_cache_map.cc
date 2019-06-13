@@ -58,8 +58,19 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
          owner_->status() == ServiceWorkerVersion::REDUNDANT);
-  if (!context_)
+  if (!context_) {
+    // For debugging. See https://crbug.com/946719.
+    DCHECK(resource_map_.find(url) != resource_map_.end());
+    ServiceWorkerDatabase::ResourceRecord& record = resource_map_[url];
+    if (record.size_bytes ==
+        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
+                                 kStartedCaching)) {
+      record.size_bytes =
+          static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::
+                                   ErrorState::kFinishedCachingNoContext);
+    }
     return;  // Our storage has been wiped via DeleteAndStartOver.
+  }
   if (net_error != net::OK) {
     context_->storage()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);

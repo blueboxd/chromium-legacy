@@ -82,8 +82,6 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_IMAGES_THROBBER_SMALL"
                file="images/throbber_small.svg" type="BINDATA"
                compress="gzip" />
-      <include name="IDR_WEBUI_IMAGES_TRASH"
-               file="images/trash.png" type="BINDATA" />
 
       <if expr="not is_android">
         <part file="cr_components/cr_components_images.grdp" />
@@ -144,8 +142,6 @@ without changes to the corresponding grd file. -->
                  file="css/tabs.css" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_CSS_THROBBER"
                  file="css/throbber.css" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_CSS_TRASH"
-                 file="css/trash.css" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_CSS_TREE"
                  file="css/tree.css" type="chrome_html" compress="gzip"
                  flattenhtml="true" />

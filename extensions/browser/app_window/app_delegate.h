@@ -18,6 +18,7 @@ class FileChooserParams;
 }  // namespace blink
 
 namespace content {
+enum class PictureInPictureResult;
 class BrowserContext;
 class ColorChooser;
 class FileSelectListener;
@@ -105,10 +106,11 @@ class AppDelegate {
 
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
-  // Returns the size of the Picture-in-Picture window.
-  virtual gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                          const viz::SurfaceId& surface_id,
-                                          const gfx::Size& natural_size) = 0;
+  // Returns the result of the enter request.
+  virtual content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& natural_size) = 0;
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.

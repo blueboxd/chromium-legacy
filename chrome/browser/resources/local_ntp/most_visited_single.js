@@ -82,12 +82,6 @@ const CLASSES = {
 const LOG_TYPE = {
   // All NTP tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
-  // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
-  // has been received. In contrast to NTP_ALL_TILES_LOADED, this is recorded
-  // before the actual DOM elements have loaded (in particular the thumbnail
-  // images).
-  NTP_ALL_TILES_RECEIVED: 12,
-
   // Shortcuts have been customized.
   NTP_SHORTCUT_CUSTOMIZED: 39,
   // The 'Add shortcut' link was clicked.
@@ -863,7 +857,6 @@ function handleCommand(data) {
  * @param {!Object} info Data received in the message.
  */
 function showTiles(info) {
-  logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
   utils.setPlatformClass(document.body);
   countLoad();
 }

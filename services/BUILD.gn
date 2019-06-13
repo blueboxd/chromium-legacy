@@ -46,15 +46,13 @@ test("services_unittests") {
       "//services/viz",
       "//services/viz/privileged/interfaces:unit_tests",
       "//services/viz/public/cpp/compositing:tests",
+      "//services/viz/public/cpp/gpu:tests",
       "//services/viz/public/cpp/hit_test:tests",
     ]
   }
 
   if (use_aura) {
-    deps += [
-      "//services/ws/input_devices:tests",
-      "//services/ws/public/cpp/tests",
-    ]
+    deps += [ "//services/ws/input_devices:tests" ]
   }
 
   if (is_android) {

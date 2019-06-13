@@ -225,10 +225,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       override;
   WebContentSettingsClient* GetContentSettingsClient() override;
 
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) override;
-
   void DispatchDidChangeManifest() override;
 
   unsigned BackForwardLength() override;
@@ -323,6 +319,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool UsePrintingLayout() const override;
 
   void TransferUserActivationFrom(LocalFrame* source_frame) override;
+
+  void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
+  WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {

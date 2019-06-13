@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
@@ -28,7 +29,7 @@ class Extension;
 
 struct AppLaunchParams {
   AppLaunchParams(Profile* profile,
-                  const extensions::Extension* extension,
+                  const web_app::AppId& app_id,
                   extensions::LaunchContainer container,
                   WindowOpenDisposition disposition,
                   extensions::AppLaunchSource source,
@@ -41,8 +42,8 @@ struct AppLaunchParams {
   // The profile to load the application from.
   Profile* profile;
 
-  // The extension to load.
-  std::string extension_id;
+  // The app to launch.
+  web_app::AppId app_id;
 
   // An id that can be passed to an app when launched in order to support
   // multiple shelf items per app.

@@ -71,17 +71,6 @@ void OverlayRequestQueueImpl::PopBackRequest() {
   requests_.pop_back();
 }
 
-void OverlayRequestQueueImpl::CancelAllRequests() {
-  while (!empty()) {
-    // Requests are cancelled in reverse order to prevent attempting to present
-    // subsequent requests after the dismissal of the front request's UI.
-    for (auto& observer : observers_) {
-      observer.QueuedRequestCancelled(this, requests_.back().get());
-    }
-    PopBackRequest();
-  }
-}
-
 #pragma mark OverlayRequestQueue
 
 void OverlayRequestQueueImpl::AddRequest(
@@ -94,6 +83,17 @@ void OverlayRequestQueueImpl::AddRequest(
 
 OverlayRequest* OverlayRequestQueueImpl::front_request() const {
   return requests_.empty() ? nullptr : requests_.front().get();
+}
+
+void OverlayRequestQueueImpl::CancelAllRequests() {
+  while (!empty()) {
+    // Requests are cancelled in reverse order to prevent attempting to present
+    // subsequent requests after the dismissal of the front request's UI.
+    for (auto& observer : observers_) {
+      observer.QueuedRequestCancelled(this, requests_.back().get());
+    }
+    PopBackRequest();
+  }
 }
 
 #pragma mark RequestCancellationHelper

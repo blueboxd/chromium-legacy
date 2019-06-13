@@ -31,7 +31,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebApplicationCacheHost;
 class WebSharedWorker;
 }  // namespace blink
 
@@ -82,9 +81,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
-  void SelectAppCacheID(int64_t, base::OnceClosure) override;
-  std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
-      blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
@@ -120,9 +116,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   using PendingChannel =
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   std::vector<PendingChannel> pending_channels_;
-
-  const base::UnguessableToken appcache_host_id_;
-  blink::WebApplicationCacheHost* app_cache_host_ = nullptr;  // Not owned.
 
   // The info needed to connect to the ServiceWorkerProviderHost on the browser.
   blink::mojom::ServiceWorkerProviderInfoForWorkerPtr

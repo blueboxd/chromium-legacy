@@ -23,6 +23,12 @@
 
 namespace net {
 
+namespace {
+const char* const kSchemeNames[] = {kBasicAuthScheme,     kDigestAuthScheme,
+                                    kNtlmAuthScheme,      kNegotiateAuthScheme,
+                                    kSpdyProxyAuthScheme, kMockAuthScheme};
+}  // namespace
+
 HttpAuth::Identity::Identity() : source(IDENT_SRC_NONE), invalid(true) {}
 
 // static
@@ -137,9 +143,6 @@ std::string HttpAuth::GetAuthTargetString(Target target) {
 
 // static
 const char* HttpAuth::SchemeToString(Scheme scheme) {
-  static const char* const kSchemeNames[] = {
-      kBasicAuthScheme,     kDigestAuthScheme,    kNtlmAuthScheme,
-      kNegotiateAuthScheme, kSpdyProxyAuthScheme, kMockAuthScheme};
   static_assert(base::size(kSchemeNames) == AUTH_SCHEME_MAX,
                 "http auth scheme names incorrect size");
   if (scheme < AUTH_SCHEME_BASIC || scheme >= AUTH_SCHEME_MAX) {
@@ -147,6 +150,16 @@ const char* HttpAuth::SchemeToString(Scheme scheme) {
     return "invalid_scheme";
   }
   return kSchemeNames[scheme];
+}
+
+// static
+HttpAuth::Scheme HttpAuth::StringToScheme(const std::string& str) {
+  for (uint8_t i = 0; i < base::size(kSchemeNames); i++) {
+    if (str == kSchemeNames[i])
+      return static_cast<Scheme>(i);
+  }
+  NOTREACHED();
+  return AUTH_SCHEME_MAX;
 }
 
 // static

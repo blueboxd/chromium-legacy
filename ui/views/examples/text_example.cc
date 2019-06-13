@@ -130,9 +130,8 @@ TextExample::TextExample() : ExampleBase("Text Styles") {}
 TextExample::~TextExample() = default;
 
 Checkbox* TextExample::AddCheckbox(GridLayout* layout, const char* name) {
-  Checkbox* checkbox = new Checkbox(base::ASCIIToUTF16(name), this);
-  layout->AddView(checkbox);
-  return checkbox;
+  return layout->AddView(
+      std::make_unique<Checkbox>(base::ASCIIToUTF16(name), this));
 }
 
 Combobox* TextExample::AddCombobox(GridLayout* layout,
@@ -140,18 +139,17 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
                                    const char* const* strings,
                                    int count) {
   layout->StartRow(0, 0);
-  layout->AddView(new Label(base::ASCIIToUTF16(name)));
-  Combobox* combobox =
-      new Combobox(std::make_unique<ExampleComboboxModel>(strings, count));
+  layout->AddView(std::make_unique<Label>(base::ASCIIToUTF16(name)));
+  auto combobox = std::make_unique<Combobox>(
+      std::make_unique<ExampleComboboxModel>(strings, count));
   combobox->SetSelectedIndex(0);
   combobox->set_listener(this);
-  layout->AddView(combobox, kNumColumns - 1, 1);
-  return combobox;
+  return layout->AddView(std::move(combobox), kNumColumns - 1, 1);
 }
 
 void TextExample::CreateExampleView(View* container) {
-  text_view_ = new TextExampleView;
-  text_view_->SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
+  auto text_view = std::make_unique<TextExampleView>();
+  text_view->SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));
   layout->AddPaddingRow(0, 8);
@@ -190,7 +188,7 @@ void TextExample::CreateExampleView(View* container) {
                         1, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 16);
   layout->StartRow(1, 1);
-  layout->AddView(text_view_);
+  text_view_ = layout->AddView(std::move(text_view));
   layout->AddPaddingRow(0, 8);
 }
 

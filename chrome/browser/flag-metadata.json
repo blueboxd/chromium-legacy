@@ -568,6 +568,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "disable-accelerated-video-encode",
+    "owners": [ "chromeos-video-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW video
+    // encoding for debugging purpose and temporary workaround for some issues.
+    "expiry_milestone": -1
+  },
+  {
     "name": "disable-best-effort-tasks",
     "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 75
@@ -892,16 +899,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-autofill-save-credit-card-uses-strike-system",
-    "owners": [ "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-autofill-save-credit-card-uses-strike-system-v2",
-    "owners": [ "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
     "owners": [ "dlkumar@google.com" ],
     "expiry_milestone": 76
@@ -938,7 +935,7 @@
   },
   {
     "name": "enable-chrome-duet-labels",
-    "owners": [ "amaralp" ],
+    "owners": [ "mdjones" ],
     "expiry_milestone": 79
   },
   {
@@ -979,11 +976,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-cros-ime-service",
-    "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-cros-vm-cups-proxy",
     "owners": [ "//chrome/services/cups_proxy/OWNERS" ],
     "expiry_milestone": 78
@@ -1013,16 +1005,6 @@
     "name": "enable-data-reduction-proxy-with-network-service",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 79
-  },
-  {
-    "name": "enable-desktop-pwas-link-capturing",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-desktop-pwas-stay-in-window",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-desktop-pwas-omnibox-install",
@@ -1311,11 +1293,6 @@
   {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-message-center-new-style-notification",
-    "owners": [ "knollr", "peter" ],
     "expiry_milestone": 76
   },
   {
@@ -1620,66 +1597,6 @@
     "name": "enable-sxg-prefetch-cache-for-navigations",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-sync-pseudo-uss-app-list",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-apps",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-dictionary",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-extension-settings",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-extensions",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-favicons",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-history-delete-directives",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-preferences",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-priority-preferences",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-search-engines",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-supervised-users",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-themes",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-sync-uss-bookmarks",
@@ -2146,6 +2063,11 @@
     "name": "hardware-media-key-handling",
     "owners": [ "steimel", "media-dev" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "harfbuzz-pdf-subsetter",
+    "owners": ["dhoss", "thestig"],
+    "expiry_milestone": 80
   },
   {
     "name": "http-auth-committed-interstitials",
@@ -2723,11 +2645,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "safe-browsing-telemetry-for-apk-downloads",
-    "owners": [ "vakh" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "safe-browsing-use-local-blacklists-v2",
     "owners": [ "vakh" ],
     "expiry_milestone": 76
@@ -2852,16 +2769,6 @@
     "name": "strict-origin-isolation",
     "owners": ["wjmaclean", "alexmos", "creis"],
     "expiry_milestone": 80
-  },
-  {
-    "name": "sync-USS-autofill-profile",
-    "owners": [ "jkrcal", "treib", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "sync-USS-autofill-wallet-data",
-    "owners": [ "jkrcal", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "sync-USS-autofill-wallet-metadata",
@@ -3047,11 +2954,6 @@
   {
     "name": "user-activation-v2",
     "owners": [ "mustaq", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "user-activity-prediction-ml-service",
-    "owners": [ "amoylan", "pmalani", "jiameng" ],
     "expiry_milestone": 76
   },
   {

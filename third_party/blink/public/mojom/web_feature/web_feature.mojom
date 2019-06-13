@@ -2192,7 +2192,6 @@ enum WebFeature {
   kV8UserActivation_HasBeenActive_AttributeGetter = 2785,
   kV8UserActivation_IsActive_AttributeGetter = 2786,
   kTextEncoderEncodeInto = 2787,
-  kInvalidBasicCardMethodData = 2788,
   kClientHintsUA = 2789,
   kClientHintsUAArch = 2790,
   kClientHintsUAPlatform = 2791,
@@ -2308,6 +2307,9 @@ enum WebFeature {
   kCookieNoSameSite = 2916,
   kCookieInsecureAndSameSiteNone = 2917,
   kUnsizedMediaPolicy = 2918,
+  kScrollByPrecisionTouchPad = 2919,
+  kPinchZoom = 2920,
+  kBuiltInModuleSwitchImported = 2921,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

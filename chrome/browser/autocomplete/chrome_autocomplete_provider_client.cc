@@ -388,10 +388,10 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
 
 void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(
     AutocompleteController* controller) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-      content::Source<AutocompleteController>(controller),
-      content::NotificationService::NoDetails());
+//  content::NotificationService::current()->Notify(
+//      chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+//      content::Source<AutocompleteController>(controller),
+//      content::NotificationService::NoDetails());
 }
 
 // TODO(crbug.com/46623): Maintain a map of URL->WebContents for fast look-up.

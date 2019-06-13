@@ -76,15 +76,15 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kCaretColor:
       // TODO(rego): "auto" value for caret-color should not interpolate
       // (http://crbug.com/676295).
-      if (style.VisitedLinkCaretColor().IsAutoColor())
+      if (style.InternalVisitedCaretColor().IsAutoColor())
         return StyleColor::CurrentColor();
-      return style.VisitedLinkCaretColor().ToStyleColor();
+      return style.InternalVisitedCaretColor().ToStyleColor();
     case CSSPropertyID::kColor:
       return style.InternalVisitedColor();
     case CSSPropertyID::kOutlineColor:
-      return style.VisitedLinkOutlineColor();
+      return style.InternalVisitedOutlineColor();
     case CSSPropertyID::kColumnRuleColor:
-      return style.VisitedLinkColumnRuleColor();
+      return style.InternalVisitedColumnRuleColor();
     case CSSPropertyID::kWebkitTextEmphasisColor:
       return style.InternalVisitedTextEmphasisColor();
     case CSSPropertyID::kWebkitTextFillColor:
@@ -100,7 +100,7 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kWebkitTapHighlightColor:
       return style.TapHighlightColor();
     case CSSPropertyID::kTextDecorationColor:
-      return style.VisitedLinkTextDecorationColor();
+      return style.InternalVisitedTextDecorationColor();
     default:
       NOTREACHED();
       return nullptr;
@@ -178,7 +178,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetInternalVisitedBorderTopColor(color);
       return;
     case CSSPropertyID::kCaretColor:
-      return style.SetVisitedLinkCaretColor(color);
+      return style.SetInternalVisitedCaretColor(color);
     case CSSPropertyID::kColor:
       style.SetInternalVisitedColor(color);
       return;
@@ -189,16 +189,16 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetLightingColor(color);
       return;
     case CSSPropertyID::kOutlineColor:
-      style.SetVisitedLinkOutlineColor(color);
+      style.SetInternalVisitedOutlineColor(color);
       return;
     case CSSPropertyID::kStopColor:
       style.SetStopColor(color);
       return;
     case CSSPropertyID::kTextDecorationColor:
-      style.SetVisitedLinkTextDecorationColor(color);
+      style.SetInternalVisitedTextDecorationColor(color);
       return;
     case CSSPropertyID::kColumnRuleColor:
-      style.SetVisitedLinkColumnRuleColor(color);
+      style.SetInternalVisitedColumnRuleColor(color);
       return;
     case CSSPropertyID::kWebkitTextStrokeColor:
       style.SetInternalVisitedTextStrokeColor(color);

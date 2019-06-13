@@ -25,20 +25,11 @@ namespace tracing {
 class TRACING_EXPORT BackgroundTracingAgentImpl
     : public mojom::BackgroundTracingAgent {
  public:
-  static void Create(
-      mojo::PendingReceiver<mojom::BackgroundTracingAgent> receiver);
-
-  // For backwards compat.
-  static void CreateFromRequest(
-      mojo::InterfaceRequest<mojom::BackgroundTracingAgent> request);
-
-  BackgroundTracingAgentImpl();
+  explicit BackgroundTracingAgentImpl(
+      mojo::PendingRemote<mojom::BackgroundTracingAgentClient> client);
   ~BackgroundTracingAgentImpl() override;
 
   // mojom::BackgroundTracingAgent methods:
-  void Initialize(uint64_t tracing_process_id,
-                  mojo::PendingRemote<mojom::BackgroundTracingAgentClient>
-                      pending_client) override;
   void SetUMACallback(const std::string& histogram_name,
                       int32_t histogram_lower_value,
                       int32_t histogram_upper_value,

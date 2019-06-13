@@ -225,6 +225,12 @@ SignedExchangeLoader::ComputeHeaderIntegrity() const {
   return signed_exchange_handler_->ComputeHeaderIntegrity();
 }
 
+base::Time SignedExchangeLoader::GetSignatureExpireTime() const {
+  if (!signed_exchange_handler_)
+    return base::Time();
+  return signed_exchange_handler_->GetSignatureExpireTime();
+}
+
 void SignedExchangeLoader::OnHTTPExchangeFound(
     SignedExchangeLoadResult result,
     net::Error error,

@@ -1170,11 +1170,6 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   if (state.AnimationUpdate().IsEmpty())
     return false;
 
-  if (state.Style()->InsideLink() != EInsideLink::kNotInsideLink) {
-    DCHECK(state.ApplyPropertyToRegularStyle());
-    state.SetApplyPropertyToVisitedLinkStyle(true);
-  }
-
   const ActiveInterpolationsMap& animations_map =
       state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
   const ActiveInterpolationsMap& transitions_map =
@@ -1192,8 +1187,6 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   LoadPendingResources(state);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
-
-  state.SetApplyPropertyToVisitedLinkStyle(false);
 
   return true;
 }
@@ -1454,14 +1447,26 @@ static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
   return true;
 }
 
+static inline void ApplyProperty(const CSSProperty& property,
+                                 StyleResolverState& state,
+                                 const CSSValue& value,
+                                 unsigned apply_mask) {
+  if (apply_mask & kApplyMaskRegular)
+    StyleBuilder::ApplyProperty(property, state, value);
+  if (apply_mask & kApplyMaskVisited) {
+    if (const CSSProperty* visited = property.GetVisitedProperty())
+      StyleBuilder::ApplyProperty(*visited, state, value);
+  }
+}
+
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <CSSPropertyPriority priority>
-void StyleResolver::ApplyAllProperty(
-    StyleResolverState& state,
-    const CSSValue& all_value,
-    bool inherited_only,
-    ValidPropertyFilter valid_property_filter) {
+void StyleResolver::ApplyAllProperty(StyleResolverState& state,
+                                     const CSSValue& all_value,
+                                     bool inherited_only,
+                                     ValidPropertyFilter valid_property_filter,
+                                     unsigned apply_mask) {
   // The 'all' property doesn't apply to variables:
   // https://drafts.csswg.org/css-variables/#defining-variables
   if (priority == kResolveVariables)
@@ -1499,33 +1504,29 @@ void StyleResolver::ApplyAllProperty(
     if (inherited_only && !property_class.IsInherited())
       continue;
 
-    StyleBuilder::ApplyProperty(property_class, state, all_value);
+    ApplyProperty(property_class, state, all_value, apply_mask);
   }
 }
 
 template <CSSPropertyPriority priority>
 static inline void ApplyProperty(
     const CSSPropertyValueSet::PropertyReference& reference,
-    StyleResolverState& state) {
+    StyleResolverState& state,
+    unsigned apply_mask) {
   static_assert(
       priority != kResolveVariables,
       "Application of custom properties must use specialized template");
   DCHECK_NE(reference.Id(), CSSPropertyID::kVariable);
-  StyleBuilder::ApplyProperty(reference.Property(), state, reference.Value());
+  ApplyProperty(reference.Property(), state, reference.Value(), apply_mask);
 }
 
 template <>
 inline void ApplyProperty<kResolveVariables>(
     const CSSPropertyValueSet::PropertyReference& reference,
-    StyleResolverState& state) {
+    StyleResolverState& state,
+    unsigned apply_mask) {
   CSSPropertyRef ref(reference.Name(), state.GetDocument());
-  StyleBuilder::ApplyProperty(ref.GetProperty(), state, reference.Value());
-}
-
-static bool WillApplyToVisitedLink(StyleResolverState& state,
-                                   const CSSProperty& property) {
-  return state.ApplyPropertyToVisitedLinkStyle() &&
-         (property.IsValidForVisitedLink() || property.GetVisitedProperty());
+  ApplyProperty(ref.GetProperty(), state, reference.Value(), apply_mask);
 }
 
 template <CSSPropertyPriority priority,
@@ -1535,7 +1536,8 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
                                     bool is_important,
                                     bool inherited_only,
                                     NeedsApplyPass& needs_apply_pass,
-                                    ValidPropertyFilter valid_property_filter) {
+                                    ValidPropertyFilter valid_property_filter,
+                                    unsigned apply_mask) {
   unsigned property_count = properties->PropertyCount();
   for (unsigned i = 0; i < property_count; ++i) {
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
@@ -1549,7 +1551,7 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
         needs_apply_pass.Set(kLowPropertyPriority, is_important);
       }
       ApplyAllProperty<priority>(state, current.Value(), inherited_only,
-                                 valid_property_filter);
+                                 valid_property_filter, apply_mask);
       continue;
     }
 
@@ -1570,16 +1572,31 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
       // here. For this reason we don't allow declarations with explicitly
       // inherited properties to be cached.
       DCHECK(!current.Value().IsInheritedValue() ||
-             (!state.ApplyPropertyToRegularStyle() &&
-              !WillApplyToVisitedLink(state, current.Property())));
+             (!(apply_mask & kApplyMaskRegular) &&
+              (!(apply_mask & kApplyMaskVisited) ||
+               !current.Property().GetVisitedProperty())));
       continue;
     }
 
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
       continue;
 
-    ApplyProperty<priority>(current, state);
+    ApplyProperty<priority>(current, state, apply_mask);
   }
+}
+
+static inline unsigned ComputeApplyMask(
+    StyleResolverState& state,
+    const MatchedProperties& matched_properties) {
+  if (state.Style()->InsideLink() == EInsideLink::kNotInsideLink)
+    return kApplyMaskRegular;
+  static_assert(static_cast<int>(kApplyMaskRegular) ==
+                    static_cast<int>(CSSSelector::kMatchLink),
+                "kApplyMaskRegular and kMatchLink must match");
+  static_assert(static_cast<int>(kApplyMaskVisited) ==
+                    static_cast<int>(CSSSelector::kMatchVisited),
+                "kApplyMaskVisited and kMatchVisited must match");
+  return matched_properties.types_.link_match_type;
 }
 
 template <CSSPropertyPriority priority,
@@ -1596,32 +1613,14 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
       !needs_apply_pass.Get(priority, is_important))
     return;
 
-  if (state.Style()->InsideLink() != EInsideLink::kNotInsideLink) {
-    for (const auto& matched_properties : range) {
-      unsigned link_match_type = matched_properties.types_.link_match_type;
-      // FIXME: It would be nicer to pass these as arguments but that requires
-      // changes in many places.
-      state.SetApplyPropertyToRegularStyle(link_match_type &
-                                           CSSSelector::kMatchLink);
-      state.SetApplyPropertyToVisitedLinkStyle(link_match_type &
-                                               CSSSelector::kMatchVisited);
-
-      ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
-          state, matched_properties.properties.Get(), is_important,
-          inherited_only, needs_apply_pass,
-          static_cast<ValidPropertyFilter>(
-              matched_properties.types_.valid_property_filter));
-    }
-    state.SetApplyPropertyToRegularStyle(true);
-    state.SetApplyPropertyToVisitedLinkStyle(false);
-    return;
-  }
   for (const auto& matched_properties : range) {
+    const unsigned apply_mask = ComputeApplyMask(state, matched_properties);
     ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
         state, matched_properties.properties.Get(), is_important,
         inherited_only, needs_apply_pass,
         static_cast<ValidPropertyFilter>(
-            matched_properties.types_.valid_property_filter));
+            matched_properties.types_.valid_property_filter),
+        apply_mask);
   }
 }
 

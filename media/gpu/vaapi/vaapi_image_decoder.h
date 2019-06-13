@@ -50,11 +50,17 @@ enum class VaapiImageDecodeStatus : uint32_t {
 // more implementing classes are added (e.g. VaapiWebPDecoder).
 class VaapiImageDecoder {
  public:
+  // Type of image decoder.
+  enum class Type {
+    kJpeg,
+    kWebP,
+  };
+
   virtual ~VaapiImageDecoder();
 
-  // Initializes |vaapi_wrapper_| in kDecode mode with the appropriate VAAPI
-  // profile and |error_uma_cb| for error reporting.
-  virtual bool Initialize(const base::RepeatingClosure& error_uma_cb) = 0;
+  // Uses GetType() to initialize |vaapi_wrapper_| in kDecode mode with the
+  // appropriate VAAPI profile and |error_uma_cb| for error reporting.
+  bool Initialize(const base::RepeatingClosure& error_uma_cb);
 
   // Decodes a picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the image in |encoded_image|.
@@ -65,6 +71,9 @@ class VaapiImageDecoder {
   virtual scoped_refptr<VASurface> Decode(
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status) = 0;
+
+  // Returns the type of the current decoder.
+  virtual Type GetType() const = 0;
 
  protected:
   VaapiImageDecoder();

@@ -5,6 +5,8 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 #include <memory>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,7 +24,8 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
-#include "components/signin/core/browser/primary_account_policy_manager.h"
+#include "components/signin/core/browser/primary_account_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -34,7 +37,6 @@
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/identity/public/cpp/test_identity_manager_observer.h"
@@ -295,18 +297,16 @@ class IdentityManagerTest : public testing::Test {
         &signin_client_, token_service.get(), account_tracker_service.get(),
         std::make_unique<image_fetcher::FakeImageDecoder>());
 
-#if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by PrimaryAccountManager";
+    std::unique_ptr<PrimaryAccountPolicyManager> policy_manager;
+#if !defined(OS_CHROMEOS)
+    policy_manager =
+        std::make_unique<PrimaryAccountPolicyManagerImpl>(&signin_client_);
+#endif
     auto primary_account_manager = std::make_unique<PrimaryAccountManager>(
         &signin_client_, token_service.get(), account_tracker_service.get(),
-        account_consistency);
-#else
-    auto primary_account_manager =
-        std::make_unique<PrimaryAccountPolicyManager>(
-            &signin_client_, token_service.get(), account_tracker_service.get(),
-            account_consistency);
-#endif
+        account_consistency, std::move(policy_manager));
 
     // Passing this switch ensures that the new PrimaryAccountManager starts
     // with a clean slate. Otherwise PrimaryAccountManager::Initialize will use

@@ -212,6 +212,17 @@ bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
+  if (RuntimeEnabledFeatures::ElementInternalsEnabled() && DisableShadow() &&
+      element.GetShadowRoot()) {
+    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateOrEmpty(
+        script_state_->GetIsolate(), DOMExceptionCode::kNotSupportedError,
+        "The element already has a ShadowRoot though it is disabled by "
+        "disabledFeatures static field.");
+    if (!exception.IsEmpty())
+      V8ScriptRunner::ReportException(isolate, exception);
+    return false;
+  }
+
   Element* result = CallConstructor();
 
   // To report exception thrown from callConstructor()

@@ -13,6 +13,10 @@
 #define DRM_FORMAT_INVALID  0
 #endif
 
+#ifndef DRM_FORMAT_P010
+#define DRM_FORMAT_P010 fourcc_code('P', '0', '1', '0')
+#endif
+
 namespace ui {
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
@@ -47,6 +51,8 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
+    case gfx::BufferFormat::P010:
+      return DRM_FORMAT_P010;
   }
   return DRM_FORMAT_INVALID;
 }
@@ -77,6 +83,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     case DRM_FORMAT_YVU420:
       return gfx::BufferFormat::YVU_420;
+    case DRM_FORMAT_P010:
+      return gfx::BufferFormat::P010;
     default:
       NOTREACHED();
       return gfx::BufferFormat::BGRA_8888;
@@ -97,6 +105,7 @@ bool IsValidBufferFormat(uint32_t current_format) {
     case DRM_FORMAT_UYVY:
     case DRM_FORMAT_NV12:
     case DRM_FORMAT_YVU420:
+    case DRM_FORMAT_P010:
       return true;
     default:
       return false;

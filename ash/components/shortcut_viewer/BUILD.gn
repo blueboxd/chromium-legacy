@@ -50,10 +50,10 @@ source_set("unit_tests") {
     ":shortcut_viewer",
     "//ash:test_support",
     "//base/test:test_support",
-    "//services/ws/public/cpp/input_devices:test_support",
     "//testing/gtest",
     "//ui/compositor:test_support",
     "//ui/events:test_support",
+    "//ui/events/devices:test_support",
     "//ui/views",
   ]
 }

@@ -2015,8 +2015,8 @@ void ComputedStyle::ClearMultiCol() {
       ComputedStyleInitialValues::InitialColumnRuleColor());
   SetColumnRuleColorIsCurrentColor(
       ComputedStyleInitialValues::InitialColumnRuleColorIsCurrentColor());
-  SetVisitedLinkColumnRuleColorInternal(
-      ComputedStyleInitialValues::InitialVisitedLinkColumnRuleColor());
+  SetInternalVisitedColumnRuleColorInternal(
+      ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
   SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
   SetHasAutoColumnCountInternal(
       ComputedStyleInitialValues::InitialHasAutoColumnCount());
@@ -2028,8 +2028,8 @@ void ComputedStyle::ClearMultiCol() {
 
 StyleColor ComputedStyle::DecorationColorIncludingFallback(
     bool visited_link) const {
-  StyleColor style_color =
-      visited_link ? VisitedLinkTextDecorationColor() : TextDecorationColor();
+  StyleColor style_color = visited_link ? InternalVisitedTextDecorationColor()
+                                        : TextDecorationColor();
 
   if (!style_color.IsCurrentColor())
     return style_color;

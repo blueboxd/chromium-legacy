@@ -1412,4 +1412,32 @@
     await checkContextMenu(
         appId, '/Computers/Computer A/A', folderMenus, false /* rootMenu */);
   };
+
+  /**
+   * Tests that context menu in directory tree gets the focus, so ChromeVox can
+   * announce it.
+   */
+  testcase.dirContextMenuFocus = async () => {
+    // Open Files app on local Downloads.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Right-click /My files/Downloads in the directory tree.
+    const query =
+        '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
+    await remoteCall.waitForElement(appId, query);
+
+    // Right-click the selected file.
+    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+        'fakeMouseRightClick', appId, [query]));
+
+    // Wait for the context menu to appear.
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu:not([hidden])');
+
+    // Check currently focused element.
+    const focusedElement =
+        await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+    chrome.test.assertEq('menuitem', focusedElement.attributes.role);
+  };
 })();

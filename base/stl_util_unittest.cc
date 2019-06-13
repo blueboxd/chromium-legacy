@@ -105,6 +105,9 @@ void RunConstCastIteratorTest() {
                              decltype(it)>::value,
                 "it is not a iterator.");
   EXPECT_EQ(c_it, it);
+  // Const casting the iterator should not modify the underlying container.
+  Container other = {1, 2, 3, 4, 5};
+  EXPECT_THAT(c, testing::ContainerEq(other));
 }
 
 struct CustomIntHash {
@@ -308,7 +311,6 @@ TEST(STLUtilTest, ConstCastIterator) {
   RunConstCastIteratorTest<std::deque<int>>();
   RunConstCastIteratorTest<std::vector<int>>();
   RunConstCastIteratorTest<std::array<int, 5>>();
-  RunConstCastIteratorTest<std::initializer_list<int>>();
   RunConstCastIteratorTest<int[5]>();
 
   // Associative Containers

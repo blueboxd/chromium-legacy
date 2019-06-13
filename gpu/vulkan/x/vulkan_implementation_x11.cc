@@ -76,7 +76,7 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {}, use_swiftshader()))
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
   return true;
 }

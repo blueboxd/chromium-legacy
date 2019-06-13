@@ -29,6 +29,10 @@ namespace base {
 class AtExitManager;
 }  // namespace base
 
+namespace discardable_memory {
+class DiscardableSharedMemoryManager;
+}
+
 namespace content {
 class ContentMainDelegate;
 struct ContentMainParams;
@@ -54,6 +58,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   bool is_browser_main_loop_started_ = false;
 
+  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
   std::unique_ptr<StartupDataImpl> startup_data_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<BrowserProcessSubThread> service_manager_thread_;

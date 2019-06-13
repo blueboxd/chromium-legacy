@@ -61,8 +61,13 @@ enum class WebSchedulerTrackedFeature {
 
   kIndexedDBConnection = 28,
 
+  // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
   kMaxValue = kIndexedDBConnection
 };
+
+static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,
+              "This enum is used in a bitmask, so the values should fit into a"
+              "64-bit integer");
 
 }  // namespace scheduler
 }  // namespace blink

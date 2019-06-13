@@ -3,7 +3,6 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/viz/service",
-  "+services/ws/public",
   "+third_party/blink/public/platform/web_gesture_curve.h",
   "+third_party/zlib",
   "+ui/events/gestures/blink/web_gesture_curve_impl.h",

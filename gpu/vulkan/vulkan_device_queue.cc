@@ -134,15 +134,40 @@ bool VulkanDeviceQueue::Initialize(
                             std::begin(required_extensions),
                             std::end(required_extensions));
 
+#if defined(OS_ANDROID)
+  // Query if VkPhysicalDeviceSamplerYcbcrConversionFeatures is supported by
+  // the implementation. This extension must be supported for android.
+  // Note that vulkan is only turned on in chrome for android P+ and android P+
+  // requires vulkan apiVersion 1.1.
+  sampler_ycbcr_conversion_features_.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+  sampler_ycbcr_conversion_features_.pNext = nullptr;
+
+  // Add VkPhysicalDeviceSamplerYcbcrConversionFeatures struct to pNext chain
+  // of VkPhysicalDeviceFeatures2.
+  enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
+  vkGetPhysicalDeviceFeatures2(vk_physical_device_,
+                               &enabled_device_features_2_);
+  if (!sampler_ycbcr_conversion_features_.samplerYcbcrConversion) {
+    LOG(ERROR) << "samplerYcbcrConversion is not supported";
+    return false;
+  }
+
+  // Disable all physical device features by default.
+  memset(&enabled_device_features_2_.features, 0,
+         sizeof(enabled_device_features_2_.features));
+#endif
+
   VkDeviceCreateInfo device_create_info = {};
   device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  device_create_info.pNext = enabled_device_features_2_.pNext;
   device_create_info.queueCreateInfoCount = 1;
   device_create_info.pQueueCreateInfos = &queue_create_info;
   device_create_info.enabledLayerCount = enabled_layer_names.size();
   device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
   device_create_info.enabledExtensionCount = enabled_extensions.size();
   device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
-  device_create_info.pEnabledFeatures = &enabled_device_features_;
+  device_create_info.pEnabledFeatures = &enabled_device_features_2_.features;
 
   result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
                           &owned_vk_device_);

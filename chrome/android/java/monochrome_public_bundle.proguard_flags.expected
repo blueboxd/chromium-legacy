@@ -610,7 +610,8 @@
     native <methods>;
 }
 
--keep public class com.google.ar.core.** {*;}
+-keep public class !com.google.ar.core.viewer.**, !com.google.ar.core**.R$*, !com.google.ar.core.services.logging.**, com.google.ar.core.** {*;}
+
 # If you need to build a library on top of arcore_client, and use this library for your project
 # Please un-comment this line below.
 # -keepattributes *Annotation*

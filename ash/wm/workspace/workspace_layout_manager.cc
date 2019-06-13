@@ -10,7 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -213,7 +213,7 @@ void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// WorkspaceLayoutManager, keyboard::KeyboardControllerObserver implementation:
+// WorkspaceLayoutManager, ash::KeyboardControllerObserver implementation:
 
 void WorkspaceLayoutManager::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& new_bounds) {
@@ -223,7 +223,7 @@ void WorkspaceLayoutManager::OnKeyboardVisibleBoundsChanged(
     NotifySystemUiAreaChanged();
 }
 
-void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
+void WorkspaceLayoutManager::OnKeyboardDisplacingBoundsChanged(
     const gfx::Rect& new_bounds_in_screen) {
   aura::Window* window = wm::GetActiveWindow();
   if (!window)

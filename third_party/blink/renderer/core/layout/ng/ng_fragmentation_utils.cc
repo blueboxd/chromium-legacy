@@ -17,12 +17,13 @@ LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
                                     const NGPhysicalFragment& fragment) {
   if (!fragment.IsBox())
     return LayoutUnit();
-  const auto* break_token = To<NGBlockBreakToken>(fragment.BreakToken());
+  const NGPhysicalBoxFragment& box_fragment =
+      To<NGPhysicalBoxFragment>(fragment);
+  const auto* break_token = To<NGBlockBreakToken>(box_fragment.BreakToken());
   if (!break_token)
     return LayoutUnit();
   NGBoxFragment logical_fragment(constraint_space.GetWritingMode(),
-                                 constraint_space.Direction(),
-                                 To<NGPhysicalBoxFragment>(fragment));
+                                 constraint_space.Direction(), box_fragment);
   return break_token->UsedBlockSize() - logical_fragment.BlockSize();
 }
 

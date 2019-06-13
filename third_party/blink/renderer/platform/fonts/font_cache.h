@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -219,7 +218,7 @@ class PLATFORM_EXPORT FontCache {
 #if defined(OS_LINUX)
   struct PlatformFallbackFont {
     String name;
-    CString filename;
+    std::string filename;
     int fontconfig_interface_id;
     int ttc_index;
     bool is_bold;

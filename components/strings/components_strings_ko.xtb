@@ -124,7 +124,7 @@
 <translation id="1549470594296187301">이 기능을 이용하려면 자바스크립트를 사용하도록 설정해야 합니다.</translation>
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1555130319947370107">파란색</translation>
-<translation id="1559528461873125649">해당 파일이나 디렉토리가 없습니다.</translation>
+<translation id="1559528461873125649">해당 파일이나 디렉터리가 없습니다.</translation>
 <translation id="1559572115229829303">&lt;p&gt;기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다.&lt;/p&gt;
 
       &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 맞추세요.&lt;/p&gt;</translation>

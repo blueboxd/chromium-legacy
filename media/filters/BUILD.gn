@@ -90,7 +90,6 @@ jumbo_source_set("filters") {
     "//media/cdm",
     "//media/formats",
     "//media/video",
-    "//skia",
     "//third_party/libyuv",
   ]
 

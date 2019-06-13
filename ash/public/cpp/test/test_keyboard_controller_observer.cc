@@ -17,7 +17,7 @@ TestKeyboardControllerObserver::TestKeyboardControllerObserver(
 TestKeyboardControllerObserver::~TestKeyboardControllerObserver() = default;
 
 void TestKeyboardControllerObserver::OnKeyboardEnableFlagsChanged(
-    const std::vector<keyboard::KeyboardEnableFlag>& flags) {
+    const std::set<keyboard::KeyboardEnableFlag>& flags) {
   enable_flags_ = flags;
 }
 

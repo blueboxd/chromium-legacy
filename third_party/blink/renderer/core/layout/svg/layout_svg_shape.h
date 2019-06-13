@@ -160,7 +160,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   void Paint(const PaintInfo&) const final;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_parent,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
   bool HitTestShape(const HitTestRequest&,

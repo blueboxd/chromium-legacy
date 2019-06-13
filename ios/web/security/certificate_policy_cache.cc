@@ -5,7 +5,7 @@
 #include "ios/web/public/security/certificate_policy_cache.h"
 
 #include "base/logging.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 
 namespace web {
 

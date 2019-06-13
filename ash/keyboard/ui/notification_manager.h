@@ -9,9 +9,11 @@
 #include "base/observer_list.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace keyboard {
-
+namespace ash {
 class KeyboardControllerObserver;
+}
+
+namespace keyboard {
 
 template <typename T>
 class ValueNotificationConsolidator {
@@ -41,7 +43,7 @@ class KEYBOARD_EXPORT NotificationManager {
       bool does_occluded_bounds_affect_layout,
       const gfx::Rect& visual_bounds,
       const gfx::Rect& occluded_bounds,
-      const base::ObserverList<KeyboardControllerObserver>::Unchecked&
+      const base::ObserverList<ash::KeyboardControllerObserver>::Unchecked&
           observers);
 
   bool ShouldSendVisibilityNotification(bool current_visibility);

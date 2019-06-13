@@ -245,6 +245,9 @@ class NavigationSimulator {
   // Sets whether this navigation originated as the result of a form submission.
   virtual void SetIsFormSubmission(bool is_form_submission) = 0;
 
+  // Sets whether this navigation originated as the result of a link click.
+  virtual void SetWasInitiatedByLinkClick(bool was_initiated_by_link_click) = 0;
+
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
   // the original url. Otherwise, they should be specified before calling

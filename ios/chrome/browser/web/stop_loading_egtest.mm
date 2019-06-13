@@ -94,7 +94,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::SetUpHttpServer(
       std::make_unique<InfinitePendingResponseProvider>(infinitePendingURL));
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/960508): Investigate why test fails on iPad if
     // synchronization is enabled.
     ScopedSynchronizationDisabler disabler;
@@ -103,7 +103,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
     [ChromeEarlGrey loadURL:infinitePendingURL waitForCompletion:NO];
   }
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Disable EG synchronization so the framework does not wait until the tab
     // loading spinner becomes idle (which will not happen until the stop button
     // is tapped).
@@ -116,7 +116,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     [ChromeEarlGreyUI openToolsMenu];
   }
 
@@ -137,7 +137,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   // Verify that stop button is hidden and reload button is visible.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]

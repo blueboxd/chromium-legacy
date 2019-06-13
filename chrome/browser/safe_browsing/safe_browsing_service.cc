@@ -47,7 +47,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -185,17 +184,6 @@ void SafeBrowsingService::ShutDown() {
   proxy_config_monitor_.reset();
 }
 
-scoped_refptr<net::URLRequestContextGetter>
-SafeBrowsingService::url_request_context() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(false);
-  // TODO(jam): remove this after
-  // chrome_browsing_data_remover_delegate_unittest.cc is converted to use the
-  // Network Service APIs instead of URLRequestContext directly.
-  // https://crbug.com/721398
-  return nullptr;
-}
-
 network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return network_context_->GetNetworkContext();
@@ -260,19 +248,6 @@ void SafeBrowsingService::RegisterDelayedAnalysisCallback(
 void SafeBrowsingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
   services_delegate_->AddDownloadManager(download_manager);
-}
-
-void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
-#if defined(FULL_SAFE_BROWSING)
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT1("loading", "SafeBrowsingService::OnResourceRequest", "url",
-               request->url().spec());
-
-  ResourceRequestInfo info = ResourceRequestDetector::GetRequestInfo(request);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SafeBrowsingService::ProcessResourceRequest, this, info));
-#endif
 }
 
 SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
@@ -471,12 +446,6 @@ void SafeBrowsingService::SendSerializedDownloadReport(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (ping_manager())
     ping_manager()->ReportThreatDetails(report);
-}
-
-void SafeBrowsingService::ProcessResourceRequest(
-    const ResourceRequestInfo& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  services_delegate_->ProcessResourceRequest(&request);
 }
 
 void SafeBrowsingService::CreateTriggerManager() {

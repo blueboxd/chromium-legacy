@@ -26,7 +26,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-class Label;
 class LabelButton;
 class MenuRunner;
 class TreeView;
@@ -233,22 +232,16 @@ class BookmarkEditorView : public BookmarkEditor,
   std::unique_ptr<EditorTreeModel> tree_model_;
 
   // Displays star folder.
-  views::TreeView* tree_view_;
+  views::TreeView* tree_view_ = nullptr;
 
   // Used to create a new folder.
-  std::unique_ptr<views::LabelButton> new_folder_button_;
-
-  // The label for the url text field.
-  views::Label* url_label_;
+  views::LabelButton* new_folder_button_ = nullptr;
 
   // The text field used for editing the URL.
-  views::Textfield* url_tf_;
-
-  // The label for the title text field.
-  views::Label* title_label_;
+  views::Textfield* url_tf_ = nullptr;
 
   // The text field used for editing the title.
-  views::Textfield* title_tf_;
+  views::Textfield* title_tf_ = nullptr;
 
   // Initial parent to select. Is only used if |details_.existing_node| is
   // NULL.
@@ -265,7 +258,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // If true, we're running the menu for the bookmark bar or other bookmarks
   // nodes.
-  bool running_menu_for_root_;
+  bool running_menu_for_root_ = false;
 
   // Is the tree shown?
   bool show_tree_;

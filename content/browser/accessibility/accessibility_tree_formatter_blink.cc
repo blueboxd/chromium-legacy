@@ -406,22 +406,26 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
                  FormatCoordinates("size", "boundsWidth", "boundsHeight", dict),
                  &line);
 
-  WriteAttribute(
-      false,
-      FormatCoordinates("pageLocation", "pageBoundsX", "pageBoundsY", dict),
-      &line);
-  WriteAttribute(false,
-                 FormatCoordinates("pageSize", "pageBoundsWidth",
-                                   "pageBoundsHeight", dict),
-                 &line);
-  WriteAttribute(false,
-                 FormatCoordinates("unclippedLocation", "unclippedBoundsX",
-                                   "unclippedBoundsY", dict),
-                 &line);
-  WriteAttribute(false,
-                 FormatCoordinates("unclippedSize", "unclippedBoundsWidth",
-                                   "unclippedBoundsHeight", dict),
-                 &line);
+  bool ignored = false;
+  dict.GetBoolean("ignored", &ignored);
+  if (!ignored) {
+    WriteAttribute(
+        false,
+        FormatCoordinates("pageLocation", "pageBoundsX", "pageBoundsY", dict),
+        &line);
+    WriteAttribute(false,
+                   FormatCoordinates("pageSize", "pageBoundsWidth",
+                                     "pageBoundsHeight", dict),
+                   &line);
+    WriteAttribute(false,
+                   FormatCoordinates("unclippedLocation", "unclippedBoundsX",
+                                     "unclippedBoundsY", dict),
+                   &line);
+    WriteAttribute(false,
+                   FormatCoordinates("unclippedSize", "unclippedBoundsWidth",
+                                     "unclippedBoundsHeight", dict),
+                   &line);
+  }
 
   bool transform;
   if (dict.GetBoolean("transform", &transform) && transform)

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/identity_manager_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "build/build_config.h"
@@ -18,7 +19,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
-#include "components/signin/core/browser/primary_account_policy_manager.h"
+#include "components/signin/core/browser/primary_account_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -77,15 +80,14 @@ std::unique_ptr<PrimaryAccountManager> BuildPrimaryAccountManager(
   std::unique_ptr<PrimaryAccountManager> primary_account_manager;
   SigninClient* client =
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
-#if defined(OS_CHROMEOS)
+  std::unique_ptr<PrimaryAccountPolicyManager> policy_manager;
+#if !defined(OS_CHROMEOS)
+  policy_manager = std::make_unique<PrimaryAccountPolicyManagerImpl>(client);
+#endif
   primary_account_manager = std::make_unique<PrimaryAccountManager>(
       client, token_service, account_tracker_service,
-      AccountConsistencyModeManager::GetMethodForProfile(profile));
-#else
-  primary_account_manager = std::make_unique<PrimaryAccountPolicyManager>(
-      client, token_service, account_tracker_service,
-      AccountConsistencyModeManager::GetMethodForProfile(profile));
-#endif
+      AccountConsistencyModeManager::GetMethodForProfile(profile),
+      std::move(policy_manager));
   primary_account_manager->Initialize(g_browser_process->local_state());
   return primary_account_manager;
 }

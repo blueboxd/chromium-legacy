@@ -17,7 +17,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"

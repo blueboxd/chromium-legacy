@@ -281,9 +281,7 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
   }
 
   auto data_item = std::make_unique<JSONObject>();
-  data_item->SetString(
-      "base64",
-      WTF::Base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
+  data_item->SetString("base64", Base64Encode(output));
   data_item->SetString("mimeType", "image/png");
   return data_item;
 }

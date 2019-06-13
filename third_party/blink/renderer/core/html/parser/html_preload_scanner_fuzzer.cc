@@ -71,7 +71,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           TokenPreloadScanner::ScannerType::kMainDocument);
 
   TextResourceDecoderForFuzzing decoder(fuzzed_data);
-  CString bytes = fuzzed_data.ConsumeRemainingBytes();
+  std::string bytes = fuzzed_data.ConsumeRemainingBytes();
   String decoded_bytes = decoder.Decode(bytes.data(), bytes.length());
   scanner->AppendToEnd(decoded_bytes);
   bool has_csp_meta_tag_unused = false;

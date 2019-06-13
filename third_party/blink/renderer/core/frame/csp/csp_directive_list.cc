@@ -40,8 +40,7 @@ String GetSha256String(const String& content) {
     return "sha256-...";
   }
 
-  return "sha256-" + Base64Encode(reinterpret_cast<char*>(digest.data()),
-                                  digest.size(), kBase64DoNotInsertLFs);
+  return "sha256-" + Base64Encode(digest);
 }
 
 ContentSecurityPolicyHashAlgorithm ConvertHashAlgorithmToCSPHashAlgorithm(

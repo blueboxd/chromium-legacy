@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/android/android_browser_test.h"
 
+#include "chrome/browser/android/startup_bridge.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -26,6 +27,8 @@ void AndroidBrowserTest::SetUpDefaultCommandLine(
 }
 
 void AndroidBrowserTest::PreRunTestOnMainThread() {
+  android_startup::HandlePostNativeStartupSynchronously();
+
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 }

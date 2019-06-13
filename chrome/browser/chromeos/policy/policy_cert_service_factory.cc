@@ -17,7 +17,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#include "services/network/public/cpp/features.h"
 
 namespace policy {
 
@@ -28,21 +27,8 @@ PolicyCertService* PolicyCertServiceFactory::GetForProfile(Profile* profile) {
 }
 
 // static
-std::unique_ptr<network::CertVerifierWithTrustAnchors>
-PolicyCertServiceFactory::CreateForProfile(Profile* profile) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(!GetInstance()->GetServiceForBrowserContext(profile, false));
-  PolicyCertService* service = static_cast<PolicyCertService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
-  if (!service)
-    return nullptr;
-  return service->CreatePolicyCertVerifier();
-}
-
-// static
 bool PolicyCertServiceFactory::CreateAndStartObservingForProfile(
     Profile* profile) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // This can be called multiple times if the network process crashes.
   if (GetInstance()->GetServiceForBrowserContext(profile, false))
     return true;

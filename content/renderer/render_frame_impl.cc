@@ -7104,6 +7104,9 @@ void RenderFrameImpl::BeginNavigationInternal(
       info->navigation_type == blink::kWebNavigationTypeFormSubmitted ||
       info->navigation_type == blink::kWebNavigationTypeFormResubmitted;
 
+  bool was_initiated_by_link_click =
+      info->navigation_type == blink::kWebNavigationTypeLinkClicked;
+
   GURL searchable_form_url;
   std::string searchable_form_encoding;
   if (!info->form.IsNull()) {
@@ -7128,8 +7131,8 @@ void RenderFrameImpl::BeginNavigationInternal(
           info->url_request.GetSkipServiceWorker(),
           GetRequestContextTypeForWebURLRequest(info->url_request),
           GetMixedContentContextTypeForWebURLRequest(info->url_request),
-          is_form_submission, searchable_form_url, searchable_form_encoding,
-          client_side_redirect_url,
+          is_form_submission, was_initiated_by_link_click, searchable_form_url,
+          searchable_form_encoding, client_side_redirect_url,
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt);
 

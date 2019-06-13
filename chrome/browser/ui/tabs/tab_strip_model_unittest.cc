@@ -36,11 +36,6 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/aura/test/aura_test_utils.h"
-#include "ui/events/devices/input_device_manager.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -300,11 +295,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
 class TabStripModelTest : public testing::Test {
  public:
-  TabStripModelTest() : profile_(new TestingProfile) {
-#if defined(OS_CHROMEOS)
-    input_device_manager_ = aura::test::CreateTestInputDeviceManager();
-#endif
-  }
+  TabStripModelTest() : profile_(new TestingProfile) {}
 
   TestingProfile* profile() { return profile_.get(); }
 
@@ -391,10 +382,6 @@ class TabStripModelTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   const std::unique_ptr<TestingProfile> profile_;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<ui::InputDeviceManager> input_device_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelTest);
 };

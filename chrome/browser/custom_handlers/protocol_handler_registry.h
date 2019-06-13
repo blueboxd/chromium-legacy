@@ -113,58 +113,9 @@ class ProtocolHandlerRegistry : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(IOThreadDelegate);
   };
 
-  // JobInterceptorFactory intercepts URLRequestJob creation for URLRequests the
-  // ProtocolHandlerRegistry is registered to handle.  When no handler is
-  // registered, the URLRequest is passed along to the chained
-  // URLRequestJobFactory (set with |JobInterceptorFactory::Chain|).
-  // JobInterceptorFactory's are created via
-  // |ProtocolHandlerRegistry::CreateJobInterceptorFactory|.
-  class JobInterceptorFactory : public net::URLRequestJobFactory {
-   public:
-    // |io_thread_delegate| is used to perform actual job creation work.
-    explicit JobInterceptorFactory(IOThreadDelegate* io_thread_delegate);
-    ~JobInterceptorFactory() override;
-
-    // |job_factory| is set as the URLRequestJobFactory where requests are
-    // forwarded if JobInterceptorFactory decides to pass on them.
-    void Chain(std::unique_ptr<net::URLRequestJobFactory> job_factory);
-
-    // URLRequestJobFactory implementation.
-    net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-        const std::string& scheme,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const override;
-
-    net::URLRequestJob* MaybeInterceptRedirect(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate,
-        const GURL& location) const override;
-
-    net::URLRequestJob* MaybeInterceptResponse(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const override;
-
-    bool IsHandledProtocol(const std::string& scheme) const override;
-    bool IsSafeRedirectTarget(const GURL& location) const override;
-
-   private:
-    // When JobInterceptorFactory decides to pass on particular requests,
-    // they're forwarded to the chained URLRequestJobFactory, |job_factory_|.
-    std::unique_ptr<URLRequestJobFactory> job_factory_;
-    // |io_thread_delegate_| performs the actual job creation decisions by
-    // mirroring the ProtocolHandlerRegistry on the IO thread.
-    scoped_refptr<IOThreadDelegate> io_thread_delegate_;
-
-    DISALLOW_COPY_AND_ASSIGN(JobInterceptorFactory);
-  };
-
   // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
   ~ProtocolHandlerRegistry() override;
-
-  // Returns a net::URLRequestJobFactory suitable for use on the IO thread, but
-  // is initialized on the UI thread.
-  std::unique_ptr<JobInterceptorFactory> CreateJobInterceptorFactory();
 
   // Called when a site tries to register as a protocol handler. If the request
   // can be handled silently by the registry - either to ignore the request

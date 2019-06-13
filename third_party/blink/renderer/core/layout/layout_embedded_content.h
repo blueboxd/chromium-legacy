@@ -42,7 +42,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   bool RequiresAcceleratedCompositing() const;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
@@ -86,7 +86,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
 
   bool NodeAtPointOverEmbeddedContentView(
       HitTestResult&,
-      const HitTestLocation& location_in_container,
+      const HitTestLocation&,
       const PhysicalOffset& accumulated_offset,
       HitTestAction);
 

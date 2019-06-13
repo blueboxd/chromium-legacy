@@ -32,6 +32,7 @@ import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.R;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
@@ -248,7 +249,8 @@ public class WebViewChromiumAwInit {
                 packageName = webViewPackageInfo.applicationInfo.metaData.getString(
                         "com.android.webview.WebViewDonorPackage", packageName);
             }
-            ResourceRewriter.rewriteRValues(mFactory.getWebViewDelegate().getPackageId(
+
+            R.onResourcesLoaded(mFactory.getWebViewDelegate().getPackageId(
                     context.getResources(), packageName));
 
             AwResource.setResources(context.getResources());

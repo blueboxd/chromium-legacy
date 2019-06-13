@@ -16,10 +16,6 @@ namespace blink {
 // resource name.
 PLATFORM_EXPORT String GetDataResourceAsASCIIString(const char* resource);
 
-// Returns the contents of a resource as a string specified by the
-// resource id from Grit.
-PLATFORM_EXPORT String GetResourceAsString(int resource_id);
-
 // Uncompresses a gzipped resource and returns it as a string. The resource
 // is specified by the resource id from Grit.
 PLATFORM_EXPORT String UncompressResourceAsString(int resource_id);

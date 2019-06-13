@@ -38,11 +38,14 @@ void PrefetchedSignedExchangeCacheAdapter::OnReceiveOuterResponse(
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveRedirect(
     const GURL& new_url,
-    const base::Optional<net::SHA256HashValue> header_integrity) {
+    const base::Optional<net::SHA256HashValue> header_integrity,
+    const base::Time& signature_expire_time) {
   DCHECK(header_integrity);
+  DCHECK(!signature_expire_time.is_null());
   cached_exchange_->SetHeaderIntegrity(
       std::make_unique<net::SHA256HashValue>(*header_integrity));
   cached_exchange_->SetInnerUrl(new_url);
+  cached_exchange_->SetSignatureExpireTime(signature_expire_time);
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveInnerResponse(

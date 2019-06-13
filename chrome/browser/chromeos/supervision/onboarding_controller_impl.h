@@ -16,6 +16,7 @@ class Profile;
 namespace chromeos {
 namespace supervision {
 
+class OnboardingDelegate;
 class OnboardingFlowModel;
 class OnboardingPresenter;
 class OnboardingLogger;
@@ -23,7 +24,8 @@ class KioskNextFlowObserver;
 
 class OnboardingControllerImpl : public mojom::OnboardingController {
  public:
-  explicit OnboardingControllerImpl(Profile* profile);
+  explicit OnboardingControllerImpl(Profile* profile,
+                                    OnboardingDelegate* delegate);
   ~OnboardingControllerImpl() override;
 
   void BindRequest(mojom::OnboardingControllerRequest request);

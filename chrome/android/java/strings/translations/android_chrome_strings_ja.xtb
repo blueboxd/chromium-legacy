@@ -1099,6 +1099,7 @@
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8993760627012879038">新しいタブをシークレット モードで開く</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
+<translation id="9005637476204108703">アカウントを管理するにはここをタップ</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報がデバイスでオフになっています。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 個の動画}other{# 個の動画}}</translation>
@@ -1119,6 +1120,7 @@
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9169594135889675189">グループに新しいタブを追加</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
+<translation id="9190112541605496997">アカウントを管理するには [アカウントを管理] をタップします</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">画像</translation>

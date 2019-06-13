@@ -1896,6 +1896,40 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   EXPECT_EQ("Value3", request_headers2.find("Header3")->second);
 }
 
+// Make sure requests are failed when the consumer tries to modify the host
+// header.
+TEST_F(URLLoaderTest, RedirectFailsOnModifyHostHeader) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client()->RunUntilRedirectReceived();
+
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader(net::HttpRequestHeaders::kHost, "foo.test");
+  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_TRUE(client()->has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            client()->completion_status().error_code);
+}
+
 // Test the client can remove headers during a redirect.
 TEST_F(URLLoaderTest, RedirectRemoveHeader) {
   ResourceRequest request = CreateResourceRequest(

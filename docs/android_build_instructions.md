@@ -23,7 +23,7 @@ see the [Linux instructions](linux_build_instructions.md) for some suggestions.
 
 Building the Android client on Windows or Mac is not supported and doesn't work.
 
-## Install `depot_tools`
+## Install depot\_tools
 
 Clone the `depot_tools` repository:
 

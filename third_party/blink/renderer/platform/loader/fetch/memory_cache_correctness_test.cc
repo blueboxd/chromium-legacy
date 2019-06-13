@@ -124,9 +124,12 @@ class MemoryCacheCorrectnessTest : public testing::Test {
         ResourceFetcherInit(properties->MakeDetachable(), context,
                             base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                             MakeGarbageCollected<TestLoaderFactory>()));
+    Resource::SetClockForTesting(platform_->test_task_runner()->GetMockClock());
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();
+
+    Resource::SetClockForTesting(nullptr);
 
     // Yield the ownership of the global memory cache back.
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());

@@ -1,0 +1,31 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//ios/build/config.gni")
+
+source_set("favicon") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    "//ios/web/public",
+  ]
+  sources = [
+    "favicon_status.cc",
+    "favicon_url.cc",
+  ]
+}
+
+source_set("inttests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/web/public",
+    "//ios/web/public:web_state_types",
+    "//ios/web/public/test",
+  ]
+  sources = [
+    "favicon_callbacks_inttest.mm",
+  ]
+}

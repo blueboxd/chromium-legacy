@@ -59,6 +59,9 @@ class ScheduledNotificationManager {
   // by creation timestamp.
   virtual void GetAllNotifications(Notifications* notifications) = 0;
 
+  // Deletes all notifications of given SchedulerClientType.
+  virtual void DeleteNotifications(SchedulerClientType type) = 0;
+
   virtual ~ScheduledNotificationManager();
 
  protected:

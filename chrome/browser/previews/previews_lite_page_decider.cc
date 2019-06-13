@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -138,7 +139,8 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
       page_id_(base::RandUint64()),
       drp_settings_(nullptr),
       pref_service_(nullptr),
-      host_bypass_blacklist_(std::make_unique<base::DictionaryValue>()) {
+      host_bypass_blacklist_(std::make_unique<base::DictionaryValue>()),
+      drp_headers_valid_(false) {
   if (!browser_context)
     return;
 
@@ -244,6 +246,15 @@ uint64_t PreviewsLitePageDecider::GeneratePageIdForProfile(Profile* profile) {
 void PreviewsLitePageDecider::OnProxyRequestHeadersChanged(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::string drp_header;
+  drp_headers_valid_ =
+      headers.GetHeader(data_reduction_proxy::chrome_proxy_header(),
+                        &drp_header) &&
+      (drp_header.find(",s=") != std::string::npos ||
+       drp_header.find(" s=") != std::string::npos ||
+       base::StartsWith(drp_header, "s=", base::CompareCase::SENSITIVE));
+
   // This is done so that successive page ids cannot be used to track users
   // across sessions. These sessions are contained in the chrome-proxy header.
   page_id_ = base::RandUint64();

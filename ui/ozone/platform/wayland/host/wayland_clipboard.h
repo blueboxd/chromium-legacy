@@ -22,7 +22,7 @@ class WaylandClipboard : public PlatformClipboard {
  public:
   WaylandClipboard(WaylandDataDeviceManager* data_device_manager,
                    WaylandDataDevice* data_device);
-  virtual ~WaylandClipboard();
+  ~WaylandClipboard() override;
 
   // PlatformClipboard.
   void OfferClipboardData(

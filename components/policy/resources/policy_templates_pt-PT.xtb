@@ -1116,9 +1116,9 @@
           Se esta política não for definida, o comportamento das políticas mais específicas permanece intacto.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
-<translation id="2990018289267778247">Se esta política for definida como Verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
+<translation id="2990018289267778247">Se esta política for definida como verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
 
-          Se esta política for definida como Falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
+          Se esta política for definida como falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
 
           Se definir esta política, os utilizadores não a podem alterar nem substituir.
 
@@ -1840,11 +1840,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
         O modelo de autorização de USB utiliza o URL do site requerente ("URL requerente") e o URL do site de nível superior ("URL incorporante") para autorizar o URL requerente a aceder ao dispositivo USB. O URL requerente pode ser diferente do URL incorporante se o site requerente for carregado num iFrame. Assim, o campo "URLs" pode conter até duas strings de URL separadas por vírgula para especificar o URL requerente e o URL incorporante, respetivamente. Se apenas for especificado um URL, é concedido acesso aos dispositivos USB correspondentes quando o URL do site requerente corresponder a este URL, independentemente do estado de incorporação. Os URLs no campo "URLs" têm de ser URLs válidos; caso contrário, a política será ignorada.
 
-        Se esta política não estiver definida, o valor predefinido global é utilizado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se estiver definida, ou, caso contrário, a partir da configuração pessoal do utilizador.
+        Se esta política não estiver definida, o valor predefinido global é utilizado para todos os sites, seja a partir da política "DefaultWebUsbGuardSetting", se estiver definida, ou, caso contrário, a partir da configuração pessoal do utilizador.
 
         Os padrões de URL nesta política não devem entrar em conflito com os configurados através de WebUsbBlockedForUrls. Se existir conflito, esta política prevalece em relação a WebUsbBlockedForUrls e WebUsbAskForUrls.
 
-        Os valores desta política e da política WebUsbAllowDevicesForUrls policy são unidos.</translation>
+        Os valores desta política e da política WebUsbAllowDevicesForUrls são unidos.</translation>
 <translation id="4298509794364745131">Especifica a lista de aplicações que podem ser ativadas como aplicações para tirar notas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" />.
 
       Se a aplicação para tirar notas preferida estiver ativada no ecrã de bloqueio, este irá conter um elemento de IU para a iniciar.

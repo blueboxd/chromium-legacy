@@ -1399,17 +1399,12 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
   }
 
   LocationBarView* location_bar = GetLocationBarView();
-  PageActionIconView* icon_view =
-      (PageActionIconView*)location_bar->send_tab_to_self_icon_view();
   views::View* anchor_view = location_bar;
 
   send_tab_to_self::SendTabToSelfBubbleViewImpl* bubble =
       new send_tab_to_self::SendTabToSelfBubbleViewImpl(
           anchor_view, gfx::Point(), web_contents, controller);
 
-  if (icon_view) {
-    bubble->SetHighlightedButton(icon_view);
-  }
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
 

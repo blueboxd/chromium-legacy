@@ -15,10 +15,6 @@ interface BackgroundTracingAgentClient {
 // specific metrics being hit and control when to start/stop tracing in
 // response. How metrics are communicated b/w processes is not covered here.
 interface BackgroundTracingAgent {
-  // Call this method first. Results in an OnInitialized callback.
-  Initialize(uint64 tracing_process_id,
-             pending_remote<BackgroundTracingAgentClient> client);
-
   // Call this method to begin reporting metrics corresponding to the named
   // histogram. Lower and upper bound values constrain what data is reported.
   // This results in OnTriggerBackgroundTrace callbacks (multiple if |repeat|
@@ -32,4 +28,12 @@ interface BackgroundTracingAgent {
   // Call this method to stop reporting metrics corresponding to the named
   // histogram.
   ClearUMACallback(string histogram_name);
+};
+
+// This interface is used to construct a BackgroundTracingAgent.
+interface BackgroundTracingAgentProvider {
+  // Results in an OnInitialized callback to |client|.
+  Create(uint64 tracing_process_id,
+         pending_remote<BackgroundTracingAgentClient> client,
+         pending_receiver<BackgroundTracingAgent> agent);
 };

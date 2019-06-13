@@ -208,6 +208,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onPietFrameRenderingEvent(List<Integer> pietErrorCodes) {
+        if (mNativeFeedLoggingBridge == 0) return;
         int[] pietErrorCodesArray = new int[pietErrorCodes.size()];
         for (int i = 0; i < pietErrorCodes.size(); ++i) {
             pietErrorCodesArray[i] = pietErrorCodes.get(i);
@@ -217,12 +218,18 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onVisualElementClicked(ElementLoggingData data, int elementType) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnVisualElementClicked(mNativeFeedLoggingBridge, elementType,
+                data.getPositionInStream(),
+                TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()));
     }
 
     @Override
     public void onVisualElementViewed(ElementLoggingData data, int elementType) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnVisualElementViewed(mNativeFeedLoggingBridge, elementType,
+                data.getPositionInStream(),
+                TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()));
     }
 
     @Override
@@ -393,6 +400,10 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
     private native void nativeOnPietFrameRenderingEvent(
             long nativeFeedLoggingBridge, int[] pietErrorCodes);
+    private native void nativeOnVisualElementClicked(long nativeFeedLoggingBridge, int elementType,
+            int position, long timeContentBecameAvailableMs);
+    private native void nativeOnVisualElementViewed(long nativeFeedLoggingBridge, int elementType,
+            int position, long timeContentBecameAvailableMs);
     private native void nativeOnInternalError(long nativeFeedLoggingBridge, int internalError);
     private native void nativeOnTokenCompleted(
             long nativeFeedLoggingBridge, boolean wasSynthetic, int contentCount, int tokenCount);

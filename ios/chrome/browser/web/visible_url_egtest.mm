@@ -276,7 +276,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
   GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
              @"Last request URL: %@", self.lastRequestURLSpec);
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // Enable EG synchronization to make test wait for popover animations.
     [[GREYConfiguration sharedInstance]
             setValue:@YES
@@ -408,7 +408,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [self setServerPaused:YES];
 
   // Start reloading the page.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // Enable EG synchronization to make test wait for popover animations.
     [[GREYConfiguration sharedInstance]
             setValue:@YES

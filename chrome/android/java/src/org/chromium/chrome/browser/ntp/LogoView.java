@@ -29,7 +29,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.widget.LoadingView;
 
 import java.lang.ref.WeakReference;
@@ -303,7 +303,7 @@ public class LogoView extends FrameLayout implements OnClickListener {
      * @return The default logo.
      */
     private Bitmap getDefaultLogo() {
-        if (!TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) return null;
+        if (!TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) return null;
 
         Bitmap defaultLogo = sDefaultLogo == null ? null : sDefaultLogo.get();
         final int tint = ApiCompatibilityUtils.getColor(getResources(), R.color.google_logo_tint);

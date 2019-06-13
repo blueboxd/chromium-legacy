@@ -27,6 +27,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -555,6 +556,51 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
+std::string ResourceBundle::DecompressDataResource(int resource_id) {
+  DCHECK(IsGzipped(resource_id));
+  base::StringPiece raw_resource = GetRawDataResource(resource_id);
+  std::string uncompressed_resource;
+  bool success =
+      compression::GzipUncompress(raw_resource, &uncompressed_resource);
+  DCHECK(success);
+  return uncompressed_resource;
+}
+
+std::string ResourceBundle::DecompressDataResourceScaled(
+    int resource_id,
+    ScaleFactor scaling_factor) {
+  DCHECK(IsGzipped(resource_id));
+  base::StringPiece raw_resource =
+      GetRawDataResourceForScale(resource_id, scaling_factor);
+  std::string uncompressed_resource;
+  bool success =
+      compression::GzipUncompress(raw_resource, &uncompressed_resource);
+  DCHECK(success);
+  return uncompressed_resource;
+}
+
+std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+  base::StringPiece data;
+
+  if (!(locale_resources_data_.get() &&
+        locale_resources_data_->GetStringPiece(
+            static_cast<uint16_t>(resource_id), &data) &&
+        !data.empty())) {
+    if (secondary_locale_resources_data_.get() &&
+        secondary_locale_resources_data_->GetStringPiece(
+            static_cast<uint16_t>(resource_id), &data) &&
+        !data.empty()) {
+    } else {
+      data = GetRawDataResource(resource_id);
+    }
+  }
+  std::string uncompressed_resource;
+  bool success = compression::GzipUncompress(data, &uncompressed_resource);
+  DCHECK(success);
+  return uncompressed_resource;
+}
+
 bool ResourceBundle::IsGzipped(int resource_id) const {
   bool is_gzipped;
   for (const auto& pack : data_packs_) {
@@ -574,30 +620,6 @@ base::string16 ResourceBundle::GetLocalizedString(int resource_id) {
   }
 #endif
   return GetLocalizedStringImpl(resource_id);
-}
-
-base::RefCountedMemory* ResourceBundle::LoadLocalizedResourceBytes(
-    int resource_id) {
-  {
-    base::AutoLock lock_scope(*locale_resources_data_lock_);
-    base::StringPiece data;
-
-    if (locale_resources_data_.get() &&
-        locale_resources_data_->GetStringPiece(
-            static_cast<uint16_t>(resource_id), &data) &&
-        !data.empty()) {
-      return new base::RefCountedStaticMemory(data.data(), data.length());
-    }
-
-    if (secondary_locale_resources_data_.get() &&
-        secondary_locale_resources_data_->GetStringPiece(
-            static_cast<uint16_t>(resource_id), &data) &&
-        !data.empty()) {
-      return new base::RefCountedStaticMemory(data.data(), data.length());
-    }
-  }
-  // Release lock_scope and fall back to main data pack.
-  return LoadDataResourceBytes(resource_id);
 }
 
 const gfx::FontList& ResourceBundle::GetFontListWithDelta(

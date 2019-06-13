@@ -1,4 +1,5 @@
 rootWebArea
-++button name='Onscreen'
-++button offscreen name='Offscreen'
-<-- End-of-file -->
+++genericContainer ignored
+++++button name='Onscreen'
+++++genericContainer ignored
+++++button offscreen name='Offscreen'

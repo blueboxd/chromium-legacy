@@ -11,7 +11,7 @@
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "components/sync_sessions/tab_node_pool.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"

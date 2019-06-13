@@ -19,7 +19,6 @@
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
-#include "components/dom_distiller/core/resource_utils.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -28,6 +27,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -57,12 +57,17 @@ const char kMonospaceCssClass[] = "monospace";
 
 std::string GetPlatformSpecificCss() {
 #if defined(OS_IOS)
-  return base::StrCat({GetResourceFromIdAsString(IDR_DISTILLER_MOBILE_CSS),
-                       GetResourceFromIdAsString(IDR_DISTILLER_IOS_CSS)});
+  return base::StrCat(
+      {ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+           IDR_DISTILLER_MOBILE_CSS),
+       ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+           IDR_DISTILLER_IOS_CSS)});
 #elif defined(OS_ANDROID)
-  return GetResourceFromIdAsString(IDR_DISTILLER_MOBILE_CSS);
+  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      IDR_DISTILLER_MOBILE_CSS);
 #else  // Desktop
-  return GetResourceFromIdAsString(IDR_DISTILLER_DESKTOP_CSS);
+  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      IDR_DISTILLER_DESKTOP_CSS);
 #endif
 }
 
@@ -115,7 +120,8 @@ std::string ReplaceHtmlTemplateValues(
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
   std::string html_template =
-      GetResourceFromIdAsString(IDR_DOM_DISTILLER_VIEWER_HTML);
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
 
   std::ostringstream css;
@@ -227,15 +233,19 @@ const std::string GetUnsafeArticleContentJs(
 
 const std::string GetCss() {
   return base::StrCat(
-      {GetResourceFromIdAsString(IDR_DISTILLER_CSS), GetPlatformSpecificCss()});
+      {ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+           IDR_DISTILLER_CSS),
+       GetPlatformSpecificCss()});
 }
 
 const std::string GetLoadingImage() {
-  return GetResourceFromIdAsString(IDR_DISTILLER_LOADING_IMAGE);
+  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      IDR_DISTILLER_LOADING_IMAGE);
 }
 
 const std::string GetJavaScript() {
-  return GetResourceFromIdAsString(IDR_DOM_DISTILLER_VIEWER_JS);
+  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      IDR_DOM_DISTILLER_VIEWER_JS);
 }
 
 std::unique_ptr<ViewerHandle> CreateViewRequest(

@@ -13,6 +13,12 @@ ProfileKey::ProfileKey(const base::FilePath& path, ProfileKey* original_key)
 
 ProfileKey::~ProfileKey() = default;
 
+ProfileKey* ProfileKey::GetOriginalKey() {
+  if (original_key_)
+    return original_key_;
+  return this;
+}
+
 PrefService* ProfileKey::GetPrefs() {
   DCHECK(prefs_);
   return prefs_;

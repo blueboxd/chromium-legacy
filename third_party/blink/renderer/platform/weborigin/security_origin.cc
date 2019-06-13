@@ -246,10 +246,8 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 
 url::Origin SecurityOrigin::ToUrlOrigin() const {
   const SecurityOrigin* unmasked = GetOriginOrPrecursorOriginIfOpaque();
-  std::string scheme =
-      StringUTF8Adaptor(unmasked->protocol_).AsStringPiece().as_string();
-  std::string host =
-      StringUTF8Adaptor(unmasked->host_).AsStringPiece().as_string();
+  std::string scheme = unmasked->protocol_.Utf8();
+  std::string host = unmasked->host_.Utf8();
   uint16_t port = unmasked->effective_port_;
   if (nonce_if_opaque_) {
     url::Origin result = url::Origin::CreateOpaqueFromNormalizedPrecursorTuple(

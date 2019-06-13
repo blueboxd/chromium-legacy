@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/tabs.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "components/zoom/zoom_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/api/web_contents_capture_client.h"
 #include "extensions/browser/extension_function.h"
@@ -180,17 +180,30 @@ class TabsRemoveFunction : public UIThreadExtensionFunction {
   bool RemoveTab(int tab_id, std::string* error);
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
 };
-class TabsDetectLanguageFunction : public UIThreadExtensionFunction,
-                                   public content::NotificationObserver {
+class TabsDetectLanguageFunction
+    : public UIThreadExtensionFunction,
+      public content::WebContentsObserver,
+      public translate::ContentTranslateDriver::Observer {
  private:
   ~TabsDetectLanguageFunction() override {}
   ResponseAction Run() override;
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-  void GotLanguage(const std::string& language);
-  content::NotificationRegistrar registrar_;
+  // content::WebContentsObserver:
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
+  void WebContentsDestroyed() override;
+
+  // translate::ContentTranslateDriver::Observer:
+  void OnLanguageDetermined(
+      const translate::LanguageDetectionDetails& details) override;
+
+  // Resolves the API call with the detected |language|.
+  void RespondWithLanguage(const std::string& language);
+
+  // Indicates if this instance is observing the tabs' WebContents and the
+  // ContentTranslateDriver, in which case the observers must be unregistered.
+  bool is_observing_ = false;
+
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
 };
 

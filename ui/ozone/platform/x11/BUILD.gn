@@ -20,6 +20,8 @@ source_set("x11") {
     "gl_surface_glx_ozone.h",
     "ozone_platform_x11.cc",
     "ozone_platform_x11.h",
+    "x11_clipboard.cc",
+    "x11_clipboard.h",
     "x11_cursor_factory_ozone.cc",
     "x11_cursor_factory_ozone.h",
     "x11_cursor_ozone.cc",

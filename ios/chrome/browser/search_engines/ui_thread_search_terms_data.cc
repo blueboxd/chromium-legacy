@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "net/base/escape.h"
 #include "rlz/buildflags/buildflags.h"
 #include "url/gurl.h"

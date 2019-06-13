@@ -38,7 +38,10 @@
                flattenhtml="true"
                type="BINDATA"
                compress="gzip" />
-      <include name="IDR_OS_SETTINGS_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
+      <include name="IDR_OS_SETTINGS_MANIFEST"
+               file="os_settings_manifest.json"
+               type="BINDATA"
+               compress="gzip" />
     </includes>
   </release>
 </grit>

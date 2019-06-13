@@ -129,71 +129,6 @@ void ProtocolHandlerRegistry::IOThreadDelegate::Disable() {
   enabled_ = false;
 }
 
-// JobInterceptorFactory -------------------------------------------------------
-
-// Instances of JobInterceptorFactory are produced for ownership by the IO
-// thread where it handler URL requests. We should never hold
-// any pointers on this class, only produce them in response to
-// requests via |ProtocolHandlerRegistry::CreateJobInterceptorFactory|.
-ProtocolHandlerRegistry::JobInterceptorFactory::JobInterceptorFactory(
-    IOThreadDelegate* io_thread_delegate)
-    : io_thread_delegate_(io_thread_delegate) {
-  DCHECK(io_thread_delegate_.get());
-  DETACH_FROM_THREAD(thread_checker_);
-}
-
-ProtocolHandlerRegistry::JobInterceptorFactory::~JobInterceptorFactory() {
-}
-
-void ProtocolHandlerRegistry::JobInterceptorFactory::Chain(
-    std::unique_ptr<net::URLRequestJobFactory> job_factory) {
-  job_factory_ = std::move(job_factory);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::
-MaybeCreateJobWithProtocolHandler(
-    const std::string& scheme,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::URLRequestJob* job = io_thread_delegate_->MaybeCreateJob(
-      request, network_delegate);
-  if (job)
-    return job;
-  return job_factory_->MaybeCreateJobWithProtocolHandler(
-      scheme, request, network_delegate);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptRedirect(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const GURL& location) const {
-  return job_factory_->MaybeInterceptRedirect(
-      request, network_delegate, location);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptResponse(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeInterceptResponse(request, network_delegate);
-}
-
-bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledProtocol(
-    const std::string& scheme) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return io_thread_delegate_->IsHandledProtocol(scheme) ||
-      job_factory_->IsHandledProtocol(scheme);
-}
-
-bool ProtocolHandlerRegistry::JobInterceptorFactory::IsSafeRedirectTarget(
-    const GURL& location) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return job_factory_->IsSafeRedirectTarget(location);
-}
-
 // Delegate --------------------------------------------------------------------
 
 ProtocolHandlerRegistry::Delegate::~Delegate() {}
@@ -912,14 +847,4 @@ ProtocolHandlerRegistry::GetDefaultWebClientCallback(
   return base::Bind(
       &ProtocolHandlerRegistry::OnSetAsDefaultProtocolClientFinished,
       weak_ptr_factory_.GetWeakPtr(), protocol);
-}
-
-std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-ProtocolHandlerRegistry::CreateJobInterceptorFactory() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // this is always created on the UI thread (in profile_io's
-  // InitializeOnUIThread. Any method calls must be done
-  // on the IO thread (this is checked).
-  return std::unique_ptr<JobInterceptorFactory>(
-      new JobInterceptorFactory(io_thread_delegate_.get()));
 }

@@ -64,3 +64,18 @@ if (is_android) {
     jni_package = "events/devices"
   }
 }
+
+source_set("test_support") {
+  sources = [
+    "device_data_manager_test_api.cc",
+    "device_data_manager_test_api.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  public_deps = [
+    ":devices",
+  ]
+}

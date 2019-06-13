@@ -99,9 +99,7 @@ void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   const NGPhysicalFragment* fragment = nullptr;
   if (const NGLayoutResult* layout_result = child->layout_result.get()) {
     // Need to propagate OOF descendants in this inline-block child.
-    if (!layout_result->PhysicalFragment()
-             .OutOfFlowPositionedDescendants()
-             .IsEmpty())
+    if (layout_result->PhysicalFragment().HasOutOfFlowPositionedDescendants())
       return;
     fragment = &layout_result->PhysicalFragment();
   } else {

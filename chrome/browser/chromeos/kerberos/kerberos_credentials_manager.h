@@ -62,25 +62,31 @@ class KerberosCredentialsManager final {
   // Helper method for ignoring the results of method calls.
   static ResultCallback EmptyResultCallback();
 
+  // Returns the default Kerberos configuration (krb5.conf).
+  static const char* GetDefaultKerberosConfig();
+
   // Start observing this object. |observer| is not owned.
   void AddObserver(Observer* observer);
 
   // Stop observing this object. |observer| is not owned.
   void RemoveObserver(const Observer* observer);
 
-  // Adds an account for the given |principal_name|. If |is_managed| is true,
-  // the account is assumed to be managed by an admin and it overwrites any
-  // existing unmanaged account. If |password| is given, authenticates the
-  // account. If |remember_password| is true and a |password| is given, the
-  // Kerberos daemon remembers the password. |krb5_conf| is set as configuration
-  // if given. Sets a default configuration for new accounts if |krb5_conf| is
-  // not given. On success, sets |principal_name| as active principal and calls
-  // OnAccountsChanged() for observers.
+  // Adds an account for the given |principal_name| (user@example.com). If
+  // |is_managed| is true, the account is assumed to be managed by an admin and
+  // it overwrites any existing unmanaged account. If |password| is given,
+  // authenticates the account. If |remember_password| is true and a |password|
+  // is given, the Kerberos daemon remembers the password. |krb5_conf| is set as
+  // configuration. On success, sets |principal_name| as active principal and
+  // calls OnAccountsChanged() for observers. If |allow_existing| is false and
+  // an account for |principal_name| already exists, no action is performed and
+  // the method returns with ERROR_DUPLICATE_PRINCIPAL_NAME. If true, the
+  // existing account is updated.
   void AddAccountAndAuthenticate(std::string principal_name,
                                  bool is_managed,
                                  const base::Optional<std::string>& password,
                                  bool remember_password,
-                                 const base::Optional<std::string>& krb5_conf,
+                                 const std::string& krb5_conf,
+                                 bool allow_existing,
                                  ResultCallback callback);
 
   // Removes the Kerberos account for the account with given |principal_name|.

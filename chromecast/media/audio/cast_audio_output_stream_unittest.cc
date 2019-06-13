@@ -369,6 +369,7 @@ TEST_F(CastAudioOutputStreamTest, CloseWithoutStop) {
   RunThreadsUntilIdle();
 
   stream->Close();
+  RunThreadsUntilIdle();
 }
 
 TEST_F(CastAudioOutputStreamTest, CloseCancelsOpen) {

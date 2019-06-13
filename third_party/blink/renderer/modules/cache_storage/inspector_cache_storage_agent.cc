@@ -148,30 +148,30 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   return AssertCacheStorage(security_origin, frames, caches, result);
 }
 
-CString CacheStorageErrorString(mojom::blink::CacheStorageError error) {
+std::string CacheStorageErrorString(mojom::blink::CacheStorageError error) {
   switch (error) {
     case mojom::blink::CacheStorageError::kErrorNotImplemented:
-      return CString("not implemented.");
+      return std::string("not implemented.");
     case mojom::blink::CacheStorageError::kErrorNotFound:
-      return CString("not found.");
+      return std::string("not found.");
     case mojom::blink::CacheStorageError::kErrorExists:
-      return CString("cache already exists.");
+      return std::string("cache already exists.");
     case mojom::blink::CacheStorageError::kErrorQuotaExceeded:
-      return CString("quota exceeded.");
+      return std::string("quota exceeded.");
     case mojom::blink::CacheStorageError::kErrorCacheNameNotFound:
-      return CString("cache not found.");
+      return std::string("cache not found.");
     case mojom::blink::CacheStorageError::kErrorQueryTooLarge:
-      return CString("operation too large.");
+      return std::string("operation too large.");
     case mojom::blink::CacheStorageError::kErrorStorage:
-      return CString("storage failure.");
+      return std::string("storage failure.");
     case mojom::blink::CacheStorageError::kErrorDuplicateOperation:
-      return CString("duplicate operation.");
+      return std::string("duplicate operation.");
     case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
   }
   NOTREACHED();
-  return "";
+  return std::string();
 }
 
 CachedResponseType ResponseTypeToString(

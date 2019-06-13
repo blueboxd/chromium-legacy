@@ -357,7 +357,8 @@ class GridTabSwitcherMediator
 
     @Nullable
     TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
-        if (!ableToCreateGroup(tab)) return null;
+        if (!ableToCreateGroup(tab) || FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled())
+            return null;
 
         return tabId -> {
             Tab parentTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);

@@ -98,16 +98,15 @@ public class TabGridDialogMediator {
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                if (type == TabSelectionType.FROM_USER)
+                if (type == TabSelectionType.FROM_USER) {
                     // Cancel the zooming into tab grid card animation.
                     mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
                     mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+                }
             }
 
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
-                updateDialog();
-                updateGridTabSwitcher();
                 List<Tab> relatedTabs = getRelatedTabs(tab.getId());
                 // If current tab is closed and tab group is not empty, hand over ID of the next
                 // tab in the group to mCurrentTabId.
@@ -115,6 +114,8 @@ public class TabGridDialogMediator {
                 if (tab.getId() == mCurrentTabId) {
                     mCurrentTabId = relatedTabs.get(0).getId();
                 }
+                updateDialog();
+                updateGridTabSwitcher();
             }
         };
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
@@ -134,9 +135,11 @@ public class TabGridDialogMediator {
                             .getCurrentTabModelFilter();
             int index = filter.indexOf(
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
-            Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
+            if (mAnimationOriginProvider != null) {
+                Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
+                mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
+            }
             updateDialog();
-            mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
@@ -154,7 +157,9 @@ public class TabGridDialogMediator {
     }
 
     private void updateGridTabSwitcher() {
-        if (!mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE)) return;
+        if (!mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE)
+                || mGridTabSwitcherResetHandler == null)
+            return;
         mGridTabSwitcherResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
     }

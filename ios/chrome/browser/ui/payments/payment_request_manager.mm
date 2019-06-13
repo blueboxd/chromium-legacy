@@ -59,7 +59,7 @@
 #include "ios/web/common/origin_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"

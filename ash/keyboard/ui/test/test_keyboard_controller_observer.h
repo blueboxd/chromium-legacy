@@ -5,12 +5,12 @@
 #ifndef ASH_KEYBOARD_UI_TEST_TEST_KEYBOARD_CONTROLLER_OBSERVER_H_
 #define ASH_KEYBOARD_UI_TEST_TEST_KEYBOARD_CONTROLLER_OBSERVER_H_
 
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 
 namespace keyboard {
 
 // A KeyboardControllerObserver that counts occurrences of events for testing.
-struct TestKeyboardControllerObserver : public KeyboardControllerObserver {
+struct TestKeyboardControllerObserver : public ash::KeyboardControllerObserver {
   TestKeyboardControllerObserver();
   ~TestKeyboardControllerObserver() override;
 

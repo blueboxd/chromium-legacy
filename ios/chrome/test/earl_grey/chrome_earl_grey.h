@@ -38,6 +38,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // will properly synchronize the UI for Earl Grey tests.
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
+#pragma mark - Device Utilities
+
+// Returns YES if running on an iPad.
+- (BOOL)isIPadIdiom;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.

@@ -7,10 +7,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_raw_request_headers.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
@@ -105,6 +107,17 @@ std::string ComputeReferrer(const GURL& referrer) {
   }
 
   return referrer.spec();
+}
+
+bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers) {
+  // Disallow setting the Host header because it can conflict with specified URL
+  // and logic related to isolating sites.
+  if (request_headers.HasHeader(net::HttpRequestHeaders::kHost)) {
+    LOG(WARNING)
+        << "Host header should not be set from outside the network service";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace network

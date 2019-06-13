@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -67,7 +68,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
       const SkISize& full_size,
       bool is_multi_frame,
       const ColorBehavior& color_behavior,
-      std::vector<SkISize> supported_sizes) {
+      Vector<SkISize> supported_sizes) {
     return base::AdoptRef(new ImageFrameGenerator(
         full_size, is_multi_frame, color_behavior, std::move(supported_sizes)));
   }
@@ -131,7 +132,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   ImageFrameGenerator(const SkISize& full_size,
                       bool is_multi_frame,
                       const ColorBehavior&,
-                      std::vector<SkISize> supported_sizes);
+                      Vector<SkISize> supported_sizes);
 
   friend class ImageFrameGeneratorTest;
   friend class DeferredImageDecoderTest;
@@ -147,7 +148,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   // Parameters used to create internal ImageDecoder objects.
   const ColorBehavior decoder_color_behavior_;
   const bool is_multi_frame_;
-  const std::vector<SkISize> supported_sizes_;
+  const Vector<SkISize> supported_sizes_;
 
   // Prevents concurrent access to all variables below.
   mutable Mutex generator_mutex_;
@@ -161,10 +162,15 @@ class PLATFORM_EXPORT ImageFrameGenerator final
     int ref_count = 0;
     Mutex mutex;
   };
-  // Note that it is necessary to use unordered_map here to ensure that
-  // references to entries in the map, stored in ClientMutexLocker, remain valid
-  // across insertions into the map.
-  std::unordered_map<cc::PaintImage::GeneratorClientId, ClientMutex> mutex_map_;
+
+  // Note that it is necessary to use HashMap here to ensure that references
+  // to entries in the map, stored in ClientMutexLocker, remain valid across
+  // insertions into the map.
+  HashMap<cc::PaintImage::GeneratorClientId,
+          std::unique_ptr<ClientMutex>,
+          WTF::IntHash<cc::PaintImage::GeneratorClientId>,
+          WTF::UnsignedWithZeroKeyHashTraits<cc::PaintImage::GeneratorClientId>>
+      mutex_map_;
 
   std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
 

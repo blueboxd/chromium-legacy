@@ -19,6 +19,8 @@ source_set("earl_grey_support") {
     "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
+    "base_earl_grey_test_case_app_interface.h",
+    "base_earl_grey_test_case_app_interface.mm",
     "base_eg_test_helper_impl.h",
     "base_eg_test_helper_impl.mm",
     "coverage_utils.h",
@@ -45,6 +47,8 @@ source_set("eg_app_support+eg2") {
   ]
 
   sources = [
+    "base_earl_grey_test_case_app_interface.h",
+    "base_earl_grey_test_case_app_interface.mm",
     "coverage_utils.h",
     "coverage_utils.mm",
     "earl_grey_app.h",
@@ -65,6 +69,7 @@ source_set("eg_test_support+eg2") {
     "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
+    "base_earl_grey_test_case_app_interface.h",
     "base_eg_test_helper_impl.h",
     "base_eg_test_helper_impl.mm",
     "coverage_utils.h",

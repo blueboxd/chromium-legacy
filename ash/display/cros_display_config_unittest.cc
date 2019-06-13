@@ -16,12 +16,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_transform_controller_test_api.h"
 #include "ui/display/manager/touch_transform_setter.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -40,7 +40,7 @@ void InitExternalTouchDevices(int64_t display_id) {
   ui::TouchscreenDevice touchdevice(123, ui::InputDeviceType::INPUT_DEVICE_USB,
                                     std::string("test external touch device"),
                                     gfx::Size(1000, 1000), 1);
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchdevice});
 
   std::vector<ui::TouchDeviceTransform> transforms;
   ui::TouchDeviceTransform touch_device_transform;
@@ -635,7 +635,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationNonTouchDisplay) {
                                  ? display_id_list[1]
                                  : display_id_list[0];
 
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({});
   std::string id = base::NumberToString(display_id);
 
   // Since no external touch devices are present, the calibration should fail.

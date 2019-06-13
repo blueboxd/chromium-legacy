@@ -1,7 +1,6 @@
 include_rules = [
   "+chromeos/constants",
   "+chromeos/ime",
-  "+services/ws/public/cpp/input_devices",
   "+ui/chromeos/strings",
   "+ui/ozone/public",
 ]

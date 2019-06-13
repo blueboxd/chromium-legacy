@@ -37,7 +37,6 @@ static_library("security_interstitial_page") {
     "//components/strings:components_strings_grit",
     "//content/public/browser",
     "//content/public/common",
-    "//third_party/zlib/google:compression_utils",
   ]
 }
 

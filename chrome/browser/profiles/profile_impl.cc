@@ -1225,23 +1225,7 @@ net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
   return nullptr;
 }
 
-net::URLRequestContextGetter*
-ProfileImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
 net::URLRequestContextGetter* ProfileImpl::CreateMediaRequestContext() {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-ProfileImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
   return nullptr;
 }
 

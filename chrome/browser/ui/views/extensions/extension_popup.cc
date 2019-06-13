@@ -33,7 +33,7 @@ void ExtensionPopup::ShowPopup(
     views::BubbleBorder::Arrow arrow,
     ShowAction show_action) {
   auto* popup =
-      new ExtensionPopup(host.release(), anchor_view, arrow, show_action);
+      new ExtensionPopup(std::move(host), anchor_view, arrow, show_action);
   views::BubbleDialogDelegateView::CreateBubble(popup);
 
 #if defined(USE_AURA)
@@ -168,14 +168,15 @@ void ExtensionPopup::DevToolsAgentHostDetached(
     show_action_ = SHOW;
 }
 
-ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
-                               views::View* anchor_view,
-                               views::BubbleBorder::Arrow arrow,
-                               ShowAction show_action)
+ExtensionPopup::ExtensionPopup(
+    std::unique_ptr<extensions::ExtensionViewHost> host,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow arrow,
+    ShowAction show_action)
     : BubbleDialogDelegateView(anchor_view,
                                arrow,
                                views::BubbleBorder::SMALL_SHADOW),
-      host_(host),
+      host_(std::move(host)),
       show_action_(show_action) {
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -188,7 +189,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   // Listen for the containing view calling window.close();
   registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<content::BrowserContext>(host->browser_context()));
+      content::Source<content::BrowserContext>(host_->browser_context()));
   content::DevToolsAgentHost::AddObserver(this);
   observer_.Add(GetExtensionView()->GetBrowser()->tab_strip_model());
 

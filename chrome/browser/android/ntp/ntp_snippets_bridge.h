@@ -14,6 +14,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/status.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace gfx {
 class Image;

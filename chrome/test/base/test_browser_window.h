@@ -226,6 +226,7 @@ class TestBrowserWindow : public BrowserWindow {
 
     // PageActionIconContainer:
     void UpdatePageActionIcon(PageActionIconType type) override {}
+    void ExecutePageActionIconForTesting(PageActionIconType type) override {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);

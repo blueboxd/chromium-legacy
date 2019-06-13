@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/web_authn.h"
+#include "content/common/content_export.h"
 
 namespace content {
 class VirtualFidoDiscoveryFactory;
@@ -17,8 +18,8 @@ namespace protocol {
 
 class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
  public:
-  WebAuthnHandler();
-  ~WebAuthnHandler() override;
+  CONTENT_EXPORT WebAuthnHandler();
+  CONTENT_EXPORT ~WebAuthnHandler() override;
 
   // DevToolsDomainHandler:
   void SetRenderer(int process_host_id,
@@ -26,8 +27,8 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
   void Wire(UberDispatcher* dispatcher) override;
 
   // WebAuthn::Backend
-  Response Enable() override;
-  Response Disable() override;
+  CONTENT_EXPORT Response Enable() override;
+  CONTENT_EXPORT Response Disable() override;
   Response AddVirtualAuthenticator(
       std::unique_ptr<WebAuthn::VirtualAuthenticatorOptions> options,
       String* out_authenticator_id) override;
@@ -42,7 +43,7 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
   Response ClearCredentials(const String& in_authenticator_id) override;
 
  private:
-  RenderFrameHostImpl* frame_host_;
+  RenderFrameHostImpl* frame_host_ = nullptr;
   VirtualFidoDiscoveryFactory* virtual_discovery_factory_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(WebAuthnHandler);
 };

@@ -503,7 +503,7 @@ void WorkletAnimation::UpdateCompositingState() {
   } else if (play_state_ == Animation::kRunning) {
     // TODO(majidvp): If keyframes have changed then it may be possible to now
     // run the animation on compositor. The current logic does not allow this
-    // switch from main to compositor to happen.
+    // switch from main to compositor to happen. https://crbug.com/972691.
     if (!running_on_main_thread_) {
       if (!UpdateOnCompositor()) {
         // When an animation that is running on compositor loses the target, it
@@ -535,6 +535,14 @@ void WorkletAnimation::StartOnMain() {
 
 bool WorkletAnimation::StartOnCompositor() {
   DCHECK(IsMainThread());
+  // There is no need to proceed if an animation has already started on main
+  // thread.
+  // TODO(majidvp): If keyframes have changed then it may be possible to now
+  // run the animation on compositor. The current logic does not allow this
+  // switch from main to compositor to happen. https://crbug.com/972691.
+  if (running_on_main_thread_)
+    return false;
+
   if (effects_.size() > 1) {
     // Compositor doesn't support multiple effects but they can be run via main.
     return false;

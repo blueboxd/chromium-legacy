@@ -15,7 +15,7 @@
 
       <ph name="MS_WIN_NAME" /> 관리자 참고사항: 이 설정은 Windows 7을 실행하는 기기에서만 작동합니다. Windows 8 이상 버전에서는 <ph name="PRODUCT_NAME" />을 <ph name="HHTPS_PROTOCOL" /> 및 <ph name="HTTP_PROTOCOL" /> 프로토콜(선택사항: <ph name="FTP_PROTOCOL" /> 프로토콜 및 <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> 등과 같은 파일 유형)의 핸들러로 설정하는 '기본 애플리케이션 연결' 파일을 사용해야 합니다. 자세한 내용은 <ph name="SUPPORT_URL" />을(를) 참조하세요.</translation>
 <translation id="1017967144265860778">로그인 화면의 전원 관리</translation>
-<translation id="1019101089073227242">사용자 데이터 디렉토리 설정</translation>
+<translation id="1019101089073227242">사용자 데이터 디렉터리 설정</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
 <translation id="102492767056134033">로그인 화면에서 터치 키보드의 기본 상태를 설정</translation>
 <translation id="1027000705181149370">로그인 중에 SAML IdP에서 설정한 인증 쿠키를 사용자의 프로필로 전송할지를 지정합니다.
@@ -106,13 +106,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1117535567637097036">Android 인텐트를 처리할 때 이 정책을 통해 설정된 프로토콜 핸들러는 사용되지 않습니다.</translation>
 <translation id="1118093128235245168">사이트에서 사용자에게 연결된 USB 기기의 액세스 권한을 부여할지 묻도록 허용합니다.</translation>
-<translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉토리를 설정합니다.
+<translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉터리를 설정합니다.
 
-      이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉토리나 다른 목적으로 사용되는 디렉토리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉토리의 콘텐츠를 관리하기 때문입니다.
+      이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉터리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉터리나 다른 목적으로 사용되는 디렉터리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉터리의 콘텐츠를 관리하기 때문입니다.
 
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
 
-      이 정책을 설정하지 않으면 기본 캐시 디렉토리가 사용되며 사용자는 '--disk-cache-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
+      이 정책을 설정하지 않으면 기본 캐시 디렉터리가 사용되며 사용자는 '--disk-cache-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
 <translation id="113521240853905588"><ph name="PRODUCT_OS_NAME" />에서 기본 언어로 사용할 수 있는 언어를 설정합니다.
 
       이 정책이 설정되면 사용자는 기본 언어 목록에 이 정책에 명시되어 있는 언어 중 하나만 추가할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정된 경우 사용자는 아무 언어나 기본 언어로 지정할 수 있습니다. 이 정책이 잘못된 값이 있는 목록으로 지정된 경우 잘못된 값은 모두 무시됩니다. 사용자가 이미 이 정책에서 허용되지 않는 일부 언어를 선호하는 언어 목록에 추가한 경우 해당 언어는 목록에서 삭제됩니다. 사용자가 이미 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 허용되지 않는 언어로 표시되도록 구성한 경우 다음번에 사용자가 로그인하면 표시되는 언어가 이 정책에서 허용되는 UI 언어로 변경됩니다. 그렇지 않은 경우 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 지정된 첫 번째 유효한 값으로 변경되거나 이 정책에 잘못된 항목만 있으면 대체 언어(현재 미국 영어)로 변경됩니다.</translation>
@@ -179,7 +179,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책이 설정되지 않거나 False로 설정되면 빠른 전환이 사용되지 않습니다.
       True로 설정하면 무선 액세스 포인트에서 지원하는 경우 빠른 전환이 사용됩니다.</translation>
 <translation id="1243570869342663665">SafeSites 성인용 콘텐츠 필터링을 관리합니다.</translation>
-<translation id="1257550411839719984">기본 다운로드 디렉토리 설정</translation>
+<translation id="1257550411839719984">기본 다운로드 디렉터리 설정</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
 <translation id="1290634681382861275">USB, 블루투스, 정책 새로고침, 개발자 모드 등을 포함하여 기타 설정을 제어합니다.</translation>
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
@@ -709,7 +709,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 'DisallowArc'로 설정하는 경우(이미 ext4 암호화가 설정된 기기를 포함하여) 기기의 모든 사용자에게 Android 앱이 사용 중지되며, 어떠한 사용자에게도 ecryptfs에서 ext4 암호화로의 이전이 제공되지 않습니다.
 
-      이 정책을 'AllowMigration'으로 설정하면, ecryptfs 홈 디렉토리가 있는 사용자는 필요한 경우 이를 ext4 암호화로 이전할 수 있습니다.
+      이 정책을 'AllowMigration'으로 설정하면, ecryptfs 홈 디렉터리가 있는 사용자는 필요한 경우 이를 ext4 암호화로 이전할 수 있습니다.
 
       이 정책은 키오스크 앱에는 적용되지 않습니다. 키오스크 앱은 자동으로 이전됩니다. 이 정책이 설정되지 않으면 기기는 'DisallowArc'가 선택된 것처럼 동작합니다.</translation>
 <translation id="2195032660890227692">이 정책은 <ph name="PRODUCT_NAME" /> 68에서 삭제되었으며 <ph name="ARC_BR_POLICY_NAME" />(으)로 교체되었습니다.</translation>
@@ -1210,15 +1210,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3072045631333522102">판매 모드의 로그인 화면에서 사용되는 화면 보호기</translation>
 <translation id="3072847235228302527">기기 로컬 계정에 대한 서비스 약관 설정</translation>
 <translation id="3077183141551274418">탭 수명 주기 사용 또는 사용 중지</translation>
-<translation id="3079417254871857650">사용자의 홈 디렉토리가 ecryptfs 암호화를 사용하여 생성된 경우 실행될 작업을 지정합니다.
+<translation id="3079417254871857650">사용자의 홈 디렉터리가 ecryptfs 암호화를 사용하여 생성된 경우 실행될 작업을 지정합니다.
 
-      이 정책을 'DisallowArc'로 설정하면 사용자는 Android 앱을 사용할 수 없게 되며 ecryptfs에서 ext4 암호화로 이전 작업이 실행되지 않습니다. 홈 디렉토리가 이미 ext4로 암호화된 경우 Android 앱 실행이 중지되지 않습니다.
+      이 정책을 'DisallowArc'로 설정하면 사용자는 Android 앱을 사용할 수 없게 되며 ecryptfs에서 ext4 암호화로 이전 작업이 실행되지 않습니다. 홈 디렉터리가 이미 ext4로 암호화된 경우 Android 앱 실행이 중지되지 않습니다.
 
-      이 정책을 'Migrate'로 설정하면 ecryptfs로 암호화된 홈 디렉토리는 로그인 시 사용자의 동의를 구하지 않고 자동으로 ext4 암호화로 이전됩니다.
+      이 정책을 'Migrate'로 설정하면 ecryptfs로 암호화된 홈 디렉터리는 로그인 시 사용자의 동의를 구하지 않고 자동으로 ext4 암호화로 이전됩니다.
 
-      이 정책을 'Wipe'로 설정하면 로그인 시 ecryptfs로 암호화된 홈 디렉토리는 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉토리가 생성됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
+      이 정책을 'Wipe'로 설정하면 로그인 시 ecryptfs로 암호화된 홈 디렉터리는 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉터리가 생성됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
 
-      정책을 'MinimalMigrate'로 설정하면 ecryptfs로 암호화된 홈 디렉토리는 로그인 시 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉토리가 생성됩니다. 하지만 사용자가 다시 로그인하지 않아도 되도록 로그인 토큰 저장이 시도됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
+      정책을 'MinimalMigrate'로 설정하면 ecryptfs로 암호화된 홈 디렉터리는 로그인 시 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉터리가 생성됩니다. 하지만 사용자가 다시 로그인하지 않아도 되도록 로그인 토큰 저장이 시도됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
 
       정책을 더 이상 지원되지 않는 옵션('AskUser' 또는 'AskForEcryptfsArcUsers')으로 설정하면 'Migrate'를 선택한 것과 같이 처리됩니다.
 
@@ -1528,13 +1528,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           블랙리스트 값 '*'은 허용 목록에 명시적으로 등록되지 않은 경우 확장 프로그램이 모두 블랙리스트에 올라감을 의미합니다.
 
           이 정책이 설정되지 않은 경우 사용자는 <ph name="PRODUCT_NAME" />에서 모든 확장 프로그램을 설치할 수 있습니다.</translation>
-<translation id="3800626789999016379"><ph name="PRODUCT_NAME" />이(가) 파일 다운로드에 사용할 디렉토리를 설정합니다.
+<translation id="3800626789999016379"><ph name="PRODUCT_NAME" />이(가) 파일 다운로드에 사용할 디렉터리를 설정합니다.
 
-      이 정책을 설정하면 <ph name="PRODUCT_NAME" />은(는) 사용자가 디렉토리를 지정했는지 아니면 매번 다운로드 위치를 물어보도록 플래그를 설정했는지와 관계없이 제공된 디렉토리를 사용합니다.
+      이 정책을 설정하면 <ph name="PRODUCT_NAME" />은(는) 사용자가 디렉터리를 지정했는지 아니면 매번 다운로드 위치를 물어보도록 플래그를 설정했는지와 관계없이 제공된 디렉터리를 사용합니다.
 
       사용할 수 있는 변수 목록은 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.
 
-      이 정책을 설정하지 않는 경우 기본 다운로드 디렉토리가 사용되며 사용자는 해당 디렉토리를 변경할 수 있습니다.</translation>
+      이 정책을 설정하지 않는 경우 기본 다운로드 디렉터리가 사용되며 사용자는 해당 디렉터리를 변경할 수 있습니다.</translation>
 <translation id="3805659594028420438">TLS 도메인 바인딩 인증서 확장 프로그램 사용(지원 중단됨)</translation>
 <translation id="3808945828600697669">사용 중지된 플러그인 목록 지정</translation>
 <translation id="3811562426301733860">모든 사이트에서 광고 허용</translation>
@@ -1617,11 +1617,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 설정하지 않으면 SPDY를 사용할 수 있습니다.</translation>
 <translation id="3891357445869647828">자바스크립트 사용</translation>
-<translation id="3895557476567727016"><ph name="PRODUCT_NAME" />에서 파일을 다운로드할 때 사용하는 기본 디렉토리를 설정합니다.
+<translation id="3895557476567727016"><ph name="PRODUCT_NAME" />에서 파일을 다운로드할 때 사용하는 기본 디렉터리를 설정합니다.
 
-      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 파일을 다운로드하는 기본 디렉토리를 변경합니다. 이 정책은 필수가 아니므로 사용자가 디렉토리를 변경할 수 있습니다. 
+      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 파일을 다운로드하는 기본 디렉터리를 변경합니다. 이 정책은 필수가 아니므로 사용자가 디렉터리를 변경할 수 있습니다. 
 
-      이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 일반적인 기본 디렉토리(플랫폼별)를 사용합니다.
+      이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 일반적인 기본 디렉터리(플랫폼별)를 사용합니다.
 
       사용할 수 있는 변수 목록을 확인하려면 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.</translation>
 <translation id="3904459740090265495">브라우저의 로그인 동작을 제어하는 정책입니다. 이 정책을 사용하면 사용자가 자신의 계정으로 <ph name="PRODUCT_NAME" />에 로그인하고 Chrome 동기화와 같은 계정 관련 서비스를 사용하도록 허용할지 결정할 수 있습니다.
@@ -1836,9 +1836,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="423797045246308574">키 생성 사용이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenAllowedForUrls'에 있는 경우 이 정책은 이 예외를 무시합니다.
 
           이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의 글로벌 기본값이, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
-<translation id="4238997902172035160"><ph name="PRODUCT_NAME" />에서 프로필의 로밍 사본을 저장하는 데 사용할 디렉토리를 구성합니다.
+<translation id="4238997902172035160"><ph name="PRODUCT_NAME" />에서 프로필의 로밍 사본을 저장하는 데 사용할 디렉터리를 구성합니다.
 
-      이 정책을 설정하면 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우 <ph name="PRODUCT_NAME" />에서 제공된 디렉토리에 프로필의 로밍 사본을 저장합니다. <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책이 사용 중지되었거나 설정되지 않은 경우 이 정책에 저장된 값은 사용되지 않습니다.
+      이 정책을 설정하면 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우 <ph name="PRODUCT_NAME" />에서 제공된 디렉터리에 프로필의 로밍 사본을 저장합니다. <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책이 사용 중지되었거나 설정되지 않은 경우 이 정책에 저장된 값은 사용되지 않습니다.
 
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 확인하세요.
 
@@ -2672,13 +2672,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5809728392451418079">기기 로컬 계정용 표시 이름 설정</translation>
 <translation id="5814301096961727113">로그인 화면에서 음성 피드백의 기본 상태를 설정</translation>
 <translation id="5815129011704381141">업데이트 후 자동 재부팅</translation>
-<translation id="5815353477778354428"><ph name="PRODUCT_FRAME_NAME" />이(가) 사용자 데이터 저장에 사용할 디렉토리를 설정합니다.
+<translation id="5815353477778354428"><ph name="PRODUCT_FRAME_NAME" />이(가) 사용자 데이터 저장에 사용할 디렉터리를 설정합니다.
 
-      이 정책을 설정하는 경우 <ph name="PRODUCT_FRAME_NAME" />은(는) 제공된 디렉토리를 사용합니다.
+      이 정책을 설정하는 경우 <ph name="PRODUCT_FRAME_NAME" />은(는) 제공된 디렉터리를 사용합니다.
 
       사용할 수 있는 변수의 목록은 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.
 
-      이 정책을 설정하지 않는 경우 기본 프로필 디렉토리가 사용됩니다.</translation>
+      이 정책을 설정하지 않는 경우 기본 프로필 디렉터리가 사용됩니다.</translation>
 <translation id="5826047473100157858">사용자가 <ph name="PRODUCT_NAME" />에서 시크릿 모드로 페이지를 열 수 있는지 여부를 지정합니다.
 
       '사용'을 선택하거나 정책이 설정되지 않은 경우 시크릿 모드로 페이지를 열 수 있습니다.
@@ -2895,7 +2895,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       설정하지 않은 경우 양식 자동 완성 데이터를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="6221175752766085998">로컬 트러스트 앵커에서 발급되었으나 subjectAlternativeName 확장 프로그램이 없는 인증서를 허용합니다.</translation>
 <translation id="6224304369267200483">자동으로 직접 보안 키 인증을 허용하는 URL/도메인</translation>
-<translation id="6233173491898450179">다운로드 디렉토리 설정</translation>
+<translation id="6233173491898450179">다운로드 디렉터리 설정</translation>
 <translation id="6244210204546589761">시작 시 열리는 URL</translation>
 <translation id="6255387031094435995">범위 및 수준이 같다면 정책의 출처가 서로 다를 경우 선택한 정책을 병합하도록 허용합니다.
 
@@ -3012,7 +3012,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작도록 값이 잘립니다.</translation>
 <translation id="6536600139108165863">기기 종료 시 자동 재부팅</translation>
-<translation id="6539246272469751178">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. Android 앱은 언제나 기본 다운로드 디렉토리를 사용하며 <ph name="PRODUCT_OS_NAME" />에 의해 기본 다운로드 디렉토리가 아닌 디렉토리로 다운로드된 파일에 액세스할 수 없습니다.</translation>
+<translation id="6539246272469751178">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. Android 앱은 언제나 기본 다운로드 디렉터리를 사용하며 <ph name="PRODUCT_OS_NAME" />에 의해 기본 다운로드 디렉터리가 아닌 디렉터리로 다운로드된 파일에 액세스할 수 없습니다.</translation>
 <translation id="654303922206238013">ecryptfs 관련 이전 전략</translation>
 <translation id="6544897973797372144">정책이 True로 설정되어 있고 ChromeOsReleaseChannel 정책이 지정되지 않은 경우 등록된 도메인의 사용자가 기기의 배포 채널을 변경할 수 있도록 허용됩니다. 정책이 false로 설정되어 있으면 마지막에 설정한 채널을 기기가 사용합니다.
 
@@ -3121,7 +3121,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6766216162565713893">사이트에서 사용자에게 근처 블루투스 기기에 대한 액세스 권한을 부여할 것인지 묻도록 허용합니다.</translation>
 <translation id="6770454900105963262">활성 키오스크 세션에 관한 정보 보고</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
-<translation id="6786967369487349613">로밍 프로필 디렉토리를 설정합니다.</translation>
+<translation id="6786967369487349613">로밍 프로필 디렉터리를 설정합니다.</translation>
 <translation id="6795485990775913659">PIN이 없으면 인쇄만 허용</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="6813263547126514821">전원 및 종료</translation>
@@ -3253,9 +3253,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       설정하지 않은 경우 저장된 비밀번호를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 환경설정</translation>
-<translation id="7007671350884342624"><ph name="PRODUCT_NAME" />이(가) 사용자 데이터를 저장할 때 사용할 디렉토리를 설정합니다.
+<translation id="7007671350884342624"><ph name="PRODUCT_NAME" />이(가) 사용자 데이터를 저장할 때 사용할 디렉터리를 설정합니다.
 
-      이 정책을 설정하면 사용자가 '--user-data-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉토리나 다른 목적으로 사용되는 디렉토리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉토리의 콘텐츠를 관리하기 때문입니다.
+      이 정책을 설정하면 사용자가 '--user-data-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉터리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉터리나 다른 목적으로 사용되는 디렉터리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉터리의 콘텐츠를 관리하기 때문입니다.
 
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
 
@@ -3970,7 +3970,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8259592978873597235">이 정책이 True로 설정되어 있거나 설정되어 있지 않으면 동영상이 재생되는 동안 사용자가 유휴 상태인 것으로 간주되지 않습니다. 이로 인해 유휴 지연 시간, 화면 어둡게 하기 지연 시간 및 화면 잠금 지연 시간에 도달하거나 해당 작업이 실행되지 않습니다.
 
           이 정책이 False로 설정되어 있으면 동영상 활동이 있어도 사용자가 유휴 상태인 것으로 간주됩니다.</translation>
-<translation id="8274603902181597201">사용자의 ecryptfs 홈 디렉토리를 삭제하고 ext4로 암호화된 새 홈 디렉토리로 시작합니다.</translation>
+<translation id="8274603902181597201">사용자의 ecryptfs 홈 디렉터리를 삭제하고 ext4로 암호화된 새 홈 디렉터리로 시작합니다.</translation>
 <translation id="8285435910062771358">전체화면 돋보기 사용</translation>
 <translation id="8288199156259560552">Android Google 위치 서비스 사용</translation>
 <translation id="8292322992383748446">SoC 구성요소의 하드웨어 통계를 보고합니다.
@@ -4324,7 +4324,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           <ph name="MS_AD_NAME" /> 도메인에 연결되지 않은 Windows 인스턴스의 경우 강제 설치는 Chrome 웹 스토어에 등록된 앱과 확장 프로그램으로 제한됩니다.
           </translation>
 <translation id="8947415621777543415">기기 위치 신고</translation>
-<translation id="8951350807133946005">디스크 캐시 디렉토리 설정</translation>
+<translation id="8951350807133946005">디스크 캐시 디렉터리 설정</translation>
 <translation id="8952317565138994125">Google에서 호스팅하는 동기화 서비스를 사용하는 <ph name="PRODUCT_NAME" />의 데이터 동기화를 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME" />에서 이 설정을 변경하거나 무시할 수 없습니다.
@@ -4457,7 +4457,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       이 정책이 설정되어 있으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />으로 전환 및 실행 시 <ph name="PRODUCT_NAME" />을(를) 실행하는 데 이 정책이 사용됩니다.
 
       이 정책은 실행 파일 경로로 설정하거나 ${chrome}으로 설정하여 Chrome의 설치 위치를 자동으로 감지하게 할 수 있습니다.</translation>
-<translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉토리 설정</translation>
+<translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉터리 설정</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다.
       기본 설정은 호스트 브라우저가 렌더링을 실행하도록 허용하지만 원하는 경우 기본 설정을 무시하고 <ph name="PRODUCT_FRAME_NAME" />이(가) HTML 페이지를 기본적으로 렌더링하도록 할 수 있습니다.</translation>
 <translation id="944817693306670849">디스크 캐시 크기 설정</translation>

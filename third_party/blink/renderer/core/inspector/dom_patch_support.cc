@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 
@@ -465,15 +464,14 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
       attrs_digestor.Finish(digest_result);
       DCHECK(!attrs_digestor.has_failed());
       digest->attrs_sha1_ =
-          Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
+          Base64Encode(base::make_span(digest_result).first<10>());
       digestor.UpdateUtf8(digest->attrs_sha1_);
     }
   }
 
   digestor.Finish(digest_result);
   DCHECK(!digestor.has_failed());
-  digest->sha1_ =
-      Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
+  digest->sha1_ = Base64Encode(base::make_span(digest_result).first<10>());
 
   if (unused_nodes_map)
     unused_nodes_map->insert(digest->sha1_, digest);

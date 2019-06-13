@@ -45,10 +45,9 @@ class TestLayoutManager : public WorkspaceLayoutManager {
 
   ~TestLayoutManager() override = default;
 
-  void OnKeyboardWorkspaceDisplacingBoundsChanged(
-      const gfx::Rect& bounds) override {
+  void OnKeyboardDisplacingBoundsChanged(const gfx::Rect& bounds) override {
     keyboard_bounds_changed_ = true;
-    WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(bounds);
+    WorkspaceLayoutManager::OnKeyboardDisplacingBoundsChanged(bounds);
   }
 
   bool keyboard_bounds_changed() const { return keyboard_bounds_changed_; }

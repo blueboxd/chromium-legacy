@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
@@ -110,6 +111,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // available. This is available after OnReceiveRedirect() of
   // |forwarding_client| is called. Otherwise returns nullopt.
   base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
+
+  // Returns the signature expire time of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called. Otherwise returns a null Time.
+  base::Time GetSignatureExpireTime() const;
 
   // Set nullptr to reset the mocking.
   static void SetSignedExchangeHandlerFactoryForTest(

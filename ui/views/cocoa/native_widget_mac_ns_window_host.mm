@@ -502,6 +502,16 @@ void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
   UpdateLocalWindowFrame(bounds);
   GetNSWindowMojo()->SetBounds(
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
+
+  if (remote_ns_window_ptr_) {
+    gfx::Rect window_in_screen =
+        gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
+    gfx::Rect content_in_screen =
+        gfx::ScreenRectFromNSRect([in_process_ns_window_
+            contentRectForFrameRect:[in_process_ns_window_ frame]]);
+
+    OnWindowGeometryChanged(window_in_screen, content_in_screen);
+  }
 }
 
 void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen) {
@@ -998,12 +1008,13 @@ void NativeWidgetMacNSWindowHost::OnWindowGeometryChanged(
 
   // Note we can't use new_window_bounds_in_screen.size(), since it includes the
   // titlebar for the purposes of detecting a window move.
-  if (content_has_resized)
+  if (content_has_resized) {
     native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(
         content_bounds_in_screen_.size());
 
-  // Update the compositor surface and layer size.
-  UpdateCompositorProperties();
+    // Update the compositor surface and layer size.
+    UpdateCompositorProperties();
+  }
 }
 
 void NativeWidgetMacNSWindowHost::OnWindowFullscreenTransitionStart(

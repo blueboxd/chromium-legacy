@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="12dp"
-    android:paddingBottom="@dimen/autofill_assistant_bottombar_vertical_spacing"
+    android:paddingBottom="14dp"
     android:paddingStart="24dp"
     android:paddingEnd="24dp"
     android:gravity="center_horizontal"
@@ -91,7 +91,7 @@
     </LinearLayout>
 
     <!-- Layout for the buttons -->
-    <Space android:layout_width="0dp" android:layout_height="24dp"/>
+    <Space android:layout_width="0dp" android:layout_height="18dp"/>
     <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

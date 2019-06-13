@@ -59,6 +59,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include <sys/time.h>
 #include "base/debug/elf_reader.h"
 #include "content/browser/android/tracing_controller_android.h"
 
@@ -114,6 +115,38 @@ std::string GetClockString() {
   NOTREACHED();
   return std::string();
 }
+
+#if defined(OS_ANDROID)
+int64_t ConvertTimespecToMicros(const struct timespec& ts) {
+  // On 32-bit systems, the calculation cannot overflow int64_t.
+  // 2**32 * 1000000 + 2**64 / 1000 < 2**63
+  if (sizeof(ts.tv_sec) <= 4 && sizeof(ts.tv_nsec) <= 8) {
+    int64_t result = ts.tv_sec;
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+    return result;
+  }
+  base::CheckedNumeric<int64_t> result(ts.tv_sec);
+  result *= base::Time::kMicrosecondsPerSecond;
+  result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+  return result.ValueOrDie();
+}
+
+// This returns the offset between the monotonic clock and the realtime clock.
+// We could read btime from /proc/status files; however, btime can be off by
+// around 1s, which is too much. The following method should give us a better
+// approximation of the offset.
+std::string GetClockOffsetSinceEpoch() {
+  struct timespec realtime_before, monotonic, realtime_after;
+  clock_gettime(CLOCK_REALTIME, &realtime_before);
+  clock_gettime(CLOCK_MONOTONIC, &monotonic);
+  clock_gettime(CLOCK_REALTIME, &realtime_after);
+  return base::StringPrintf("%" PRId64,
+                            ConvertTimespecToMicros(realtime_before) / 2 +
+                                ConvertTimespecToMicros(realtime_after) / 2 -
+                                ConvertTimespecToMicros(monotonic));
+}
+#endif
 
 #if defined(OS_WIN)
 // The following code detect whether the current session is a remote session.
@@ -241,6 +274,8 @@ TracingControllerImpl::GenerateMetadataDict() {
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
     metadata_dict->SetString("chrome-library-name", *soname);
+  metadata_dict->SetString("clock-offset-since-epoch",
+                           GetClockOffsetSinceEpoch());
 #endif  // defined(OS_ANDROID)
   metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
 

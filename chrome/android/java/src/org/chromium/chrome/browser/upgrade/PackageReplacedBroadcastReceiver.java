@@ -10,6 +10,7 @@ import android.content.Intent;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantModuleEntryProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 
@@ -33,6 +34,7 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
         if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) return;
         updateChannelsIfNecessary();
         VrModuleProvider.maybeRequestModuleIfDaydreamReady();
+        AutofillAssistantModuleEntryProvider.maybeInstallDeferred();
     }
 
     private void updateChannelsIfNecessary() {

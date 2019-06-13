@@ -2310,6 +2310,8 @@ enum WebFeature {
   kScrollByPrecisionTouchPad = 2919,
   kPinchZoom = 2920,
   kBuiltInModuleSwitchImported = 2921,
+  kFeaturePolicyCommaSeparatedDeclarations = 2922,
+  kFeaturePolicySemicolonSeparatedDeclarations = 2923,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

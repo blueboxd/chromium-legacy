@@ -749,15 +749,12 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
     // We allocate the same number of output buffer slot in V4L2 device and the
     // output VideoFrame. If there is free output buffer slot but no free
     // VideoFrame, surface_it means the VideoFrame is not released at client
-    // side. Post PumpDecodeTask for busy waiting VideoFrame released.
-    //
-    // TODO(akahuang): WARNING: This is a temporary hack.
-    // Switch to event-driven mechanism instead of busy-polling.
+    // side. Post PumpDecodeTask when the pool has available frames.
     DVLOGF(3) << "There is no available VideoFrame.";
-    decoder_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_),
-        base::TimeDelta::FromMilliseconds(2));
+    frame_pool_->NotifyWhenFrameAvailable(base::BindOnce(
+        base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+        decoder_task_runner_, FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_)));
     return nullptr;
   }
   frame->set_timestamp(current_decode_request_->buffer->timestamp());
@@ -765,8 +762,10 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
   // Request V4L2 input and output buffers.
   V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
   V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
-  if (!input_buf.IsValid() || !output_buf.IsValid())
+  if (!input_buf.IsValid() || !output_buf.IsValid()) {
+    DVLOGF(3) << "There is no free V4L2 buffer.";
     return nullptr;
+  }
 
   // Record the frame and V4L2 buffers to the input and output records.
   int input_record_id = input_buf.BufferId();

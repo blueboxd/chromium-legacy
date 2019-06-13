@@ -124,11 +124,15 @@ public class TouchlessDialogProperties {
     /** The priority for this set of properties. */
     public static final WritableIntPropertyKey PRIORITY = new WritableIntPropertyKey();
 
+    /** Force the title to be a single line and truncate with an ellipsis. */
+    public static final WritableBooleanPropertyKey FORCE_SINGLE_LINE_TITLE =
+            new WritableBooleanPropertyKey();
+
     public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
             ModalDialogProperties.TITLE, ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY};
 
     public static final PropertyKey[] ALL_DIALOG_KEYS =
             PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS,
                     new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY,
-                            IS_FULLSCREEN, LIST_MODELS});
+                            IS_FULLSCREEN, LIST_MODELS, FORCE_SINGLE_LINE_TITLE});
 }

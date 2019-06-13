@@ -1831,10 +1831,10 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
   DVLOG(2) << "Destroying " << va_surfaces.size() << " surfaces";
 
-  if (va_surfaces.empty())
-    return;
   // vaDestroySurfaces() makes no guarantees about VA_INVALID_SURFACE.
   base::Erase(va_surfaces, VA_INVALID_SURFACE);
+  if (va_surfaces.empty())
+    return;
 
   base::AutoLock auto_lock(*va_lock_);
   const VAStatus va_res =

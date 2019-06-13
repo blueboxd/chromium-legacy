@@ -2200,7 +2200,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   ++lifecycle_data_.count;
 
   {
-    TRACE_EVENT0("blink,benchmark", "LocalFrameView::WillStartLifecycleUpdate");
+    TRACE_EVENT0("blink", "LocalFrameView::WillStartLifecycleUpdate");
 
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       auto lifecycle_observers = frame_view.lifecycle_observers_;
@@ -2221,7 +2221,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   UpdateLifecyclePhasesInternal(target_state);
 
   {
-    TRACE_EVENT0("blink,benchmark", "LocalFrameView::DidFinishLifecycleUpdate");
+    TRACE_EVENT0("blink", "LocalFrameView::DidFinishLifecycleUpdate");
 
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       auto lifecycle_observers = frame_view.lifecycle_observers_;

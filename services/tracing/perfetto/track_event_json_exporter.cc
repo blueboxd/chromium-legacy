@@ -5,6 +5,7 @@
 #include "services/tracing/perfetto/track_event_json_exporter.h"
 
 #include <cinttypes>
+#include <memory>
 
 #include "base/json/string_escape.h"
 #include "base/strings/string_util.h"
@@ -69,12 +70,15 @@ TrackEventJSONExporter::TrackEventJSONExporter(
     : JSONTraceExporter(std::move(argument_filter_predicate),
                         std::move(metadata_filter_predicate),
                         std::move(callback)),
-      current_state_(0) {}
+      current_state_(std::make_unique<ProducerWriterState>(0)) {}
 
-TrackEventJSONExporter::~TrackEventJSONExporter() {}
+TrackEventJSONExporter::~TrackEventJSONExporter() {
+  DCHECK(!current_state_ || !current_state_->last_seen_thread_descriptor);
+}
 
 void TrackEventJSONExporter::ProcessPackets(
-    const std::vector<perfetto::TracePacket>& packets) {
+    const std::vector<perfetto::TracePacket>& packets,
+    bool has_more) {
   for (auto& encoded_packet : packets) {
     // These are perfetto::TracePackets, but ChromeTracePacket is a mirror that
     // reduces binary bloat and only has the fields we are interested in. So
@@ -86,7 +90,7 @@ void TrackEventJSONExporter::ProcessPackets(
     // If this is a different packet_sequence_id we have to reset all our state
     // and wait for the first state_clear before emitting anything.
     if (packet.trusted_packet_sequence_id() !=
-        current_state_.trusted_packet_sequence_id) {
+        current_state_->trusted_packet_sequence_id) {
       StartNewState(packet.trusted_packet_sequence_id(),
                     packet.incremental_state_cleared());
     } else if (packet.incremental_state_cleared()) {
@@ -95,10 +99,10 @@ void TrackEventJSONExporter::ProcessPackets(
       // If we've lost packets we can no longer trust any timestamp data and
       // other state which might have been dropped. We will keep skipping events
       // until we start a new sequence.
-      LOG_IF(ERROR, current_state_.incomplete)
+      LOG_IF(ERROR, current_state_->incomplete)
           << "Previous packet was dropped. Skipping TraceEvents until reset or "
           << "new sequence.";
-      current_state_.incomplete = true;
+      current_state_->incomplete = true;
     }
 
     // Now we process the data from the packet. First by getting the interned
@@ -123,37 +127,42 @@ void TrackEventJSONExporter::ProcessPackets(
       // and has no equivalent in the old trace format. We thus ignore it.
     }
   }
+  if (!has_more) {
+    EmitThreadDescriptorIfNeeded();
+  }
 }
 
 TrackEventJSONExporter::ProducerWriterState::ProducerWriterState(
     uint32_t sequence_id)
-    : ProducerWriterState(sequence_id, false, false, true) {}
+    : ProducerWriterState(sequence_id, false, nullptr, true) {}
 
 TrackEventJSONExporter::ProducerWriterState::ProducerWriterState(
     uint32_t sequence_id,
     bool emitted_process,
-    bool emitted_thread,
+    std::unique_ptr<ThreadDescriptor> last_seen_thread_descriptor,
     bool incomplete)
     : trusted_packet_sequence_id(sequence_id),
       emitted_process_metadata(emitted_process),
-      emitted_thread_metadata(emitted_thread),
+      last_seen_thread_descriptor(std::move(last_seen_thread_descriptor)),
       incomplete(incomplete) {}
 
 TrackEventJSONExporter::ProducerWriterState::~ProducerWriterState() {}
 
 void TrackEventJSONExporter::StartNewState(uint32_t trusted_packet_sequence_id,
                                            bool state_cleared) {
-  current_state_ = ProducerWriterState{
+  EmitThreadDescriptorIfNeeded();
+  current_state_ = std::make_unique<ProducerWriterState>(
       trusted_packet_sequence_id, /* emitted_process = */ false,
-      /* emitted_thread = */ false, /* incomplete = */ !state_cleared};
+      /* last_seen_thread_descriptor = */ nullptr,
+      /* incomplete = */ !state_cleared);
 }
 
 void TrackEventJSONExporter::ResetIncrementalState() {
-  current_state_ =
-      ProducerWriterState{current_state_.trusted_packet_sequence_id,
-                          current_state_.emitted_process_metadata,
-                          current_state_.emitted_thread_metadata,
-                          /* incomplete = */ false};
+  current_state_ = std::make_unique<ProducerWriterState>(
+      current_state_->trusted_packet_sequence_id,
+      current_state_->emitted_process_metadata,
+      std::move(current_state_->last_seen_thread_descriptor),
+      /* incomplete = */ false);
 }
 
 int64_t TrackEventJSONExporter::ComputeTimeUs(const TrackEvent& event) {
@@ -161,9 +170,9 @@ int64_t TrackEventJSONExporter::ComputeTimeUs(const TrackEvent& event) {
     case TrackEvent::kTimestampAbsoluteUs:
       return event.timestamp_absolute_us();
     case TrackEvent::kTimestampDeltaUs:
-      DCHECK(current_state_.time_us != -1);
-      current_state_.time_us += event.timestamp_delta_us();
-      return current_state_.time_us;
+      DCHECK(current_state_->time_us != -1);
+      current_state_->time_us += event.timestamp_delta_us();
+      return current_state_->time_us;
     case TrackEvent::TIMESTAMP_NOT_SET:
       DLOG(FATAL) << "Event has no timestamp this shouldn't be possible";
       return -1;
@@ -176,9 +185,9 @@ base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadTimeUs(
     case TrackEvent::kThreadTimeAbsoluteUs:
       return event.thread_time_absolute_us();
     case TrackEvent::kThreadTimeDeltaUs:
-      DCHECK(current_state_.thread_time_us != -1);
-      current_state_.thread_time_us += event.thread_time_delta_us();
-      return current_state_.thread_time_us;
+      DCHECK(current_state_->thread_time_us != -1);
+      current_state_->thread_time_us += event.thread_time_delta_us();
+      return current_state_->thread_time_us;
     case TrackEvent::THREAD_TIME_NOT_SET:
       return base::nullopt;
   }
@@ -189,7 +198,7 @@ void TrackEventJSONExporter::HandleInternedData(
   DCHECK(packet.has_interned_data());
 
   // InternedData is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -197,24 +206,24 @@ void TrackEventJSONExporter::HandleInternedData(
   // Even if the interned data was reset we should not change the values in the
   // interned data.
   for (const auto& event_cat : data.event_categories()) {
-    auto iter = current_state_.interned_event_categories_.insert(
+    auto iter = current_state_->interned_event_categories_.insert(
         std::make_pair(event_cat.iid(), event_cat.name()));
     DCHECK(iter.second || iter.first->second == event_cat.name());
   }
   for (const auto& event_name : data.legacy_event_names()) {
-    auto iter = current_state_.interned_legacy_event_names_.insert(
+    auto iter = current_state_->interned_legacy_event_names_.insert(
         std::make_pair(event_name.iid(), event_name.name()));
     DCHECK(iter.second || iter.first->second == event_name.name());
   }
   for (const auto& debug_name : data.debug_annotation_names()) {
-    auto iter = current_state_.interned_debug_annotation_names_.insert(
+    auto iter = current_state_->interned_debug_annotation_names_.insert(
         std::make_pair(debug_name.iid(), debug_name.name()));
     DCHECK(iter.second || iter.first->second == debug_name.name());
   }
   for (const auto& src_loc : data.source_locations()) {
-    auto iter = current_state_.interned_source_locations_.insert(std::make_pair(
-        src_loc.iid(),
-        std::make_pair(src_loc.file_name(), src_loc.function_name())));
+    auto iter = current_state_->interned_source_locations_.insert(
+        std::make_pair(src_loc.iid(), std::make_pair(src_loc.file_name(),
+                                                     src_loc.function_name())));
     DCHECK(iter.second ||
            (iter.first->second.first == src_loc.file_name() &&
             iter.first->second.second == src_loc.function_name()));
@@ -226,10 +235,10 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   DCHECK(packet.has_process_descriptor());
   const auto& process = packet.process_descriptor();
   // Save the current state we need for future packets.
-  current_state_.pid = process.pid();
+  current_state_->pid = process.pid();
 
   // ProcessDescriptor is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -240,10 +249,10 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   }
 
   // Prevent duplicates by only emitting the metadata once.
-  if (current_state_.emitted_process_metadata) {
+  if (current_state_->emitted_process_metadata) {
     return;
   }
-  current_state_.emitted_process_metadata = true;
+  current_state_->emitted_process_metadata = true;
 
   if (!process.cmdline().empty()) {
     NOTIMPLEMENTED();
@@ -252,7 +261,7 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   if (process.has_legacy_sort_index()) {
     auto event_builder =
         AddTraceEvent("process_sort_index", "__metadata", 'M', 0,
-                      current_state_.pid, current_state_.pid);
+                      current_state_->pid, current_state_->pid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("sort_index");
     if (add_arg) {
@@ -261,8 +270,9 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   }
 
   const auto emit_process_name = [this](const char* name) {
-    auto event_builder = AddTraceEvent("process_name", "__metadata", 'M', 0,
-                                       current_state_.pid, current_state_.pid);
+    auto event_builder =
+        AddTraceEvent("process_name", "__metadata", 'M', 0, current_state_->pid,
+                      current_state_->pid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("name");
     if (add_arg) {
@@ -305,33 +315,36 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   DCHECK(packet.has_thread_descriptor());
 
   // ThreadDescriptor is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
   const auto& thread = packet.thread_descriptor();
   // Save the current state we need for future packets.
-  current_state_.pid = thread.pid();
-  current_state_.tid = thread.tid();
-  current_state_.time_us = thread.reference_timestamp_us();
-  current_state_.thread_time_us = thread.reference_thread_time_us();
+  current_state_->pid = thread.pid();
+  current_state_->tid = thread.tid();
+  current_state_->time_us = thread.reference_timestamp_us();
+  current_state_->thread_time_us = thread.reference_thread_time_us();
 
   // If we aren't outputting traceEvents then we don't need to look at the
   // metadata that might need to be emitted.
   if (!ShouldOutputTraceEvents()) {
     return;
   }
+  current_state_->last_seen_thread_descriptor =
+      std::make_unique<ThreadDescriptor>();
+  *current_state_->last_seen_thread_descriptor = thread;
+}
 
-  // Prevent duplicates by only emitting the metadata once.
-  if (current_state_.emitted_thread_metadata) {
+void TrackEventJSONExporter::EmitThreadDescriptorIfNeeded() {
+  if (!current_state_->last_seen_thread_descriptor) {
     return;
   }
-  current_state_.emitted_thread_metadata = true;
-
+  const auto& thread = *current_state_->last_seen_thread_descriptor;
   if (thread.has_legacy_sort_index()) {
     auto event_builder =
         AddTraceEvent("thread_sort_index", "__metadata", 'M', 0,
-                      current_state_.pid, current_state_.tid);
+                      current_state_->pid, current_state_->tid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("sort_index");
     if (add_arg) {
@@ -340,8 +353,9 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   }
 
   const auto emit_thread_name = [this](const char* name) {
-    auto event_builder = AddTraceEvent("thread_name", "__metadata", 'M', 0,
-                                       current_state_.pid, current_state_.tid);
+    auto event_builder =
+        AddTraceEvent("thread_name", "__metadata", 'M', 0, current_state_->pid,
+                      current_state_->tid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("name");
     if (add_arg) {
@@ -356,6 +370,7 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
       emit_thread_name(name);
     }
   }
+  current_state_->last_seen_thread_descriptor.reset();
 }
 
 void TrackEventJSONExporter::HandleChromeEvents(
@@ -382,7 +397,7 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   DCHECK(packet.has_track_event());
 
   // TrackEvents need incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -403,7 +418,7 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   all_categories.reserve(track.category_iids().size());
   for (const auto& cat_iid : track.category_iids()) {
     const std::string& name =
-        GetInternedName(cat_iid, current_state_.interned_event_categories_);
+        GetInternedName(cat_iid, current_state_->interned_event_categories_);
     all_categories.push_back(name);
   }
   const std::string joined_categories = base::JoinString(all_categories, ",");
@@ -440,7 +455,7 @@ void TrackEventJSONExporter::HandleDebugAnnotation(
     ArgumentBuilder* args_builder) {
   const std::string& name =
       GetInternedName(debug_annotation.name_iid(),
-                      current_state_.interned_debug_annotation_names_);
+                      current_state_->interned_debug_annotation_names_);
 
   auto* maybe_arg = args_builder->MaybeAddArg(name);
   if (!maybe_arg) {
@@ -453,8 +468,8 @@ void TrackEventJSONExporter::HandleTaskExecution(
     const perfetto::protos::TaskExecution& task,
     ArgumentBuilder* args_builder) {
   auto iter =
-      current_state_.interned_source_locations_.find(task.posted_from_iid());
-  DCHECK(iter != current_state_.interned_source_locations_.end());
+      current_state_->interned_source_locations_.find(task.posted_from_iid());
+  DCHECK(iter != current_state_->interned_source_locations_.end());
 
   // If source locations were turned off, only the file is provided. JSON
   // expects the event to then have only an "src" attribute.
@@ -486,12 +501,12 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
 
   // Determine which pid and tid to use.
   int32_t pid =
-      event.pid_override() == 0 ? current_state_.pid : event.pid_override();
+      event.pid_override() == 0 ? current_state_->pid : event.pid_override();
   int32_t tid =
-      event.tid_override() == 0 ? current_state_.tid : event.tid_override();
+      event.tid_override() == 0 ? current_state_->tid : event.tid_override();
 
   const std::string& name = GetInternedName(
-      event.name_iid(), current_state_.interned_legacy_event_names_);
+      event.name_iid(), current_state_->interned_legacy_event_names_);
 
   // Build the actual json output, if we are missing the interned name we just
   // use the interned ID.

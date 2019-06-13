@@ -59,6 +59,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"  // nogncheck
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
@@ -183,6 +184,7 @@ BrowserTestBase::~BrowserTestBase() {
   // RemoteTestServer can cause wait on the UI thread.
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   spawned_test_server_.reset();
+  discardable_shared_memory_manager_.reset();
 #endif
 
   CHECK(set_up_called_ || IsSkipped())
@@ -392,6 +394,9 @@ void BrowserTestBase::SetUp() {
     BrowserTaskExecutor::PostFeatureListSetup();
     delegate->PostTaskSchedulerStart();
   }
+
+  discardable_shared_memory_manager_ =
+      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
   // ContentMain would normally call RunProcess() on the delegate and fallback
   // to BrowserMain() if it did not run it (or equivalent) itself. On Android,

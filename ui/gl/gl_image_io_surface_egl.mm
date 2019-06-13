@@ -55,6 +55,7 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::P010:
       NOTREACHED();
       return {GL_NONE, GL_NONE};
   }

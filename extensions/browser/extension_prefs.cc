@@ -177,7 +177,7 @@ constexpr const char kPrefGeometryCache[] = "geometry_cache";
 // A preference that indicates when an extension is last launched.
 constexpr const char kPrefLastLaunchTime[] = "last_launch_time";
 
-// Am installation parameter bundled with an extension.
+// An installation parameter bundled with an extension.
 constexpr const char kPrefInstallParam[] = "install_parameter";
 
 // A list of installed ids and a signature.
@@ -203,6 +203,11 @@ constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
 
 constexpr const char kPrefDNRDynamicRulesetChecksum[] =
     "dnr_dynamic_ruleset_checksum";
+
+// A boolean preference that indicates whether the extension's icon should be
+// automatically badged to the matched action count for a tab. False by default.
+constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
+    "dnr_use_action_count_as_badge_text";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
@@ -1815,6 +1820,20 @@ URLPatternSet ExtensionPrefs::GetDNRAllowedPages(
   ReadPrefAsURLPatternSet(extension_id, kPrefDNRAllowedPages, &result,
                           URLPattern::SCHEME_ALL);
   return result;
+}
+
+bool ExtensionPrefs::GetDNRUseActionCountAsBadgeText(
+    const ExtensionId& extension_id) const {
+  return ReadPrefAsBooleanAndReturn(extension_id,
+                                    kPrefDNRUseActionCountAsBadgeText);
+}
+
+void ExtensionPrefs::SetDNRUseActionCountAsBadgeText(
+    const ExtensionId& extension_id,
+    bool use_action_count_as_badge_text) {
+  UpdateExtensionPref(
+      extension_id, kPrefDNRUseActionCountAsBadgeText,
+      std::make_unique<base::Value>(use_action_count_as_badge_text));
 }
 
 // static

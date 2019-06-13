@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.ContextMenu;
 
@@ -20,6 +21,7 @@ import java.util.List;
  * A simple wrapper around a {@link ContextMenuPopulator} to handle observer notification.
  */
 public class TabContextMenuPopulator implements ContextMenuPopulator {
+    @Nullable
     private final ContextMenuPopulator mPopulator;
     private final Tab mTab;
 
@@ -36,7 +38,9 @@ public class TabContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public void onDestroy() {
-        mPopulator.onDestroy();
+        // |mPopulator| can be null for activities that do not use context menu. Following
+        // methods are not called, but |onDestroy| is.
+        if (mPopulator != null) mPopulator.onDestroy();
     }
 
     @Override

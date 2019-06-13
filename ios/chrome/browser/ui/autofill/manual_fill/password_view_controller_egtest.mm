@@ -417,7 +417,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissPasswordController {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // The keyboard icon is never present in iPads.
     return;
   }
@@ -448,7 +448,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the outside
 // the popover on iPad.
 - (void)testIPadTappingOutsidePopOverDismissPasswordController {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   // Bring up the keyboard.
@@ -482,7 +482,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // TODO(crbug.com/909629): started to be flaky and sometimes opens full list
 // when typing text.
 - (void)DISABLED_testTappingKeyboardDismissPasswordControllerPopOver {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   // Bring up the keyboard.

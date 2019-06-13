@@ -57,7 +57,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void HitInnerEditorElement(HitTestResult&,
-                             const PhysicalOffset& point_in_container,
+                             const HitTestLocation&,
                              const PhysicalOffset& accumulated_offset);
 
   int TextBlockLogicalWidth() const;

@@ -18,7 +18,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
@@ -54,7 +54,7 @@ class ASH_EXPORT AssistantUiController
       public AssistantViewDelegateObserver,
       public CaptionBarDelegate,
       public HighlighterController::Observer,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public display::DisplayObserver,
       public ui::EventObserver {
  public:
@@ -112,9 +112,8 @@ class ASH_EXPORT AssistantUiController
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& new_bounds) override;
+  // KeyboardControllerObserver:
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

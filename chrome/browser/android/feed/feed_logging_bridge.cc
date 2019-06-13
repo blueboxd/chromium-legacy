@@ -171,6 +171,28 @@ void FeedLoggingBridge::OnPietFrameRenderingEvent(
   feed_logging_metrics_->OnPietFrameRenderingEvent(std::move(piet_error_codes));
 }
 
+void FeedLoggingBridge::OnVisualElementClicked(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_element_type,
+    const jint j_position,
+    const jlong j_timeContentBecameAvailableMs) {
+  feed_logging_metrics_->OnVisualElementClicked(
+      j_element_type, j_position,
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
+}
+
+void FeedLoggingBridge::OnVisualElementViewed(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_element_type,
+    const jint j_position,
+    const jlong j_timeContentBecameAvailableMs) {
+  feed_logging_metrics_->OnVisualElementViewed(
+      j_element_type, j_position,
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
+}
+
 void FeedLoggingBridge::OnInternalError(JNIEnv* j_env,
                                         const JavaRef<jobject>& j_this,
                                         const jint j_internal_error) {

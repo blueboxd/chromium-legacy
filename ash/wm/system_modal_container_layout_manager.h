@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -28,7 +28,7 @@ class WindowDimmer;
 class ASH_EXPORT SystemModalContainerLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
       public aura::WindowObserver,
-      public keyboard::KeyboardControllerObserver {
+      public KeyboardControllerObserver {
  public:
   explicit SystemModalContainerLayoutManager(aura::Window* container);
   ~SystemModalContainerLayoutManager() override;
@@ -49,9 +49,8 @@ class ASH_EXPORT SystemModalContainerLayoutManager
                                const void* key,
                                intptr_t old) override;
 
-  // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& new_bounds) override;
+  // Overridden from KeyboardControllerObserver:
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override;
 
   // True if the window is either contained by the top most modal window,
   // or contained by its transient children.

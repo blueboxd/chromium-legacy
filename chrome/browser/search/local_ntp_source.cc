@@ -72,7 +72,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

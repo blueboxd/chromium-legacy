@@ -270,6 +270,14 @@ namespace declarativeNetRequest {
     [nodoc]
     static void getMatchedRules(optional MatchedRulesFilter filter,
         GetMatchedRulesCallback callback);
+
+    // Sets whether to automatically badge extension's icon to the matched
+    // action count for a tab. This preference is persisted across sessions and
+    // is false by default.
+    // TODO(crbug.com/973211): Add documentation once implementation is
+    // complete.
+    [nodoc]
+    static void setActionCountAsBadgeText(boolean enable);
   };
 
   interface Properties {

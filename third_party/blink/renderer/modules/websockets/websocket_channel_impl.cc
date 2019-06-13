@@ -295,7 +295,7 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
 }
 
 void WebSocketChannelImpl::Send(const std::string& message) {
-  NETWORK_DVLOG(1) << this << " Send(" << message << ") (CString argument)";
+  NETWORK_DVLOG(1) << this << " Send(" << message << ") (std::string argument)";
   probe::DidSendWebSocketMessage(execution_context_, identifier_,
                                  WebSocketOpCode::kOpCodeText, true,
                                  message.c_str(), message.length());

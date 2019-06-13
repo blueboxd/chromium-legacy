@@ -420,13 +420,6 @@ class AssistantPaymentRequestBinder
      */
     // TODO(crbug.com/806868): Move the logic to retrieve and filter payment methods to native.
     private void updateAvailablePaymentMethods(AssistantPaymentRequestModel model) {
-        WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
-        if (webContents == null) {
-            model.set(
-                    AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS, Collections.emptyMap());
-            return;
-        }
-
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
         methodData.supportedMethod = BasicCardUtils.BASIC_CARD_METHOD_NAME;
@@ -460,11 +453,6 @@ class AssistantPaymentRequestBinder
     // TODO(crbug.com/806868): Move this logic to native.
     private void updateAvailableAutofillPaymentMethods(AssistantPaymentRequestModel model) {
         WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
-        if (webContents == null) {
-            model.set(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                    Collections.emptyList());
-            return;
-        }
 
         AutofillPaymentApp autofillPaymentApp = new AutofillPaymentApp(webContents);
         Map<String, PaymentMethodData> supportedPaymentMethods =

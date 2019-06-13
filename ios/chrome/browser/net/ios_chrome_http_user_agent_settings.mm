@@ -7,9 +7,9 @@
 #include "base/task/post_task.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
 #include "net/http/http_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

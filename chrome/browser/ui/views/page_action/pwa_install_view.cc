@@ -10,6 +10,7 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -54,9 +55,20 @@ bool PwaInstallView::Update() {
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
   base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
-  web_app::CreateWebAppFromManifest(GetWebContents(),
-                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
-                                    base::DoNothing());
+  content::WebContents* web_contents = GetWebContents();
+  // TODO(https://crbug.com/956810): Make AppBannerManager listen for
+  // installations instead of having to notify it from every installation UI
+  // surface.
+  auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
+  web_app::CreateWebAppFromManifest(
+      web_contents, WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      base::BindOnce(
+          [](base::WeakPtr<banners::AppBannerManager> manager,
+             const web_app::AppId& app_id, web_app::InstallResultCode code) {
+            if (manager && code == web_app::InstallResultCode::kSuccess)
+              manager->OnInstall(false, blink::kWebDisplayModeStandalone);
+          },
+          manager ? manager->GetWeakPtr() : nullptr));
 }
 
 views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {

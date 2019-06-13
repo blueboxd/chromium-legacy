@@ -1078,14 +1078,7 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  // If the recommend app screen should be shown, show it after the user
-  // finished with the PlayStore Terms of Service. Otherwise, advance to the
-  // assistant opt-in flow screen.
-  if (ShouldShowRecommendAppsScreen()) {
-    ShowRecommendAppsScreen();
-  } else {
-    ShowAssistantOptInFlowScreen();
-  }
+  ShowSupervisionOnboardingScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -1117,7 +1110,7 @@ void WizardController::OnAssistantOptInFlowScreenExit() {
 void WizardController::OnMultiDeviceSetupScreenExit() {
   OnScreenExit(MultiDeviceSetupScreenView::kScreenId, 0 /* exit_code */);
 
-  ShowSupervisionOnboardingScreen();
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnResetScreenExit() {
@@ -1145,10 +1138,29 @@ void WizardController::OnDeviceModificationCanceled() {
   }
 }
 
-void WizardController::OnSupervisionOnboardingScreenExit() {
-  OnScreenExit(SupervisionOnboardingScreenView::kScreenId, 0 /* exit_code */);
+void WizardController::OnSupervisionOnboardingScreenExit(
+    SupervisionOnboardingScreen::Result result) {
+  OnScreenExit(SupervisionOnboardingScreenView::kScreenId,
+               static_cast<int>(result));
 
-  OnOobeFlowFinished();
+  // In this case, the user went through the whole Supervision Onboarding flow
+  // successfully, so we should just finish the OOBE/Login here.
+  // Note: This intentionally skips the other screens like Assistant and
+  // recommended app downloads.
+  if (result == SupervisionOnboardingScreen::Result::kFinished) {
+    OnOobeFlowFinished();
+    return;
+  }
+
+  // If the recommend app screen should be shown, show it after the user
+  // skipped the Supervision Onboarding. Otherwise, advance to the
+  // assistant opt-in flow screen.
+  if (ShouldShowRecommendAppsScreen()) {
+    ShowRecommendAppsScreen();
+    return;
+  }
+
+  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {

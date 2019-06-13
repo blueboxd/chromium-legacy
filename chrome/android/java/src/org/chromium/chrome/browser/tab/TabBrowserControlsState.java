@@ -13,23 +13,21 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 
 /**
- * Manages the state of tab browser controls. Instantiation is done by
- * {@link TabDelegateFactory#createBrowserControlsState()}.
+ * Manages the state of tab browser controls.
  */
 public class TabBrowserControlsState extends TabWebContentsUserData implements ImeEventObserver {
     private static final Class<TabBrowserControlsState> USER_DATA_KEY =
             TabBrowserControlsState.class;
 
     private final Tab mTab;
-    private final BrowserControlsVisibilityDelegate mVisibilityDelegate;
-    private final long mNativeTabBrowserControlsState;
+    private long mNativeTabBrowserControlsState; // Lazily initialized in |update|
+    private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mConstraints = -1;
 
-    public static void create(Tab tab, BrowserControlsVisibilityDelegate delegate) {
-        tab.getUserDataHost().setUserData(
-                USER_DATA_KEY, new TabBrowserControlsState(tab, delegate));
+    public static void createForTab(Tab tab) {
+        tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabBrowserControlsState(tab));
     }
 
     public static TabBrowserControlsState get(Tab tab) {
@@ -74,15 +72,27 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     }
 
     /** Constructor */
-    private TabBrowserControlsState(Tab tab, BrowserControlsVisibilityDelegate delegate) {
+    private TabBrowserControlsState(Tab tab) {
         super(tab);
         mTab = tab;
-        mVisibilityDelegate = delegate;
-        mNativeTabBrowserControlsState = nativeInit();
         mTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
                 updateEnabledState();
+            }
+
+            @Override
+            public void onInitialized(Tab tab, TabState tabState) {
+                mVisibilityDelegate =
+                        tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                if (isAttached) {
+                    mVisibilityDelegate =
+                            tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+                }
             }
 
             @Override
@@ -109,7 +119,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     @Override
     public void destroyInternal() {
-        nativeOnDestroyed(mNativeTabBrowserControlsState);
+        if (mNativeTabBrowserControlsState != 0) nativeOnDestroyed(mNativeTabBrowserControlsState);
     }
 
     @Override
@@ -156,10 +166,9 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
                         && current == BrowserControlsState.HIDDEN)) {
             return;
         }
-        if (mNativeTabBrowserControlsState != 0) {
-            nativeUpdateState(mNativeTabBrowserControlsState, mTab.getWebContents(), constraints,
-                    current, animate);
-        }
+        if (mNativeTabBrowserControlsState == 0) mNativeTabBrowserControlsState = nativeInit();
+        nativeUpdateState(mNativeTabBrowserControlsState, mTab.getWebContents(), constraints,
+                current, animate);
         if (constraints == mConstraints) return;
 
         mConstraints = constraints;
@@ -173,14 +182,15 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
      * @return Whether hiding browser controls is enabled or not.
      */
     private boolean canAutoHide() {
-        return mVisibilityDelegate.canAutoHideBrowserControls();
+        return mVisibilityDelegate != null ? mVisibilityDelegate.canAutoHideBrowserControls()
+                                           : false;
     }
 
     /**
      * @return Whether showing browser controls is enabled or not.
      */
     public boolean canShow() {
-        return mVisibilityDelegate.canShowBrowserControls();
+        return mVisibilityDelegate != null ? mVisibilityDelegate.canShowBrowserControls() : false;
     }
 
     @BrowserControlsState

@@ -135,11 +135,20 @@ class TabGridViewBinder {
         } else if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
             selectionHolder.itemView.setOnClickListener(view -> {
                 item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
+                selectionHolder.selectableTabGridView.onClick();
             });
         } else if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
-            holder.actionButton.setContentDescription(holder.itemView.getResources().getString(
-                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+            selectionHolder.actionButton.setContentDescription(
+                    holder.itemView.getResources().getString(
+                            org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab,
+                            title));
+        } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
+            assert item.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
+
+            selectionHolder.selectableTabGridView.setSelectionDelegate(
+                    item.get(TabProperties.TAB_SELECTION_DELEGATE));
+            selectionHolder.selectableTabGridView.setItem(selectionHolder.getTabId());
         }
     }
 

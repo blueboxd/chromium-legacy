@@ -397,9 +397,10 @@ _CONFIG = [
             'base::(scoped_nsobject|ScopedCFTypeRef)',
         ],
         'disallowed': [
-            '.+',
             ('base::Bind(|Once|Repeating)',
              'Use WTF::Bind or WTF::BindRepeating.'),
+            ('std::(map)',
+             'Use WTF containers like WTF::HashMap instead of the banned std containers.'),
         ],
     },
     {
@@ -817,10 +818,10 @@ def _find_matching_entries(path):
 def _check_entries_for_identifier(entries, identifier):
     """Check if an identifier is allowed"""
     for entry in entries:
-        if entry['allowed'].match(identifier):
-            return True
         if entry['disallowed'].match(identifier):
             return False
+        if entry['allowed'].match(identifier):
+            return True
     # Disallow by default.
     return False
 

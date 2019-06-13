@@ -190,7 +190,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
 - (void)testCachingBehaviorOnSelectOmniboxSuggestion {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 

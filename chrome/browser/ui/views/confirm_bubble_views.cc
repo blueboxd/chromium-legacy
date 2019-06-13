@@ -40,13 +40,12 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 
   // Add the message label.
   auto label = std::make_unique<views::Label>(model_->GetMessageText());
-  label_ = label.get();
   DCHECK(!label->text().empty());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SizeToFit(kMaxMessageWidth);
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(label.release());
+  label_ = layout->AddView(std::move(label));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CONFIRM_BUBBLE);
 }

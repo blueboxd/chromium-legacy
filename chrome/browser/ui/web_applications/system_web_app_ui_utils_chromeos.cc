@@ -103,7 +103,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
             ->GetExtensionById(GetAppIdFromApplicationName(browser->app_name()),
                                extensions::ExtensionRegistry::EVERYTHING);
 
-    if (browser_extension->id() == extension->id())
+    if (browser_extension && browser_extension->id() == extension->id())
       return browser;
   }
 

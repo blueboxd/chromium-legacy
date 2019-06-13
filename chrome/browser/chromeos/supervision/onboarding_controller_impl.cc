@@ -15,8 +15,9 @@
 namespace chromeos {
 namespace supervision {
 
-OnboardingControllerImpl::OnboardingControllerImpl(Profile* profile)
-    : flow_model_(std::make_unique<OnboardingFlowModel>(profile)),
+OnboardingControllerImpl::OnboardingControllerImpl(Profile* profile,
+                                                   OnboardingDelegate* delegate)
+    : flow_model_(std::make_unique<OnboardingFlowModel>(profile, delegate)),
       presenter_(std::make_unique<OnboardingPresenter>(flow_model_.get())),
       logger_(std::make_unique<OnboardingLogger>(flow_model_.get())),
       kiosk_next_observer_(

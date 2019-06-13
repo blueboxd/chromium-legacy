@@ -100,8 +100,7 @@ void Mojo::bindInterface(ScriptState* script_state,
                          const String& interface_name,
                          MojoHandle* request_handle,
                          const String& scope) {
-  std::string name =
-      StringUTF8Adaptor(interface_name).AsStringPiece().as_string();
+  std::string name = interface_name.Utf8();
   auto handle =
       mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle());
 

@@ -123,7 +123,7 @@ using chrome_test_util::SettingsDoneButton;
   [ChromeEarlGrey loadURL:URL];
 
   // Bookmark page
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     id<GREYMatcher> bookmarkMatcher =
         chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
     [[EarlGrey selectElementWithMatcher:bookmarkMatcher]

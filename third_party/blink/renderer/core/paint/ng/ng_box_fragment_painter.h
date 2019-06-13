@@ -40,10 +40,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   // Hit tests this box fragment.
   // @param physical_offset Physical offset of this box fragment in the
-  // coordinate space of |location_in_container|.
+  // coordinate space of |hit_test_location|.
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation& hit_test_location,
                    const PhysicalOffset& physical_offset,
                    HitTestAction);
 
@@ -120,7 +120,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // container has 'overflow: scroll'.
   bool HitTestChildren(HitTestResult&,
                        NGPaintFragment::ChildList,
-                       const HitTestLocation& location_in_container,
+                       const HitTestLocation& hit_test_location,
                        const PhysicalOffset& physical_offset,
                        HitTestAction);
 
@@ -130,7 +130,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // paint layer.
   bool HitTestChildBoxFragment(HitTestResult&,
                                const NGPaintFragment&,
-                               const HitTestLocation& location_in_container,
+                               const HitTestLocation& hit_test_location,
                                const PhysicalOffset& physical_offset,
                                HitTestAction);
 
@@ -138,7 +138,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // @param physical_offset Physical offset of the text fragment in paint layer.
   bool HitTestTextFragment(HitTestResult&,
                            const NGPaintFragment&,
-                           const HitTestLocation& location_in_container,
+                           const HitTestLocation& hit_test_location,
                            const PhysicalOffset& physical_offset,
                            HitTestAction);
 
@@ -147,7 +147,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // layer.
   bool HitTestLineBoxFragment(HitTestResult&,
                               const NGPaintFragment&,
-                              const HitTestLocation& location_in_container,
+                              const HitTestLocation& hit_test_location,
                               const PhysicalOffset& physical_offset,
                               HitTestAction);
 

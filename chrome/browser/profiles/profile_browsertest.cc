@@ -33,7 +33,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -63,10 +62,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -79,55 +74,6 @@
 #endif
 
 namespace {
-
-// Simple URLFetcherDelegate with an expected final status and the ability to
-// wait until a request completes. It's not considered a failure for the request
-// to never complete.
-// TODO(crbug.com/789657): remove once there is no separate on-disk media cache.
-class TestURLFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  // Creating the TestURLFetcherDelegate automatically creates and starts a
-  // URLFetcher.
-  TestURLFetcherDelegate(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      const GURL& url,
-      net::URLRequestStatus expected_request_status,
-      int load_flags = net::LOAD_NORMAL)
-      : expected_request_status_(expected_request_status),
-        is_complete_(false),
-        fetcher_(net::URLFetcher::Create(url,
-                                         net::URLFetcher::GET,
-                                         this,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {
-    fetcher_->SetLoadFlags(load_flags);
-    fetcher_->SetRequestContext(context_getter.get());
-    fetcher_->Start();
-  }
-
-  ~TestURLFetcherDelegate() override {}
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    EXPECT_EQ(expected_request_status_.status(), source->GetStatus().status());
-    EXPECT_EQ(expected_request_status_.error(), source->GetStatus().error());
-
-    run_loop_.Quit();
-  }
-
-  void WaitForCompletion() {
-    run_loop_.Run();
-  }
-
-  bool is_complete() const { return is_complete_; }
-
- private:
-  const net::URLRequestStatus expected_request_status_;
-  base::RunLoop run_loop_;
-
-  bool is_complete_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLFetcherDelegate);
-};
 
 // A helper class which creates a SimpleURLLoader with an expected final status
 // and the ability to wait until a request completes. It's not considered a
@@ -231,20 +177,6 @@ class ProfileBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
-  }
-
-  // content::BrowserTestBase implementation:
-
-  void SetUpOnMainThread() override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
-  }
-
-  void TearDownOnMainThread() override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, false));
   }
 
   std::unique_ptr<Profile> CreateProfile(const base::FilePath& path,

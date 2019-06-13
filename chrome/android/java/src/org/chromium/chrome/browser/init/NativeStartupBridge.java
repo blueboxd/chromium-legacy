@@ -24,12 +24,7 @@ public class NativeStartupBridge {
                         .isStartupSuccessfullyCompleted()) {
             return;
         }
-        final BrowserParts parts = new EmptyBrowserParts() {
-            @Override
-            public boolean startServiceManagerOnly() {
-                return false;
-            }
-        };
+        final BrowserParts parts = new EmptyBrowserParts() {};
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
@@ -43,5 +38,17 @@ public class NativeStartupBridge {
                 }
             }
         });
+    }
+
+    @CalledByNative
+    private static void handlePostNativeStartupSynchronously() {
+        final BrowserParts parts = new EmptyBrowserParts() {};
+        try {
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(
+                    /*isAsync=*/false, parts);
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Cannot handlePostNativeStartup synchronously.", e);
+            System.exit(-1);
+        }
     }
 }

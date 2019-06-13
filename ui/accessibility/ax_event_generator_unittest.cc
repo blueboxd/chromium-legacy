@@ -86,6 +86,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
         event_name = "HIERARCHICAL_LEVEL_CHANGED";
         break;
+      case ui::AXEventGenerator::Event::IGNORED_CHANGED:
+        event_name = "IGNORED_CHANGED";
+        break;
       case AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
         event_name = "IMAGE_ANNOTATION_CHANGED";
         break;
@@ -935,6 +938,7 @@ TEST(AXEventGeneratorTest, NodeBecomesIgnored) {
   ASSERT_TRUE(tree.Unserialize(update));
   EXPECT_EQ(
       "CHILDREN_CHANGED on 2, "
+      "IGNORED_CHANGED on 4, "
       "STATE_CHANGED on 4",
       DumpEvents(&event_generator));
 }
@@ -968,6 +972,7 @@ TEST(AXEventGeneratorTest, NodeBecomesUnignored) {
   ASSERT_TRUE(tree.Unserialize(update));
   EXPECT_EQ(
       "CHILDREN_CHANGED on 2, "
+      "IGNORED_CHANGED on 4, "
       "STATE_CHANGED on 4",
       DumpEvents(&event_generator));
 }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_COLLECTED_COOKIES_VIEWS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -75,9 +77,9 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   void Init();
 
-  views::View* CreateAllowedPane();
+  std::unique_ptr<views::View> CreateAllowedPane();
 
-  views::View* CreateBlockedPane();
+  std::unique_ptr<views::View> CreateBlockedPane();
 
   // Creates and returns the "buttons pane", which is the view in the
   // bottom-leading edge of this dialog containing the action buttons for the

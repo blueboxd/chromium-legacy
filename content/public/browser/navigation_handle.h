@@ -289,6 +289,9 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns true if this navigation was initiated by a form submission.
   virtual bool IsFormSubmission() = 0;
 
+  // Returns true if this navigation was initiated by a link click.
+  virtual bool WasInitiatedByLinkClick() = 0;
+
   // Returns true if the target is an inner response of a signed exchange.
   virtual bool IsSignedExchangeInnerResponse() = 0;
 

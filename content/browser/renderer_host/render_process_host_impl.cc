@@ -135,14 +135,12 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
-#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
@@ -269,12 +267,6 @@
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
 
-#if defined(OS_WIN)
-#define NumberToStringType base::NumberToString16
-#else
-#define NumberToStringType base::NumberToString
-#endif
-
 namespace content {
 
 namespace {
@@ -294,9 +286,6 @@ const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
 RenderProcessHost::AnalyzeHungRendererFunction g_analyze_hung_renderer =
     nullptr;
-
-const base::FilePath::CharType kAecDumpFileNameAddition[] =
-    FILE_PATH_LITERAL("aec_dump");
 
 void CacheShaderInfo(int32_t id, base::FilePath path) {
   if (GetShaderCacheFactorySingleton())
@@ -330,18 +319,6 @@ void GetContexts(
   *resource_context_out = resource_context;
   *request_context_out =
       GetRequestContext(request_context, media_request_context, resource_type);
-}
-
-// Creates a file used for handing over to the renderer.
-IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path) {
-  base::File dump_file(file_path,
-                       base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
-  if (!dump_file.IsValid()) {
-    VLOG(1) << "Could not open AEC dump file, error="
-            << dump_file.error_details();
-    return IPC::InvalidPlatformFileForTransit();
-  }
-  return IPC::TakePlatformFileForTransit(std::move(dump_file));
 }
 
 // Allow us to only run the trial in the first renderer.
@@ -1743,7 +1720,8 @@ bool RenderProcessHostImpl::Init() {
 
     // In single process mode, browser-side tracing and memory will cover the
     // whole process including renderers.
-    BackgroundTracingManagerImpl::ActivateForProcess(this);
+    BackgroundTracingManagerImpl::ActivateForProcess(
+        GetID(), child_control_interface_.get());
 
     fast_shutdown_started_ = false;
   }
@@ -2192,6 +2170,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindVideoDecoderService,
                           base::Unretained(this)));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&AecDumpManagerImpl::AddRequest,
+                          base::Unretained(&aec_dump_manager_)));
 
   // ---- Please do not register interfaces below this line ------
   //
@@ -3276,10 +3259,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(WidgetHostMsg_Close_ACK, OnCloseACK)
-      IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
-                          OnRegisterAecDumpConsumer)
-      IPC_MESSAGE_HANDLER(AecDumpMsg_UnregisterAecDumpConsumer,
-                          OnUnregisterAecDumpConsumer)
     // Adding single handlers for your service here is fine, but once your
     // service needs more than one handler, please extract them into a new
     // message filter and add that filter to CreateMessageFilters().
@@ -3546,26 +3525,16 @@ void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
 }
 
 void RenderProcessHostImpl::EnableAudioDebugRecordings(
-    const base::FilePath& file) {
+    const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Enable AEC dump for each registered consumer.
-  base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(file);
-  for (int id : aec_dump_consumers_) {
-    EnableAecDumpForId(file_with_extensions, id);
-  }
+  aec_dump_manager_.Start(GetProcess().Pid(), file_path);
 }
 
 void RenderProcessHostImpl::DisableAudioDebugRecordings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Posting on the sequence and then replying back on the UI thread is only
-  // for avoiding races between enable and disable. Nothing is done on the
-  // sequence.
-  GetAecDumpFileTaskRunner().PostTaskAndReply(
-      FROM_HERE, base::DoNothing(),
-      base::BindOnce(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
-                     weak_factory_.GetWeakPtr()));
+  aec_dump_manager_.Stop();
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
@@ -4471,11 +4440,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       observer.RenderProcessReady(this);
   }
 
-  WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals->IsAudioDebugRecordingsEnabled()) {
-    EnableAudioDebugRecordings(
-        webrtc_internals->GetAudioDebugRecordingsFilePath());
-  }
+  aec_dump_manager_.AutoStart(GetProcess().Pid());
 }
 
 void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
@@ -4574,80 +4539,6 @@ void RenderProcessHostImpl::CreateMdnsResponder(
       std::move(request));
 }
 #endif  // BUILDFLAG(ENABLE_MDNS)
-
-void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread,
-                     weak_factory_.GetWeakPtr(), id));
-}
-
-void RenderProcessHostImpl::OnUnregisterAecDumpConsumer(int id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread,
-          weak_factory_.GetWeakPtr(), id));
-}
-
-void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  aec_dump_consumers_.push_back(id);
-
-  WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals->IsAudioDebugRecordingsEnabled()) {
-    base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(
-        webrtc_internals->GetAudioDebugRecordingsFilePath());
-    EnableAecDumpForId(file_with_extensions, id);
-  }
-}
-
-void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto it =
-      std::find(aec_dump_consumers_.begin(), aec_dump_consumers_.end(), id);
-  if (it != aec_dump_consumers_.end())
-    aec_dump_consumers_.erase(it);
-}
-
-void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
-                                               int id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      &GetAecDumpFileTaskRunner(), FROM_HERE,
-      base::Bind(&CreateFileForProcess,
-                 file.AddExtension(NumberToStringType(id))),
-      base::Bind(&RenderProcessHostImpl::SendAecDumpFileToRenderer,
-                 weak_factory_.GetWeakPtr(), id));
-}
-
-void RenderProcessHostImpl::SendAecDumpFileToRenderer(
-    int id,
-    IPC::PlatformFileForTransit file_for_transit) {
-  if (file_for_transit == IPC::InvalidPlatformFileForTransit())
-    return;
-  Send(new AecDumpMsg_EnableAecDump(id, file_for_transit));
-}
-
-void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
-  Send(new AecDumpMsg_DisableAecDump());
-}
-
-base::FilePath RenderProcessHostImpl::GetAecDumpFilePathWithExtensions(
-    const base::FilePath& file) {
-  return file.AddExtension(NumberToStringType(GetProcess().Pid()))
-      .AddExtension(kAecDumpFileNameAddition);
-}
-
-base::SequencedTaskRunner& RenderProcessHostImpl::GetAecDumpFileTaskRunner() {
-  if (!audio_debug_recordings_file_task_runner_) {
-    audio_debug_recordings_file_task_runner_ =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-             base::TaskPriority::USER_BLOCKING});
-  }
-  return *audio_debug_recordings_file_task_runner_;
-}
 
 // static
 void RenderProcessHostImpl::OnMojoError(int render_process_id,

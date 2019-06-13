@@ -1336,7 +1336,7 @@ void NetworkHandler::SetCookies(
             cookie->GetDomain(""), cookie->GetPath(""),
             cookie->GetSecure(false), cookie->GetHttpOnly(false),
             cookie->GetSameSite(""), cookie->GetExpires(-1));
-    if (!cookie) {
+    if (!net_cookie) {
       callback->sendFailure(Response::InvalidParams("Invalid cookie fields"));
       return;
     }

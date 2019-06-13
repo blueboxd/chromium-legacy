@@ -717,8 +717,10 @@
     'chromedriver': {
       'filepath': 'chrome/test/chromedriver|'\
                   'chrome/test/data/chromedriver|'\
-                  'third_party/webdriver|'\
-                  'third_party/blink/renderer/devtools/front_end/emulated_devices/module.json'
+                  'third_party/blink/renderer/devtools/front_end/emulated_devices/module.json|'\
+                  'third_party/blink/web_tests/external/wpt/webdriver|'\
+                  'third_party/blink/web_tests/WebDriverExpectations|'\
+                  'third_party/webdriver'
     },
     'chromeos': {
       'filepath': 'chromeos/',
@@ -1229,10 +1231,6 @@
                   '|chromeos/services/multidevice_setup/'\
                   '|chromeos/services/secure_channel/'\
                   '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
-    },
-    'mus': {
-      'filepath': 'services/ws/'\
-                  '|mojo/gpu/',
     },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
@@ -2267,9 +2265,7 @@
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
-    'cups_printing': ['baileyberro+watch-printers@chromium.org',
-                      'jimmyxgong+watch-printers@chromium.org',
-                      'zentaro+watch-printers@chromium.org'],
+    'cups_printing': ['print-reviews+cups@chromium.org'],
     'custom_proxy': ['lbendig@opera.com',
                      'wdzierzanowski@opera.com'],
     'custom_tabs': ['amalova+watch@chromium.org',
@@ -2423,7 +2419,6 @@
                     'jordynass+watch-multidevice@chromium.org',
                     'khorimoto+watch-multidevice@chromium.org',
                     'nohle+watch-multidevice@chromium.org'],
-    'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
                           'sbc@chromium.org'],
@@ -2506,7 +2501,7 @@
                   'tburkard+watch@chromium.org'],
     'presentation': ['mfoltz+watch@chromium.org'],
     'preview_features': ['chrome-lite-pages+watch@google.com'],
-    'print_preview': ['rbpotter@chromium.org'],
+    'print_preview': ['print-reviews+preview@chromium.org'],
     'push_messaging': ['peter@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
     'remoteplayback': ['mfoltz+watch@chromium.org'],

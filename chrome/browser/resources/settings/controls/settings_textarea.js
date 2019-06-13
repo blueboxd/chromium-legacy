@@ -10,17 +10,34 @@ Polymer({
   is: 'settings-textarea',
 
   properties: {
+    /**
+       Whether the text area should automatically get focus when the page
+       loads.
+     */
     autofocus: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
     },
 
+    /** Number of rows (lines) of the text area. */
+    rows: {
+      type: Number,
+      value: 3,
+      reflectToAttribute: true,
+    },
+
+    /** Caption of the text area. */
     label: {
       type: String,
       value: '',
     },
 
+    /**
+     * Text inside the text area. If the text exceeds the bounds of the text
+     * area, i.e. if it has more than |rows| lines, a scrollbar is shown by
+     * default.
+     */
     value: {
       type: String,
       value: '',

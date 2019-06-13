@@ -974,6 +974,10 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
+  // ignored nodes are not a part of ordered sets.
+  if (original_node.data().HasState(ax::mojom::State::kIgnored))
+    return;
+
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {

@@ -1,6 +1,5 @@
 include_rules = [
   "+services/identity/public/cpp/manifest.h",
-  "+third_party/zlib/google",
 ]
 
 specific_include_rules = {

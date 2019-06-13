@@ -90,9 +90,9 @@ class ServiceProcessControlBrowserTest
     // point to a bundle so that the service process has an Info.plist.
     base::FilePath exe_path;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
-    exe_path = exe_path.DirName()
+    exe_path = exe_path.Append(chrome::kBrowserProcessExecutablePath)
                    .DirName()
-                   .Append("Contents")
+                   .DirName()
                    .Append("Frameworks")
                    .Append(chrome::kFrameworkName)
                    .Append("Versions")

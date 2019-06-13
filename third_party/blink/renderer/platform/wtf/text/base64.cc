@@ -49,11 +49,10 @@ static const char kBase64DecMap[128] = {
     0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,
     0x31, 0x32, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-String Base64Encode(const char* data,
-                    unsigned length,
-                    Base64EncodePolicy policy) {
+String Base64Encode(base::span<const uint8_t> data, Base64EncodePolicy policy) {
   Vector<char> result;
-  Base64Encode(data, length, result, policy);
+  Base64Encode(reinterpret_cast<const char*>(data.data()), data.size(), result,
+               policy);
   return String(result.data(), result.size());
 }
 
@@ -273,7 +272,9 @@ bool Base64UnpaddedURLDecode(const String& in,
 String Base64URLEncode(const char* data,
                        unsigned length,
                        Base64EncodePolicy policy) {
-  return Base64Encode(data, length, policy).Replace('+', '-').Replace('/', '_');
+  return Base64Encode(base::as_bytes(base::make_span(data, length)), policy)
+      .Replace('+', '-')
+      .Replace('/', '_');
 }
 
 String NormalizeToBase64(const String& encoding) {

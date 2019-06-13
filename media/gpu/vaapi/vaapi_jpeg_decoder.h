@@ -30,9 +30,9 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   ~VaapiJpegDecoder() override;
 
   // VaapiImageDecoder implementation.
-  bool Initialize(const base::RepeatingClosure& error_uma_cb) override;
   scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
                                   VaapiImageDecodeStatus* status) override;
+  Type GetType() const override;
 
   // Get the decoded data from the last Decode() call as a ScopedVAImage. The
   // VAImage's format will be either |preferred_image_fourcc| if the conversion

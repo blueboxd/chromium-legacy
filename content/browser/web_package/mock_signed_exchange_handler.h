@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "net/base/hash_value.h"
 #include "url/gurl.h"
@@ -19,6 +20,7 @@ class SignedExchangeCertFetcherFactory;
 class MockSignedExchangeHandlerParams {
  public:
   // |mime_type| and |response_headers| are ignored if |error| is not net::OK.
+  // If |signature_expire_time| is a null Time, we treat as one day after now.
   MockSignedExchangeHandlerParams(
       const GURL& outer_url,
       SignedExchangeLoadResult result,
@@ -26,7 +28,8 @@ class MockSignedExchangeHandlerParams {
       const GURL& inner_url,
       const std::string& mime_type,
       std::vector<std::string> response_headers,
-      base::Optional<net::SHA256HashValue> header_integrity);
+      base::Optional<net::SHA256HashValue> header_integrity,
+      const base::Time& signature_expire_time = base::Time());
   MockSignedExchangeHandlerParams(const MockSignedExchangeHandlerParams& other);
   ~MockSignedExchangeHandlerParams();
   const GURL outer_url;
@@ -36,6 +39,7 @@ class MockSignedExchangeHandlerParams {
   const std::string mime_type;
   const std::vector<std::string> response_headers;
   const base::Optional<net::SHA256HashValue> header_integrity;
+  const base::Time signature_expire_time;
 };
 
 class MockSignedExchangeHandler final : public SignedExchangeHandler {
@@ -45,9 +49,11 @@ class MockSignedExchangeHandler final : public SignedExchangeHandler {
                             ExchangeHeadersCallback headers_callback);
   ~MockSignedExchangeHandler() override;
   base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const override;
+  base::Time GetSignatureExpireTime() const override;
 
  private:
   const base::Optional<net::SHA256HashValue> header_integrity_;
+  const base::Time signature_expire_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSignedExchangeHandler);
 };

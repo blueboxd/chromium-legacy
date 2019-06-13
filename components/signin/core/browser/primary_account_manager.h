@@ -22,23 +22,22 @@
 #include <string>
 
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+struct AccountInfo;
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
+class PrimaryAccountPolicyManager;
 class ProfileOAuth2TokenService;
-class SigninClient;
+
+namespace signin_metrics {
+enum ProfileSignout;
+enum class SignoutDelete;
+}  // namespace signin_metrics
 
 class PrimaryAccountManager : public OAuth2TokenServiceObserver {
  public:
@@ -63,24 +62,6 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
     virtual ~Observer() {}
   };
 
-// On non-ChromeOS platforms, PrimaryAccountManager should only be instantiated
-// via the derived PrimaryAccountPolicyManager class, as the codewise assumes
-// the invariant that any PrimaryAccountManager object can be cast to a
-// PrimaryAccountPolicyManager object when not on ChromeOS. Make the constructor
-// private and add PrimaryAccountPolicyManager as a friend to support this.
-// TODO(952766): Eliminate this once the functionality of PrimaryAccountManager
-// and PrimaryAccountPolicyManager is merged.
-#if !defined(OS_CHROMEOS)
- private:
-#endif
-  PrimaryAccountManager(SigninClient* client,
-                        ProfileOAuth2TokenService* token_service,
-                        AccountTrackerService* account_tracker_service,
-                        signin::AccountConsistencyMethod account_consistency);
-#if !defined(OS_CHROMEOS)
- public:
-#endif
-
 #if !defined(OS_CHROMEOS)
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
@@ -93,6 +74,12 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   };
 #endif
 
+  PrimaryAccountManager(
+      SigninClient* client,
+      ProfileOAuth2TokenService* token_service,
+      AccountTrackerService* account_tracker_service,
+      signin::AccountConsistencyMethod account_consistency,
+      std::unique_ptr<PrimaryAccountPolicyManager> policy_manager);
   ~PrimaryAccountManager() override;
 
   // Registers per-profile prefs.
@@ -174,19 +161,7 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
       signin_metrics::SignoutDelete signout_delete_metric);
 #endif
 
- protected:
-  SigninClient* signin_client() const { return client_; }
-
-  // Invoked at the end of |Initialize| before the refresh token for the primary
-  // account is loaded.
-  virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
-
  private:
-  // Added only to allow PrimaryAccountPolicyManager to call the
-  // PrimaryAccountManager constructor while disallowing any ad-hoc subclassing
-  // of PrimaryAccountManager.
-  friend class PrimaryAccountPolicyManager;
-
   // Sets the authenticated user's account id.
   // If the user is already authenticated with the same account id, then this
   // method is a no-op.
@@ -242,7 +217,11 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;
 
+#if !defined(OS_CHROMEOS)
   signin::AccountConsistencyMethod account_consistency_;
+#endif
+
+  std::unique_ptr<PrimaryAccountPolicyManager> policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountManager);
 };

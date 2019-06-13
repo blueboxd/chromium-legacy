@@ -4,6 +4,9 @@
 
 #include "components/remote_cocoa/browser/application_host.h"
 
+#import <Cocoa/Cocoa.h>
+
+#include "components/remote_cocoa/browser/window.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace remote_cocoa {
@@ -27,6 +30,12 @@ void ApplicationHost::AddObserver(Observer* observer) {
 
 void ApplicationHost::RemoveObserver(const Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+ApplicationHost* ApplicationHost::GetForNativeView(gfx::NativeView view) {
+  gfx::NativeWindow window([view.GetNativeNSView() window]);
+  return GetWindowApplicationHost(window);
 }
 
 }  // namespace remote_cocoa

@@ -5,10 +5,13 @@
 #ifndef SERVICES_TRACING_PERFETTO_TRACK_EVENT_JSON_EXPORTER_H_
 #define SERVICES_TRACING_PERFETTO_TRACK_EVENT_JSON_EXPORTER_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
+#include "base/macros.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
 namespace perfetto {
 namespace protos {
@@ -31,15 +34,16 @@ class TrackEventJSONExporter : public JSONTraceExporter {
   ~TrackEventJSONExporter() override;
 
  protected:
-  void ProcessPackets(
-      const std::vector<perfetto::TracePacket>& packets) override;
+  void ProcessPackets(const std::vector<perfetto::TracePacket>& packets,
+                      bool has_more) override;
 
  private:
   struct ProducerWriterState {
     ProducerWriterState(uint32_t sequence_id);
     ProducerWriterState(uint32_t sequence_id,
                         bool emitted_process,
-                        bool emitted_thread,
+                        std::unique_ptr<perfetto::protos::ThreadDescriptor>
+                            last_seen_thread_descriptor,
                         bool incomplete);
     ~ProducerWriterState();
 
@@ -56,7 +60,8 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     // containing this data are periodically emitted and so would occur
     // frequently if not suppressed.
     bool emitted_process_metadata = false;
-    bool emitted_thread_metadata = false;
+    std::unique_ptr<perfetto::protos::ThreadDescriptor>
+        last_seen_thread_descriptor;
 
     // Until we see a TracePacket that will initialize our state we will skip
     // all data besides stateful information. Once we've been reset on the same
@@ -69,6 +74,8 @@ class TrackEventJSONExporter : public JSONTraceExporter {
         interned_source_locations_;
     std::unordered_map<uint32_t, std::string> interned_legacy_event_names_;
     std::unordered_map<uint32_t, std::string> interned_debug_annotation_names_;
+
+    DISALLOW_COPY_AND_ASSIGN(ProducerWriterState);
   };
 
   // Packet sequences are given in order so when we encounter a new one we need
@@ -93,6 +100,7 @@ class TrackEventJSONExporter : public JSONTraceExporter {
       const perfetto::protos::ChromeTracePacket& packet);
   void HandleThreadDescriptor(
       const perfetto::protos::ChromeTracePacket& packet);
+  void EmitThreadDescriptorIfNeeded();
   void HandleChromeEvents(const perfetto::protos::ChromeTracePacket& packet);
   void HandleTrackEvent(const perfetto::protos::ChromeTracePacket& packet);
 
@@ -111,7 +119,10 @@ class TrackEventJSONExporter : public JSONTraceExporter {
       int64_t timestamp_us);
 
   // Tracks all the interned state in the current sequence.
-  ProducerWriterState current_state_;
+  std::unique_ptr<ProducerWriterState> current_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrackEventJSONExporter);
 };
+
 }  // namespace tracing
 #endif  // SERVICES_TRACING_PERFETTO_TRACK_EVENT_JSON_EXPORTER_H_

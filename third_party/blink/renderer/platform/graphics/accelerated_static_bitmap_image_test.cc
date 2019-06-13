@@ -77,21 +77,18 @@ TEST_F(AcceleratedStaticBitmapImageTest, NoTextureHolderThrashing) {
   scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
       AcceleratedStaticBitmapImage::CreateFromSkImage(image,
                                                       context_provider_wrapper);
-  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsSkiaTextureHolder());
 
   sk_sp<SkImage> stored_image =
       bitmap->PaintImageForCurrentFrame().GetSkImage();
   EXPECT_EQ(stored_image.get(), image.get());
 
   bitmap->EnsureMailbox(kUnverifiedSyncToken, GL_LINEAR);
-  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsMailboxTextureHolder());
 
   // Verify that calling PaintImageForCurrentFrame does not swap out of mailbox
   // mode. It should use the cached original image instead.
   stored_image = bitmap->PaintImageForCurrentFrame().GetSkImage();
 
   EXPECT_EQ(stored_image.get(), image.get());
-  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsMailboxTextureHolder());
 }
 
 TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
@@ -106,7 +103,6 @@ TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
   scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
       AcceleratedStaticBitmapImage::CreateFromSkImage(image,
                                                       context_provider_wrapper);
-  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsSkiaTextureHolder());
 
   MockGLES2InterfaceWithSyncTokenSupport destination_gl;
 

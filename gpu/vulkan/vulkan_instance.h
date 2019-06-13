@@ -26,12 +26,8 @@ class VULKAN_EXPORT VulkanInstance {
   // The extensions in |required_extensions| and the layers in |required_layers|
   // will be enabled in the created instance. See the "Extended Functionality"
   // section of vulkan specification for more information.
-  // TODO(samans): Remove |using_swiftshader| once Vulkan Swiftshader is more
-  // developed and the workarounds that were added can be deleted.
-  // https://crbug.com/963988
   bool Initialize(const std::vector<const char*>& required_extensions,
-                  const std::vector<const char*>& required_layers,
-                  bool using_swiftshader = false);
+                  const std::vector<const char*>& required_layers);
 
   // VkApplicationInfo.apiVersion value used to initialize the instance.
   uint32_t api_version() const { return api_version_; }

@@ -1940,7 +1940,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
   if (!container_builder_.BfcBlockOffset().has_value())
     return NoBreak;
 
-  const NGPhysicalFragment& physical_fragment =
+  const NGPhysicalContainerFragment& physical_fragment =
       layout_result.PhysicalFragment();
 
   // If we haven't used any space at all in the fragmentainer yet, we cannot

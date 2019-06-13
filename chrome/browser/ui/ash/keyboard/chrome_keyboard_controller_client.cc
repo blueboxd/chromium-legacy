@@ -88,24 +88,16 @@ void ChromeKeyboardControllerClient::Init(
   keyboard_controller_->AddObserver(this);
 
   // Request the initial enabled state.
-  keyboard_controller_->IsKeyboardEnabled(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardEnabledChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
+  OnKeyboardEnabledChanged(keyboard_controller_->IsKeyboardEnabled());
 
   // Request the initial set of enable flags.
-  keyboard_controller_->GetEnableFlags(base::BindOnce(
-      &ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged,
-      weak_ptr_factory_.GetWeakPtr()));
+  OnKeyboardEnableFlagsChanged(keyboard_controller_->GetEnableFlags());
 
   // Request the initial visible state.
-  keyboard_controller_->IsKeyboardVisible(base::BindOnce(
-      &ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged,
-      weak_ptr_factory_.GetWeakPtr()));
+  OnKeyboardVisibilityChanged(keyboard_controller_->IsKeyboardVisible());
 
   // Request the configuration.
-  keyboard_controller_->GetKeyboardConfig(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardConfigChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
+  OnKeyboardConfigChanged(keyboard_controller_->GetKeyboardConfig());
 }
 
 ChromeKeyboardControllerClient::~ChromeKeyboardControllerClient() {
@@ -164,9 +156,8 @@ void ChromeKeyboardControllerClient::SetKeyboardConfig(
   keyboard_controller_->SetKeyboardConfig(config);
 }
 
-void ChromeKeyboardControllerClient::GetKeyboardEnabled(
-    base::OnceCallback<void(bool)> callback) {
-  keyboard_controller_->IsKeyboardEnabled(std::move(callback));
+bool ChromeKeyboardControllerClient::GetKeyboardEnabled() {
+  return keyboard_controller_->IsKeyboardEnabled();
 }
 
 void ChromeKeyboardControllerClient::SetEnableFlag(
@@ -264,9 +255,8 @@ aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged(
-    const std::vector<keyboard::KeyboardEnableFlag>& flags) {
-  keyboard_enable_flags_ =
-      std::set<keyboard::KeyboardEnableFlag>(flags.begin(), flags.end());
+    const std::set<keyboard::KeyboardEnableFlag>& flags) {
+  keyboard_enable_flags_ = flags;
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {

@@ -150,6 +150,9 @@ void PlatformVideoFramePool::SetMaxNumFrames(size_t max_num_frames) {
   base::AutoLock auto_lock(lock_);
 
   max_num_frames_ = max_num_frames;
+
+  if (frame_available_cb_ && !IsExhausted_Locked())
+    std::move(frame_available_cb_).Run();
 }
 
 void PlatformVideoFramePool::SetFrameFormat(VideoFrameLayout layout,
@@ -174,6 +177,13 @@ bool PlatformVideoFramePool::IsExhausted() {
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
+  return IsExhausted_Locked();
+}
+
+bool PlatformVideoFramePool::IsExhausted_Locked() {
+  DVLOGF(4);
+  lock_.AssertAcquired();
+
   return free_frames_.empty() && GetTotalNumFrames_Locked() >= max_num_frames_;
 }
 
@@ -184,6 +194,18 @@ VideoFrame* PlatformVideoFramePool::UnwrapFrame(
 
   auto it = frames_in_use_.find(wrapped_frame.unique_id());
   return (it == frames_in_use_.end()) ? nullptr : it->second;
+}
+
+void PlatformVideoFramePool::NotifyWhenFrameAvailable(base::OnceClosure cb) {
+  DVLOGF(4);
+  base::AutoLock auto_lock(lock_);
+
+  if (!IsExhausted_Locked()) {
+    parent_task_runner_->PostTask(FROM_HERE, std::move(cb));
+    return;
+  }
+
+  frame_available_cb_ = std::move(cb);
 }
 
 // static
@@ -216,6 +238,9 @@ void PlatformVideoFramePool::OnFrameReleased(
                           origin_frame->natural_size())) {
     InsertFreeFrame_Locked(std::move(origin_frame));
   }
+
+  if (frame_available_cb_ && !IsExhausted_Locked())
+    std::move(frame_available_cb_).Run();
 }
 
 void PlatformVideoFramePool::InsertFreeFrame_Locked(

@@ -125,7 +125,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
                        NGOutlineType) const override;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 

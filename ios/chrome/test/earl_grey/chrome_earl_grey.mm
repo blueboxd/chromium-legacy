@@ -54,6 +54,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 @implementation ChromeEarlGreyImpl
 
+#pragma mark - Device Utilities
+
+- (BOOL)isIPadIdiom {
+#if defined(CHROME_EARL_GREY_1)
+  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+#elif defined(CHROME_EARL_GREY_2)
+  UIUserInterfaceIdiom idiom =
+      [[GREY_REMOTE_CLASS_IN_APP(UIDevice) currentDevice] userInterfaceIdiom];
+#endif
+
+  return idiom == UIUserInterfaceIdiomPad;
+}
+
 #pragma mark - History Utilities (EG2)
 
 - (void)clearBrowsingHistory {

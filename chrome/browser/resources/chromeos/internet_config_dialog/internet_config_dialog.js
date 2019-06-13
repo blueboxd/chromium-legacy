@@ -125,12 +125,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelClick_: function() {
     this.close_();
   },
 
   /** @private */
-  onConnectTap_: function() {
+  onConnectClick_: function() {
     this.$.networkConfig.connect();
   },
 });

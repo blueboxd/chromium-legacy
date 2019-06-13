@@ -53,6 +53,11 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
 
+  // Returns the global instance of DiscardableSharedMemoryManager, usable from
+  // any thread. May return null if no DiscardableSharedMemoryManager has been
+  // created in the current process.
+  static DiscardableSharedMemoryManager* Get();
+
   // Bind the manager to a mojo interface request.
   void Bind(mojom::DiscardableSharedMemoryManagerRequest request,
             const service_manager::BindSourceInfo& source_info);

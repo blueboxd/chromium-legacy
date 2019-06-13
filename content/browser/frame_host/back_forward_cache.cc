@@ -3,16 +3,47 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/back_forward_cache.h"
+
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/common/navigation_policy.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
 
 namespace {
 
+using blink::scheduler::WebSchedulerTrackedFeature;
+
 // The number of document the BackForwardCache can hold per tab.
 static constexpr size_t kBackForwardCacheLimit = 3;
 
+// Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
+constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
+  return 1 << static_cast<uint32_t>(feature);
+}
+
+// TODO(lowell): Finalize disallowed feature list, and test for each disallowed
+// feature.
+constexpr uint64_t kDisallowedFeatures =
+    ToFeatureBit(WebSchedulerTrackedFeature::kWebSocket) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
+    ToFeatureBit(
+        WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
+    ToFeatureBit(
+        WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
+    ToFeatureBit(
+        WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection);
 }  // namespace
 
 BackForwardCache::BackForwardCache() = default;
@@ -26,15 +57,13 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (!IsBackForwardCacheEnabled())
     return false;
 
-  // TODO(arthursonzogni): In a lot of other cases, a document must not be in
-  // the BackForwardCache. The main frame needs to be checked, but also its
-  // iframes.
-  // * Document using plugin.
-  // * Document not fully loaded.
-  // * Document with unload handlers.
-  // * Error pages.
-  // * AppCache?
-  // * ...
+  // Don't enable BackForwardCache if the page has any disallowed features.
+  // TODO(lowell): Handle races involving scheduler_tracked_features.
+  // One solution could be to listen for changes to scheduler_tracked_features
+  // and if we see a frame in bfcache starting to use something forbidden, evict
+  // it from the bfcache.
+  if (kDisallowedFeatures & rfh->scheduler_tracked_features())
+    return false;
 
   return true;
 }

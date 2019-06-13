@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -31,12 +32,18 @@
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 class GURL;
 class PrefService;
 class TemplateURLServiceClient;
 class TemplateURLServiceObserver;
 struct TemplateURLData;
+#if defined(OS_ANDROID)
+class TemplateUrlServiceAndroid;
+#endif
 
 namespace rappor {
 class RapporServiceImpl;
@@ -115,6 +122,10 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Register Profile preferences in |registry|.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+#endif
 
   // Returns true if there is no TemplateURL that conflicts with the
   // keyword/url pair, or there is one but it can be replaced. If there is an
@@ -851,6 +862,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // mutated. The outermost Scoper handles, can be used to defer notifications,
   // but if no model mutation occurs, the deferred notification can be skipped.
   bool model_mutated_notification_pending_ = false;
+
+#if defined(OS_ANDROID)
+  // Manage and fetch the java object that wraps this TemplateURLService on
+  // android.
+  std::unique_ptr<TemplateUrlServiceAndroid> template_url_service_android_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

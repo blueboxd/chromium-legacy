@@ -87,8 +87,8 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
   const auto previous_child_fragments =
       To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment()).Children();
 
-  const auto* it = previous_child_fragments.begin();
-  const auto* end = previous_child_fragments.end();
+  auto it = previous_child_fragments.begin();
+  auto end = previous_child_fragments.end();
 
   // We may have a list-marker as our first child. This may have been
   // propagated up to this container by an arbitrary child. As we don't know

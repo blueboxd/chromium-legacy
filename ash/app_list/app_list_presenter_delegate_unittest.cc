@@ -278,6 +278,23 @@ TEST_F(AppListPresenterDelegateZeroStateTest, RightClickSearchBoxInPeeking) {
   EXPECT_EQ(AppListViewState::kPeeking, app_list_view->app_list_state());
 }
 
+TEST_F(AppListPresenterDelegateZeroStateTest,
+       ReshownAppListResetsSearchBoxActivation) {
+  // Activate the search box.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetEventGenerator()->GestureTapAt(GetPointInsideSearchbox());
+
+  // Dismiss and re-show the AppList.
+  GetAppListTestHelper()->Dismiss();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  // Test that the search box is no longer active.
+  EXPECT_FALSE(GetAppListTestHelper()
+                   ->GetAppListView()
+                   ->search_box_view()
+                   ->is_search_box_active());
+}
+
 // Verifies that tapping on the search box in tablet mode with animation and
 // zero state enabled should not bring Chrome crash (https://crbug.com/958267).
 TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {

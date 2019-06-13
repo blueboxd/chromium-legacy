@@ -13,6 +13,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -68,7 +69,7 @@ void AssertTryAgainButtonOnPage() {
 // to iOS 10.2.
 + (NSArray*)testInvocations {
 #if TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
     return @[];
 #endif  // TARGET_IPHONE_SIMULATOR
   return [super testInvocations];

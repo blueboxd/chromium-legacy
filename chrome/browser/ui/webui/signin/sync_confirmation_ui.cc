@@ -38,9 +38,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   source->SetJsonPath("strings.js");
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
 
-  int title_ids = -1;
-  int confirm_button_ids = -1;
-  int undo_button_ids = -1;
   if (is_sync_allowed) {
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.html",
@@ -53,15 +50,19 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                             IDR_SYNC_CONFIRMATION_APP_JS);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
+    AddStringResource(source, "syncConfirmationTitle",
+                      IDS_SYNC_CONFIRMATION_TITLE);
     AddStringResource(source, "syncConfirmationSyncInfoTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_TITLE);
+                      IDS_SYNC_CONFIRMATION_SYNC_INFO_TITLE);
     AddStringResource(source, "syncConfirmationSyncInfoDesc",
-                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_DESC);
+                      IDS_SYNC_CONFIRMATION_SYNC_INFO_DESC);
     AddStringResource(source, "syncConfirmationSettingsInfo",
-                      IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO);
-
+                      IDS_SYNC_CONFIRMATION_SETTINGS_INFO);
     AddStringResource(source, "syncConfirmationSettingsLabel",
-                      IDS_SYNC_CONFIRMATION_DICE_SETTINGS_BUTTON_LABEL);
+                      IDS_SYNC_CONFIRMATION_SETTINGS_BUTTON_LABEL);
+    AddStringResource(source, "syncConfirmationConfirmLabel",
+                      IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL);
+    AddStringResource(source, "syncConfirmationUndoLabel", IDS_CANCEL);
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
@@ -81,30 +82,23 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     }
     source->AddString("accountPictureUrl", custom_picture_url);
 
-    title_ids = IDS_SYNC_CONFIRMATION_DICE_TITLE;
-    confirm_button_ids = IDS_SYNC_CONFIRMATION_DICE_CONFIRM_BUTTON_LABEL;
-    undo_button_ids = IDS_CANCEL;
     consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;
   } else {
     source->SetDefaultResource(IDR_SYNC_DISABLED_CONFIRMATION_HTML);
     source->AddResourcePath("sync_disabled_confirmation.js",
                             IDR_SYNC_DISABLED_CONFIRMATION_JS);
+
+    AddStringResource(source, "syncDisabledConfirmationTitle",
+                      IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE);
     AddStringResource(source, "syncDisabledConfirmationDetails",
                       IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
+    AddStringResource(source, "syncDisabledConfirmationConfirmLabel",
+                      IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL);
+    AddStringResource(source, "syncDisabledConfirmationUndoLabel",
+                      IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL);
 
-    title_ids = IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE;
-    confirm_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL;
-    undo_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL;
     consent_feature_ = consent_auditor::Feature::CHROME_SYNC;
   }
-
-  DCHECK_GE(title_ids, 0);
-  DCHECK_GE(confirm_button_ids, 0);
-  DCHECK_GE(undo_button_ids, 0);
-
-  AddStringResource(source, "syncConfirmationTitle", title_ids);
-  AddStringResource(source, "syncConfirmationConfirmLabel", confirm_button_ids);
-  AddStringResource(source, "syncConfirmationUndoLabel", undo_button_ids);
 
   base::DictionaryValue strings;
   webui::SetLoadTimeDataDefaults(

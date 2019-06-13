@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.View;
 
 import java.lang.ref.WeakReference;
 
@@ -15,7 +16,7 @@ import java.lang.ref.WeakReference;
 class ClosableTabGridViewHolder extends TabGridViewHolder {
     private static WeakReference<Bitmap> sCloseButtonBitmapWeakRef;
 
-    ClosableTabGridViewHolder(TabGridView itemView) {
+    ClosableTabGridViewHolder(View itemView) {
         super(itemView);
         if (sCloseButtonBitmapWeakRef == null || sCloseButtonBitmapWeakRef.get() == null) {
             int closeButtonSize = (int) itemView.getResources().getDimension(

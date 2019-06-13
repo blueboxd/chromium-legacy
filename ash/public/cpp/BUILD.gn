@@ -90,6 +90,7 @@ component("cpp") {
     "keyboard/keyboard_config.h",
     "keyboard/keyboard_controller.cc",
     "keyboard/keyboard_controller.h",
+    "keyboard/keyboard_controller_observer.h",
     "keyboard/keyboard_switches.cc",
     "keyboard/keyboard_switches.h",
     "keyboard/keyboard_types.h",

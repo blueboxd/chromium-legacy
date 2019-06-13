@@ -35,7 +35,6 @@
     <color name="ripple_color_blue">@color/modern_blue_300</color>
 
     <!-- Chip colors -->
-    <color name="chip_text_color_default">@color/default_text_color_light</color>
     <color name="chip_text_color_selected">@color/default_text_color_dark</color>
     <color name="chip_background_color_disabled">@color/modern_grey_300_alpha_38</color>
     <color name="chip_ripple_color_default">@android:color/white</color>

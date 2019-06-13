@@ -1046,17 +1046,6 @@ net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
-net::URLRequestContextGetter*
-TestingProfile::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  // We don't test storage partitions here yet, so returning the same dummy
-  // context is sufficient for now.
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
   return nullptr;
 }
@@ -1080,13 +1069,6 @@ std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
   }
 #endif  // !defined(OS_ANDROID)
 
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-TestingProfile::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
   return nullptr;
 }
 

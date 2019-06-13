@@ -108,7 +108,6 @@ jumbo_static_library("test_support") {
 
   deps = [
     ":wm",
-    "//services/ws/public/cpp/input_devices",
     "//skia",
     "//ui/aura",
     "//ui/aura:test_support",

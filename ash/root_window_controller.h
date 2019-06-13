@@ -248,6 +248,11 @@ class ASH_EXPORT RootWindowController {
   // Creates the containers (aura::Windows) used by the shell.
   void CreateContainers();
 
+  // Creates a new window for use as a container.
+  aura::Window* CreateContainer(int window_id,
+                                const char* name,
+                                aura::Window* parent);
+
   // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.
   // The initial color is determined by the |root_window_type| and whether or
   // not this is the first boot.

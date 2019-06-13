@@ -18,7 +18,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -224,12 +223,9 @@ class OzonePlatformGbm : public OzonePlatform {
     GpuThreadAdapter* adapter;
 
     if (using_mojo_) {
-      const std::string& service_name = single_process_
-                                            ? ws::mojom::kServiceName
-                                            : viz::mojom::kVizServiceName;
       host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
       drm_device_connector_ = std::make_unique<DrmDeviceConnector>(
-          args.connector, service_name, host_drm_device_);
+          args.connector, viz::mojom::kVizServiceName, host_drm_device_);
       adapter = host_drm_device_.get();
     } else {
       gpu_platform_support_host_.reset(

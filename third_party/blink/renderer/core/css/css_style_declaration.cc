@@ -171,7 +171,7 @@ bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
     return false;
   // We create the ExceptionState manually due to performance issues: adding
   // [RaisesException] to the IDL causes the bindings layer to expensively
-  // create a CString to set the ExceptionState's |property_name| argument,
+  // create a std::string to set the ExceptionState's |property_name| argument,
   // while we can use CSSProperty::GetPropertyName() here (see bug 829408).
   ExceptionState exception_state(
       script_state->GetIsolate(), ExceptionState::kSetterContext,

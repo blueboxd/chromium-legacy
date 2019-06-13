@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "components/tracing/common/background_tracing_agent.mojom";
 import "services/service_manager/public/mojom/service.mojom";
 
 interface ChildControl {
@@ -13,6 +14,10 @@ interface ChildControl {
   // Tells the child process to begin or end IPC message logging.
   [EnableIf=ipc_logging]
   SetIPCLoggingEnabled(bool on);
+
+  // Used to configure triggering for background tracing of child processes.
+  GetBackgroundTracingAgentProvider(
+      pending_receiver<tracing.mojom.BackgroundTracingAgentProvider> receiver);
 
   // Tells the child process to run an instance of a service named
   // |service_name|, binding it to |receiver|. This is used by the browser to

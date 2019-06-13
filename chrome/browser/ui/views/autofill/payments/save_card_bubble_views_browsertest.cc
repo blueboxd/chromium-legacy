@@ -83,6 +83,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #endif
 
 using base::Bucket;
@@ -161,6 +163,11 @@ class SaveCardBubbleViewsFullFormBrowserTest
         IdentityManagerFactory::GetForProfile(browser()->profile())
             ->GetPrimaryAccountInfo();
     username = info.email;
+
+    // Install the Settings App.
+    web_app::WebAppProvider::Get(browser()->profile())
+        ->system_web_app_manager()
+        .InstallSystemAppsForTesting();
 #endif
     if (username.empty())
       username = "user@gmail.com";

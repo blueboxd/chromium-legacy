@@ -23,31 +23,9 @@ class PLATFORM_EXPORT TextureHolder {
   virtual ~TextureHolder() = default;
 
   // Methods overridden by all sub-classes
-  virtual bool IsSkiaTextureHolder() = 0;
-  virtual bool IsMailboxTextureHolder() = 0;
   virtual IntSize Size() const = 0;
-  virtual bool CurrentFrameKnownToBeOpaque() = 0;
+  virtual bool CurrentFrameKnownToBeOpaque() const = 0;
   virtual bool IsValid() const = 0;
-
-  // Methods overrided by MailboxTextureHolder
-  virtual const gpu::Mailbox& GetMailbox() const {
-    NOTREACHED();
-    static const gpu::Mailbox mailbox;
-    return mailbox;
-  }
-  virtual const gpu::SyncToken& GetSyncToken() const {
-    static const gpu::SyncToken sync_token;
-    return sync_token;
-  }
-  virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
-  virtual void Sync(MailboxSyncMode) { NOTREACHED(); }
-  virtual bool IsCrossThread() const { return false; }
-
-  // Methods overridden by SkiaTextureHolder
-  virtual sk_sp<SkImage> GetSkImage() {
-    NOTREACHED();
-    return nullptr;
-  }
 
   // Methods that have exactly the same impelmentation for all sub-classes
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()

@@ -50,15 +50,9 @@ BookmarkEditorView::BookmarkEditorView(
     const EditDetails& details,
     BookmarkEditor::Configuration configuration)
     : profile_(profile),
-      tree_view_(nullptr),
-      url_label_(nullptr),
-      url_tf_(nullptr),
-      title_label_(nullptr),
-      title_tf_(nullptr),
       parent_(parent),
       details_(details),
       bb_model_(BookmarkModelFactory::GetForBrowserContext(profile)),
-      running_menu_for_root_(false),
       show_tree_(configuration == SHOW_TREE) {
   DCHECK(profile);
   DCHECK(bb_model_);
@@ -96,7 +90,14 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 std::unique_ptr<views::View> BookmarkEditorView::CreateExtraView() {
-  return std::move(new_folder_button_);
+  if (show_tree_ && !new_folder_button_) {
+    auto new_folder_button = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
+    new_folder_button->SetEnabled(bb_model_->loaded());
+    new_folder_button_ = new_folder_button.get();
+    return new_folder_button;
+  }
+  return nullptr;
 }
 
 ui::ModalType BookmarkEditorView::GetModalType() const {
@@ -166,7 +167,7 @@ void BookmarkEditorView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  DCHECK_EQ(new_folder_button_.get(), sender);
+  DCHECK_EQ(new_folder_button_, sender);
   NewFolder();
 }
 
@@ -301,9 +302,6 @@ void BookmarkEditorView::BookmarkNodeChildrenReordered(
 void BookmarkEditorView::Init() {
   bb_model_->AddObserver(this);
 
-  title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL));
-
   base::string16 title;
   GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
@@ -315,22 +313,17 @@ void BookmarkEditorView::Init() {
     url = details_.url;
     title = details_.title;
   }
-  title_tf_ = new views::Textfield;
-  title_tf_->SetAccessibleName(
+  auto title_tf = std::make_unique<views::Textfield>();
+  title_tf->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_NAME_LABEL));
-  title_tf_->SetText(title);
-  title_tf_->set_controller(this);
+  title_tf->SetText(title);
+  title_tf->set_controller(this);
 
   std::unique_ptr<views::TreeView> tree_view;
   if (show_tree_) {
     tree_view = std::make_unique<views::TreeView>();
     tree_view->SetRootShown(false);
     tree_view->set_context_menu_controller(this);
-
-    new_folder_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
-    new_folder_button_->set_owned_by_client();
-    new_folder_button_->SetEnabled(false);
   }
 
   views::GridLayout* layout =
@@ -374,27 +367,26 @@ void BookmarkEditorView::Init() {
   column_set->LinkColumnSizes(0, 2, 4, -1);
 
   layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);
-  layout->AddView(title_label_);
-  layout->AddView(title_tf_);
+  layout->AddView(std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL)));
+  title_tf_ = layout->AddView(std::move(title_tf));
 
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
-    url_label_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
-
-    url_tf_ = new views::Textfield;
-    url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url));
-    url_tf_->set_controller(this);
-    url_tf_->SetAccessibleName(
+    auto url_tf = std::make_unique<views::Textfield>();
+    url_tf->SetText(chrome::FormatBookmarkURLForDisplay(url));
+    url_tf->set_controller(this);
+    url_tf->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
-    url_tf_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
+    url_tf->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
 
     layout->AddPaddingRow(
         views::GridLayout::kFixedSize,
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
     layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);
-    layout->AddView(url_label_);
-    layout->AddView(url_tf_);
+    layout->AddView(std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL)));
+    url_tf_ = layout->AddView(std::move(url_tf));
   }
 
   if (show_tree_) {
@@ -404,8 +396,7 @@ void BookmarkEditorView::Init() {
     layout->StartRow(1.0, single_column_view_set_id);
     tree_view_ = tree_view.get();
     layout->AddView(
-        views::TreeView::CreateScrollViewWithTree(std::move(tree_view))
-            .release());
+        views::TreeView::CreateScrollViewWithTree(std::move(tree_view)));
   }
 
   if (!show_tree_ || bb_model_->loaded())
@@ -419,7 +410,8 @@ void BookmarkEditorView::Reset() {
     return;
   }
 
-  new_folder_button_->SetEnabled(true);
+  if (new_folder_button_)
+    new_folder_button_->SetEnabled(true);
 
   // Do this first, otherwise when we invoke SetModel with the real one
   // tree_view will try to invoke something on the model we just deleted.

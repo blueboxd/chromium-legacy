@@ -8,7 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -330,17 +330,17 @@ bool Shelf::ShouldHideOnSecondaryDisplay(session_manager::SessionState state) {
 }
 
 void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
-  keyboard::KeyboardStateDescriptor state;
+  KeyboardStateDescriptor state;
   state.is_visible = !bounds.IsEmpty();
   state.visual_bounds = bounds;
   state.occluded_bounds_in_screen = bounds;
   state.displaced_bounds_in_screen = gfx::Rect();
   WorkAreaInsets* work_area_insets = GetWorkAreaInsets();
-  work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
+  work_area_insets->OnKeyboardVisibilityChanged(state.is_visible);
   work_area_insets->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
-  work_area_insets->OnKeyboardWorkspaceOccludedBoundsChanged(
+  work_area_insets->OnKeyboardOccludedBoundsChanged(
       state.occluded_bounds_in_screen);
-  work_area_insets->OnKeyboardWorkspaceDisplacingBoundsChanged(
+  work_area_insets->OnKeyboardDisplacingBoundsChanged(
       state.displaced_bounds_in_screen);
   work_area_insets->OnKeyboardAppearanceChanged(state);
 }

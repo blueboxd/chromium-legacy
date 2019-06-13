@@ -47,6 +47,53 @@
       }
     ]
   },
+  "android-pixel2-perf-fyi": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=exact",
+          "--upload-results",
+          "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
+          "--device=android",
+          "--test-shard-map-filename=android-pixel2-perf-fyi_map.json"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 14400,
+          "shards": 7
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "linux-perf-fyi": {
     "isolated_scripts": [
       {

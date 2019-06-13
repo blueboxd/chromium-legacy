@@ -31,6 +31,9 @@ class VulkanContextProvider;
 }  // namespace viz
 
 namespace gpu {
+
+class SharedContextState;
+
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
 // Returns true on success.
 GPU_GLES2_EXPORT bool GetGrBackendTexture(const gl::GLVersionInfo* version_info,
@@ -50,6 +53,9 @@ GPU_GLES2_EXPORT void AddVulkanCleanupTaskForSkiaFlush(
     viz::VulkanContextProvider* context_provider,
     GrFlushInfo* flush_info);
 
+GPU_GLES2_EXPORT void DeleteGrBackendTexture(
+    SharedContextState* context_state,
+    GrBackendTexture* backend_textures);
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_SKIA_UTILS_H_

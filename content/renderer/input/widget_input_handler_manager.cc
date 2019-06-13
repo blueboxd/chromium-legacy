@@ -24,8 +24,8 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/common/content_client.h"
-#include "content/renderer/android/synchronous_compositor_proxy.h"
-#include "content/renderer/android/synchronous_compositor_registry.h"
+#include "content/renderer/input/synchronous_compositor_proxy.h"
+#include "content/renderer/input/synchronous_compositor_registry.h"
 #endif
 
 namespace content {

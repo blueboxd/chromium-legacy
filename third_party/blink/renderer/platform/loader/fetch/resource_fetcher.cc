@@ -74,7 +74,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -600,48 +599,11 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   return policy != kUse || resource->StillNeedsLoad();
 }
 
-void ResourceFetcher::RequestLoadStarted(uint64_t identifier,
-                                         Resource* resource,
-                                         const FetchParameters& params,
-                                         RevalidationPolicy policy,
-                                         bool is_static_data) {
-  KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
-  if (policy == kUse && resource->GetStatus() == ResourceStatus::kCached &&
-      !cached_resources_map_.Contains(url)) {
-    // Loaded from MemoryCache.
-    DidLoadResourceFromMemoryCache(identifier, resource,
-                                   params.GetResourceRequest());
-  }
-
-  if (is_static_data)
-    return;
-
-  if (policy == kUse && !resource->StillNeedsLoad() &&
-      !cached_resources_map_.Contains(url)) {
-    // Resources loaded from memory cache should be reported the first time
-    // they're used.
-    scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        params.Options().initiator_info.name, CurrentTimeTicks());
-    // TODO(yoav): GetInitialUrlForResourceTiming() is only needed until
-    // Out-of-Blink CORS lands: https://crbug.com/736308
-    info->SetInitialURL(
-        resource->GetResourceRequest().GetInitialUrlForResourceTiming().IsNull()
-            ? resource->GetResourceRequest().Url()
-            : resource->GetResourceRequest().GetInitialUrlForResourceTiming());
-    ResourceResponse final_response = resource->GetResponse();
-    final_response.SetResourceLoadTiming(nullptr);
-    info->SetFinalResponse(final_response);
-    info->SetLoadResponseEnd(info->InitialTime());
-    scheduled_resource_timing_reports_.push_back(std::move(info));
-    if (!resource_timing_report_timer_.IsActive())
-      resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-  }
-}
-
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
     uint64_t identifier,
     Resource* resource,
-    const ResourceRequest& request) {
+    const ResourceRequest& request,
+    bool is_static_data) {
   if (IsDetached() || !resource_load_observer_)
     return;
 
@@ -659,6 +621,26 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   resource_load_observer_->DidFinishLoading(
       identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
       false, ResourceLoadObserver::ResponseSource::kFromMemoryCache);
+
+  if (!is_static_data) {
+    // Resources loaded from memory cache should be reported the first time
+    // they're used.
+    scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+        resource->Options().initiator_info.name, CurrentTimeTicks());
+    // TODO(yoav): GetInitialUrlForResourceTiming() is only needed until
+    // Out-of-Blink CORS lands: https://crbug.com/736308
+    info->SetInitialURL(
+        resource->GetResourceRequest().GetInitialUrlForResourceTiming().IsNull()
+            ? resource->GetResourceRequest().Url()
+            : resource->GetResourceRequest().GetInitialUrlForResourceTiming());
+    ResourceResponse final_response = resource->GetResponse();
+    final_response.SetResourceLoadTiming(nullptr);
+    info->SetFinalResponse(final_response);
+    info->SetLoadResponseEnd(info->InitialTime());
+    scheduled_resource_timing_reports_.push_back(std::move(info));
+    if (!resource_timing_report_timer_.IsActive())
+      resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  }
 }
 
 Resource* ResourceFetcher::ResourceForStaticData(
@@ -1076,7 +1058,13 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   // If only the fragment identifiers differ, it is the same resource.
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
-  RequestLoadStarted(identifier, resource, params, policy, is_static_data);
+  if (policy == kUse && resource->GetStatus() == ResourceStatus::kCached &&
+      !cached_resources_map_.Contains(
+          MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()))) {
+    // Loaded from MemoryCache.
+    DidLoadResourceFromMemoryCache(identifier, resource, resource_request,
+                                   is_static_data);
+  }
   if (!is_stale_revalidation) {
     String resource_url =
         MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
@@ -2034,7 +2022,9 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        resource->LastResourceRequest().Url(), params.Options(),
                        SecurityViolationReportingPolicy::kReport,
                        resource->LastResourceRequest().GetRedirectStatus());
-  RequestLoadStarted(resource->InspectorId(), resource, params, kUse);
+  DidLoadResourceFromMemoryCache(resource->InspectorId(), resource,
+                                 params.GetResourceRequest(),
+                                 false /* is_static_data */);
 }
 
 void ResourceFetcher::PrepareForLeakDetection() {

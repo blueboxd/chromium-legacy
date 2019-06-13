@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
@@ -65,8 +64,7 @@ NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:new_incognito_tab_button_matcher]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)]);
+  [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)];
   ConditionBlock condition = ^bool {
     return [ChromeEarlGrey isIncognitoMode];
   };

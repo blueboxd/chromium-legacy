@@ -127,11 +127,11 @@ void LayoutSVGForeignObject::UpdateLayout() {
 
 bool LayoutSVGForeignObject::NodeAtPointFromSVG(
     HitTestResult& result,
-    const HitTestLocation& location_in_parent,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction) {
   DCHECK_EQ(accumulated_offset, PhysicalOffset());
-  TransformedHitTestLocation local_location(location_in_parent,
+  TransformedHitTestLocation local_location(hit_test_location,
                                             LocalSVGTransform());
   if (!local_location)
     return false;
@@ -161,11 +161,11 @@ bool LayoutSVGForeignObject::NodeAtPointFromSVG(
 
 bool LayoutSVGForeignObject::NodeAtPoint(
     HitTestResult& result,
-    const HitTestLocation& location_in_parent,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   // Skip LayoutSVGBlock's override.
-  return LayoutBlockFlow::NodeAtPoint(result, location_in_parent,
+  return LayoutBlockFlow::NodeAtPoint(result, hit_test_location,
                                       accumulated_offset, hit_test_action);
 }
 

@@ -41,7 +41,7 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
 
     private int mTabId;
 
-    protected TabGridViewHolder(TabGridView itemView) {
+    protected TabGridViewHolder(View itemView) {
         super(itemView);
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);
@@ -55,11 +55,14 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {
-        TabGridView view = (TabGridView) LayoutInflater.from(parent.getContext())
-                                   .inflate(R.layout.tab_grid_card_item, parent, false);
         if (itemViewType == TabGridViewItemType.CLOSABLE_TAB) {
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.closable_tab_grid_card_item, parent, false);
             return new ClosableTabGridViewHolder(view);
         } else {
+            SelectableTabGridView view =
+                    (SelectableTabGridView) LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.selectable_tab_grid_card_item, parent, false);
             return new SelectableTabGridViewHolder(view);
         }
     }

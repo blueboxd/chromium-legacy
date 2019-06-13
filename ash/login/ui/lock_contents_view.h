@@ -12,13 +12,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_error_bubble.h"
 #include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_observer.h"
@@ -66,7 +66,7 @@ class ASH_EXPORT LockContentsView
       public display::DisplayObserver,
       public views::StyledLabelListener,
       public SessionObserver,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
@@ -189,8 +189,8 @@ class ASH_EXPORT LockContentsView
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+  // KeyboardControllerObserver:
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;

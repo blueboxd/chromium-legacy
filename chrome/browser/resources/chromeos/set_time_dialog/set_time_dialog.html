@@ -6,14 +6,13 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="set_time_browser_proxy.html">
 
 <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
@@ -25,7 +24,7 @@
 <body>
   <dom-module id="set-time-dialog">
     <template>
-      <style include="cr-shared-style md-select paper-button-style">
+      <style include="cr-shared-style md-select">
         :host {
           @apply --cr-page-host;
           user-select: none;
@@ -139,10 +138,10 @@
         </div>
 
         <div slot="button-container">
-          <paper-button id="doneButton" class="action-button"
+          <cr-button id="doneButton" class="action-button"
               on-click="onDoneClick_">
             $i18n{doneButton}
-          </paper-button>
+          </cr-button>
         </div>
       </cr-dialog>
     </template>

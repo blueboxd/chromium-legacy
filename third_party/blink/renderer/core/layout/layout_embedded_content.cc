@@ -140,16 +140,16 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
 
 bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   bool had_result = result.InnerNode();
-  bool inside = LayoutReplaced::NodeAtPoint(result, location_in_container,
+  bool inside = LayoutReplaced::NodeAtPoint(result, hit_test_location,
                                             accumulated_offset, action);
 
   // Check to see if we are really over the EmbeddedContentView itself (and not
   // just in the border/padding area).
-  if ((inside || location_in_container.IsRectBasedTest()) && !had_result &&
+  if ((inside || hit_test_location.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
     result.SetIsOverEmbeddedContentView(
         PhysicalContentBoxRect().Contains(result.LocalPoint()));
@@ -159,14 +159,14 @@ bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
 
 bool LayoutEmbeddedContent::NodeAtPoint(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   auto* local_frame_view = DynamicTo<LocalFrameView>(ChildFrameView());
   bool skip_contents = (result.GetHitTestRequest().GetStopNode() == this ||
                         !result.GetHitTestRequest().AllowsChildFrameContent());
   if (!local_frame_view || skip_contents) {
-    return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+    return NodeAtPointOverEmbeddedContentView(result, hit_test_location,
                                               accumulated_offset, action);
   }
 
@@ -179,7 +179,7 @@ bool LayoutEmbeddedContent::NodeAtPoint(
       !local_frame_view->GetFrame().GetDocument() ||
       local_frame_view->GetFrame().GetDocument()->Lifecycle().GetState() <
           DocumentLifecycle::kCompositingClean) {
-    return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+    return NodeAtPointOverEmbeddedContentView(result, hit_test_location,
                                               accumulated_offset, action);
   }
 
@@ -191,12 +191,10 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
     if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
         child_layout_view) {
-      PhysicalOffset adjusted_location =
-          accumulated_offset + PhysicalLocation();
       PhysicalOffset content_offset(BorderLeft() + PaddingLeft(),
                                     BorderTop() + PaddingTop());
       HitTestLocation new_hit_test_location(
-          location_in_container, -adjusted_location - content_offset);
+          hit_test_location, -accumulated_offset - content_offset);
       HitTestRequest new_hit_test_request(
           result.GetHitTestRequest().GetType() |
               HitTestRequest::kChildFrameHitTest,
@@ -225,12 +223,12 @@ bool LayoutEmbeddedContent::NodeAtPoint(
       // iframe element itself if the hit-test rect is totally within the
       // iframe.
       if (is_inside_child_frame) {
-        if (!location_in_container.IsRectBasedTest())
+        if (!hit_test_location.IsRectBasedTest())
           return true;
         HitTestResult point_over_embedded_content_view_result = result;
         bool point_over_embedded_content_view =
             NodeAtPointOverEmbeddedContentView(
-                point_over_embedded_content_view_result, location_in_container,
+                point_over_embedded_content_view_result, hit_test_location,
                 accumulated_offset, action);
         if (point_over_embedded_content_view)
           return true;
@@ -240,7 +238,7 @@ bool LayoutEmbeddedContent::NodeAtPoint(
     }
   }
 
-  return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+  return NodeAtPointOverEmbeddedContentView(result, hit_test_location,
                                             accumulated_offset, action);
 }
 

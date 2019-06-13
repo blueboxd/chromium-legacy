@@ -863,8 +863,10 @@ bool NewTabPageBindings::GetIsCustomLinks() {
 // static
 bool NewTabPageBindings::GetIsUsingMostVisited() {
   const SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
+                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
     return false;
+  }
 
   return search_box->IsUsingMostVisited();
 }

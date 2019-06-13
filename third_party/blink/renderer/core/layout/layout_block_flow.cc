@@ -4189,11 +4189,10 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
                                         : LayoutBlock::NodeForHitTest();
 }
 
-bool LayoutBlockFlow::HitTestChildren(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestAction hit_test_action) {
+bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
+                                      const HitTestLocation& hit_test_location,
+                                      const PhysicalOffset& accumulated_offset,
+                                      HitTestAction hit_test_action) {
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (HasOverflowClip())
     scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
@@ -4202,19 +4201,18 @@ bool LayoutBlockFlow::HitTestChildren(
     // Hit-test the floats using the FloatingObjects list if we're in legacy
     // layout. LayoutNG, on the other hand, just hit-tests floats in regular
     // tree order.
-    if (HitTestFloats(result, location_in_container, scrolled_offset))
+    if (HitTestFloats(result, hit_test_location, scrolled_offset))
       return true;
   }
 
   if (ChildrenInline()) {
-    if (line_boxes_.HitTest(LineLayoutBoxModel(this), result,
-                            location_in_container, scrolled_offset,
-                            hit_test_action)) {
+    if (line_boxes_.HitTest(LineLayoutBoxModel(this), result, hit_test_location,
+                            scrolled_offset, hit_test_action)) {
       UpdateHitTestResult(result,
-                          location_in_container.Point() - accumulated_offset);
+                          hit_test_location.Point() - accumulated_offset);
       return true;
     }
-  } else if (LayoutBlock::HitTestChildren(result, location_in_container,
+  } else if (LayoutBlock::HitTestChildren(result, hit_test_location,
                                           accumulated_offset,
                                           hit_test_action)) {
     return true;
@@ -4223,10 +4221,9 @@ bool LayoutBlockFlow::HitTestChildren(
   return false;
 }
 
-bool LayoutBlockFlow::HitTestFloats(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset) {
+bool LayoutBlockFlow::HitTestFloats(HitTestResult& result,
+                                    const HitTestLocation& hit_test_location,
+                                    const PhysicalOffset& accumulated_offset) {
   if (!floating_objects_)
     return false;
 
@@ -4238,15 +4235,16 @@ bool LayoutBlockFlow::HitTestFloats(
     if (floating_object.ShouldPaint() &&
         // TODO(wangxianzhu): Should this be a DCHECK?
         !floating_object.GetLayoutObject()->HasSelfPaintingLayer()) {
-      PhysicalOffset child_point = accumulated_offset;
-      child_point +=
+      PhysicalOffset child_accumulated_offset = accumulated_offset;
+      child_accumulated_offset +=
           PhysicalOffset(XPositionForFloatIncludingMargin(floating_object),
                          YPositionForFloatIncludingMargin(floating_object));
-      child_point -= floating_object.GetLayoutObject()->PhysicalLocation();
       if (floating_object.GetLayoutObject()->HitTestAllPhases(
-              result, location_in_container, child_point)) {
-        UpdateHitTestResult(result,
-                            location_in_container.Point() - child_point);
+              result, hit_test_location, child_accumulated_offset)) {
+        PhysicalOffset result_offset =
+            child_accumulated_offset -
+            floating_object.GetLayoutObject()->PhysicalLocation();
+        UpdateHitTestResult(result, hit_test_location.Point() - result_offset);
         return true;
       }
     }

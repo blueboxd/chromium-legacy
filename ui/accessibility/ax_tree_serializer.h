@@ -208,6 +208,7 @@ struct AX_EXPORT ClientTreeNode {
   int32_t id;
   ClientTreeNode* parent;
   std::vector<ClientTreeNode*> children;
+  bool ignored;
   bool invalid;
 };
 
@@ -500,6 +501,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
 
   // We're about to serialize it, so mark it as valid.
   client_node->invalid = false;
+  client_node->ignored = tree_->IsIgnored(node);
 
   // Iterate over the ids of the children of |node|.
   // Create a set of the child ids so we can quickly look
@@ -507,6 +509,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   // If we've hit the maximum number of serialized nodes, pretend
   // this node has no children but keep going so that we get
   // consistent results.
+  std::unordered_set<int32_t> new_ignored_ids;
   std::unordered_set<int32_t> new_child_ids;
   std::vector<AXSourceNode> children;
   if (max_node_count_ == 0 || out_update->nodes.size() < max_node_count_) {
@@ -523,6 +526,8 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     AXSourceNode& child = children[i];
     int new_child_id = tree_->GetId(child);
     new_child_ids.insert(new_child_id);
+    if (tree_->IsIgnored(child))
+      new_ignored_ids.insert(new_child_id);
 
     // There shouldn't be any reparenting because we've already handled it
     // above. If this happens, reset and return an error.
@@ -591,9 +596,12 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     if (client_child_id_map.find(child_id) != client_child_id_map.end()) {
       ClientTreeNode* reused_child = client_child_id_map[child_id];
       client_node->children.push_back(reused_child);
+      const bool ignored_state_changed =
+          reused_child->ignored !=
+          (new_ignored_ids.find(reused_child->id) != new_ignored_ids.end());
       // Re-serialize it if the child is marked as invalid, otherwise
       // we don't have to because the client already has it.
-      if (reused_child->invalid) {
+      if (reused_child->invalid || ignored_state_changed) {
         if (!SerializeChangedNodes(child, out_update))
           return false;
       }
@@ -601,6 +609,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
       ClientTreeNode* new_child = new ClientTreeNode();
       new_child->id = child_id;
       new_child->parent = client_node;
+      new_child->ignored = tree_->IsIgnored(child);
       new_child->invalid = false;
       client_node->children.push_back(new_child);
       client_id_map_[child_id] = new_child;

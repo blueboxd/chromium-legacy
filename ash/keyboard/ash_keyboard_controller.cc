@@ -4,6 +4,8 @@
 
 #include "ash/keyboard/ash_keyboard_controller.h"
 
+#include <utility>
+
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
@@ -80,9 +82,8 @@ void AshKeyboardController::KeyboardContentsLoaded(
   keyboard_controller()->KeyboardContentsLoaded(size);
 }
 
-void AshKeyboardController::GetKeyboardConfig(
-    GetKeyboardConfigCallback callback) {
-  std::move(callback).Run(keyboard_controller_->keyboard_config());
+keyboard::KeyboardConfig AshKeyboardController::GetKeyboardConfig() {
+  return keyboard_controller_->keyboard_config();
 }
 
 void AshKeyboardController::SetKeyboardConfig(
@@ -90,9 +91,8 @@ void AshKeyboardController::SetKeyboardConfig(
   keyboard_controller_->UpdateKeyboardConfig(keyboard_config);
 }
 
-void AshKeyboardController::IsKeyboardEnabled(
-    IsKeyboardEnabledCallback callback) {
-  std::move(callback).Run(keyboard_controller_->IsEnabled());
+bool AshKeyboardController::IsKeyboardEnabled() {
+  return keyboard_controller_->IsEnabled();
 }
 
 void AshKeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
@@ -103,12 +103,9 @@ void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
   keyboard_controller_->ClearEnableFlag(flag);
 }
 
-void AshKeyboardController::GetEnableFlags(GetEnableFlagsCallback callback) {
-  const std::set<keyboard::KeyboardEnableFlag>& keyboard_enable_flags =
-      keyboard_controller_->keyboard_enable_flags();
-  std::vector<keyboard::KeyboardEnableFlag> flags(keyboard_enable_flags.begin(),
-                                                  keyboard_enable_flags.end());
-  std::move(callback).Run(std::move(flags));
+const std::set<keyboard::KeyboardEnableFlag>&
+AshKeyboardController::GetEnableFlags() {
+  return keyboard_controller_->keyboard_enable_flags();
 }
 
 void AshKeyboardController::ReloadKeyboardIfNeeded() {
@@ -122,9 +119,8 @@ void AshKeyboardController::RebuildKeyboardIfEnabled() {
   keyboard_controller_->RebuildKeyboardIfEnabled();
 }
 
-void AshKeyboardController::IsKeyboardVisible(
-    IsKeyboardVisibleCallback callback) {
-  std::move(callback).Run(keyboard_controller_->IsKeyboardVisible());
+bool AshKeyboardController::IsKeyboardVisible() {
+  return keyboard_controller_->IsKeyboardVisible();
 }
 
 void AshKeyboardController::ShowKeyboard() {
@@ -174,8 +170,7 @@ void AshKeyboardController::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }
 
-void AshKeyboardController::AddObserver(
-    ash::KeyboardControllerObserver* observer) {
+void AshKeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
@@ -211,13 +206,13 @@ void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
   }
 }
 
-void AshKeyboardController::OnKeyboardConfigChanged() {
-  KeyboardConfig config = keyboard_controller_->keyboard_config();
+void AshKeyboardController::OnKeyboardConfigChanged(
+    const keyboard::KeyboardConfig& config) {
   for (auto& observer : observers_)
     observer.OnKeyboardConfigChanged(config);
 }
 
-void AshKeyboardController::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void AshKeyboardController::OnKeyboardVisibilityChanged(bool is_visible) {
   for (auto& observer : observers_)
     observer.OnKeyboardVisibilityChanged(is_visible);
 }
@@ -227,7 +222,7 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
   SendOnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
-void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
+void AshKeyboardController::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
   for (auto& observer : observers_)
@@ -235,12 +230,9 @@ void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
 }
 
 void AshKeyboardController::OnKeyboardEnableFlagsChanged(
-    const std::set<keyboard::KeyboardEnableFlag>& keyboard_enable_flags) {
-  std::vector<keyboard::KeyboardEnableFlag> flags(keyboard_enable_flags.begin(),
-                                                  keyboard_enable_flags.end());
-  for (auto& observer : observers_) {
+    const std::set<keyboard::KeyboardEnableFlag>& flags) {
+  for (auto& observer : observers_)
     observer.OnKeyboardEnableFlagsChanged(flags);
-  }
 }
 
 void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {

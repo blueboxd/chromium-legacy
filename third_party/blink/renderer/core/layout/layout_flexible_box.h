@@ -104,7 +104,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutUnit& max_logical_width) const override;
 
   bool HitTestChildren(HitTestResult&,
-                       const HitTestLocation& location_in_container,
+                       const HitTestLocation&,
                        const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 

@@ -17,9 +17,10 @@ namespace content {
 class BackgroundTracingAgentClientImpl
     : public tracing::mojom::BackgroundTracingAgentClient {
  public:
-  static void Create(int child_process_id,
-                     mojo::PendingRemote<tracing::mojom::BackgroundTracingAgent>
-                         pending_agent);
+  static void Create(
+      int child_process_id,
+      mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
+          pending_provider);
 
   ~BackgroundTracingAgentClientImpl() override;
 

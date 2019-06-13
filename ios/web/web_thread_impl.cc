@@ -19,8 +19,8 @@
 #include "base/task/post_task.h"
 #include "base/task/task_executor.h"
 #include "base/time/time.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread_delegate.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread_delegate.h"
 
 namespace web {
 

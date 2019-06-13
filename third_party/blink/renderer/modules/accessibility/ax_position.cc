@@ -36,7 +36,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
   if (child.IsTextObject())
     return CreateFirstPositionInObject(child, adjustment_behavior);
 
-  const AXObject* parent = child.ParentObjectUnignored();
+  const AXObject* parent = child.ParentObjectIncludedInTree();
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent();
@@ -58,7 +58,7 @@ const AXPosition AXPosition::CreatePositionAfterObject(
   if (child.IsTextObject())
     return CreateLastPositionInObject(child, adjustment_behavior);
 
-  const AXObject* parent = child.ParentObjectUnignored();
+  const AXObject* parent = child.ParentObjectIncludedInTree();
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent() + 1;
@@ -83,9 +83,10 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
   // If the container is not a text object, creating a position inside an
   // ignored container might result in an invalid position, because child count
   // is inaccurate.
-  const AXObject* unignored_container = container.AccessibilityIsIgnored()
-                                            ? container.ParentObjectUnignored()
-                                            : &container;
+  const AXObject* unignored_container =
+      !container.AccessibilityIsIncludedInTree()
+          ? container.ParentObjectIncludedInTree()
+          : &container;
   DCHECK(unignored_container);
   AXPosition position(*unignored_container);
   position.text_offset_or_child_index_ = 0;
@@ -110,9 +111,10 @@ const AXPosition AXPosition::CreateLastPositionInObject(
   // If the container is not a text object, creating a position inside an
   // ignored container might result in an invalid position, because child count
   // is inaccurate.
-  const AXObject* unignored_container = container.AccessibilityIsIgnored()
-                                            ? container.ParentObjectUnignored()
-                                            : &container;
+  const AXObject* unignored_container =
+      !container.AccessibilityIsIncludedInTree()
+          ? container.ParentObjectIncludedInTree()
+          : &container;
   DCHECK(unignored_container);
   AXPosition position(*unignored_container);
   position.text_offset_or_child_index_ = unignored_container->ChildCount();
@@ -163,7 +165,7 @@ const AXPosition AXPosition::FromPosition(
     return {};
 
   if (container_node->IsTextNode()) {
-    if (container->AccessibilityIsIgnored()) {
+    if (!container->AccessibilityIsIncludedInTree()) {
       // Find the closest DOM sibling that is unignored in the accessibility
       // tree.
       switch (adjustment_behavior) {
@@ -178,10 +180,10 @@ const AXPosition AXPosition::FromPosition(
 
           // Do the next best thing by moving up to the unignored parent if it
           // exists.
-          if (!container || !container->ParentObjectUnignored())
+          if (!container || !container->ParentObjectIncludedInTree())
             return {};
-          return CreateLastPositionInObject(*container->ParentObjectUnignored(),
-                                            adjustment_behavior);
+          return CreateLastPositionInObject(
+              *container->ParentObjectIncludedInTree(), adjustment_behavior);
         }
 
         case AXPositionAdjustmentBehavior::kMoveLeft: {
@@ -195,10 +197,10 @@ const AXPosition AXPosition::FromPosition(
 
           // Do the next best thing by moving up to the unignored parent if it
           // exists.
-          if (!container || !container->ParentObjectUnignored())
+          if (!container || !container->ParentObjectIncludedInTree())
             return {};
           return CreateFirstPositionInObject(
-              *container->ParentObjectUnignored(), adjustment_behavior);
+              *container->ParentObjectIncludedInTree(), adjustment_behavior);
         }
       }
     }
@@ -221,8 +223,8 @@ const AXPosition AXPosition::FromPosition(
   }
 
   DCHECK(container_node->IsContainerNode());
-  if (container->AccessibilityIsIgnored()) {
-    container = container->ParentObjectUnignored();
+  if (!container->AccessibilityIsIncludedInTree()) {
+    container = container->ParentObjectIncludedInTree();
     if (!container)
       return {};
 
@@ -244,7 +246,7 @@ const AXPosition AXPosition::FromPosition(
       // |ax_child| might be nullptr because not all DOM nodes can have AX
       // objects. For example, the "head" element has no corresponding AX
       // object.
-      if (!ax_child || ax_child->AccessibilityIsIgnored()) {
+      if (!ax_child || !ax_child->AccessibilityIsIncludedInTree()) {
         // Find the closest DOM sibling that is present and unignored in the
         // accessibility tree.
         switch (adjustment_behavior) {
@@ -443,14 +445,14 @@ const AXPosition AXPosition::CreateNextPosition() const {
   const AXObject* child = ChildAfterTreePosition();
   if (!child) {
     const AXObject* next_in_order = container_object_->NextInTreeObject();
-    if (!next_in_order || !next_in_order->ParentObjectUnignored())
+    if (!next_in_order || !next_in_order->ParentObjectIncludedInTree())
       return {};
 
     return CreatePositionBeforeObject(*next_in_order,
                                       AXPositionAdjustmentBehavior::kMoveRight);
   }
 
-  if (!child->ParentObjectUnignored())
+  if (!child->ParentObjectIncludedInTree())
     return {};
 
   return CreatePositionAfterObject(*child,
@@ -490,7 +492,7 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
   }
 
   if (!object_before_position ||
-      !object_before_position->ParentObjectUnignored()) {
+      !object_before_position->ParentObjectIncludedInTree()) {
     return {};
   }
 
@@ -539,17 +541,17 @@ const AXPosition AXPosition::AsUnignoredPosition(
   // Case 1.
   // Neither text positions nor "after children" positions have a |child|
   // object.
-  if (container->AccessibilityIsIgnored() && child) {
+  if (!container->AccessibilityIsIncludedInTree() && child) {
     // |CreatePositionBeforeObject| already finds the unignored parent before
     // creating the new position, so we don't need to replicate the logic here.
     return CreatePositionBeforeObject(*child, adjustment_behavior);
   }
 
   // Cases 2 and 3.
-  if (container->AccessibilityIsIgnored()) {
+  if (!container->AccessibilityIsIncludedInTree()) {
     // Case 2.
     if (IsTextPosition()) {
-      if (!container->ParentObjectUnignored())
+      if (!container->ParentObjectIncludedInTree())
         return {};
 
       // Calling |CreateNextPosition| or |CreatePreviousPosition| is not
@@ -558,11 +560,11 @@ const AXPosition AXPosition::AsUnignoredPosition(
       // any unignored siblings.
       switch (adjustment_behavior) {
         case AXPositionAdjustmentBehavior::kMoveRight:
-          return CreateLastPositionInObject(*container->ParentObjectUnignored(),
-                                            adjustment_behavior);
+          return CreateLastPositionInObject(
+              *container->ParentObjectIncludedInTree(), adjustment_behavior);
         case AXPositionAdjustmentBehavior::kMoveLeft:
           return CreateFirstPositionInObject(
-              *container->ParentObjectUnignored(), adjustment_behavior);
+              *container->ParentObjectIncludedInTree(), adjustment_behavior);
       }
     }
 
@@ -577,7 +579,7 @@ const AXPosition AXPosition::AsUnignoredPosition(
   }
 
   // Case 4.
-  if (child && child->AccessibilityIsIgnored()) {
+  if (child && !child->AccessibilityIsIncludedInTree()) {
     switch (adjustment_behavior) {
       case AXPositionAdjustmentBehavior::kMoveRight:
         return CreateLastPositionInObject(*container);
@@ -657,7 +659,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
       ax_object_cache_impl.GetOrCreate(container_node);
   DCHECK(new_container);
   AXPosition position(*new_container);
-  if (new_container == container->ParentObjectUnignored()) {
+  if (new_container == container->ParentObjectIncludedInTree()) {
     position.text_offset_or_child_index_ = container->IndexInParent();
   } else {
     switch (adjustment_behavior) {
@@ -788,7 +790,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
                   *next_node, container_node))) {
         const AXObject* next_object =
             ax_object_cache_impl->GetOrCreate(next_node);
-        if (next_object && !next_object->AccessibilityIsIgnored())
+        if (next_object && next_object->AccessibilityIsIncludedInTree())
           return next_object;
       }
       return nullptr;
@@ -800,7 +802,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
                   *previous_node, container_node))) {
         const AXObject* previous_object =
             ax_object_cache_impl->GetOrCreate(previous_node);
-        if (previous_object && !previous_object->AccessibilityIsIgnored())
+        if (previous_object && previous_object->AccessibilityIsIncludedInTree())
           return previous_object;
       }
       return nullptr;

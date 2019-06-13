@@ -20,9 +20,7 @@ constexpr StaticOobeScreenId SupervisionOnboardingScreenView::kScreenId;
 
 SupervisionOnboardingScreenHandler::SupervisionOnboardingScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.SupervisionOnboardingScreen.userActed");
-}
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 SupervisionOnboardingScreenHandler::~SupervisionOnboardingScreenHandler() {
   if (screen_)
@@ -48,6 +46,7 @@ void SupervisionOnboardingScreenHandler::Bind(
 }
 
 void SupervisionOnboardingScreenHandler::Unbind() {
+  supervision_onboarding_controller_.reset();
   screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
@@ -68,10 +67,11 @@ void SupervisionOnboardingScreenHandler::Initialize() {}
 
 void SupervisionOnboardingScreenHandler::BindSupervisionOnboardingController(
     supervision::mojom::OnboardingControllerRequest request) {
+  DCHECK(screen_);
   if (!supervision_onboarding_controller_) {
     supervision_onboarding_controller_ =
         std::make_unique<supervision::OnboardingControllerImpl>(
-            ProfileManager::GetPrimaryUserProfile());
+            ProfileManager::GetPrimaryUserProfile(), screen_);
   }
 
   supervision_onboarding_controller_->BindRequest(std::move(request));

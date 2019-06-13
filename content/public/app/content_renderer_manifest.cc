@@ -34,7 +34,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
                   "content.mojom.RenderWidgetWindowTreeClientFactory",
                   "content.mojom.ResourceUsageReporter",
                   "IPC.mojom.ChannelBootstrap",
-                  "tracing.mojom.BackgroundTracingAgent",
                   "visitedlink.mojom.VisitedLinkNotificationSink",
                   "web_cache.mojom.WebCache",
               })

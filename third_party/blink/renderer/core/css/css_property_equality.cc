@@ -132,7 +132,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return DataEquivalent(a.BoxShadow(), b.BoxShadow());
     case CSSPropertyID::kCaretColor:
       return a.CaretColor() == b.CaretColor() &&
-             a.VisitedLinkCaretColor() == b.VisitedLinkCaretColor();
+             a.InternalVisitedCaretColor() == b.InternalVisitedCaretColor();
     case CSSPropertyID::kClip:
       return a.Clip() == b.Clip();
     case CSSPropertyID::kColor:
@@ -142,8 +142,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.FillPaint().EqualTypeOrColor(b_svg.FillPaint()) &&
-             a_svg.VisitedLinkFillPaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkFillPaint());
+             a_svg.InternalVisitedFillPaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedFillPaint());
     }
     case CSSPropertyID::kFillOpacity:
       return a.FillOpacity() == b.FillOpacity();
@@ -222,7 +222,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Orphans() == b.Orphans();
     case CSSPropertyID::kOutlineColor:
       return a.OutlineColor() == b.OutlineColor() &&
-             a.VisitedLinkOutlineColor() == b.VisitedLinkOutlineColor();
+             a.InternalVisitedOutlineColor() == b.InternalVisitedOutlineColor();
     case CSSPropertyID::kOutlineOffset:
       return a.OutlineOffset() == b.OutlineOffset();
     case CSSPropertyID::kOutlineWidth:
@@ -251,8 +251,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.StrokePaint().EqualTypeOrColor(b_svg.StrokePaint()) &&
-             a_svg.VisitedLinkStrokePaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkStrokePaint());
+             a_svg.InternalVisitedStrokePaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedStrokePaint());
     }
     case CSSPropertyID::kStrokeDasharray:
       return a.StrokeDashArray() == b.StrokeDashArray();
@@ -266,8 +266,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.StrokeWidth() == b.StrokeWidth();
     case CSSPropertyID::kTextDecorationColor:
       return a.TextDecorationColor() == b.TextDecorationColor() &&
-             a.VisitedLinkTextDecorationColor() ==
-                 b.VisitedLinkTextDecorationColor();
+             a.InternalVisitedTextDecorationColor() ==
+                 b.InternalVisitedTextDecorationColor();
     case CSSPropertyID::kTextDecorationSkipInk:
       return a.TextDecorationSkipInk() == b.TextDecorationSkipInk();
     case CSSPropertyID::kTextIndent:
@@ -298,7 +298,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.RowGap() == b.RowGap();
     case CSSPropertyID::kColumnRuleColor:
       return a.ColumnRuleColor() == b.ColumnRuleColor() &&
-             a.VisitedLinkColumnRuleColor() == b.VisitedLinkColumnRuleColor();
+             a.InternalVisitedColumnRuleColor() ==
+                 b.InternalVisitedColumnRuleColor();
     case CSSPropertyID::kColumnRuleWidth:
       return a.ColumnRuleWidth() == b.ColumnRuleWidth();
     case CSSPropertyID::kColumnWidth:

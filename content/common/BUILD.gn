@@ -176,7 +176,6 @@ source_set("common") {
     "mac/attributed_string_coder.mm",
     "mac/font_loader.h",
     "mac/font_loader.mm",
-    "media/aec_dump_messages.h",
     "media/cdm_info.cc",
     "media/media_player_delegate_messages.h",
     "media/peer_connection_tracker_messages.h",
@@ -476,6 +475,7 @@ mojom("mojo_bindings") {
     "input/input_handler.mojom",
     "input/input_injector.mojom",
     "input/synchronous_compositor.mojom",
+    "media/aec_dump.mojom",
     "media/peer_connection_tracker.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
@@ -503,6 +503,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/services/leveldb/public/interfaces",
+    "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:resource_type_bindings",
     "//ipc:mojom_constants",

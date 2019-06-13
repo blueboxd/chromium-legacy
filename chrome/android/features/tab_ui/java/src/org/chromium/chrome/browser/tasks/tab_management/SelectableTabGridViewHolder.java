@@ -17,14 +17,15 @@ import org.chromium.chrome.R;
  * A {@link TabGridViewHolder} with a checkable button. This is used in the manual selection mode.
  */
 class SelectableTabGridViewHolder extends TabGridViewHolder {
+    public final SelectableTabGridView selectableTabGridView;
     public final int defaultLevel;
     public final int selectedLevel;
     public AnimatedVectorDrawableCompat mCheckDrawable;
     public ColorStateList iconColorList;
 
-    SelectableTabGridViewHolder(TabGridView itemView) {
+    SelectableTabGridViewHolder(SelectableTabGridView itemView) {
         super(itemView);
-
+        selectableTabGridView = itemView;
         defaultLevel = itemView.getResources().getInteger(
                 org.chromium.chrome.R.integer.list_item_level_default);
         selectedLevel = itemView.getResources().getInteger(

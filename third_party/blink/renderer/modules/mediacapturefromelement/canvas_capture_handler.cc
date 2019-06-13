@@ -480,10 +480,9 @@ void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
     std::unique_ptr<media::VideoCapturerSource> source,
     blink::WebMediaStreamTrack* web_track) {
-  Vector<char> base64_track_id;
-  Base64Encode(base::RandBytesAsString(64).c_str(), base64_track_id);
-  const auto track_id =
-      WebString::FromUTF8(base64_track_id.data(), base64_track_id.size());
+  uint8_t track_id_bytes[64];
+  base::RandBytes(track_id_bytes, sizeof(track_id_bytes));
+  WebString track_id = Base64Encode(track_id_bytes);
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   blink::MediaStreamVideoSource* media_stream_source =
       new blink::MediaStreamVideoCapturerSource(

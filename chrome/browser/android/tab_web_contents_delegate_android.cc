@@ -512,7 +512,7 @@ bool TabWebContentsDelegateAndroid::IsPictureInPictureEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroid_isPictureInPictureEnabled(env, obj);
 }
 
 bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
@@ -520,7 +520,7 @@ bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isPictureInPictureEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
 }
 
 const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {

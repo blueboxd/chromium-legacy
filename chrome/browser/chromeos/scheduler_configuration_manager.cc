@@ -77,7 +77,7 @@ void SchedulerConfigurationManager::OnPrefChange() {
   } else if (!feature_param_value.empty()) {
     config_name = feature_param_value;
   } else {
-    config_name = debugd::scheduler_configuration::kPerformanceScheduler;
+    config_name = debugd::scheduler_configuration::kConservativeScheduler;
   }
 
   // NB: Also send an update when the config gets reset to let the system pick

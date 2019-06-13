@@ -1241,13 +1241,6 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},
-       IDS_KSV_DESCRIPTION_WINDOW_POSITION_CENTER,
-       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
-       // |accelerator_ids|
-       {{ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN}}},
-
-      {// |categories|
-       {ShortcutCategory::kTabAndWindow},
        IDS_KSV_DESCRIPTION_OPEN_CROSH,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|

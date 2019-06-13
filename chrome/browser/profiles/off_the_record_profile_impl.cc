@@ -393,13 +393,6 @@ net::URLRequestContextGetter*
   return GetRequestContext();
 }
 
-net::URLRequestContextGetter*
-OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return nullptr;
-}
-
 std::unique_ptr<service_manager::Service>
 OffTheRecordProfileImpl::HandleServiceRequest(
     const std::string& service_name,
@@ -452,15 +445,6 @@ scoped_refptr<network::SharedURLLoaderFactory>
 OffTheRecordProfileImpl::GetURLLoaderFactory() {
   return GetDefaultStoragePartition(this)
       ->GetURLLoaderFactoryForBrowserProcess();
-}
-
-net::URLRequestContextGetter*
-OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

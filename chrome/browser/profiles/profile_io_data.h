@@ -34,7 +34,6 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 
 class HostContentSettingsMap;
-class ProtocolHandlerRegistry;
 
 namespace chromeos {
 class CertificateProvider;
@@ -212,17 +211,6 @@ class ProfileIOData {
 #endif
     signin::AccountConsistencyMethod account_consistency =
         signin::AccountConsistencyMethod::kDisabled;
-
-    // This pointer exists only as a means of conveying a url job factory
-    // pointer from the protocol handler registry on the UI thread to the
-    // the URLRequestContext on the IO thread. The consumer MUST take
-    // ownership of the object by calling release() on this pointer.
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-        protocol_handler_interceptor;
-
-    // Holds the URLRequestInterceptor pointer that is created on the UI thread
-    // and then passed to the list of request_interceptors on the IO thread.
-    std::unique_ptr<net::URLRequestInterceptor> new_tab_page_interceptor;
 
 #if defined(OS_CHROMEOS)
     std::string username_hash;

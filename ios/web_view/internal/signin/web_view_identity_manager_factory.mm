@@ -14,8 +14,10 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
-#include "components/signin/core/browser/primary_account_policy_manager.h"
+#include "components/signin/core/browser/primary_account_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -82,11 +84,13 @@ std::unique_ptr<PrimaryAccountManager> BuildPrimaryAccountManager(
   pref_service->ClearPref(prefs::kGoogleServicesUsername);
   pref_service->ClearPref(prefs::kGoogleServicesUserAccountId);
 
-  std::unique_ptr<PrimaryAccountPolicyManager> service =
-      std::make_unique<PrimaryAccountPolicyManager>(
-          WebViewSigninClientFactory::GetForBrowserState(browser_state),
-          token_service, account_tracker_service,
-          signin::AccountConsistencyMethod::kDisabled);
+  SigninClient* client =
+      WebViewSigninClientFactory::GetForBrowserState(browser_state);
+  std::unique_ptr<PrimaryAccountManager> service =
+      std::make_unique<PrimaryAccountManager>(
+          client, token_service, account_tracker_service,
+          signin::AccountConsistencyMethod::kDisabled,
+          std::make_unique<PrimaryAccountPolicyManagerImpl>(client));
   service->Initialize(ApplicationContext::GetInstance()->GetLocalState());
   return service;
 }

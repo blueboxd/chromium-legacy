@@ -216,9 +216,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/filename_util.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/cookies/cookie_monster.h"
-#include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
@@ -2047,6 +2044,10 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
       }
     }
   }
+
+  // If an extension page was active, the toolbar may need to be updated to hide
+  // the extension name in the location icon.
+  UpdateToolbar(/*should_restore_state=*/false);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

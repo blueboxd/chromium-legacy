@@ -2645,6 +2645,18 @@
       'blink_python_tests': {},
     },
 
+    'fieldtrial_browser_tests': {
+      'no_fieldtrial_browser_tests': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests',
+      },
+    },
+
     'fuchsia_gtests': {
       'angle_unittests': {},
       'base_unittests': {},
@@ -4128,6 +4140,8 @@
         'args': [
           '--build-revision=${got_revision}',
           '--enable-logging',
+          '--test-launcher-jobs=1',
+          '--test-launcher-print-test-stdio=always'
         ],
         'experiment_percentage': 100,
         'swarming': {
@@ -4590,16 +4604,6 @@
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
-    ],
-
-    # chromium_mac_gtests + additional suites.
-    'chromium_mac_fyi_gtests': [
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'mac_specific_chromium_gtests',
-      'non_android_chromium_gtests',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_linux_chromium_gtests',
     ],
 
     'chromium_mac_gtests': [

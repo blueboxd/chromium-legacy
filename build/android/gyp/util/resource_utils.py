@@ -328,13 +328,21 @@ class RJavaBuildOptions:
       return entry.name not in self.resources_whitelist
 
 
-def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
-                     extra_r_txt_files, rjava_build_options, srcjar_out):
+def CreateRJavaFiles(srcjar_dir,
+                     package,
+                     main_r_txt_file,
+                     extra_res_packages,
+                     extra_r_txt_files,
+                     rjava_build_options,
+                     srcjar_out,
+                     custom_root_package_name=None,
+                     grandparent_custom_package_name=None):
   """Create all R.java files for a set of packages and R.txt files.
 
   Args:
     srcjar_dir: The top-level output directory for the generated files.
-    package: Top-level package name.
+    package: Package name for R java source files which will inherit
+      from the root R java file.
     main_r_txt_file: The main R.txt file containing the valid values
       of _all_ resource IDs.
     extra_res_packages: A list of extra package names.
@@ -344,6 +352,13 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
     rjava_build_options: An RJavaBuildOptions instance that controls how
       exactly the R.java file is generated.
     srcjar_out: Path of desired output srcjar.
+    custom_root_package_name: Custom package name for module root R.java file,
+      (eg. vr for gen.vr package).
+    grandparent_custom_package_name: Custom root package name for the root
+      R.java file to inherit from. DFM root R.java files will have "base"
+      as the grandparent_custom_package_name. The format of this package name
+      is identical to custom_root_package_name.
+      (eg. for vr grandparent_custom_package_name would be "base")
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
@@ -367,18 +382,20 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
     all_resources[(entry.resource_type, entry.name)] = entry
     all_resources_by_type[entry.resource_type].append(entry)
 
-  # Creating the root R.java file. We use srcjar_out to provide unique package
-  # names, since when one java target depends on 2 different targets (each with
-  # resources), those 2 root resource packages have to be different from one
-  # another. We add an underscore before each subdirectory so that if a reserved
-  # keyword (for example, "public") is used as a directory name, it will not
-  # cause Java to complain.
-  root_r_java_package = re.sub('[^\w\.]', '', srcjar_out.replace('/', '._'))
+  if custom_root_package_name:
+    # Custom package name is available, thus use it for root_r_java_package.
+    root_r_java_package = GetCustomPackagePath(custom_root_package_name)
+  else:
+    # Create a unique name using srcjar_out. Underscores are added to ensure
+    # no reserved keywords are used for directory names.
+    root_r_java_package = re.sub('[^\w\.]', '', srcjar_out.replace('/', '._'))
+
   root_r_java_dir = os.path.join(srcjar_dir, *root_r_java_package.split('.'))
   build_utils.MakeDirectory(root_r_java_dir)
   root_r_java_path = os.path.join(root_r_java_dir, 'R.java')
   root_java_file_contents = _RenderRootRJavaSource(
-      root_r_java_package, all_resources_by_type, rjava_build_options)
+      root_r_java_package, all_resources_by_type, rjava_build_options,
+      grandparent_custom_package_name)
   with open(root_r_java_path, 'w') as f:
     f.write(root_java_file_contents)
 
@@ -479,7 +496,12 @@ public final class R {
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded)
 
 
-def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
+def GetCustomPackagePath(package_name):
+  return 'gen.' + package_name + '_module'
+
+
+def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options,
+                           grandparent_custom_package_name):
   """Render an R.java source file. See _CreateRJaveSourceFile for args info."""
   final_resources_by_type = collections.defaultdict(list)
   non_final_resources_by_type = collections.defaultdict(list)
@@ -497,13 +519,19 @@ def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
   create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] ^='
                    ' packageIdTransform;')
-  for_loop_condition  = ('int i = {{ startIndex(e) }}; i < '
-                         '{{ e.resource_type }}.{{ e.name }}.length; ++i')
+  for_loop_condition = ('int i = {{ startIndex(e) }}; i < '
+                        '{{ e.resource_type }}.{{ e.name }}.length; ++i')
 
   # Here we diverge from what aapt does. Because we have so many
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
   # Java imposes. For this reason we split onResourcesLoaded into different
   # methods for each resource type.
+  extends_string = ''
+  dep_path = ''
+  if grandparent_custom_package_name:
+    extends_string = 'extends {{ parent_path }}.R.{{ resource_type }} '
+    dep_path = GetCustomPackagePath(grandparent_custom_package_name)
+
   template = Template(
       """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
@@ -511,7 +539,7 @@ package {{ package }};
 
 public final class R {
     {% for resource_type in resource_types %}
-    public static class {{ resource_type }} {
+    public static class {{ resource_type }} """ + extends_string + """ {
         {% for e in final_resources[resource_type] %}
         public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endfor %}
@@ -558,14 +586,14 @@ public final class R {
 """,
       trim_blocks=True,
       lstrip_blocks=True)
-
   return template.render(
       package=package,
       resource_types=sorted(all_resources_by_type),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
       non_final_resources=non_final_resources_by_type,
-      startIndex=_GetNonSystemIndex)
+      startIndex=_GetNonSystemIndex,
+      parent_path=dep_path)
 
 
 def ExtractPackageFromManifest(manifest_path):

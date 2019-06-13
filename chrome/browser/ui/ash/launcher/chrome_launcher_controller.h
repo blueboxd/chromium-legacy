@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_observer.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
@@ -178,6 +179,9 @@ class ChromeLauncherController
   // Get the list of all tabs which belong to a certain application type.
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id);
+
+  // Get the list of all ARC app windows.
+  std::vector<aura::Window*> GetArcWindows();
 
   // Activates a specified shell application by app id and window index.
   void ActivateShellApp(const std::string& app_id, int window_index);
@@ -396,6 +400,9 @@ class ChromeLauncherController
   // Used to track app windows.
   std::vector<std::unique_ptr<AppWindowLauncherController>>
       app_window_controllers_;
+
+  // Pointer to the ARC app window controller owned by app_window_controllers_.
+  ArcAppWindowLauncherController* arc_app_window_controller_ = nullptr;
 
   // Used to handle app load/unload events.
   std::vector<std::unique_ptr<LauncherAppUpdater>> app_updaters_;

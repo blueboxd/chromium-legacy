@@ -139,10 +139,13 @@ struct VulkanFunctionPointers {
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
-  // Android only device functions.
 #if defined(OS_ANDROID)
+  // Android only device functions.
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
+
+  // Android only physical device functions.
+  PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2Fn = nullptr;
 #endif
 
   // Device functions shared between Linux and Android.
@@ -241,6 +244,11 @@ struct VulkanFunctionPointers {
 #define vkGetPhysicalDeviceXlibPresentationSupportKHR \
   gpu::GetVulkanFunctionPointers()                    \
       ->vkGetPhysicalDeviceXlibPresentationSupportKHRFn
+#endif
+
+#if defined(OS_ANDROID)
+#define vkGetPhysicalDeviceFeatures2 \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFeatures2Fn
 #endif
 
 // Device functions

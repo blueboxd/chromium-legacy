@@ -286,16 +286,6 @@
       computed_style_custom_functions: ["setter"],
     },
     {
-      name: "VisitedLinkCaretColor",
-      inherited: true,
-      field_template: "external",
-      type_name: "Color",
-      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
-      default_value: "Color()",
-      field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
       name: "CursorData",
       inherited: true,
       field_template: "external",
@@ -388,7 +378,7 @@
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
-      name: "VisitedLinkCaretColorIsCurrentColor",
+      name: "InternalVisitedCaretColorIsCurrentColor",
       inherited: true,
       field_template: "primitive",
       type_name: "bool",
@@ -397,7 +387,7 @@
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
-      name: "VisitedLinkCaretColorIsAuto",
+      name: "InternalVisitedCaretColorIsAuto",
       inherited: true,
       field_template: "primitive",
       type_name: "bool",
@@ -620,22 +610,6 @@
       field_group: "*",
     },
     {
-      name: "VisitedLinkTextDecorationColor",
-      field_template: "external",
-      type_name: "StyleColor",
-      field_group: "*",
-      default_value: "StyleColor::CurrentColor()",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
-      name: "VisitedLinkOutlineColor",
-      field_template: "external",
-      type_name: "StyleColor",
-      field_group: "*",
-      default_value: "StyleColor::CurrentColor()",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
       name: "CallbackSelectors",
       field_template: "external",
       type_name: "Vector<String>",
@@ -808,15 +782,6 @@
       default_value: "true",
       type_name: "bool",
       field_group: "*->multi-col",
-    },
-    {
-      name: "VisitedLinkColumnRuleColor",
-      field_template: "external",
-      type_name: "StyleColor",
-      field_group: "*->multi-col",
-      default_value: "StyleColor::CurrentColor()",
-      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
-      computed_style_custom_functions: ["getter", "setter"],
     },
     {
       name: "HasAutoColumnWidth",

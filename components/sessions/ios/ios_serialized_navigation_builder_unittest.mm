@@ -6,7 +6,7 @@
 
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"

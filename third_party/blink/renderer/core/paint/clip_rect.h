@@ -84,6 +84,8 @@ class CORE_EXPORT ClipRect {
   String ToString() const;
 
  private:
+  void SetRectInternal(const FloatClipRect&);
+
   PhysicalRect rect_;
   bool has_radius_ : 1;
   bool is_infinite_ : 1;

@@ -108,6 +108,7 @@ struct BioEnrollmentRequest {
       const pin::TokenResponse& pin_token,
       std::vector<uint8_t> template_id);
   static BioEnrollmentRequest ForCancel();
+  static BioEnrollmentRequest ForEnumerate(const pin::TokenResponse&);
 
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentSubCommand> subcommand;
@@ -133,12 +134,16 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentResponse {
   BioEnrollmentResponse& operator=(BioEnrollmentResponse&&) = default;
   ~BioEnrollmentResponse();
 
+  bool operator==(const BioEnrollmentResponse&) const;
+
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentFingerprintKind> fingerprint_kind;
   base::Optional<uint8_t> max_samples_for_enroll;
   base::Optional<std::vector<uint8_t>> template_id;
   base::Optional<BioEnrollmentSampleStatus> last_status;
   base::Optional<uint8_t> remaining_samples;
+  base::Optional<std::vector<std::pair<std::vector<uint8_t>, std::string>>>
+      enumerated_ids;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

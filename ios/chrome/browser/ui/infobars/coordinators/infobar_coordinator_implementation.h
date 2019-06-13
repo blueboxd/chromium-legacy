@@ -33,8 +33,9 @@
 // Transitioning from Banner to Modal won't call this method.
 - (void)infobarWasDismissed;
 
-// The infobar modal content height. Used to calculate its container height.
-- (CGFloat)infobarModalContentHeight;
+// The infobar modal height. Used to calculate its presentation container
+// height.
+- (CGFloat)infobarModalHeight;
 
 @end
 

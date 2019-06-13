@@ -37,7 +37,7 @@
 <translation id="1351692861129622852">파일 <ph name="FILE_COUNT" />개를 가져오는 중...</translation>
 <translation id="1352103415082130575">태국어 키보드(Pattachote)</translation>
 <translation id="1358032944105037487">일본어 키보드</translation>
-<translation id="1358735829858566124">파일 또는 디렉토리를 사용할 수 없습니다.</translation>
+<translation id="1358735829858566124">파일 또는 디렉터리를 사용할 수 없습니다.</translation>
 <translation id="1363028406613469049">트랙</translation>
 <translation id="1378727793141957596">Google 드라이브에 오신 것을 환영합니다.</translation>
 <translation id="1383876407941801731">검색</translation>
@@ -635,7 +635,7 @@
 <translation id="8329978297633540474">일반 텍스트</translation>
 <translation id="8336153091935557858">어제 <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">아이슬란드어 키보드</translation>
-<translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉토리가 이미 존재합니다.</translation>
+<translation id="8342318071240498787">같은 이름을 가진 파일 또는 디렉터리가 이미 존재합니다.</translation>
 <translation id="8391950649760071442">음역(emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">크기</translation>
 <translation id="8412586565681117057">빠른 입력 방법</translation>
@@ -697,7 +697,7 @@
 <translation id="9219103736887031265">이미지</translation>
 <translation id="9219908252191632183">달</translation>
 <translation id="939736085109172342">새 폴더</translation>
-<translation id="942954117721265519">이 디렉토리에 이미지가 없습니다.</translation>
+<translation id="942954117721265519">이 디렉터리에 이미지가 없습니다.</translation>
 <translation id="943972244133411984">수정한 사용자</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="981121421437150478">오프라인</translation>

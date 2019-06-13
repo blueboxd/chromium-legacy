@@ -196,6 +196,16 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     @CalledByNative
     protected abstract boolean shouldResumeRequestsForCreatedWindow();
 
+    /**
+     * Creates a new tab with the already-created WebContents. The tab for the added
+     * contents should be reparented correctly when this method returns.
+     * @param sourceWebContents Source WebContents from which the new one is created.
+     * @param webContents Newly created WebContents object.
+     * @param disposition WindowOpenDisposition indicating how the tab should be created.
+     * @param initialPosition Initial position of the content to be created.
+     * @param userGesture {@code true} if opened by user gesture.
+     * @return {@code true} if new tab was created successfully with a give WebContents.
+     */
     @CalledByNative
     protected abstract boolean addNewContents(WebContents sourceWebContents,
             WebContents webContents, int disposition, Rect initialPosition, boolean userGesture);

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -34,7 +34,7 @@ class Surface;
 class Keyboard : public ui::EventHandler,
                  public SurfaceObserver,
                  public SeatObserver,
-                 public keyboard::KeyboardControllerObserver {
+                 public ash::KeyboardControllerObserver {
  public:
   Keyboard(KeyboardDelegate* delegate, Seat* seat);
   ~Keyboard() override;
@@ -65,7 +65,7 @@ class Keyboard : public ui::EventHandler,
   void OnSurfaceFocusing(Surface* gaining_focus) override;
   void OnSurfaceFocused(Surface* gained_focus) override;
 
-  // Overridden from keyboard::KeyboardControllerObserver
+  // Overridden from ash::KeyboardControllerObserver
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
  private:

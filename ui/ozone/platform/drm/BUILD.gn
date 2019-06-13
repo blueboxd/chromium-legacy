@@ -130,7 +130,6 @@ source_set("gbm") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/viz/public/interfaces:constants",
-    "//services/ws/public/mojom:constants",
     "//skia",
     "//third_party/libsync",
     "//third_party/minigbm",

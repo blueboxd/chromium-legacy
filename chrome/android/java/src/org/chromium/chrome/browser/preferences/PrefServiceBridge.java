@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,7 +100,7 @@ public class PrefServiceBridge {
             // TODO(wnwen): Check while refactoring TemplateUrlService whether this belongs here.
             // This is necessary as far as ensuring that TemplateUrlService is loaded at some point.
             // Put initialization here to make instantiation in unit tests easier.
-            TemplateUrlService.getInstance().load();
+            TemplateUrlServiceFactory.get().load();
         }
         return sInstance;
     }

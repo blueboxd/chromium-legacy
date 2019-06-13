@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -65,7 +64,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
     }
 
     DOMUint8Array* array =
-        CreateDOMUint8ArrayFromTwoCStringsConcatenated(prefix, result);
+        CreateDOMUint8ArrayFromTwoStdStringsConcatenated(prefix, result);
     controller->Enqueue(ToV8(array, script_state_), exception_state);
   }
 
@@ -98,7 +97,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
     return std::string(kRawBytes, sizeof(kRawBytes));
   }
 
-  static DOMUint8Array* CreateDOMUint8ArrayFromTwoCStringsConcatenated(
+  static DOMUint8Array* CreateDOMUint8ArrayFromTwoStdStringsConcatenated(
       const std::string& string1,
       const std::string& string2) {
     const wtf_size_t length1 = static_cast<wtf_size_t>(string1.length());

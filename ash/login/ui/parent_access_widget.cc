@@ -36,18 +36,15 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   widget_params.parent =
       ash::Shell::GetPrimaryRootWindow()->GetChildById(parent_window_id);
 
-  widget_ = std::make_unique<views::Widget>();
-  widget_->set_focus_on_creation(true);
-  widget_->Init(widget_params);
-
   ParentAccessView::Callbacks callbacks;
   callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,
                                               weak_factory_.GetWeakPtr());
+  widget_params.delegate = new ParentAccessView(account_id, callbacks, reason);
 
-  widget_->SetContentsView(new ParentAccessView(account_id, callbacks, reason));
+  widget_ = std::make_unique<views::Widget>();
+  widget_->Init(widget_params);
   widget_->CenterWindow(widget_->GetContentsView()->GetPreferredSize());
   widget_->Show();
-  widget_->GetContentsView()->RequestFocus();
 }
 
 ParentAccessWidget::~ParentAccessWidget() = default;

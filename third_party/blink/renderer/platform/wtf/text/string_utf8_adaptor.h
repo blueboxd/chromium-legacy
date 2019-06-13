@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_UTF8_ADAPTOR_H_
 
 #include "base/strings/string_piece.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -55,12 +54,6 @@ class WTF_EXPORT StringUTF8Adaptor final {
 
   base::StringPiece AsStringPiece() const {
     return base::StringPiece(data_, size_);
-  }
-
-  std::string AsStdString() {
-    // TODO(dcheng): it might be nice to store a std::string and avoid the
-    // double conversion...
-    return std::string(data_, size_);
   }
 
  private:

@@ -16,23 +16,24 @@ namespace content {
 // static
 void BackgroundTracingAgentClientImpl::Create(
     int child_process_id,
-    mojo::PendingRemote<tracing::mojom::BackgroundTracingAgent> pending_agent) {
-  uint64_t tracing_process_id =
-      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
-          child_process_id);
-
+    mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
+        pending_provider) {
   mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentClient> client;
-  auto receiver = client.InitWithNewPipeAndPassReceiver();
+  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
 
-  mojo::Remote<tracing::mojom::BackgroundTracingAgent> agent(
-      std::move(pending_agent));
-  agent->Initialize(tracing_process_id, std::move(client));
+  mojo::Remote<tracing::mojom::BackgroundTracingAgent> agent;
+
+  mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider(
+      std::move(pending_provider));
+  provider->Create(ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+                       child_process_id),
+                   std::move(client), agent.BindNewPipeAndPassReceiver());
 
   // Lifetime bound to the agent, which means it is bound to the lifetime of
   // the child process. Will be cleaned up when the process exits.
   mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new BackgroundTracingAgentClientImpl(std::move(agent))),
-      std::move(receiver));
+      std::move(client_receiver));
 }
 
 BackgroundTracingAgentClientImpl::~BackgroundTracingAgentClientImpl() {

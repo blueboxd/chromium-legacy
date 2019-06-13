@@ -154,7 +154,8 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case gfx::BufferFormat::RGBA_F16:
       return true;
     case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR: {
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::P010: {
       size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
       for (size_t i = 0; i < num_planes; ++i) {
         size_t factor = gfx::SubsamplingFactorForBufferFormat(format, i);

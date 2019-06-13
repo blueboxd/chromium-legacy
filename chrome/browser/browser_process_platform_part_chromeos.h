@@ -41,10 +41,6 @@ namespace policy {
 class BrowserPolicyConnectorChromeOS;
 }
 
-namespace ws {
-class InputDeviceControllerClient;
-}
-
 class ScopedKeepAlive;
 
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
@@ -124,8 +120,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
-  ws::InputDeviceControllerClient* GetInputDeviceControllerClient();
-
   chromeos::AccountManagerFactory* GetAccountManagerFactory();
 
  private:
@@ -166,11 +160,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<chromeos::KerberosCredentialsManager>
       kerberos_credentials_manager_;
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ws::InputDeviceControllerClient>
-      input_device_controller_client_;
-#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

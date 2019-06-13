@@ -21,6 +21,8 @@ namespace ui {
 //
 class OZONE_BASE_EXPORT PlatformClipboard {
  public:
+  virtual ~PlatformClipboard() {}
+
   // DataMap is a map from "mime type" to associated data, whereas
   // the data can be organized differently for each mime type.
   using Data = std::vector<uint8_t>;

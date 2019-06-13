@@ -21,7 +21,7 @@
 #include "services/service_manager/public/cpp/service.h"  // nogncheck
 #include "services/service_manager/public/cpp/service_binding.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"  // nogncheck
-#include "services/ws/public/mojom/constants.mojom.h"  // nogncheck
+#include "services/viz/public/interfaces/constants.mojom.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -69,10 +69,10 @@ class GlTestSuite : public base::TestSuite {
             base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
 #if defined(USE_OZONE)
-    // OzonePlatform DRM implementation may attempt to connect to the ws service
-    // to acquire interfaces.
+    // OzonePlatform DRM implementation may attempt to connect to the viz
+    // service to acquire interfaces.
     service_ = std::make_unique<OzoneDrmTestService>(
-        connector_factory_.RegisterInstance(ws::mojom::kServiceName));
+        connector_factory_.RegisterInstance(viz::mojom::kVizServiceName));
 
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread. Note that this mode

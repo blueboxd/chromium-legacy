@@ -85,6 +85,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(GetGlobalRequestID, const GlobalRequestID&());
   MOCK_METHOD0(IsDownload, bool());
   bool IsFormSubmission() override { return is_form_submission_; }
+  MOCK_METHOD0(WasInitiatedByLinkClick, bool());
   MOCK_METHOD0(IsSignedExchangeInnerResponse, bool());
   bool WasResponseCached() override { return was_response_cached_; }
   const net::ProxyServer& GetProxyServer() override { return proxy_server_; }

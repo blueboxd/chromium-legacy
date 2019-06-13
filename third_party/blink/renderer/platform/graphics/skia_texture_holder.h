@@ -12,22 +12,21 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
-
+class MailboxTextureHolder;
 class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
  public:
   ~SkiaTextureHolder() override;
 
-  // Methods overriding TextureHolder
-  bool IsSkiaTextureHolder() final { return true; }
-  bool IsMailboxTextureHolder() final { return false; }
+  // TextureHolder impl.
   IntSize Size() const final {
     return IntSize(image_->width(), image_->height());
   }
   bool IsValid() const final;
-  bool CurrentFrameKnownToBeOpaque() final { return image_->isOpaque(); }
-  sk_sp<SkImage> GetSkImage() final { return image_; }
+  bool CurrentFrameKnownToBeOpaque() const final { return image_->isOpaque(); }
+
+  const sk_sp<SkImage>& GetSkImage() const { return image_; }
 
   // When creating a AcceleratedStaticBitmap from a texture-backed SkImage, this
   // function will be called to create a TextureHolder object.
@@ -35,7 +34,7 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
                     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // This function consumes the mailbox in the input parameter and turn it into
   // a texture-backed SkImage.
-  SkiaTextureHolder(std::unique_ptr<TextureHolder>);
+  explicit SkiaTextureHolder(const MailboxTextureHolder* texture_holder);
 
  private:
   // The image_ should always be texture-backed.

@@ -47,7 +47,6 @@ source_set("renderers") {
     "//media/base",
     "//media/filters",
     "//media/video",
-    "//skia",
     "//third_party/libaom:libaom_buildflags",
     "//third_party/libyuv",
     "//ui/gfx:geometry_skia",

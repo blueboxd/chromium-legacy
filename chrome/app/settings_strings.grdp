@@ -1653,11 +1653,17 @@
     <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL" desc="Label of the Add account button on Kerberos Accounts Settings page.">
       Add account
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL" desc="Label of the Set as active account button on Kerberos Accounts Settings page.">
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL" desc="Label of the 'Refresh now' button on Kerberos Accounts Settings page.">
+      Refresh now
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL" desc="Label of the 'Set as active account' button on Kerberos Accounts Settings page.">
       Set as active account
     </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the Remove account button on Kerberos Accounts Settings page.">
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the 'Remove account' button on Kerberos Accounts Settings page.">
       Remove account from this device
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL" desc="Label of the button on Kerberos Accounts Settings page to get to the Advanced configuration dialog.">
+      Advanced configuration
     </message>
     <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN" desc="Text displayed if a Kerberos account is in signed-in state on Kerberos Accounts Settings page.">
       Signed in
@@ -1671,11 +1677,23 @@
     <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="In Add Kerberos Accounts dialog, the title of the dialog.">
       Add Kerberos Account
     </message>
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD" desc="In Add Kerberos Accounts dialog, label of the checkbox to remember the password.">
+      Remember password
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE" desc="In Kerberos Advanced Configuration dialog, the title of the dialog.">
+      Advanced Kerberos configuration
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC" desc="In Kerberos Advanced Configuration dialog, the description of the dialog (below the title).">
+      Edit the Kerberos configuration file here.
+    </message>
     <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos account.">
       Username
     </message>
     <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos account.">
       Password
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG" desc="In Kerberos Advanced Configuration dialog, label of the Kerberos configuration text area.">
+      Configuration
     </message>
     <message name="IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM" desc="Error message displayed in the Add Kerberos Account dialog when the user has no network connection or enters a bad realm.">
       Network problem or bad realm
@@ -1685,6 +1703,9 @@
     </message>
     <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a username that is not known to the Kerberos realm.">
       Username not known to server
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME" desc="Error message displayed in the Add Kerberos Account dialog when the user enters a username for which there is already an account.">
+      An account with this username already exists
     </message>
     <message name="IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER" desc="Error message displayed in the Add Kerberos Account dialog when the OS is not able to contact the server for the given realm.">
       Contacting server for realm failed
@@ -1865,9 +1886,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SHARE" desc="Settings > Internet > Network config: Label for setting allowing other device users to use the network configuration.">
       Allow other users of this device to use this network
-    </message>
-    <message name="IDS_SETTINGS_HIDDEN_NETWORK_WARNING" desc="Settings > Internet > Network config: Text shown when auto connect to the WiFi network is enabled, warning about the dangers of auto-connecting to hidden networks.">
-      Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.
     </message>
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
       Save identity and password
@@ -3725,6 +3743,9 @@
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT" desc="Management status label for unmanaged accounts.">
       Primary account
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ACCOUNT_REMOVED_MESSAGE" desc="Notification message after account removal.">
+      <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph> was removed from this device
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE" desc="Title of the add fingerprint dialog popup.">
       Set up your fingerprint

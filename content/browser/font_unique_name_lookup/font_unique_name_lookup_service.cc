@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -43,8 +44,27 @@ FontUniqueNameLookupService::GetTaskRunner() {
 void FontUniqueNameLookupService::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
-  std::move(callback).Run(
-      font_unique_name_lookup_.GetUniqueNameTableAsSharedMemoryRegion());
+  if (font_unique_name_lookup_.IsValid()) {
+    std::move(callback).Run(font_unique_name_lookup_.DuplicateMemoryRegion());
+  } else {
+    font_unique_name_lookup_.QueueShareMemoryRegionWhenReady(
+        GetTaskRunner(), std::move(callback));
+  }
+}
+
+void FontUniqueNameLookupService::GetUniqueNameLookupTableIfAvailable(
+    GetUniqueNameLookupTableIfAvailableCallback callback) {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+
+  base::ReadOnlySharedMemoryRegion invalid_region;
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), false, std::move(invalid_region));
+
+  if (!font_unique_name_lookup_.IsValid())
+    return;
+
+  std::move(callback).Run(true,
+                          font_unique_name_lookup_.DuplicateMemoryRegion());
 }
 
 }  // namespace content

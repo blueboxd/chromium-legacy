@@ -371,7 +371,7 @@
 <translation id="1549788673239553762"><ph name="APP_NAME" />에서 <ph name="VOLUME_NAME" />에 액세스하려고 합니다. 내 파일을 수정하거나 삭제할 수 있습니다.</translation>
 <translation id="1553538517812678578">무제한</translation>
 <translation id="1554390798506296774"><ph name="HOST" />에서 샌드박스 처리되지 않은 플러그인을 항상 허용</translation>
-<translation id="1556537182262721003">확장 프로그램 디렉토리를 프로필로 이동하지 못했습니다.</translation>
+<translation id="1556537182262721003">확장 프로그램 디렉터리를 프로필로 이동하지 못했습니다.</translation>
 <translation id="155865706765934889">터치패드</translation>
 <translation id="1564414980088536597">이 이미지는 사용할 수 없습니다. 다른 이미지를 선택하세요.</translation>
 <translation id="1566049601598938765">웹사이트</translation>
@@ -865,7 +865,7 @@
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" />을(를) 설치하시겠습니까?</translation>
 <translation id="2297705863329999812">프린터 검색</translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> 맞춤설정 및 제어</translation>
-<translation id="2301382460326681002">확장 프로그램 루트 디렉토리가 잘못되었습니다.</translation>
+<translation id="2301382460326681002">확장 프로그램 루트 디렉터리가 잘못되었습니다.</translation>
 <translation id="23030561267973084">'<ph name="EXTENSION_NAME" />'이(가) 추가 승인을 요청했습니다.</translation>
 <translation id="2307462900900812319">네트워크 설정</translation>
 <translation id="230927227160767054">이 페이지에서 서비스 핸들러를 설치하려 합니다.</translation>
@@ -918,7 +918,7 @@
 <translation id="2377667304966270281">하드 결함</translation>
 <translation id="237828693408258535">이 페이지를 번역하시겠습니까?</translation>
 <translation id="2378346380592252785"><ph name="SHARE_PATH" /> 사용자 인증 정보 업데이트</translation>
-<translation id="2378982052244864789">확장 프로그램 디렉토리를 선택합니다.</translation>
+<translation id="2378982052244864789">확장 프로그램 디렉터리를 선택합니다.</translation>
 <translation id="2379232090534544565">사이트에서 오디오 및 동영상 입력을 공유하는 중입니다.</translation>
 <translation id="2379281330731083556">시스템 대화상자를 사용하여 인쇄... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
@@ -952,7 +952,7 @@
 <translation id="2436707352762155834">최소</translation>
 <translation id="2439545803278355377">새 PIN을 입력하세요. PIN은 4자 이상이어야 하며 문자, 숫자, 기타 문자를 포함할 수 있습니다.</translation>
 <translation id="2440604414813129000">소스 보기(&amp;O)</translation>
-<translation id="2445081178310039857">확장 프로그램 루트 디렉토리가 필요합니다.</translation>
+<translation id="2445081178310039857">확장 프로그램 루트 디렉터리가 필요합니다.</translation>
 <translation id="2445484935443597917">새 프로필 만들기</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" />에서 귀하의 신원을 확인하려고 합니다</translation>
 <translation id="2448312741937722512">유형</translation>
@@ -1276,7 +1276,7 @@
 <translation id="2907619724991574506">시작 URL</translation>
 <translation id="2907798539022650680">'<ph name="NAME" />'에 연결하지 못함: <ph name="DETAILS" />
     서버 메시지: <ph name="SERVER_MSG" /></translation>
-<translation id="2908162660801918428">디렉토리별 미디어 갤러리 추가</translation>
+<translation id="2908162660801918428">디렉터리별 미디어 갤러리 추가</translation>
 <translation id="2910318910161511225">네트워크에 연결하고 다시 시도해 주세요</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="2915102088417824677">활동 로그 보기</translation>
@@ -1400,7 +1400,7 @@
 <translation id="3120430004221004537">기기(<ph name="DEVICE_NAME" />)에서 해당 작업에 필요한 암호화가 수행되지 않았습니다.</translation>
 <translation id="3121793941267913344"><ph name="IDS_SHORT_PRODUCT_NAME" /> 기기 재설정</translation>
 <translation id="3122464029669770682">CPU</translation>
-<translation id="3122496702278727796">데이터 디렉토리 만들기 실패</translation>
+<translation id="3122496702278727796">데이터 디렉터리 만들기 실패</translation>
 <translation id="3124111068741548686">사용자 핸들</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">기기에 저장된 데이터 중 표시된 모든 사이트의 데이터가 삭제됩니다. 계속하시겠습니까?</translation>
@@ -1468,7 +1468,7 @@
 <translation id="3232318083971127729">값:</translation>
 <translation id="3233271424239923319">Linux 앱 및 파일 백업</translation>
 <translation id="323803881985677942">확장 프로그램 옵션 열기</translation>
-<translation id="3241680850019875542">압축할 확장 프로그램의 루트 디렉토리를 선택합니다. 확장 프로그램을 업데이트하려면 다시 사용할 비공개 키 파일도 선택합니다.</translation>
+<translation id="3241680850019875542">압축할 확장 프로그램의 루트 디렉터리를 선택합니다. 확장 프로그램을 업데이트하려면 다시 사용할 비공개 키 파일도 선택합니다.</translation>
 <translation id="3244294424315804309">계속 음소거</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - 네트워크 오류</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" />(<ph name="APP_URL" />)</translation>
@@ -3312,7 +3312,7 @@
 <translation id="6059925163896151826">USB 기기</translation>
 <translation id="6061882183774845124">기기로 링크 전송</translation>
 <translation id="6064217302520318294">화면 잠금</translation>
-<translation id="6065289257230303064">인증서 대상 디렉토리 속성</translation>
+<translation id="6065289257230303064">인증서 대상 디렉터리 속성</translation>
 <translation id="6069671174561668781">배경화면 설정</translation>
 <translation id="6071181508177083058">비밀번호 확인</translation>
 <translation id="6071576563962215370">시스템에서 기기 설치 시간 속성 잠금을 설정하지 못했습니다.</translation>
@@ -5094,7 +5094,7 @@
 <translation id="8762886931014513155"><ph name="DEVICE_TYPE" /> 업데이트 필요</translation>
 <translation id="8763927697961133303">USB 기기</translation>
 <translation id="8767621466733104912">모든 사용자의 Chrome 자동 업데이트</translation>
-<translation id="8770406935328356739">확장 프로그램 루트 디렉토리</translation>
+<translation id="8770406935328356739">확장 프로그램 루트 디렉터리</translation>
 <translation id="8770507190024617908">사용자 관리</translation>
 <translation id="8771300903067484968">시작 페이지 배경화면이 기본 배경화면으로 재설정되었습니다.</translation>
 <translation id="8774934320277480003">상단 여백</translation>
@@ -5170,7 +5170,7 @@
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="887550310442005096">회사 또는 조직에서 기기 업데이트를 요청합니다.</translation>
 <translation id="8876307312329369159">데모 세션에서는 이 설정을 변경할 수 없습니다.</translation>
-<translation id="8877448029301136595">[상위 디렉토리]</translation>
+<translation id="8877448029301136595">[상위 디렉터리]</translation>
 <translation id="8879284080359814990">탭으로 표시(&amp;S)</translation>
 <translation id="8883847527783433352">다른 계정에 동기화</translation>
 <translation id="8884570509232205463">기기가 <ph name="UNLOCK_TIME" />에 잠깁니다.</translation>

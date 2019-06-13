@@ -76,6 +76,6 @@ void BulletedLabelListView::AddLabel(const base::string16& text) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  layout->AddView(new BulletView(label->enabled_color()));
-  layout->AddView(label.release());
+  layout->AddView(std::make_unique<BulletView>(label->enabled_color()));
+  layout->AddView(std::move(label));
 }

@@ -14,6 +14,7 @@
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/initiator_lock_compatibility.h"
+#include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
@@ -215,10 +216,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     }
   }
 
-  // Disallow setting the Host header over mojo::URLLoaderFactory interface
-  // because it can conflict with specified URL and make servers confused.
-  if (request.headers.HasHeader(net::HttpRequestHeaders::kHost)) {
-    LOG(WARNING) << "Host header should be set inside the network service";
+  if (!AreRequestHeadersSafe(request.headers) ||
+      !AreRequestHeadersSafe(request.cors_exempt_headers)) {
     return false;
   }
 

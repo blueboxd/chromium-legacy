@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_IME_MENU_IME_MENU_TRAY_H_
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
@@ -32,7 +32,7 @@ class ImeListView;
 // for emoji, handwriting, and voice.
 class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public IMEObserver,
-                               public keyboard::KeyboardControllerObserver,
+                               public KeyboardControllerObserver,
                                public VirtualKeyboardObserver {
  public:
   explicit ImeMenuTray(Shelf* shelf);
@@ -72,7 +72,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
 
-  // keyboard::KeyboardControllerObserver:
+  // KeyboardControllerObserver:
   void OnKeyboardHidden(bool is_temporary_hide) override;
 
   // VirtualKeyboardObserver:

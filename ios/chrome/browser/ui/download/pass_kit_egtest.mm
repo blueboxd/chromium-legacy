@@ -95,7 +95,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 // Tests that Chrome PassKit dialog is shown for sucessfully downloaded pkpass
 // file.
 - (void)testPassKitDownload {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Wallet app is not supported on iPads.");
   }
 

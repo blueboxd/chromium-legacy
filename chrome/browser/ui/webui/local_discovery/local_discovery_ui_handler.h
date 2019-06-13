@@ -15,6 +15,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_printer_list.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/public/cpp/identity_manager.h"

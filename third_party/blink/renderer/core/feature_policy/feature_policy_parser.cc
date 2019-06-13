@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/origin.h"
 
@@ -52,6 +53,7 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
   ParsedFeaturePolicy allowlists;
   std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
       features_specified;
+  HashSet<FeaturePolicyAllowlistType> allowlist_types_used;
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
@@ -59,10 +61,20 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
   Vector<String> policy_items;
   // policy_items = [ policy *( "," [ policy ] ) ]
   policy.Split(',', policy_items);
+  if (policy_items.size() > 1) {
+    UseCounter::Count(
+        execution_context,
+        mojom::WebFeature::kFeaturePolicyCommaSeparatedDeclarations);
+  }
   for (const String& item : policy_items) {
     Vector<String> entry_list;
     // entry_list = [ entry *( ";" [ entry ] ) ]
     item.Split(';', entry_list);
+    if (entry_list.size() > 1) {
+      UseCounter::Count(
+          execution_context,
+          mojom::WebFeature::kFeaturePolicySemicolonSeparatedDeclarations);
+    }
     for (const String& entry : entry_list) {
       // Split removes extra whitespaces by default
       //     "name value1 value2" or "name".
@@ -111,7 +123,17 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
                                   feature);
       }
 
-      // Detect usage of UnoptimizedImagePolicies origin trial
+      // True if we should try to detect what kind of allowlist is being used.
+      bool count_allowlist_type = true;
+
+      // Flags for the types of items which can be used in allowlists.
+      bool allowlist_includes_star = false;
+      bool allowlist_includes_self = false;
+      bool allowlist_includes_src = false;
+      bool allowlist_includes_none = false;
+      bool allowlist_includes_origin = false;
+
+      // Detect usage of UnoptimizedImagePolicies origin trial.
       if (feature == mojom::FeaturePolicyFeature::kOversizedImages ||
           feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages ||
           feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
@@ -119,12 +141,16 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
               mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
         UseCounter::Count(execution_context,
                           mojom::WebFeature::kUnoptimizedImagePolicies);
+        // Don't analyze allowlists for origin trial features.
+        count_allowlist_type = false;
       }
 
       // Detect usage of UnsizedMediaPolicy origin trial
       if (feature == mojom::FeaturePolicyFeature::kUnsizedMedia) {
         UseCounter::Count(execution_context,
                           mojom::WebFeature::kUnsizedMediaPolicy);
+        // Don't analyze allowlists for origin trial features.
+        count_allowlist_type = false;
       }
 
       ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
@@ -200,9 +226,11 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
 
         // 'self' origin is used if either the origin is omitted (and there is
         // no 'src' origin available) or the origin is exactly 'self'.
-        if ((origin_string.length() == 0 && !src_origin) ||
-            EqualIgnoringASCIICase(origin_string, "'self'")) {
+        if ((origin_string.length() == 0 && !src_origin)) {
           target_origin = self_origin->ToUrlOrigin();
+        } else if (EqualIgnoringASCIICase(origin_string, "'self'")) {
+          target_origin = self_origin->ToUrlOrigin();
+          allowlist_includes_self = true;
         }
         // 'src' origin is used if |src_origin| is available and either the
         // origin is omitted or is a match for 'src'. |src_origin| is only set
@@ -210,15 +238,19 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
         else if (src_origin &&
                  (origin_string.length() == 0 ||
                   EqualIgnoringASCIICase(origin_string, "'src'"))) {
+          if (origin_string.length() > 0)
+            allowlist_includes_src = true;
           if (!src_origin->IsOpaque()) {
             target_origin = src_origin->ToUrlOrigin();
           } else {
             target_is_opaque = true;
           }
         } else if (EqualIgnoringASCIICase(origin_string, "'none'")) {
+          allowlist_includes_none = true;
           continue;
         } else if (origin_string == "*") {
           target_is_all = true;
+          allowlist_includes_star = true;
         }
         // Otherwise, parse the origin string and verify that the result is
         // valid. Invalid strings will produce an opaque origin, which will
@@ -228,6 +260,7 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
               SecurityOrigin::CreateFromString(origin_string);
           if (!parsed_origin->IsOpaque()) {
             target_origin = parsed_origin->ToUrlOrigin();
+            allowlist_includes_origin = true;
           } else if (messages) {
             messages->push_back("Unrecognized origin: '" + origin_string +
                                 "'.");
@@ -246,6 +279,36 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
           values[target_origin] = value;
         }
       }
+
+      if (count_allowlist_type) {
+        // Record the type of allowlist used.
+        if (tokens.size() == 1) {
+          allowlist_types_used.insert(FeaturePolicyAllowlistType::kEmpty);
+        } else if (tokens.size() == 2) {
+          if (allowlist_includes_star)
+            allowlist_types_used.insert(FeaturePolicyAllowlistType::kStar);
+          else if (allowlist_includes_self)
+            allowlist_types_used.insert(FeaturePolicyAllowlistType::kSelf);
+          else if (allowlist_includes_src)
+            allowlist_types_used.insert(FeaturePolicyAllowlistType::kSrc);
+          else if (allowlist_includes_none)
+            allowlist_types_used.insert(FeaturePolicyAllowlistType::kNone);
+          else
+            allowlist_types_used.insert(FeaturePolicyAllowlistType::kOrigins);
+        } else {
+          if (allowlist_includes_origin) {
+            if (allowlist_includes_star || allowlist_includes_none ||
+                allowlist_includes_src || allowlist_includes_self)
+              allowlist_types_used.insert(FeaturePolicyAllowlistType::kMixed);
+            else
+              allowlist_types_used.insert(FeaturePolicyAllowlistType::kOrigins);
+          } else {
+            allowlist_types_used.insert(
+                FeaturePolicyAllowlistType::kKeywordsOnly);
+          }
+        }
+      }
+
       // Size reduction: remove all items in the allowlist whose value is the
       // same as the fallback.
       for (auto it = values.begin(); it != values.end();) {
@@ -257,6 +320,23 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
 
       allowlist.values = std::move(values);
       allowlists.push_back(allowlist);
+    }
+  }
+
+  // The use of various allowlist types should only be recorded once per page.
+  // For simplicity, this recording assumes that the ParseHeader method is
+  // called once when creating a new document, and similarly the ParseAttribute
+  // method is called once for a frame. It is possible for multiple calls, but
+  // the additional complexity to guarantee only one record isn't warranted as
+  // yet.
+  for (const FeaturePolicyAllowlistType allowlist_type : allowlist_types_used) {
+    if (src_origin) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.UseCounter.FeaturePolicy.AttributeAllowlistType",
+          allowlist_type);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.UseCounter.FeaturePolicy.HeaderAllowlistType", allowlist_type);
     }
   }
   return allowlists;

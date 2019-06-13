@@ -80,16 +80,16 @@ bool CanCreateWebApp(const Browser* browser) {
   return provider->install_manager().CanInstallWebApp(web_contents);
 }
 
-void CreateWebAppFromCurrentWebContents(Browser* browser,
-                                        bool force_shortcut_app) {
+void CreateWebAppFromCurrentWebContents(
+    Browser* browser,
+    bool force_shortcut_app,
+    WebAppInstalledCallback installed_callback) {
   DCHECK(CanCreateWebApp(browser));
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   DCHECK(provider);
-
-  WebAppInstalledCallback installed_callback = base::DoNothing();
 
   WebappInstallSource install_source =
       InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU);

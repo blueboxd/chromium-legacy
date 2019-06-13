@@ -139,9 +139,7 @@ class BinaryBasedOnCachedData : public Binary::Impl {
 }  // namespace
 
 String Binary::toBase64() const {
-  return impl_ ? WTF::Base64Encode(reinterpret_cast<const char*>(impl_->data()),
-                                   impl_->size())
-               : String();
+  return impl_ ? Base64Encode(*impl_) : String();
 }
 
 // static

@@ -10,6 +10,7 @@
 #include "ash/app_list/app_list_export.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -28,7 +29,8 @@ class ContentsView;
 
 // A tile item for the expand arrow on the start page.
 class APP_LIST_EXPORT ExpandArrowView : public views::Button,
-                                        public views::ButtonListener {
+                                        public views::ButtonListener,
+                                        public views::ViewTargeterDelegate {
  public:
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
@@ -63,6 +65,10 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   void ScheduleHintingAnimation(bool is_first_time);
   void StartHintingAnimation();
   void ResetHintingAnimation();
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   ContentsView* const contents_view_;
   AppListView* const app_list_view_;  // Owned by the views hierarchy.

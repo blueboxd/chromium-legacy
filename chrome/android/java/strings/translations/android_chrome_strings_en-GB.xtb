@@ -1099,6 +1099,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
+<translation id="9005637476204108703">Tap here to manage your accounts</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>
@@ -1119,6 +1120,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9169594135889675189">Add new tab to group</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
+<translation id="9190112541605496997">Tap the 'Manage account' button to manage your accounts</translation>
 <translation id="9204836675896933765">1 file left</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>

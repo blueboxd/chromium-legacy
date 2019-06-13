@@ -37,6 +37,9 @@
 namespace aura {
 class Window;
 }
+namespace ash {
+class KeyboardControllerObserver;
+}
 namespace ui {
 class InputMethod;
 class TextInputClient;
@@ -45,7 +48,6 @@ class TextInputClient;
 namespace keyboard {
 
 class CallbackAnimationObserver;
-class KeyboardControllerObserver;
 class KeyboardUI;
 class KeyboardUIFactory;
 
@@ -101,9 +103,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void RebuildKeyboardIfEnabled();
 
   // Management of the observer list.
-  void AddObserver(KeyboardControllerObserver* observer);
-  bool HasObserver(KeyboardControllerObserver* observer) const;
-  void RemoveObserver(KeyboardControllerObserver* observer);
+  void AddObserver(ash::KeyboardControllerObserver* observer);
+  bool HasObserver(ash::KeyboardControllerObserver* observer) const;
+  void RemoveObserver(ash::KeyboardControllerObserver* observer);
 
   // Updates |keyboard_config_| with |config|. Returns |false| if there is no
   // change, otherwise returns true and notifies observers if this is enabled.
@@ -391,6 +393,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // keyboard is loaded.
   void MarkKeyboardLoadFinished();
 
+  // Called when the enable flags change. Notifies observers of the change.
+  void EnableFlagsChanged();
+
   std::unique_ptr<KeyboardUIFactory> ui_factory_;
   std::unique_ptr<KeyboardUI> ui_;
   std::unique_ptr<ui::InputMethodKeyboardController>
@@ -419,7 +424,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool keyboard_locked_ = false;
   KeyboardEventHandler event_handler_;
 
-  base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
+  base::ObserverList<ash::KeyboardControllerObserver>::Unchecked observer_list_;
 
   KeyboardUIModel model_;
 

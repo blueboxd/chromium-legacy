@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -122,6 +123,12 @@ class TabListMediator {
     }
 
     /**
+     * An interface to get a SelectionDelegate that contains the selected items for a selectable
+     * tab list.
+     */
+    public interface SelectionDelegateProvider { SelectionDelegate getSelectionDelegate(); }
+
+    /**
      * An interface to get the onClickListener for opening dialog when click on a grid card.
      */
     public interface GridCardOnClickListenerProvider {
@@ -154,6 +161,7 @@ class TabListMediator {
     private final TabActionListener mTabClosedListener;
     private final TitleProvider mTitleProvider;
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
+    private final SelectionDelegateProvider mSelectionDelegateProvider;
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final String mComponentName;
     private boolean mActionsOnAllRelatedTabs;
@@ -257,16 +265,19 @@ class TabListMediator {
      * @param titleProvider {@link TitleProvider} for a given tab's title to show.
      * @param tabListFaviconProvider Provider for all favicon related drawables.
      * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
-     *         tabs.
+     *                            tabs.
      * @param createGroupButtonProvider {@link CreateGroupButtonProvider} to provide "Create group"
      *                                   button information. It's null when "Create group" is not
      *                                   possible.
+     * @param selectionDelegateProvider Provider for a {@link SelectionDelegate} that is used for
+     *                                  a selectable list. It's null when selection is not possible.
      * @param componentName This is a unique string to identify different components.
      */
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
             TabListFaviconProvider tabListFaviconProvider, boolean actionOnRelatedTabs,
             @Nullable CreateGroupButtonProvider createGroupButtonProvider,
+            @Nullable SelectionDelegateProvider selectionDelegateProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             String componentName) {
         mTabModelSelector = tabModelSelector;
@@ -276,6 +287,7 @@ class TabListMediator {
         mComponentName = componentName;
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
         mCreateGroupButtonProvider = createGroupButtonProvider;
+        mSelectionDelegateProvider = selectionDelegateProvider;
         mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
         mActionsOnAllRelatedTabs = actionOnRelatedTabs;
 
@@ -713,6 +725,7 @@ class TabListMediator {
                                 TabListRecyclerView.ANIMATION_STATUS_RESTORE)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
                                 mSelectableTabOnClickListener)
+                        .with(TabProperties.TAB_SELECTION_DELEGATE, getTabSelectionDelegate())
                         .build();
 
         if (index >= mModel.size()) {
@@ -735,6 +748,13 @@ class TabListMediator {
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);
+    }
+
+    @Nullable
+    private SelectionDelegate<Integer> getTabSelectionDelegate() {
+        return mSelectionDelegateProvider == null
+                ? null
+                : mSelectionDelegateProvider.getSelectionDelegate();
     }
 
     @Nullable

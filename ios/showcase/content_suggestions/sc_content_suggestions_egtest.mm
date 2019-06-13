@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/content_suggestions/sc_content_suggestions_data_source.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
@@ -64,7 +65,7 @@ GREYElementInteraction* CellWithID(NSString* ID) {
 // to iOS 10.2.
 + (NSArray*)testInvocations {
 #if TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
     return @[];
 #endif  // TARGET_IPHONE_SIMULATOR
   return [super testInvocations];

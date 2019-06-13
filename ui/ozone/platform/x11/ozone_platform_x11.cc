@@ -16,6 +16,7 @@
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/x11/x11_clipboard.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
@@ -81,12 +82,17 @@ class OzonePlatformX11 : public OzonePlatform {
     return std::make_unique<X11ScreenOzone>();
   }
 
+  PlatformClipboard* GetPlatformClipboard() override {
+    return clipboard_.get();
+  }
+
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
     CreatePlatformEventSource();
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
+    clipboard_ = std::make_unique<X11Clipboard>();
     cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
@@ -145,6 +151,7 @@ class OzonePlatformX11 : public OzonePlatform {
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<X11Clipboard> clipboard_;
   std::unique_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 

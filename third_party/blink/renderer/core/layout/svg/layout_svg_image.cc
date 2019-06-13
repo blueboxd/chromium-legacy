@@ -175,7 +175,7 @@ void LayoutSVGImage::Paint(const PaintInfo& paint_info) const {
 }
 
 bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
-                                 const HitTestLocation& location_in_container,
+                                 const HitTestLocation& hit_test_location,
                                  const PhysicalOffset& accumulated_offset,
                                  HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, PhysicalOffset());
@@ -190,7 +190,7 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
   if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
     return false;
 
-  TransformedHitTestLocation local_location(location_in_container,
+  TransformedHitTestLocation local_location(hit_test_location,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;

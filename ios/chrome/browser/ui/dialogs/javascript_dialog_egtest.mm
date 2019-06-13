@@ -444,7 +444,7 @@ void TapSuppressDialogsButton() {
 - (void)testShowJavaScriptPromptOK {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
@@ -466,7 +466,7 @@ void TapSuppressDialogsButton() {
 - (void)testShowJavaScriptPromptCancelled {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
@@ -602,7 +602,7 @@ void TapSuppressDialogsButton() {
   // continues to animate until the dialog is closed.  Disabling EarlGrey
   // synchronization code for iPad allows the test to detect and dismiss the
   // dialog while this animation is occurring.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     [[GREYConfiguration sharedInstance]
             setValue:@(NO)
         forConfigKey:kGREYConfigKeySynchronizationEnabled];
@@ -620,7 +620,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Reenable synchronization on iPads now that the dialog has been dismissed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     [[GREYConfiguration sharedInstance]
             setValue:@(YES)
         forConfigKey:kGREYConfigKeySynchronizationEnabled];

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
@@ -100,7 +101,7 @@ id<GREYMatcher> KeyboardNextKey() {
 // to iOS 10.2.
 + (NSArray*)testInvocations {
 #if TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
     return @[];
 #endif  // TARGET_IPHONE_SIMULATOR
   return [super testInvocations];
@@ -195,7 +196,7 @@ id<GREYMatcher> KeyboardNextKey() {
 // Tests whether tapping the input accessory view's close button dismisses the
 // input accessory view.
 - (void)testInputAccessoryViewCloseButton {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/602666): Investigate why the close button is hidden on
     // iPad.
     EARL_GREY_TEST_DISABLED(

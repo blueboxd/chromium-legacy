@@ -42,7 +42,6 @@
 
 namespace WTF {
 
-class CString;
 struct StringHash;
 
 enum UTF8ConversionMode {
@@ -519,7 +518,6 @@ class WTF_EXPORT String {
   static String FromUTF8(const char* s) WARN_UNUSED_RESULT {
     return FromUTF8(reinterpret_cast<const LChar*>(s));
   }
-  static String FromUTF8(const CString&) WARN_UNUSED_RESULT;
   static String FromUTF8(base::StringPiece) WARN_UNUSED_RESULT;
 
   // Tries to convert the passed in string to UTF-8, but will fall back to
@@ -696,7 +694,6 @@ inline StringView::StringView(const String& string)
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(String)
 
-using WTF::CString;
 using WTF::kStrictUTF8Conversion;
 using WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD;
 using WTF::String;

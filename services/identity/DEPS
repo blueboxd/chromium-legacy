@@ -8,7 +8,7 @@ include_rules = [
   "+components/signin/core/browser/profile_oauth2_token_service.h",
   "+components/signin/core/browser/set_accounts_in_cookie_result.h",
   "+components/signin/core/browser/primary_account_manager.h",
-  "+components/signin/core/browser/primary_account_policy_manager.h",
+  "+components/signin/core/browser/primary_account_policy_manager_impl.h",
   "+components/signin/core/browser/test_signin_client.h",
   "+components/signin/public",
   "+components/sync_preferences/testing_pref_service_syncable.h",

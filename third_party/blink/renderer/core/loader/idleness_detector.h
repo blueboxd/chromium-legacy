@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class LocalFrame;
@@ -38,6 +42,9 @@ class CORE_EXPORT IdlenessDetector
   TimeTicks GetNetworkAlmostIdleTime();
   TimeTicks GetNetworkIdleTime();
   bool NetworkIsAlmostIdle();
+
+  // The caller owns the |clock| which must outlive the IdlenessDetector.
+  static void SetTickClockForTesting(const base::TickClock* clock);
 
   void Trace(blink::Visitor*);
 

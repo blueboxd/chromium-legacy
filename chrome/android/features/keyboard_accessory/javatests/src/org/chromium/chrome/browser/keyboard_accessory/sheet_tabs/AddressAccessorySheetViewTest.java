@@ -133,7 +133,9 @@ public class AddressAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        // Wait until at least one element is rendered. Test devices with small screens will cause
+        // the footer to not be created. Instantiating a footer still covers potential crashes.
+        CriteriaHelper.pollUiThread(() -> mView.get().getChildCount() > 0);
 
         // Check that the titles are correct:
         assertThat(getChipText(R.id.name_first), is("Maya"));

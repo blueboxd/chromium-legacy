@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -61,9 +60,4 @@ ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
 std::unique_ptr<ash::ScreenshotDelegate>
 ChromeShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<ChromeScreenshotGrabber>();
-}
-
-ws::InputDeviceControllerClient*
-ChromeShellDelegate::GetInputDeviceControllerClient() {
-  return g_browser_process->platform_part()->GetInputDeviceControllerClient();
 }

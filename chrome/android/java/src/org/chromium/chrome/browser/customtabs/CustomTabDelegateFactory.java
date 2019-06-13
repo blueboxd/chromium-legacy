@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -50,7 +49,7 @@ import javax.inject.Inject;
  * by a {@link CustomTabActivity}.
  */
 @ActivityScope
-public class CustomTabDelegateFactory extends TabDelegateFactory {
+public class CustomTabDelegateFactory implements TabDelegateFactory {
     /**
      * A custom external navigation delegate that forbids the intent picker from showing up.
      */
@@ -270,7 +269,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public void createBrowserControlsState(Tab tab) {
+    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         TabStateBrowserControlsVisibilityDelegate tabDelegate =
                 new TabStateBrowserControlsVisibilityDelegate(tab) {
                     @Override
@@ -279,11 +278,12 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                     }
                 };
 
-        TabBrowserControlsState.create(tab,
-                mBrowserStateVisibilityDelegate == null
-                        ? tabDelegate
-                        : new ComposedBrowserControlsVisibilityDelegate(
-                                tabDelegate, mBrowserStateVisibilityDelegate));
+        // mBrowserStateVisibilityDelegate == null for background tabs for which
+        // fullscreen state info from BrowserStateVisibilityDelegate is not available.
+        return mBrowserStateVisibilityDelegate == null
+                ? tabDelegate
+                : new ComposedBrowserControlsVisibilityDelegate(
+                        tabDelegate, mBrowserStateVisibilityDelegate);
     }
 
     @Override

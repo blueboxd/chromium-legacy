@@ -229,6 +229,12 @@ FeatureInfo::FeatureInfo(
 #elif defined(OS_MACOSX)
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
+
+#if defined(OS_CHROMEOS)
+  feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
+      gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
+      gfx::BufferFormat::P010);
+#endif
 }
 
 void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
@@ -1141,6 +1147,11 @@ void FeatureInfo::InitializeFeatures() {
   if (feature_flags_.chromium_image_xb30) {
     feature_flags_.gpu_memory_buffer_formats.Add(
         gfx::BufferFormat::RGBX_1010102);
+  }
+
+  if (feature_flags_.chromium_image_ycbcr_p010) {
+    AddExtensionString("GL_CHROMIUM_ycbcr_p010_image");
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::P010);
   }
 
   // TODO(gman): Add support for these extensions.

@@ -18,6 +18,7 @@ class PrefService;
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 }
 namespace previews {
 
@@ -27,6 +28,13 @@ class PreviewsTopHostProviderImpl : public PreviewsTopHostProvider {
  public:
   explicit PreviewsTopHostProviderImpl(content::BrowserContext* BrowserContext);
   ~PreviewsTopHostProviderImpl() override;
+
+  // Update the HintsFetcherTopHostBlacklist by attempting to remove the host
+  // for the current navigation from the blacklist. A host is removed if it is
+  // currently on the blacklist and the blacklist state is updated if the
+  // blacklist is empty after removing a host.
+  static void MaybeUpdateTopHostBlacklist(
+      content::NavigationHandle* navigation_handle);
 
   std::vector<std::string> GetTopHosts(size_t max_sites) override;
 

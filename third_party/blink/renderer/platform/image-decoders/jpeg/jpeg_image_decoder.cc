@@ -529,13 +529,13 @@ class JPEGImageReader final {
           // the original size won't exceed the memory limit (see
           // |max_decoded_bytes_| in ImageDecoder) or something less than
           // |g_scale_denominator| otherwise to ensure the image is downscaled.
-          std::vector<SkISize> sizes;
+          Vector<SkISize> sizes;
           if (max_numerator == g_scale_denominator &&
               ShouldDecodeToOriginalSize()) {
             sizes.push_back(
                 SkISize::Make(info_.image_width, info_.image_height));
           } else {
-            sizes.reserve(max_numerator);
+            sizes.ReserveCapacity(max_numerator);
             for (int numerator = 1; numerator <= max_numerator; ++numerator) {
               info_.scale_num = numerator;
               jpeg_calc_output_dimensions(&info_);
@@ -918,7 +918,7 @@ unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
 }
 
 bool JPEGImageDecoder::ShouldGenerateAllSizes() const {
-  return supported_decode_sizes_.empty();
+  return supported_decode_sizes_.IsEmpty();
 }
 
 bool JPEGImageDecoder::CanDecodeToYUV() {
@@ -954,11 +954,11 @@ void JPEGImageDecoder::SetImagePlanes(
   image_planes_ = std::move(image_planes);
 }
 
-void JPEGImageDecoder::SetSupportedDecodeSizes(std::vector<SkISize> sizes) {
+void JPEGImageDecoder::SetSupportedDecodeSizes(Vector<SkISize> sizes) {
   supported_decode_sizes_ = std::move(sizes);
 }
 
-std::vector<SkISize> JPEGImageDecoder::GetSupportedDecodeSizes() const {
+Vector<SkISize> JPEGImageDecoder::GetSupportedDecodeSizes() const {
   // DCHECK IsDecodedSizeAvailable instead of IsSizeAvailable, since the latter
   // has side effects of actually doing the decode.
   DCHECK(IsDecodedSizeAvailable());

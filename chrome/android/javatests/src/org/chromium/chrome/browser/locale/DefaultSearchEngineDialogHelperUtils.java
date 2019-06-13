@@ -11,7 +11,7 @@ import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -61,8 +61,9 @@ public class DefaultSearchEngineDialogHelperUtils {
 
         // Confirm the engine was set appropriately.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals("Search engine wasn't set",
-                                TemplateUrlService.getInstance()
+                ()
+                        -> Assert.assertEquals("Search engine wasn't set",
+                                TemplateUrlServiceFactory.get()
                                         .getDefaultSearchEngineTemplateUrl()
                                         .getKeyword(),
                                 sSelectedEngine));

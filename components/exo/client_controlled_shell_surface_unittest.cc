@@ -1973,11 +1973,11 @@ TEST_F(ClientControlledShellSurfaceTest, SetPipWindowBoundsAnimates) {
   ui::ScopedAnimationDurationScaleMode animation_scale_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ(gfx::Rect(8, 8, 256, 256), window->layer()->GetTargetBounds());
-  EXPECT_EQ(gfx::Rect(8, 8, 256, 256), window->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->bounds());
   window->SetBounds(gfx::Rect(10, 10, 256, 256));
   EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->GetTargetBounds());
-  EXPECT_EQ(gfx::Rect(8, 8, 256, 256), window->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->bounds());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
@@ -1995,15 +1995,15 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
   shell_surface->GetWidget()->Show();
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ(gfx::Rect(8, 8, 256, 256), window->layer()->GetTargetBounds());
-  EXPECT_EQ(gfx::Rect(8, 8, 256, 256), window->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->bounds());
   ui::ScopedAnimationDurationScaleMode animation_scale_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   std::unique_ptr<ash::WindowResizer> resizer(ash::CreateWindowResizer(
       window, gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   resizer->Drag(gfx::Point(10, 10), 0);
-  EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->GetTargetBounds());
-  EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->bounds());
   resizer->CompleteDrag();
 }
 
@@ -2096,6 +2096,34 @@ TEST_F(ClientControlledShellSurfaceTest, DoNotReplayWindowStateRequest) {
   shell_surface->SetMinimized();
   surface->Attach(buffer.get());
   surface->Commit();
+}
+
+TEST_F(ClientControlledShellSurfaceDisplayTest,
+       DoNotRequestBoundsChangeWithStateTransition) {
+  gfx::Size buffer_size(64, 64);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  auto* widget = shell_surface->GetWidget();
+  const gfx::Rect original_bounds(gfx::Point(20, 20), buffer_size);
+  shell_surface->SetGeometry(original_bounds);
+  widget->Restore();
+  surface->Commit();
+
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
+      base::Unretained(this), base::Unretained(shell_surface.get())));
+
+  shell_surface->SetPip();
+  surface->Commit();
+
+  ASSERT_EQ(0, bounds_change_count());
 }
 
 }  // namespace exo

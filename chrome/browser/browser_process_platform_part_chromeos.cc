@@ -43,8 +43,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ws/public/cpp/input_devices/input_device_controller.h"
-#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
@@ -213,17 +211,6 @@ chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
 
 void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
-}
-
-ws::InputDeviceControllerClient*
-BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
-  if (!input_device_controller_client_) {
-    input_device_controller_client_ =
-        std::make_unique<ws::InputDeviceControllerClient>(
-            content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-            chromeos::kChromeServiceName);
-  }
-  return input_device_controller_client_.get();
 }
 
 void BrowserProcessPlatformPart::CreateProfileHelper() {

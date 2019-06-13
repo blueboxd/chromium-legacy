@@ -707,6 +707,7 @@ test("gfx_unittests") {
       "sequential_id_generator_unittest.cc",
       "shadow_value_unittest.cc",
       "skbitmap_operations_unittest.cc",
+      "skia_util_unittest.cc",
       "skia_vector_animation_unittest.cc",
       "skrect_conversion_unittest.cc",
       "transform_util_unittest.cc",

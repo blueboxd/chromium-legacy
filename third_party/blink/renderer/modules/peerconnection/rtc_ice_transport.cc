@@ -509,10 +509,11 @@ void RTCIceTransport::OnStateChanged(webrtc::IceTransportState new_state) {
   if (state_ == webrtc::IceTransportState::kFailed) {
     selected_candidate_pair_ = nullptr;
   }
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  // Make sure the peerconnection's state is updated before the event fires.
   if (peer_connection_) {
     peer_connection_->UpdateIceConnectionState();
   }
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
   if (state_ == webrtc::IceTransportState::kClosed ||
       state_ == webrtc::IceTransportState::kFailed) {
     stop();

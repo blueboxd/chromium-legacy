@@ -141,7 +141,7 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
-                createGroupButtonProvider, gridCardOnClickListenerProvider, componentName);
+                createGroupButtonProvider, null, gridCardOnClickListenerProvider, componentName);
 
         if (mMode == TabListMode.GRID) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(

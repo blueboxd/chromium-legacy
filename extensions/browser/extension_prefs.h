@@ -578,9 +578,9 @@ class ExtensionPrefs : public KeyedService {
   int GetCorruptedDisableCount() const;
   void IncrementCorruptedDisableCount();
 
-  // Whether the extension with the given |id| needs to be synced. This is set
-  // when the state (such as enabled/disabled or allowed in incognito) is
-  // changed before Sync is ready.
+  // Whether the extension with the given |extension_id| needs to be synced.
+  // This is set when the state (such as enabled/disabled or allowed in
+  // incognito) is changed before Sync is ready.
   bool NeedsSync(const std::string& extension_id) const;
   void SetNeedsSync(const std::string& extension_id, bool needs_sync);
 
@@ -606,6 +606,13 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns the set of allowed pages for the given |extension_id|.
   URLPatternSet GetDNRAllowedPages(const ExtensionId& extension_id) const;
+
+  // Whether the extension with the given |extension_id| is using its ruleset's
+  // matched action count for the badge text. This is set via the
+  // setActionCountAsBadgeText API call.
+  bool GetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id) const;
+  void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
+                                       bool use_action_count_as_badge_text);
 
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.

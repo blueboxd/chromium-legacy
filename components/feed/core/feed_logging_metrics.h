@@ -89,6 +89,14 @@ class FeedLoggingMetrics {
 
   void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
 
+  void OnVisualElementClicked(int element_type,
+                              int position,
+                              base::Time fetch_date);
+
+  void OnVisualElementViewed(int element_type,
+                             int position,
+                             base::Time fetch_date);
+
   void OnInternalError(int internal_error);
 
   void OnTokenCompleted(bool was_synthetic, int content_count, int token_count);

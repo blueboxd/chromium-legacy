@@ -812,6 +812,21 @@ void HintCacheStore::OnLoadHint(
     return;
   }
 
+  if (entry->has_expiry_time_secs() &&
+      entry->expiry_time_secs() <=
+          base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds()) {
+    // An expired hint should be loaded rarely if the user is regularly fetching
+    // and storing fresh hints. Expired fetched hints are removed each time
+    // fresh hints are fetched and placed into the store. In the future, the
+    // expired hints could be asynchronously removed if necessary.
+    // An empty hint is returned instead of the expired one.
+    UMA_HISTOGRAM_BOOLEAN(
+        "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true);
+    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(nullptr);
+    std::move(callback).Run(entry_key, std::move(loaded_hint));
+    return;
+  }
+
   // Release the Hint into a Hint unique_ptr. This eliminates the need for any
   // copies of the entry's hint.
   std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(

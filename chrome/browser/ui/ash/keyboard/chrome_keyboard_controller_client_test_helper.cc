@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
@@ -23,30 +25,26 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
 
   // ash::KeyboardController:
   void KeyboardContentsLoaded(const gfx::Size& size) override {}
-  void GetKeyboardConfig(GetKeyboardConfigCallback callback) override {
-    std::move(callback).Run(keyboard_config_);
+  keyboard::KeyboardConfig GetKeyboardConfig() override {
+    return keyboard_config_;
   }
   void SetKeyboardConfig(
       const keyboard::KeyboardConfig& keyboard_config) override {
     keyboard_config_ = keyboard_config;
   }
-  void IsKeyboardEnabled(IsKeyboardEnabledCallback callback) override {
-    std::move(callback).Run(enabled_);
-  }
+  bool IsKeyboardEnabled() override { return enabled_; }
   void SetEnableFlag(keyboard::KeyboardEnableFlag flag) override {
     keyboard_enable_flags_.insert(flag);
   }
   void ClearEnableFlag(keyboard::KeyboardEnableFlag flag) override {
     keyboard_enable_flags_.erase(flag);
   }
-  void GetEnableFlags(GetEnableFlagsCallback callback) override {
-    std::move(callback).Run(std::vector<keyboard::KeyboardEnableFlag>());
+  const std::set<keyboard::KeyboardEnableFlag>& GetEnableFlags() override {
+    return keyboard_enable_flags_;
   }
   void ReloadKeyboardIfNeeded() override {}
   void RebuildKeyboardIfEnabled() override {}
-  void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override {
-    std::move(callback).Run(visible_);
-  }
+  bool IsKeyboardVisible() override { return visible_; }
   void ShowKeyboard() override { visible_ = true; }
   void HideKeyboard(ash::HideReason reason) override { visible_ = false; }
   void SetContainerType(keyboard::ContainerType container_type,

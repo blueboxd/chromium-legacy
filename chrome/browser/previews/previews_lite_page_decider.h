@@ -97,12 +97,14 @@ class PreviewsLitePageDecider
                              base::TimeDelta duration) override;
   bool HostBlacklistedFromBypass(const std::string& host) override;
 
- private:
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
       const net::HttpRequestHeaders& headers) override;
   void OnSettingsInitialized() override;
 
+  bool has_drp_headers() const { return drp_headers_valid_; }
+
+ private:
   // The time after which it is ok to send the server more preview requests.
   base::Optional<base::TimeTicks> retry_at_;
 
@@ -132,6 +134,10 @@ class PreviewsLitePageDecider
   // this dictionary, that host should be blacklisted from this preview until
   // after the time value. This is stored persistently in prefs.
   std::unique_ptr<base::DictionaryValue> host_bypass_blacklist_;
+
+  // A bool that tracks if the last call to |OnProxyRequestHeadersChanged| had
+  // what looked like a valid chrome-proxy header.
+  bool drp_headers_valid_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

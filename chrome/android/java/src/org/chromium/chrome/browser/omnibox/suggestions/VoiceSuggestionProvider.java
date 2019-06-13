@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.Vo
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,7 +117,7 @@ class VoiceSuggestionProvider {
         if (doesVoiceResultHaveMatch(suggestions, result)) return;
         if (result.getConfidence() < confidenceThreshold && result.getConfidence() > 0) return;
         String voiceUrl =
-                TemplateUrlService.getInstance().getUrlForVoiceSearchQuery(result.getMatch());
+                TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(result.getMatch());
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         suggestions.add(new OmniboxSuggestion(OmniboxSuggestionType.VOICE_SUGGEST, true, 0, 1,

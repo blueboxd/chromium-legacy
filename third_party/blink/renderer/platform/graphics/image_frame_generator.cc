@@ -61,7 +61,7 @@ static bool UpdateYUVComponentSizes(ImageDecoder* decoder,
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& full_size,
                                          bool is_multi_frame,
                                          const ColorBehavior& color_behavior,
-                                         std::vector<SkISize> supported_sizes)
+                                         Vector<SkISize> supported_sizes)
     : full_size_(full_size),
       decoder_color_behavior_(color_behavior),
       is_multi_frame_(is_multi_frame),
@@ -263,12 +263,15 @@ ImageFrameGenerator::ClientMutexLocker::ClientMutexLocker(
     : generator_(generator), client_id_(client_id) {
   {
     MutexLocker lock(generator_->generator_mutex_);
-    ClientMutex* client_mutex = nullptr;
     auto it = generator_->mutex_map_.find(client_id_);
-    if (it == generator_->mutex_map_.end())
-      client_mutex = &generator_->mutex_map_[client_id];
-    else
-      client_mutex = &it->second;
+    ClientMutex* client_mutex;
+    if (it == generator_->mutex_map_.end()) {
+      auto result = generator_->mutex_map_.insert(
+          client_id_, std::make_unique<ClientMutex>());
+      client_mutex = result.stored_value->value.get();
+    } else {
+      client_mutex = it->value.get();
+    }
     client_mutex->ref_count++;
     mutex_ = &client_mutex->mutex;
   }
@@ -282,9 +285,9 @@ ImageFrameGenerator::ClientMutexLocker::~ClientMutexLocker() {
   MutexLocker lock(generator_->generator_mutex_);
   auto it = generator_->mutex_map_.find(client_id_);
   DCHECK(it != generator_->mutex_map_.end());
-  it->second.ref_count--;
+  it->value->ref_count--;
 
-  if (it->second.ref_count == 0)
+  if (it->value->ref_count == 0)
     generator_->mutex_map_.erase(it);
 }
 

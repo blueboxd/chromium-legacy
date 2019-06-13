@@ -889,8 +889,6 @@ if (enable_java_templates) {
   #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   custom_package: java package for generated .java files.
-  #   v14_skip: If true, don't run v14 resource generator on this. Defaults to
-  #     false. (see build/android/gyp/generate_v14_compatible_resources.py)
   #   shared_resources: If true make a resource package that can be loaded by a
   #     different application at runtime to access the package's resources.
   #   r_text_file: (optional) path to pre-generated R.txt to be used when
@@ -914,6 +912,9 @@ if (enable_java_templates) {
     forward_variables_from(invoker, [ "testonly" ])
 
     _base_path = "$target_gen_dir/$target_name"
+    if (defined(invoker.v14_skip)) {
+      not_needed(invoker, [ "v14_skip" ])
+    }
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
@@ -977,7 +978,6 @@ if (enable_java_templates) {
                                "generated_resource_dirs",
                                "generated_resource_files",
                                "resource_dirs",
-                               "v14_skip",
                                "strip_drawables",
                              ])
       deps = _deps
@@ -2032,7 +2032,6 @@ if (enable_java_templates) {
   #     target.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
-
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
     assert(defined(invoker.android_manifest))
     _gen_dir = "$target_gen_dir/$target_name"
@@ -2640,6 +2639,18 @@ if (enable_java_templates) {
     }
 
     _java_target = "${_template_name}__java"
+
+    # Included special group to bypass looking for __java__build_config file
+    # for base module. Build config for base_module does not include the __java
+    # (eg. monochrome_public_bundle__base_bundle_module__build_config)
+    # and thus, this workaround skips looking for one.
+    if (defined(invoker.base_module_target)) {
+      group("${_template_name}__group") {
+        deps = [
+          "${invoker.base_module_target}__java",
+        ]
+      }
+    }
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
@@ -2665,6 +2676,12 @@ if (enable_java_templates) {
         type = "android_app_bundle_module"
         res_size_info_path = _res_size_info_path
         is_base_module = _is_base_module
+
+        if (!is_base_module) {
+          if (defined(invoker.base_module_target)) {
+            _deps += [ ":${_template_name}__group" ]
+          }
+        }
       } else {
         type = "android_apk"
       }
@@ -4063,7 +4080,6 @@ if (enable_java_templates) {
         if (!_strip_resources && _scanned_files.has_r_text_file) {
           r_text_file = "${_output_path}/R.txt"
         }
-        v14_skip = true
       }
     } else if (defined(invoker.strip_drawables)) {
       not_needed(invoker, [ "strip_drawables" ])

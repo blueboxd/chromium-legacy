@@ -75,6 +75,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 
   base::Process& peer_process() { return peer_process_; }
+  mojom::ChildControl* child_control() { return child_control_.get(); }
 
  private:
   friend class ChildProcessHost;

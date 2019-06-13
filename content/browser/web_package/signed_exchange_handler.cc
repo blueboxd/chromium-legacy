@@ -790,4 +790,10 @@ SignedExchangeHandler::ComputeHeaderIntegrity() const {
   return envelope_->ComputeHeaderIntegrity();
 }
 
+base::Time SignedExchangeHandler::GetSignatureExpireTime() const {
+  if (!envelope_)
+    return base::Time();
+  return base::Time::UnixEpoch() +
+         base::TimeDelta::FromSeconds(envelope_->signature().expires);
+}
 }  // namespace content

@@ -49,6 +49,10 @@ class ScopedIPCSupport;
 }  // namespace core
 }  // namespace mojo
 
+namespace tracing {
+class BackgroundTracingAgentProviderImpl;
+}  // namespace tracing
+
 namespace content {
 class InProcessChildThreadParams;
 class ThreadSafeSender;
@@ -145,6 +149,9 @@ class CONTENT_EXPORT ChildThreadImpl
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabled(bool enable) override;
 #endif
+  void GetBackgroundTracingAgentProvider(
+      mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
+          receiver) override;
   void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
@@ -235,6 +242,9 @@ class CONTENT_EXPORT ChildThreadImpl
   base::RepeatingClosure quit_closure_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
+
+  std::unique_ptr<tracing::BackgroundTracingAgentProviderImpl>
+      background_tracing_agent_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 

@@ -1404,6 +1404,7 @@ enum HistogramValue {
   LOGINSCREENUI_SHOW = 1341,
   LOGINSCREENUI_CLOSE = 1342,
   DECLARATIVENETREQUEST_GETMATCHEDRULES = 1343,
+  DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT = 1344,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

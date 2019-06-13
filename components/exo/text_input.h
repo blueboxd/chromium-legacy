@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_EXO_TEXT_INPUT_H_
 #define COMPONENTS_EXO_TEXT_INPUT_H_
 
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/optional.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -29,7 +29,7 @@ size_t OffsetFromUTF16Offset(const base::StringPiece16& text, uint32_t offset);
 
 // This class bridges the ChromeOS input method and a text-input context.
 class TextInput : public ui::TextInputClient,
-                  public keyboard::KeyboardControllerObserver {
+                  public ash::KeyboardControllerObserver {
  public:
   class Delegate {
    public:
@@ -139,8 +139,8 @@ class TextInput : public ui::TextInputClient,
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+  // ash::KeyboardControllerObserver:
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
  private:
   void AttachInputMethod();

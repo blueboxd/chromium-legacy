@@ -175,8 +175,8 @@ public class ChromeFullscreenManager
         mActivity = activity;
         mControlsPosition = controlsPosition;
         mExitFullscreenOnStop = exitFullscreenOnStop;
-        mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
-                new Runnable() {
+        mBrowserVisibilityDelegate =
+                new BrowserStateBrowserControlsVisibilityDelegate(new Runnable() {
                     @Override
                     public void run() {
                         if (getTab() != null) {
@@ -185,7 +185,7 @@ public class ChromeFullscreenManager
                             setPositionsForTabToNonFullscreen();
                         }
                     }
-                });
+                }, this::getPersistentFullscreenMode);
     }
 
     /**

@@ -31,11 +31,12 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
  * Widget that lets the user search using their default search engine.
@@ -91,7 +92,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             implements LoadListener, TemplateUrlServiceObserver {
         @Override
         public void onTemplateUrlServiceLoaded() {
-            TemplateUrlService.getInstance().unregisterLoadListener(this);
+            TemplateUrlServiceFactory.get().unregisterLoadListener(this);
             updateCachedEngineName();
         }
 
@@ -149,7 +150,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             if (sObserver != null) return;
             sObserver = new SearchWidgetTemplateUrlServiceObserver();
 
-            TemplateUrlService service = TemplateUrlService.getInstance();
+            TemplateUrlService service = TemplateUrlServiceFactory.get();
             service.registerLoadListener(sObserver);
             service.addObserver(sObserver);
             if (!service.isLoaded()) service.load();
@@ -305,7 +306,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
         // Getting an instance of the TemplateUrlService requires that the native library be
         // loaded, but the TemplateUrlService also itself needs to be initialized.
-        TemplateUrlService service = TemplateUrlService.getInstance();
+        TemplateUrlService service = TemplateUrlServiceFactory.get();
         if (!service.isLoaded()) return;
 
         // Update the URL that we show for zero-suggest.

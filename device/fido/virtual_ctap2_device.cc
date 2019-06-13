@@ -1364,6 +1364,17 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
   }
 
+  cbor::Value::MapValue id0;
+  id0.emplace(cbor::Value(static_cast<int>(
+                  BioEnrollmentTemplateInfoParam::kTemplateId)),
+              cbor::Value::BinaryValue{0, 0, 0, 1});
+  id0.emplace(cbor::Value(static_cast<int>(
+                  BioEnrollmentTemplateInfoParam::kTemplateFriendlyName)),
+              cbor::Value("Template0001"));
+
+  cbor::Value::ArrayValue enumerated_ids;
+  enumerated_ids.emplace_back(id0);
+
   switch (it->second.GetUnsigned()) {
     case static_cast<int>(SubCmd::kGetFingerprintSensorInfo):
       response_map.emplace(
@@ -1396,6 +1407,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
       break;
     case static_cast<int>(SubCmd::kCancelCurrentEnrollment):
       return CtapDeviceResponseCode::kSuccess;
+    case static_cast<int>(SubCmd::kEnumerateEnrollments):
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos),
+          enumerated_ids);
+      break;
     default:
       // Handle all other commands as if they were unsupported (will change
       // when support is added).

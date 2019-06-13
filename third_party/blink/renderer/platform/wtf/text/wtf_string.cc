@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
@@ -472,11 +471,11 @@ std::string String::Utf8(UTF8ConversionMode mode) const {
   // Allocate a buffer big enough to hold all the characters
   // (an individual UTF-16 UChar can only expand to 3 UTF-8 bytes).
   // Optimization ideas, if we find this function is hot:
-  //  * We could speculatively create a CStringImpl to contain 'length'
+  //  * We could speculatively create a std::string to contain 'length'
   //    characters, and resize if necessary (i.e. if the buffer contains
   //    non-ascii characters). (Alternatively, scan the buffer first for
   //    ascii characters, so we know this will be sufficient).
-  //  * We could allocate a CStringImpl with an appropriate size to
+  //  * We could allocate a std::string with an appropriate size to
   //    have a good chance of being able to write the string into the
   //    buffer without reallocing (say, 1.5 x length).
   if (length > std::numeric_limits<unsigned>::max() / 3)
@@ -610,10 +609,6 @@ String String::FromUTF8(const LChar* string) {
   if (!string)
     return String();
   return FromUTF8(string, strlen(reinterpret_cast<const char*>(string)));
-}
-
-String String::FromUTF8(const CString& s) {
-  return FromUTF8(s.data());
 }
 
 String String::FromUTF8(base::StringPiece s) {

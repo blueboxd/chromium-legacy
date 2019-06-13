@@ -309,6 +309,7 @@ Polymer({
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     print_preview.NativeLayer.getInstance().signIn(false);
+    this.$.searchBox.focus();
   },
 
   /** @private */

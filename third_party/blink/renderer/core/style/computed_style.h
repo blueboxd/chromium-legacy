@@ -106,7 +106,11 @@ class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
 class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
+class InternalVisitedCaretColor;
 class InternalVisitedColor;
+class InternalVisitedColumnRuleColor;
+class InternalVisitedOutlineColor;
+class InternalVisitedTextDecorationColor;
 class InternalVisitedTextEmphasisColor;
 class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
@@ -203,7 +207,11 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderLeftColor;
   friend class css_longhand::InternalVisitedBorderRightColor;
   friend class css_longhand::InternalVisitedBorderTopColor;
+  friend class css_longhand::InternalVisitedCaretColor;
   friend class css_longhand::InternalVisitedColor;
+  friend class css_longhand::InternalVisitedColumnRuleColor;
+  friend class css_longhand::InternalVisitedOutlineColor;
+  friend class css_longhand::InternalVisitedTextDecorationColor;
   friend class css_longhand::InternalVisitedTextEmphasisColor;
   friend class css_longhand::InternalVisitedTextFillColor;
   friend class css_longhand::InternalVisitedTextStrokeColor;
@@ -2378,14 +2386,14 @@ class ComputedStyle : public ComputedStyleBase,
   void SetInternalVisitedBorderTopColor(const StyleColor& v) {
     SetInternalVisitedBorderTopColorInternal(v);
   }
-  void SetVisitedLinkOutlineColor(const StyleColor& v) {
-    SetVisitedLinkOutlineColorInternal(v);
+  void SetInternalVisitedOutlineColor(const StyleColor& v) {
+    SetInternalVisitedOutlineColorInternal(v);
   }
-  void SetVisitedLinkColumnRuleColor(const StyleColor& v) {
-    SetVisitedLinkColumnRuleColorInternal(v);
+  void SetInternalVisitedColumnRuleColor(const StyleColor& v) {
+    SetInternalVisitedColumnRuleColorInternal(v);
   }
-  void SetVisitedLinkTextDecorationColor(const StyleColor& v) {
-    SetVisitedLinkTextDecorationColorInternal(v);
+  void SetInternalVisitedTextDecorationColor(const StyleColor& v) {
+    SetInternalVisitedTextDecorationColorInternal(v);
   }
   void SetInternalVisitedTextEmphasisColor(const StyleColor& color) {
     SetInternalVisitedTextEmphasisColorInternal(color.Resolve(Color()));
@@ -2402,10 +2410,10 @@ class ComputedStyle : public ComputedStyleBase,
     SetInternalVisitedTextStrokeColorIsCurrentColorInternal(
         color.IsCurrentColor());
   }
-  void SetVisitedLinkCaretColor(const StyleAutoColor& color) {
-    SetVisitedLinkCaretColorInternal(color.Resolve(Color()));
-    SetVisitedLinkCaretColorIsCurrentColorInternal(color.IsCurrentColor());
-    SetVisitedLinkCaretColorIsAutoInternal(color.IsAutoColor());
+  void SetInternalVisitedCaretColor(const StyleAutoColor& color) {
+    SetInternalVisitedCaretColorInternal(color.Resolve(Color()));
+    SetInternalVisitedCaretColorIsCurrentColorInternal(color.IsCurrentColor());
+    SetInternalVisitedCaretColorIsAutoInternal(color.IsAutoColor());
   }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
@@ -2510,12 +2518,12 @@ class ComputedStyle : public ComputedStyleBase,
                : StyleColor(TextStrokeColorInternal());
   }
   Color InternalVisitedColor() const { return InternalVisitedColorInternal(); }
-  StyleAutoColor VisitedLinkCaretColor() const {
-    if (VisitedLinkCaretColorIsCurrentColorInternal())
+  StyleAutoColor InternalVisitedCaretColor() const {
+    if (InternalVisitedCaretColorIsCurrentColorInternal())
       return StyleAutoColor::CurrentColor();
-    if (VisitedLinkCaretColorIsAutoInternal())
+    if (InternalVisitedCaretColorIsAutoInternal())
       return StyleAutoColor::AutoColor();
-    return StyleAutoColor(VisitedLinkCaretColorInternal());
+    return StyleAutoColor(InternalVisitedCaretColorInternal());
   }
   StyleColor InternalVisitedBackgroundColor() const {
     return InternalVisitedBackgroundColorInternal();
@@ -2556,18 +2564,20 @@ class ComputedStyle : public ComputedStyleBase,
                 other.InternalVisitedBorderTopColor() ||
             !BorderTopWidth());
   }
-  StyleColor VisitedLinkOutlineColor() const {
-    return VisitedLinkOutlineColorInternal();
+  StyleColor InternalVisitedOutlineColor() const {
+    return InternalVisitedOutlineColorInternal();
   }
-  bool VisitedLinkOutlineColorHasNotChanged(const ComputedStyle& other) const {
-    return (VisitedLinkOutlineColor() == other.VisitedLinkOutlineColor() ||
+  bool InternalVisitedOutlineColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (InternalVisitedOutlineColor() ==
+                other.InternalVisitedOutlineColor() ||
             !OutlineWidth());
   }
-  StyleColor VisitedLinkColumnRuleColor() const {
-    return VisitedLinkColumnRuleColorInternal();
+  StyleColor InternalVisitedColumnRuleColor() const {
+    return InternalVisitedColumnRuleColorInternal();
   }
-  StyleColor VisitedLinkTextDecorationColor() const {
-    return VisitedLinkTextDecorationColorInternal();
+  StyleColor InternalVisitedTextDecorationColor() const {
+    return InternalVisitedTextDecorationColorInternal();
   }
   StyleColor InternalVisitedTextEmphasisColor() const {
     return InternalVisitedTextEmphasisColorIsCurrentColorInternal()

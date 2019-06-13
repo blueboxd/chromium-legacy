@@ -119,6 +119,8 @@ class WMHelper : public aura::client::DragDropDelegate {
   virtual void RemovePostTargetHandler(ui::EventHandler* handler) = 0;
   virtual bool IsTabletModeWindowManagerEnabled() const = 0;
   virtual double GetDefaultDeviceScaleFactor() const = 0;
+  virtual void SetImeBlocked(aura::Window* window, bool ime_blocked) = 0;
+  virtual bool IsImeBlocked(aura::Window* window) const = 0;
 
   virtual LifetimeManager* GetLifetimeManager() = 0;
   virtual aura::client::CaptureClient* GetCaptureClient() = 0;

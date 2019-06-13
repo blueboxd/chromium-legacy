@@ -61,10 +61,10 @@
 #include "ios/web/public/security/certificate_policy_cache.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #include "ios/web/public/session/session_certificate_policy_cache.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

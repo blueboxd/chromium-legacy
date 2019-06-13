@@ -125,6 +125,7 @@ source_set("application_delegate_internal") {
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/payments",
     "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/u2f",
     "//ios/chrome/browser/ui/authentication",

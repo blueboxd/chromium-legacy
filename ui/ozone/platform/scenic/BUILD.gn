@@ -63,16 +63,11 @@ source_set("scenic") {
     "//ui/platform_window",
   ]
 
-  data_deps = []
   if (enable_vulkan) {
     sources += [
       "vulkan_implementation_scenic.cc",
       "vulkan_implementation_scenic.h",
     ]
     defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
-    data_deps += [
-      "//third_party/angle:libEGL",
-      "//third_party/angle:libGLESv2",
-    ]
   }
 }

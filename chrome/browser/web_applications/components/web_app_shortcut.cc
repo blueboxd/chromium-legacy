@@ -31,10 +31,10 @@ void DeleteShortcutInfoOnUIThread(
 
 namespace web_app {
 
-ShortcutInfo::ShortcutInfo() {}
+ShortcutInfo::ShortcutInfo() = default;
 
 ShortcutInfo::~ShortcutInfo() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 ShortcutLocations::ShortcutLocations()

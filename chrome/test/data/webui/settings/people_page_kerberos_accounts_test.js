@@ -5,6 +5,26 @@
 'use strict';
 
 cr.define('settings_people_page_kerberos_accounts', function() {
+  // List of fake accounts.
+  const testAccounts = [
+    {
+      principalName: 'user@REALM',
+      config: 'config1',
+      isSignedIn: true,
+      isActive: true,
+      hasRememberedPassword: false,
+      pic: 'pic',
+    },
+    {
+      principalName: 'user2@REALM2',
+      config: 'config2',
+      isSignedIn: false,
+      isActive: false,
+      hasRememberedPassword: true,
+      pic: 'pic2',
+    }
+  ];
+
   /** @implements {settings.KerberosAccountsBrowserProxy} */
   class TestKerberosAccountsBrowserProxy extends TestBrowserProxy {
     constructor() {
@@ -22,26 +42,15 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     /** @override */
     getAccounts() {
       this.methodCalled('getAccounts');
-
-      return Promise.resolve([
-        {
-          principalName: 'user@REALM',
-          isSignedIn: true,
-          isActive: true,
-          pic: 'pic',
-        },
-        {
-          principalName: 'user2@REALM2',
-          isSignedIn: false,
-          isActive: false,
-          pic: 'pic2',
-        }
-      ]);
+      return Promise.resolve(testAccounts);
     }
 
     /** @override */
-    addAccount(principalName, password) {
-      this.methodCalled('addAccount', [principalName, password]);
+    addAccount(
+        principalName, password, rememberPassword, config, allowExisting) {
+      this.methodCalled(
+          'addAccount',
+          [principalName, password, rememberPassword, config, allowExisting]);
       return Promise.resolve(this.addAccountError);
     }
 
@@ -70,8 +79,9 @@ cr.define('settings_people_page_kerberos_accounts', function() {
 
     // Indices of 'More Actions' buttons.
     const MoreActions = {
-      SET_AS_ACTIVE_ACCOUNT: 0,
-      REMOVE_ACCOUNT: 1,
+      REFRESH_NOW: 0,
+      SET_AS_ACTIVE_ACCOUNT: 1,
+      REMOVE_ACCOUNT: 2,
     };
 
     setup(function() {
@@ -116,7 +126,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       Polymer.dom.flush();
       const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
       assertTrue(!!addDialog);
-      assertEquals('', addDialog.username);
+      assertEquals('', addDialog.$.username.value);
     });
 
     test('ReauthenticateAccount', function() {
@@ -128,16 +138,34 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         assertTrue(!kerberosAccounts.$$('kerberos-add-account-dialog'));
 
         // Click "Sign-In" on an existing account.
-        // Note that both accounts have a reauth button, but [0] is hidden, so
-        // click [1] (clicking a hidden button works, but it feels weird).
-        kerberosAccounts.root.querySelectorAll('.reauth-button')[1].click();
+        // Note that both accounts have a reauth button, but the first one is
+        // hidden, so click the second one (clicking a hidden button works, but
+        // it feels weird).
+        kerberosAccounts.root.querySelectorAll('.reauth-button')[Account.SECOND]
+            .click();
         Polymer.dom.flush();
 
         // Now the kerberos-add-account-dialog should be open with preset
         // username.
         const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
         assertTrue(!!addDialog);
-        assertEquals('user2@REALM2', addDialog.username);
+        assertEquals(
+            testAccounts[Account.SECOND].principalName,
+            addDialog.$.username.value);
+      });
+    });
+
+    test('RefreshNow', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        clickMoreActions(Account.FIRST, MoreActions.REFRESH_NOW);
+        Polymer.dom.flush();
+
+        const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
+        assertTrue(!!addDialog);
+        assertEquals(
+            testAccounts[Account.FIRST].principalName,
+            addDialog.$.username.value);
       });
     });
 
@@ -146,7 +174,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         Polymer.dom.flush();
         clickMoreActions(Account.FIRST, MoreActions.REMOVE_ACCOUNT);
         return browserProxy.whenCalled('removeAccount').then((account) => {
-          assertEquals('user@REALM', account.principalName);
+          assertEquals(
+              testAccounts[Account.FIRST].principalName, account.principalName);
         });
       });
     });
@@ -165,7 +194,9 @@ cr.define('settings_people_page_kerberos_accounts', function() {
             return browserProxy.whenCalled('setAsActiveAccount');
           })
           .then((account) => {
-            assertEquals('user2@REALM2', account.principalName);
+            assertEquals(
+                testAccounts[Account.SECOND].principalName,
+                account.principalName);
           });
     });
   });
@@ -173,19 +204,48 @@ cr.define('settings_people_page_kerberos_accounts', function() {
   // Tests for the kerberos-add-account-dialog element.
   suite('KerberosAddAccountTests', function() {
     let browserProxy = null;
+
     let dialog = null;
+    let addDialog = null;
+
     let username = null;
     let password = null;
+    let rememberPassword = null;
+    let advancedConfigButton = null;
     let addButton = null;
     let generalError = null;
+
+    // Indices of 'addAccount' params.
+    const AddParams = {
+      PRINCIPAL_NAME: 0,
+      PASSWORD: 1,
+      REMEMBER_PASSWORD: 2,
+      CONFIG: 3,
+      ALLOW_EXISTING: 4,
+    };
 
     setup(function() {
       browserProxy = new TestKerberosAccountsBrowserProxy();
       settings.KerberosAccountsBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
+      createDialog(null);
+    });
+
+    teardown(function() {
+      dialog.remove();
+    });
+
+    function createDialog(presetAccount) {
+      if (dialog) {
+        dialog.remove();
+      }
 
       dialog = document.createElement('kerberos-add-account-dialog');
+      dialog.presetAccount = presetAccount;
       document.body.appendChild(dialog);
+
+      addDialog = dialog.$.addDialog;
+      assertTrue(!!addDialog);
 
       username = dialog.$.username;
       assertTrue(!!username);
@@ -193,16 +253,18 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       password = dialog.$.password;
       assertTrue(!!password);
 
-      addButton = dialog.$$('.action-button');
+      rememberPassword = dialog.$.rememberPassword;
+      assertTrue(!!rememberPassword);
+
+      advancedConfigButton = dialog.$.advancedConfigButton;
+      assertTrue(!!advancedConfigButton);
+
+      addButton = addDialog.querySelector('.action-button');
       assertTrue(!!addButton);
 
       generalError = dialog.$['general-error-message'];
       assertTrue(!!generalError);
-    });
-
-    teardown(function() {
-      dialog.remove();
-    });
+    }
 
     // Sets |error| as error result for addAccount(), simulates a click on the
     // addAccount button and checks that |errorElement| has an non-empty
@@ -218,32 +280,99 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       });
     }
 
-    // The username input field is not disabled by default.
-    test('UsernameFieldNotDisabledByDefault', function() {
+    // Opens the Advanced Config dialog, sets |config| as Kerberos configuration
+    // and clicks 'Save'.
+    function setConfig(config) {
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      advancedConfigDialog.querySelector('#config').value = config;
+      advancedConfigDialog.querySelector('.action-button').click();
+      Polymer.dom.flush();
+    }
+
+    // Opens the Advanced Config dialog, asserts that |config| is set as
+    // Kerberos configuration and clicks 'Cancel'.
+    function assertConfig(config) {
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      assertEquals(config, advancedConfigDialog.querySelector('#config').value);
+      advancedConfigDialog.querySelector('.cancel-button').click();
+      Polymer.dom.flush();
+    }
+
+    // Verifies expected states if no account is preset.
+    test('StatesWithoutPresetAccount', function() {
       assertFalse(username.disabled);
+      assertEquals('', username.value);
+      assertEquals('', password.value);
+      assertConfig(loadTimeData.getString('defaultKerberosConfig'));
+      assertFalse(rememberPassword.checked);
     });
 
-    // The username input field is disabled if a username is preset before the
-    // dialog is appended to the document.
-    test('UsernameFieldDisabledIfPreset', function() {
-      const newDialog = document.createElement('kerberos-add-account-dialog');
-      newDialog.username = 'user';
-      document.body.appendChild(newDialog);
-      assertTrue(newDialog.$.username.disabled);
+    // Verifies expected states if an account is preset.
+    test('StatesWithPresetAccount', function() {
+      createDialog(testAccounts[0]);
+      assertTrue(username.readonly);
+      assertEquals(testAccounts[0].principalName, username.value);
+      assertConfig(testAccounts[0].config);
+      // Password and remember password are tested below since the contents
+      // depends on the hasRememberedPassword property of the account.
     });
 
-    // By clicking the "Add account", the username and password values are
-    // passed to the 'addAccount' browser proxy method.
-    test('AddButtonPassesCredentials', function() {
+    // The password input field is empty and 'Remember password' is not preset
+    // if |hasRememberedPassword| is false.
+    test('PasswordNotPresetIfHasRememberedPasswordIsFalse', function() {
+      assertFalse(testAccounts[0].hasRememberedPassword);
+      createDialog(testAccounts[0]);
+      assertEquals('', password.value);
+      assertFalse(rememberPassword.checked);
+    });
+
+    // The password input field is not empty and 'Remember password' is preset
+    // if |hasRememberedPassword| is true.
+    test('PasswordPresetIfHasRememberedPasswordIsTrue', function() {
+      assertTrue(testAccounts[1].hasRememberedPassword);
+      createDialog(testAccounts[1]);
+      assertNotEquals('', password.value);
+      assertTrue(rememberPassword.checked);
+    });
+
+    // By clicking the "Add account", all field values are passed to the
+    // 'addAccount' browser proxy method.
+    test('AddButtonPassesFieldValues', function() {
       const EXPECTED_USER = 'testuser';
       const EXPECTED_PASS = 'testpass';
+      const EXPECTED_REMEMBER_PASS = true;
+      const EXPECTED_CONFIG = 'testconf';
+
       username.value = EXPECTED_USER;
       password.value = EXPECTED_PASS;
+      setConfig(EXPECTED_CONFIG);
+      rememberPassword.checked = EXPECTED_REMEMBER_PASS;
+
       assertFalse(addButton.disabled);
       addButton.click();
       return browserProxy.whenCalled('addAccount').then(function(args) {
-        assertEquals(EXPECTED_USER, args[0]);
-        assertEquals(EXPECTED_PASS, args[1]);
+        assertEquals(EXPECTED_USER, args[AddParams.PRINCIPAL_NAME]);
+        assertEquals(EXPECTED_PASS, args[AddParams.PASSWORD]);
+        assertEquals(EXPECTED_REMEMBER_PASS, args[AddParams.REMEMBER_PASSWORD]);
+        assertEquals(EXPECTED_CONFIG, args[AddParams.CONFIG]);
+
+        // Should be false if a new account is added. See also
+        // AllowExistingIsTrueForPresetAccounts test.
+        assertFalse(args[AddParams.ALLOW_EXISTING]);
+      });
+    });
+
+    // If an account is preset, overwriting that account should be allowed.
+    test('AllowExistingIsTrueForPresetAccounts', function() {
+      // Populate dialog with preset account.
+      createDialog(testAccounts[1]);
+      addButton.click();
+      return browserProxy.whenCalled('addAccount').then(function(args) {
+        assertTrue(args[AddParams.ALLOW_EXISTING]);
       });
     });
 
@@ -255,6 +384,82 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertFalse(addButton.disabled);
       });
+    });
+
+    // If the account has hasRememberedPassword == true and the user just clicks
+    // the 'Add' button, an empty password is submitted.
+    test('SubmitsEmptyPasswordIfRememberedPasswordIsUsed', function() {
+      assertTrue(testAccounts[1].hasRememberedPassword);
+      createDialog(testAccounts[1]);
+      addButton.click();
+      return browserProxy.whenCalled('addAccount').then(function(args) {
+        assertEquals('', args[AddParams.PASSWORD]);
+        assertTrue(args[AddParams.REMEMBER_PASSWORD]);
+      });
+    });
+
+    // If the account has hasRememberedPassword == true and the user changes the
+    // password before clicking 'Add' button, the changed password is submitted.
+    test('SubmitsChangedPasswordIfRememberedPasswordIsChanged', function() {
+      assertTrue(testAccounts[1].hasRememberedPassword);
+      createDialog(testAccounts[1]);
+      password.inputElement.value = 'some edit';
+      password.dispatchEvent(new CustomEvent('input'));
+      addButton.click();
+      return browserProxy.whenCalled('addAccount').then(function(args) {
+        assertNotEquals('', args[AddParams.PASSWORD]);
+        assertTrue(args[AddParams.REMEMBER_PASSWORD]);
+      });
+    });
+
+    test('AdvancedConfigOpenClose', function() {
+      assertTrue(!dialog.$$('#advancedConfigDialog'));
+      assertFalse(addDialog.hidden);
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+
+      let advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      assertTrue(!!advancedConfigDialog);
+      assertTrue(advancedConfigDialog.open);
+      assertTrue(addDialog.hidden);
+      advancedConfigDialog.querySelector('.action-button').click();
+
+      Polymer.dom.flush();
+      assertTrue(!dialog.$$('#advancedConfigDialog'));
+      assertFalse(addDialog.hidden);
+      assertTrue(addDialog.open);
+    });
+
+    test('AdvancedConfigurationSaveKeepsConfig', function() {
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      assertTrue(!!advancedConfigDialog);
+
+      // Change config and save.
+      const modifiedConfig = 'modified';
+      advancedConfigDialog.querySelector('#config').value = modifiedConfig;
+      advancedConfigDialog.querySelector('.action-button').click();
+
+      // Changed value should stick.
+      Polymer.dom.flush();
+      assertConfig(modifiedConfig);
+    });
+
+    test('AdvancedConfigurationCancelResetsConfig', function() {
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      assertTrue(!!advancedConfigDialog);
+
+      // Change config and cancel.
+      const prevConfig = advancedConfigDialog.querySelector('#config').value;
+      advancedConfigDialog.querySelector('#config').value = 'modified';
+      advancedConfigDialog.querySelector('.cancel-button').click();
+      Polymer.dom.flush();
+
+      // Changed value should NOT stick.
+      assertConfig(prevConfig);
     });
 
     // addAccount: KerberosErrorType.kNetworkProblem spawns a general error.
@@ -274,6 +479,13 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     test('AddAccountError_BadPrincipal', function() {
       checkAddAccountError(
           settings.KerberosErrorType.kBadPrincipal, username.$.error);
+    });
+
+    // addAccount: KerberosErrorType.kDuplicatePrincipalName spawns a username
+    // error.
+    test('AddAccountError_DuplicatePrincipalName', function() {
+      checkAddAccountError(
+          settings.KerberosErrorType.kDuplicatePrincipalName, username.$.error);
     });
 
     // addAccount: KerberosErrorType.kContactingKdcFailed spawns a username

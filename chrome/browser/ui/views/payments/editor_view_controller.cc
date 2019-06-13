@@ -314,6 +314,17 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
                      kFieldExtraViewHorizontalPadding - long_extra_view_width;
   columns_long->AddPaddingColumn(views::GridLayout::kFixedSize, long_padding);
 
+  // This column set is used for the error label in CreateInputField().
+  views::ColumnSet* columns_error = editor_layout->AddColumnSet(2);
+  columns_error->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::FIXED, kLabelWidth, 0);
+  columns_error->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                  kLabelInputFieldHorizontalPadding);
+  columns_error->AddColumn(views::GridLayout::LEADING,
+                           views::GridLayout::CENTER, 1.0,
+                           views::GridLayout::USE_PREF, 0, 0);
+
   views::View* first_field = nullptr;
   for (const auto& field : GetFieldDefinitions()) {
     bool valid = false;
@@ -331,11 +342,12 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   // Validate all fields and disable the primary (Done) button if necessary.
   primary_button()->SetEnabled(ValidateInputFields());
 
-  views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(2);
+  views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(3);
   required_field_columns->AddColumn(views::GridLayout::LEADING,
                                     views::GridLayout::CENTER, 1.0,
                                     views::GridLayout::USE_PREF, 0, 0);
-  editor_layout->StartRow(views::GridLayout::kFixedSize, 2);
+  editor_layout->StartRow(views::GridLayout::kFixedSize, 3);
+
   // Adds the "* indicates a required field" label in "hint" grey text.
   editor_layout->AddView(
       CreateHintLabel(
@@ -447,7 +459,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   if (extra_view)
     layout->AddView(extra_view.release());
 
-  layout->StartRow(views::GridLayout::kFixedSize, column_set);
+  layout->StartRow(views::GridLayout::kFixedSize, 2);
   layout->SkipColumns(1);
   std::unique_ptr<views::View> error_label_view =
       std::make_unique<views::View>();

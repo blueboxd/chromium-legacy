@@ -45,25 +45,6 @@ DownloadInfo::DownloadInfo(const GURL& url,
       cookie(cookie),
       referer(referer) {}
 
-DownloadInfo::DownloadInfo(const net::URLRequest* request) {
-  request->GetResponseHeaderByName("content-disposition", &content_disposition);
-
-  if (request->response_headers())
-    request->response_headers()->GetMimeType(&original_mime_type);
-
-  request->extra_request_headers().GetHeader(
-    net::HttpRequestHeaders::kUserAgent, &user_agent);
-  if (user_agent.empty())
-    user_agent = GetUserAgent();
-  GURL referer_url(request->referrer());
-  if (referer_url.is_valid())
-    referer = referer_url.spec();
-  if (!request->url_chain().empty()) {
-    original_url = request->url_chain().front();
-    url = request->url_chain().back();
-  }
-}
-
 DownloadInfo::DownloadInfo(const DownloadInfo& other) = default;
 
 DownloadInfo::~DownloadInfo() {}

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
@@ -476,7 +478,23 @@ void ChromeNewWindowClient::OpenArcCustomTab(
     arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) {
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  auto custom_tab = ash::ArcCustomTab::Create(task_id, surface_id, top_margin);
+
+  aura::Window* arc_window = nullptr;
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id) {
+      arc_window = window;
+      break;
+    }
+  }
+  if (!arc_window) {
+    LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
+    std::move(callback).Run(
+        CustomTabSessionImpl::Create(profile, url, nullptr));
+    return;
+  }
+
+  auto custom_tab =
+      ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   std::move(callback).Run(
       CustomTabSessionImpl::Create(profile, url, std::move(custom_tab)));
 }

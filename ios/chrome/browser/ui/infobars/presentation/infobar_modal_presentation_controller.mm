@@ -23,8 +23,6 @@ const CGFloat kContainerCornerRadius = 13.0;
 const int kContainerBackgroundColor = 0x2F2F2F;
 // The alpha component for the container view background color.
 const CGFloat kContainerBackgroundColorAlpha = 0.5;
-// The modal view content vertical padding.
-const CGFloat kModalViewVerticalPadding = 20;
 }  // namespace
 
 @implementation InfobarModalPresentationController
@@ -58,10 +56,9 @@ const CGFloat kModalViewVerticalPadding = 20;
   CGFloat frameWidth = fmin(maxAvailableWidth, kPresentedViewMaxWidth);
 
   // Calculate the frame height needed to fit the content.
-  CGFloat contentHeight = [self.modalPositioner modalHeight];
+  CGFloat modalTargetHeight = [self.modalPositioner modalHeight];
   CGFloat maxAvailableHeight = containerHeight - 2 * kPresentedViewMargin;
-  CGFloat frameHeight =
-      fmin(maxAvailableHeight, contentHeight + kModalViewVerticalPadding);
+  CGFloat frameHeight = fmin(maxAvailableHeight, modalTargetHeight);
 
   // Based on the container width calculate the values in order to center the
   // frame in the X and Y axis.

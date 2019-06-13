@@ -735,13 +735,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
   }
 
-  discardable_shared_memory_manager_ =
-      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
   if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
     base::DiscardableMemoryAllocator::SetInstance(
-        discardable_shared_memory_manager_.get());
+        discardable_memory::DiscardableSharedMemoryManager::Get());
   }
 
   if (parts_)

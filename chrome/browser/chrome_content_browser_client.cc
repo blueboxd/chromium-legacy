@@ -2777,7 +2777,11 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
   // If we pass 0 for size, disk_cache will pick a default size using the
   // heuristics based on available disk size. These are implemented in
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
-  return content::GeneratedCodeCacheSettings(true, 0, cache_path);
+  int64_t size_in_bytes = 0;
+  PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
+  DCHECK(prefs);
+  size_in_bytes = prefs->GetInteger(prefs::kDiskCacheSize);
+  return content::GeneratedCodeCacheSettings(true, size_in_bytes, cache_path);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

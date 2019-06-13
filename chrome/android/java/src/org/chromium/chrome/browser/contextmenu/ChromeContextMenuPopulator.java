@@ -23,10 +23,11 @@ import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -546,7 +547,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @return The service that handles TemplateUrls.
      */
     protected TemplateUrlService getTemplateUrlService() {
-        return TemplateUrlService.getInstance();
+        return TemplateUrlServiceFactory.get();
     }
 
     /**

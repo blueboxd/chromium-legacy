@@ -87,7 +87,6 @@ static_library("internals") {
     "oauth_multilogin_token_fetcher.h",
     "primary_account_manager.cc",
     "primary_account_manager.h",
-    "primary_account_policy_manager.cc",
     "primary_account_policy_manager.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
@@ -99,8 +98,11 @@ static_library("internals") {
     "ubertoken_fetcher_impl.h",
   ]
 
-  if (is_chromeos) {
-    sources -= [ "primary_account_policy_manager.cc" ]
+  if (!is_chromeos) {
+    sources += [
+      "primary_account_policy_manager_impl.cc",
+      "primary_account_policy_manager_impl.h",
+    ]
   }
 
   deps = [

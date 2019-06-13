@@ -16,8 +16,8 @@
 #include "base/values.h"
 #include "crypto/aead.h"
 #include "crypto/random.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_task_traits.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

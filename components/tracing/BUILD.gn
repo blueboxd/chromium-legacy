@@ -8,6 +8,8 @@ component("tracing") {
   sources = [
     "child/background_tracing_agent_impl.cc",
     "child/background_tracing_agent_impl.h",
+    "child/background_tracing_agent_provider_impl.cc",
+    "child/background_tracing_agent_provider_impl.h",
     "common/graphics_memory_dump_provider_android.cc",
     "common/graphics_memory_dump_provider_android.h",
     "tracing_export.h",

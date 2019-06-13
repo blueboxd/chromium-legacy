@@ -68,7 +68,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
                             LogicalExtentComputedValues&) const override;
   void Paint(const PaintInfo&) const override;
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 

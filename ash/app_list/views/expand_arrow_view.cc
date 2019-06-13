@@ -118,6 +118,7 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
       !AppListView::ShortAnimationsForTesting()) {
     ScheduleHintingAnimation(true);
   }
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 ExpandArrowView::~ExpandArrowView() = default;
@@ -377,6 +378,19 @@ void ExpandArrowView::ResetHintingAnimation() {
   pulse_radius_ = kPulseMinRadius;
   animation_->Reset();
   Layout();
+}
+
+bool ExpandArrowView::DoesIntersectRect(const views::View* target,
+                                        const gfx::Rect& rect) const {
+  DCHECK_EQ(target, this);
+  gfx::Rect button_bounds = GetLocalBounds();
+  // Increase clickable area for the button from
+  // (kTileWidth x height) to
+  // (3 * height - width).
+  int horizontal_padding =
+      button_bounds.width() - (button_bounds.height() * 1.5);
+  button_bounds.Inset(gfx::Insets(0, horizontal_padding));
+  return button_bounds.Intersects(rect);
 }
 
 }  // namespace app_list

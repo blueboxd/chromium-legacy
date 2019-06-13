@@ -174,13 +174,12 @@ void LayoutSVGContainer::UpdateCachedBoundaries() {
   GetElement()->SetNeedsResizeObserverUpdate();
 }
 
-bool LayoutSVGContainer::NodeAtPoint(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestAction hit_test_action) {
+bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,
+                                     const HitTestLocation& hit_test_location,
+                                     const PhysicalOffset& accumulated_offset,
+                                     HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, PhysicalOffset());
-  TransformedHitTestLocation local_location(location_in_container,
+  TransformedHitTestLocation local_location(hit_test_location,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;

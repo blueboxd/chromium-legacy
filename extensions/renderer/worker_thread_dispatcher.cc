@@ -100,6 +100,10 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
     if (worker_thread_id == kMainThreadId)
       return false;
     base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
+    // The TaskRunner may have been destroyed, for example, if the extension
+    // was unloaded, so check before trying to post a task.
+    if (runner == nullptr)
+      return false;
     bool task_posted = runner->PostTask(
         FROM_HERE, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
                                   worker_thread_id, message));
@@ -130,7 +134,8 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
 base::TaskRunner* WorkerThreadDispatcher::GetTaskRunnerFor(
     int worker_thread_id) {
   base::AutoLock lock(task_runner_map_lock_);
-  return task_runner_map_[worker_thread_id];
+  auto it = task_runner_map_.find(worker_thread_id);
+  return it == task_runner_map_.end() ? nullptr : it->second;
 }
 
 bool WorkerThreadDispatcher::Send(IPC::Message* message) {

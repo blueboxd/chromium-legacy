@@ -27,7 +27,6 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -163,9 +162,6 @@ std::string TextCodecUTF16::Encode(const UChar* characters,
 
   std::string result(length * 2, '\0');
 
-  // FIXME: CString is not a reasonable data structure for encoded UTF-16, which
-  // will have null characters inside it. Perhaps the result of encode should
-  // not be a CString.
   if (little_endian_) {
     for (wtf_size_t i = 0; i < length; ++i) {
       UChar c = characters[i];

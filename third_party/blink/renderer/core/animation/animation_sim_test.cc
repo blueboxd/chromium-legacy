@@ -37,7 +37,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   ScopedStackedCSSPropertyAnimationsForTest stacked_css_property_animation(
       true);
 
-  WebView().GetPage()->Animator().Clock().DisableSyntheticTimeForTesting();
+  WebView().GetPage()->Animator().Clock().SetClockForTesting(nullptr);
 
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");

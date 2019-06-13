@@ -41,11 +41,6 @@ namespace content {
 class DownloadManager;
 }
 
-namespace net {
-class URLRequest;
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -69,13 +64,11 @@ class PingManager;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
-struct ResourceRequestInfo;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingNetworkContext;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
-class SafeBrowsingURLRequestContextGetter;
 class TriggerManager;
 
 // Construction needs to happen on the main thread.
@@ -127,8 +120,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
     return services_delegate_->GetDownloadService();
   }
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context();
-
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   // Called on UI thread.
   network::mojom::NetworkContext* GetNetworkContext();
@@ -167,10 +158,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Adds |download_manager| to the set monitored by safe browsing.
   void AddDownloadManager(content::DownloadManager* download_manager);
-
-  // Observes resource requests made by the renderer and reports suspicious
-  // activity.
-  void OnResourceRequest(const net::URLRequest* request);
 
   // Type for subscriptions to SafeBrowsing service state.
   typedef base::CallbackList<void(void)>::Subscription StateSubscription;
@@ -257,9 +244,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Checks if any profile is currently using the safe browsing service, and
   // starts or stops the service accordingly.
   void RefreshState();
-
-  // Process the observed resource requests on the UI thread.
-  void ProcessResourceRequest(const ResourceRequestInfo& request);
 
   void CreateTriggerManager();
 

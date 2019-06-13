@@ -158,23 +158,7 @@ net::URLRequestContextGetter* WebEngineBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-WebEngineBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
 WebEngineBrowserContext::CreateMediaRequestContext() {
   DCHECK(url_request_getter_.get());
   return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter*
-WebEngineBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return nullptr;
 }

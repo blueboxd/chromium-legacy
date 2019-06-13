@@ -470,26 +470,18 @@ void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {
   app_delegate_->RenderViewCreated(render_view_host);
 }
 
-void AppWindow::SetOnFirstCommitOrWindowClosedCallback(
-    FirstCommitOrWindowClosedCallback callback) {
-  DCHECK(on_first_commit_or_window_closed_callback_.is_null());
-  on_first_commit_or_window_closed_callback_ = std::move(callback);
+void AppWindow::SetOnDidFinishFirstNavigationCallback(
+    DidFinishFirstNavigationCallback callback) {
+  DCHECK(on_did_finish_first_navigation_callback_.is_null());
+  on_did_finish_first_navigation_callback_ = std::move(callback);
 }
 
-void AppWindow::OnReadyToCommitFirstNavigation() {
-  // Execute renderer-side setup now that there is a renderer process assigned
-  // to the navigation. We must wait until this point in time in the navigation.
-  if (on_first_commit_or_window_closed_callback_.is_null())
+void AppWindow::OnDidFinishFirstNavigation() {
+  // We need to call it exactly once.
+  if (on_did_finish_first_navigation_callback_.is_null())
     return;
-  // It is important that the callback executes after the calls to
-  // WebContentsObserver::ReadyToCommitNavigation have been processed. The
-  // CommitNavigation IPC that will properly set up the renderer will only be
-  // sent after these, and it must be sent before the callback gets to run,
-  // hence the use of PostTask.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(on_first_commit_or_window_closed_callback_),
-                     true /* ready_to_commit */));
+  std::move(on_did_finish_first_navigation_callback_)
+      .Run(true /* did_finish */);
 }
 
 void AppWindow::OnNativeClose() {
@@ -498,11 +490,11 @@ void AppWindow::OnNativeClose() {
   // Dispatch "OnClosed" event by default.
   bool send_onclosed = true;
 
-  // Run pending |on_first_commit_or_window_closed_callback_| so that
+  // Run pending |on_did_finish_first_navigation_callback_| so that
   // AppWindowCreateFunction can respond with an error properly.
-  if (!on_first_commit_or_window_closed_callback_.is_null()) {
-    std::move(on_first_commit_or_window_closed_callback_)
-        .Run(false /* ready_to_commit */);
+  if (!on_did_finish_first_navigation_callback_.is_null()) {
+    std::move(on_did_finish_first_navigation_callback_)
+        .Run(false /* did_finish */);
 
     send_onclosed = false;  // No "OnClosed" event on window creation error.
   }

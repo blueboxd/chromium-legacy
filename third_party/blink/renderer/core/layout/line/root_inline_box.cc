@@ -181,20 +181,20 @@ void RootInlineBox::Paint(const PaintInfo& paint_info,
 }
 
 bool RootInlineBox::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
+                                const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
                                 LayoutUnit line_top,
                                 LayoutUnit line_bottom) {
   if (HasEllipsisBox() && VisibleToHitTestRequest(result.GetHitTestRequest())) {
-    if (GetEllipsisBox()->NodeAtPoint(result, location_in_container,
+    if (GetEllipsisBox()->NodeAtPoint(result, hit_test_location,
                                       accumulated_offset, line_top,
                                       line_bottom)) {
       GetLineLayoutItem().UpdateHitTestResult(
-          result, location_in_container.Point() - accumulated_offset);
+          result, hit_test_location.Point() - accumulated_offset);
       return true;
     }
   }
-  return InlineFlowBox::NodeAtPoint(result, location_in_container,
+  return InlineFlowBox::NodeAtPoint(result, hit_test_location,
                                     accumulated_offset, line_top, line_bottom);
 }
 

@@ -68,6 +68,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1741,6 +1742,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
     {"kerberosAccountsAddAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
+    {"kerberosAccountsRefreshNowLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL},
     {"kerberosAccountsSetAsActiveAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL},
     {"kerberosAccountsRemoveAccountLabel",
@@ -1750,14 +1753,24 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"kerberosAccountsReauthenticationLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
     {"addKerberosAccount", IDS_SETTINGS_ADD_KERBEROS_ACCOUNT},
+    {"addKerberosAccountRememberPassword",
+     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD},
     {"kerberosUsername", IDS_SETTINGS_KERBEROS_USERNAME},
     {"kerberosPassword", IDS_SETTINGS_KERBEROS_PASSWORD},
+    {"kerberosConfig", IDS_SETTINGS_KERBEROS_CONFIG},
+    {"kerberosAdvancedConfigLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL},
+    {"kerberosAdvancedConfigTitle",
+     IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE},
+    {"kerberosAdvancedConfigDesc", IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC},
     {"kerberosErrorNetworkProblem",
      IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM},
     {"kerberosErrorUsernameInvalid",
      IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID},
     {"kerberosErrorUsernameUnknown",
      IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN},
+    {"kerberosErrorDuplicatePrincipalName",
+     IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME},
     {"kerberosErrorContactingServer",
      IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER},
     {"kerberosErrorPasswordInvalid",
@@ -2051,6 +2064,11 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean(
       "isKerberosEnabled",
       g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled));
+
+  // Kerberos default configuration.
+  html_source->AddString(
+      "defaultKerberosConfig",
+      chromeos::KerberosCredentialsManager::GetDefaultKerberosConfig());
 #endif
 }
 

@@ -76,7 +76,6 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -200,6 +199,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/network_service_test_helper.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -795,9 +795,6 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(chrome_browser_net::SetUrlRequestMocksEnabled, true));
     if (extension_service()->updater()) {
       extension_service()->updater()->SetExtensionCacheForTesting(
           test_extension_cache_.get());
@@ -2654,19 +2651,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   }
 
   // Test policy-installed extensions are reloaded when killed.
-  BackgroundContentsService::
-      SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
-  content::WindowedNotificationObserver extension_crashed_observer(
-      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-      content::NotificationService::AllSources());
-  extensions::TestExtensionRegistryObserver extension_loaded_observer(
-      extensions::ExtensionRegistry::Get(browser()->profile()), kGoodCrxId);
-  extensions::ExtensionHost* extension_host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(kGoodCrxId);
-  extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED);
-  extension_crashed_observer.Wait();
-  extension_loaded_observer.WaitForExtensionLoaded();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    BackgroundContentsService::
+        SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
+    content::WindowedNotificationObserver extension_crashed_observer(
+        extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver extension_loaded_observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()), kGoodCrxId);
+    extensions::ExtensionHost* extension_host =
+        extensions::ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(kGoodCrxId);
+    extension_host->render_process_host()->Shutdown(
+        content::RESULT_CODE_KILLED);
+    extension_crashed_observer.Wait();
+    extension_loaded_observer.WaitForExtensionLoaded();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest,
@@ -6728,14 +6729,7 @@ class WebAppInstallForceListPolicyTest : public PolicyTest {
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallForceListPolicyTest);
 };
 
-// TODO(crbug.com/878797): Flaky on windows
-#if defined(OS_WIN)
-#define MAYBE_StartUpInstallation DISABLED_StartUpInstallation
-#else
-#define MAYBE_StartUpInstallation StartUpInstallation
-#endif
-IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest,
-                       MAYBE_StartUpInstallation) {
+IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
   extensions::TestExtensionRegistryObserver observer(
       extensions::ExtensionRegistry::Get(browser()->profile()));
   const extensions::Extension* installed_extension =

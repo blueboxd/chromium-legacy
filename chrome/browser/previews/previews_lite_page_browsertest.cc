@@ -1112,6 +1112,31 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNoChromeProxyHeader)) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  // Mimic a bad proxy header update.
+  net::HttpRequestHeaders empty;
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(browser()->profile());
+  PreviewsLitePageDecider* decider =
+      previews_service->previews_lite_page_decider();
+  decider->OnProxyRequestHeadersChanged(empty);
+
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewNotLoaded();
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.IneligibleReasons",
+      static_cast<int>(PreviewsLitePageNavigationThrottle::IneligibleReason::
+                           kInvalidProxyHeaders),
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(CoinFlipHoldbackTriggering)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(

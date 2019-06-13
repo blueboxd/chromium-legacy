@@ -157,6 +157,18 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
     return false;
   }
 
+#if defined(OS_ANDROID)
+  vkGetPhysicalDeviceFeatures2Fn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
+          vkGetInstanceProcAddrFn(vk_instance, "vkGetPhysicalDeviceFeatures2"));
+  if (!vkGetPhysicalDeviceFeatures2Fn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkGetPhysicalDeviceFeatures2";
+    return false;
+  }
+
+#endif
+
   return true;
 }
 

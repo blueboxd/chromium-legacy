@@ -12,6 +12,7 @@ class GURL;
 
 namespace net {
 class HttpRawRequestHeaders;
+class HttpRequestHeaders;
 class HttpResponseHeaders;
 class URLRequest;
 }  // namespace net
@@ -53,6 +54,12 @@ scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
 // Returns the referrer based on the validity of the URL and command line flags.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 std::string ComputeReferrer(const GURL& referrer);
+
+// Any single headers in a set of request headers are not safe to send. When
+// adding sets of headers together, it's safe to call this on each set
+// individually.
+COMPONENT_EXPORT(NETWORK_SERVICE)
+bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers);
 
 }  // namespace network
 

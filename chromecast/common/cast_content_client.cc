@@ -126,12 +126,6 @@ base::StringPiece CastContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
-    int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceBytes(
-      resource_id);
-}
-
 bool CastContentClient::IsDataResourceGzipped(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }

@@ -8,15 +8,10 @@
 
 #include "base/metrics/statistics_recorder.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
-using base::trace_event::MemoryDumpManager;
-using base::trace_event::TraceLog;
-
 namespace tracing {
-
 namespace {
 
 constexpr base::TimeDelta kMinTimeBetweenHistogramChanges =
@@ -24,30 +19,13 @@ constexpr base::TimeDelta kMinTimeBetweenHistogramChanges =
 
 }  // namespace
 
-// static
-void BackgroundTracingAgentImpl::Create(
-    mojo::PendingReceiver<mojom::BackgroundTracingAgent> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<BackgroundTracingAgentImpl>(),
-                              std::move(receiver));
-}
-
-void BackgroundTracingAgentImpl::CreateFromRequest(
-    mojo::InterfaceRequest<mojom::BackgroundTracingAgent> request) {
-  Create(std::move(request));
-}
-
-BackgroundTracingAgentImpl::BackgroundTracingAgentImpl() = default;
-
-BackgroundTracingAgentImpl::~BackgroundTracingAgentImpl() = default;
-
-void BackgroundTracingAgentImpl::Initialize(
-    uint64_t tracing_process_id,
-    mojo::PendingRemote<mojom::BackgroundTracingAgentClient> client) {
-  MemoryDumpManager::GetInstance()->set_tracing_process_id(tracing_process_id);
-
-  client_.Bind(std::move(client));
+BackgroundTracingAgentImpl::BackgroundTracingAgentImpl(
+    mojo::PendingRemote<mojom::BackgroundTracingAgentClient> client)
+    : client_(std::move(client)) {
   client_->OnInitialized();
 }
+
+BackgroundTracingAgentImpl::~BackgroundTracingAgentImpl() = default;
 
 void BackgroundTracingAgentImpl::SetUMACallback(
     const std::string& histogram_name,

@@ -768,10 +768,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::BindOnce(&RecordLastRunAppBundlePath));
+  if (base::mac::AmIBundled()) {
+    base::PostTaskWithTraits(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                             base::BindOnce(&RecordLastRunAppBundlePath));
+  }
 
   // Makes "Services" menu items available.
   [self registerServicesMenuTypesTo:[notify object]];

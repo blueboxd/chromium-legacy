@@ -50,6 +50,12 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // pool is exhausted will return a nullptr.
   virtual bool IsExhausted() = 0;
 
+  // Set the callback for notifying when the pool is no longer exhausted. The
+  // callback will be called on |parent_task_runner_|. Note: if there is a
+  // pending callback when calling NotifyWhenFrameAvailable(), the old callback
+  // would be dropped immediately.
+  virtual void NotifyWhenFrameAvailable(base::OnceClosure cb) = 0;
+
   // Returns the original frame of a wrapped frame. We need this method to
   // determine whether the frame returned by GetFrame() is the same one after
   // recycling, and bind destruction callback at original frames.

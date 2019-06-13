@@ -35,7 +35,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/field_trial_recorder.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -48,6 +47,7 @@
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -454,7 +454,7 @@ void BindDiscardableMemoryRequestOnUI(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindDiscardableMemoryRequestOnIO, std::move(request),
-          BrowserMainLoop::GetInstance()->discardable_shared_memory_manager()));
+          discardable_memory::DiscardableSharedMemoryManager::Get()));
 }
 
 }  // anonymous namespace

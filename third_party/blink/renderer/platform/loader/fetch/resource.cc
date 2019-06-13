@@ -32,6 +32,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -55,9 +56,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -120,6 +119,17 @@ static inline bool ShouldUpdateHeaderAfterRevalidation(
   return true;
 }
 
+namespace {
+const base::Clock* g_clock_for_testing = nullptr;
+}
+
+static inline double Now() {
+  const base::Clock* clock = g_clock_for_testing
+                                 ? g_clock_for_testing
+                                 : base::DefaultClock::GetInstance();
+  return clock->Now().ToDoubleT();
+}
+
 Resource::Resource(const ResourceRequest& request,
                    ResourceType type,
                    const ResourceLoaderOptions& options)
@@ -135,7 +145,7 @@ Resource::Resource(const ResourceRequest& request,
       is_add_remove_client_prohibited_(false),
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
-      response_timestamp_(CurrentTime()),
+      response_timestamp_(Now()),
       resource_request_(request),
       overhead_size_(CalculateOverheadSize()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
@@ -378,7 +388,7 @@ static double CurrentAge(const ResourceResponse& response,
   double corrected_received_age = std::isfinite(age_value)
                                       ? std::max(apparent_age, age_value)
                                       : apparent_age;
-  double resident_time = CurrentTime() - response_timestamp;
+  double resident_time = Now() - response_timestamp;
   return corrected_received_age + resident_time;
 }
 
@@ -490,7 +500,7 @@ void Resource::SetResponse(const ResourceResponse& response) {
 }
 
 void Resource::ResponseReceived(const ResourceResponse& response) {
-  response_timestamp_ = CurrentTime();
+  response_timestamp_ = Now();
   if (is_revalidating_) {
     if (response.HttpStatusCode() == 304) {
       RevalidationSucceeded(response);
@@ -1228,6 +1238,11 @@ bool Resource::IsLoadEventBlockingResourceType() const {
   }
   NOTREACHED();
   return false;
+}
+
+// static
+void Resource::SetClockForTesting(const base::Clock* clock) {
+  g_clock_for_testing = clock;
 }
 
 }  // namespace blink

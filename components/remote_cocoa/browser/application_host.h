@@ -9,6 +9,7 @@
 #include "base/observer_list_types.h"
 #include "components/remote_cocoa/browser/remote_cocoa_browser_export.h"
 #include "components/remote_cocoa/common/application.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace remote_cocoa {
 
@@ -32,6 +33,8 @@ class REMOTE_COCOA_BROWSER_EXPORT ApplicationHost {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(const Observer* observer);
+
+  static ApplicationHost* GetForNativeView(gfx::NativeView view);
 
  private:
   mojom::ApplicationAssociatedPtr application_ptr_;

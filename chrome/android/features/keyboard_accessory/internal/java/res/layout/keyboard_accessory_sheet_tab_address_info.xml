@@ -32,6 +32,7 @@
         <org.chromium.ui.widget.ChipView
             android:id="@+id/name_middle"
             android:gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/InputChip" />
@@ -39,6 +40,7 @@
         <org.chromium.ui.widget.ChipView
             android:id="@+id/name_last"
             android:gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/InputChip" />
@@ -83,6 +85,7 @@
         <org.chromium.ui.widget.ChipView
             android:id="@+id/address_home_city"
             android:gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/InputChip" />
@@ -90,6 +93,7 @@
         <org.chromium.ui.widget.ChipView
             android:id="@+id/address_home_zip"
             android:gravity="center_vertical|start"
+            android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/InputChip" />
@@ -99,6 +103,8 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/address_home_country"
         android:gravity="center_vertical|start"
+        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
+        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
@@ -116,5 +122,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
+
+    <View style="@style/HorizontalDivider"
+        android:layout_marginTop="@dimen/keyboard_accessory_sheet_divider_margin"
+        android:layout_marginBottom="0dp" />
 
 </org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessoryInfoView>

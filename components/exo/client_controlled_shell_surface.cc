@@ -401,6 +401,17 @@ void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
                                           always_on_top);
 }
 
+void ClientControlledShellSurface::SetImeBlocked(bool ime_blocked) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetImeBlocked",
+               "ime_blocked", ime_blocked);
+
+  if (!widget_)
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+
+  WMHelper::GetInstance()->SetImeBlocked(widget_->GetNativeWindow(),
+                                         ime_blocked);
+}
+
 void ClientControlledShellSurface::SetOrientation(Orientation orientation) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetOrientation",
                "orientation",
@@ -566,6 +577,8 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     int64_t display_id,
     const gfx::Rect& window_bounds,
     int bounds_change) {
+  if (ignore_bounds_change_request_)
+    return;
   // 1) Do no update the bounds unless we have geometry from client.
   // 2) Do not update the bounds if window is minimized unless it
   // exiting the minimzied state.
@@ -965,6 +978,9 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
   bool wasPip = window_state->IsPip();
 
+  // As the bounds of the widget is updated later, ensure that no bounds change
+  // happens with this state change (e.g. updatePipBounds can be triggered).
+  base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
   if (client_controlled_state_->EnterNextState(window_state,
                                                pending_window_state_)) {
     client_controlled_state_->set_next_bounds_change_animation_type(

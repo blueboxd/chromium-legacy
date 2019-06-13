@@ -257,6 +257,9 @@ Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-dis
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update.html [ Timeout ]
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-001.html [ Failure Crash ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-002.html [ Failure Crash ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-003.html [ Failure Crash ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -2836,6 +2839,19 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
+crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
+crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/html/cross-origin/anonymous.tentative.html [ Crash ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Crash ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
+crbug.com/626703 [ Retina ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
+crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
+crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
+crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
@@ -5721,7 +5737,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add
 
 # Sheriff 2019-05-06
 crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ Pass Timeout ]
-crbug.com/959129 [ Win Linux ] http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-05-07
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
@@ -5840,3 +5855,19 @@ crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass
 
 # Sheriff 2019-06-10
 crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
+
+# Sheriff 2019-06-13
+crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
+crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
+crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
+
+# Flaky on Linux
+crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
+crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/video-played-ranges-1.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/video-played-reset.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]

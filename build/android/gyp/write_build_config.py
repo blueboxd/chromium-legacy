@@ -1372,6 +1372,13 @@ def main(argv):
     javac_full_classpath = [
         c['unprocessed_jar_path'] for c in all_library_deps]
 
+    # Adding base module to classpath to compile against its R.java file
+    if base_module_build_config:
+      javac_full_classpath.append(
+          base_module_build_config['deps_info']['jar_path'])
+      javac_full_interface_classpath.append(
+          base_module_build_config['deps_info']['interface_jar_path'])
+
     for dep in direct_group_deps:
       javac_classpath.extend(dep.get('extra_classpath_jars', []))
       javac_interface_classpath.extend(

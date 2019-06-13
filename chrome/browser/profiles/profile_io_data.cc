@@ -273,12 +273,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   protocol_handler_registry_io_thread_delegate_ =
       protocol_handler_registry->io_thread_delegate();
 
-  // The profile instance is only available here in the InitializeOnUIThread
-  // method, so we create the url job factory here, then save it for
-  // later delivery to the job factory in Init().
-  params->protocol_handler_interceptor =
-      protocol_handler_registry->CreateJobInterceptorFactory();
-
 #if defined(OS_CHROMEOS)
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
   // is not disabled by a flag.

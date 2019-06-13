@@ -171,7 +171,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 // Tests that the progress indicator is shown and has expected progress value
 // for a simple two item page, and the toolbar is visible.
 - (void)testProgressIndicatorShown {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
 
@@ -201,7 +201,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 // Tests that the progress indicator is shown and has expected progress value
 // after a form is submitted, and the toolbar is visible.
 - (void)testProgressIndicatorShownOnFormSubmit {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
 
@@ -240,7 +240,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 
 // Tests that the progress indicator disappears after form has been submitted.
 - (void)testProgressIndicatorDisappearsAfterFormSubmit {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
 
@@ -270,7 +270,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 // Tests that the progress indicator disappears after form post attempt with a
 // submit event that returns false.
 - (void)testProgressIndicatorDisappearsAfterSuppressedFormPost {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad (no progress view in tablet)");
   }
 

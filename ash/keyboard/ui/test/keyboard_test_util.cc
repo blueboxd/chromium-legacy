@@ -5,7 +5,7 @@
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "ui/display/screen.h"
@@ -14,7 +14,7 @@ namespace keyboard {
 
 namespace {
 
-class KeyboardVisibilityChangeWaiter : public KeyboardControllerObserver {
+class KeyboardVisibilityChangeWaiter : public ash::KeyboardControllerObserver {
  public:
   explicit KeyboardVisibilityChangeWaiter(bool wait_until)
       : wait_until_(wait_until) {
@@ -27,7 +27,7 @@ class KeyboardVisibilityChangeWaiter : public KeyboardControllerObserver {
   void Wait() { run_loop_.Run(); }
 
  private:
-  void OnKeyboardVisibilityStateChanged(const bool is_visible) override {
+  void OnKeyboardVisibilityChanged(const bool is_visible) override {
     if (is_visible == wait_until_)
       run_loop_.QuitWhenIdle();
   }

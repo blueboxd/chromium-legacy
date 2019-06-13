@@ -58,7 +58,6 @@
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -70,6 +69,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -1172,7 +1172,7 @@ class SideVolumeButtonAcceleratorTest
     AcceleratorControllerTest::SetUp();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
     test_api_->SetSideVolumeButtonLocation(region_, side_);
-    ws::InputDeviceClientTestApi().SetUncategorizedDevices({ui::InputDevice(
+    ui::DeviceDataManagerTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
         "cros_ec_buttons")});
     scoped_feature_list_.InitAndEnableFeature(

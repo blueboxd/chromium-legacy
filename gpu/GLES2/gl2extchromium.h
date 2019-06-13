@@ -113,6 +113,10 @@ typedef void(GL_APIENTRYP PFNGLRELEASETEXIMAGE2DCHROMIUMPROC)(GLenum target,
 #define GL_RGB_YCBCR_420V_CHROMIUM 0x78FC
 #endif
 
+#ifndef GL_RGB_YCBCR_P010_CHROMIUM
+#define GL_RGB_YCBCR_P010_CHROMIUM 0x78FD
+#endif
+
 /* GL_CHROMIUM_deschedule */
 #ifndef GL_CHROMIUM_deschedule
 #define GL_CHROMIUM_deschedule 1

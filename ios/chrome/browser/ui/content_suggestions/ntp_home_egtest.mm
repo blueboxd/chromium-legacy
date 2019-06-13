@@ -255,7 +255,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testOmniboxWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -362,7 +362,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     [ChromeEarlGreyUI openNewTab];
   }
   id<GREYMatcher> matcher;
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     matcher = grey_accessibilityID(@"Enter Tab Switcher");
   } else {
     matcher = grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
@@ -638,7 +638,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
   id<GREYMatcher> tabGridMatcher = nil;
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     tabGridMatcher = grey_accessibilityID(@"Enter Tab Switcher");
   } else {
     tabGridMatcher =

@@ -130,6 +130,9 @@ class ClientControlledShellSurface
   // Sets the surface to be on top of all other windows.
   void SetAlwaysOnTop(bool always_on_top);
 
+  // Sets the IME to be blocked so that all events are forwarded by Exo.
+  void SetImeBlocked(bool ime_blocked);
+
   // Controls the visibility of the system UI when this surface is active.
   void SetSystemUiVisibility(bool autohide);
 
@@ -328,6 +331,8 @@ class ClientControlledShellSurface
   // N uses older protocol which expects that server will reparent the window.
   // TODO(oshima): Remove this once all boards are migrated to P or above.
   bool server_reparent_window_ = false;
+
+  bool ignore_bounds_change_request_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

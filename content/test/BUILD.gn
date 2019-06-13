@@ -526,6 +526,7 @@ jumbo_static_library("test_support") {
     ]
 
     deps += [
+      "//components/discardable_memory/service",
       "//media/capture/video/android:android",
       "//ui/android",
       "//ui/android:test_support",
@@ -2232,6 +2233,7 @@ test("content_unittests") {
   } else {
     # Non-Android.
     sources += [
+      "../browser/devtools/protocol/webauthn_handler_unittest.cc",
       "../browser/host_zoom_map_impl_unittest.cc",
       "../browser/serial/serial_unittest.cc",
       "../browser/speech/chunked_byte_buffer_unittest.cc",

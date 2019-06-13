@@ -13138,6 +13138,14 @@ should be able to be added at any place in this file.
   <description>An NTP tile was clicked. Desktop only.</description>
 </action>
 
+<action name="MostVisited_ClickedFromContextMenu">
+  <owner>dbeam@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <description>
+    An NTP tile was opened from the context menu. Desktop only.
+  </description>
+</action>
+
 <action name="MostVisited_UrlBlacklisted">
   <owner>sfiera@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -13508,6 +13516,18 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated due to NPAPI removal.</obsolete>
   <owner>wfh@chromium.org</owner>
   <description>Recorded when the NPAPI removal infobar is shown.</description>
+</action>
+
+<action name="NTP_LinkOpenedFromContextMenu">
+  <owner>kmilka@chromium.org</owner>
+  <owner>ramyan@chromium.org</owner>
+  <description>
+    Recorded when a link on the New Tab Page is opened via the context menu.
+    This can include: Middle-slot promos, Doodles, the One Google Bar, and
+    custom background image attributions, but *not* shortcuts. For shortcuts see
+    MostVisited_Clicked. Logged only when Google is the default search provider,
+    as these elements only appear on the Google NTP.
+  </description>
 </action>
 
 <action name="NTPPromoClosed">

@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 

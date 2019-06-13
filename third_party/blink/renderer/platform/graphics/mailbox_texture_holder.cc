@@ -74,14 +74,13 @@ MailboxTextureHolder::MailboxTextureHolder(
 }
 
 MailboxTextureHolder::MailboxTextureHolder(
-    std::unique_ptr<TextureHolder> texture_holder,
+    const SkiaTextureHolder* texture_holder,
     GLenum filter)
     : TextureHolder(texture_holder->ContextProviderWrapper(),
                     texture_holder->IsOriginTopLeft()),
       texture_id_(0),
       is_converted_from_skia_texture_(true),
       thread_id_(0) {
-  DCHECK(texture_holder->IsSkiaTextureHolder());
   sk_sp<SkImage> image = texture_holder->GetSkImage();
   DCHECK(image);
   sk_image_info_ = image->imageInfo();

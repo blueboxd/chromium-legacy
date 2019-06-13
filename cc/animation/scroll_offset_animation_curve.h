@@ -35,7 +35,9 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
     // Duration inversely proportional to scroll delta within certain bounds.
     // Used for mouse wheels, makes fast wheel flings feel "snappy" while
     // preserving smoothness of slow wheel movements.
-    INVERSE_DELTA
+    INVERSE_DELTA,
+    // Constant velocity; used for autoscrolls.
+    CONSTANT_VELOCITY,
   };
   static std::unique_ptr<ScrollOffsetAnimationCurve> Create(
       const gfx::ScrollOffset& target_value,
@@ -44,7 +46,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
   static base::TimeDelta SegmentDuration(const gfx::Vector2dF& delta,
                                          DurationBehavior behavior,
-                                         base::TimeDelta delayed_by);
+                                         base::TimeDelta delayed_by,
+                                         float velocity);
 
   ScrollOffsetAnimationCurve(const ScrollOffsetAnimationCurve&) = delete;
   ~ScrollOffsetAnimationCurve() override;
@@ -52,8 +55,10 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   ScrollOffsetAnimationCurve& operator=(const ScrollOffsetAnimationCurve&) =
       delete;
 
+  // Sets the initial offset and velocity (in pixels per second).
   void SetInitialValue(const gfx::ScrollOffset& initial_value,
-                       base::TimeDelta delayed_by = base::TimeDelta());
+                       base::TimeDelta delayed_by = base::TimeDelta(),
+                       float velocity = 0);
   bool HasSetInitialValue() const;
   gfx::ScrollOffset GetValue(base::TimeDelta t) const;
   gfx::ScrollOffset target_value() const { return target_value_; }

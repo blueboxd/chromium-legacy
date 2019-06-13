@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.fullscreen;
 import android.os.Handler;
 import android.os.SystemClock;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 
@@ -27,6 +28,9 @@ public class BrowserStateBrowserControlsVisibilityDelegate
 
     private final Handler mHandler = new Handler();
 
+    /** Predicate that tells if we're in persistent fullscreen mode. */
+    private final Supplier<Boolean> mPersistentFullscreenMode;
+
     private long mCurrentShowingStartTime;
 
     /**
@@ -35,9 +39,12 @@ public class BrowserStateBrowserControlsVisibilityDelegate
      *
      * @param stateChangedCallback The callback to be triggered when the fullscreen state should be
      *                             updated based on the state of the browser visibility override.
+     * @param persistentFullscreenMode Predicate that tells if we're in persistent fullscreen mode.
      */
-    public BrowserStateBrowserControlsVisibilityDelegate(Runnable stateChangedCallback) {
+    public BrowserStateBrowserControlsVisibilityDelegate(
+            Runnable stateChangedCallback, Supplier<Boolean> persistentFullscreenMode) {
         mTokenHolder = new TokenHolder(stateChangedCallback);
+        mPersistentFullscreenMode = persistentFullscreenMode;
     }
 
     private void ensureControlsVisibleForMinDuration() {
@@ -98,7 +105,7 @@ public class BrowserStateBrowserControlsVisibilityDelegate
 
     @Override
     public boolean canShowBrowserControls() {
-        return true;
+        return !mPersistentFullscreenMode.get();
     }
 
     @Override

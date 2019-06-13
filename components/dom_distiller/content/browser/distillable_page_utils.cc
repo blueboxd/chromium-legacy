@@ -17,10 +17,10 @@
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"
-#include "components/dom_distiller/core/resource_utils.h"
 #include "components/grit/components_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace dom_distiller {
 namespace {
@@ -43,7 +43,8 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
     return;
   }
   std::string extract_features_js =
-      GetResourceFromIdAsString(IDR_EXTRACT_PAGE_FEATURES_JS);
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          IDR_EXTRACT_PAGE_FEATURES_JS);
   RunIsolatedJavaScript(
       main_frame, extract_features_js,
       base::BindOnce(OnExtractFeaturesJsResult, detector, callback));

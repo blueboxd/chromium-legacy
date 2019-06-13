@@ -14,6 +14,11 @@
         <item name="android:textColor">@android:color/white</item>
     </style>
 
+    <style name="TextAppearance.DinoSubtitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/default_text_color_secondary</item>
+    </style>
+
     <style name="PreferenceActionBarModern.Touchless">
         <item name="titleTextStyle">@style/TextAppearance.BlackTitle1</item>
     </style>

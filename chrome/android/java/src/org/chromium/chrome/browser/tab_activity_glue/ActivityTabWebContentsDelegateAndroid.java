@@ -128,7 +128,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     @Override
-    public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
+    protected boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
         assert mWebContentsUrlMapping.containsKey(webContents);
 

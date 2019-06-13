@@ -5,7 +5,7 @@
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"
 
 #include "components/sessions/core/serialized_navigation_entry.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
 

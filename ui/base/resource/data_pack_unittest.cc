@@ -166,8 +166,8 @@ TEST(DataPackTest, LoadFromBufferV4) {
 TEST(DataPackTest, LoadFromBufferV5) {
   DataPack pack(SCALE_FACTOR_100P);
 
-  ASSERT_TRUE(pack.LoadFromBuffer(
-      base::StringPiece(kSamplePakContentsV5, kSamplePakSizeV5)));
+  ASSERT_TRUE(pack.LoadFromBuffer(base::StringPiece(
+      kSampleCompressPakContentsV5, kSampleCompressPakSizeV5)));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));

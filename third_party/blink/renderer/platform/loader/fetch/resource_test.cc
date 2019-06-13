@@ -500,8 +500,17 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_FALSE(resource->IsAlive());
 }
 
+class ScopedResourceMockClock {
+ public:
+  explicit ScopedResourceMockClock(const base::Clock* clock) {
+    Resource::SetClockForTesting(clock);
+  }
+  ~ScopedResourceMockClock() { Resource::SetClockForTesting(nullptr); }
+};
+
 TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
+  ScopedResourceMockClock clock(mock->test_task_runner()->GetMockClock());
   const KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
@@ -529,6 +538,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
 
 TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
+  ScopedResourceMockClock clock(mock->test_task_runner()->GetMockClock());
   const KURL url("http://127.0.0.1:8000/foo.html");
   const KURL redirect_target_url("http://127.0.0.1:8000/food.html");
   ResourceResponse response(url);

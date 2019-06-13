@@ -214,6 +214,14 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
             break;
         }
         next_bounds_change_animation_type_ = kAnimationNone;
+
+        // For PIP, restore bounds is used to specify the ideal position.
+        // Usually this value is set in completeDrag, but for the initial
+        // position, we need to set it here.
+        if (window_state->IsPip() &&
+            window_state->GetRestoreBoundsInParent().IsEmpty())
+          window_state->SetRestoreBoundsInParent(bounds);
+
       } else if (!window_state->IsPinned()) {
         // TODO(oshima): Define behavior for pinned app.
         bounds_change_animation_duration_ = set_bounds_event->duration();

@@ -49,6 +49,7 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
+    case P010:
       return kN32_SkColorType;
     case RGBA_F16:
       return kRGBA_F16_SkColorType;
@@ -67,6 +68,7 @@ int BitsPerPixel(ResourceFormat format) {
     case BGRX_8888:
     case RGBX_1010102:
     case BGRX_1010102:
+    case P010:
       return 32;
     case RGBA_4444:
     case RGB_565:
@@ -113,6 +115,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_ZERO,                             // YVU_420
       GL_ZERO,                             // YUV_420_BIPLANAR
       GL_ZERO,                             // UYVY_422
+      GL_ZERO,                             // P010
   };
   static_assert(base::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
@@ -143,6 +146,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
       GL_ZERO,       // UYVY_422
+      GL_ZERO,       // P010
   };
   static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -194,6 +198,7 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
       GL_ZERO,       // UYVY_422
+      GL_ZERO,       // P010
   };
 
   static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
@@ -234,6 +239,8 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     case UYVY_422:
       return gfx::BufferFormat::UYVY_422;
+    case P010:
+      return gfx::BufferFormat::P010;
     case ETC1:
     case ALPHA_8:
     case LUMINANCE_8:
@@ -285,6 +292,7 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
+    case P010:
       break;
   }
   NOTREACHED();
@@ -316,6 +324,7 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
+    case P010:
       return false;
   }
   NOTREACHED();
@@ -345,6 +354,7 @@ bool IsBitmapFormatSupported(ResourceFormat format) {
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
+    case P010:
       return false;
   }
   NOTREACHED();
@@ -383,10 +393,11 @@ ResourceFormat GetResourceFormat(gfx::BufferFormat format) {
       return YUV_420_BIPLANAR;
     case gfx::BufferFormat::UYVY_422:
       return UYVY_422;
-    default:
-      NOTREACHED();
-      return RGBA_8888;
+    case gfx::BufferFormat::P010:
+      return P010;
   }
+  NOTREACHED();
+  return RGBA_8888;
 }
 
 bool GLSupportsFormat(ResourceFormat format) {
@@ -397,6 +408,7 @@ bool GLSupportsFormat(ResourceFormat format) {
     case YVU_420:
     case YUV_420_BIPLANAR:
     case UYVY_422:
+    case P010:
       return false;
     default:
       return true;
@@ -441,6 +453,7 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case YUV_420_BIPLANAR:
     case UYVY_422:
     case ETC1:
+    case P010:
       break;
   }
   NOTREACHED() << "Unsupported format " << format;

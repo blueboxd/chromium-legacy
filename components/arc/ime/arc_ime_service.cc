@@ -93,6 +93,13 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
     return window->GetHost()->GetInputMethod();
   }
 
+  bool IsImeBlocked(aura::Window* window) const override {
+    // WMHelper is not created in tests.
+    if (!exo::WMHelper::HasInstance())
+      return false;
+    return exo::WMHelper::GetInstance()->IsImeBlocked(window);
+  }
+
  private:
   ArcImeService* const ime_service_;
 
@@ -215,15 +222,39 @@ void ArcImeService::OnWindowDestroying(aura::Window* window) {
   // This shouldn't be reached on production, since the window lost the focus
   // and called OnWindowFocused() before destroying.
   // But we handle this case for testing.
-  DCHECK_EQ(window, focused_arc_window_);
-  OnWindowFocused(nullptr, focused_arc_window_);
+  if (window == focused_arc_window_)
+    OnWindowFocused(nullptr, focused_arc_window_);
 }
 
 void ArcImeService::OnWindowRemovingFromRootWindow(aura::Window* window,
                                                    aura::Window* new_root) {
-  DCHECK_EQ(window, focused_arc_window_);
   // IMEs are associated with root windows, hence we may need to detach/attach.
-  ReattachInputMethod(focused_arc_window_, new_root);
+  if (window == focused_arc_window_)
+    ReattachInputMethod(focused_arc_window_, new_root);
+}
+
+void ArcImeService::OnWindowPropertyChanged(aura::Window* window,
+                                            const void* key,
+                                            intptr_t old) {
+  if (window == focused_arc_window_)
+    return;
+
+  bool ime_blocked = arc_window_delegate_->IsImeBlocked(focused_arc_window_);
+  if (last_ime_blocked_ == ime_blocked)
+    return;
+  last_ime_blocked_ = ime_blocked;
+
+  // IME blocking has changed.
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (input_method) {
+    if (has_composition_text_) {
+      // If it has composition text, clear both ARC's current composition text
+      // and Chrome IME's one.
+      ClearCompositionText();
+      input_method->CancelComposition(this);
+    }
+    input_method->OnTextInputTypeChanged(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,6 +269,10 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   const bool attach = arc_window_delegate_->IsInArcAppWindow(gained_focus);
 
   if (detach) {
+    // The focused window and the toplevel window are different in production,
+    // but in tests they can be the same, so avoid adding the observer twice.
+    if (focused_arc_window_ != focused_arc_window_->GetToplevelWindow())
+      focused_arc_window_->GetToplevelWindow()->RemoveObserver(this);
     focused_arc_window_->RemoveObserver(this);
     focused_arc_window_ = nullptr;
   }
@@ -245,6 +280,10 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
     DCHECK_EQ(nullptr, focused_arc_window_);
     focused_arc_window_ = gained_focus;
     focused_arc_window_->AddObserver(this);
+    // The focused window and the toplevel window are different in production,
+    // but in tests they can be the same, so avoid adding the observer twice.
+    if (focused_arc_window_ != focused_arc_window_->GetToplevelWindow())
+      focused_arc_window_->GetToplevelWindow()->AddObserver(this);
   }
 
   ReattachInputMethod(detach ? lost_focus : nullptr, focused_arc_window_);
@@ -330,9 +369,9 @@ void ArcImeService::RequestHideIme() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Overridden from keyboard::KeyboardControllerObserver
+// Overridden from ash::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(
-    const keyboard::KeyboardStateDescriptor& state) {
+    const ash::KeyboardStateDescriptor& state) {
   gfx::Rect new_bounds = state.occluded_bounds_in_screen;
   // Multiply by the scale factor. To convert from DIP to physical pixels.
   // The default scale factor is always used in Android side regardless of
@@ -378,6 +417,10 @@ void ArcImeService::InsertText(const base::string16& text) {
 }
 
 void ArcImeService::InsertChar(const ui::KeyEvent& event) {
+  // When IME is blocked for the window, let Exo handle the event.
+  if (arc_window_delegate_->IsImeBlocked(focused_arc_window_))
+    return;
+
   // According to the document in text_input_client.h, InsertChar() is called
   // even when the text input type is NONE. We ignore such events, since for
   // ARC we are only interested in the event as a method of text input.
@@ -419,6 +462,8 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType ArcImeService::GetTextInputType() const {
+  if (arc_window_delegate_->IsImeBlocked(focused_arc_window_))
+    return ui::TEXT_INPUT_TYPE_NONE;
   return ime_type_;
 }
 

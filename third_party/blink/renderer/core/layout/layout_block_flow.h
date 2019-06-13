@@ -532,7 +532,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   Node* NodeForHitTest() const final;
   bool HitTestChildren(HitTestResult&,
-                       const HitTestLocation& location_in_container,
+                       const HitTestLocation&,
                        const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
@@ -581,7 +581,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                             bool make_child_paint_other_floats);
 
   bool HitTestFloats(HitTestResult&,
-                     const HitTestLocation& location_in_container,
+                     const HitTestLocation&,
                      const PhysicalOffset& accumulated_offset);
 
   void ClearFloats(EClear);

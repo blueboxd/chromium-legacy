@@ -625,8 +625,7 @@ void AppListControllerImpl::OnWallpaperColorsChanged() {
     presenter_.GetView()->OnWallpaperColorsChanged();
 }
 
-void AppListControllerImpl::OnKeyboardVisibilityStateChanged(
-    const bool is_visible) {
+void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
   onscreen_keyboard_shown_ = is_visible;
   app_list::AppListView* app_list_view = presenter_.GetView();
   if (app_list_view)

@@ -381,6 +381,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     return true;
   }
 
+  // Allow derived classes to do event pre-processing.
+  BeforeAccessibilityEvents();
+
   // If the root's parent is in another accessibility tree but it wasn't
   // previously connected, post the proper notifications on the parent.
   BrowserAccessibility* parent = GetParentNodeFromParentTree();
@@ -402,7 +405,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   root_manager->FireFocusEventsIfNeeded();
 
   // Fire any events related to changes to the tree.
-  for (auto targeted_event : event_generator_) {
+  for (const auto& targeted_event : event_generator_) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
     if (!event_target || !event_target->CanFireEvents())
       continue;
@@ -440,6 +443,8 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   FinalizeAccessibilityEvents();
   return true;
 }
+
+void BrowserAccessibilityManager::BeforeAccessibilityEvents() {}
 
 void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}
 

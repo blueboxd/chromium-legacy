@@ -20,9 +20,9 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusUnsupported) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
-  ws::InputDeviceClientTestApi test_api;
+  ui::DeviceDataManagerTestApi test_api;
   ui::TouchscreenDevice touchscreen(1,
                                     ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                                     "Touchscreen", gfx::Size(1024, 768), 0);
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
 // TODO(https://crbug.com/814675): Excluded from Mash because pointer events
 // aren't seen.
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
-  ws::InputDeviceClientTestApi test_api;
+  ui::DeviceDataManagerTestApi test_api;
   ui::TouchscreenDevice touchscreen(1,
                                     ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                                     "Touchscreen", gfx::Size(1024, 768), 0);

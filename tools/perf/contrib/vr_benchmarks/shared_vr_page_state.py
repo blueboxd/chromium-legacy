@@ -16,6 +16,8 @@ from contrib.vr_benchmarks.desktop_runtimes import wmr_runtimes
 
 CARDBOARD_PATH = os.path.join('chrome', 'android', 'shared_preference_files',
                               'test', 'vr_cardboard_skipdon_setupcomplete.json')
+WEBXR_CONSENT_DIALOG_DISABLE_FLAG = (
+    '--disable-xr-device-consent-prompt-for-testing')
 
 
 class SharedVrPageStateFactory(shared_page_state.SharedPageState):
@@ -62,6 +64,8 @@ class _SharedVrPageState(shared_page_state.SharedPageState):
     super(_SharedVrPageState, self).__init__(
         test, finder_options, story_set, possible_browser)
     self._story_set = story_set
+    self._finder_options.AppendExtraBrowserArgs(
+        [WEBXR_CONSENT_DIALOG_DISABLE_FLAG])
 
   @property
   def recording_wpr(self):

@@ -72,18 +72,17 @@ bool SystemClipboard::IsHTMLAvailable() {
 uint64_t SystemClipboard::SequenceNumber() {
   if (!IsValidBufferType(buffer_))
     return 0;
-
   uint64_t result = 0;
   clipboard_->GetSequenceNumber(buffer_, &result);
   return result;
 }
 
 Vector<String> SystemClipboard::ReadAvailableTypes() {
+  if (!IsValidBufferType(buffer_))
+    return {};
   Vector<String> types;
-  if (IsValidBufferType(buffer_)) {
-    bool unused;
-    clipboard_->ReadAvailableTypes(buffer_, &types, &unused);
-  }
+  bool contains_filenames;  // Unused argument.
+  clipboard_->ReadAvailableTypes(buffer_, &types, &contains_filenames);
   return types;
 }
 
@@ -152,9 +151,10 @@ String SystemClipboard::ReadRTF() {
 }
 
 SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
+  if (!IsValidBufferType(buffer))
+    return SkBitmap();
   SkBitmap image;
-  if (IsValidBufferType(buffer))
-    clipboard_->ReadImage(buffer, &image);
+  clipboard_->ReadImage(buffer, &image);
   return image;
 }
 

@@ -113,9 +113,7 @@ public abstract class SingleTabActivity extends ChromeActivity {
     /**
      * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
      */
-    protected TabDelegateFactory createTabDelegateFactory() {
-        return new TabDelegateFactory();
-    }
+    protected abstract TabDelegateFactory createTabDelegateFactory();
 
     /**
      * Restore {@link TabState} from a given {@link Bundle} and tabId.

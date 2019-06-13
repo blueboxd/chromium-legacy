@@ -539,6 +539,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     // May happen on iOS9, however in didCommitNavigation: callback the URL
     // will be "about:blank".
     webViewURL = GURL(url::kAboutBlankURL);
+    UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewStartProvisionalNavigationWithEmptyURL",
+                          true);
   }
 
   web::NavigationContextImpl* context =
@@ -2000,6 +2002,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // they should have already been triggered during navigation commit for
   // failures that happen after commit.
   [self.delegate navigationHandlerDidStartLoading:self];
+  // TODO(crbug.com/973765): This is a workaround because |item| might get
+  // released after
+  // |self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem()|.
+  // Remove this once navigation refactor is done.
+  GURL itemURL = item->GetURL();
   self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
   web::NavigationItem* lastCommittedItem =
       self.navigationManagerImpl->GetLastCommittedItem();
@@ -2013,7 +2020,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // is also needed if |context| is not yet committed, which can happen on a
   // reload/back/forward load that failed in provisional navigation.
   if (context->IsPlaceholderNavigation() || !context->HasCommitted()) {
-    context->SetUrl(item->GetURL());
+    context->SetUrl(itemURL);
     context->SetPlaceholderNavigation(false);
     context->SetHasCommitted(true);
     self.webStateImpl->OnNavigationFinished(context);

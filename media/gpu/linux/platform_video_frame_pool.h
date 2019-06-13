@@ -49,6 +49,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame) override;
+  void NotifyWhenFrameAvailable(base::OnceClosure cb) override;
 
  private:
   friend class PlatformVideoFramePoolTest;
@@ -95,6 +96,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
                            gfx::Rect visible_rect,
                            gfx::Size natural_size) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Purges the stale frame. This method is executed periodically on
   // |parent_task_runner_|.
@@ -125,6 +127,9 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
 
   // The maximum number of frames created by the pool.
   size_t max_num_frames_ GUARDED_BY(lock_);
+
+  // Callback which is called when the pool is not exhausted.
+  base::OnceClosure frame_available_cb_ GUARDED_BY(lock_);
 
   // The weak pointer of this, bound at |parent_task_runner_|.
   // Used at the VideoFrame destruction callback.

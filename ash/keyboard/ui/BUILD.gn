@@ -24,7 +24,6 @@ jumbo_component("ui") {
     "drag_descriptor.h",
     "keyboard_controller.cc",
     "keyboard_controller.h",
-    "keyboard_controller_observer.h",
     "keyboard_event_handler.cc",
     "keyboard_event_handler.h",
     "keyboard_export.h",
@@ -95,6 +94,7 @@ static_library("test_support") {
   ]
   deps = [
     ":ui",
+    "//ash/public/cpp",
     "//base",
     "//ui/aura",
     "//ui/aura:test_support",
@@ -149,6 +149,7 @@ test("keyboard_unittests") {
     "container_full_width_behavior_unittest.cc",
     "keyboard_controller_unittest.cc",
     "keyboard_event_handler_unittest.cc",
+    "keyboard_ui_model_unittest.cc",
     "keyboard_ukm_recorder_unittest.cc",
     "keyboard_util_unittest.cc",
     "notification_manager_unittest.cc",

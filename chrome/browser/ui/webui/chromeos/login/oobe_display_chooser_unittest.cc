@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -21,6 +20,7 @@
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace chromeos {
@@ -91,7 +91,7 @@ class OobeDisplayChooserTest : public ChromeAshTestBase {
     display_chooser_->set_cros_display_config_ptr_for_test(
         cros_display_config_->CreateInterfacePtrAndBind());
 
-    ws::InputDeviceClientTestApi().OnDeviceListsComplete();
+    ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
   }
 
   OobeDisplayChooser* display_chooser() { return display_chooser_.get(); }
@@ -125,7 +125,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB,
                             "Touchscreen", gfx::Size(800, 600), 1);
   touchscreen.vendor_id = kWhitelistedId;
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 
   // Associate touchscreen device with display
@@ -141,7 +141,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
   // ws::mojom::InputDeviceObserverMojo. In unit tests InputDeviceClient is not
   // wired to the window server (the window server isn't running).
   touchscreen.target_display_id = display_info[1].id();
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen}, true);
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchscreen}, true);
 
   EXPECT_EQ(1, GetPrimaryDisplay());
   display_chooser()->TryToPlaceUiOnTouchDisplay();
@@ -168,7 +168,7 @@ TEST_F(OobeDisplayChooserTest, DontSwitchFromTouch) {
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB,
                             "Touchscreen", gfx::Size(800, 600), 1);
   touchscreen.vendor_id = kWhitelistedId;
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen});
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 
   // Associate touchscreen device with display

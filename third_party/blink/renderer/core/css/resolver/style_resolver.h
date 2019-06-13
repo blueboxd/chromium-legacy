@@ -55,6 +55,7 @@ class StyleRuleUsageTracker;
 class PropertyHandle;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
+enum ApplyMask { kApplyMaskRegular = 1 << 0, kApplyMaskVisited = 1 << 1 };
 
 // This class selects a ComputedStyle for a given element in a document based on
 // the document's collection of stylesheets (user styles, author styles, UA
@@ -256,7 +257,8 @@ class CORE_EXPORT StyleResolver final
                        bool is_important,
                        bool inherited_only,
                        NeedsApplyPass&,
-                       ValidPropertyFilter = ValidPropertyFilter::kNoFilter);
+                       ValidPropertyFilter,
+                       unsigned apply_mask);
   template <CSSPropertyPriority priority>
   void ApplyAnimatedStandardProperties(StyleResolverState&,
                                        const ActiveInterpolationsMap&);
@@ -264,7 +266,8 @@ class CORE_EXPORT StyleResolver final
   void ApplyAllProperty(StyleResolverState&,
                         const CSSValue&,
                         bool inherited_only,
-                        ValidPropertyFilter);
+                        ValidPropertyFilter,
+                        unsigned apply_mask);
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,

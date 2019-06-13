@@ -69,9 +69,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -109,6 +107,9 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -1196,7 +1197,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mBookmarkBridge = null;
         }
         if (mTemplateUrlObserver != null) {
-            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
+            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
             mTemplateUrlObserver = null;
         }
         if (mOverviewModeBehavior != null) {
@@ -1275,7 +1276,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     private void registerTemplateUrlObserver() {
-        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         assert mTemplateUrlObserver == null;
         mTemplateUrlObserver = new TemplateUrlServiceObserver() {
             private TemplateUrl mSearchEngine =
@@ -1299,7 +1300,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private void onNativeLibraryReady() {
         mNativeLibraryReady = true;
 
-        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         TemplateUrlService.LoadListener mTemplateServiceLoadListener =
                 new TemplateUrlService.LoadListener() {
                     @Override

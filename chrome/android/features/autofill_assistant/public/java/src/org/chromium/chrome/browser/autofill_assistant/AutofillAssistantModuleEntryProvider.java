@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -16,7 +18,7 @@ import org.chromium.components.module_installer.ModuleInstaller;
  * Manages the loading of autofill assistant DFM, and provides implementation of
  * AutofillAssistantModuleEntry.
  */
-class AutofillAssistantModuleEntryProvider {
+public class AutofillAssistantModuleEntryProvider {
     /**
      * Returns AutofillAssistantModuleEntry by using it as argument to the
      * passed in callback, or null if DFM loading fails.
@@ -32,6 +34,27 @@ class AutofillAssistantModuleEntryProvider {
             }
             loadDynamicModuleWithUi(activity, tab, callback);
         });
+    }
+
+    /**
+     * Maybe trigger a deferred install of the module.
+     *
+     * <p>This is public so that it can be used in the Chrome upgrade package. The conditions for
+     * eligibility are:
+     *
+     * <ul>
+     *   <li>This is a Bundle build.
+     *   <li>The autofill_assistant DFM is not installed yet.
+     *   <li>The Android version is L+.
+     *   <li>The device has high disk capacity.
+     * </ul>
+     */
+    public static void maybeInstallDeferred() {
+        if (!BundleUtils.isBundle()) return;
+        if (AutofillAssistantModule.isInstalled()) return;
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) return;
+        if (!SysUtils.isHighEndDiskDevice()) return;
+        AutofillAssistantModule.installDeferred();
     }
 
     private static AutofillAssistantModuleEntry createEntry(Tab tab) {

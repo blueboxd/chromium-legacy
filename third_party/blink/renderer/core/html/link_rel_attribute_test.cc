@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

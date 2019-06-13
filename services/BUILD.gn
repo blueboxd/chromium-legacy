@@ -51,10 +51,6 @@ test("services_unittests") {
     ]
   }
 
-  if (use_aura) {
-    deps += [ "//services/ws/input_devices:tests" ]
-  }
-
   if (is_android) {
     deps += [
       "//services/data_decoder/public/cpp/android:safe_json_java",

@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
 #include "device/gamepad/nintendo_controller.h"
@@ -174,6 +175,14 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
 
   uint16_t vendor_id = device->GetVendorId();
   uint16_t product_id = device->GetProductId();
+
+  // Filter out devices that have gamepad-like HID usages but aren't gamepads.
+  if (GamepadIsExcluded(vendor_id, product_id)) {
+    device->CloseJoydevNode();
+    RemoveDevice(device);
+    return;
+  }
+
   if (NintendoController::IsNintendoController(vendor_id, product_id)) {
     // Nintendo devices are handled by the Nintendo data fetcher.
     device->CloseJoydevNode();

@@ -29,7 +29,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace network {
-class CertVerifierWithTrustAnchors;
 class NSSTempCertsCacheChromeOS;
 }
 
@@ -48,12 +47,6 @@ class PolicyCertService : public KeyedService,
                     UserNetworkConfigurationUpdater* net_conf_updater,
                     user_manager::UserManager* user_manager);
   ~PolicyCertService() override;
-
-  // Creates an associated PolicyCertVerifier. The returned object must only be
-  // used on the IO thread and must outlive this object.
-  // This can only be called if the network service is disabled.
-  std::unique_ptr<network::CertVerifierWithTrustAnchors>
-  CreatePolicyCertVerifier();
 
   // Start listening for trust anchor changes to push to the network service.
   // This only needs to be called with the network service.
@@ -81,12 +74,10 @@ class PolicyCertService : public KeyedService,
 
   static std::unique_ptr<PolicyCertService> CreateForTesting(
       const std::string& user_id,
-      network::CertVerifierWithTrustAnchors* verifier,
       user_manager::UserManager* user_manager);
 
  private:
   PolicyCertService(const std::string& user_id,
-                    network::CertVerifierWithTrustAnchors* verifier,
                     user_manager::UserManager* user_manager);
 
   void StartObservingPolicyCertsInternal(bool notify);
@@ -96,7 +87,6 @@ class PolicyCertService : public KeyedService,
       bool notify);
 
   Profile* profile_ = nullptr;
-  network::CertVerifierWithTrustAnchors* cert_verifier_;
   std::string user_id_;
   UserNetworkConfigurationUpdater* net_conf_updater_;
   user_manager::UserManager* user_manager_;

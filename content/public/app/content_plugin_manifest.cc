@@ -23,7 +23,6 @@ const service_manager::Manifest& GetContentPluginManifest() {
                                 "content.mojom.ChildHistogramFetcherFactory",
                                 "content.mojom.ResourceUsageReporter",
                                 "IPC.mojom.ChannelBootstrap",
-                                "tracing.mojom.BackgroundTracingAgent",
                             })
           .RequireCapability("device", "device:power_monitor")
           .RequireCapability(mojom::kSystemServiceName, "dwrite_font_proxy")

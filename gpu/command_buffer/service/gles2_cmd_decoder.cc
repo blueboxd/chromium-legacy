@@ -4264,6 +4264,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
           .disable_biplanar_gpu_memory_buffers_for_video_frames;
   caps.image_xr30 = feature_info_->feature_flags().chromium_image_xr30;
   caps.image_xb30 = feature_info_->feature_flags().chromium_image_xb30;
+  caps.image_ycbcr_p010 =
+      feature_info_->feature_flags().chromium_image_ycbcr_p010;
   caps.max_copy_texture_chromium_size =
       workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =

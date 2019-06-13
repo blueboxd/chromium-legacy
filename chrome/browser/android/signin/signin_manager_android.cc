@@ -195,19 +195,24 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
   return domain;
 }
 
-void SigninManagerAndroid::WipeProfileData(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
-  WipeData(profile_, true /* all data */,
-           base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr()));
+void SigninManagerAndroid::WipeProfileData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback) {
+  WipeData(
+      profile_, true /* all data */,
+      base::BindOnce(base::android::RunRunnableAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  WipeData(profile_, false /* only Google service worker caches */,
-           base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr()));
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback) {
+  WipeData(
+      profile_, false /* only Google service worker caches */,
+      base::BindOnce(base::android::RunRunnableAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 void SigninManagerAndroid::RegisterPolicyWithAccount(
@@ -235,7 +240,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
           std::move(callback))));
 }
 
-void SigninManagerAndroid::RegisterAndFetchPolicyBeforeSignIn(
+void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username) {
@@ -286,11 +291,6 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
 void SigninManagerAndroid::OnPolicyFetchDone(bool success) const {
   Java_SigninManager_onPolicyFetchedBeforeSignIn(
       base::android::AttachCurrentThread(), java_signin_manager_);
-}
-
-void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
-  Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
-                                        java_signin_manager_);
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(

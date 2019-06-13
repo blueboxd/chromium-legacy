@@ -17,6 +17,7 @@
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_top_host_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -227,11 +228,9 @@ void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
   is_stale_reload_ = is_reload;
 }
 
-void PreviewsUITabHelper::DidStartNavigation(
+void PreviewsUITabHelper::MaybeRecordPreviewReload(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
-    return;
-  if (!navigation_handle->IsInMainFrame())
     return;
   if (!previews_user_data_)
     return;
@@ -249,6 +248,17 @@ void PreviewsUITabHelper::DidStartNavigation(
         ->previews_decider_impl()
         ->AddPreviewReload();
   }
+}
+
+void PreviewsUITabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  MaybeRecordPreviewReload(navigation_handle);
+
+  previews::PreviewsTopHostProviderImpl::MaybeUpdateTopHostBlacklist(
+      navigation_handle);
 }
 
 void PreviewsUITabHelper::DidFinishNavigation(

@@ -162,7 +162,9 @@ Polymer({
    * @private
    */
   onBrowsingDataTap_: function() {
-    settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA);
+    settings.navigateTo(
+        settings.routes.CLEAR_BROWSER_DATA,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /**
@@ -178,7 +180,9 @@ Polymer({
    * @private
    */
   onCrostiniTap_: function() {
-    settings.navigateTo(settings.routes.CROSTINI_DETAILS);
+    settings.navigateTo(
+        settings.routes.CROSTINI_DETAILS, /* dynamicParams */ null,
+        /* removeSearch */ true);
   },
 
   /**
@@ -186,7 +190,9 @@ Polymer({
    * @private
    */
   onOtherUsersTap_: function() {
-    settings.navigateTo(settings.routes.ACCOUNTS);
+    settings.navigateTo(
+        settings.routes.ACCOUNTS,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /**

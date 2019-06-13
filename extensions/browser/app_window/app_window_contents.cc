@@ -96,9 +96,10 @@ bool AppWindowContentsImpl::OnMessageReceived(
   return handled;
 }
 
-void AppWindowContentsImpl::ReadyToCommitNavigation(
+void AppWindowContentsImpl::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  host_->OnReadyToCommitFirstNavigation();
+  // The callback inside app_window will be moved after the first call.
+  host_->OnDidFinishFirstNavigation();
 }
 
 void AppWindowContentsImpl::UpdateDraggableRegions(

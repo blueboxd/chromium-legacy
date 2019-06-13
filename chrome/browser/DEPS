@@ -93,7 +93,6 @@ include_rules = [
   "+services/video_capture/public",
   "+services/viz/public",
   "+services/viz/privileged",
-  "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
@@ -199,28 +198,6 @@ include_rules = [
   # don't use WTF types.
   "+third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h",
   "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
-
-  # The following restrictions are for ChromeOS and in particular mus/mash where
-  # Ozone does not run in process. If the linux build transitions to Ozone then
-  # we likely need to make these restrictions applicable only to ChromeOS files.
-  "-ui/events/ozone",
-  "-ui/ozone/",
-  "+ui/ozone/public/ozone_platform.h",
-  "+ui/ozone/public/ozone_switches.h",
-  # ui/events/devices is tied with ozone, which is controlled by mus, and
-  # shouldn't be used by Chrome directly.
-  "-ui/events/devices",
-  # Enums and supporting classes or observers that are safe (should be moved to
-  # services/ws/public/cpp). http://crbug.com/747544.
-  "+ui/events/devices/device_hotplug_event_observer.h",
-  "+ui/events/devices/input_device.h",
-  "+ui/events/devices/input_device_event_observer.h",
-  "+ui/events/devices/input_device_manager.h",
-  "+ui/events/devices/stylus_state.h",
-  "+ui/events/devices/touchscreen_device.h",
-
-  # Only used by X11 (non-ChromeOS) code, which can use X directly.
-  "+ui/events/devices/x11",
 ]
 
 specific_include_rules = {

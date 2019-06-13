@@ -110,8 +110,6 @@ class ASH_EXPORT WindowResizer {
   // Updates |new_bounds| to adhere to the aspect ratio.
   void CalculateBoundsWithAspectRatio(float aspect_ratio,
                                       gfx::Rect* new_bounds);
-  // Remove once it is confirmed that crbug.com/970911 is fixed.
-  bool* destroyed_ = nullptr;
 
   std::unique_ptr<PresentationTimeRecorder> recorder_;
 

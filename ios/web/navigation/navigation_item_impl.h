@@ -11,7 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/security/ssl_status.h"

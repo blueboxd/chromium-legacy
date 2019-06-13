@@ -46,6 +46,7 @@ public class TabGridDialogParent {
     private ScrimView.ScrimParams mScrimParams;
     private View mBlockView;
     private Animator mCurrentAnimator;
+    private ObjectAnimator mBasicFadeIn;
     private ObjectAnimator mBasicFadeOut;
     private AnimatorSet mShowDialogAnimation;
     private AnimatorSet mHideDialogAnimation;
@@ -99,9 +100,14 @@ public class TabGridDialogParent {
     }
 
     private void prepareAnimation() {
+        mBasicFadeIn = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 0f, 1f);
+        mBasicFadeIn.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+        mBasicFadeIn.setDuration(DIALOG_ANIMATION_DURATION);
+
         mBasicFadeOut = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 1f, 0f);
         mBasicFadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         mBasicFadeOut.setDuration(DIALOG_ANIMATION_DURATION);
+
         mShowDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -124,6 +130,11 @@ public class TabGridDialogParent {
         // mHideDialogAnimation and play basic fade out instead of zooming back to corresponding tab
         // grid card.
         if (rect == null) {
+            mShowDialogAnimation = new AnimatorSet();
+            mShowDialogAnimation.play(mBasicFadeIn);
+            mShowDialogAnimation.removeAllListeners();
+            mShowDialogAnimation.addListener(mShowDialogAnimationListener);
+
             mHideDialogAnimation = new AnimatorSet();
             mHideDialogAnimation.play(mBasicFadeOut);
             mHideDialogAnimation.removeAllListeners();
@@ -159,6 +170,7 @@ public class TabGridDialogParent {
                 .with(showMoveYAnimator)
                 .with(showScaleXAnimator)
                 .with(showScaleYAnimator);
+        mShowDialogAnimation.removeAllListeners();
         mShowDialogAnimation.addListener(mShowDialogAnimationListener);
 
         final ObjectAnimator hideMoveYAnimator =

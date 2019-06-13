@@ -708,6 +708,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->is_app()) {
+    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
+    // the above Hosted App branch will render the theme color.
     active_color =
         base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
             ? gfx::kGoogleGrey050

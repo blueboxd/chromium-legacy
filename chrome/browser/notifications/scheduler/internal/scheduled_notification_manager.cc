@@ -81,7 +81,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
   void GetAllNotifications(Notifications* notifications) override {
     DCHECK(notifications);
-
+    notifications->clear();
     for (const auto& pair : notifications_) {
       const auto& notif = pair.second;
       DCHECK(notif);
@@ -91,6 +91,22 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     // Sort by creation time for each notification type.
     for (auto it = notifications->begin(); it != notifications->end(); ++it) {
       std::sort(it->second.begin(), it->second.end(), &CreateTimeCompare);
+    }
+  }
+
+  void DeleteNotifications(SchedulerClientType type) override {
+    auto it = notifications_.begin();
+    while (it != notifications_.end()) {
+      const auto& entry = *it->second;
+      ++it;
+      if (entry.type == type) {
+        store_->Delete(
+            entry.guid,
+            base::BindOnce(
+                &ScheduledNotificationManagerImpl::OnNotificationDeleted,
+                weak_ptr_factory_.GetWeakPtr()));
+        notifications_.erase(entry.guid);
+      }
     }
   }
 

@@ -430,7 +430,7 @@ bool InlineTextBox::IsLineBreak() const {
 }
 
 bool InlineTextBox::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
+                                const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
                                 LayoutUnit /* lineTop */,
                                 LayoutUnit /*lineBottom*/) {
@@ -441,11 +441,11 @@ bool InlineTextBox::NodeAtPoint(HitTestResult& result,
   box_origin += accumulated_offset;
   PhysicalRect rect(box_origin, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      location_in_container.Intersects(rect)) {
+      hit_test_location.Intersects(rect)) {
     GetLineLayoutItem().UpdateHitTestResult(
-        result, location_in_container.Point() - accumulated_offset);
+        result, hit_test_location.Point() - accumulated_offset);
     if (result.AddNodeToListBasedTestResult(GetLineLayoutItem().GetNode(),
-                                            location_in_container,
+                                            hit_test_location,
                                             rect) == kStopHitTesting)
       return true;
   }

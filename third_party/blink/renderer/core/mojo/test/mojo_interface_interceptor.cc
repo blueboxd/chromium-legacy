@@ -55,8 +55,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     return;
   }
 
-  std::string interface_name =
-      StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
+  std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
     service_manager::Connector* connector = Platform::Current()->GetConnector();
@@ -100,8 +99,7 @@ void MojoInterfaceInterceptor::stop() {
     return;
 
   started_ = false;
-  std::string interface_name =
-      StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
+  std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
     auto filter = service_manager::ServiceFilter::ByName(

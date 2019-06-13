@@ -76,7 +76,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
  public:
   virtual ~InspectTool() = default;
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
-  virtual CString GetDataResourceName();
+  virtual std::string GetDataResourceName();
   virtual bool HandleInputEvent(LocalFrameView* frame_view,
                                 const WebInputEvent& input_event,
                                 bool* swallow_next_mouse_up);
@@ -215,7 +215,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Page> overlay_page_;
-  CString frame_resource_name_;
+  std::string frame_resource_name_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
   bool resize_timer_active_;

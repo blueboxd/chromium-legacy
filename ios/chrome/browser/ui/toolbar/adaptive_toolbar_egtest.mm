@@ -202,7 +202,7 @@ UITraitCollection* RotateOrChangeTraitCollection(
     UIViewController* topViewController) {
   // Change the orientation or the trait collection.
   UITraitCollection* secondTraitCollection = nil;
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Simulate a multitasking by overriding the trait collections of the view
     // controllers. The rotation doesn't work on iPad.
     UITraitCollection* horizontalCompact = [UITraitCollection
@@ -363,7 +363,7 @@ void CheckCurrentURLContainsString(std::string string) {
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
         assertWithMatcher:chrome_test_util::OmniboxContainingText(string)];
 
-    if (IsIPadIdiom()) {
+    if ([ChromeEarlGrey isIPadIdiom]) {
       // Defocus omnibox by tapping the typing shield.
       [[EarlGrey
           selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
@@ -480,7 +480,7 @@ void FocusOmnibox() {
   CheckToolbarButtonVisibility(secondTraitCollection, YES);
 
   // Revert the orientation/trait collection to the original.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection
@@ -520,7 +520,7 @@ void FocusOmnibox() {
   // Check the visiblity after a size class change.
   CheckToolbarButtonVisibility(secondTraitCollection, YES);
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection
@@ -697,7 +697,7 @@ void FocusOmnibox() {
 
 // Tests share button is enabled only on pages that can be shared.
 - (void)testShareButton {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                              errorOrNil:nil];
@@ -714,7 +714,7 @@ void FocusOmnibox() {
   [[EarlGrey selectElementWithMatcher:ShareButton()]
       assertWithMatcher:grey_interactable()];
 
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // Cancel rotation.
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
@@ -771,7 +771,7 @@ void FocusOmnibox() {
   // Check the visiblity after a size class change.
   CheckToolbarButtonVisibility(secondTraitCollection, NO);
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection

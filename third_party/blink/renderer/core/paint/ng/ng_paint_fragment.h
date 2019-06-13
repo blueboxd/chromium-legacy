@@ -38,8 +38,6 @@ enum class NGOutlineType;
 //   placeholders for displaying them.
 class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
                                     public DisplayItemClient {
-  USING_FAST_MALLOC(NGPaintFragment);
-
  public:
   NGPaintFragment(scoped_refptr<const NGPhysicalFragment>,
                   PhysicalOffset offset,

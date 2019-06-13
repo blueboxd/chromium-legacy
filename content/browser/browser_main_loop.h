@@ -39,10 +39,6 @@ class SingleThreadTaskRunner;
 class SystemMonitor;
 }  // namespace base
 
-namespace discardable_memory {
-class DiscardableSharedMemoryManager;
-}
-
 namespace gpu {
 class GpuChannelEstablishFactory;
 }
@@ -190,10 +186,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 #endif
 
-  discardable_memory::DiscardableSharedMemoryManager*
-  discardable_shared_memory_manager() const {
-    return discardable_shared_memory_manager_.get();
-  }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
 
   // Returns the task runner for tasks that that are critical to producing a new
@@ -396,8 +388,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;
   scoped_refptr<responsiveness::Watcher> responsiveness_watcher_;

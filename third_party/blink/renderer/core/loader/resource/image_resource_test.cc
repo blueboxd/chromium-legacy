@@ -1400,9 +1400,7 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderDataURL) {
-  KURL test_url("data:image/jpeg;base64," +
-                Base64Encode(reinterpret_cast<const char*>(kJpegImage),
-                             sizeof(kJpegImage)));
+  KURL test_url("data:image/jpeg;base64," + Base64Encode(kJpegImage));
   FetchParameters params{ResourceRequest(test_url)};
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());

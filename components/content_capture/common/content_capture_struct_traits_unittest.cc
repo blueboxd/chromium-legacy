@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/content_capture/common/traits_test_service.test-mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ class ContentCaptureStructTraitsTest : public testing::Test,
     std::move(callback).Run(i);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureStructTraitsTest);

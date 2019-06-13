@@ -130,6 +130,14 @@ _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES = frozenset([
     'heap_profiling.mobile.disabled',
     'heap_profiling.mobile.native',
     'heap_profiling.mobile.pseudo'])
+_ANDROID_PIXEL2_FYI_BENCHMARK_NAMES = frozenset([
+    'v8.browsing_mobile',
+    'system_health.memory_mobile',
+    'system_health.common_mobile',
+    'startup.mobile',
+    'speedometer2',
+    'octane',
+    'jetstream'])
 
 # Linux
 LINUX = PerfPlatform(
@@ -195,6 +203,10 @@ ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,
     num_shards=3, is_fyi=True)
+ANDROID_PIXEL2_PERF_FYI = PerfPlatform(
+    'android-pixel2-perf-fyi', 'Android OPM1.171019.021',
+    _ANDROID_PIXEL2_FYI_BENCHMARK_NAMES,
+    num_shards=7, platform_os='android', is_fyi=True)
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
 # the sharding map.

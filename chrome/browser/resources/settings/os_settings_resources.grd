@@ -40,7 +40,7 @@
                  file="a11y_page/tts_subpage.html"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MANIFEST"
-                 file="manifest.json"
+                 file="os_settings_manifest.json"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_ADD_SITE_DIALOG_HTML"
                  file="site_settings/add_site_dialog.html"

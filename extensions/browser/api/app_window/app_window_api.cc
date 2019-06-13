@@ -423,18 +423,18 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
   // Delay sending the response until the newly created window has been told to
   // navigate, and blink has been correctly initialized in the renderer.
   // SetOnFirstCommitOrWindowClosedCallback() will respond asynchronously.
-  app_window->SetOnFirstCommitOrWindowClosedCallback(base::Bind(
-      &AppWindowCreateFunction::OnAppWindowReadyToCommitFirstNavigationOrClosed,
-      this, base::Passed(&result_arg)));
+  app_window->SetOnDidFinishFirstNavigationCallback(base::BindOnce(
+      &AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed,
+      this, std::move(result_arg)));
   return RespondLater();
 }
 
-void AppWindowCreateFunction::OnAppWindowReadyToCommitFirstNavigationOrClosed(
+void AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed(
     ResponseValue result_arg,
-    bool ready_to_commit) {
+    bool did_finish) {
   DCHECK(!did_respond());
 
-  if (!ready_to_commit) {
+  if (!did_finish) {
     Respond(Error(app_window_constants::kPrematureWindowClose));
     return;
   }

@@ -166,6 +166,11 @@ public class TouchlessDialogPresenter extends Presenter {
                 modelPairs.add(Pair.create(0, models[i]));
             }
             optionsAdapter.updateModels(modelPairs);
+        } else if (TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE == propertyKey) {
+            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            textView.setMaxLines(model.get(TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE)
+                            ? 1
+                            : Integer.MAX_VALUE);
         }
     }
 

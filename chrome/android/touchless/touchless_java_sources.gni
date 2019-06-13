@@ -15,6 +15,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabViewBinder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/OpenLastTabView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/QuantizedSizeIconView.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchTabDelegateFactory.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ScrollPositionInfo.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionModel.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsAdapter.java",

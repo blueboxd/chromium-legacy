@@ -14,7 +14,6 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 #include "components/omnibox/resources/grit/omnibox_resources.h"
-#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -95,15 +94,10 @@ OmniboxPedal::Tokens OmniboxPedalProvider::Tokenize(
 }
 
 void OmniboxPedalProvider::LoadPedalConcepts() {
-  // Get raw gzipped data, uncompress it, then parse to base::Value for loading.
-  scoped_refptr<base::RefCountedMemory> bytes =
-      ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceBytes(
+  // Load concept data then parse to base::Value in order to construct Pedals.
+  std::string uncompressed_data =
+      ui::ResourceBundle::GetSharedInstance().DecompressLocalizedDataResource(
           IDR_OMNIBOX_PEDAL_CONCEPTS);
-  DCHECK(bytes);
-  base::StringPiece compressed_data(bytes->front_as<char>(), bytes->size());
-  std::string uncompressed_data;
-  uncompressed_data.resize(compression::GetUncompressedSize(compressed_data));
-  CHECK(compression::GzipUncompress(compressed_data, uncompressed_data));
   const auto concept_data = base::JSONReader::Read(uncompressed_data);
 
   DCHECK(concept_data);

@@ -879,7 +879,6 @@ html.focus-outline-visible #cloud-import-details cr-button:focus {
 .breadcrumbs {
   align-items: center;
   display: flex;
-  flex: auto;
   flex-direction: row;
   overflow: hidden;
 }
@@ -959,6 +958,36 @@ html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
 
 html[dir='rtl'] .breadcrumbs .separator {
   transform: scaleX(-1);
+}
+
+/* The toolbar indicator that means the current directory is read only. */
+#read-only-indicator {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  display: flex;
+  flex: none;
+  height: 32px;
+  margin-inline-start: 4px;
+  padding: 0 16px;
+}
+
+body.check-select #read-only-indicator {
+  display: none;
+}
+
+#read-only-icon {
+  background-image: url(../images/files/ui/visibility_white.svg);
+  flex: none;
+  height: 16px;
+  margin-inline-end: 8px;
+  width: 16px;
+}
+
+#read-only-label {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .filelist-panel {

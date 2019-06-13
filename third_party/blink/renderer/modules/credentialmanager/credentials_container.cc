@@ -265,7 +265,7 @@ DOMException* CredentialManagerErrorToDOMException(
     case CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
-          "Requested protection policy is inconsistent or incongurent with "
+          "Requested protection policy is inconsistent or incongruent with "
           "other requested parameters.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
       return MakeGarbageCollected<DOMException>(

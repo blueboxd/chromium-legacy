@@ -206,7 +206,7 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
       !navigation_handle->IsSameDocument()) {
     NotifyDidNavigateMainFrame(navigation_handle->IsRendererInitiated(),
                                navigation_handle->GetPageTransition(),
-                               navigation_handle->HasUserGesture(),
+                               navigation_handle->WasInitiatedByLinkClick(),
                                GetPasswordManager());
     GetPasswordAutofillManager()->DidNavigateMainFrame();
   }

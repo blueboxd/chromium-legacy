@@ -27,11 +27,12 @@ class BackgroundTracingAgent;
 }  // namespace tracing
 
 namespace content {
+namespace mojom {
+class ChildControl;
+}  // namespace mojom
 
 class BackgroundTracingRule;
 class BackgroundTracingActiveScenario;
-class BrowserChildProcessHost;
-class RenderProcessHost;
 class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public BackgroundTracingManager {
@@ -85,8 +86,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   CONTENT_EXPORT static BackgroundTracingManagerImpl* GetInstance();
 
-  static void ActivateForProcess(BrowserChildProcessHost* host);
-  static void ActivateForProcess(RenderProcessHost* host);
+  static void ActivateForProcess(int child_process_id,
+                                 mojom::ChildControl* child_control);
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          ReceiveCallback,

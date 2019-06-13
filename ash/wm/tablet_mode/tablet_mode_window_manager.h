@@ -47,7 +47,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public ShellObserver,
                                            public SessionObserver {
  public:
-  // This should only be deleted by the creator (TabletModeController).
+  // This should only be created or deleted by the creator
+  // (TabletModeController).
+  TabletModeWindowManager();
   ~TabletModeWindowManager() override;
 
   static aura::Window* GetTopWindow();
@@ -74,6 +76,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
 
+  // Tell all managing windows not to handle WM events.
+  void SetIgnoreWmEventsForExit();
+
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
@@ -98,15 +103,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
-  // Tell all managing windows not to handle WM events.
-  void SetIgnoreWmEventsForExit();
-
- protected:
-  friend class TabletModeController;
-
-  // The object should only be created by TabletModeController.
-  TabletModeWindowManager();
 
  private:
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;

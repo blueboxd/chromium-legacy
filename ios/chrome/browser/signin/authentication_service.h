@@ -60,30 +60,30 @@ class AuthenticationService : public KeyedService,
   void ResetPromptForSignIn();
 
   // Returns whether user should be prompted to Sign in to Chrome.
-  bool ShouldPromptForSignIn();
+  bool ShouldPromptForSignIn() const;
 
   // Returns whether the token service accounts have changed since the last time
   // they were stored in the browser state prefs. This storing happens every
   // time the accounts change in foreground.
   // This reloads the cached accounts if the information might be stale.
-  virtual bool HaveAccountsChanged();
+  virtual bool HaveAccountsChanged() const;
 
   // ChromeIdentity management
 
   // Returns true if the user is signed in.
   // While the AuthenticationService is in background, this will reload the
   // credentials to ensure the value is up to date.
-  virtual bool IsAuthenticated();
+  virtual bool IsAuthenticated() const;
 
   // Returns true if the user is signed in and the identity is considered
   // managed.
-  virtual bool IsAuthenticatedIdentityManaged();
+  virtual bool IsAuthenticatedIdentityManaged() const;
 
   // Retrieves the identity of the currently authenticated user or |nil| if
   // either the user is not authenticated, or is authenticated through
   // ClientLogin.
   // Virtual for testing.
-  virtual ChromeIdentity* GetAuthenticatedIdentity();
+  virtual ChromeIdentity* GetAuthenticatedIdentity() const;
 
   // Signs |identity| in to Chrome with |hosted_domain| as its hosted domain,
   // pauses sync and logs |identity| in to http://google.com. If |identity| has
@@ -98,7 +98,7 @@ class AuthenticationService : public KeyedService,
                        ProceduralBlock completion);
 
   // Returns whether there is a cached associated MDM error for |identity|.
-  bool HasCachedMDMErrorForIdentity(ChromeIdentity* identity);
+  bool HasCachedMDMErrorForIdentity(ChromeIdentity* identity) const;
 
   // Shows the MDM Error dialog for |identity| if it has an associated MDM
   // error. Returns true if |identity| had an associated error, false otherwise.
@@ -112,15 +112,17 @@ class AuthenticationService : public KeyedService,
   // Returns a weak pointer of this.
   base::WeakPtr<AuthenticationService> GetWeakPtr();
 
+  // This needs to be invoked when the application enters foreground to
+  // sync the accounts between the IdentityManager and the SSO library.
+  void OnApplicationWillEnterForeground();
+
+  // This needs to be invoked when the application enters background to
+  // sync the accounts between the IdentityManager and the SSO library.
+  void OnApplicationDidEnterBackground();
+
  private:
   friend class AuthenticationServiceTest;
   friend class AuthenticationServiceFake;
-
-  // Method called each time the application enters foreground.
-  void OnApplicationEnterForeground();
-
-  // Method called each time the application enters background.
-  void OnApplicationEnterBackground();
 
   // Migrates the token service accounts stored in prefs from emails to account
   // ids.
@@ -134,7 +136,7 @@ class AuthenticationService : public KeyedService,
 
   // Returns the cached MDM infos associated with |identity|. If the cache is
   // stale for |identity|, the entry might be removed.
-  NSDictionary* GetCachedMDMInfo(ChromeIdentity* identity);
+  NSDictionary* GetCachedMDMInfo(ChromeIdentity* identity) const;
 
   // Handles an MDM notification |user_info| associated with |identity|.
   // Returns whether the notification associated with |user_info| was fully
@@ -172,7 +174,9 @@ class AuthenticationService : public KeyedService,
 
   // Computes whether the available accounts have changed since the last time
   // they were stored in the  browser state prefs.
-  void ComputeHaveAccountsChanged();
+  // |should_prompt| indicates whether the user should be prompted if the
+  // authenticated identity was removed.
+  void ComputeHaveAccountsChanged(bool should_prompt);
 
   // identity::IdentityManager::Observer implementation.
   void OnEndBatchOfRefreshTokenStateChanges() override;
@@ -202,24 +206,19 @@ class AuthenticationService : public KeyedService,
   // cannot be trusted.
   bool have_accounts_changed_ = false;
 
-  // Whether the AuthenticationService behaves as being in foreground. In
-  // background, identities changes aren't always notified and can't be
-  // initiated by the user.
-  bool is_in_foreground_ = false;
-
   // Whether the AuthenticationService is currently reloading credentials, used
   // to avoid an infinite reloading loop.
   bool is_reloading_credentials_ = false;
 
   // Map between account IDs and their associated MDM error.
-  std::map<std::string, NSDictionary*> cached_mdm_infos_;
-
-  id foreground_observer_ = nil;
-  id background_observer_ = nil;
+  mutable std::map<std::string, NSDictionary*> cached_mdm_infos_;
 
   ScopedObserver<ios::ChromeIdentityService,
                  ios::ChromeIdentityService::Observer>
       identity_service_observer_;
+
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+      identity_manager_observer_;
 
   base::WeakPtrFactory<AuthenticationService> weak_pointer_factory_;
 

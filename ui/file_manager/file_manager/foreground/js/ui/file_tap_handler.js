@@ -8,8 +8,6 @@
  * the user of this class can choose to either handle the event as a tap
  * distincted from mouse clicks, or leave it handled by the mouse event
  * handlers by default.
- *
- * @constructor
  */
 class FileTapHandler {
   constructor() {

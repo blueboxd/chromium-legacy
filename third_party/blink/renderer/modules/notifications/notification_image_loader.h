@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -37,7 +38,9 @@ class MODULES_EXPORT NotificationImageLoader final
   // be decoded.
   using ImageCallback = base::OnceCallback<void(const SkBitmap&)>;
 
-  explicit NotificationImageLoader(Type type);
+  NotificationImageLoader(
+      Type type,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
   ~NotificationImageLoader() override;
 
   // Asynchronously downloads an image from the given url, decodes the loaded
@@ -75,6 +78,7 @@ class MODULES_EXPORT NotificationImageLoader final
   scoped_refptr<SharedBuffer> data_;
   ImageCallback image_callback_;
   Member<ThreadableLoader> threadable_loader_;
+  const base::TickClock* clock_;
 };
 
 }  // namespace blink

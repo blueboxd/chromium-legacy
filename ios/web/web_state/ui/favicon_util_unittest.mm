@@ -5,7 +5,7 @@
 #import "ios/web/web_state/ui/favicon_util.h"
 
 #include "base/values.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

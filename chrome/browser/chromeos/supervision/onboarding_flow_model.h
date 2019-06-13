@@ -22,11 +22,13 @@ class PrimaryAccountAccessTokenFetcher;
 namespace chromeos {
 namespace supervision {
 
+class OnboardingDelegate;
+
 // Class that manages the onboarding flow state, handling user actions and
 // loading new pages. It notifies its observers of flow changes.
 class OnboardingFlowModel {
  public:
-  explicit OnboardingFlowModel(Profile* profile);
+  explicit OnboardingFlowModel(Profile* profile, OnboardingDelegate* delegate);
   ~OnboardingFlowModel();
 
   // Represents each onboarding flow step.
@@ -97,6 +99,7 @@ class OnboardingFlowModel {
   void LoadPageCallback(mojom::OnboardingLoadPageResultPtr result);
 
   Profile* profile_;
+  OnboardingDelegate* delegate_;
   mojom::OnboardingWebviewHostPtr webview_host_;
   Step current_step_ = Step::kStart;
   base::ObserverList<Observer> observer_list_;

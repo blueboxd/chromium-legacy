@@ -30,7 +30,6 @@
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
-#include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -97,12 +96,6 @@ const service_manager::Manifest& GetChromeManifest() {
 #endif
                               spellcheck::mojom::SpellCheckHost,
                               startup_metric_utils::mojom::StartupMetricHost>())
-#if defined(OS_CHROMEOS)
-        // Only used in the classic Ash case.
-        .ExposeCapability("input_device_controller",
-                          service_manager::Manifest::InterfaceList<
-                              ws::mojom::InputDeviceController>())
-#endif
         .RequireCapability(chrome::mojom::kRendererServiceName, "browser")
         .Build()
   };

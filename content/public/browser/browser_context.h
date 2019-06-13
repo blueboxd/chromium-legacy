@@ -308,24 +308,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) = 0;
 
-  // Creates the net::URLRequestContextGetter for a StoragePartition. It's
-  // called only once per partition_path.
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) = 0;
-
   // Creates the main net::URLRequestContextGetter for media resources. It's
   // called only once.
   virtual net::URLRequestContextGetter* CreateMediaRequestContext() = 0;
-
-  // Creates the media net::URLRequestContextGetter for a StoragePartition. It's
-  // called only once per partition_path.
-  virtual net::URLRequestContextGetter*
-      CreateMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) = 0;
 
   // Sets CORS origin access lists.
   virtual void SetCorsOriginAccessListForOrigin(

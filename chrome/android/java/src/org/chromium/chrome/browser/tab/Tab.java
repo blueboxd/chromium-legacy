@@ -865,12 +865,10 @@ public class Tab
 
             if (tabState != null) restoreFieldsFromState(tabState);
 
-            mDelegateFactory = delegateFactory;
             initializeNative();
 
+            mDelegateFactory = delegateFactory;
             RevenueStats.getInstance().tabCreated(this);
-
-            mDelegateFactory.createBrowserControlsState(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1009,7 +1007,6 @@ public class Tab
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-        mDelegateFactory.createBrowserControlsState(this);
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.

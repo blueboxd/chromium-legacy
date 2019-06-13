@@ -26,7 +26,6 @@ const service_manager::Manifest& GetNaClLoaderManifest() {
                                 "content.mojom.ChildControl",
                                 "content.mojom.ChildHistogramFetcherFactory",
                                 "content.mojom.ResourceUsageReporter",
-                                "tracing.mojom.BackgroundTracingAgent",
                             })
           .Build()};
   return *manifest;

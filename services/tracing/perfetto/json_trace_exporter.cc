@@ -216,7 +216,7 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   // Delegate to the subclasses to parse the packets. It will create
   // ScopedJSONTraceEventAppenders to write the contained events along with
   // other trace fields.
-  ProcessPackets(packets);
+  ProcessPackets(packets, has_more);
 
   if (!has_more) {
     if (label_filter_.empty()) {

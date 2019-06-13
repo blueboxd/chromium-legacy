@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/web_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

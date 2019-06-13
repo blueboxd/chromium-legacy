@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/login/ui/non_accessible_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/callback.h"
@@ -17,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "components/account_id/account_id.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class Label;
@@ -27,12 +27,13 @@ namespace ash {
 class ArrowButtonView;
 class LoginButton;
 class LoginPinView;
+class NonAccessibleView;
 
 enum class ParentAccessRequestReason;
 
 // The view that allows for input of parent access code to authorize certain
 // actions on child's device.
-class ASH_EXPORT ParentAccessView : public NonAccessibleView,
+class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
                                     public views::ButtonListener,
                                     public TabletModeObserver {
  public:
@@ -93,6 +94,10 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   void RequestFocus() override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // views::DialogDelegateView:
+  ui::ModalType GetModalType() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

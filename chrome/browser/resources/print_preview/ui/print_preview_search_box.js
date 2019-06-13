@@ -38,6 +38,10 @@ Polymer({
     return this.$.searchInput;
   },
 
+  focus: function() {
+    this.$.searchInput.focus();
+  },
+
   /**
    * @param {!CustomEvent<string>} e Event containing the new search.
    * @private

@@ -18,6 +18,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 
 import android.graphics.Point;
+import android.os.Build;
 import android.support.test.espresso.web.sugar.Web;
 import android.support.test.espresso.web.webdriver.Locator;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -85,11 +86,14 @@ public class DropDownListTest {
      * Test Drop Down List works in ViewPort Scale Factor > 1 in wideViewPortMode
      */
     // TODO(aluo): Re-enable once crbug.com/947352 is fixed.
-    @DisableIf.Build(product_name_includes = "walleye")
+    @DisableIf.
+    Build(message = "crbug.com/947352", sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
+            sdk_is_less_than = Build.VERSION_CODES.P)
     @Test
     @SmallTest
     @UseLayout("edittext_webview")
-    public void testDropDownScaledViewPortUseWideViewPort() {
+    public void
+    testDropDownScaledViewPortUseWideViewPort() {
         onView(withId(R.id.webview)).perform(Actions.setUseWideViewPort());
         mWebViewActivityRule.loadFileSync(HTML_SCALED, false);
         WebView webView = (WebView) mWebViewActivityRule.getActivity()

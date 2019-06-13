@@ -271,7 +271,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the credit card View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissCreditCardController {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // The keyboard icon is never present in iPads.
     return;
   }
@@ -304,7 +304,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the credit card View Controller is dismissed when tapping the
 // outside the popover on iPad.
 - (void)testIPadTappingOutsidePopOverDismissCreditCardController {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   [self saveLocalCreditCard];
@@ -338,7 +338,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the credit card View Controller is dismissed when tapping the
 // keyboard.
 - (void)testTappingKeyboardDismissCreditCardControllerPopOver {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   [self saveLocalCreditCard];

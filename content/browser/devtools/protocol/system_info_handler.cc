@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -37,6 +38,13 @@ using SystemInfo::GPUDevice;
 using SystemInfo::GPUInfo;
 using GetInfoCallback = SystemInfo::Backend::GetInfoCallback;
 
+std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
+    const gfx::Size& size) {
+  return SystemInfo::Size::Create()
+      .SetWidth(size.width())
+      .SetHeight(size.height())
+      .Build();
+}
 // Give the GPU process a few seconds to provide GPU info.
 // Linux Debug builds need more time -- see Issue 796437.
 // Windows builds need more time -- see Issue 873112.
@@ -126,6 +134,57 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
                             .Build();
 }
 
+std::unique_ptr<SystemInfo::VideoDecodeAcceleratorCapability>
+VideoDecodeAcceleratorSupportedProfileToProtocol(
+    const gpu::VideoDecodeAcceleratorSupportedProfile& profile) {
+  return SystemInfo::VideoDecodeAcceleratorCapability::Create()
+      .SetProfile(media::GetProfileName(
+          static_cast<media::VideoCodecProfile>(profile.profile)))
+      .SetMaxResolution(GfxSizeToSystemInfoSize(profile.max_resolution))
+      .SetMinResolution(GfxSizeToSystemInfoSize(profile.min_resolution))
+      .Build();
+}
+
+std::unique_ptr<SystemInfo::VideoEncodeAcceleratorCapability>
+VideoEncodeAcceleratorSupportedProfileToProtocol(
+    const gpu::VideoEncodeAcceleratorSupportedProfile& profile) {
+  return SystemInfo::VideoEncodeAcceleratorCapability::Create()
+      .SetProfile(media::GetProfileName(
+          static_cast<media::VideoCodecProfile>(profile.profile)))
+      .SetMaxResolution(GfxSizeToSystemInfoSize(profile.max_resolution))
+      .SetMaxFramerateNumerator(profile.max_framerate_numerator)
+      .SetMaxFramerateDenominator(profile.max_framerate_denominator)
+      .Build();
+}
+
+std::unique_ptr<SystemInfo::ImageDecodeAcceleratorCapability>
+ImageDecodeAcceleratorSupportedProfileToProtocol(
+    const gpu::ImageDecodeAcceleratorSupportedProfile& profile) {
+  std::unique_ptr<protocol::Array<std::string>> subsamplings;
+  for (const auto subsampling : profile.subsamplings) {
+    switch (subsampling) {
+      case gpu::ImageDecodeAcceleratorSubsampling::k420:
+        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv420);
+        break;
+      case gpu::ImageDecodeAcceleratorSubsampling::k422:
+        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv422);
+        break;
+      case gpu::ImageDecodeAcceleratorSubsampling::k444:
+        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv444);
+        break;
+    }
+  }
+
+  return SystemInfo::ImageDecodeAcceleratorCapability::Create()
+      .SetImageType(profile.image_type == gpu::ImageDecodeAcceleratorType::kJpeg
+                        ? "JPEG"
+                        : "Unknown")
+      .SetMaxDimensions(GfxSizeToSystemInfoSize(profile.max_encoded_dimensions))
+      .SetMinDimensions(GfxSizeToSystemInfoSize(profile.min_encoded_dimensions))
+      .SetSubsamplings(std::move(subsamplings))
+      .Build();
+}
+
 void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   std::unique_ptr<protocol::Array<GPUDevice>> devices =
@@ -153,12 +212,40 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   for (const std::string& s : GetDriverBugWorkarounds())
       driver_bug_workarounds->addItem(s);
 
-  std::unique_ptr<GPUInfo> gpu = GPUInfo::Create()
-      .SetDevices(std::move(devices))
-      .SetAuxAttributes(std::move(aux_attributes))
-      .SetFeatureStatus(std::move(feature_status))
-      .SetDriverBugWorkarounds(std::move(driver_bug_workarounds))
-      .Build();
+  auto decoding_profiles =
+      protocol::Array<SystemInfo::VideoDecodeAcceleratorCapability>::create();
+  for (const auto& profile :
+       gpu_info.video_decode_accelerator_capabilities.supported_profiles) {
+    decoding_profiles->addItem(
+        VideoDecodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  auto encoding_profiles =
+      protocol::Array<SystemInfo::VideoEncodeAcceleratorCapability>::create();
+  for (const auto& profile :
+       gpu_info.video_encode_accelerator_supported_profiles) {
+    encoding_profiles->addItem(
+        VideoEncodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  auto image_profiles =
+      protocol::Array<SystemInfo::ImageDecodeAcceleratorCapability>::create();
+  for (const auto& profile :
+       gpu_info.image_decode_accelerator_supported_profiles) {
+    image_profiles->addItem(
+        ImageDecodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  std::unique_ptr<GPUInfo> gpu =
+      GPUInfo::Create()
+          .SetDevices(std::move(devices))
+          .SetAuxAttributes(std::move(aux_attributes))
+          .SetFeatureStatus(std::move(feature_status))
+          .SetDriverBugWorkarounds(std::move(driver_bug_workarounds))
+          .SetVideoDecoding(std::move(decoding_profiles))
+          .SetVideoEncoding(std::move(encoding_profiles))
+          .SetImageDecoding(std::move(image_profiles))
+          .Build();
 
   base::CommandLine* command = base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)

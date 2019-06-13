@@ -10,7 +10,7 @@
   <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
   <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_select.html">
   <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 
   <script src="chrome://resources/js/chromeos/onc_mojo.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
@@ -31,9 +31,9 @@
 
   <div>
     <h2>$i18n{cellularActivationLabel}</h2>
-    <paper-button raised class="colored" id="cellular-activation-button">
+    <cr-button class="action-button" id="cellular-activation-button">
       $i18n{cellularActivationButtonText}
-    </paper-button>
+    </cr-button>
     <div id="cellular-error-text" hidden>$i18n{noCellularErrorText}</div>
   </div>
 
@@ -45,9 +45,9 @@
     <cr-network-select></cr-network-select>
   </div>
   <div>
-    <paper-button raised class="colored" id="refresh">
+    <cr-button class="action-button" id="refresh">
       $i18n{networkRefreshText}
-    </paper-button>
+    </cr-button>
   </div>
 
   <h2>$i18n{networkListsLabel}</h2>

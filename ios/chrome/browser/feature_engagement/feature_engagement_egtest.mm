@@ -97,8 +97,9 @@ id<GREYMatcher> LongPressTipBubble() {
 // Opens the TabGrid and then opens a new tab.
 void OpenTabGridAndOpenTab() {
   id<GREYMatcher> openTabSwitcherMatcher =
-      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherOpenButton()
-                    : chrome_test_util::ShowTabsButton();
+      [ChromeEarlGrey isIPadIdiom]
+          ? chrome_test_util::TabletTabSwitcherOpenButton()
+          : chrome_test_util::ShowTabsButton();
   [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
       performAction:grey_tap()];
 
@@ -109,8 +110,9 @@ void OpenTabGridAndOpenTab() {
 // Opens and closes the tab switcher.
 void OpenAndCloseTabSwitcher() {
   id<GREYMatcher> openTabSwitcherMatcher =
-      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherOpenButton()
-                    : chrome_test_util::ShowTabsButton();
+      [ChromeEarlGrey isIPadIdiom]
+          ? chrome_test_util::TabletTabSwitcherOpenButton()
+          : chrome_test_util::ShowTabsButton();
   [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
       performAction:grey_tap()];
 

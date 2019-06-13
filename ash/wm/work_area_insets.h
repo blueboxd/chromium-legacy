@@ -6,7 +6,7 @@
 #define ASH_WM_WORK_AREA_INSETS_H_
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -26,7 +26,7 @@ class RootWindowController;
 // WorkAreaInsets class caches information about persistent system elements to
 // avoid frequent recalculations. It gathers work area related computations and
 // provides single interface to query work area details.
-class ASH_EXPORT WorkAreaInsets : public keyboard::KeyboardControllerObserver {
+class ASH_EXPORT WorkAreaInsets : public KeyboardControllerObserver {
  public:
   // Returns work area parameters associated with the given |window|.
   static WorkAreaInsets* ForWindow(const aura::Window* window);
@@ -79,10 +79,10 @@ class ASH_EXPORT WorkAreaInsets : public keyboard::KeyboardControllerObserver {
   void SetShelfBoundsAndInsets(const gfx::Rect& bounds,
                                const gfx::Insets& insets);
 
-  // keyboard::KeyboardControllerObserver:
+  // KeyboardControllerObserver:
   void OnKeyboardAppearanceChanged(
-      const keyboard::KeyboardStateDescriptor& state) override;
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+      const KeyboardStateDescriptor& state) override;
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
  private:
   // Updates cached values of work area bounds and insets.

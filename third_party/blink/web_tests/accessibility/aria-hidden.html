@@ -14,9 +14,9 @@
 test((t) => {
     var body = document.getElementById("body");
     body.focus();
-    var h2 = accessibilityController.focusedElement.childAtIndex(0);
-    assert_equals(h2.name, "h2");
-}, "This tests that the aria-hidden attribute works correctly with accessibility. The H1 element (and its children) should not appear in the AX hierarchy. The H2 element should be the first child");
+    var h2 = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
+    assert_equals(h2.name, "h1 test");
+}, "This tests that the aria-hidden attribute works correctly with accessibility. The H1 element (and its children) should appear in the AX hierarchy. The H1 element should be the first child");
 
 
 </script>

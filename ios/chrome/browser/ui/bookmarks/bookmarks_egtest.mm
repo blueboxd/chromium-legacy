@@ -369,7 +369,7 @@ id<GREYMatcher> SearchIconButton() {
 // Test that swiping left to right navigate back.
 - (void)testNavigateBackWithGesture {
   // Disabled on iPad as there is not "navigate back" gesture.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPad");
   }
 
@@ -708,7 +708,7 @@ id<GREYMatcher> SearchIconButton() {
 // pressed. (iPad specific)
 - (void)DISABLED_testNewFolderNameCommittedWhenKeyboardDismissedOnIpad {
   // Tablet only (handset keyboard does not have "hide keyboard" button).
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
   [BookmarksTestCase setupStandardBookmarks];

@@ -360,6 +360,10 @@ bool NavigationHandleImpl::IsFormSubmission() {
   return navigation_request_->begin_params()->is_form_submission;
 }
 
+bool NavigationHandleImpl::WasInitiatedByLinkClick() {
+  return navigation_request_->begin_params()->was_initiated_by_link_click;
+}
+
 const std::string& NavigationHandleImpl::GetHrefTranslate() {
   return navigation_request_->common_params().href_translate;
 }

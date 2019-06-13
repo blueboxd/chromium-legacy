@@ -91,8 +91,8 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
     return false;
   if (text_fragment.TextContent()[text_fragment.EndOffset()] != ' ')
     return false;
-  const NGInlineBreakToken& break_token =
-      *To<NGInlineBreakToken>(line_box.PhysicalFragment().BreakToken());
+  const NGInlineBreakToken& break_token = *To<NGInlineBreakToken>(
+      To<NGPhysicalLineBoxFragment>(line_box.PhysicalFragment()).BreakToken());
   // TODO(yosin): We should support OOF fragments between |fragment_| and
   // break token.
   if (break_token.TextOffset() != text_fragment.EndOffset() + 1)

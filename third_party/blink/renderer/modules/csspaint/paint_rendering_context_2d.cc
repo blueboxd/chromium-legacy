@@ -32,7 +32,8 @@ PaintRenderingContext2D::PaintRenderingContext2D(
 void PaintRenderingContext2D::InitializePaintRecorder() {
   paint_recorder_ = std::make_unique<PaintRecorder>();
   cc::PaintCanvas* canvas = paint_recorder_->beginRecording(
-      container_size_.Width(), container_size_.Height());
+      container_size_.Width() / effective_zoom_,
+      container_size_.Height() / effective_zoom_);
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.

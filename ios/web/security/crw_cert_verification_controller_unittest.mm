@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/web_test.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

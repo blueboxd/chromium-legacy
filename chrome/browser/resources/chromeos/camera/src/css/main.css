@@ -517,7 +517,7 @@ body.videoresolutionsettings #resolutionsettings {
   --bottom-line: 56px;
   --mode-item-height: 48px;
   --modes-bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 24px);
-  --modes-gradient-padding: 24px;
+  --modes-gradient-padding: 16px;
   --modes-height: 140px;
   --small-icon: 40px;
 }

@@ -117,12 +117,13 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -448,13 +449,16 @@ public class ChromeTabbedActivity
         }
     }
 
-    private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
+    private class TabbedModeTabDelegateFactory extends TabDelegateFactoryImpl {
+        private TabbedModeTabDelegateFactory() {
+            super(ChromeTabbedActivity.this);
+        }
+
         @Override
-        public void createBrowserControlsState(Tab tab) {
-            TabBrowserControlsState.create(tab,
-                    new ComposedBrowserControlsVisibilityDelegate(
-                            new TabbedModeBrowserControlsVisibilityDelegate(tab),
-                            getFullscreenManager().getBrowserVisibilityDelegate()));
+        public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+            return new ComposedBrowserControlsVisibilityDelegate(
+                    new TabbedModeBrowserControlsVisibilityDelegate(tab),
+                    getFullscreenManager().getBrowserVisibilityDelegate());
         }
     }
 

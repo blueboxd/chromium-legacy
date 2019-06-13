@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 
@@ -22,7 +21,6 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -130,8 +128,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 - (void)waitForWebViewContainingTexts:(const std::vector<std::string>&)texts {
   for (const std::string& text : texts)
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:text]);
+    [ChromeEarlGrey waitForWebStateContainingText:text];
 }
 
 - (autofill::PersonalDataManager*)personalDataManager {
@@ -141,8 +138,11 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 - (void)loadTestPage:(const std::string&)page {
   std::string fullPath = base::StringPrintf(
       "https://components/test/data/payments/%s", page.c_str());
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)];
+  // TODO(crbug.com/973440): Tests immediately tap on page elements without
+  // waiting for page to render. -drainUntilIdle call is incorrect (but
+  // functional) way to wait for page content.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 - (void)payWithCreditCardUsingCVC:(NSString*)cvc {

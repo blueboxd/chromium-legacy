@@ -12,15 +12,10 @@
 #include "components/version_info/version_info.h"
 
 namespace chromeos {
-namespace {
-
-constexpr const char kFinishedUserAction[] = "setup-finished";
-
-}  // namespace
 
 SupervisionOnboardingScreen::SupervisionOnboardingScreen(
     SupervisionOnboardingScreenView* view,
-    const base::RepeatingClosure& exit_callback)
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(SupervisionOnboardingScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback) {
@@ -49,20 +44,12 @@ void SupervisionOnboardingScreen::Show() {
   }
 #endif
 
-  Exit();
+  SkipOnboarding();
 }
 
 void SupervisionOnboardingScreen::Hide() {
   if (view_)
     view_->Hide();
-}
-
-void SupervisionOnboardingScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kFinishedUserAction) {
-    Exit();
-    return;
-  }
-  BaseScreen::OnUserAction(action_id);
 }
 
 void SupervisionOnboardingScreen::OnViewDestroyed(
@@ -71,8 +58,12 @@ void SupervisionOnboardingScreen::OnViewDestroyed(
     view_ = nullptr;
 }
 
-void SupervisionOnboardingScreen::Exit() {
-  exit_callback_.Run();
+void SupervisionOnboardingScreen::SkipOnboarding() {
+  exit_callback_.Run(Result::kSkipped);
+}
+
+void SupervisionOnboardingScreen::FinishOnboarding() {
+  exit_callback_.Run(Result::kFinished);
 }
 
 }  // namespace chromeos

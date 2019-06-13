@@ -249,7 +249,7 @@ public abstract class StackLayoutBase extends Layout {
             mLastOnDownTimeStamp = time;
 
             if (shouldIgnoreTouchInput()) return;
-            if (mNavigationEnabled) mNavigationHandler.onDown();
+            if (mNavigationHandler != null) mNavigationHandler.onDown();
             mStacks.get(getTabStackIndex()).onDown(time);
         }
 
@@ -262,7 +262,7 @@ public abstract class StackLayoutBase extends Layout {
         public void drag(float x, float y, float dx, float dy, float tx, float ty) {
             if (shouldIgnoreTouchInput()) return;
 
-            if (mNavigationEnabled) {
+            if (mNavigationHandler != null) {
                 mNavigationHandler.onScroll(mLastOnDownX * mDpToPx, -dx * mDpToPx, -dy * mDpToPx,
                         x * mDpToPx, y * mDpToPx);
                 if (mNavigationHandler.isActive()) {
@@ -355,7 +355,7 @@ public abstract class StackLayoutBase extends Layout {
         private void onUpOrCancel(long time) {
             if (shouldIgnoreTouchInput()) return;
 
-            if (mNavigationEnabled && mNavigationHandler.isActive()) {
+            if (mNavigationHandler != null && mNavigationHandler.isActive()) {
                 mNavigationHandler.onTouchEvent(MotionEvent.ACTION_UP);
             }
             cancelDragTabs(time);

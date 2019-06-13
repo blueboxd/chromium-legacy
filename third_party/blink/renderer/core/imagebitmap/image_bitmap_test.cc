@@ -267,7 +267,6 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
   scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
       AcceleratedStaticBitmapImage::CreateFromSkImage(image,
                                                       context_provider_wrapper);
-  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsSkiaTextureHolder());
 
   ImageBitmap* image_bitmap = ImageBitmap::Create(bitmap);
   EXPECT_TRUE(image_bitmap);

@@ -24,11 +24,12 @@ import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -150,9 +151,9 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
         }
 
-        if (!TemplateUrlService.getInstance().isLoaded()) {
-            TemplateUrlService.getInstance().registerLoadListener(this);
-            TemplateUrlService.getInstance().load();
+        if (!TemplateUrlServiceFactory.get().isLoaded()) {
+            TemplateUrlServiceFactory.get().registerLoadListener(this);
+            TemplateUrlServiceFactory.get().load();
         }
 
         // This checks whether the flag for Downloads Preferences is enabled.
@@ -245,7 +246,7 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void updateSearchEnginePreference() {
-        if (!TemplateUrlService.getInstance().isLoaded()) {
+        if (!TemplateUrlServiceFactory.get().isLoaded()) {
             ChromeBasePreference searchEnginePref =
                     (ChromeBasePreference) findPreference(PREF_SEARCH_ENGINE);
             searchEnginePref.setEnabled(false);
@@ -254,7 +255,7 @@ public class MainPreferences extends PreferenceFragment
 
         String defaultSearchEngineName = null;
         TemplateUrl dseTemplateUrl =
-                TemplateUrlService.getInstance().getDefaultSearchEngineTemplateUrl();
+                TemplateUrlServiceFactory.get().getDefaultSearchEngineTemplateUrl();
         if (dseTemplateUrl != null) defaultSearchEngineName = dseTemplateUrl.getShortName();
 
         Preference searchEnginePreference = findPreference(PREF_SEARCH_ENGINE);
@@ -300,7 +301,7 @@ public class MainPreferences extends PreferenceFragment
     // TemplateUrlService.LoadListener implementation.
     @Override
     public void onTemplateUrlServiceLoaded() {
-        TemplateUrlService.getInstance().unregisterLoadListener(this);
+        TemplateUrlServiceFactory.get().unregisterLoadListener(this);
         updateSearchEnginePreference();
     }
 
@@ -322,7 +323,7 @@ public class MainPreferences extends PreferenceFragment
                     return DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
                 }
                 if (PREF_SEARCH_ENGINE.equals(preference.getKey())) {
-                    return TemplateUrlService.getInstance().isDefaultSearchManaged();
+                    return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
                 }
                 return false;
             }
@@ -335,7 +336,7 @@ public class MainPreferences extends PreferenceFragment
                             && !settings.isDataReductionProxyEnabled();
                 }
                 if (PREF_SEARCH_ENGINE.equals(preference.getKey())) {
-                    return TemplateUrlService.getInstance().isDefaultSearchManaged();
+                    return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
                 }
                 return isPreferenceControlledByPolicy(preference)
                         || isPreferenceControlledByCustodian(preference);

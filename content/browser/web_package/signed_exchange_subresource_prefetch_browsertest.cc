@@ -300,8 +300,8 @@ class SignedExchangePrefetchBrowserTest
       const std::string& inner_url_path,
       const net::SHA256HashValue& header_integrity,
       const std::string& content,
-      const std::vector<std::pair<std::string, std::string>>&
-          sxg_outer_headers) {
+      const std::vector<std::pair<std::string, std::string>>& sxg_outer_headers,
+      const base::Time& signature_expire_time = base::Time()) {
     auto sxg_request_counter =
         RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
     RegisterRequestHandler(embedded_test_server());
@@ -322,7 +322,7 @@ class SignedExchangePrefetchBrowserTest
 
     MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
         sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
-        "text/html", {}, header_integrity)});
+        "text/html", {}, header_integrity, signature_expire_time)});
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
     EXPECT_EQ(0, sxg_request_counter->GetRequestCount());
@@ -577,6 +577,56 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
 
   // SXG must be fetched again, because the cache has been expired.
+  EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_SignatureExpire) {
+  const char* hostname = "example.com";
+  const char* sxg_path = "/target.sxg";
+  const char* inner_url_path = "/target.html";
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+  auto sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
+  LoadPrefetchMainResourceSXGTestPage(
+      hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
+      hostname, inner_url_path,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {} /* sxg_outer_headers */,
+      base::Time::Now() +
+          base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins * 2));
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+
+  const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL(hostname, inner_url_path);
+
+  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+
+  MockClock::Get().Advance(
+      base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins * 3));
+
+  // Setup MockSignedExchangeHandlerFactory which triggers signature
+  // verificvation error fallback.
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      sxg_url, SignedExchangeLoadResult::kSignatureVerificationError,
+      net::ERR_INVALID_SIGNED_EXCHANGE, inner_url, "",
+      {} /* sxg_inner_headers */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  RegisterResponse(inner_url_path, ResponseEntry("<title>from server</title>"));
+
+  NavigateToURLAndWaitTitle(sxg_url, "from server");
+
+  // SXG must be fetched again, because:
+  //  - The entry in PrefetchedSignedExchangeCache is expired (signature expire
+  //    time).
+  //  - The entry in HTTPCache is expired (more than kPrefetchReuseMins minutes
+  //    passed). Note: The prefetched resource can skip cache revalidation for
+  //    kPrefetchReuseMins minutes.
   EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
 }
 

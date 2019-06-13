@@ -45,10 +45,6 @@ const BoolSetFunction kBoolSetFunctions[] = {
     &blink::BooleanConstraint::SetExact, &blink::BooleanConstraint::SetIdeal,
 };
 
-const StringSetFunction kStringSetFunctions[] = {
-    &blink::StringConstraint::SetExact, &blink::StringConstraint::SetIdeal,
-};
-
 const MockFactoryAccessor kFactoryAccessors[] = {
     &MockConstraintFactory::basic, &MockConstraintFactory::AddAdvanced};
 
@@ -311,56 +307,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
     CheckBoolDefaults(exclude_main_settings, exclude_audio_properties, result);
     CheckEchoCancellationTypeDefault(result);
     CheckDeviceDefaults(result);
-  }
-
-  // Assumes that echoCancellation is set to true as a basic, exact constraint.
-  void CheckAudioProcessingPropertiesForExactEchoCancellationType(
-      const blink::WebString& echo_cancellation_type_constraint,
-      const AudioCaptureSettings& result) {
-    const AudioProcessingProperties& properties =
-        result.audio_processing_properties();
-
-    // With device capture, the echo_cancellation constraint
-    // enables/disables all audio processing by default.
-    // With content capture, the echo_cancellation constraint controls
-    // only the echo_cancellation properties. The other audio processing
-    // properties default to false.
-    const EchoCancellationType expected_ec_type =
-        GetEchoCancellationTypeFromConstraintString(
-            echo_cancellation_type_constraint);
-    if (!IsDeviceCapture()) {
-      ASSERT_NE(EchoCancellationType::kEchoCancellationSystem,
-                expected_ec_type);
-    }
-    EXPECT_EQ(expected_ec_type, properties.echo_cancellation_type);
-
-    const bool enable_webrtc_audio_processing = IsDeviceCapture();
-    EXPECT_EQ(enable_webrtc_audio_processing,
-              properties.goog_auto_gain_control);
-    CheckGoogExperimentalEchoCancellationDefault(
-        properties, enable_webrtc_audio_processing);
-    EXPECT_EQ(enable_webrtc_audio_processing,
-              properties.goog_noise_suppression);
-    EXPECT_EQ(enable_webrtc_audio_processing,
-              properties.goog_experimental_noise_suppression);
-    EXPECT_EQ(enable_webrtc_audio_processing, properties.goog_highpass_filter);
-    EXPECT_EQ(enable_webrtc_audio_processing,
-              properties.goog_experimental_auto_gain_control);
-
-    // The following are not audio processing.
-    EXPECT_FALSE(properties.goog_audio_mirroring);
-    EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
-              result.disable_local_echo());
-    EXPECT_FALSE(result.render_to_associated_sink());
-    if (IsDeviceCapture()) {
-      CheckDevice(
-          expected_ec_type == EchoCancellationType::kEchoCancellationSystem
-              ? *system_echo_canceller_device_
-              : *default_device_,
-          result);
-    } else {
-      EXPECT_TRUE(result.device_id().empty());
-    }
   }
 
   void CheckAudioProcessingPropertiesForIdealEchoCancellationType(
@@ -1454,193 +1400,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithSystem) {
   }
 }
 
-// Tests the echoCancellationType constraint without constraining to a device
-// with system echo cancellation. Tested as basic exact constraints.
-TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationTypeExact) {
-  for (blink::WebString value : kEchoCancellationTypeValues) {
-    ResetFactory();
-    constraint_factory_.basic().echo_cancellation.SetExact(true);
-    constraint_factory_.basic().echo_cancellation_type.SetExact(value);
-    auto result = SelectSettings();
-    // If content capture and EC type "system", we expect failure.
-    if (!IsDeviceCapture() && value == kEchoCancellationTypeValues[2]) {
-      EXPECT_FALSE(result.HasValue());
-      EXPECT_EQ(result.failed_constraint_name(),
-                constraint_factory_.basic().echo_cancellation_type.GetName());
-      continue;
-    }
-    ASSERT_TRUE(result.HasValue());
-
-    CheckAudioProcessingPropertiesForExactEchoCancellationType(value, result);
-  }
-}
-
-// Like the test above, but changes the device with system echo cancellation
-// support to only support experimental system echo cancellation. It should
-// still be picked if requested.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeExact_Experimental) {
-  if (!IsDeviceCapture())
-    return;
-
-  // Replace the device with one that only supports experimental system echo
-  // cancellation.
-  MakeSystemEchoCancellerDeviceExperimental();
-
-  for (blink::WebString value : kEchoCancellationTypeValues) {
-    ResetFactory();
-    constraint_factory_.basic().echo_cancellation.SetExact(true);
-    constraint_factory_.basic().echo_cancellation_type.SetExact(value);
-    auto result = SelectSettings();
-    ASSERT_TRUE(result.HasValue());
-    CheckAudioProcessingPropertiesForExactEchoCancellationType(value, result);
-  }
-}
-
-// Tests the echoCancellationType constraint without constraining to a device
-// with system echo cancellation. Tested as basic ideal constraints.
-TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationTypeIdeal) {
-  // With content capture, there is no system echo cancellation, so
-  // nothing to test.
-  if (!IsDeviceCapture())
-    return;
-
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  constraint_factory_.basic().echo_cancellation_type.SetIdeal(
-      kEchoCancellationTypeValues[2]);
-  auto result = SelectSettings();
-  ASSERT_TRUE(result.HasValue());
-  CheckAudioProcessingPropertiesForIdealEchoCancellationType(result);
-}
-
-// Like the test above, but only having a device with experimental system echo
-// cancellation available.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeIdeal_Experimental) {
-  // With content capture, there is no system echo cancellation, so
-  // nothing to test.
-  if (!IsDeviceCapture())
-    return;
-
-  // Replace the device with one that only supports experimental system echo
-  // cancellation.
-  MakeSystemEchoCancellerDeviceExperimental();
-
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  constraint_factory_.basic().echo_cancellation_type.SetIdeal(
-      kEchoCancellationTypeValues[2]);
-  auto result = SelectSettings();
-  ASSERT_TRUE(result.HasValue());
-  CheckAudioProcessingPropertiesForIdealEchoCancellationType(result);
-}
-
-// Tests the echoCancellationType constraint with constraining to a device with
-// experimental system echo cancellation.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeWithExpSystemDeviceConstraint) {
-  // With content capture, there is no system echo cancellation, so
-  // nothing to test.
-  if (!IsDeviceCapture())
-    return;
-
-  MakeSystemEchoCancellerDeviceExperimental();
-
-  // Include leaving the echoCancellationType constraint unset in the tests.
-  // It should then behave as before the constraint was introduced.
-  auto echo_cancellation_types_and_unset = kEchoCancellationTypeValues;
-  echo_cancellation_types_and_unset.push_back(blink::WebString());
-
-  for (auto set_function : kStringSetFunctions) {
-    for (auto accessor : kFactoryAccessors) {
-      // Ideal advanced is ignored by the SelectSettings algorithm.
-      // Using array elements instead of pointer values due to the comparison
-      // failing on some build configurations.
-      if (set_function == kStringSetFunctions[1] &&
-          accessor == kFactoryAccessors[1]) {
-        continue;
-      }
-      for (blink::WebString ec_type_value : echo_cancellation_types_and_unset) {
-        for (bool ec_value : kBoolValues) {
-          ResetFactory();
-          constraint_factory_.basic().device_id.SetExact(
-              blink::WebString::FromASCII(
-                  system_echo_canceller_device_->DeviceID()));
-          constraint_factory_.basic().echo_cancellation.SetExact(ec_value);
-          if (!ec_type_value.IsNull())
-            ((constraint_factory_.*accessor)().echo_cancellation_type.*
-             set_function)(ec_type_value);
-
-          // We should get a result if echo cancellation is enabled or if it's
-          // disabled and we set the type as an advanced or ideal constraint, or
-          // we've left the constraint unset.
-          auto result = SelectSettings();
-          const bool advanced_constraint = accessor == kFactoryAccessors[1];
-          const bool ideal_constraint = set_function == kStringSetFunctions[1];
-          const bool should_have_result = ec_value || advanced_constraint ||
-                                          ideal_constraint ||
-                                          ec_type_value.IsNull();
-          EXPECT_EQ(should_have_result, result.HasValue());
-          if (!should_have_result)
-            continue;
-
-          const AudioProcessingProperties& properties =
-              result.audio_processing_properties();
-
-          // With experimental system echo cancellation (echo canceller type
-          // "system"), the echo_cancellation constraint enables/disables all
-          // audio processing by default, WebRTC echo cancellation is always
-          // disabled, and experimental system echo cancellation is disabled
-          // if the echo_cancellation constraint is false.
-          if (ec_value) {
-            const EchoCancellationType expected_echo_cancellation_type =
-                ec_type_value == blink::WebString()
-                    ? EchoCancellationType::kEchoCancellationAec3
-                    : GetEchoCancellationTypeFromConstraintString(
-                          ec_type_value);
-            EXPECT_EQ(expected_echo_cancellation_type,
-                      properties.echo_cancellation_type);
-          } else {
-            EXPECT_EQ(EchoCancellationType::kEchoCancellationDisabled,
-                      properties.echo_cancellation_type);
-          }
-          EXPECT_EQ(ec_value, properties.goog_auto_gain_control);
-          CheckGoogExperimentalEchoCancellationDefault(properties, ec_value);
-          EXPECT_EQ(ec_value, properties.goog_noise_suppression);
-          EXPECT_EQ(ec_value, properties.goog_experimental_noise_suppression);
-          EXPECT_EQ(ec_value, properties.goog_highpass_filter);
-          EXPECT_EQ(ec_value, properties.goog_experimental_auto_gain_control);
-
-          // The following are not audio processing.
-          EXPECT_FALSE(properties.goog_audio_mirroring);
-          EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
-                    result.disable_local_echo());
-          EXPECT_FALSE(result.render_to_associated_sink());
-          CheckDevice(*system_echo_canceller_device_, result);
-        }
-      }
-    }
-  }
-}
-
-// Tests the echoCancellationType constraint with constraining to a device
-// without experimental system echo cancellation, which should fail.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeWithWebRtcDeviceConstraint) {
-  if (!IsDeviceCapture())
-    return;
-
-  constraint_factory_.basic().device_id.SetExact(
-      blink::WebString::FromASCII(default_device_->DeviceID()));
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  constraint_factory_.basic().echo_cancellation_type.SetExact(
-      kEchoCancellationTypeValues[2]);
-
-  auto result = SelectSettings();
-  EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(result.failed_constraint_name(),
-            constraint_factory_.basic().device_id.GetName());
-}
-
 // Test that having differing mandatory values for echoCancellation and
 // googEchoCancellation fails.
 TEST_P(MediaStreamConstraintsUtilAudioTest, ContradictoryEchoCancellation) {
@@ -1845,32 +1604,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
   }
 }
 
-// Test functionality to support applyConstraints() for echo cancellation type
-// for tracks attached to sources that have no audio processing.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeWithSourceWithNoAudioProcessing) {
-  for (blink::WebString value : kEchoCancellationTypeValues) {
-    std::unique_ptr<LocalMediaStreamAudioSource> source =
-        GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
-                                       false /* disable_local_echo */,
-                                       false /* render_to_associated_sink */);
-
-    // No echo cancellation is available so we expect failure.
-    constraint_factory_.Reset();
-    constraint_factory_.basic().echo_cancellation_type.SetExact(value);
-    auto result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
-    EXPECT_FALSE(result.HasValue());
-
-    // Setting just ideal values should always succeed.
-    constraint_factory_.Reset();
-    constraint_factory_.basic().echo_cancellation_type.SetIdeal(value);
-    result = SelectSettingsAudioCapture(
-        source.get(), constraint_factory_.CreateWebMediaConstraints());
-    EXPECT_TRUE(result.HasValue());
-  }
-}
-
 // Test functionality to support applyConstraints() for tracks attached to
 // sources that have audio processing.
 TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
@@ -2045,52 +1778,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
     result = SelectSettingsAudioCapture(
         source.get(), constraint_factory_.CreateWebMediaConstraints());
     EXPECT_TRUE(result.HasValue());
-  }
-}
-
-// Test functionality to support applyConstraints() for echo cancellation type
-// for tracks attached to sources that have audio processing.
-TEST_P(MediaStreamConstraintsUtilAudioTest,
-       EchoCancellationTypeWithSourceWithAudioProcessing) {
-  // Processed audio sources are supported only for device capture.
-  if (!IsDeviceCapture())
-    return;
-
-  const EchoCancellationType kEchoCancellationTypes[] = {
-      EchoCancellationType::kEchoCancellationDisabled,
-      EchoCancellationType::kEchoCancellationAec3,
-      EchoCancellationType::kEchoCancellationSystem};
-
-  for (EchoCancellationType ec_type : kEchoCancellationTypes) {
-    AudioProcessingProperties properties;
-    properties.DisableDefaultProperties();
-    properties.echo_cancellation_type = ec_type;
-
-    std::unique_ptr<ProcessedLocalAudioSource> source =
-        GetProcessedLocalAudioSource(
-            properties, false /* disable_local_echo */,
-            false /* render_to_associated_sink */,
-            ec_type == EchoCancellationType::kEchoCancellationSystem
-                ? media::AudioParameters::PlatformEffectsMask::
-                      EXPERIMENTAL_ECHO_CANCELLER
-                : media::AudioParameters::PlatformEffectsMask::NO_EFFECTS);
-
-    for (blink::WebString value : kEchoCancellationTypeValues) {
-      constraint_factory_.Reset();
-      constraint_factory_.basic().echo_cancellation_type.SetExact(value);
-      auto result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
-      const bool should_have_result_value =
-          ec_type == GetEchoCancellationTypeFromConstraintString(value);
-      EXPECT_EQ(should_have_result_value, result.HasValue());
-
-      // Setting just ideal values should always succeed.
-      constraint_factory_.Reset();
-      constraint_factory_.basic().echo_cancellation_type.SetIdeal(value);
-      result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
-      EXPECT_TRUE(result.HasValue());
-    }
   }
 }
 

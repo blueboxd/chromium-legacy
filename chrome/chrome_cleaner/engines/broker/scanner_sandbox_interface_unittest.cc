@@ -28,6 +28,7 @@
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
+#include "chrome/chrome_cleaner/test/scoped_process_protector.h"
 #include "chrome/chrome_cleaner/test/test_executables.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_native_reg_util.h"
@@ -507,6 +508,24 @@ TEST(ScannerSandboxInterface, GetProcessCommandLine_Success) {
   base::string16 command_line;
   EXPECT_TRUE(SandboxGetProcessCommandLine(test_process.Pid(), &command_line));
   EXPECT_EQ(test_process_cmd.GetCommandLineString(), command_line);
+
+  test_process.Terminate(/*exit_code=*/1, /*wait=*/false);
+}
+
+TEST(ScannerSandboxInterface, GetProcessCommandLine_AccessDenied) {
+  base::CommandLine test_process_cmd(base::CommandLine::NO_PROGRAM);
+  base::Process test_process =
+      chrome_cleaner::LongRunningProcess(&test_process_cmd);
+  ASSERT_TRUE(test_process.IsValid());
+
+  {
+    // Set up a ScopedProcessProtector that removes only some access rights.
+    chrome_cleaner::ScopedProcessProtector process_protector(
+        test_process.Pid(), PROCESS_QUERY_INFORMATION);
+    base::string16 command_line;
+    EXPECT_FALSE(
+        SandboxGetProcessCommandLine(test_process.Pid(), &command_line));
+  }
 
   test_process.Terminate(/*exit_code=*/1, /*wait=*/false);
 }

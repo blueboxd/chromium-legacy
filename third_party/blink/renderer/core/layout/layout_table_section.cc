@@ -1786,36 +1786,29 @@ void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
 }
 
 // Hit Testing
-bool LayoutTableSection::NodeAtPoint(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestAction action) {
+bool LayoutTableSection::NodeAtPoint(HitTestResult& result,
+                                     const HitTestLocation& hit_test_location,
+                                     const PhysicalOffset& accumulated_offset,
+                                     HitTestAction action) {
   // If we have no children then we have nothing to do.
   if (!FirstRow())
     return false;
 
+  DCHECK(!HasOverflowClip());
+
   // Table sections cannot ever be hit tested.  Effectively they do not exist.
   // Just forward to our children always.
-  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
-
-  if (HasOverflowClip() &&
-      !location_in_container.Intersects(OverflowClipRect(adjusted_location)))
-    return false;
-
   if (HasVisuallyOverflowingCell()) {
     for (LayoutTableRow* row = LastRow(); row; row = row->PreviousRow()) {
-      // FIXME: We have to skip over inline flows, since they can show up inside
-      // table rows at the moment (a demoted inline <form> for example). If we
-      // ever implement a table-specific hit-test method (which we should do for
-      // performance reasons anyway), then we can remove this check.
-      if (!row->HasSelfPaintingLayer()) {
-        if (row->NodeAtPoint(result, location_in_container, adjusted_location,
-                             action)) {
-          UpdateHitTestResult(
-              result, location_in_container.Point() - adjusted_location);
-          return true;
-        }
+      if (row->HasSelfPaintingLayer())
+        continue;
+      PhysicalOffset row_accumulated_offset =
+          accumulated_offset + row->PhysicalLocation(this);
+      if (row->NodeAtPoint(result, hit_test_location, row_accumulated_offset,
+                           action)) {
+        UpdateHitTestResult(result,
+                            hit_test_location.Point() - accumulated_offset);
+        return true;
       }
     }
     return false;
@@ -1823,8 +1816,8 @@ bool LayoutTableSection::NodeAtPoint(
 
   RecalcCellsIfNeeded();
 
-  PhysicalRect hit_test_rect = location_in_container.BoundingBox();
-  hit_test_rect.Move(-adjusted_location);
+  PhysicalRect hit_test_rect = hit_test_location.BoundingBox();
+  hit_test_rect.Move(-accumulated_offset);
 
   LayoutRect table_aligned_rect =
       LogicalRectForWritingModeAndDirection(hit_test_rect);
@@ -1846,10 +1839,12 @@ bool LayoutTableSection::NodeAtPoint(
       for (unsigned i = grid_cell.Cells().size(); i;) {
         --i;
         LayoutTableCell* cell = grid_cell.Cells()[i];
+        PhysicalOffset cell_accumulated_offset =
+            accumulated_offset + cell->PhysicalLocation(this);
         if (static_cast<LayoutObject*>(cell)->NodeAtPoint(
-                result, location_in_container, adjusted_location, action)) {
-          UpdateHitTestResult(
-              result, location_in_container.Point() - adjusted_location);
+                result, hit_test_location, cell_accumulated_offset, action)) {
+          UpdateHitTestResult(result,
+                              hit_test_location.Point() - accumulated_offset);
           return true;
         }
       }

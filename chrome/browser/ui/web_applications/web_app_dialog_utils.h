@@ -25,12 +25,14 @@ enum class InstallResultCode;
 // Returns true if a WebApp installation is allowed for the current page.
 bool CanCreateWebApp(const Browser* browser);
 
-// Initiates install of a WebApp for the current page.
-void CreateWebAppFromCurrentWebContents(Browser* browser,
-                                        bool force_shortcut_app);
-
 using WebAppInstalledCallback =
     base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+
+// Initiates install of a WebApp for the current page.
+void CreateWebAppFromCurrentWebContents(
+    Browser* browser,
+    bool force_shortcut_app,
+    WebAppInstalledCallback installed_callback);
 
 // Starts install of a WebApp for a given |web_contents|, initiated from
 // a promotional banner or omnibox install icon.

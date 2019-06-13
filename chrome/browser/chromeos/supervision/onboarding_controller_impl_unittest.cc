@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
+#include "chrome/browser/chromeos/supervision/onboarding_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -31,6 +32,32 @@ const char kTestAccountId[] = "test-account-id";
 const char kFakeAccessToken[] = "fake-access-token";
 
 }  // namespace
+
+class FakeOnboardingDelegate : public OnboardingDelegate {
+ public:
+  ~FakeOnboardingDelegate() override {}
+
+  bool finished_onboarding() { return finished_; }
+
+  bool skipped_onboarding() { return skipped_; }
+
+ private:
+  // OnboardingDelegate:
+  void SkipOnboarding() override {
+    ASSERT_FALSE(finished_);
+    ASSERT_FALSE(skipped_);
+    skipped_ = true;
+  }
+
+  void FinishOnboarding() override {
+    ASSERT_FALSE(finished_);
+    ASSERT_FALSE(skipped_);
+    finished_ = true;
+  }
+
+  bool skipped_ = false;
+  bool finished_ = false;
+};
 
 class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
  public:
@@ -66,8 +93,6 @@ class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
     presentations_.clear();
   }
 
-  bool exited_flow() const { return exited_flow_; }
-
   const base::Optional<mojom::OnboardingPage>& page_loaded() {
     return page_loaded_;
   }
@@ -83,25 +108,15 @@ class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
 
   void LoadPage(mojom::OnboardingPagePtr page,
                 LoadPageCallback callback) override {
-    ASSERT_FALSE(exited_flow_);
-
     page_loaded_ = *page;
 
     std::move(callback).Run(load_page_result_.Clone());
-  }
-
-  void ExitFlow() override {
-    ASSERT_FALSE(exited_flow_);
-
-    exited_flow_ = true;
   }
 
   mojo::Binding<mojom::OnboardingWebviewHost> binding_;
 
   mojom::OnboardingLoadPageResult load_page_result_{
       net::Error::OK, kDeviceOnboardingExperimentName};
-
-  bool exited_flow_ = false;
 
   std::vector<mojom::OnboardingPresentationPtr> presentations_;
   base::Optional<mojom::OnboardingPage> page_loaded_;
@@ -129,7 +144,9 @@ class OnboardingControllerBaseTest : public testing::Test {
         base::CommandLine::ForCurrentProcess(), base::FilePath(),
         /*autoupdate_enabled=*/false);
 
-    controller_impl_ = std::make_unique<OnboardingControllerImpl>(profile());
+    delegate_ = std::make_unique<FakeOnboardingDelegate>();
+    controller_impl_ =
+        std::make_unique<OnboardingControllerImpl>(profile(), delegate());
     controller_impl_->BindRequest(mojo::MakeRequest(&controller_));
   }
 
@@ -213,6 +230,8 @@ class OnboardingControllerBaseTest : public testing::Test {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
+  FakeOnboardingDelegate* delegate() { return delegate_.get(); }
+
   FakeOnboardingWebviewHost* webview_host() { return webview_host_.get(); }
 
  private:
@@ -220,6 +239,7 @@ class OnboardingControllerBaseTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
+  std::unique_ptr<FakeOnboardingDelegate> delegate_;
   std::unique_ptr<OnboardingControllerImpl> controller_impl_;
   mojom::OnboardingControllerPtr controller_;
   std::unique_ptr<FakeOnboardingWebviewHost> webview_host_;
@@ -242,7 +262,7 @@ class OnboardingControllerFlowDisabledTest
 TEST_F(OnboardingControllerFlowDisabledTest, ExitFlowWhenFlowIsDisabled) {
   BindHostAndReturnLoadPageSuccess();
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerFlowDisabledTest,
@@ -344,7 +364,8 @@ TEST_F(OnboardingControllerTest, OverridePageUrlsByCommandLine) {
 TEST_F(OnboardingControllerTest, StayInFlowWhenLoadSucceeds) {
   BindHostAndReturnLoadPageSuccess();
 
-  EXPECT_FALSE(webview_host()->exited_flow());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, PresentReadyStateWhenLoadSucceeds) {
@@ -372,7 +393,7 @@ TEST_F(OnboardingControllerTest, ExitFlowOnAuthError) {
   BindHostAndSetupFailedAuth();
 
   EXPECT_FALSE(webview_host()->page_loaded().has_value());
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnAuthError) {
@@ -393,7 +414,7 @@ TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnAuthError) {
 TEST_F(OnboardingControllerTest, ExitFlowOnLoadPageError) {
   BindHostAndReturnLoadPageError();
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnLoadPageError) {
@@ -414,7 +435,7 @@ TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnLoadPageError) {
 TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsMissing) {
   BindHostAndReturnMissingCustomHeader();
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest,
@@ -438,7 +459,7 @@ TEST_F(OnboardingControllerTest,
 TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsWrong) {
   BindHostAndReturnWrongCustomHeader();
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest,
@@ -462,13 +483,14 @@ TEST_F(OnboardingControllerTest,
 TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToDetailsPage) {
   NavigateToDetailsPage();
 
-  EXPECT_FALSE(webview_host()->exited_flow());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, DetailsPageExitsFlowOnFailedPageLoad) {
   NavigateToDetailsPage(/*return_error=*/true);
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, DetailsPageIsPresentedCorrectly) {
@@ -500,13 +522,14 @@ TEST_F(OnboardingControllerTest, DetailsPageIsLoadedCorrectly) {
 TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToAllSetPage) {
   NavigateToAllSetPage();
 
-  EXPECT_FALSE(webview_host()->exited_flow());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, AllSetPageExitsFlowOnFailedPageLoad) {
   NavigateToAllSetPage(/*return_error=*/true);
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->skipped_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, AllSetPageIsPresentedCorrectly) {
@@ -538,9 +561,9 @@ TEST_F(OnboardingControllerTest, AllSetPageIsLoadedCorrectly) {
 TEST_F(OnboardingControllerTest, AllSetPageCanFinishFlow) {
   NavigateToAllSetPage();
 
-  EXPECT_FALSE(webview_host()->exited_flow());
+  EXPECT_FALSE(delegate()->finished_onboarding());
   HandleAction(mojom::OnboardingAction::kShowNextPage);
-  EXPECT_TRUE(webview_host()->exited_flow());
+  EXPECT_TRUE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, AllSetPageEnablesKioskNext) {

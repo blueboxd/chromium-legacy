@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 using base::sequence_manager::TaskQueue;
 using blink::scheduler::MainThreadTaskQueue;
@@ -39,17 +38,19 @@ class TimerTest : public testing::Test {
   void SetUp() override {
     run_times_.clear();
     platform_->AdvanceClock(TimeDelta::FromSeconds(10));
-    start_time_ = CurrentTimeTicks();
+    start_time_ = Now();
   }
 
-  void CountingTask(TimerBase*) { run_times_.push_back(CurrentTimeTicks()); }
+  base::TimeTicks Now() { return platform_->test_task_runner()->NowTicks(); }
+
+  void CountingTask(TimerBase*) { run_times_.push_back(Now()); }
 
   void RecordNextFireTimeTask(TimerBase* timer) {
-    next_fire_times_.push_back(CurrentTimeTicks() + timer->NextFireInterval());
+    next_fire_times_.push_back(Now() + timer->NextFireInterval());
   }
 
   void RunUntilDeadline(TimeTicks deadline) {
-    TimeDelta period = deadline - CurrentTimeTicks();
+    TimeDelta period = deadline - Now();
     EXPECT_GE(period, TimeDelta());
     platform_->RunForPeriod(period);
   }
@@ -250,7 +251,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
   platform_->RunUntilIdle();
   EXPECT_FALSE(run_times_.size());
 
-  TimeTicks second_post_time = CurrentTimeTicks();
+  TimeTicks second_post_time = Now();
   timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -554,7 +555,7 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   // Simulate timer firing early. Next scheduled task to run at
   // |start_time_| + 4s
   platform_->AdvanceClock(TimeDelta::FromMilliseconds(1900));
-  RunUntilDeadline(CurrentTimeTicks() + TimeDelta::FromMilliseconds(200));
+  RunUntilDeadline(Now() + TimeDelta::FromMilliseconds(200));
 
   // Next scheduled task to run at |start_time_| + 6s
   platform_->RunForPeriod(TimeDelta::FromSeconds(2));
@@ -716,7 +717,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
-  TimeTicks start_time = CurrentTimeTicks();
+  TimeTicks start_time = Now();
 
   timer.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
 
@@ -757,7 +758,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
-  TimeTicks start_time = CurrentTimeTicks();
+  TimeTicks start_time = Now();
 
   timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 

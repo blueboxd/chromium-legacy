@@ -4,8 +4,8 @@
 
 #include "gpu/vulkan/vulkan_instance.h"
 
-#include <unordered_set>
 #include <vector>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -48,8 +48,7 @@ VulkanInstance::~VulkanInstance() {
 
 bool VulkanInstance::Initialize(
     const std::vector<const char*>& required_extensions,
-    const std::vector<const char*>& required_layers,
-    bool using_swiftshader) {
+    const std::vector<const char*>& required_layers) {
   DCHECK(!vk_instance_);
 
   VulkanFunctionPointers* vulkan_function_pointers =
@@ -84,10 +83,7 @@ bool VulkanInstance::Initialize(
   app_info.pApplicationName = "Chromium";
   app_info.apiVersion = api_version_;
 
-  std::vector<const char*> enabled_extensions;
-  enabled_extensions.insert(std::end(enabled_extensions),
-                            std::begin(required_extensions),
-                            std::end(required_extensions));
+  std::vector<const char*> enabled_extensions = required_extensions;
 
   uint32_t num_instance_exts = 0;
   result = vkEnumerateInstanceExtensionProperties(nullptr, &num_instance_exts,
@@ -132,7 +128,7 @@ bool VulkanInstance::Initialize(
   }
 #endif
 
-  std::vector<const char*> enabled_layer_names;
+  std::vector<const char*> enabled_layer_names = required_layers;
 #if DCHECK_IS_ON()
   uint32_t num_instance_layers = 0;
   result = vkEnumerateInstanceLayerProperties(&num_instance_layers, nullptr);
@@ -150,30 +146,34 @@ bool VulkanInstance::Initialize(
     return false;
   }
 
-  std::unordered_set<std::string> desired_layers({
-#if !defined(USE_X11) && !defined(USE_OZONE)
-    // TODO(crbug.com/843346): Make validation work in combination with
-    // VK_KHR_xlib_surface or switch to VK_KHR_xcb_surface.
-    "VK_LAYER_LUNARG_standard_validation",
-#endif
-  });
-
-  for (const VkLayerProperties& layer_property : instance_layers) {
-    if (desired_layers.find(layer_property.layerName) != desired_layers.end())
-      enabled_layer_names.push_back(layer_property.layerName);
+  // TODO(crbug.com/843346): Make validation work in combination with
+  // VK_KHR_xlib_surface or switch to VK_KHR_xcb_surface.
+  const base::StringPiece xlib_surface_extension_name("VK_KHR_xlib_surface");
+  bool enable_validation =
+      std::find_if(enabled_extensions.begin(), enabled_extensions.end(),
+                   [xlib_surface_extension_name](const char* e) {
+                     return xlib_surface_extension_name == e;
+                   }) == enabled_extensions.end();
+  if (enable_validation) {
+    constexpr base::StringPiece standard_validation(
+        "VK_LAYER_LUNARG_standard_validation");
+    for (const VkLayerProperties& layer_property : instance_layers) {
+      if (standard_validation == layer_property.layerName)
+        enabled_layer_names.push_back(standard_validation.data());
+    }
   }
-#endif
-  enabled_layer_names.insert(std::end(enabled_layer_names),
-                             std::begin(required_layers),
-                             std::end(required_layers));
+#endif  // DCHECK_IS_ON()
 
-  VkInstanceCreateInfo instance_create_info = {};
-  instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instance_create_info.pApplicationInfo = &app_info;
-  instance_create_info.enabledLayerCount = enabled_layer_names.size();
-  instance_create_info.ppEnabledLayerNames = enabled_layer_names.data();
-  instance_create_info.enabledExtensionCount = enabled_extensions.size();
-  instance_create_info.ppEnabledExtensionNames = enabled_extensions.data();
+  VkInstanceCreateInfo instance_create_info = {
+      VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,  // sType
+      nullptr,                                 // pNext
+      0,                                       // flags
+      &app_info,                               // pApplicationInfo
+      enabled_layer_names.size(),              // enableLayerCount
+      enabled_layer_names.data(),              // ppEnabledLayerNames
+      enabled_extensions.size(),               // enabledExtensionCount
+      enabled_extensions.data(),               // ppEnabledExtensionNames
+  };
 
   result = vkCreateInstance(&instance_create_info, nullptr, &vk_instance_);
   if (VK_SUCCESS != result) {
@@ -241,9 +241,7 @@ bool VulkanInstance::Initialize(
         reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
             vkGetInstanceProcAddr(
                 vk_instance_, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-    // TODO(samans): Remove |using_swiftshader| once Swiftshader supports this
-    // method. https://crbug.com/swiftshader/129
-    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR && !using_swiftshader)
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR)
       return false;
 #endif
 

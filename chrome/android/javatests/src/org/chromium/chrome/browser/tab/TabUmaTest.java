@@ -20,6 +20,7 @@ import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -74,7 +75,8 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
+                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
+                        true, null, false);
                 return bgTab;
             }
         });
@@ -119,7 +121,8 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
+                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
+                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
@@ -137,7 +140,8 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
+                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
+                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 // Simulate the renderer being killed by the OS.
                 ChromeTabUtils.simulateRendererKilledForTesting(bgTab, false);
@@ -157,7 +161,8 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
+                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
+                        true, null, false);
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
             }

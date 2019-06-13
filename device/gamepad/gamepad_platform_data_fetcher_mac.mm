@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
 #include "device/gamepad/nintendo_controller.h"
@@ -184,6 +185,10 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   uint16_t vendor_int = [vendor_id intValue];
   uint16_t product_int = [product_id intValue];
   uint16_t version_int = [version_number intValue];
+
+  // Filter out devices that have gamepad-like HID usages but aren't gamepads.
+  if (GamepadIsExcluded(vendor_int, product_int))
+    return;
 
   // Nintendo devices are handled by the Nintendo data fetcher.
   if (NintendoController::IsNintendoController(vendor_int, product_int))

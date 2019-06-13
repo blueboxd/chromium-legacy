@@ -17,7 +17,9 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  void* break_token;
+  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+      oof_positioned_descendants_;
   void* pointer;
   wtf_size_t size;
 };
@@ -35,8 +37,12 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      break_token_(std::move(builder->break_token_)),
       oof_positioned_descendants_(
-          std::move(builder->oof_positioned_descendants_)),
+          builder->oof_positioned_descendants_.IsEmpty()
+              ? nullptr
+              : new Vector<NGOutOfFlowPositionedDescendant>(
+                    std::move(builder->oof_positioned_descendants_))),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->has_floating_descendants_;
@@ -151,7 +157,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,
                                   descendant_line_box->Size().ToLayoutSize());
-    } else if (descendant_line_box->Children().IsEmpty()) {
+    } else if (descendant_line_box->Children().empty()) {
       // Special-case for when the first continuation does not generate
       // fragments. NGInlineLayoutAlgorithm suppresses box fragments when the
       // line is "empty". When there is a continuation from the LayoutInline,

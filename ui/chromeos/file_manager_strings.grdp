@@ -603,6 +603,9 @@
   <message name="IDS_FILE_BROWSER_CANCEL_SELECTION_BUTTON_LABEL" desc="Label for button that unselects all selected items.">
     Cancel selection
   </message>
+  <message name="IDS_FILE_BROWSER_READ_ONLY_LABEL" desc="Label for an indicator which means that the current folder is read-only.">
+    Read only
+  </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_LISTVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'list view' mode.">
     Switch to list view
   </message>

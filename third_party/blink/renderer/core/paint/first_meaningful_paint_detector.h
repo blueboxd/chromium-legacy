@@ -12,6 +12,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class Document;
@@ -40,6 +44,9 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
   void OnNetwork0Quiet();
   void OnNetwork2Quiet();
+
+  // The caller owns the |clock| which must outlive the paint detector.
+  static void SetTickClockForTesting(const base::TickClock* clock);
 
   void Trace(blink::Visitor*);
 

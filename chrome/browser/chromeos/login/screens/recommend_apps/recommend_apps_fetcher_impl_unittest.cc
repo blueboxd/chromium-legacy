@@ -30,14 +30,14 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
-#include "ui/aura/test/aura_test_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/test/test_screen.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace chromeos {
 
@@ -229,8 +229,6 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   ~RecommendAppsFetcherImplTest() override = default;
 
   void SetUp() override {
-    input_device_manager_ = aura::test::CreateTestInputDeviceManager();
-
     display::Screen::SetScreenInstance(&test_screen_);
     display::Display::SetInternalDisplayId(
         test_screen_.GetPrimaryDisplay().id());
@@ -256,9 +254,8 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     recommend_apps_fetcher_.reset();
     cros_display_config_.reset();
     display::Screen::SetScreenInstance(nullptr);
-    input_device_manager_.reset();
-    input_device_client_test_api_.SetKeyboardDevices({});
-    input_device_client_test_api_.SetTouchscreenDevices({});
+    device_data_manager_test_api_.SetKeyboardDevices({});
+    device_data_manager_test_api_.SetTouchscreenDevices({});
   }
 
  protected:
@@ -329,7 +326,7 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
   std::unique_ptr<TestCrosDisplayConfig> cros_display_config_;
 
-  ws::InputDeviceClientTestApi input_device_client_test_api_;
+  ui::DeviceDataManagerTestApi device_data_manager_test_api_;
   display::test::TestScreen test_screen_;
   base::OnceCallback<void(base::Optional<arc::ArcFeatures>)>
       arc_features_callback_;
@@ -353,18 +350,16 @@ class RecommendAppsFetcherImplTest : public testing::Test {
 
   service_manager::TestConnectorFactory connector_factory_;
 
-  std::unique_ptr<ui::InputDeviceManager> input_device_manager_;
-
   std::unique_ptr<base::RunLoop> request_waiter_;
 };
 
 TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithTouch) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
+  device_data_manager_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
       123, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test external touch device"), gfx::Size(1920, 1200), 1)});
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
   SetDisplaySize(gfx::Size(1920, 1200));
 
@@ -425,10 +420,10 @@ TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithTouch) {
 TEST_F(RecommendAppsFetcherImplTest, NoArcFeatures) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
+  device_data_manager_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
       123, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test external touch device"), gfx::Size(1920, 1200), 1)});
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
   SetDisplaySize(gfx::Size(1920, 1200));
 
@@ -493,10 +488,10 @@ TEST_F(RecommendAppsFetcherImplTest, NoArcFeatures) {
 TEST_F(RecommendAppsFetcherImplTest, HasHardKeyboard) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
+  device_data_manager_test_api_.SetTouchscreenDevices({ui::TouchscreenDevice(
       123, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test external touch device"), gfx::Size(1920, 1200), 1)});
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard", "phys",
        base::FilePath("sys_path"), 0, 0, 0}});
   SetDisplaySize(gfx::Size(1920, 1200));
@@ -617,11 +612,11 @@ TEST_F(RecommendAppsFetcherImplTest, NoKeyboard) {
 TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithStylus) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetTouchscreenDevices(
+  device_data_manager_test_api_.SetTouchscreenDevices(
       {ui::TouchscreenDevice(123, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
                              std::string("test external touch device"),
                              gfx::Size(1200, 1920), 1, true)});
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
 
   SetDisplaySize(gfx::Size(1200, 1920));
@@ -682,7 +677,7 @@ TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithStylus) {
 TEST_F(RecommendAppsFetcherImplTest, LargeScreenWithoutTouchScreen) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
 
   SetDisplaySize(gfx::Size(1200, 1200));
@@ -742,7 +737,7 @@ TEST_F(RecommendAppsFetcherImplTest, LargeScreenWithoutTouchScreen) {
 TEST_F(RecommendAppsFetcherImplTest, NormalScreenWithoutTouchScreen) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
 
   SetDisplaySize(gfx::Size(1200, 512));
@@ -802,7 +797,7 @@ TEST_F(RecommendAppsFetcherImplTest, NormalScreenWithoutTouchScreen) {
 TEST_F(RecommendAppsFetcherImplTest, SmallScreenWithoutTouchScreen) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
 
@@ -863,7 +858,7 @@ TEST_F(RecommendAppsFetcherImplTest, SmallScreenWithoutTouchScreen) {
 TEST_F(RecommendAppsFetcherImplTest, ArcFeaturesReadyBeforeAsh) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
 
@@ -924,7 +919,7 @@ TEST_F(RecommendAppsFetcherImplTest, ArcFeaturesReadyBeforeAsh) {
 TEST_F(RecommendAppsFetcherImplTest, RetryCalledBeforeFirstRequest) {
   ASSERT_TRUE(recommend_apps_fetcher_);
 
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
 

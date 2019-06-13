@@ -45,9 +45,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const base::Callback<void(bool)>& close_callback)
     : profile_(profile),
       close_callback_(close_callback),
-      desktop_check_box_(nullptr),
-      menu_check_box_(nullptr),
-      quick_launch_check_box_(nullptr),
       weak_ptr_factory_(this) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -65,24 +62,24 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 void CreateChromeApplicationShortcutView::InitControls() {
-  views::Label* create_shortcuts_label =
-      new views::Label(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
+  auto create_shortcuts_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   create_shortcuts_label->SetMultiLine(true);
 
-  desktop_check_box_ = AddCheckbox(
+  std::unique_ptr<views::Checkbox> desktop_check_box = AddCheckbox(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
 
-  menu_check_box_ = nullptr;
-  quick_launch_check_box_ = nullptr;
+  std::unique_ptr<views::Checkbox> menu_check_box;
+  std::unique_ptr<views::Checkbox> quick_launch_check_box;
 
 #if defined(OS_WIN)
   base::win::Version version = base::win::GetVersion();
   // Do not allow creating shortcuts on the Start Screen for Windows 8.
   if (version != base::win::Version::WIN8 &&
       version != base::win::Version::WIN8_1) {
-    menu_check_box_ = AddCheckbox(
+    menu_check_box = AddCheckbox(
         l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
         profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
   }
@@ -90,7 +87,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   // Win10 actively prevents creating shortcuts on the taskbar so we eliminate
   // that option from the dialog.
   if (base::win::CanPinShortcutToTaskbar()) {
-    quick_launch_check_box_ = AddCheckbox(
+    quick_launch_check_box = AddCheckbox(
         (version >= base::win::Version::WIN7)
             ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
             : l10n_util::GetStringUTF16(
@@ -98,7 +95,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
         profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
   }
 #elif defined(OS_POSIX)
-  menu_check_box_ = AddCheckbox(
+  menu_check_box = AddCheckbox(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 #endif
@@ -123,26 +120,27 @@ void CreateChromeApplicationShortcutView::InitControls() {
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
-  layout->AddView(create_shortcuts_label);
+  layout->AddView(std::move(create_shortcuts_label));
 
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
-  layout->AddView(desktop_check_box_);
+  desktop_check_box_ = layout->AddView(std::move(desktop_check_box));
 
   const int vertical_spacing =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  if (menu_check_box_ != nullptr) {
+  if (menu_check_box) {
     layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
     layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
-    layout->AddView(menu_check_box_);
+    menu_check_box_ = layout->AddView(std::move(menu_check_box));
   }
 
-  if (quick_launch_check_box_ != nullptr) {
+  if (quick_launch_check_box) {
     layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
     layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
-    layout->AddView(quick_launch_check_box_);
+    quick_launch_check_box_ =
+        layout->AddView(std::move(quick_launch_check_box));
   }
 }
 
@@ -238,10 +236,10 @@ void CreateChromeApplicationShortcutView::ButtonPressed(
   DialogModelChanged();
 }
 
-views::Checkbox* CreateChromeApplicationShortcutView::AddCheckbox(
-    const base::string16& text,
-    bool checked) {
-  views::Checkbox* checkbox = new views::Checkbox(text, this);
+std::unique_ptr<views::Checkbox>
+CreateChromeApplicationShortcutView::AddCheckbox(const base::string16& text,
+                                                 bool checked) {
+  auto checkbox = std::make_unique<views::Checkbox>(text, this);
   checkbox->SetChecked(checked);
   return checkbox;
 }

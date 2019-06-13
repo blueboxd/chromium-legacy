@@ -32,6 +32,7 @@
 #define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
+#define DRM_FORMAT_P010 FOURCC('P', '0', '1', '0')
 
 namespace gl {
 namespace {
@@ -64,6 +65,8 @@ unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       return GL_NONE;
+    case gfx::BufferFormat::P010:
+      return GL_RGB_YCBCR_P010_CHROMIUM;
   }
 
   NOTREACHED();
@@ -96,6 +99,8 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
+    case gfx::BufferFormat::P010:
+      return DRM_FORMAT_P010;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
@@ -129,6 +134,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     case DRM_FORMAT_YVU420:
       return gfx::BufferFormat::YVU_420;
+    case DRM_FORMAT_P010:
+      return gfx::BufferFormat::P010;
     default:
       NOTREACHED();
       return gfx::BufferFormat::BGRA_8888;
@@ -297,9 +304,8 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     return gfx::NativePixmapHandle();
   }
 
-  gfx::NativePixmapHandle handle;
+  gfx::NativePixmapHandle handle{};
   handle.modifier = modifiers;
-
   for (int i = 0; i < num_planes; ++i) {
     // Sanity check. In principle all the fds are meant to be valid when
     // eglExportDMABUFImageMESA succeeds.

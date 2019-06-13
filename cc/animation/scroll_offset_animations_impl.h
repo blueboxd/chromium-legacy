@@ -32,6 +32,11 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
   ScrollOffsetAnimationsImpl& operator=(const ScrollOffsetAnimationsImpl&) =
       delete;
 
+  void AutoScrollAnimationCreate(ElementId element_id,
+                                 const gfx::ScrollOffset& target_offset,
+                                 const gfx::ScrollOffset& current_offset,
+                                 float autoscroll_velocity);
+
   // |delayed_by| shrinks the duration of the
   // animation. |animation_start_offset| causes us to start the animation
   // partway through.
@@ -73,6 +78,10 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
   bool IsAnimating() const;
 
  private:
+  void ScrollAnimationCreateInternal(ElementId element_id,
+                                     std::unique_ptr<AnimationCurve> curve,
+                                     base::TimeDelta animation_start_offset);
+
   void ReattachScrollOffsetAnimationIfNeeded(ElementId element_id);
 
   AnimationHost* animation_host_;

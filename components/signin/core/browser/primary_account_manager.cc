@@ -4,37 +4,39 @@
 
 #include "components/signin/core/browser/primary_account_manager.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/ref_counted.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 
 PrimaryAccountManager::PrimaryAccountManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    signin::AccountConsistencyMethod account_consistency)
+    signin::AccountConsistencyMethod account_consistency,
+    std::unique_ptr<PrimaryAccountPolicyManager> policy_manager)
     : client_(client),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       initialized_(false),
-      account_consistency_(account_consistency) {
+#if !defined(OS_CHROMEOS)
+      account_consistency_(account_consistency),
+#endif
+      policy_manager_(std::move(policy_manager)) {
   DCHECK(client_);
   DCHECK(account_tracker_service_);
 }
@@ -155,15 +157,14 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
     }
     SetAuthenticatedAccountId(CoreAccountId(pref_account_id));
   }
-  FinalizeInitBeforeLoadingRefreshTokens(local_state);
+  if (policy_manager_) {
+    policy_manager_->InitializePolicy(local_state, this);
+  }
   // It is important to only load credentials after starting to observe the
   // token service.
   token_service_->AddObserver(this);
   token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
-
-void PrimaryAccountManager::FinalizeInitBeforeLoadingRefreshTokens(
-    PrefService* local_state) {}
 
 bool PrimaryAccountManager::IsInitialized() const {
   return initialized_;
@@ -263,7 +264,7 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
 
   bool reauth_in_progress = IsAuthenticated();
 
-  signin_client()->GetPrefs()->SetInt64(
+  client_->GetPrefs()->SetInt64(
       prefs::kSignedInTime,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
@@ -272,8 +273,8 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
   if (!reauth_in_progress && observer_ != nullptr)
     observer_->GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
 
-  signin_metrics::LogSigninProfile(signin_client()->IsFirstRun(),
-                                   signin_client()->GetInstallDate());
+  signin_metrics::LogSigninProfile(client_->IsFirstRun(),
+                                   client_->GetInstallDate());
 }
 
 void PrimaryAccountManager::SignOut(
@@ -307,7 +308,7 @@ void PrimaryAccountManager::StartSignOut(
   VLOG(1) << "StartSignOut: " << static_cast<int>(signout_source_metric) << ", "
           << static_cast<int>(signout_delete_metric) << ", "
           << static_cast<int>(remove_option);
-  signin_client()->PreSignOut(
+  client_->PreSignOut(
       base::BindOnce(&PrimaryAccountManager::OnSignoutDecisionReached,
                      base::Unretained(this), signout_source_metric,
                      signout_delete_metric, remove_option),
@@ -340,12 +341,12 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   const std::string username = account_info.email;
   const base::Time signin_time =
       base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
-          signin_client()->GetPrefs()->GetInt64(prefs::kSignedInTime)));
+          client_->GetPrefs()->GetInt64(prefs::kSignedInTime)));
   ClearAuthenticatedAccountId();
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
-  signin_client()->GetPrefs()->ClearPref(prefs::kSignedInTime);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
 
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {

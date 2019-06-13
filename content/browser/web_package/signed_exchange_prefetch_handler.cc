@@ -84,6 +84,12 @@ SignedExchangePrefetchHandler::ComputeHeaderIntegrity() const {
   return signed_exchange_loader_->ComputeHeaderIntegrity();
 }
 
+base::Time SignedExchangePrefetchHandler::GetSignatureExpireTime() const {
+  if (!signed_exchange_loader_)
+    return base::Time();
+  return signed_exchange_loader_->GetSignatureExpireTime();
+}
+
 void SignedExchangePrefetchHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   NOTREACHED();

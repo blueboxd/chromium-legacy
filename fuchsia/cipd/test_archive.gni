@@ -1,0 +1,90 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_fuchsia)
+
+# Prepares a staging directory for creating a CIPD archive of Fuchsia
+# packages. Generates a manifest JSON file used by consumers to discover
+# the set of available FARs.
+#
+# Parameters:
+#   cipd_manifest_name: The filename to use for the generated CIPD YAML file.
+#   cipd_path: The path where the package will be located inside the CIPD
+#              repository.
+#   cipd_description: Sets the "description" field in CIPD metadata.
+#   packages: A list of test targets whose FAR files will be included in the
+#             archive.
+#             Dependency links to these targets are implicitly created.
+#   include_manifest: If set, includes a JSON-encoded listing of FAR files in
+#                     the archive.
+template("cipd_archive") {
+  forward_variables_from(invoker,
+                         [
+                           "additional_files",
+                           "cipd_description",
+                           "cipd_manifest_name",
+                           "cipd_path",
+                           "deps",
+                           "include_manifest",
+                           "packages",
+                         ])
+  archive_staging_dir = "${target_gen_dir}/${target_name}"
+
+  manifest_contents = []
+  yaml_contents = [
+    "package: ${cipd_path}",
+    "description: ${cipd_description}",
+    "root: \${outdir}/" + rebase_path(archive_staging_dir, root_build_dir),
+    "data:",
+    "  - file: LICENSE",
+  ]
+
+  if (!defined(deps)) {
+    deps = []
+  }
+  deps += [
+    "//fuchsia:build_id",
+    "//fuchsia:license",
+  ]
+
+  copy_sources = [
+    "${root_out_dir}/fuchsia_artifacts/build_id.txt",
+    "${root_out_dir}/fuchsia_artifacts/LICENSE",
+  ]
+
+  package_deps = []
+  foreach(package, packages) {
+    package_name = get_label_info(package, "name")
+    package_deps += [ "${package}_pkg" ]
+
+    copy_sources += [ root_build_dir + "/gen" + get_label_info(package, "dir") +
+                      "/" + package_name + "/" + package_name + ".far" ]
+
+    manifest_contents += [
+      {
+        package = package_name
+        component_name = package_name
+      },
+    ]
+
+    yaml_contents += [ "  - file: ${package_name}.far" ]
+  }
+
+  if (defined(include_manifest) && include_manifest) {
+    yaml_contents += [ "  - file: test_manifest.json" ]
+    write_file("${archive_staging_dir}/test_manifest.json",
+               manifest_contents,
+               "json")
+  }
+  write_file("${archive_staging_dir}/${cipd_manifest_name}", yaml_contents)
+
+  copy(target_name) {
+    testonly = true
+    sources = copy_sources
+    deps += package_deps
+    outputs = [
+      "${archive_staging_dir}/{{source_file_part}}",
+    ]
+  }
+}

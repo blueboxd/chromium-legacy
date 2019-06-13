@@ -559,6 +559,21 @@ void FidoDeviceAuthenticator::BioEnrollCancel(BioEnrollmentCallback callback) {
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
+void FidoDeviceAuthenticator::BioEnrollEnumerate(
+    pin::TokenResponse token,
+    BioEnrollmentCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(), BioEnrollmentRequest::ForEnumerate(std::move(token)),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";

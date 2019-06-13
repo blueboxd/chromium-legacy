@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -476,13 +477,13 @@ public class LocationBarLayout extends FrameLayout
 
         if (hasFocus && mToolbarDataProvider.hasTab() && !mToolbarDataProvider.isIncognito()) {
             if (mNativeInitialized
-                    && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
+                    && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
                 GeolocationHeader.primeLocationForGeoHeader();
             } else {
                 mDeferredNativeRunnables.add(new Runnable() {
                     @Override
                     public void run() {
-                        if (TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
+                        if (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
                             GeolocationHeader.primeLocationForGeoHeader();
                         }
                     }
@@ -747,7 +748,7 @@ public class LocationBarLayout extends FrameLayout
     public void performSearchQueryForTest(String query) {
         if (TextUtils.isEmpty(query)) return;
 
-        String queryUrl = TemplateUrlService.getInstance().getUrlForSearchQuery(query);
+        String queryUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
 
         if (!TextUtils.isEmpty(queryUrl)) {
             loadUrl(queryUrl, PageTransition.GENERATED, 0);

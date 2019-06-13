@@ -24,6 +24,7 @@ enum BufferFormat {
   YVU_420,
   YUV_420_BIPLANAR,
   UYVY_422,
+  P010,
 };
 
 // gfx::BufferUsage

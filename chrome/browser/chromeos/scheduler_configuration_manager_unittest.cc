@@ -54,7 +54,7 @@ TEST_F(SchedulerConfigurationManagerTest, ConfigChange) {
   // Correct default is used when there is no configured value.
   SchedulerConfigurationManager manager(&debug_daemon_client_, &local_state_);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(debugd::scheduler_configuration::kPerformanceScheduler,
+  EXPECT_EQ(debugd::scheduler_configuration::kConservativeScheduler,
             debug_daemon_client_.scheduler_configuration_name());
 
   // Change user pref, which should trigger a config change.
@@ -77,7 +77,7 @@ TEST_F(SchedulerConfigurationManagerTest, ConfigChange) {
   // Dropping the policy as well reverts to the default configuration.
   local_state_.RemoveManagedPref(prefs::kSchedulerConfiguration);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(debugd::scheduler_configuration::kPerformanceScheduler,
+  EXPECT_EQ(debugd::scheduler_configuration::kConservativeScheduler,
             debug_daemon_client_.scheduler_configuration_name());
 }
 

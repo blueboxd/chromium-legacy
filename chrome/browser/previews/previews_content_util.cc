@@ -104,6 +104,11 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
         PreviewsLitePageNavigationThrottle::IneligibleReason::kCookiesBlocked);
   }
 
+  if (!decider->has_drp_headers()) {
+    ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                     IneligibleReason::kInvalidProxyHeaders);
+  }
+
   // Record UMA.
   for (PreviewsLitePageNavigationThrottle::IneligibleReason reason :
        ineligible_reasons) {

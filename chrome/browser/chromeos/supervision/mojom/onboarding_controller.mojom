@@ -70,12 +70,6 @@ interface OnboardingWebviewHost {
 
   // Requests the host to load the given page.
   LoadPage(OnboardingPage page) => (OnboardingLoadPageResult result);
-
-  // Requests that the host exit the flow immediately. This might mean
-  // different things depending on the type of host. If we are running in OOBE
-  // we will exit the supervision screen and move to the next OOBE step, if we
-  // are running in a custom WebUI, we should close it.
-  ExitFlow();
 };
 
 // Result of a LoadPage call. Contains data about errors and custom data

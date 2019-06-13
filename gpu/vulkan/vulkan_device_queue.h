@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/extension_set.h"
 
@@ -80,8 +81,12 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   VulkanFenceHelper* GetFenceHelper() const { return cleanup_helper_.get(); }
 
+  const VkPhysicalDeviceFeatures2& enabled_device_features_2() const {
+    return enabled_device_features_2_;
+  }
+
   const VkPhysicalDeviceFeatures& enabled_device_features() const {
-    return enabled_device_features_;
+    return enabled_device_features_2_.features;
   }
 
  private:
@@ -94,7 +99,12 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
-  VkPhysicalDeviceFeatures enabled_device_features_ = {};
+  VkPhysicalDeviceFeatures2 enabled_device_features_2_ = {};
+
+#if defined(OS_ANDROID)
+  VkPhysicalDeviceSamplerYcbcrConversionFeatures
+      sampler_ycbcr_conversion_features_ = {};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

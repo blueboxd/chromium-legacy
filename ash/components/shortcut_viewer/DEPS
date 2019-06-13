@@ -1,6 +1,5 @@
 include_rules = [
   "+ash/components/strings",
-  "+services/ws/public",
   "+ui/accessibility",
   "+ui/chromeos/events",
   "+ui/chromeos/search_box",

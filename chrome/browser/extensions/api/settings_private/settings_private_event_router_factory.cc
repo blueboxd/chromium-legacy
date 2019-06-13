@@ -44,8 +44,7 @@ KeyedService* SettingsPrivateEventRouterFactory::BuildServiceInstanceFor(
 content::BrowserContext*
 SettingsPrivateEventRouterFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // Use the incognito profile in guest mode.
-  return context;
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 bool SettingsPrivateEventRouterFactory::ServiceIsCreatedWithBrowserContext()
@@ -54,7 +53,7 @@ bool SettingsPrivateEventRouterFactory::ServiceIsCreatedWithBrowserContext()
 }
 
 bool SettingsPrivateEventRouterFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return false;
 }
 
 }  // namespace extensions

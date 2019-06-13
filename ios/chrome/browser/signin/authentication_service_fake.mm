@@ -53,15 +53,15 @@ void AuthenticationServiceFake::SetHaveAccountsChanged(bool changed) {
   have_accounts_changed_ = changed;
 }
 
-bool AuthenticationServiceFake::HaveAccountsChanged() {
+bool AuthenticationServiceFake::HaveAccountsChanged() const {
   return have_accounts_changed_;
 }
 
-bool AuthenticationServiceFake::IsAuthenticated() {
+bool AuthenticationServiceFake::IsAuthenticated() const {
   return authenticated_identity_ != nil;
 }
 
-ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() {
+ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() const {
   return authenticated_identity_;
 }
 

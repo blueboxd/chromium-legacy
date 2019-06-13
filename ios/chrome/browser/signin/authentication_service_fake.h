@@ -34,11 +34,11 @@ class AuthenticationServiceFake : public AuthenticationService {
 
   void SetHaveAccountsChanged(bool changed);
 
-  bool HaveAccountsChanged() override;
+  bool HaveAccountsChanged() const override;
 
-  bool IsAuthenticated() override;
+  bool IsAuthenticated() const override;
 
-  ChromeIdentity* GetAuthenticatedIdentity() override;
+  ChromeIdentity* GetAuthenticatedIdentity() const override;
 
  private:
   AuthenticationServiceFake(PrefService* pref_service,

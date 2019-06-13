@@ -44,8 +44,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   struct AccountData {
     // Kerberos configuration file.
     std::string krb5conf;
-    // Gets set to true if AcquireKerberosTgt succeeds.
+
+    // True if AcquireKerberosTgt succeeded.
     bool has_tgt = false;
+
+    // True if the account was added by policy.
+    bool is_managed = false;
+
+    // Remembered password, if any.
+    std::string password;
   };
 
   // Returns the AccountData for |principal_name| if available or nullptr

@@ -1725,6 +1725,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "selected";
     case ax::mojom::BoolAttribute::kSupportsTextLocation:
       return "supportsTextLocation";
+    case ax::mojom::BoolAttribute::kIsLineBreakingObject:
+      return "isLineBreakingObject";
   }
 
   return "";
@@ -1761,6 +1763,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kSelected;
   if (0 == strcmp(bool_attribute, "supportsTextLocation"))
     return ax::mojom::BoolAttribute::kSupportsTextLocation;
+  if (0 == strcmp(bool_attribute, "isLineBreakingObject"))
+    return ax::mojom::BoolAttribute::kIsLineBreakingObject;
   return ax::mojom::BoolAttribute::kNone;
 }
 

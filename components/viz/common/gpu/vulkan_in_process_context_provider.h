@@ -27,7 +27,6 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
   static scoped_refptr<VulkanInProcessContextProvider> Create(
       gpu::VulkanImplementation* vulkan_implementation);
 
-  bool Initialize();
   void Destroy();
 
   // VulkanContextProvider implementation
@@ -39,12 +38,13 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
       std::vector<VkSemaphore> semaphores) override;
   void EnqueueSecondaryCBPostSubmitTask(base::OnceClosure closure) override;
 
- protected:
+ private:
   explicit VulkanInProcessContextProvider(
       gpu::VulkanImplementation* vulkan_implementation);
   ~VulkanInProcessContextProvider() override;
 
- private:
+  bool Initialize();
+
 #if BUILDFLAG(ENABLE_VULKAN)
   sk_sp<GrContext> gr_context_;
   gpu::VulkanImplementation* vulkan_implementation_;

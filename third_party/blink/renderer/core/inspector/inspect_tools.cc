@@ -344,8 +344,8 @@ void NodeHighlightTool::Trace(blink::Visitor* visitor) {
 
 // NearbyDistanceTool ----------------------------------------------------------
 
-CString NearbyDistanceTool::GetDataResourceName() {
-  return "inspect_tool_distances.html";
+std::string NearbyDistanceTool::GetDataResourceName() {
+  return std::string("inspect_tool_distances.html");
 }
 
 bool NearbyDistanceTool::HandleMouseDown(const WebMouseEvent& event,
@@ -414,8 +414,8 @@ void ShowViewSizeTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawViewSize", "");
 }
 
-CString ShowViewSizeTool::GetDataResourceName() {
-  return "inspect_tool_viewport_size.html";
+std::string ShowViewSizeTool::GetDataResourceName() {
+  return std::string("inspect_tool_viewport_size.html");
 }
 
 bool ShowViewSizeTool::ForwardEventsToOverlay() {
@@ -431,8 +431,8 @@ void ScreenshotTool::DoInit() {
   client.SetCursorOverridden(true);
 }
 
-CString ScreenshotTool::GetDataResourceName() {
-  return "inspect_tool_screenshot.html";
+std::string ScreenshotTool::GetDataResourceName() {
+  return std::string("inspect_tool_screenshot.html");
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
@@ -501,8 +501,8 @@ void ScreenshotTool::Dispatch(const String& message) {
 
 // PausedInDebuggerTool --------------------------------------------------------
 
-CString PausedInDebuggerTool::GetDataResourceName() {
-  return "inspect_tool_paused.html";
+std::string PausedInDebuggerTool::GetDataResourceName() {
+  return std::string("inspect_tool_paused.html");
 }
 
 void PausedInDebuggerTool::Draw(float scale) {

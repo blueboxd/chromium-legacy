@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -70,6 +71,12 @@ class SignedExchangePrefetchHandler final
   // |forwarding_client| is called and before FollowRedirect() of |this| is
   // called. Otherwise returns nullopt.
   base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
+
+  // Returns the signature expire time of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called and before FollowRedirect() of |this| is
+  // called. Otherwise returns a null Time.
+  base::Time GetSignatureExpireTime() const;
 
  private:
   // network::mojom::URLLoaderClient overrides:

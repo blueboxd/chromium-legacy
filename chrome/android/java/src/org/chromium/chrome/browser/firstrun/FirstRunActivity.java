@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -257,7 +257,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 onNativeDependenciesFullyInitialized();
             }
         };
-        TemplateUrlService.getInstance().runWhenLoaded(onNativeFinished);
+        TemplateUrlServiceFactory.get().runWhenLoaded(onNativeFinished);
     }
 
     public boolean isNativeSideIsInitializedForTest() {

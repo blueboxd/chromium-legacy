@@ -197,6 +197,23 @@ class DeclarativeNetRequestGetMatchedRulesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetMatchedRulesFunction);
 };
 
+class DeclarativeNetRequestSetActionCountAsBadgeTextFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestSetActionCountAsBadgeTextFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.setActionCountAsBadgeText",
+                             DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT)
+
+ protected:
+  ~DeclarativeNetRequestSetActionCountAsBadgeTextFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      DeclarativeNetRequestSetActionCountAsBadgeTextFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_DECLARATIVE_NET_REQUEST_API_H_

@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_UI_TAB_HELPER_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_UI_TAB_HELPER_H_
 
-#include <map>
-
 #include <stdint.h>
+
+#include <map>
+#include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -128,6 +130,10 @@ class PreviewsUITabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // Records the time of the navigation if the current navigation is a reload
+  // and a preview was shown.
+  void MaybeRecordPreviewReload(content::NavigationHandle* navigation_handle);
 
   // True if the UI for a preview has been shown for the page.
   bool displayed_preview_ui_ = false;

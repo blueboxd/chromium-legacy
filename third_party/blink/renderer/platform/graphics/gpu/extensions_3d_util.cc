@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {

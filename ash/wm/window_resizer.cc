@@ -85,10 +85,7 @@ WindowResizer::WindowResizer(wm::WindowState* window_state)
   DCHECK(window_state_->drag_details());
 }
 
-WindowResizer::~WindowResizer() {
-  if (destroyed_)
-    *destroyed_ = true;
-}
+WindowResizer::~WindowResizer() = default;
 
 // static
 int WindowResizer::GetBoundsChangeForWindowComponent(int component) {
@@ -272,20 +269,14 @@ bool WindowResizer::IsBottomEdge(int window_component) {
 void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
   aura::Window* window = GetTarget();
   DCHECK(window);
-  bool destroyed = false;
-  destroyed_ = &destroyed;
-  aura::WindowTracker tracker;
-  tracker.Add(window);
-
   const gfx::Rect original_bounds = window->bounds();
   window->SetBounds(bounds);
-
+  aura::WindowTracker tracker;
+  tracker.Add(window);
   if (tracker.windows().empty())
     return;  // Assume we've been destroyed.
   if (bounds.size() == original_bounds.size())
     return;
-  CHECK(!destroyed);
-  destroyed_ = nullptr;
   recorder_->RequestNext();
 }
 

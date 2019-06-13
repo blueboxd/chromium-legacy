@@ -210,6 +210,20 @@ void AppBannerManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void AppBannerManager::MigrateObserverListForTesting(
+    content::WebContents* web_contents) {
+  AppBannerManager* existing_manager = FromWebContents(web_contents);
+  for (Observer& observer : existing_manager->observer_list_)
+    observer.ObserveAppBannerManager(this);
+  DCHECK(existing_manager->observer_list_.begin() ==
+         existing_manager->observer_list_.end())
+      << "Old observer list must be empty after transfer to test instance.";
+}
+
+bool AppBannerManager::IsPromptAvailableForTesting() const {
+  return binding_.is_bound();
+}
+
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(SiteEngagementService::Get(
@@ -487,16 +501,6 @@ void AppBannerManager::SetInstallableWebAppCheckResult(
 
   for (Observer& observer : observer_list_)
     observer.OnInstallableWebAppStatusUpdated();
-}
-
-void AppBannerManager::MigrateObserverListForTesting(
-    content::WebContents* web_contents) {
-  AppBannerManager* existing_manager = FromWebContents(web_contents);
-  for (Observer& observer : existing_manager->observer_list_)
-    observer.ObserveAppBannerManager(this);
-  DCHECK(existing_manager->observer_list_.begin() ==
-         existing_manager->observer_list_.end())
-      << "Old observer list must be empty after transfer to test instance.";
 }
 
 void AppBannerManager::Stop(InstallableStatusCode code) {

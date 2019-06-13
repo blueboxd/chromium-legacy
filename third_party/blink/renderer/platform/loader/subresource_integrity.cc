@@ -52,11 +52,6 @@ inline bool IsSpaceOrComma(UChar c) {
   return IsASCIISpace(c) || c == ',';
 }
 
-static String DigestToString(const DigestValue& digest) {
-  return Base64Encode(reinterpret_cast<const char*>(digest.data()),
-                      digest.size(), kBase64DoNotInsertLFs);
-}
-
 void SubresourceIntegrity::ReportInfo::AddUseCount(UseCounterFeature feature) {
   use_counts_.push_back(feature);
 }
@@ -163,7 +158,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrityImpl(
         "Failed to find a valid digest in the 'integrity' attribute for "
         "resource '" +
         resource_url.ElidedString() + "' with computed SHA-256 integrity '" +
-        DigestToString(digest) + "'. The resource has been blocked.");
+        Base64Encode(digest) + "'. The resource has been blocked.");
   } else {
     report_info.AddConsoleErrorMessage(
         "There was an error computing an integrity value for resource '" +

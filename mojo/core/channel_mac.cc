@@ -353,8 +353,8 @@ class ChannelMac : public Channel,
         sizeof(mach_msg_header_t) + sizeof(mach_msg_body_t) +
         (message->num_handles() * sizeof(mach_msg_port_descriptor_t));
     const size_t expected_message_size =
-        round_msg(mach_header_size + message->data_num_bytes() +
-                  sizeof(mach_msg_audit_trailer_t));
+        round_msg(mach_header_size + sizeof(uint64_t) +
+                  message->data_num_bytes() + sizeof(mach_msg_audit_trailer_t));
     const bool transfer_message_ool =
         expected_message_size >= send_buffer_.size();
 

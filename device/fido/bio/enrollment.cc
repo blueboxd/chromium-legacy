@@ -69,6 +69,19 @@ BioEnrollmentRequest BioEnrollmentRequest::ForCancel() {
   return request;
 }
 
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForEnumerate(
+    const pin::TokenResponse& response) {
+  BioEnrollmentRequest request;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kEnumerateEnrollments;
+  request.pin_protocol = 1;
+  request.pin_auth = response.PinAuth(
+      std::vector<uint8_t>{static_cast<int>(*request.modality),
+                           static_cast<int>(*request.subcommand)});
+  return request;
+}
+
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
 BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;
@@ -169,12 +182,59 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
     response.remaining_samples = it->second.GetUnsigned();
   }
 
+  // enumerated template infos
+  it = response_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos)));
+  if (it != response_map.end()) {
+    if (!it->second.is_array()) {
+      return base::nullopt;
+    }
+
+    std::vector<std::pair<std::vector<uint8_t>, std::string>> enumerated_ids;
+    for (const auto& bio_template : it->second.GetArray()) {
+      if (!bio_template.is_map()) {
+        return base::nullopt;
+      }
+      const cbor::Value::MapValue& template_map = bio_template.GetMap();
+
+      // id (required)
+      auto template_it = template_map.find(cbor::Value(
+          static_cast<int>(BioEnrollmentTemplateInfoParam::kTemplateId)));
+      if (template_it == template_map.end() ||
+          !template_it->second.is_bytestring()) {
+        return base::nullopt;
+      }
+      std::vector<uint8_t> id = template_it->second.GetBytestring();
+
+      // name (optional)
+      std::string name;
+      template_it = template_map.find(cbor::Value(static_cast<int>(
+          BioEnrollmentTemplateInfoParam::kTemplateFriendlyName)));
+      if (template_it != template_map.end()) {
+        if (!template_it->second.is_string()) {
+          return base::nullopt;
+        }
+        name = template_it->second.GetString();
+      }
+      enumerated_ids.push_back(std::make_pair(std::move(id), std::move(name)));
+    }
+    response.enumerated_ids = std::move(enumerated_ids);
+  }
+
   return response;
 }
 
 BioEnrollmentResponse::BioEnrollmentResponse() = default;
 BioEnrollmentResponse::BioEnrollmentResponse(BioEnrollmentResponse&&) = default;
 BioEnrollmentResponse::~BioEnrollmentResponse() = default;
+
+bool BioEnrollmentResponse::operator==(const BioEnrollmentResponse& r) const {
+  return modality == r.modality && fingerprint_kind == r.fingerprint_kind &&
+         max_samples_for_enroll == r.max_samples_for_enroll &&
+         template_id == r.template_id && last_status == r.last_status &&
+         remaining_samples == r.remaining_samples &&
+         enumerated_ids == r.enumerated_ids;
+}
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
 AsCTAPRequestValuePair(const BioEnrollmentRequest& request) {

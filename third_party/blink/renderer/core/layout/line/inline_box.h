@@ -102,7 +102,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                      LayoutUnit line_top,
                      LayoutUnit line_bottom) const;
   virtual bool NodeAtPoint(HitTestResult&,
-                           const HitTestLocation& location_in_container,
+                           const HitTestLocation&,
                            const PhysicalOffset& accumulated_offset,
                            LayoutUnit line_top,
                            LayoutUnit line_bottom);

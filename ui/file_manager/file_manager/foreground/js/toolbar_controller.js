@@ -57,6 +57,13 @@ class ToolbarController {
     this.deleteButton_ = queryRequiredElement('#delete-button', this.toolbar_);
 
     /**
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.readOnlyIndicator_ =
+        queryRequiredElement('#read-only-indicator', this.toolbar_);
+
+    /**
      * @private {!cr.ui.Command}
      * @const
      */
@@ -143,7 +150,7 @@ class ToolbarController {
   }
 
   /**
-   * Updates buttons that act on current directory.
+   * Updates toolbar's UI elements which are related to current directory.
    * @private
    */
   updateCurrentDirectoryButtons_() {
@@ -152,6 +159,11 @@ class ToolbarController {
     this.refreshCommand_.setHidden(
         volumeInfo && volumeInfo.watchable ||
         this.directoryModel_.getFileListSelection().getCheckSelectMode());
+
+    const currentDirectory = this.directoryModel_.getCurrentDirEntry();
+    const locationInfo = currentDirectory &&
+        this.volumeManager_.getLocationInfo(currentDirectory);
+    this.readOnlyIndicator_.hidden = !(locationInfo && locationInfo.isReadOnly);
   }
 
   /**

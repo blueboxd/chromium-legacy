@@ -66,17 +66,18 @@ TEST_F(BioEnrollmentHandlerTest, Modality) {
   handler->GetModality(cb.callback());
   cb.WaitForCallback();
 
+  // Operation was successful.
   auto result = cb.TakeResult();
   EXPECT_EQ(std::get<0>(result), CtapDeviceResponseCode::kSuccess);
 
+  // Result is valid.
   auto v = std::move(std::get<1>(result));
   EXPECT_TRUE(v);
-  EXPECT_EQ(v->modality, BioEnrollmentModality::kFingerprint);
-  EXPECT_FALSE(v->fingerprint_kind);
-  EXPECT_FALSE(v->max_samples_for_enroll);
-  EXPECT_FALSE(v->template_id);
-  EXPECT_FALSE(v->last_status);
-  EXPECT_FALSE(v->remaining_samples);
+
+  // Result is correct.
+  BioEnrollmentResponse expected;
+  expected.modality = BioEnrollmentModality::kFingerprint;
+  EXPECT_EQ(v, expected);
 }
 
 // Tests getting authenticator modality without pin auth.
@@ -101,12 +102,12 @@ TEST_F(BioEnrollmentHandlerTest, FingerprintSensorInfo) {
 
   auto v = std::move(std::get<1>(result));
   EXPECT_TRUE(v);
-  EXPECT_EQ(v->modality, BioEnrollmentModality::kFingerprint);
-  EXPECT_EQ(v->fingerprint_kind, BioEnrollmentFingerprintKind::kTouch);
-  EXPECT_EQ(v->max_samples_for_enroll, 7);
-  EXPECT_FALSE(v->template_id);
-  EXPECT_FALSE(v->last_status);
-  EXPECT_FALSE(v->remaining_samples);
+
+  BioEnrollmentResponse expected;
+  expected.modality = BioEnrollmentModality::kFingerprint;
+  expected.fingerprint_kind = BioEnrollmentFingerprintKind::kTouch;
+  expected.max_samples_for_enroll = 7;
+  EXPECT_EQ(v, expected);
 }
 
 // Tests bio enrollment commands against an authenticator lacking support.
@@ -156,19 +157,18 @@ TEST_F(BioEnrollmentHandlerTest, Enroll) {
   test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
                                        base::Optional<BioEnrollmentResponse>>
       cb;
-  handler->Enroll(cb.callback());
+  handler->EnrollTemplate(cb.callback());
 
   cb.WaitForCallback();
   EXPECT_EQ(cb.status(), CtapDeviceResponseCode::kSuccess);
 
   auto v = std::move(std::get<1>(cb.TakeResult()));
   EXPECT_TRUE(v);
-  EXPECT_FALSE(v->modality);
-  EXPECT_FALSE(v->fingerprint_kind);
-  EXPECT_FALSE(v->max_samples_for_enroll);
-  EXPECT_FALSE(v->template_id);
-  EXPECT_EQ(v->last_status, BioEnrollmentSampleStatus::kGood);
-  EXPECT_EQ(v->remaining_samples, 0);
+
+  BioEnrollmentResponse expected;
+  expected.last_status = BioEnrollmentSampleStatus::kGood;
+  expected.remaining_samples = 0;
+  EXPECT_EQ(v, expected);
 }
 
 // Tests cancelling fingerprint without an ongoing enrollment.
@@ -185,6 +185,34 @@ TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
   test::TestCallbackReceiver<> cb;
   handler->Cancel(cb.callback());
   cb.WaitForCallback();
+}
+
+TEST_F(BioEnrollmentHandlerTest, Enumerate) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.bio_enrollment_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
+
+  test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
+                                       base::Optional<BioEnrollmentResponse>>
+      cb;
+  handler->EnumerateTemplates(cb.callback());
+
+  cb.WaitForCallback();
+  EXPECT_EQ(cb.status(), CtapDeviceResponseCode::kSuccess);
+
+  auto v = std::move(std::get<1>(cb.TakeResult()));
+  EXPECT_TRUE(v);
+
+  BioEnrollmentResponse expected;
+  expected.enumerated_ids =
+      std::vector<std::pair<std::vector<uint8_t>, std::string>>{
+          {{0, 0, 0, 1}, "Template0001"}};
+  EXPECT_EQ(v, expected);
 }
 
 }  // namespace

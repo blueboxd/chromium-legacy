@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/numerics/safe_conversions.h"
+#include "base/time/default_tick_clock.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -48,8 +49,9 @@ const uint32_t kImageFetchTimeoutInMs = 90000;
 
 namespace blink {
 
-NotificationImageLoader::NotificationImageLoader(Type type)
-    : type_(type), stopped_(false) {}
+NotificationImageLoader::NotificationImageLoader(Type type,
+                                                 const base::TickClock* clock)
+    : type_(type), stopped_(false), clock_(clock) {}
 
 NotificationImageLoader::~NotificationImageLoader() = default;
 
@@ -58,7 +60,7 @@ void NotificationImageLoader::Start(ExecutionContext* context,
                                     ImageCallback image_callback) {
   DCHECK(!stopped_);
 
-  start_time_ = CurrentTimeTicks();
+  start_time_ = clock_->NowTicks();
   image_callback_ = std::move(image_callback);
 
   // TODO(mvanouwerkerk): Add an entry for notifications to
@@ -105,7 +107,7 @@ void NotificationImageLoader::DidFinishLoading(uint64_t resource_identifier) {
   NOTIFICATION_HISTOGRAM_COUNTS(
       LoadFinishTime, type_,
       base::saturated_cast<base::HistogramBase::Sample>(
-          (CurrentTimeTicks() - start_time_).InMilliseconds()),
+          (clock_->NowTicks() - start_time_).InMilliseconds()),
       1000 * 60 * 60 /* 1 hour max */);
 
   if (data_) {
@@ -135,7 +137,7 @@ void NotificationImageLoader::DidFail(const ResourceError& error) {
   NOTIFICATION_HISTOGRAM_COUNTS(
       LoadFailTime, type_,
       base::saturated_cast<base::HistogramBase::Sample>(
-          (CurrentTimeTicks() - start_time_).InMilliseconds()),
+          (clock_->NowTicks() - start_time_).InMilliseconds()),
       1000 * 60 * 60 /* 1 hour max */);
 
   RunCallbackWithEmptyBitmap();

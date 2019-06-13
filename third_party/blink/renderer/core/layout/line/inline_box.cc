@@ -239,15 +239,20 @@ void InlineBox::Paint(const PaintInfo& paint_info,
 }
 
 bool InlineBox::NodeAtPoint(HitTestResult& result,
-                            const HitTestLocation& location_in_container,
+                            const HitTestLocation& hit_test_location,
                             const PhysicalOffset& accumulated_offset,
                             LayoutUnit /* lineTop */,
                             LayoutUnit /* lineBottom */) {
   // Hit test all phases of replaced elements atomically, as though the replaced
   // element established its own stacking context. (See Appendix E.2, section
   // 6.4 on inline block/table elements in the CSS2.1 specification.)
-  return GetLineLayoutItem().HitTestAllPhases(result, location_in_container,
-                                              accumulated_offset);
+  PhysicalOffset layout_item_accumulated_offset = accumulated_offset;
+  if (GetLineLayoutItem().IsBox()) {
+    layout_item_accumulated_offset +=
+        LineLayoutBox(GetLineLayoutItem()).PhysicalLocation();
+  }
+  return GetLineLayoutItem().HitTestAllPhases(result, hit_test_location,
+                                              layout_item_accumulated_offset);
 }
 
 const RootInlineBox& InlineBox::Root() const {

@@ -38,12 +38,13 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -122,7 +123,7 @@ public class PreferencesTest {
             // Simulate selecting the third search engine, ensure that TemplateUrlService is
             // updated, and location permission granted by default for the new engine.
             String keyword2 = pref.setValueForTesting("2");
-            TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+            TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
             Assert.assertEquals(
                     keyword2, templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
             Assert.assertEquals(
@@ -136,7 +137,7 @@ public class PreferencesTest {
                     url, url, ContentSettingValues.BLOCK, false);
             keyword3 = pref.setValueForTesting("3");
             Assert.assertEquals(keyword3,
-                    TemplateUrlService.getInstance()
+                    TemplateUrlServiceFactory.get()
                             .getDefaultSearchEngineTemplateUrl()
                             .getKeyword());
             Assert.assertEquals(
@@ -157,7 +158,7 @@ public class PreferencesTest {
                     url, url, ContentSettingValues.ALLOW, false);
             keyword2 = pref.setValueForTesting("2");
             Assert.assertEquals(keyword2,
-                    TemplateUrlService.getInstance()
+                    TemplateUrlServiceFactory.get()
                             .getDefaultSearchEngineTemplateUrl()
                             .getKeyword());
 
@@ -187,7 +188,7 @@ public class PreferencesTest {
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return TemplateUrlService.getInstance().isDefaultSearchManaged();
+                return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
             }
         }));
 
@@ -248,7 +249,7 @@ public class PreferencesTest {
             int index = indexOfFirstHttpSearchEngine(pref);
             String keyword = pref.setValueForTesting(Integer.toString(index));
 
-            TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+            TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
             Assert.assertEquals(
                     keyword, templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
             Assert.assertEquals(
@@ -257,7 +258,7 @@ public class PreferencesTest {
     }
 
     private int indexOfFirstHttpSearchEngine(SearchEnginePreference pref) {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         List<TemplateUrl> urls = templateUrlService.getTemplateUrls();
         int index;
         for (index = 0; index < urls.size(); ++index) {
@@ -275,23 +276,23 @@ public class PreferencesTest {
         // Make sure the template_url_service is loaded.
         final CallbackHelper onTemplateUrlServiceLoadedHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            if (TemplateUrlService.getInstance().isLoaded()) {
+            if (TemplateUrlServiceFactory.get().isLoaded()) {
                 onTemplateUrlServiceLoadedHelper.notifyCalled();
             } else {
-                TemplateUrlService.getInstance().registerLoadListener(new LoadListener() {
+                TemplateUrlServiceFactory.get().registerLoadListener(new LoadListener() {
                     @Override
                     public void onTemplateUrlServiceLoaded() {
                         onTemplateUrlServiceLoadedHelper.notifyCalled();
                     }
                 });
-                TemplateUrlService.getInstance().load();
+                TemplateUrlServiceFactory.get().load();
             }
         });
         onTemplateUrlServiceLoadedHelper.waitForCallback(0);
     }
 
     private @ContentSettingValues int locationPermissionForSearchEngine(String keyword) {
-        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(keyword);
+        String url = TemplateUrlServiceFactory.get().getSearchEngineUrlFromTemplateUrl(keyword);
         PermissionInfo locationSettings =
                 new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
         @ContentSettingValues

@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
@@ -53,6 +54,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private TabGridViewHolder mSelectableTabGridViewHolder;
     private PropertyModel mSelectableModel;
     private PropertyModelChangeProcessor mSelectableMCP;
+    private SelectionDelegate<Integer> mSelectionDelegate;
 
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
@@ -108,6 +110,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             view.addView(mSelectableTabGridViewHolder.itemView);
         });
 
+        mSelectionDelegate = new SelectionDelegate<>();
+
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
                              .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
@@ -119,6 +123,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mSelectableModel =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mMockSelectedListener)
+                        .with(TabProperties.TAB_SELECTION_DELEGATE, mSelectionDelegate)
                         .build();
 
         mGridMCP = PropertyModelChangeProcessor.create(mGridModel, mTabGridViewHolder,

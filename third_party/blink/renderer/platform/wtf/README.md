@@ -43,7 +43,7 @@ The below is a list of major libraries. For a complete list, look at
 
 * **Strings**
 
-  [String], [AtomicString], [StringBuilder], [CString]
+  [String], [AtomicString], [StringBuilder]
 
 * **Reference counting**
 
@@ -93,7 +93,6 @@ current location][4] platform/wtf.
 [String]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/wtf_string.h
 [AtomicString]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/atomic_string.h
 [StringBuilder]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/string_builder.h
-[CString]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/text/cstring.h
 [RefCounted]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/ref_counted.h
 [allocator.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/allocator.h
 [functional.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/functional.h

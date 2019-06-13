@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
+#include "chrome/browser/chromeos/supervision/onboarding_delegate.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
@@ -41,8 +42,9 @@ GURL SupervisionServerBaseUrl() {
 
 }  // namespace
 
-OnboardingFlowModel::OnboardingFlowModel(Profile* profile)
-    : profile_(profile) {}
+OnboardingFlowModel::OnboardingFlowModel(Profile* profile,
+                                         OnboardingDelegate* delegate)
+    : profile_(profile), delegate_(delegate) {}
 
 OnboardingFlowModel::~OnboardingFlowModel() = default;
 
@@ -82,8 +84,13 @@ void OnboardingFlowModel::ExitFlow(ExitReason reason) {
     observer.WillExitFlow(current_step_, reason);
   }
 
-  webview_host_->ExitFlow();
   webview_host_ = nullptr;
+  if (reason == ExitReason::kUserReachedEnd) {
+    delegate_->FinishOnboarding();
+    return;
+  }
+
+  delegate_->SkipOnboarding();
 }
 
 mojom::OnboardingWebviewHost& OnboardingFlowModel::GetWebviewHost() {

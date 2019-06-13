@@ -40,7 +40,7 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
   }
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 

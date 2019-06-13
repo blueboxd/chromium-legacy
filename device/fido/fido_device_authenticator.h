@@ -83,6 +83,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetSensorInfo(BioEnrollmentCallback callback) override;
   void BioEnrollFingerprint(pin::TokenResponse, BioEnrollmentCallback) override;
   void BioEnrollCancel(BioEnrollmentCallback) override;
+  void BioEnrollEnumerate(pin::TokenResponse, BioEnrollmentCallback) override;
 
   void Reset(ResetCallback callback) override;
   void Cancel() override;

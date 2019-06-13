@@ -10,8 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
+#include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/texture_holder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 class GrContext;
@@ -23,7 +24,6 @@ class SingleReleaseCallback;
 
 namespace blink {
 class WebGraphicsContext3DProviderWrapper;
-class TextureHolder;
 
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     : public StaticBitmapImage {
@@ -93,25 +93,24 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
                      const IntPoint& dest_point,
                      const IntRect& source_sub_rectangle) override;
 
-  bool HasMailbox() const final {
-    return texture_holder_->IsMailboxTextureHolder();
-  }
+  bool HasMailbox() const final { return !!mailbox_texture_holder_; }
   // To be called on sender thread before performing a transfer
   void Transfer() final;
 
   void EnsureMailbox(MailboxSyncMode, GLenum filter) final;
 
   const gpu::Mailbox& GetMailbox() const final {
-    return texture_holder_->GetMailbox();
+    static const gpu::Mailbox mailbox;
+    return mailbox_texture_holder_ ? mailbox_texture_holder_->GetMailbox()
+                                   : mailbox;
   }
   const gpu::SyncToken& GetSyncToken() const final {
-    return texture_holder_->GetSyncToken();
+    static const gpu::SyncToken sync_token;
+    return mailbox_texture_holder_ ? mailbox_texture_holder_->GetSyncToken()
+                                   : sync_token;
   }
-  void UpdateSyncToken(gpu::SyncToken) final;
 
   PaintImage PaintImageForCurrentFrame() override;
-
-  TextureHolder* TextureHolderForTesting() { return texture_holder_.get(); }
 
  private:
   AcceleratedStaticBitmapImage(
@@ -138,7 +137,25 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   void WaitSyncTokenIfNeeded();
   void RetainOriginalSkImage();
 
-  std::unique_ptr<TextureHolder> texture_holder_;
+  // TODO(khushalsagar): Its unclear what to use here for calls checking IsValid
+  // or querying the ContextProvider for the image. This can differ in the 2,
+  // for instance if the image was transferred between threads.
+  const TextureHolder* texture_holder() const {
+    if (skia_texture_holder_)
+      return skia_texture_holder_.get();
+    return mailbox_texture_holder_.get();
+  }
+
+  // The image is created with one of the texture holders below while the other
+  // one is created lazily if needed and then persisted for the lifetime of the
+  // image on a particular thread.
+  // When Transfer is called, the image is detached from its current thread to
+  // allow it to be used on a different thread. We create(if needed) and cache
+  // the mailbox in this case, so the texture can be used with a different
+  // context. The skia texture holder is released since the mailbox needs to be
+  // imported into the GrContext on the new thread.
+  std::unique_ptr<SkiaTextureHolder> skia_texture_holder_;
+  std::unique_ptr<MailboxTextureHolder> mailbox_texture_holder_;
 
   THREAD_CHECKER(thread_checker_);
   PaintImage::ContentId paint_image_content_id_;

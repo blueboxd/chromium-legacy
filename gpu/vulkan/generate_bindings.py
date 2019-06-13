@@ -92,6 +92,10 @@ VULKAN_DEVICE_FUNCTIONS_ANDROID = [
 { 'name': 'vkGetAndroidHardwareBufferPropertiesANDROID' },
 ]
 
+VULKAN_PHYSICAL_DEVICE_FUNCTIONS_ANDROID = [
+{ 'name': 'vkGetPhysicalDeviceFeatures2' },
+]
+
 VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID = [
 { 'name': 'vkGetSemaphoreFdKHR' },
 { 'name': 'vkImportSemaphoreFdKHR' },
@@ -164,6 +168,7 @@ def WriteMacros(file, functions):
 def GenerateHeaderFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
                        device_functions_android,
+                       physical_device_functions_android,
                        device_functions_linux_or_android,
                        device_functions_linux, device_functions_fuchsia,
                        queue_functions, command_buffer_functions,
@@ -264,11 +269,18 @@ struct VulkanFunctionPointers {
 
   file.write("""\
 
-  // Android only device functions.
 #if defined(OS_ANDROID)
+  // Android only device functions.
 """)
 
   WriteFunctionDeclarations(file, device_functions_android)
+
+  file.write("""\
+
+  // Android only physical device functions.
+""")
+
+  WriteFunctionDeclarations(file, physical_device_functions_android)
 
   file.write("""\
 #endif
@@ -371,6 +383,16 @@ struct VulkanFunctionPointers {
   ])
   file.write("#endif\n")
 
+  file.write("""\
+
+#if defined(OS_ANDROID)
+""")
+
+  WriteMacros(file, physical_device_functions_android)
+
+  file.write("""\
+#endif
+""")
 
   file.write("""\
 
@@ -485,6 +507,7 @@ def WriteDeviceFunctionPointerInitialization(file,
 def GenerateSourceFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
                        device_functions_android,
+                       physical_device_functions_android,
                        device_functions_linux_or_android,
                        device_functions_linux, device_functions_fuchsia,
                        queue_functions, command_buffer_functions,
@@ -548,6 +571,17 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
 """)
 
   WriteInstanceFunctionPointerInitialization(file, physical_device_functions)
+
+  file.write("""\
+#if defined(OS_ANDROID)
+""")
+
+  WriteInstanceFunctionPointerInitialization(file,
+                                             physical_device_functions_android)
+
+  file.write("""\
+#endif
+""")
 
   file.write("""\
 
@@ -679,6 +713,7 @@ def main(argv):
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
+                     VULKAN_PHYSICAL_DEVICE_FUNCTIONS_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX,
                      VULKAN_DEVICE_FUNCTIONS_FUCHSIA,
@@ -694,6 +729,7 @@ def main(argv):
                      VULKAN_INSTANCE_FUNCTIONS,
                      VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_DEVICE_FUNCTIONS_ANDROID,
+                     VULKAN_PHYSICAL_DEVICE_FUNCTIONS_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID,
                      VULKAN_DEVICE_FUNCTIONS_LINUX,
                      VULKAN_DEVICE_FUNCTIONS_FUCHSIA,

@@ -57,7 +57,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   void UpdateLayout() override;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 

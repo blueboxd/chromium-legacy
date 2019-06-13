@@ -22,9 +22,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
-#if defined(OS_CHROMEOS)
-#include "services/ws/public/cpp/input_devices/input_device_controller.h"
-#endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
@@ -39,9 +36,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
         base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI});
 
-#if defined(OS_CHROMEOS)
-    input_device_controller_.AddInterface(&registry_, ui_task_runner);
-#endif
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -108,10 +102,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_with_source_info_;
-
-#if defined(OS_CHROMEOS)
-  ws::InputDeviceController input_device_controller_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };

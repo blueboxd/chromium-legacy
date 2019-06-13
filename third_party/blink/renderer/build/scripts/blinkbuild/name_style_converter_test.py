@@ -53,7 +53,6 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('CDATASection'), ['CDATA', 'Section'])
 
         self.assertEqual(tokenize_name('ASCIICType'), ['ASCII', 'CType'])
-        self.assertEqual(tokenize_name('CString'), ['CString'])
 
         self.assertEqual(tokenize_name('HTMLDListElement'), ['HTML', 'DList', 'Element'])
         self.assertEqual(tokenize_name('HTMLOListElement'), ['HTML', 'OList', 'Element'])

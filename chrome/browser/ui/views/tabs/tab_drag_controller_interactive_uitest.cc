@@ -148,9 +148,9 @@ class QuitDraggingObserver : public content::NotificationObserver {
     run_loop_.QuitWhenIdle();
   }
 
-  void Wait() {
-    run_loop_.Run();
-  }
+  // The observer should be constructed prior to initiating the drag. To prevent
+  // misuse via constructing a temporary object, Wait is marked lvalue-only.
+  void Wait() & { run_loop_.Run(); }
 
  private:
   content::NotificationRegistrar registrar_;
@@ -583,6 +583,7 @@ class DetachToBrowserTabDragControllerTest
                         base::OnceClosure task,
                         int tab = 0,
                         int drag_x_offset = 0) {
+    test::QuitDraggingObserver observer;
     // Move to the tab and drag it enough so that it detaches.
     const gfx::Point tab_0_center =
         GetCenterInScreenCoordinates(tab_strip->tab_at(tab));
@@ -590,7 +591,7 @@ class DetachToBrowserTabDragControllerTest
     ASSERT_TRUE(DragInputToNotifyWhenDone(
         tab_0_center + gfx::Vector2d(drag_x_offset, GetDetachY(tab_strip)),
         std::move(task)));
-    test::QuitDraggingObserver().Wait();
+    observer.Wait();
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
@@ -1244,7 +1245,6 @@ void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
 
 }  // namespace
 
-// This is disabled until NativeViewHost::Detach really detaches.
 // Detaches a tab and while detached presses escape to revert the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        PressEscapeWhileDetached) {
@@ -1608,6 +1608,7 @@ TabStrip* GetAttachedTabstrip() {
 void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
                                TabStrip* tab_strip,
                                int tab_index) {
+  test::QuitDraggingObserver observer;
   // Move to the tab and drag it enough so that it detaches.
   const gfx::Point tab_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(tab_index));
@@ -1640,7 +1641,7 @@ void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
               ASSERT_TRUE(test->ReleaseInput());
             })));
       })));
-  test::QuitDraggingObserver().Wait();
+  observer.Wait();
 }
 
 }  // namespace
@@ -3032,6 +3033,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // minimizing the window. See https://crbug.com/902897 for the details.
   ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
 
+  test::QuitDraggingObserver observer;
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(0));
@@ -3051,7 +3053,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
               ASSERT_TRUE(ReleaseInput());
             })));
       })));
-  test::QuitDraggingObserver().Wait();
+  observer.Wait();
 
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());

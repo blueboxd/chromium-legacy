@@ -475,7 +475,7 @@ Polymer({
   },
 
   /** @private */
-  onCloseTap_: function() {
+  onCloseClick_: function() {
     this.$.editDialog.close();
   },
 

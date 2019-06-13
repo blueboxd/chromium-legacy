@@ -106,6 +106,11 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // Otherwise returns nullopt.
   virtual base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
 
+  // Returns the signature expire time of the loaded signed exchange if
+  // available. This is available after |headers_callback| is called.
+  // Otherwise returns a null Time.
+  virtual base::Time GetSignatureExpireTime() const;
+
  protected:
   SignedExchangeHandler();
 

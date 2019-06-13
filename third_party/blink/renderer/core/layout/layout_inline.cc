@@ -1018,7 +1018,7 @@ LayoutUnit LayoutInline::MarginBottom() const {
 }
 
 bool LayoutInline::NodeAtPoint(HitTestResult& result,
-                               const HitTestLocation& location_in_container,
+                               const HitTestLocation& hit_test_location,
                                const PhysicalOffset& accumulated_offset,
                                HitTestAction hit_test_action) {
   if (ContainingNGBlockFlow()) {
@@ -1037,28 +1037,27 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       PhysicalOffset adjusted_location =
           accumulated_offset + fragment->InlineOffsetToContainerBox();
       if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
-              result, location_in_container, adjusted_location,
-              hit_test_action))
+              result, hit_test_location, adjusted_location, hit_test_action))
         return true;
     }
     return false;
   }
 
   return LineBoxes()->HitTest(LineLayoutBoxModel(this), result,
-                              location_in_container, accumulated_offset,
+                              hit_test_location, accumulated_offset,
                               hit_test_action);
 }
 
 bool LayoutInline::HitTestCulledInline(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     const NGPaintFragment* container_fragment) {
   DCHECK(container_fragment || !AlwaysCreateLineBoxes());
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
 
-  HitTestLocation adjusted_location(location_in_container, -accumulated_offset);
+  HitTestLocation adjusted_location(hit_test_location, -accumulated_offset);
   Region region_result;
   bool intersected = false;
   auto yield = [&adjusted_location, &region_result,

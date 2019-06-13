@@ -28,6 +28,10 @@ NotificationEntry CreateNotificationEntry() {
   return NotificationEntry(SchedulerClientType::kUnknown, base::GenerateGUID());
 }
 
+NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
+  return NotificationEntry(type, base::GenerateGUID());
+}
+
 class MockDelegate : public ScheduledNotificationManager::Delegate {
  public:
   MockDelegate() = default;
@@ -225,5 +229,44 @@ TEST_F(ScheduledNotificationManagerTest, GetAllNotifications) {
   EXPECT_EQ(output2->create_time, entry2.create_time);
 }
 
+// Verify DeleteNotifications API, all notifications with given
+// SchedulerClientType should be deleted.
+TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
+  // Type1: entry0
+  // Type2: entry1, entry2
+  // Type3: entry3
+  auto entry0 = CreateNotificationEntry(SchedulerClientType::kTest1);
+  auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest2);
+  auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest2);
+  auto entry3 = CreateNotificationEntry(SchedulerClientType::kTest3);
+
+  InitWithData(
+      std::vector<NotificationEntry>({entry0, entry1, entry2, entry3}));
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 3u);
+
+  EXPECT_CALL(*store(), Delete(_, _)).Times(2).RetiresOnSaturation();
+  manager()->DeleteNotifications(SchedulerClientType::kTest2);
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 2u);
+
+  // Ensure deleting non-existing key will not crash, and store will not call
+  // Delete.
+  EXPECT_CALL(*store(), Delete(_, _)).Times(0).RetiresOnSaturation();
+  manager()->DeleteNotifications(SchedulerClientType::kTest2);
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 2u);
+
+  EXPECT_CALL(*store(), Delete(_, _)).RetiresOnSaturation();
+  manager()->DeleteNotifications(SchedulerClientType::kTest1);
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 1u);
+
+  EXPECT_CALL(*store(), Delete(_, _)).RetiresOnSaturation();
+  manager()->DeleteNotifications(SchedulerClientType::kTest3);
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 0u);
+}
 }  // namespace
 }  // namespace notifications

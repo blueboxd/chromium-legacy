@@ -3,9 +3,9 @@
     featureSplit="autofill_assistant"
     package="{{manifest_package}}">
 
-    <!-- For Chrome Modern use android:minSdkVersion="21". -->
+    <!-- For Chrome Modern we use android:minSdkVersion="21". -->
     <uses-sdk
-        android:minSdkVersion="24"
+        android:minSdkVersion="21"
         android:targetSdkVersion="{{target_sdk_version}}" />
 
     <dist:module

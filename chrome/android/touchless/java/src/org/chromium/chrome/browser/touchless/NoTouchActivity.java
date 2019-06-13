@@ -210,6 +210,12 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
+    protected TabDelegateFactory createTabDelegateFactory() {
+        return new NoBrowserControlsTabDelegateFactory(
+                getFullscreenManager().getBrowserVisibilityDelegate());
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         saveTabState(outState);

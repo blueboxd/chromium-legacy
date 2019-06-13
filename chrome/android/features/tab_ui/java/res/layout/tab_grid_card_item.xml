@@ -3,11 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <!-- TODO(crbug/928388): Handle elevation for KitKat.-->
-<org.chromium.chrome.browser.tasks.tab_management.TabGridView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:app="http://schemas.android.com/apk/res-auto">
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -21,53 +18,53 @@
         android:layout_gravity="center"
         android:background="@drawable/tab_grid_card_background"
         android:layout_margin="8dp">
-            <ImageView
-                android:id="@+id/tab_favicon"
-                android:layout_width="@dimen/tab_grid_favicon_size"
-                android:layout_height="@dimen/tab_grid_favicon_size"
-                android:padding="8dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/ic_omnibox_page"/>
-            <TextView
-                android:id="@+id/tab_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/tab_favicon"
-                android:layout_marginEnd="32dp"
-                android:gravity="center_vertical"
-                android:minHeight="32dp"
-                android:requiresFadingEdge="horizontal"
-                android:fadingEdgeLength="24dp"
-                android:ellipsize="none"
-                android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackTitle2"/>
-            <org.chromium.ui.widget.RoundedCornerImageView
-                android:id="@+id/tab_thumbnail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tab_title"
-                android:gravity="center_horizontal"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                android:importantForAccessibility="no"
-                android:src="@color/thumbnail_placeholder_on_primary_bg"
-                app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
-                app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"
-                app:roundedfillColor="@color/default_bg_color_light"/>
-            <View
-                style="@style/HorizontalDivider"
-                android:layout_below="@id/tab_title"/>
-            <org.chromium.ui.widget.ButtonCompat
-                android:id="@+id/create_group_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:layout_margin="8dp"
-                android:elevation="4dp"
-                android:text="@string/tabswitcher_create_group"
-                android:visibility="gone"
-                style="@style/FilledButton"/>
+        <ImageView
+            android:id="@+id/tab_favicon"
+            android:layout_width="@dimen/tab_grid_favicon_size"
+            android:layout_height="@dimen/tab_grid_favicon_size"
+            android:padding="8dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_omnibox_page"/>
+        <TextView
+            android:id="@+id/tab_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/tab_favicon"
+            android:layout_marginEnd="32dp"
+            android:gravity="center_vertical"
+            android:minHeight="32dp"
+            android:requiresFadingEdge="horizontal"
+            android:fadingEdgeLength="24dp"
+            android:ellipsize="none"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        <org.chromium.ui.widget.RoundedCornerImageView
+            android:id="@+id/tab_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tab_title"
+            android:gravity="center_horizontal"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:importantForAccessibility="no"
+            android:src="@color/thumbnail_placeholder_on_primary_bg"
+            app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
+            app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"
+            app:roundedfillColor="@color/default_bg_color_light"/>
+        <View
+            style="@style/HorizontalDivider"
+            android:layout_below="@id/tab_title"/>
+        <org.chromium.ui.widget.ButtonCompat
+            android:id="@+id/create_group_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="8dp"
+            android:elevation="4dp"
+            android:text="@string/tabswitcher_create_group"
+            android:visibility="gone"
+            style="@style/FilledButton"/>
     </RelativeLayout>
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/action_button"
@@ -76,5 +73,4 @@
         android:scaleType="center"
         android:layout_gravity="end"
         android:tint="@color/modern_grey_800"/>
-</org.chromium.chrome.browser.tasks.tab_management.TabGridView>
-
+</merge>

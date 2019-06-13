@@ -847,6 +847,13 @@ void NavigationSimulatorImpl::SetIsFormSubmission(bool is_form_submission) {
   is_form_submission_ = is_form_submission;
 }
 
+void NavigationSimulatorImpl::SetWasInitiatedByLinkClick(
+    bool was_initiated_by_link_click) {
+  CHECK_EQ(INITIALIZATION, state_) << "The form submission parameter cannot "
+                                      "be set after the navigation has started";
+  was_initiated_by_link_click_ = was_initiated_by_link_click;
+}
+
 void NavigationSimulatorImpl::SetReferrer(const Referrer& referrer) {
   CHECK_LE(state_, STARTED) << "The referrer cannot be set after the "
                                "navigation has committed or has failed";
@@ -1077,7 +1084,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           false /* skip_service_worker */,
           blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable, is_form_submission_,
-          GURL() /* searchable_form_url */,
+          was_initiated_by_link_click_, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */);

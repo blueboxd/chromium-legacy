@@ -80,7 +80,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // and asserts it doesn't commit the omnibox contents if the input is canceled.
 - (void)testToolbarOmniboxCancel {
   // Handset only (tablet does not have cancel button).
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not support on iPad");
   }
 
@@ -108,12 +108,12 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // canceled.
 - (void)testToolbarOmniboxHideKeyboard {
   // TODO(crbug.com/642559): Enable the test for iPad when typing bug is fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a simulator bug.");
   }
 
   // Tablet only (handset keyboard does not have "hide keyboard" button).
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not support on iPhone");
   }
 
@@ -138,7 +138,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // canceled.
 - (void)testToolbarOmniboxTypingShield {
   // Tablet only (handset keyboard does not have "hide keyboard" button).
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not support on iPhone");
   }
 
@@ -165,7 +165,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // is pressed (iPad specific).
 - (void)testIPadKeyboardDismissOnButtonPress {
   // Tablet only (handset keyboard does not have "hide keyboard" button).
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not supported on iPhone");
   }
 
@@ -242,7 +242,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
       inRoot:SystemSelectionCallout()] performAction:grey_tap()];
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
         performAction:grey_tap()];
 
@@ -273,7 +273,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 - (void)testOmniboxClearTextButton {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
@@ -300,7 +300,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // Types JavaScript into Omnibox and verify that an alert is displayed.
 - (void)testTypeJavaScriptIntoOmnibox {
   // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
 
@@ -321,7 +321,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // script execution.
 - (void)testTypeJavaScriptIntoOmniboxWithWebUIPage {
   // TODO(crbug.com/642544): Enable the test for iPad when typing bug is fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
@@ -334,7 +334,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // Tests typing in the omnibox.
 - (void)testToolbarOmniboxTyping {
   // TODO(crbug.com/642559): Enable this test for iPad when typing bug is fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a simulator bug.");
   }
 

@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #import "ios/web/navigation/navigation_context_impl.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

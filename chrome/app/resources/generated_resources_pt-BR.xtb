@@ -529,7 +529,7 @@
 <translation id="1781771911845953849">Contas e sincronização</translation>
 <translation id="1782196717298160133">Como encontrar seu smartphone</translation>
 <translation id="1784849162047402014">O dispositivo está com pouco espaço em disco</translation>
-<translation id="1790194216133135334">Enviar link para o <ph name="DEVICE_NAME" /></translation>
+<translation id="1790194216133135334">Enviar link para este dispositivo: <ph name="DEVICE_NAME" /></translation>
 <translation id="1792619191750875668">Exibição estendida</translation>
 <translation id="1794791083288629568">Envie um feedback para nos ajudar a corrigir esse problema.</translation>
 <translation id="1795214765651529549">Usar "Clássico"</translation>
@@ -871,7 +871,7 @@
 <translation id="230927227160767054">Esta página quer instalar um manipulador de serviço.</translation>
 <translation id="2309620859903500144">Este site foi impedido de acessar os sensores de luz ou movimento.</translation>
 <translation id="2315414688463285945">Erro ao configurar arquivos do Linux. Tente novamente.</translation>
-<translation id="2315587498123194634">Enviar link para o <ph name="DEVICE_NAME" /></translation>
+<translation id="2315587498123194634">Enviar link para este dispositivo: <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% concluída</translation>
 <translation id="2318143611928805047">Tamanho do papel</translation>
@@ -4810,7 +4810,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="830868413617744215">Beta</translation>
 <translation id="8309458809024885768">O certificado já existe</translation>
 <translation id="8314381333424235892">Extensão ausente ou não instalada</translation>
-<translation id="8316618172731049784">Enviar para o <ph name="DEVICE_NAME" /></translation>
+<translation id="8316618172731049784">Enviar para este dispositivo: <ph name="DEVICE_NAME" /></translation>
 <translation id="8317671367883557781">Adicionar conexão de rede</translation>
 <translation id="8319414634934645341">Uso estendido de chave</translation>
 <translation id="8320459152843401447">A tela inteira</translation>

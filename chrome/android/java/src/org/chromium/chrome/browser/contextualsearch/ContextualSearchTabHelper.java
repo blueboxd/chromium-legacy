@@ -19,12 +19,12 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -207,7 +207,7 @@ public class ContextualSearchTabHelper
                 @Override
                 public void onTemplateURLServiceChanged() {
                     boolean isDefaultSearchEngineGoogle =
-                            TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+                            TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
                     if (mIsDefaultSearchEngineGoogle == null
                             || isDefaultSearchEngineGoogle != mIsDefaultSearchEngineGoogle) {
                         mIsDefaultSearchEngineGoogle = isDefaultSearchEngineGoogle;
@@ -215,7 +215,7 @@ public class ContextualSearchTabHelper
                     }
                 }
             };
-            TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
+            TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
         }
         updateHooksForTab(tab);
     }
@@ -232,7 +232,7 @@ public class ContextualSearchTabHelper
             mNativeHelper = 0;
         }
         if (mTemplateUrlObserver != null) {
-            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
+            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
         }
         if (NetworkChangeNotifier.isInitialized()) {
             NetworkChangeNotifier.removeConnectionTypeObserver(this);
@@ -384,7 +384,7 @@ public class ContextualSearchTabHelper
 
         return !webContents.isIncognito() && FirstRunStatus.getFirstRunFlowComplete()
                 && !PrefServiceBridge.getInstance().isContextualSearchDisabled()
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
+                && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
                 && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 // Svelte and Accessibility devices are incompatible with the first-run flow and
                 // Talkback has poor interaction with tap to search (see http://crbug.com/399708 and

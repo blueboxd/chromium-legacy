@@ -61,11 +61,6 @@
         "background_layer",
         "border_image",
         "color",
-        // The "color" template takes into account ApplyPropertyToRegularStyle
-        // and ApplyPropertyToVisitedStyle, whereas "color_only" unconditionally
-        // applies to the regular style.
-        // TODO(andruud): Remove those flags and rename this to just "color".
-        "color_only",
         "counter",
         "empty",
         "grid",
@@ -75,7 +70,6 @@
         "legacy",
         "mask_box",
         "mask_layer",
-        "svg_paint",
         "transition",
         "visited_color",
       ],
@@ -298,14 +292,20 @@
     // Tweaks how we choose defaults for getter, setter, initial and type_name.
     // For example, setting this to BlendMode will make us use a setter of
     // setBlendMode
+    // - initial
+    // The static function to invoke on ComputedStyleInitialValues,
+    // SVGComputedStyle, or FontBuilder to retrieve the initial value.
+    // Defaults to e.g. InitialBorderBottomLeft.
     // - getter
-    // The ComputedStyle getter, defaults to e.g. borderBottomLeft
+    // The ComputedStyle getter, defaults to e.g. BorderBottomLeft
     // - setter
-    // The ComputedStyle setter, defaults to e.g. setBorderBottomLeft
+    // The ComputedStyle setter, defaults to e.g. GetBorderBottomLeft
     // - type_name
     // The computed type for the property. Only required for the default value
     // application, defaults to e.g. EDisplay
     name_for_methods: {
+    },
+    initial: {
     },
     getter: {
     },
@@ -989,7 +989,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
@@ -1085,7 +1085,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1211,7 +1211,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1254,7 +1254,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1297,7 +1297,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1672,12 +1672,10 @@
       interpolable: true,
       inherited: true,
       svg: true,
+      initial: "InitialFillPaint",
       setter: "SetFillPaint",
+      getter: "FillPaint",
       converter: "ConvertSVGPaint",
-      style_builder_template: "svg_paint",
-      style_builder_template_args: {
-        paint_type: "FillPaint",
-      },
       valid_for_visited_link: true,
     },
     {
@@ -3005,12 +3003,10 @@
       interpolable: true,
       inherited: true,
       svg: true,
+      initial: "InitialStrokePaint",
       setter: "SetStrokePaint",
+      getter: "StrokePaint",
       converter: "ConvertSVGPaint",
-      style_builder_template: "svg_paint",
-      style_builder_template_args: {
-        paint_type: "StrokePaint",
-      },
       valid_for_visited_link: true,
     },
     {
@@ -3945,7 +3941,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -3976,7 +3972,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -4001,7 +3997,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -5162,6 +5158,36 @@
       priority: "High",
     },
     {
+      name: "-internal-visited-caret-color",
+      visited_property_for: "caret-color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      converter: "ConvertStyleAutoColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "StyleAutoColor::AutoColor",
+      },
+    },
+    {
+      name: "-internal-visited-column-rule-color",
+      visited_property_for: "column-rule-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*->multi-col",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter","setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
       name: "-internal-visited-background-color",
       visited_property_for: "background-color",
       property_methods: ["ColorIncludingFallback"],
@@ -5260,6 +5286,52 @@
         resolver: "block-end",
         physical_group: "visited-border-color",
       },
+    },
+    {
+      name: "-internal-visited-fill",
+      visited_property_for: "fill",
+      inherited: true,
+      svg: true,
+      initial: "InitialFillPaint",
+      setter: "SetInternalVisitedFillPaint",
+      getter: "FillPaint",
+      converter: "ConvertSVGPaint",
+    },
+    {
+      name: "-internal-visited-outline-color",
+      visited_property_for: "outline-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+    },
+    {
+      name: "-internal-visited-stroke",
+      visited_property_for: "stroke",
+      inherited: true,
+      svg: true,
+      initial: "InitialStrokePaint",
+      setter: "SetInternalVisitedStrokePaint",
+      getter: "StrokePaint",
+      converter: "ConvertSVGPaint",
+    },
+    {
+      name: "-internal-visited-text-decoration-color",
+      visited_property_for: "text-decoration-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
     },
     {
       name: "-internal-visited-text-emphasis-color",

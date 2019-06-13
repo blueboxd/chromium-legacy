@@ -15,6 +15,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"

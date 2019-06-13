@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
@@ -171,6 +173,11 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, OpenSettingsFromArc) {
     }
     int new_settings_count_ = 0;
   } observer;
+
+  // Install the Settings App.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
 
   auto* settings = chrome::SettingsWindowManager::GetInstance();
   settings->AddObserver(&observer);

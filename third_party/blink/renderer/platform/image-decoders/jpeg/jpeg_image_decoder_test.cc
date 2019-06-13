@@ -327,7 +327,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
   decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
-  std::vector<SkISize> expected_sizes = {
+  Vector<SkISize> expected_sizes = {
       SkISize::Make(32, 32),   SkISize::Make(64, 64),   SkISize::Make(96, 96),
       SkISize::Make(128, 128), SkISize::Make(160, 160), SkISize::Make(192, 192),
       SkISize::Make(224, 224), SkISize::Make(256, 256)};
@@ -355,7 +355,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
   decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
-  std::vector<SkISize> expected_sizes = {
+  Vector<SkISize> expected_sizes = {
       SkISize::Make(34, 25),   SkISize::Make(68, 50),   SkISize::Make(102, 75),
       SkISize::Make(136, 100), SkISize::Make(170, 125), SkISize::Make(204, 150),
       SkISize::Make(238, 175), SkISize::Make(272, 200)};
@@ -387,7 +387,7 @@ TEST(JPEGImageDecoderTest,
   decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
-  std::vector<SkISize> expected_sizes = {
+  Vector<SkISize> expected_sizes = {
       SkISize::Make(35, 26),   SkISize::Make(69, 52),   SkISize::Make(104, 78),
       SkISize::Make(138, 104), SkISize::Make(172, 130), SkISize::Make(207, 156),
       SkISize::Make(241, 182)};
@@ -444,7 +444,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
   decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
-  std::vector<SkISize> expected_sizes = {
+  Vector<SkISize> expected_sizes = {
       SkISize::Make(32, 32), SkISize::Make(64, 64), SkISize::Make(96, 96),
       SkISize::Make(128, 128)};
   auto sizes = decoder->GetSupportedDecodeSizes();

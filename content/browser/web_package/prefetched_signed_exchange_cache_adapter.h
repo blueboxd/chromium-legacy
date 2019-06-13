@@ -11,9 +11,13 @@
 
 class GURL;
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace net {
 struct SHA256HashValue;
-}
+}  // namespace net
 
 namespace storage {
 class BlobBuilderFromStream;
@@ -38,7 +42,8 @@ class PrefetchedSignedExchangeCacheAdapter {
   void OnReceiveOuterResponse(const network::ResourceResponseHead& response);
   void OnReceiveRedirect(
       const GURL& new_url,
-      const base::Optional<net::SHA256HashValue> header_integrity);
+      const base::Optional<net::SHA256HashValue> header_integrity,
+      const base::Time& signature_expire_time);
   void OnReceiveInnerResponse(const network::ResourceResponseHead& response);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnComplete(const network::URLLoaderCompletionStatus& status);

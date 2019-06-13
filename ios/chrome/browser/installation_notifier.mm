@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
 

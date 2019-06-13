@@ -72,6 +72,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   int active_task_id() const { return active_task_id_; }
 
+  const std::vector<aura::Window*>& GetObservedWindows() {
+    return observed_windows_;
+  }
+
  private:
   class AppWindowInfo;
 

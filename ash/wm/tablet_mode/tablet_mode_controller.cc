@@ -50,18 +50,18 @@ namespace ash {
 namespace {
 
 // The hinge angle at which to enter tablet mode.
-const float kEnterTabletModeAngle = 200.0f;
+constexpr float kEnterTabletModeAngle = 200.0f;
 
 // The angle at which to exit tablet mode, this is specifically less than the
 // angle to enter tablet mode to prevent rapid toggling when near the angle.
-const float kExitTabletModeAngle = 160.0f;
+constexpr float kExitTabletModeAngle = 160.0f;
 
 // Defines a range for which accelerometer readings are considered accurate.
 // When the lid is near open (or near closed) the accelerometer readings may be
 // inaccurate and a lid that is fully open may appear to be near closed (and
 // vice versa).
-const float kMinStableAngle = 20.0f;
-const float kMaxStableAngle = 340.0f;
+constexpr float kMinStableAngle = 20.0f;
+constexpr float kMaxStableAngle = 340.0f;
 
 // The time duration to consider an unstable lid angle to be valid. This is used
 // to prevent entering tablet mode if an erroneous accelerometer reading makes
@@ -78,15 +78,15 @@ constexpr base::TimeDelta kUnstableLidAngleDuration =
 // smoothed over time in order to reduce this noise.
 // This is the minimum acceleration parallel to the hinge under which to begin
 // smoothing in m/s^2.
-const float kHingeVerticalSmoothingStart = 7.0f;
+constexpr float kHingeVerticalSmoothingStart = 7.0f;
 // This is the maximum acceleration parallel to the hinge under which smoothing
 // will incorporate new acceleration values, in m/s^2.
-const float kHingeVerticalSmoothingMaximum = 8.7f;
+constexpr float kHingeVerticalSmoothingMaximum = 8.7f;
 
 // The maximum deviation between the magnitude of the two accelerometers under
 // which to detect hinge angle in m/s^2. These accelerometers are attached to
 // the same physical device and so should be under the same acceleration.
-const float kNoisyMagnitudeDeviation = 1.0f;
+constexpr float kNoisyMagnitudeDeviation = 1.0f;
 
 // Interval between calls to RecordLidAngle().
 constexpr base::TimeDelta kRecordLidAngleInterval =
@@ -203,7 +203,7 @@ class TabletModeController::TabletModeTransitionFpsCounter : public FpsCounter {
 constexpr char TabletModeController::kLidAngleHistogramName[];
 
 TabletModeController::TabletModeController()
-    : event_blocker_(new InternalInputDevicesEventBlocker),
+    : event_blocker_(std::make_unique<InternalInputDevicesEventBlocker>()),
       tablet_mode_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   Shell::Get()->AddShellObserver(this);
@@ -911,7 +911,7 @@ void TabletModeController::ResetPauser() {
 }
 
 void TabletModeController::FinishInitTabletMode() {
-  tablet_mode_window_manager_.reset(new TabletModeWindowManager());
+  tablet_mode_window_manager_ = std::make_unique<TabletModeWindowManager>();
   tablet_mode_window_manager_->Init();
 
   base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));

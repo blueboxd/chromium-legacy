@@ -161,6 +161,11 @@
     "contexts": ["blessed_extension"],
     "channel": "trunk"
   },
+  "declarativeNetRequest.setActionCountAsBadgeText": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
+  },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
@@ -275,7 +280,7 @@
   },
   "management": [{
     "dependencies": ["permission:management"],
-    "contexts": ["blessed_extension"],
+    "contexts": ["blessed_extension", "extension_service_worker"],
     "default_parent": true
   }, {
     "channel": "stable",

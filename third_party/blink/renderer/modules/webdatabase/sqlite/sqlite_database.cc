@@ -68,7 +68,7 @@ bool SQLiteDatabase::Open(const String& filename) {
     open_error_message_ =
         db_ ? sqlite3_errmsg(db_) : "sqlite_open returned null";
     DLOG(ERROR) << "SQLite database failed to load from " << filename
-                << "\nCause - " << open_error_message_.data();
+                << "\nCause - " << open_error_message_;
     return false;
   }
 
@@ -128,7 +128,7 @@ void SQLiteDatabase::Close() {
 
   opening_thread_ = 0;
   open_error_ = SQLITE_ERROR;
-  open_error_message_ = CString();
+  open_error_message_ = std::string();
 }
 
 void SQLiteDatabase::SetMaximumSize(int64_t size) {
@@ -266,8 +266,8 @@ int SQLiteDatabase::LastError() {
 const char* SQLiteDatabase::LastErrorMsg() {
   if (db_)
     return sqlite3_errmsg(db_);
-  return open_error_message_.IsNull() ? kNotOpenErrorMessage
-                                      : open_error_message_.data();
+  return open_error_message_.empty() ? kNotOpenErrorMessage
+                                     : open_error_message_.c_str();
 }
 
 int SQLiteDatabase::AuthorizerFunction(void* user_data,

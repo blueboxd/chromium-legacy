@@ -21,14 +21,19 @@ MockSignedExchangeHandlerParams::MockSignedExchangeHandlerParams(
     const GURL& inner_url,
     const std::string& mime_type,
     std::vector<std::string> response_headers,
-    base::Optional<net::SHA256HashValue> header_integrity)
+    base::Optional<net::SHA256HashValue> header_integrity,
+    const base::Time& signature_expire_time)
     : outer_url(outer_url),
       result(result),
       error(error),
       inner_url(inner_url),
       mime_type(mime_type),
       response_headers(std::move(response_headers)),
-      header_integrity(std::move(header_integrity)) {}
+      header_integrity(std::move(header_integrity)),
+      signature_expire_time(signature_expire_time.is_null()
+                                ? base::Time::Now() +
+                                      base::TimeDelta::FromDays(1)
+                                : signature_expire_time) {}
 
 MockSignedExchangeHandlerParams::MockSignedExchangeHandlerParams(
     const MockSignedExchangeHandlerParams& other) = default;
@@ -38,7 +43,8 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
     const MockSignedExchangeHandlerParams& params,
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback)
-    : header_integrity_(params.header_integrity) {
+    : header_integrity_(params.header_integrity),
+      signature_expire_time_(params.signature_expire_time) {
   network::ResourceResponseHead head;
   if (params.error == net::OK) {
     head.headers =
@@ -59,6 +65,10 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
 base::Optional<net::SHA256HashValue>
 MockSignedExchangeHandler::ComputeHeaderIntegrity() const {
   return header_integrity_;
+}
+
+base::Time MockSignedExchangeHandler::GetSignatureExpireTime() const {
+  return signature_expire_time_;
 }
 
 MockSignedExchangeHandler::~MockSignedExchangeHandler() {}

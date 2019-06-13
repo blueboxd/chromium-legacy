@@ -41,6 +41,9 @@ struct BeginNavigationParams {
   // Whether or not the navigation has been initiated by a form submission.
   bool is_form_submission;
 
+ // Whether or not the navigation has been initiated by a link click.
+  bool was_initiated_by_link_click;
+
   // See WebSearchableFormData for a description of these.
   url.mojom.Url searchable_form_url;
   string searchable_form_encoding;

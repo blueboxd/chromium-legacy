@@ -1,32 +1,40 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../controls/settings_textarea.html">
 <link rel="import" href="kerberos_accounts_browser_proxy.html">
 
 <dom-module id="kerberos-add-account-dialog">
   <template>
-    <style>
+    <style include="action-link">
       .label {
         @apply --cr-form-field-label;
       }
 
-      #credentials > cr-input:not(:last-child) {
+      #credentials > *:not(:last-child) {
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
       #general-error-container {
         height: 48px;
       }
+
+      #desc {
+        margin-bottom: 32px;
+      }
     </style>
-    <cr-dialog id="dialog">
+
+    <cr-dialog id="addDialog" hidden="[[showAdvancedConfig_]]">
       <div slot="title">$i18n{addKerberosAccount}</div>
       <div slot="body" spellcheck="false">
         <div id="general-error-container">
@@ -37,14 +45,22 @@
         </div>
         <div id="credentials">
           <cr-input id="username" label="$i18n{kerberosUsername}"
-              value="{{username}}" invalid="[[showError_(usernameErrorText_)]]"
+              value="{{username_}}" invalid="[[showError_(usernameErrorText_)]]"
               error-message="[[usernameErrorText_]]">
           </cr-input>
           <cr-input id="password" type="password"
               label="$i18n{kerberosPassword}" value="{{password_}}"
               invalid="[[showError_(passwordErrorText_)]]"
-              error-message="[[passwordErrorText_]]">
+              error-message="[[passwordErrorText_]]"
+              on-input="onPasswordInput_">
           </cr-input>
+          <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}">
+            $i18n{addKerberosAccountRememberPassword}
+          </cr-checkbox>
+          <a is="action-link" id="advancedConfigButton"
+              on-click="onAdvancedConfigClick_">
+            $i18n{kerberosAdvancedConfigLabel}
+          </a>
         </div>
       </div>
       <div slot="button-container">
@@ -57,6 +73,27 @@
         </cr-button>
       </div>
     </cr-dialog>
+
+    <template is="dom-if" if="[[showAdvancedConfig_]]" restamp>
+      <cr-dialog id="advancedConfigDialog" on-close=onAdvancedConfigClose_>
+        <div slot="title">$i18n{kerberosAdvancedConfigTitle}</div>
+        <div slot="body">
+          <div id="desc">$i18n{kerberosAdvancedConfigDesc}</div>
+          <settings-textarea id="config" label="$i18n{kerberosConfig}"
+              value="{{editableConfig_}}" rows=12 spellcheck="false">
+          </settings-textarea>
+        </div>
+        <div slot="button-container">
+          <paper-button class="cancel-button"
+              on-click="onAdvancedConfigCancel_">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button class="action-button" on-click="onAdvancedConfigSave_">
+            $i18n{save}
+          </paper-button>
+        </div>
+      </cr-dialog>
+    </template>
   </template>
   <script src="kerberos_add_account_dialog.js"></script>
 </dom-module>

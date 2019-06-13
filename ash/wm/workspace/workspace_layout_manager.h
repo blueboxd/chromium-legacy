@@ -9,7 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -32,15 +32,14 @@ class WMEvent;
 }
 
 // LayoutManager used on the window created for a workspace.
-class ASH_EXPORT WorkspaceLayoutManager
-    : public aura::LayoutManager,
-      public aura::WindowObserver,
-      public ::wm::ActivationChangeObserver,
-      public keyboard::KeyboardControllerObserver,
-      public display::DisplayObserver,
-      public ShellObserver,
-      public wm::WindowStateObserver,
-      public ShelfObserver {
+class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
+                                          public aura::WindowObserver,
+                                          public ::wm::ActivationChangeObserver,
+                                          public KeyboardControllerObserver,
+                                          public display::DisplayObserver,
+                                          public ShellObserver,
+                                          public wm::WindowStateObserver,
+                                          public ShelfObserver {
  public:
   // |window| is the container for this layout manager.
   explicit WorkspaceLayoutManager(aura::Window* window);
@@ -87,10 +86,9 @@ class ASH_EXPORT WorkspaceLayoutManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // keyboard::KeyboardControllerObserver:
+  // KeyboardControllerObserver:
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) override;
-  void OnKeyboardWorkspaceDisplacingBoundsChanged(
-      const gfx::Rect& new_bounds) override;
+  void OnKeyboardDisplacingBoundsChanged(const gfx::Rect& new_bounds) override;
 
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,

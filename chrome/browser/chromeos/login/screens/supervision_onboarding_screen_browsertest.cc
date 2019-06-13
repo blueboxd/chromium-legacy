@@ -274,7 +274,7 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
   SupervisionOnboardingScreen* supervision_onboarding_screen_;
 
  private:
-  void HandleScreenExit() {
+  void HandleScreenExit(SupervisionOnboardingScreen::Result result) {
     ASSERT_FALSE(screen_exited_);
     screen_exited_ = true;
     if (screen_exit_callback_)

@@ -2791,6 +2791,25 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Choose another account
       </message>
 
+      <!-- Sync confirmation dialog -->
+      <!-- TODO(https://crbug.com/846376): These strings are only used by pre-Unified Consent sync confirmation dialog. Remove them once Unified Consent is enabled by default. -->
+      <!-- "Chrome sync" is the Google Cloud Based service used for sync. Thus this string resource is set to "Chrome sync" even for Chromium builds. -->
+      <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
+        Chrome Sync
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_MESSAGE" desc="Body of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
+        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE" desc="Title of the personalize services section of the sync confirmation dialog in the tab modal signin flow">
+        Personalize Google services
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow">
+        Google may use your browsing history to personalize Search, ads, and other Google services
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY_CHILD_ACCOUNT" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow for child accounts">
+        Google may use your browsing history to personalize Search and other Google services
+      </message>
+
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_ACCESSIBILITY_PLAY" desc="The play button that starts playing the media.">
         Play

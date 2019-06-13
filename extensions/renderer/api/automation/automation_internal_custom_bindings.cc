@@ -708,7 +708,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (GetRootOfChildTree(&node, &tree_wrapper))
           child_count = 1;
         else
-          child_count = node->children().size();
+          child_count = node->GetUnignoredChildCount();
 
         result.Set(v8::Integer::New(isolate, int32_t{child_count}));
       });
@@ -716,7 +716,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetIndexInParent",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        result.Set(v8::Integer::New(isolate, int32_t{node->index_in_parent()}));
+        result.Set(v8::Integer::New(
+            isolate, int32_t{node->GetUnignoredIndexInParent()}));
       });
   RouteNodeIDFunction(
       "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -769,9 +770,9 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (GetRootOfChildTree(&node, &tree_wrapper)) {
           child_ids.push_back(node->id());
         } else {
-          const std::vector<ui::AXNode*>& children = node->children();
-          for (size_t i = 0; i < children.size(); ++i)
-            child_ids.push_back(children[i]->id());
+          size_t child_count = node->GetUnignoredChildCount();
+          for (size_t i = 0; i < child_count; ++i)
+            child_ids.push_back(node->GetUnignoredChildAtIndex(i)->id());
         }
 
         gin::DataObjectBuilder response(isolate);
@@ -1682,8 +1683,8 @@ void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
 ui::AXNode* AutomationInternalCustomBindings::GetParent(
     ui::AXNode* node,
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
-  if (node->parent())
-    return node->parent();
+  if (node->GetUnignoredParent())
+    return node->GetUnignoredParent();
 
   AutomationAXTreeWrapper* parent_tree_wrapper = nullptr;
 
@@ -1752,8 +1753,8 @@ ui::AXNode* AutomationInternalCustomBindings::GetNextInTreeOrder(
     ui::AXNode* start,
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
   ui::AXNode* walker = start;
-  if (!walker->children().empty())
-    return walker->children().front();
+  if (walker->GetUnignoredChildCount())
+    return walker->GetUnignoredChildAtIndex(0);
 
   // We also have to check child tree id.
   if (GetRootOfChildTree(&walker, in_out_tree_wrapper))
@@ -1762,9 +1763,11 @@ ui::AXNode* AutomationInternalCustomBindings::GetNextInTreeOrder(
   // Find the next branch forward.
   ui::AXNode* parent;
   while ((parent = GetParent(walker, in_out_tree_wrapper))) {
-    if ((walker->index_in_parent() + 1) < parent->children().size())
-      return parent->children()[walker->index_in_parent() + 1];
-
+    if ((walker->GetUnignoredIndexInParent() + 1) <
+        parent->GetUnignoredChildCount()) {
+      return parent->GetUnignoredChildAtIndex(
+          walker->GetUnignoredIndexInParent() + 1);
+    }
     walker = parent;
   }
 
@@ -1783,15 +1786,17 @@ ui::AXNode* AutomationInternalCustomBindings::GetPreviousInTreeOrder(
     return nullptr;
 
   // No previous sibling; parent is previous.
-  if (walker->index_in_parent() == 0)
+  if (walker->GetUnignoredIndexInParent() == 0)
     return parent;
 
-  walker = parent->children()[walker->index_in_parent() - 1];
+  walker =
+      parent->GetUnignoredChildAtIndex(walker->GetUnignoredIndexInParent() - 1);
 
   // Walks to deepest last child.
   while (true) {
-    if (!walker->children().empty()) {
-      walker = walker->children().back();
+    if (walker->GetUnignoredChildCount()) {
+      walker = walker->GetUnignoredChildAtIndex(
+          walker->GetUnignoredChildCount() - 1);
     } else if (!GetRootOfChildTree(&walker, in_out_tree_wrapper)) {
       break;
     }
@@ -1879,10 +1884,10 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
   // Check for a child tree, which is guaranteed to always be the only child.
   if (index == 0 && GetRootOfChildTree(&node, &tree_wrapper))
     child_id = node->id();
-  else if (index < 0 || size_t{index} >= node->children().size())
+  else if (index < 0 || size_t{index} >= node->GetUnignoredChildCount())
     return;
   else
-    child_id = node->children()[size_t{index}]->id();
+    child_id = node->GetUnignoredChildAtIndex(size_t{index})->id();
 
   gin::DataObjectBuilder response(GetIsolate());
   response.Set("treeId", tree_wrapper->tree_id().ToString());

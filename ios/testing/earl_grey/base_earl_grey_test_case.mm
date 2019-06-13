@@ -8,12 +8,17 @@
 #import <objc/runtime.h>
 
 #import "ios/testing/earl_grey/app_launch_manager.h"
+#import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
+#endif  // defined(CHROME_EARL_GREY_2)
 
 @implementation BaseEarlGreyTestCase
 
@@ -26,6 +31,10 @@
 
 #if defined(CHROME_EARL_GREY_2)
   [self launchAppForTestMethod];
+
+  NSString* logFormat = @"*********************************\nStarting test: %@";
+  [BaseEarlGreyTestCaseAppInterface
+      logMessage:[NSString stringWithFormat:logFormat, self.name]];
 
   // Calling XCTFail before the application is launched does not assert
   // properly, so failing upon detection of overriding +setUp is delayed until

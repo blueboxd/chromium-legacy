@@ -317,7 +317,7 @@ RootInlineBox* LayoutSVGText::CreateRootInlineBox() {
 }
 
 bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_parent,
+                                const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
                                 HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, PhysicalOffset());
@@ -325,7 +325,7 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  TransformedHitTestLocation local_location(location_in_parent,
+  TransformedHitTestLocation local_location(hit_test_location,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;

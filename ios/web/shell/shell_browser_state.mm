@@ -9,8 +9,8 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web/shell/shell_url_request_context_getter.h"
 #include "services/test/user_id/user_id_service.h"
 

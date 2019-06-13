@@ -38,7 +38,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/cert_verifier_with_trust_anchors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::FakeChromeUserManager;
@@ -49,16 +48,10 @@ namespace {
 constexpr char kUser[] = "user@test.com";
 constexpr char kUserGaiaId[] = "0123456789";
 
-// Weak ptr to network::CertVerifierWithTrustAnchors - object is freed in test
-// destructor once we've ensured the profile has been shut down.
-network::CertVerifierWithTrustAnchors* g_policy_cert_verifier_for_factory =
-    nullptr;
-
 std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
-      kUser, g_policy_cert_verifier_for_factory,
-      user_manager::UserManager::Get());
+      kUser, user_manager::UserManager::Get());
 }
 
 // A user manager that does not set profiles as loaded and notifies observers
@@ -130,8 +123,6 @@ class SessionControllerClientImplTest : public testing::Test {
   void TearDown() override {
     user_manager_enabler_.reset();
     user_manager_ = nullptr;
-    // Clear our cached pointer to the network::CertVerifierWithTrustAnchors.
-    g_policy_cert_verifier_for_factory = nullptr;
     profile_manager_.reset();
 
     // We must ensure that the network::CertVerifierWithTrustAnchors outlives
@@ -191,7 +182,6 @@ class SessionControllerClientImplTest : public testing::Test {
 
   content::TestBrowserThreadBundle threads_;
   content::TestServiceManagerContext context_;
-  std::unique_ptr<network::CertVerifierWithTrustAnchors> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   session_manager::SessionManager session_manager_;
 
@@ -314,9 +304,6 @@ TEST_F(SessionControllerClientImplTest,
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
-  cert_verifier_.reset(
-      new network::CertVerifierWithTrustAnchors(base::Closure()));
-  g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           user_profile, base::BindRepeating(&CreateTestPolicyCertService)));

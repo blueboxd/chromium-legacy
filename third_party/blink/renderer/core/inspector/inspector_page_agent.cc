@@ -245,7 +245,8 @@ static void MaybeEncodeTextContent(const String& text_content,
     *result = text_content;
     *base64_encoded = false;
   } else if (buffer_data) {
-    *result = Base64Encode(buffer_data, buffer_size);
+    *result =
+        Base64Encode(base::as_bytes(base::make_span(buffer_data, buffer_size)));
     *base64_encoded = true;
   } else if (text_content.IsNull()) {
     *result = "";
@@ -326,8 +327,8 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
       return false;
 
     const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
-    *result = Base64Encode(flat_buffer.Data(),
-                           SafeCast<wtf_size_t>(flat_buffer.size()));
+    *result = Base64Encode(base::as_bytes(
+        base::make_span(flat_buffer.Data(), flat_buffer.size())));
     *base64_encoded = true;
     return true;
   }

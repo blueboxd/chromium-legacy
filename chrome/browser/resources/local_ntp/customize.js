@@ -82,6 +82,7 @@ customize.IDS = {
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
+  BACKGROUNDS_UPLOAD_WRAPPER: 'backgrounds-upload-wrapper',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
   COLORS_MENU: 'colors-menu',
@@ -457,13 +458,48 @@ customize.getTilesWide = function() {
   return 3;
 };
 
+/**
+ * @param {number} deltaX Change in the x direction.
+ * @param {number} deltaY Change in the y direction.
+ * @param {Element} current The current tile.
+ */
+customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
+  const menu = $(customize.IDS.CUSTOMIZATION_MENU);
+  const container = menu.classList.contains(customize.CLASSES.ON_IMAGE_MENU) ?
+      $(customize.IDS.BACKGROUNDS_IMAGE_MENU) :
+      $(customize.IDS.BACKGROUNDS_MENU);
+  const tiles = Array.from(
+      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
+  const curIndex = tiles.indexOf(current);
+  if (deltaX != 0) {
+    return tiles[curIndex + deltaX];
+  } else if (deltaY != 0) {
+    let nextIndex = tiles.indexOf(current);
+    const startingTop = current.getBoundingClientRect().top;
+    const startingLeft = current.getBoundingClientRect().left;
+
+    // Search until a tile in a different row and the same column is found.
+    while (tiles[nextIndex] &&
+           (tiles[nextIndex].getBoundingClientRect().top == startingTop ||
+            tiles[nextIndex].getBoundingClientRect().left != startingLeft)) {
+      nextIndex += deltaY;
+    }
+    return tiles[nextIndex];
+  }
+  return null;
+};
+
 /* Get the next tile when the arrow keys are used to navigate the grid.
  * Returns null if the tile doesn't exist.
  * @param {number} deltaX Change in the x direction.
  * @param {number} deltaY Change in the y direction.
- * @param {string} current Number of the current tile.
+ * @param {Element} currentElem The current tile.
  */
-customize.getNextTile = function(deltaX, deltaY, current) {
+customize.getNextTile = function(deltaX, deltaY, currentElem) {
+  if (configData.richerPicker) {
+    return customize.richerPicker_getNextTile(deltaX, deltaY, currentElem);
+  }
+  const current = currentElem.dataset.tileNum;
   let idPrefix = 'coll_tile_';
   if ($(customize.IDS.MENU)
           .classList.contains(customize.CLASSES.IMAGE_DIALOG)) {
@@ -576,6 +612,10 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
     if (event.keyCode === customize.KEYCODES.ENTER) {
       event.preventDefault();
       event.stopPropagation();
+      if (event.currentTarget.onClickOverride) {
+        event.currentTarget.onClickOverride(event);
+        return;
+      }
       tileOnClickInteraction(event);
     } else if (
         event.keyCode === customize.KEYCODES.LEFT ||
@@ -590,17 +630,15 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
       if (event.keyCode === customize.KEYCODES.LEFT) {
         target = customize.getNextTile(
             document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-            event.currentTarget.dataset.tileNum);
+            event.currentTarget);
       } else if (event.keyCode === customize.KEYCODES.UP) {
-        target =
-            customize.getNextTile(0, -1, event.currentTarget.dataset.tileNum);
+        target = customize.getNextTile(0, -1, event.currentTarget);
       } else if (event.keyCode === customize.KEYCODES.RIGHT) {
         target = customize.getNextTile(
             document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-            event.currentTarget.dataset.tileNum);
+            event.currentTarget);
       } else if (event.keyCode === customize.KEYCODES.DOWN) {
-        target =
-            customize.getNextTile(0, 1, event.currentTarget.dataset.tileNum);
+        target = customize.getNextTile(0, 1, event.currentTarget);
       }
       if (target) {
         target.focus();
@@ -622,6 +660,16 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
         tileOnKeyDownInteraction);
     tileContainer.appendChild(tile);
   }
+
+  // Attach event listeners for upload and default tiles
+  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onkeydown =
+      tileOnKeyDownInteraction;
+  $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onkeydown =
+      tileOnKeyDownInteraction;
+  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onClickOverride =
+      $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown;
+  $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
+      $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown;
 
   $(customize.IDS.TILES).focus();
 };
@@ -645,8 +693,8 @@ customize.richerPicker_selectTile = function(tile) {
   const selectedCheck = document.createElement('div');
   selectedCircle.classList.add(customize.CLASSES.SELECTED_CIRCLE);
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
-  selectedCircle.appendChild(selectedCheck);
   tile.appendChild(selectedCircle);
+  tile.appendChild(selectedCheck);
 };
 
 /**
@@ -810,17 +858,15 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       if (event.keyCode == customize.KEYCODES.LEFT) {
         target = customize.getNextTile(
             document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-            event.currentTarget.dataset.tileNum);
+            event.currentTarget);
       } else if (event.keyCode == customize.KEYCODES.UP) {
-        target =
-            customize.getNextTile(0, -1, event.currentTarget.dataset.tileNum);
+        target = customize.getNextTile(0, -1, event.currentTarget);
       } else if (event.keyCode == customize.KEYCODES.RIGHT) {
         target = customize.getNextTile(
             document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-            event.currentTarget.dataset.tileNum);
+            event.currentTarget);
       } else if (event.keyCode == customize.KEYCODES.DOWN) {
-        target =
-            customize.getNextTile(0, 1, event.currentTarget.dataset.tileNum);
+        target = customize.getNextTile(0, 1, event.currentTarget);
       }
       if (target) {
         target.focus();
@@ -1382,6 +1428,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       backInteraction(event);
     }
   };
+  $(customize.IDS.MENU_BACK_CIRCLE).onkeyup = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      backInteraction(event);
+    }
+  };
   // Pressing Spacebar on the back arrow shouldn't scroll the dialog.
   $(customize.IDS.BACK_CIRCLE).onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.SPACE) {
@@ -1441,6 +1493,24 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     }
   };
 
+  $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.LEFT ||
+        event.keyCode === customize.KEYCODES.UP ||
+        event.keyCode === customize.KEYCODES.RIGHT ||
+        event.keyCode === customize.KEYCODES.DOWN) {
+      $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).focus();
+    }
+  };
+
+  $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.LEFT ||
+        event.keyCode === customize.KEYCODES.UP ||
+        event.keyCode === customize.KEYCODES.RIGHT ||
+        event.keyCode === customize.KEYCODES.DOWN) {
+      $('img_tile_0').focus();
+    }
+  };
+
   $(customize.IDS.BACKGROUNDS_UPLOAD).onclick = uploadImageInteraction;
   $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
@@ -1449,13 +1519,19 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     }
   };
 
-  $(customize.IDS.BACKGROUNDS_DEFAULT).onclick = function() {
+  $(customize.IDS.BACKGROUNDS_DEFAULT).onclick = function(event) {
     const tile = $(customize.IDS.BACKGROUNDS_DEFAULT_ICON);
     tile.dataset.url = '';
     tile.dataset.attributionLine1 = '';
     tile.dataset.attributionLine2 = '';
     tile.dataset.attributionActionUrl = '';
     customize.richerPicker_selectTile(tile);
+  };
+  $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      $(customize.IDS.BACKGROUNDS_DEFAULT).onclick(event);
+    }
   };
 
   const richerPickerOpenBackgrounds = function() {

@@ -17,7 +17,7 @@
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"

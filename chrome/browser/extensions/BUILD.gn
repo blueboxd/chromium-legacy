@@ -839,7 +839,7 @@ jumbo_static_library("extensions") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
-    "//components/translate/core/browser",
+    "//components/translate/content/browser",
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",

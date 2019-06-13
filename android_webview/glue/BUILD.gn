@@ -6,19 +6,22 @@ import("//android_webview/system_webview_apk_tmpl.gni")
 import("//android_webview/variables.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
-import("generate_resource_rewriter.gni")
-import("glue.gni")
-
-generate_resource_rewriter("glue_resource_rewriter") {
-  # Change deps? please modify glue_library_deps variable.
-  deps = glue_library_deps
-  package_name = "com.android.webview.chromium"
-}
 
 android_library("glue") {
-  # Change deps? please modify glue_library_deps variable.
-  deps = glue_library_deps
-  srcjar_deps = [ ":glue_resource_rewriter" ]
+  deps = [
+    "//android_webview:android_webview_commandline_java",
+    "//android_webview:android_webview_java",
+    "//android_webview:android_webview_platform_services_java",
+    "//android_webview:system_webview_manifest",
+    "//android_webview/support_library/boundary_interfaces:boundary_interface_java",
+    "//android_webview/support_library/callback:callback_java",
+    "//base:base_java",
+    "//components/autofill/android:autofill_java",
+    "//components/autofill/android:provider_java",
+    "//content/public/android:content_java",
+    "//net/android:net_java",
+    "//ui/android:ui_java",
+  ]
 
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"

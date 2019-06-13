@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.preferences.SearchEnginePreference;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -192,7 +194,7 @@ public final class SearchEngineChoiceNotification {
 
     @SearchEngineType
     private static int getDefaultSearchEngineType() {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         TemplateUrl currentSearchEngine = templateUrlService.getDefaultSearchEngineTemplateUrl();
         if (currentSearchEngine == null) return SearchEngineType.SEARCH_ENGINE_UNKNOWN;
         return templateUrlService.getSearchEngineTypeFromTemplateUrl(

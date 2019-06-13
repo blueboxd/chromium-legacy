@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
@@ -65,6 +66,15 @@ public class AssistantPaymentRequestCoordinator {
         createSeparator(paymentRequestExpanderAccordion);
         AssistantPaymentRequestTermsSection termsSection =
                 new AssistantPaymentRequestTermsSection(mActivity, paymentRequestExpanderAccordion);
+
+        paymentRequestExpanderAccordion.setTag(
+                AssistantTagsForTesting.PAYMENT_REQUEST_ACCORDION_TAG);
+        contactDetailsSection.getView().setTag(
+                AssistantTagsForTesting.PAYMENT_REQUEST_CONTACT_DETAILS_SECTION_TAG);
+        paymentMethodSection.getView().setTag(
+                AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG);
+        shippingAddressSection.getView().setTag(
+                AssistantTagsForTesting.PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG);
 
         // Bind view and mediator through the model.
         mViewHolder = new AssistantPaymentRequestBinder.ViewHolder(mPaymentRequestUI,

@@ -35,9 +35,10 @@ import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.location.LocationUtils;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -118,7 +119,7 @@ public class SearchEngineAdapter extends BaseAdapter
      */
     public void start() {
         refreshData();
-        TemplateUrlService.getInstance().addObserver(this);
+        TemplateUrlServiceFactory.get().addObserver(this);
     }
 
     /**
@@ -126,11 +127,11 @@ public class SearchEngineAdapter extends BaseAdapter
      */
     public void stop() {
         if (mHasLoadObserver) {
-            TemplateUrlService.getInstance().unregisterLoadListener(this);
+            TemplateUrlServiceFactory.get().unregisterLoadListener(this);
             mHasLoadObserver = false;
         }
 
-        TemplateUrlService.getInstance().removeObserver(this);
+        TemplateUrlServiceFactory.get().removeObserver(this);
     }
 
     @VisibleForTesting
@@ -152,7 +153,7 @@ public class SearchEngineAdapter extends BaseAdapter
      * Initialize the search engine list.
      */
     private void refreshData() {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         if (!templateUrlService.isLoaded()) {
             mHasLoadObserver = true;
             templateUrlService.registerLoadListener(this);
@@ -410,8 +411,9 @@ public class SearchEngineAdapter extends BaseAdapter
 
         TextView link = (TextView) view.findViewById(R.id.location_permission);
         link.setVisibility(View.GONE);
-        if (TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
-                templateUrl.getKeyword()) == null) {
+        if (TemplateUrlServiceFactory.get().getSearchEngineUrlFromTemplateUrl(
+                    templateUrl.getKeyword())
+                == null) {
             Log.e(TAG, "Invalid template URL found: %s", templateUrl);
             assert false;
         } else if (selected) {
@@ -425,7 +427,7 @@ public class SearchEngineAdapter extends BaseAdapter
 
     @Override
     public void onTemplateUrlServiceLoaded() {
-        TemplateUrlService.getInstance().unregisterLoadListener(this);
+        TemplateUrlServiceFactory.get().unregisterLoadListener(this);
         mHasLoadObserver = false;
         refreshData();
     }
@@ -451,7 +453,7 @@ public class SearchEngineAdapter extends BaseAdapter
         mSelectedSearchEnginePosition = position;
 
         String keyword = toKeyword(mSelectedSearchEnginePosition);
-        TemplateUrlService.getInstance().setSearchEngine(keyword);
+        TemplateUrlServiceFactory.get().setSearchEngine(keyword);
 
         // If the user has manually set the default search engine, disable auto switching.
         boolean manualSwitch = mSelectedSearchEnginePosition != mInitialEnginePosition;
@@ -465,7 +467,7 @@ public class SearchEngineAdapter extends BaseAdapter
 
     private void onPermissionsLinkClicked() {
         mIsLocationPermissionChanged = true;
-        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
+        String url = TemplateUrlServiceFactory.get().getSearchEngineUrlFromTemplateUrl(
                 toKeyword(mSelectedSearchEnginePosition));
         int linkBeingShown = getPermissionsLinkMessage(url);
         assert linkBeingShown != 0;
@@ -486,7 +488,7 @@ public class SearchEngineAdapter extends BaseAdapter
             return "";
         }
 
-        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
+        String url = TemplateUrlServiceFactory.get().getSearchEngineUrlFromTemplateUrl(
                 templateUrl.getKeyword());
         if (url == null) {
             Log.e(TAG, "Invalid template URL found: %s", templateUrl);

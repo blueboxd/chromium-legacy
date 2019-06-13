@@ -508,9 +508,8 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
-    html = ui::ResourceBundle::GetSharedInstance()
-               .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_UI_HTML)
-               .as_string();
+    html = ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+        IDR_SECURITY_INTERSTITIAL_UI_HTML);
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;
   html_bytes->data().assign(html.begin(), html.end());

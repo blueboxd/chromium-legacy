@@ -19,7 +19,7 @@
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"

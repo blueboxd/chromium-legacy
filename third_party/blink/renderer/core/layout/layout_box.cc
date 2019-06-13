@@ -1584,7 +1584,7 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
 
 // Hit Testing
 bool LayoutBox::HitTestAllPhases(HitTestResult& result,
-                                 const HitTestLocation& location_in_container,
+                                 const HitTestLocation& hit_test_location,
                                  const PhysicalOffset& accumulated_offset,
                                  HitTestFilter hit_test_filter) {
   // Check if we need to do anything at all.
@@ -1602,24 +1602,22 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
     }
 
     PhysicalRect adjusted_overflow_box = overflow_box;
-    adjusted_overflow_box.Move(accumulated_offset + PhysicalLocation());
-    if (!location_in_container.Intersects(adjusted_overflow_box))
+    adjusted_overflow_box.Move(accumulated_offset);
+    if (!hit_test_location.Intersects(adjusted_overflow_box))
       return false;
   }
-  return LayoutObject::HitTestAllPhases(result, location_in_container,
+  return LayoutObject::HitTestAllPhases(result, hit_test_location,
                                         accumulated_offset, hit_test_filter);
 }
 
 bool LayoutBox::NodeAtPoint(HitTestResult& result,
-                            const HitTestLocation& location_in_container,
+                            const HitTestLocation& hit_test_location,
                             const PhysicalOffset& accumulated_offset,
                             HitTestAction action) {
-  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
-
   bool should_hit_test_self = IsInSelfHitTestingPhase(action);
 
   if (should_hit_test_self && HasOverflowClip() &&
-      HitTestOverflowControl(result, location_in_container, adjusted_location))
+      HitTestOverflowControl(result, hit_test_location, accumulated_offset))
     return true;
 
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
@@ -1628,24 +1626,24 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     // foreground rect for intersection if a layer is self painting,
     // so only do the overflow clip check here for non-self-painting layers.
     if (!HasSelfPaintingLayer() &&
-        !location_in_container.Intersects(OverflowClipRect(
-            adjusted_location, kExcludeOverlayScrollbarSizeForHitTesting))) {
+        !hit_test_location.Intersects(OverflowClipRect(
+            accumulated_offset, kExcludeOverlayScrollbarSizeForHitTesting))) {
       skip_children = true;
     }
     if (!skip_children && StyleRef().HasBorderRadius()) {
-      PhysicalRect bounds_rect(adjusted_location, Size());
-      skip_children = !location_in_container.Intersects(
+      PhysicalRect bounds_rect(accumulated_offset, Size());
+      skip_children = !hit_test_location.Intersects(
           StyleRef().GetRoundedInnerBorderFor(bounds_rect.ToLayoutRect()));
     }
   }
 
-  if (!skip_children && HitTestChildren(result, location_in_container,
-                                        adjusted_location, action)) {
+  if (!skip_children &&
+      HitTestChildren(result, hit_test_location, accumulated_offset, action)) {
     return true;
   }
 
   if (StyleRef().HasBorderRadius() &&
-      HitTestClippedOutByBorder(location_in_container, adjusted_location))
+      HitTestClippedOutByBorder(hit_test_location, accumulated_offset))
     return false;
 
   // Now hit test ourselves.
@@ -1658,12 +1656,12 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     } else {
       bounds_rect = PhysicalBorderBoxRect();
     }
-    bounds_rect.Move(adjusted_location);
-    if (location_in_container.Intersects(bounds_rect)) {
+    bounds_rect.Move(accumulated_offset);
+    if (hit_test_location.Intersects(bounds_rect)) {
       UpdateHitTestResult(result,
-                          location_in_container.Point() - adjusted_location);
+                          hit_test_location.Point() - accumulated_offset);
       if (result.AddNodeToListBasedTestResult(NodeForHitTest(),
-                                              location_in_container,
+                                              hit_test_location,
                                               bounds_rect) == kStopHitTesting)
         return true;
     }
@@ -1673,14 +1671,20 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
 }
 
 bool LayoutBox::HitTestChildren(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
+                                const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
                                 HitTestAction action) {
   for (LayoutObject* child = SlowLastChild(); child;
        child = child->PreviousSibling()) {
-    if ((!child->HasLayer() ||
-         !ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer()) &&
-        child->NodeAtPoint(result, location_in_container, accumulated_offset,
+    if (child->HasLayer() &&
+        ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer())
+      continue;
+
+    PhysicalOffset child_accumulated_offset = accumulated_offset;
+    if (child->IsBox())
+      child_accumulated_offset += ToLayoutBox(child)->PhysicalLocation(this);
+
+    if (child->NodeAtPoint(result, hit_test_location, child_accumulated_offset,
                            action))
       return true;
   }
@@ -1689,11 +1693,11 @@ bool LayoutBox::HitTestChildren(HitTestResult& result,
 }
 
 bool LayoutBox::HitTestClippedOutByBorder(
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& border_box_location) const {
   PhysicalRect border_rect = PhysicalBorderBoxRect();
   border_rect.Move(border_box_location);
-  return !location_in_container.Intersects(
+  return !hit_test_location.Intersects(
       StyleRef().GetRoundedBorderFor(border_rect.ToLayoutRect()));
 }
 
@@ -5887,25 +5891,6 @@ LayoutBox* LayoutBox::LocationContainer() const {
   while (container && !container->IsBox())
     container = container->Container();
   return ToLayoutBox(container);
-}
-
-PhysicalOffset LayoutBox::PhysicalLocation(
-    const LayoutBox* flipped_blocks_container) const {
-  const LayoutBox* container_box;
-  if (flipped_blocks_container) {
-    DCHECK_EQ(flipped_blocks_container, LocationContainer());
-    container_box = flipped_blocks_container;
-  } else {
-    container_box = LocationContainer();
-  }
-  if (!container_box || !container_box->HasFlippedBlocksWritingMode())
-    return PhysicalOffset(Location());
-
-  // The child is going to add in its x(), so we have to make sure it ends up in
-  // the right place.
-  return PhysicalOffset(
-      container_box->Size().Width() - Size().Width() - Location().X(),
-      Location().Y());
 }
 
 bool LayoutBox::HasRelativeLogicalWidth() const {

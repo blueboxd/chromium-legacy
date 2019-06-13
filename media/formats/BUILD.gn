@@ -76,7 +76,6 @@ source_set("formats") {
   deps = [
     "//media:media_buildflags",
     "//media/base",
-    "//skia",
     "//third_party/libwebm",
   ]
 

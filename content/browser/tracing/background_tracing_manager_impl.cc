@@ -25,6 +25,7 @@
 #include "content/browser/tracing/background_tracing_agent_client_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/common/child_control.mojom.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,31 +64,22 @@ BackgroundTracingManagerImpl* BackgroundTracingManagerImpl::GetInstance() {
 
 // static
 void BackgroundTracingManagerImpl::ActivateForProcess(
-    BrowserChildProcessHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    int child_process_id,
+    mojom::ChildControl* child_control) {
+  mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
+      pending_provider;
+  child_control->GetBackgroundTracingAgentProvider(
+      pending_provider.InitWithNewPipeAndPassReceiver());
 
-  tracing::mojom::BackgroundTracingAgentPtr agent;
-  content::BindInterface(host->GetHost(), &agent);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          [](int child_process_id,
-             tracing::mojom::BackgroundTracingAgentPtrInfo info) {
-            BackgroundTracingAgentClientImpl::Create(child_process_id,
-                                                     std::move(info));
-          },
-          host->GetData().id, agent.PassInterface()));
-}
-
-// static
-void BackgroundTracingManagerImpl::ActivateForProcess(RenderProcessHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  tracing::mojom::BackgroundTracingAgentPtr agent;
-  content::BindInterface(host, &agent);
-  BackgroundTracingAgentClientImpl::Create(host->GetID(),
-                                           agent.PassInterface());
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&BackgroundTracingAgentClientImpl::Create,
+                       child_process_id, std::move(pending_provider)));
+    return;
+  }
+  BackgroundTracingAgentClientImpl::Create(child_process_id,
+                                           std::move(pending_provider));
 }
 
 BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()

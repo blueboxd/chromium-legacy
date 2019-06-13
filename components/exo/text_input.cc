@@ -319,7 +319,7 @@ bool TextInput::SetCompositionFromExistingText(
   return false;
 }
 
-void TextInput::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void TextInput::OnKeyboardVisibilityChanged(bool is_visible) {
   delegate_->OnVirtualKeyboardVisibilityChanged(is_visible);
 }
 

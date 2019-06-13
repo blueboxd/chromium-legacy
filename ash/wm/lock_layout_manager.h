@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
@@ -36,12 +36,11 @@ class WMEvent;
 // virtual keyboard changes inner workspace of each WebContents.
 // For all windows in LockScreenContainer default wm::WindowState is replaced
 // with LockWindowState.
-class ASH_EXPORT LockLayoutManager
-    : public wm::WmSnapToPixelLayoutManager,
-      public aura::WindowObserver,
-      public ShellObserver,
-      public ShelfObserver,
-      public keyboard::KeyboardControllerObserver {
+class ASH_EXPORT LockLayoutManager : public wm::WmSnapToPixelLayoutManager,
+                                     public aura::WindowObserver,
+                                     public ShellObserver,
+                                     public ShelfObserver,
+                                     public KeyboardControllerObserver {
  public:
   LockLayoutManager(aura::Window* window, Shelf* shelf);
   ~LockLayoutManager() override;
@@ -66,9 +65,8 @@ class ASH_EXPORT LockLayoutManager
   // ShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState visibility) override;
 
-  // keyboard::KeyboardControllerObserver overrides:
-  void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& new_bounds) override;
+  // KeyboardControllerObserver overrides:
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override;
 
  protected:
   // Adjusts the bounds of all managed windows when the display area changes.

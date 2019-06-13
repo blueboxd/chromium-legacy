@@ -190,6 +190,14 @@ struct CORE_EXPORT PhysicalRect {
     return PhysicalRect(offset, size);
   }
 
+  // This is faster than EnclosingRect(). Can be used in situation that we
+  // prefer performance to accuracy and haven't observed problems caused by the
+  // tiny error (< LayoutUnit::Epsilon()).
+  static PhysicalRect FastAndLossyFromFloatRect(const FloatRect& rect) {
+    return PhysicalRect(LayoutUnit(rect.X()), LayoutUnit(rect.Y()),
+                        LayoutUnit(rect.Width()), LayoutUnit(rect.Height()));
+  }
+
   explicit PhysicalRect(const IntRect& r)
       : offset(r.Location()), size(r.Size()) {}
 

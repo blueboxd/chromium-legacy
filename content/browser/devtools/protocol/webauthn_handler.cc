@@ -25,6 +25,8 @@ static constexpr char kAuthenticatorNotFound[] =
     "Could not find a Virtual Authenticator matching the ID";
 static constexpr char kCouldNotCreateCredential[] =
     "An error occurred trying to create the credential";
+static constexpr char kDevToolsNotAttached[] =
+    "The DevTools session is not attached to a frame";
 static constexpr char kInvalidProtocol[] = "The protocol is not valid";
 static constexpr char kInvalidRpIdHash[] =
     "The Relying Party ID hash must have a size of ";
@@ -54,6 +56,9 @@ WebAuthnHandler::~WebAuthnHandler() = default;
 
 void WebAuthnHandler::SetRenderer(int process_host_id,
                                   RenderFrameHostImpl* frame_host) {
+  if (!frame_host) {
+    Disable();
+  }
   frame_host_ = frame_host;
 }
 
@@ -62,6 +67,9 @@ void WebAuthnHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 Response WebAuthnHandler::Enable() {
+  if (!frame_host_)
+    return Response::Error(kDevToolsNotAttached);
+
   AuthenticatorEnvironmentImpl::GetInstance()->EnableVirtualAuthenticatorFor(
       frame_host_->frame_tree_node());
   virtual_discovery_factory_ =
@@ -71,8 +79,10 @@ Response WebAuthnHandler::Enable() {
 }
 
 Response WebAuthnHandler::Disable() {
-  AuthenticatorEnvironmentImpl::GetInstance()->DisableVirtualAuthenticatorFor(
-      frame_host_->frame_tree_node());
+  if (frame_host_) {
+    AuthenticatorEnvironmentImpl::GetInstance()->DisableVirtualAuthenticatorFor(
+        frame_host_->frame_tree_node());
+  }
   virtual_discovery_factory_ = nullptr;
   return Response::OK();
 }

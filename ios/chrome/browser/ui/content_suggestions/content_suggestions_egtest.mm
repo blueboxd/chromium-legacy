@@ -168,7 +168,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // to iOS 10.2.
 + (NSArray*)testInvocations {
 #if TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
     return @[];
 #endif  // TARGET_IPHONE_SIMULATOR
   return [super testInvocations];

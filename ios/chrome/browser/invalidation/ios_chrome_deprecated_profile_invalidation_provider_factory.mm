@@ -23,8 +23,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/public/web_task_traits.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

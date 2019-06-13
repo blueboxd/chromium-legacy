@@ -108,7 +108,7 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
       content::DevToolsAgentHost* agent_host) override;
 
  private:
-  ExtensionPopup(extensions::ExtensionViewHost* host,
+  ExtensionPopup(std::unique_ptr<extensions::ExtensionViewHost> host,
                  views::View* anchor_view,
                  views::BubbleBorder::Arrow arrow,
                  ShowAction show_action);

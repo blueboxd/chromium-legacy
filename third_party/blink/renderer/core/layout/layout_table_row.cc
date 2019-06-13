@@ -227,23 +227,26 @@ void LayoutTableRow::UpdateLayout() {
 
 // Hit Testing
 bool LayoutTableRow::NodeAtPoint(HitTestResult& result,
-                                 const HitTestLocation& location_in_container,
+                                 const HitTestLocation& hit_test_location,
                                  const PhysicalOffset& accumulated_offset,
                                  HitTestAction action) {
+  // The row and the cells are all located in the section.
+  const auto* section = Section();
+  PhysicalOffset section_accumulated_offset =
+      accumulated_offset - PhysicalLocation(section);
+
   // Table rows cannot ever be hit tested.  Effectively they do not exist.
   // Just forward to our children always.
   for (LayoutTableCell* cell = LastCell(); cell; cell = cell->PreviousCell()) {
-    // FIXME: We have to skip over inline flows, since they can show up inside
-    // table rows at the moment (a demoted inline <form> for example). If we
-    // ever implement a table-specific hit-test method (which we should do for
-    // performance reasons anyway), then we can remove this check.
-    if (!cell->HasSelfPaintingLayer()) {
-      if (cell->NodeAtPoint(result, location_in_container, accumulated_offset,
-                            action)) {
-        UpdateHitTestResult(result,
-                            location_in_container.Point() - accumulated_offset);
-        return true;
-      }
+    if (cell->HasSelfPaintingLayer())
+      continue;
+    PhysicalOffset cell_accumulated_offset =
+        section_accumulated_offset + cell->PhysicalLocation(section);
+    if (cell->NodeAtPoint(result, hit_test_location, cell_accumulated_offset,
+                          action)) {
+      UpdateHitTestResult(
+          result, hit_test_location.Point() - section_accumulated_offset);
+      return true;
     }
   }
 

@@ -14,6 +14,7 @@
     <dimen name="keyboard_accessory_shadow">5dp</dimen>
     <dimen name="keyboard_accessory_chip_vertical_margin">8dp</dimen>
     <!--dimen name="keyboard_accessory_sheet_height">330dp</dimen-->
+    <dimen name="keyboard_accessory_sheet_divider_margin">24dp</dimen>
     <dimen name="keyboard_accessory_sheet_padding">8dp</dimen>
     <dimen name="keyboard_accessory_sheet_top_margin">16dp</dimen>
     <dimen name="keyboard_accessory_sheet_bottom_margin">8dp</dimen>
@@ -23,5 +24,6 @@
     <dimen name="keyboard_accessory_suggestion_icon_size">20dp</dimen>
     <dimen name="keyboard_accessory_scroll_shadow_width">40dp</dimen>
     <dimen name="keyboard_accessory_bar_item_cc_icon_width">32dp</dimen>
+    <dimen name="keyboard_accessory_tab_icon_width">40dp</dimen>
     <dimen name="keyboard_accessory_tab_size">@dimen/keyboard_accessory_height</dimen>
 </resources>

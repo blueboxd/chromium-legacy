@@ -108,7 +108,6 @@ enum AcceleratorAction {
   WINDOW_CYCLE_SNAP_LEFT,
   WINDOW_CYCLE_SNAP_RIGHT,
   WINDOW_MINIMIZE,
-  WINDOW_POSITION_CENTER,
 
   // Debug accelerators are intentionally at the end, so that if you remove one
   // you don't need to update tests which check hashes of the ids.

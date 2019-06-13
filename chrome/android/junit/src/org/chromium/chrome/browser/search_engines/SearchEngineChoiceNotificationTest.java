@@ -37,6 +37,8 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 
 import java.util.HashMap;
 
@@ -74,7 +76,7 @@ public final class SearchEngineChoiceNotificationTest {
         ShadowRecordHistogram.reset();
 
         // Sets up appropriate responses from Template URL service.
-        TemplateUrlService.setInstanceForTesting(mTemplateUrlService);
+        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         doReturn(TEST_ALTERNATIVE_ENGINE).when(mAlternativeSearchEngine).getKeyword();
         doReturn(SearchEngineType.SEARCH_ENGINE_DUCKDUCKGO)
                 .when(mTemplateUrlService)

@@ -25,6 +25,8 @@ component("gamepad") {
     "dualshock4_controller_win.h",
     "game_controller_data_fetcher_mac.h",
     "game_controller_data_fetcher_mac.mm",
+    "gamepad_blocklist.cc",
+    "gamepad_blocklist.h",
     "gamepad_consumer.cc",
     "gamepad_consumer.h",
     "gamepad_data_fetcher.cc",

@@ -19,11 +19,11 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -3092,13 +3092,13 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
                               bool is_locked,
                               const gfx::Rect& bounds_in_screen) {
     WorkAreaInsets* work_area_insets = GetPrimaryWorkAreaInsets();
-    keyboard::KeyboardStateDescriptor state;
+    KeyboardStateDescriptor state;
     state.visual_bounds = bounds_in_screen;
     state.occluded_bounds_in_screen = bounds_in_screen;
     state.displaced_bounds_in_screen =
         is_locked ? bounds_in_screen : gfx::Rect();
     state.is_visible = !bounds_in_screen.IsEmpty();
-    work_area_insets->OnKeyboardVisibilityStateChanged(state.is_visible);
+    work_area_insets->OnKeyboardVisibilityChanged(state.is_visible);
     work_area_insets->OnKeyboardAppearanceChanged(state);
   }
 

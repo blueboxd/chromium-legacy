@@ -294,6 +294,9 @@ cca.models.FileSystem.savePicture = function(blob, filename) {
 cca.models.FileSystem.createThumbnail_ = function(isVideo, url) {
   const thumbnailWidth = 480;
   var element = document.createElement(isVideo ? 'video' : 'img');
+  if (isVideo) {
+    element.preload = 'auto';
+  }
   return new Promise((resolve, reject) => {
     element.addEventListener(isVideo ? 'canplay' : 'load', resolve);
     element.addEventListener('error', reject);

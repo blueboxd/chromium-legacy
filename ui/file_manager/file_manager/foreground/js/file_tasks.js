@@ -984,6 +984,10 @@ class FileTasks {
     let moreActionsSeparator =
         shareMenuButton.menu.querySelector('#more-actions-separator');
 
+    // Update share command.
+    driveShareCommand.command.canExecuteChange(
+        this.ui_.listContainer.currentList);
+
     // Hide share icon for New Folder creation.  See https://crbug.com/571355.
     shareMenuButton.hidden =
         (driveShareCommand.disabled && tasks.length == 0) ||

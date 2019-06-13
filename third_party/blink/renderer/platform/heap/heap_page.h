@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
 
 #include <stdint.h>
+
 #include "base/bits.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
@@ -240,6 +241,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   void Finalize(Address, size_t);
 
+  // Returns true if object has finalizer.
+  bool HasFinalizer() const;
+
   // Returns true if magic number is valid.
   bool IsValid() const;
   // Returns true if magic number is valid or zapped.
@@ -303,6 +307,62 @@ class FreeListEntry final : public HeapObjectHeader {
 
  private:
   FreeListEntry* next_;
+
+  friend class FreeList;
+};
+
+class FreeList {
+  DISALLOW_NEW();
+
+ public:
+  // Returns a bucket number for inserting a |FreeListEntry| of a given size.
+  // All entries in the given bucket, n, have size >= 2^n.
+  static int BucketIndexForSize(size_t);
+
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER)
+  static void GetAllowedAndForbiddenCounts(Address, size_t, size_t&, size_t&);
+  static void ZapFreedMemory(Address, size_t);
+  static void CheckFreedMemoryIsZapped(Address, size_t);
+#endif
+
+  FreeList();
+
+  FreeListEntry* Allocate(size_t);
+  void Add(Address, size_t);
+  void MoveFrom(FreeList*);
+  void Clear();
+
+  bool IsEmpty() const;
+  size_t FreeListSize() const;
+
+  // Returns true if the freelist snapshot is captured.
+  bool TakeSnapshot(const String& dump_base_name);
+
+  template <typename Predicate>
+  FreeListEntry* FindEntry(Predicate pred) {
+    for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
+      for (FreeListEntry* entry = free_list_heads_[i]; entry;
+           entry = entry->Next()) {
+        if (pred(entry)) {
+          return entry;
+        }
+      }
+    }
+    return nullptr;
+  }
+
+ private:
+  bool IsConsistent(size_t index) const {
+    return (!free_list_heads_[index] && !free_list_tails_[index]) ||
+           (free_list_heads_[index] && free_list_tails_[index] &&
+            !free_list_tails_[index]->Next());
+  }
+
+  // All |FreeListEntry|s in the nth list have size >= 2^n.
+  FreeListEntry* free_list_heads_[kBlinkPageSizeLog2];
+  FreeListEntry* free_list_tails_[kBlinkPageSizeLog2];
+  int biggest_free_list_index_;
 };
 
 // Blink heap pages are set up with a guard page before and after the payload.
@@ -694,40 +754,6 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
 #endif
 };
 
-class FreeList {
-  DISALLOW_NEW();
-
- public:
-  FreeList();
-
-  void AddToFreeList(Address, size_t);
-  void Clear();
-
-  // Returns a bucket number for inserting a |FreeListEntry| of a given size.
-  // All entries in the given bucket, n, have size >= 2^n.
-  static int BucketIndexForSize(size_t);
-
-  // Returns true if the freelist snapshot is captured.
-  bool TakeSnapshot(const String& dump_base_name);
-
-#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER)
-  static void GetAllowedAndForbiddenCounts(Address, size_t, size_t&, size_t&);
-  static void ZapFreedMemory(Address, size_t);
-  static void CheckFreedMemoryIsZapped(Address, size_t);
-#endif
-
- private:
-  int biggest_free_list_index_;
-
-  // All |FreeListEntry|s in the nth list have size >= 2^n.
-  FreeListEntry* free_lists_[kBlinkPageSizeLog2];
-
-  size_t FreeListSize() const;
-
-  friend class NormalPageArena;
-};
-
 // Each thread has a number of thread arenas (e.g., Generic arenas, typed arenas
 // for |Node|, arenas for collection backings, etc.) and |BaseArena| represents
 // each thread arena.
@@ -815,8 +841,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
     // similar expressions elsewhere)?
     DCHECK(FindPageFromAddress(address + size - 1));
 #endif
-    free_list_.AddToFreeList(address, size);
+    free_list_.Add(address, size);
   }
+  void AddToFreeList(FreeList* other) { free_list_.MoveFrom(other); }
   void ClearFreeLists() override;
   void MakeIterable() override;
 

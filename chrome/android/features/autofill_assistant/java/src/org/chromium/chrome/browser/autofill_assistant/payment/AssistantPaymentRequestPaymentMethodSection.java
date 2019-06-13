@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
@@ -40,6 +41,18 @@ public class AssistantPaymentRequestPaymentMethodSection
 
     public void setEditor(CardEditor editor) {
         mEditor = editor;
+        if (mEditor == null) {
+            return;
+        }
+
+        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+        for (AutofillPaymentInstrument method : getItems()) {
+            String guid = method.getCard().getBillingAddressId();
+            PersonalDataManager.AutofillProfile profile = personalDataManager.getProfile(guid);
+            if (profile != null) {
+                addAutocompleteInformationToEditor(profile);
+            }
+        }
     }
 
     @Override
@@ -71,9 +84,15 @@ public class AssistantPaymentRequestPaymentMethodSection
         if (method == null) {
             return;
         }
+
         ImageView cardIssuerImageView = summaryView.findViewById(R.id.credit_card_issuer_icon);
-        cardIssuerImageView.setImageDrawable(summaryView.getContext().getResources().getDrawable(
-                method.getCard().getIssuerIconDrawableId()));
+        try {
+            cardIssuerImageView.setImageDrawable(
+                    summaryView.getContext().getResources().getDrawable(
+                            method.getCard().getIssuerIconDrawableId()));
+        } catch (Resources.NotFoundException e) {
+            cardIssuerImageView.setImageDrawable(null);
+        }
 
         /**
          * By default, the obfuscated number contains the issuer (e.g., 'Visa'). This is needlessly
@@ -98,9 +117,9 @@ public class AssistantPaymentRequestPaymentMethodSection
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
+        // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
         for (PersonalDataManager.AutofillProfile profile : profiles) {
-            // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
-            mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
+            addAutocompleteInformationToEditor(profile);
         }
     }
 
@@ -124,5 +143,12 @@ public class AssistantPaymentRequestPaymentMethodSection
 
         // Replace current set of items, keep selection if possible.
         setItems(paymentMethods, selectedMethodIndex);
+    }
+
+    private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
+        if (mEditor == null) {
+            return;
+        }
+        mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
     }
 }

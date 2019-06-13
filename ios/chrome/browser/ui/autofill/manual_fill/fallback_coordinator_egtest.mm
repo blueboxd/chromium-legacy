@@ -178,7 +178,7 @@ BOOL IsKeyboardDockedForLayout(UIView* layout) {
 
 // Undocks the keyboard by swiping it up. Does nothing if already undocked.
 void UndockKeyboard() {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
 
@@ -221,7 +221,7 @@ void UndockKeyboard() {
 
 // Docks the keyboard by swiping it down. Does nothing if already docked.
 void DockKeyboard() {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
 
@@ -348,7 +348,7 @@ void DockKeyboard() {
   }
   // Leaving a picker on iPads causes problems with the docking logic. This
   // will dismiss any.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
@@ -364,7 +364,7 @@ void DockKeyboard() {
 // Tests that the when tapping the outside the popover on iPad, suggestions
 // continue working.
 - (void)testIPadTappingOutsidePopOverResumesSuggestionsCorrectly {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
 
@@ -471,7 +471,7 @@ void DockKeyboard() {
 
   // On iPad the picker is a table view in a popover, we need to dismiss that
   // first.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
@@ -499,7 +499,7 @@ void DockKeyboard() {
 // Same as before but with the keyboard undocked.
 - (void)testUndockedInputAccessoryBarIsPresentAfterPickers {
   // No need to run if not iPad.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
   // Add the profile to be used.
@@ -560,7 +560,7 @@ void DockKeyboard() {
 
 // Test the input accessory bar is present when undocking the keyboard.
 - (void)testInputAccessoryBarIsPresentAfterUndockingKeyboard {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
   // Add the profile to use for verification.

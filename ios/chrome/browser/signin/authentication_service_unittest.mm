@@ -191,16 +191,12 @@ class AuthenticationServiceTest : public PlatformTest,
     return authentication_service_->GetAccountsInPrefs();
   }
 
-  void SetAuthenticationServiceInForeground(bool is_in_foreground) {
-    authentication_service_->is_in_foreground_ = is_in_foreground;
+  void FireApplicationWillEnterForeground() {
+    authentication_service_->OnApplicationWillEnterForeground();
   }
 
-  void FireApplicationEnterForeground() {
-    authentication_service_->OnApplicationEnterForeground();
-  }
-
-  void FireApplicationEnterBackground() {
-    authentication_service_->OnApplicationEnterBackground();
+  void FireApplicationDidEnterBackground() {
+    authentication_service_->OnApplicationDidEnterBackground();
   }
 
   void FireAccessTokenRefreshFailed(ChromeIdentity* identity,
@@ -362,8 +358,8 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
 
   // Set the authentication service as "In Foreground", remove identity and run
   // the loop.
-  SetAuthenticationServiceInForeground(false);
-  FireApplicationEnterForeground();
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
   identity_service_->ForgetIdentity(identity_, nil);
   base::RunLoop().RunUntilIdle();
 
@@ -381,7 +377,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
 
   // Set the authentication service as "In Background", remove identity and run
   // the loop.
-  FireApplicationEnterBackground();
+  FireApplicationDidEnterBackground();
   identity_service_->ForgetIdentity(identity_, nil);
   base::RunLoop().RunUntilIdle();
 
@@ -457,8 +453,8 @@ TEST_F(AuthenticationServiceTest,
 
   // Simulate a switching to background and back to foreground, triggering a
   // credentials reload.
-  FireApplicationEnterBackground();
-  FireApplicationEnterForeground();
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
 
   // Accounts are reloaded, "foo3@foo.com" is added as it is now in
   // ChromeIdentityService.
@@ -496,8 +492,8 @@ TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
   base::RunLoop().RunUntilIdle();
 
   // Simulate a switching to background and back to foreground.
-  FireApplicationEnterBackground();
-  FireApplicationEnterForeground();
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
 
   EXPECT_FALSE(authentication_service_->HaveAccountsChanged());
 }
@@ -512,9 +508,9 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged) {
 
   // Simulate a switching to background and back to foreground, changing the
   // accounts while in background.
-  FireApplicationEnterBackground();
+  FireApplicationDidEnterBackground();
   identity_service_->AddIdentities(@[ @"foo4" ]);
-  FireApplicationEnterForeground();
+  FireApplicationWillEnterForeground();
 
   EXPECT_TRUE(authentication_service_->HaveAccountsChanged());
 }
@@ -529,8 +525,9 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChangedBackground) {
 
   // Simulate a switching to background, changing the accounts while in
   // background.
-  FireApplicationEnterBackground();
+  FireApplicationDidEnterBackground();
   identity_service_->AddIdentities(@[ @"foo4" ]);
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(authentication_service_->HaveAccountsChanged());
 }
@@ -543,7 +540,7 @@ TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
 
   // Remove the signed in identity while in background, and check that
   // IsAuthenticated is up-to-date.
-  FireApplicationEnterBackground();
+  FireApplicationDidEnterBackground();
   identity_service_->ForgetIdentity(identity_, nil);
   base::RunLoop().RunUntilIdle();
 
@@ -617,13 +614,13 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
 
   // MDM error for |identity_| is being cleared, refresh token available
   // notification will be sent.
-  FireApplicationEnterBackground();
-  FireApplicationEnterForeground();
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
   EXPECT_EQ(3, refresh_token_available_count_);
 
   // MDM error has already been cleared, no notification will be sent.
-  FireApplicationEnterBackground();
-  FireApplicationEnterForeground();
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
   EXPECT_EQ(3, refresh_token_available_count_);
 }
 

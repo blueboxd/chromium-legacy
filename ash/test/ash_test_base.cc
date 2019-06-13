@@ -39,8 +39,6 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"
-#include "services/ws/public/cpp/input_devices/input_device_client.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -55,6 +53,8 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
@@ -170,8 +170,8 @@ void AshTestBase::TearDown() {
   display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
 
   // Tests can add devices, so reset the lists for future tests.
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
-  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices({});
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
 }
 
 // static

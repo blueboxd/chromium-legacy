@@ -351,27 +351,9 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
   return url_request_context_getter_.get();
 }
 
-net::URLRequestContextGetter*
-AwBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  NOTREACHED();
-  return NULL;
-}
-
 net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   return url_request_context_getter_.get();
-}
-
-net::URLRequestContextGetter*
-AwBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  NOTREACHED();
-  return NULL;
 }
 
 download::InProgressDownloadManager*

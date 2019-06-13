@@ -1,5 +1,6 @@
 rootWebArea
-++button name='Regular button'
-++toggleButton name='Toggle button' checkedState=false
-++toggleButton name='Toggle button' checkedState=true
-++toggleButton name='Toggle button' checkedState=mixed
+++genericContainer ignored
+++++button name='Regular button'
+++++toggleButton name='Toggle button' checkedState=false
+++++toggleButton name='Toggle button' checkedState=true
+++++toggleButton name='Toggle button' checkedState=mixed

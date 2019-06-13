@@ -96,7 +96,7 @@ void AssertURLIs(const GURL& expectedURL) {
   // Initial y scroll positions are set to make room for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which
   // generates these values is exposed.
-  CGFloat yOffset = IsIPadIdiom() ? -89.0 : -48.0;
+  CGFloat yOffset = [ChromeEarlGrey isIPadIdiom] ? -89.0 : -48.0;
   if (@available(iOS 12, *)) {
     // The safe area is included in the top inset as well as the toolbar
     // heights.  Due to crbug.com/903635, however, this only occurs on iOS 12;

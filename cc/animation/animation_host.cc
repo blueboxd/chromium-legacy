@@ -645,6 +645,16 @@ bool AnimationHost::HasTickingKeyframeModelForTesting(
                             : false;
 }
 
+void AnimationHost::ImplOnlyAutoScrollAnimationCreate(
+    ElementId element_id,
+    const gfx::ScrollOffset& target_offset,
+    const gfx::ScrollOffset& current_offset,
+    float autoscroll_velocity) {
+  DCHECK(scroll_offset_animations_impl_);
+  scroll_offset_animations_impl_->AutoScrollAnimationCreate(
+      element_id, target_offset, current_offset, autoscroll_velocity);
+}
+
 void AnimationHost::ImplOnlyScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,

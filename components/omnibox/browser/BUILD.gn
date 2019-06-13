@@ -243,7 +243,6 @@ jumbo_static_library("browser") {
     "//sql",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
-    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/gfx",
   ]

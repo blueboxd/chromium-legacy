@@ -83,7 +83,6 @@ component("blink") {
     "//net",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp:cpp",
-    "//skia",
     "//third_party/blink/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",

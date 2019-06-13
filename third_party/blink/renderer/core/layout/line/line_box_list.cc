@@ -203,7 +203,7 @@ bool LineBoxList::LineIntersectsDirtyRect(LineLayoutBoxModel layout_object,
 
 bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
                           HitTestResult& result,
-                          const HitTestLocation& location_in_container,
+                          const HitTestLocation& hit_test_location,
                           const PhysicalOffset& accumulated_offset,
                           HitTestAction hit_test_action) const {
   if (hit_test_action != kHitTestForeground)
@@ -217,8 +217,8 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
   if (!First())
     return false;
 
-  const PhysicalOffset& point = location_in_container.Point();
-  IntRect hit_search_bounding_box = location_in_container.EnclosingIntRect();
+  const PhysicalOffset& point = hit_test_location.Point();
+  IntRect hit_search_bounding_box = hit_test_location.EnclosingIntRect();
 
   CullRect cull_rect(
       First()->IsHorizontal()
@@ -240,11 +240,11 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
             curr->LogicalBottomVisualOverflow(root.LineBottom()), cull_rect,
             accumulated_offset)) {
       bool inside =
-          curr->NodeAtPoint(result, location_in_container, accumulated_offset,
+          curr->NodeAtPoint(result, hit_test_location, accumulated_offset,
                             root.LineTop(), root.LineBottom());
       if (inside) {
         layout_object.UpdateHitTestResult(
-            result, location_in_container.Point() - accumulated_offset);
+            result, hit_test_location.Point() - accumulated_offset);
         return true;
       }
     }

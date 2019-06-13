@@ -234,9 +234,9 @@ class LineLayoutItem {
   }
 
   bool HitTestAllPhases(HitTestResult& result,
-                        const HitTestLocation& location_in_container,
+                        const HitTestLocation& hit_test_location,
                         const PhysicalOffset& accumulated_offset) {
-    return layout_object_->HitTestAllPhases(result, location_in_container,
+    return layout_object_->HitTestAllPhases(result, hit_test_location,
                                             accumulated_offset);
   }
 

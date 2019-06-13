@@ -12,12 +12,12 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
@@ -37,7 +37,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   void SetUp() override {
     ash::AshTestBase::SetUp();
     // Simulate the complete listing of input devices, required by the viewer.
-    ws::InputDeviceClientTestApi().OnDeviceListsComplete();
+    ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
   }
 
  protected:

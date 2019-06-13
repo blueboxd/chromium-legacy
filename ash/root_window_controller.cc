@@ -269,22 +269,6 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   }
 }
 
-// Creates a new window for use as a container.
-aura::Window* CreateContainer(int window_id,
-                              const char* name,
-                              aura::Window* parent) {
-  aura::Window* window =
-      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_UNKNOWN)
-          .release();
-  window->Init(ui::LAYER_NOT_DRAWN);
-  window->set_id(window_id);
-  window->SetName(name);
-  parent->AddChild(window);
-  if (window_id != kShellWindowId_UnparentedControlContainer)
-    window->Show();
-  return window;
-}
-
 bool ShouldDestroyWindowInCloseChildWindows(aura::Window* window) {
   return window->owned_by_parent();
 }
@@ -651,6 +635,8 @@ void RootWindowController::CloseChildWindows() {
       delete toplevel_windows.Pop();
   }
 
+  // Reset layout manager so that it won't fire unnecessary layout evetns.
+  root->SetLayoutManager(nullptr);
   // And then remove the containers.
   while (!root->children().empty()) {
     aura::Window* child = root->children()[0];
@@ -844,7 +830,6 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* root = GetRootWindow();
   shelf_->CreateShelfWidget(root);
 
-  root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(root_window_layout_manager_);
 
   for (auto* container : desks_util::GetDesksContainers(root)) {
@@ -901,6 +886,8 @@ void RootWindowController::InitLayoutManagers() {
 
 void RootWindowController::CreateContainers() {
   aura::Window* root = GetRootWindow();
+  root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
+
   // For screen rotation animation: add a NOT_DRAWN layer in between the
   // root_window's layer and its current children so that we only need to
   // initiate two LayerAnimationSequences. One for the new layers and one for
@@ -1139,6 +1126,22 @@ void RootWindowController::CreateContainers() {
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", magnified_container);
+}
+
+aura::Window* RootWindowController::CreateContainer(int window_id,
+                                                    const char* name,
+                                                    aura::Window* parent) {
+  aura::Window* window =
+      window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_UNKNOWN)
+          .release();
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->set_id(window_id);
+  window->SetName(name);
+  parent->AddChild(window);
+  if (window_id != kShellWindowId_UnparentedControlContainer)
+    window->Show();
+  root_window_layout_manager_->AddContainer(window);
+  return window;
 }
 
 void RootWindowController::CreateSystemWallpaper(

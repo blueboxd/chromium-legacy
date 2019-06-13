@@ -11,7 +11,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/stl_util.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
@@ -20,6 +19,7 @@
 #include "ui/display/manager/touch_transform_setter.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -52,7 +52,7 @@ class TouchCalibratorControllerTest : public AshTestBase {
     // Reset all touch device and touch association.
     test::TouchDeviceManagerTestApi(touch_device_manager())
         .ResetTouchDeviceManager();
-    ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
+    ui::DeviceDataManagerTestApi().SetTouchscreenDevices({});
     test::TouchTransformControllerTestApi(
         Shell::Get()->touch_transformer_controller())
         .touch_transform_setter()
@@ -169,7 +169,7 @@ class TouchCalibratorControllerTest : public AshTestBase {
   ui::TouchscreenDevice InitTouchDevice(
       int64_t display_id,
       const ui::TouchscreenDevice& touchdevice) {
-    ws::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
+    ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchdevice});
 
     std::vector<ui::TouchDeviceTransform> transforms;
     ui::TouchDeviceTransform touch_device_transform;
@@ -403,7 +403,7 @@ TEST_F(TouchCalibratorControllerTest, HighDPIMonitorsCalibration) {
       kExternalTouchId, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("external touch device"), gfx::Size(1000, 1000), 1);
 
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices(
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices(
       {internal_touchdevice, external_touchdevice});
 
   // Associate both touch devices to the internal display.
@@ -495,7 +495,7 @@ TEST_F(TouchCalibratorControllerTest, RotatedHighDPIMonitorsCalibration) {
       kExternalTouchId, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("external touch device"), gfx::Size(1000, 1000), 1);
 
-  ws::InputDeviceClientTestApi().SetTouchscreenDevices(
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices(
       {internal_touchdevice, external_touchdevice});
 
   // Associate both touch devices to the internal display.

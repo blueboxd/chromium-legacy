@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -72,6 +73,7 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -80,6 +82,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -261,8 +264,12 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
         new ExtensionAppWindowLauncherController(this));
   }
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
-  app_window_controllers_.push_back(
-      std::make_unique<ArcAppWindowLauncherController>(this));
+
+  auto arc_app_window_controller =
+      std::make_unique<ArcAppWindowLauncherController>(this);
+  arc_app_window_controller_ = arc_app_window_controller.get();
+  app_window_controllers_.push_back(std::move(arc_app_window_controller));
+
   if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
     std::unique_ptr<CrostiniAppWindowShelfController> crostini_controller =
         std::make_unique<CrostiniAppWindowShelfController>(this);
@@ -278,6 +285,7 @@ ChromeLauncherController::~ChromeLauncherController() {
   browser_status_monitor_.reset();
 
   // Reset the app window controllers here since it has a weak pointer to this.
+  arc_app_window_controller_ = nullptr;
   app_window_controllers_.clear();
 
   // Destroy the ShelfSpinnerController before clearing delegates.
@@ -603,6 +611,16 @@ ChromeLauncherController::GetV1ApplicationsFromAppId(
   DCHECK(item->type == ash::TYPE_APP || item->type == ash::TYPE_PINNED_APP);
 
   return AppShortcutLauncherItemController::GetRunningApplications(app_id);
+}
+
+std::vector<aura::Window*> ChromeLauncherController::GetArcWindows() {
+  std::vector<aura::Window*> windows =
+      arc_app_window_controller_->GetObservedWindows();
+  std::vector<aura::Window*> arc_windows;
+  std::copy_if(windows.begin(), windows.end(),
+               std::inserter(arc_windows, arc_windows.end()),
+               [](aura::Window* w) { return arc::IsArcAppWindow(w); });
+  return arc_windows;
 }
 
 void ChromeLauncherController::ActivateShellApp(const std::string& app_id,

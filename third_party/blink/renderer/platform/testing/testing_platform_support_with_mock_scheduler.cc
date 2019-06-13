@@ -29,13 +29,10 @@ TestingPlatformSupportWithMockScheduler::
       scheduler_->CreateMainThread());
   // Set the work batch size to one so TakePendingTasks behaves as expected.
   scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
-
-  WTF::SetTimeFunctionsForTesting(GetTestTime);
 }
 
 TestingPlatformSupportWithMockScheduler::
     ~TestingPlatformSupportWithMockScheduler() {
-  WTF::SetTimeFunctionsForTesting(nullptr);
   scheduler_->Shutdown();
 }
 
@@ -90,15 +87,6 @@ void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(
 scheduler::MainThreadSchedulerImpl*
 TestingPlatformSupportWithMockScheduler::GetMainThreadScheduler() const {
   return scheduler_.get();
-}
-
-// static
-double TestingPlatformSupportWithMockScheduler::GetTestTime() {
-  TestingPlatformSupportWithMockScheduler* platform =
-      static_cast<TestingPlatformSupportWithMockScheduler*>(
-          Platform::Current());
-  return (platform->test_task_runner_->NowTicks() - base::TimeTicks())
-      .InSecondsF();
 }
 
 }  // namespace blink

@@ -34,12 +34,12 @@ static_assert(kImageFetchTimeoutInMs > 1000.0,
 
 class NotificationImageLoaderTest : public PageTestBase {
  public:
-  NotificationImageLoaderTest()
-      :  // Use an arbitrary type, since it only affects which UMA bucket we
-         // use.
-        loader_(MakeGarbageCollected<NotificationImageLoader>(
-            NotificationImageLoader::Type::kIcon)) {
+  NotificationImageLoaderTest() {
     EnablePlatform();
+    // Use an arbitrary type, since it only affects which UMA bucket we use.
+    loader_ = MakeGarbageCollected<NotificationImageLoader>(
+        NotificationImageLoader::Type::kIcon,
+        platform()->test_task_runner()->GetMockTickClock());
   }
 
   ~NotificationImageLoaderTest() override {

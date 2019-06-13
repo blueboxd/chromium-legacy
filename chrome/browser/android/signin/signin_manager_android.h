@@ -31,7 +31,7 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   // Registers a CloudPolicyClient for fetching policy for a user and fetches
   // the policy if necessary.
-  void RegisterAndFetchPolicyBeforeSignIn(
+  void FetchAndApplyCloudPolicy(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& username);
@@ -55,12 +55,14 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   // Delete all data for this profile.
   void WipeProfileData(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& j_callback);
 
   // Delete service worker caches for google.<eTLD>.
   void WipeGoogleServiceWorkerCaches(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
   void LogInSignedInUser(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);

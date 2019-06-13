@@ -12,6 +12,7 @@
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -47,8 +48,6 @@
 namespace ash {
 
 namespace {
-
-constexpr const char kParentAccessViewClassName[] = "ParentAccessView";
 
 // Identifier of parent access input views group used for focus traversal.
 constexpr int kParentAccessInputGroup = 1;
@@ -422,9 +421,7 @@ ParentAccessView::Callbacks::~Callbacks() = default;
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason)
-    : NonAccessibleView(kParentAccessViewClassName),
-      callbacks_(callbacks),
-      account_id_(account_id) {
+    : callbacks_(callbacks), account_id_(account_id) {
   DCHECK(callbacks.on_finished);
 
   // Main view contains all other views aligned vertically and centered.
@@ -621,6 +618,18 @@ void ParentAccessView::RequestFocus() {
 
 gfx::Size ParentAccessView::CalculatePreferredSize() const {
   return GetParentAccessViewSize();
+}
+
+ui::ModalType ParentAccessView::GetModalType() const {
+  // MODAL_TYPE_SYSTEM is used to get a semi-transparent background behind the
+  // parent access view, when it is used directly on a widget. The overlay
+  // consumes all the inputs from the user, so that they can only interact with
+  // the parent access view while it is visible.
+  return ui::MODAL_TYPE_SYSTEM;
+}
+
+views::View* ParentAccessView::GetInitiallyFocusedView() {
+  return access_code_view_;
 }
 
 void ParentAccessView::ButtonPressed(views::Button* sender,

@@ -180,7 +180,6 @@ jumbo_static_library("renderer") {
     "//third_party/icu",
     "//third_party/re2",
     "//third_party/widevine/cdm:buildflags",
-    "//third_party/zlib/google:compression_utils",
     "//ui/surface",
     "//v8",
   ]

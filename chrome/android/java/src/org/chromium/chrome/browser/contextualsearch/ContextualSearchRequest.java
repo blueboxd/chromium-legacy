@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.net.MalformedURLException;
@@ -221,7 +221,7 @@ class ContextualSearchRequest {
      */
     protected Uri getUriTemplate(String query, @Nullable String alternateTerm, @Nullable String mid,
             boolean shouldPrefetch) {
-        Uri uri = Uri.parse(TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
+        Uri uri = Uri.parse(TemplateUrlServiceFactory.get().getUrlForContextualSearchQuery(
                 query, alternateTerm, shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL));
         if (!TextUtils.isEmpty(mid)) uri = makeKPTriggeringUri(uri, mid);
         return uri;

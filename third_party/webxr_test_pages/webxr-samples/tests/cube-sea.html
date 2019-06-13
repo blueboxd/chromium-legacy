@@ -158,9 +158,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Framebuffer scale override. 1 = default
         framebufferScale: getFloatParam('framebufferScale', 1),
 
-        // Viewport scale
-        viewportScale: getFloatParam('viewportScale', 1),
-
         // Immersive AR mode
         arMode: getBoolParam('arMode', false),
 
@@ -205,8 +202,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var folderRender = gui.addFolder('Rendering options');
       folderRender.add(appSettings, 'framebufferScale', 0, 2, 0.25).onFinishChange(
           getParamSaver('framebufferScale'));
-      folderRender.add(appSettings, 'viewportScale', 0.25, 1, 0.125).onFinishChange(
-          getParamSaver('viewportScale'));
       folderRender.add(appSettings, 'antialias').onFinishChange(
           getParamSaver('antialias'));
       folderRender.add(appSettings, 'arMode').onFinishChange(
@@ -380,8 +375,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             tmp = Math.sin(Math.cos(Math.tan(tmp)));
           }
         }
-
-        session.renderState.baseLayer.requestViewportScaling(appSettings.viewportScale);
 
         session.requestAnimationFrame(onXRFrame);
 

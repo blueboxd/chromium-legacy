@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/prefetched_signed_exchange_info.h"
 #include "net/base/hash_value.h"
@@ -65,6 +66,7 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
         const {
       return blob_data_handle_;
     }
+    base::Time signature_expire_time() const { return signature_expire_time_; }
 
     void SetOuterUrl(const GURL& outer_url);
     void SetOuterResponse(
@@ -79,6 +81,7 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
             completion_status);
     void SetBlobDataHandle(
         std::unique_ptr<const storage::BlobDataHandle> blob_data_handle);
+    void SetSignatureExpireTime(const base::Time& signature_expire_time);
 
     std::unique_ptr<const Entry> Clone() const;
 
@@ -91,6 +94,7 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
     std::unique_ptr<const network::URLLoaderCompletionStatus>
         completion_status_;
     std::unique_ptr<const storage::BlobDataHandle> blob_data_handle_;
+    base::Time signature_expire_time_;
 
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
@@ -112,9 +116,14 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   friend class base::RefCountedThreadSafe<PrefetchedSignedExchangeCache>;
 
   ~PrefetchedSignedExchangeCache();
+
+  // Returns PrefetchedSignedExchangeInfo of entries in |exchanges_| which are
+  // not expired and which outer URL's origin is same as the origin of
+  // |outer_url|. Note that this method erases expired entries in |exchanges_|.
   std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(
       const GURL& outer_url,
-      const GURL& inner_url) const;
+      const GURL& inner_url,
+      const base::Time& now);
 
   EntryMap exchanges_;
 

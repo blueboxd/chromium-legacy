@@ -14,9 +14,9 @@
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "ios/web/common/referrer_util.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state/navigation_context.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

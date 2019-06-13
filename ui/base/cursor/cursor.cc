@@ -71,8 +71,6 @@ bool Cursor::operator==(const Cursor& cursor) const {
          device_scale_factor_ == cursor.device_scale_factor_ &&
          custom_hotspot_ == cursor.custom_hotspot_ &&
          (native_type_ != CursorType::kCustom ||
-          custom_bitmap_.getGenerationID() ==
-              cursor.custom_bitmap_.getGenerationID() ||
           gfx::BitmapsAreEqual(custom_bitmap_, cursor.custom_bitmap_));
 }
 

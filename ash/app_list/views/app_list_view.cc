@@ -1898,12 +1898,16 @@ void AppListView::OnBoundsAnimationCompleted() {
   const bool was_animation_interrupted =
       GetRemainingBoundsAnimationDistance() != 0;
 
-  // Close embedded Assistant UI if it is open, to reset the
-  // |assistant_page_view| bounds and AppListState.
   if (app_list_state_ == ash::AppListViewState::kClosed) {
+    // Close embedded Assistant UI if it is open, to reset the
+    // |assistant_page_view| bounds and AppListState.
     auto* contents_view = app_list_main_view()->contents_view();
     if (contents_view->IsShowingEmbeddedAssistantUI())
       contents_view->ShowEmbeddedAssistantUI(false);
+
+    // Reset the search box to be shown again. This is done after the animation
+    // is complete in order to minimize work during the animation.
+    search_box_view_->SetSearchBoxActive(false /*active*/, ui::ET_LAST);
   }
 
   // Layout if the animation was completed.
@@ -2124,7 +2128,13 @@ void AppListView::UpdateAppListBackgroundYPosition() {
       transform.Translate(
           0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
     }
-  } else if (is_fullscreen()) {
+  } else if (is_fullscreen() ||
+             (app_list_state_ == ash::AppListViewState::kHalf &&
+              GetBoundsInScreen().y() == 0)) {
+    // AppListView::Layout may be called after OnWindowBoundsChanged. It may
+    // reset the transform of |app_list_background_shield_|. So hide the rounded
+    // corners when AppListView is in Half state and its bottom is on the
+    // display edge.
     transform.Translate(0, -kAppListBackgroundRadius);
   }
   app_list_background_shield_->SetTransform(transform);

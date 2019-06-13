@@ -894,9 +894,28 @@ def main(args):
       rjava_build_options.ExportAllResources()
       rjava_build_options.GenerateOnResourcesLoaded()
 
+    custom_root_package_name = None
+    grandparent_custom_package_name = None
+
+    if options.arsc_package_name:
+      # This is for test apks with an apk under test. If we have an apk under
+      # test we don't want to name the resources for both the test apk and the
+      # under test apk "base". This special case lets us name the test apk's
+      # resources "test".
+      custom_root_package_name = 'test'
+    elif options.package_name:
+      # If there exists a custom package name such as vr for a feature module,
+      # pass the name and base for the parent_custom_root_package_name.
+      custom_root_package_name = options.package_name
+      grandparent_custom_package_name = 'base'
+    else:
+      # No grandparent_custom_package_name for base module
+      custom_root_package_name = 'base'
+
     resource_utils.CreateRJavaFiles(
         build.srcjar_dir, None, build.r_txt_path, options.extra_res_packages,
-        options.extra_r_text_files, rjava_build_options, options.srcjar_out)
+        options.extra_r_text_files, rjava_build_options, options.srcjar_out,
+        custom_root_package_name, grandparent_custom_package_name)
 
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 

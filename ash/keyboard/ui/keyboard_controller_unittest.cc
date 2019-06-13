@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "ash/keyboard/ui/container_full_width_behavior.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/keyboard/ui/test/test_keyboard_layout_delegate.h"
 #include "ash/keyboard/ui/test/test_keyboard_ui_factory.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -139,7 +139,7 @@ class SetModeCallbackInvocationCounter {
 }  // namespace
 
 class KeyboardControllerTest : public aura::test::AuraTestBase,
-                               public KeyboardControllerObserver {
+                               public ash::KeyboardControllerObserver {
  public:
   KeyboardControllerTest() = default;
   ~KeyboardControllerTest() override = default;
@@ -191,12 +191,11 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     visible_bounds_ = new_bounds;
     visible_bounds_number_of_calls_++;
   }
-  void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& new_bounds) override {
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override {
     occluding_bounds_ = new_bounds;
     occluding_bounds_number_of_calls_++;
   }
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override {
+  void OnKeyboardVisibilityChanged(bool is_visible) override {
     is_visible_ = is_visible;
     is_visible_number_of_calls_++;
   }
@@ -740,7 +739,7 @@ TEST_F(KeyboardControllerTest, DontClearObserverList) {
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
-class MockKeyboardControllerObserver : public KeyboardControllerObserver {
+class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
  public:
   MockKeyboardControllerObserver() = default;
   ~MockKeyboardControllerObserver() override = default;

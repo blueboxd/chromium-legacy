@@ -70,7 +70,7 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
   bool UpdateBoundingBox();
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_parent,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 

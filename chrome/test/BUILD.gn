@@ -469,7 +469,6 @@ if (is_android) {
       ":test_support_ui_android",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
-      "//chrome/android:chrome_java",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
       # the ChromeBrowserTestsActivity is using to build the java UI. It's
@@ -513,24 +512,23 @@ if (is_android) {
 
   android_assets("android_browsertests_assets") {
     testonly = true
+    disable_compression = true
     sources = []
     deps = []
 
     # These are grit() rules so they are in $root_gen_dir.
-    deps += [
-      "//chrome/android:chrome_apk_paks",
-      "//components/resources",
-    ]
-    sources += [
-      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
-      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
-      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
-      "$root_gen_dir/components/components_resources.pak",
-    ]
+    deps += [ "//components/resources" ]
+    sources += [ "$root_gen_dir/components/components_resources.pak" ]
 
     # These are repack() rules so they are in $root_out_dir.
     deps += [ "//chrome:browser_tests_pak" ]
     sources += [ "$root_out_dir/browser_tests.pak" ]
+
+    # These are assets rules so we can just depend on them.
+    deps += [
+      "//chrome/android:chrome_apk_pak_assets",
+      "//third_party/icu:icu_assets",
+    ]
 
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
@@ -542,10 +540,10 @@ if (is_android) {
   android_library("android_browsertests_java") {
     testonly = true
     deps = [
-      ":android_browsertests_java_resources",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//chrome/android:chrome_java",
+      "//chrome/android:chrome_all_java",
+      "//content/public/android:content_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
@@ -554,12 +552,6 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
-  }
-
-  android_resources("android_browsertests_java_resources") {
-    testonly = true
-    resource_dirs = [ "//chrome/test/android/browsertests_apk/res" ]
-    custom_package = "org.chromium.android_browsertests_apk"
   }
 
   jinja_template("android_browsertests_manifest") {
@@ -682,6 +674,7 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
+      "//chrome/browser/resources/media/mei_preload:component",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
@@ -1345,7 +1338,7 @@ if (!is_android) {
         "//services/preferences/public/cpp",
         "//services/preferences/public/mojom",
         "//services/service_manager/public/cpp",
-        "//services/ws/public/cpp/input_devices:test_support",
+        "//ui/events/devices:test_support",
         "//url",
       ]
     }
@@ -2126,7 +2119,6 @@ if (!is_android) {
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
-        "../browser/extensions/api/settings_private/settings_private_browsertest_chromeos.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/extensions/chromeos_component_extensions_browsertest.cc",
         "../browser/notifications/notification_platform_bridge_chromeos_browsertest.cc",
@@ -2496,10 +2488,6 @@ if (!is_android) {
 
     if (is_chromeos || (is_linux && use_dbus)) {
       sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
-    }
-
-    if (!is_mac) {
-      data_deps += [ "//chrome/browser/resources/media/mei_preload:component" ]
     }
 
     if (toolkit_views && !is_chromeos) {
@@ -3932,7 +3920,7 @@ test("unit_tests") {
   }
 
   if (use_x11 || use_ozone) {
-    deps += [ "//services/ws/public/cpp/input_devices:test_support" ]
+    deps += [ "//ui/events/devices:test_support" ]
   }
 
   if (enable_background_contents) {

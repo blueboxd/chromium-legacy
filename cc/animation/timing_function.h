@@ -120,6 +120,21 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
   StepPosition step_position_;
 };
 
+class CC_ANIMATION_EXPORT LinearTimingFunction : public TimingFunction {
+ public:
+  static std::unique_ptr<LinearTimingFunction> Create();
+  ~LinearTimingFunction() override;
+
+  // TimingFunction implementation.
+  Type GetType() const override;
+  double GetValue(double t) const override;
+  std::unique_ptr<TimingFunction> Clone() const override;
+  double Velocity(double time) const override;
+
+ private:
+  LinearTimingFunction();
+};
+
 }  // namespace cc
 
 #endif  // CC_ANIMATION_TIMING_FUNCTION_H_

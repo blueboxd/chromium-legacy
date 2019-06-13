@@ -388,7 +388,7 @@ const HRESULT kInvalidResult = 0x12345678;
 TEST_F(TSFTextStoreTest, GetStatusTest) {
   TS_STATUS status = {};
   EXPECT_EQ(S_OK, text_store_->GetStatus(&status));
-  EXPECT_EQ(0u, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
   EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
             status.dwStaticFlags);
 }

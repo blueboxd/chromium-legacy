@@ -28,7 +28,7 @@ Polymer({
   },
 
   /** @private */
-  onMenuButtonTap_: function() {
+  onMenuButtonClick_: function() {
     this.$.drawer.toggle();
   },
 

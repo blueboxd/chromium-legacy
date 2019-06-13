@@ -23,7 +23,8 @@ See general Android instructions for:
 
 * [System
   requirements](/docs/android_build_instructions.md#System-requirements)
-* [Installing `depot_tools`](/docs/android_build_instructions.md#install)
+* [Installing
+  `depot_tools`](/docs/android_build_instructions.md#Install-depot_tools)
 * [Getting the code](/docs/android_build_instructions.md#Get-the-code) **or**
   [converting a Linux
   checkout](/docs/android_build_instructions.md#Converting-an-existing-Linux-checkout)

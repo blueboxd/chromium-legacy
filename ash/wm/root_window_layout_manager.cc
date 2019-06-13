@@ -9,33 +9,6 @@
 
 namespace ash {
 
-namespace {
-
-// Resize all container windows that RootWindowLayoutManager is responsible for.
-// That includes all container windows up to depth four except the top level
-// windows which have a delegate. We cannot simply check top level windows,
-// because we need to skip other windows without a delegate, such as
-// ScreenDimmer windows.
-// TODO(wutao): The above logic is error prone. Consider using a Shell window id
-// to indentify such a container.
-void ResizeWindow(const aura::Window::Windows& children,
-                  const gfx::Rect& fullscreen_bounds,
-                  int depth) {
-  if (depth > 3)
-    return;
-  const int child_depth = depth + 1;
-  aura::WindowTracker children_tracker(children);
-  while (!children_tracker.windows().empty()) {
-    aura::Window* child = children_tracker.Pop();
-    if (child->GetToplevelWindow())
-      continue;
-    child->SetBounds(fullscreen_bounds);
-    ResizeWindow(child->children(), fullscreen_bounds, child_depth);
-  }
-}
-
-}  // namespace
-
 namespace wm {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +23,9 @@ RootWindowLayoutManager::~RootWindowLayoutManager() = default;
 // RootWindowLayoutManager, aura::LayoutManager implementation:
 
 void RootWindowLayoutManager::OnWindowResized() {
-  ResizeWindow(owner_->children(), gfx::Rect(owner_->bounds().size()), 0);
+  gfx::Rect bounds(owner_->bounds().size());
+  for (auto* container : containers_)
+    container->SetBounds(bounds);
 }
 
 void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}
@@ -68,6 +43,11 @@ void RootWindowLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
+}
+
+void RootWindowLayoutManager::AddContainer(aura::Window* window) {
+  DCHECK(!window->GetToplevelWindow());
+  containers_.push_back(window);
 }
 
 }  // namespace wm

@@ -957,12 +957,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PhysicalOffset* offset_from_root = nullptr,
       const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
 
-  PhysicalOffset LayoutBoxPhysicalLocation() const {
-    return GetLayoutObject().IsBox()
-               ? ToLayoutBox(GetLayoutObject()).PhysicalLocation()
-               : PhysicalOffset();
-  }
-
   enum TransparencyClipBoxBehavior {
     kPaintingTransparencyClipBox,
     kHitTestingTransparencyClipBox

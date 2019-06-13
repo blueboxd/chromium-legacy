@@ -306,6 +306,10 @@ ArcAccessibilityInfoData* AXTreeSourceArc::GetParent(
   return nullptr;
 }
 
+bool AXTreeSourceArc::IsIgnored(ArcAccessibilityInfoData* info_data) const {
+  return false;
+}
+
 bool AXTreeSourceArc::IsValid(ArcAccessibilityInfoData* info_data) const {
   return info_data;
 }

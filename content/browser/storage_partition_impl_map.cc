@@ -409,22 +409,12 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
     // These calls must happen after StoragePartitionImpl::Create().
-    if (partition_domain.empty()) {
-      partition->SetURLRequestContext(browser_context_->CreateRequestContext(
-          &protocol_handlers, std::move(request_interceptors)));
-    } else {
-      partition->SetURLRequestContext(
-          browser_context_->CreateRequestContextForStoragePartition(
-              partition->GetPath(), in_memory, &protocol_handlers,
-              std::move(request_interceptors)));
-    }
+    partition->SetURLRequestContext(browser_context_->CreateRequestContext(
+        &protocol_handlers, std::move(request_interceptors)));
 
     // A separate media cache isn't used with the network service.
     partition->SetMediaURLRequestContext(
-        partition_domain.empty()
-            ? browser_context_->CreateMediaRequestContext()
-            : browser_context_->CreateMediaRequestContextForStoragePartition(
-                  partition->GetPath(), in_memory));
+        browser_context_->CreateMediaRequestContext());
 
     // This needs to happen after SetURLRequestContext() since we need this
     // code path only for non-NetworkService cases where NetworkContext needs to

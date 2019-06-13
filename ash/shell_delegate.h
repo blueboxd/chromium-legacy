@@ -16,10 +16,6 @@ namespace aura {
 class Window;
 }
 
-namespace ws {
-class InputDeviceControllerClient;
-}
-
 namespace ash {
 
 class AccessibilityDelegate;
@@ -42,9 +38,6 @@ class ASH_EXPORT ShellDelegate {
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
-
-  // Creator of Shell owns this; it's assumed this outlives Shell.
-  virtual ws::InputDeviceControllerClient* GetInputDeviceControllerClient() = 0;
 };
 
 }  // namespace ash

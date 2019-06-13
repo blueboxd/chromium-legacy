@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/primary_account_policy_manager.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -22,15 +19,12 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/device_id_helper.h"
+#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/cookies/cookie_monster.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -93,7 +87,7 @@ class PrimaryAccountManagerTest : public testing::Test {
   PrefService* prefs() { return &user_prefs_; }
 
   // Seed the account tracker with information from logged in user.  Normally
-  // this is done by UI code before calling PrimaryAccountPolicyManager.
+  // this is done by UI code before calling PrimaryAccountManager.
   // Returns the string to use as the account_id.
   std::string AddToAccountTracker(const std::string& gaia_id,
                                   const std::string& email) {
@@ -105,9 +99,12 @@ class PrimaryAccountManagerTest : public testing::Test {
   // needed.
   void CreatePrimaryAccountManager() {
     DCHECK(!manager_);
-    manager_ = std::make_unique<PrimaryAccountPolicyManager>(
+    auto policy_manager =
+        std::make_unique<PrimaryAccountPolicyManagerImpl>(&test_signin_client_);
+    policy_manager_ = policy_manager.get();
+    manager_ = std::make_unique<PrimaryAccountManager>(
         &test_signin_client_, &token_service_, &account_tracker_,
-        account_consistency_);
+        account_consistency_, std::move(policy_manager));
     manager_->Initialize(&local_state_);
     manager_->SetObserver(&test_observer_);
   }
@@ -138,7 +135,8 @@ class PrimaryAccountManagerTest : public testing::Test {
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   AccountFetcherService account_fetcher_;
-  std::unique_ptr<PrimaryAccountPolicyManager> manager_;
+  PrimaryAccountPolicyManagerImpl* policy_manager_;
+  std::unique_ptr<PrimaryAccountManager> manager_;
   TestPrimaryAccountManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;
   std::vector<std::string> cookies_;
@@ -257,11 +255,11 @@ TEST_F(PrimaryAccountManagerTest, Prohibited) {
   local_state_.SetString(prefs::kGoogleServicesUsernamePattern,
                          ".*@google.com");
   CreatePrimaryAccountManager();
-  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
-  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
+  EXPECT_TRUE(policy_manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(policy_manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername(std::string()));
 }
 
 TEST_F(PrimaryAccountManagerTest, TestAlternateWildcard) {
@@ -269,11 +267,11 @@ TEST_F(PrimaryAccountManagerTest, TestAlternateWildcard) {
   // the admin entered ".*@google.com").
   local_state_.SetString(prefs::kGoogleServicesUsernamePattern, "*@google.com");
   CreatePrimaryAccountManager();
-  EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
-  EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername("test@notgoogle.com"));
-  EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
+  EXPECT_TRUE(policy_manager_->IsAllowedUsername("test@google.com"));
+  EXPECT_TRUE(policy_manager_->IsAllowedUsername("happy@google.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@invalid.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername("test@notgoogle.com"));
+  EXPECT_FALSE(policy_manager_->IsAllowedUsername(std::string()));
 }
 
 TEST_F(PrimaryAccountManagerTest, ProhibitedAtStartup) {

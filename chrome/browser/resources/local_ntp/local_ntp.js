@@ -671,7 +671,7 @@ function reloadTiles() {
   const maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
                                                 MAX_NUM_TILES_MOST_VISITED;
   for (let i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
-    cmds.push({cmd: 'tile', rid: pages[i].rid, darkMode: useDarkChips});
+    cmds.push({cmd: 'tile', rid: pages[i].rid});
   }
   cmds.push({cmd: 'show'});
 
@@ -734,6 +734,9 @@ function onDeleteCustomLinkDone(success) {
  */
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
+  $(IDS.RESTORE_ALL_LINK).textContent = customLinksEnabled() ?
+      configData.translatedStrings.restoreDefaultLinks :
+      configData.translatedStrings.restoreThumbnailsShort;
   floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   $(IDS.UNDO_LINK).focus();
 }
@@ -884,6 +887,16 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
 
 
 /**
+ * Return true if custom links are enabled.
+ * @return {boolean}
+ */
+function customLinksEnabled() {
+  return configData.isGooglePage &&
+      !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
+}
+
+
+/**
  * Handles a click on the notification undo link by hiding the notification and
  * informing Chrome.
  */
@@ -891,7 +904,7 @@ function onUndo() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isGooglePage) {
+  if (customLinksEnabled()) {
     ntpApiHandle.undoCustomLinkAction();
   } else if (lastBlacklistedTile != null) {
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedTile);
@@ -907,7 +920,7 @@ function onRestoreAll() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isGooglePage) {
+  if (customLinksEnabled()) {
     ntpApiHandle.resetCustomLinks();
   } else {
     ntpApiHandle.undoAllMostVisitedDeletions();
@@ -1011,7 +1024,7 @@ function handlePostMessage(event) {
       if ($(IDS.PROMO)) {
         $(IDS.PROMO).classList.add(CLASSES.SHOW_ELEMENT);
       }
-      if (!configData.hideShortcuts) {
+      if (customLinksEnabled() && !configData.hideShortcuts) {
         $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
             .classList.toggle(
                 customize.CLASSES.OPTION_DISABLED, !args.showRestoreDefault);
@@ -1021,7 +1034,7 @@ function handlePostMessage(event) {
       $(IDS.OGB).classList.add(CLASSES.SHOW_ELEMENT);
     }
   } else if (cmd === 'tileBlacklisted') {
-    if (configData.isGooglePage) {
+    if (customLinksEnabled()) {
       showNotification(configData.translatedStrings.linkRemovedMsg);
     } else {
       showNotification(
@@ -1120,10 +1133,6 @@ function init() {
   restoreAllLink.addEventListener('click', onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
-  restoreAllLink.textContent =
-      (configData.isGooglePage ?
-           configData.translatedStrings.restoreDefaultLinks :
-           configData.translatedStrings.restoreThumbnailsShort);
 
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;

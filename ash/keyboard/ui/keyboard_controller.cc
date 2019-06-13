@@ -9,7 +9,6 @@
 #include "ash/keyboard/ui/container_floating_behavior.h"
 #include "ash/keyboard/ui/container_full_width_behavior.h"
 #include "ash/keyboard/ui/display_util.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/keyboard/ui/keyboard_layout_manager.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
@@ -18,6 +17,7 @@
 #include "ash/keyboard/ui/queued_container_type.h"
 #include "ash/keyboard/ui/queued_display_change.h"
 #include "ash/keyboard/ui/shaped_window_targeter.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -203,8 +203,7 @@ void KeyboardController::Initialize(
 
 void KeyboardController::Shutdown() {
   keyboard_enable_flags_.clear();
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+  EnableFlagsChanged();
 
   DCHECK(!IsKeyboardEnableRequested());
   DisableKeyboard();
@@ -234,7 +233,7 @@ void KeyboardController::EnableKeyboard() {
   LoadKeyboardWindowInBackground();
 
   // Notify observers after the keyboard window has a root window.
-  for (KeyboardControllerObserver& observer : observer_list_)
+  for (auto& observer : observer_list_)
     observer.OnKeyboardEnabledChanged(true);
 }
 
@@ -266,7 +265,7 @@ void KeyboardController::DisableKeyboard() {
   ui_.reset();
 
   // Notify observers after |ui_| is reset so that IsEnabled() is false.
-  for (KeyboardControllerObserver& observer : observer_list_)
+  for (auto& observer : observer_list_)
     observer.OnKeyboardEnabledChanged(false);
 }
 
@@ -392,16 +391,18 @@ void KeyboardController::RebuildKeyboardIfEnabled() {
   EnableKeyboard();
 }
 
-void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
+void KeyboardController::AddObserver(
+    ash::KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
 bool KeyboardController::HasObserver(
-    KeyboardControllerObserver* observer) const {
+    ash::KeyboardControllerObserver* observer) const {
   return observer_list_.HasObserver(observer);
 }
 
-void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
+void KeyboardController::RemoveObserver(
+    ash::KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -435,8 +436,8 @@ void KeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
     default:
       break;
   }
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+
+  EnableFlagsChanged();
 
   UpdateKeyboardAsRequestedBy(flag);
 }
@@ -446,8 +447,7 @@ void KeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
     return;
 
   keyboard_enable_flags_.erase(flag);
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+  EnableFlagsChanged();
 
   UpdateKeyboardAsRequestedBy(flag);
 }
@@ -589,7 +589,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
       ui_->HideKeyboardWindow();
       ChangeState(KeyboardUIState::kHidden);
 
-      for (KeyboardControllerObserver& observer : observer_list_)
+      for (auto& observer : observer_list_)
         observer.OnKeyboardHidden(reason == HIDE_REASON_SYSTEM_TEMPORARY);
 
       break;
@@ -915,8 +915,8 @@ bool KeyboardController::WillHideKeyboard() const {
 }
 
 void KeyboardController::NotifyKeyboardConfigChanged() {
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardConfigChanged();
+  for (auto& observer : observer_list_)
+    observer.OnKeyboardConfigChanged(keyboard_config_);
 }
 
 void KeyboardController::ChangeState(KeyboardUIState state) {
@@ -1120,6 +1120,11 @@ void KeyboardController::MarkKeyboardLoadFinished() {
   UMA_HISTOGRAM_TIMES("VirtualKeyboard.InitLatency.FirstLoad",
                       base::Time::Now() - keyboard_load_time_start_);
   keyboard_load_time_logged_ = true;
+}
+
+void KeyboardController::EnableFlagsChanged() {
+  for (auto& observer : observer_list_)
+    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 }
 
 }  // namespace keyboard

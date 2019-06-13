@@ -26,7 +26,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
       gfx::BufferFormat::BGRX_1010102, gfx::BufferFormat::RGBX_1010102,
       gfx::BufferFormat::BGRA_8888,    gfx::BufferFormat::RGBA_F16,
       gfx::BufferFormat::YVU_420,      gfx::BufferFormat::YUV_420_BIPLANAR,
-      gfx::BufferFormat::UYVY_422};
+      gfx::BufferFormat::UYVY_422,     gfx::BufferFormat::P010};
 
   const gfx::BufferUsage kUsages[] = {
       gfx::BufferUsage::GPU_READ,

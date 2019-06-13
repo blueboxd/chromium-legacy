@@ -331,7 +331,6 @@ const AcceleratorAction kActionsNeedingWindow[] = {
     WINDOW_CYCLE_SNAP_LEFT,
     WINDOW_CYCLE_SNAP_RIGHT,
     WINDOW_MINIMIZE,
-    WINDOW_POSITION_CENTER,
 };
 
 const size_t kActionsNeedingWindowLength = base::size(kActionsNeedingWindow);

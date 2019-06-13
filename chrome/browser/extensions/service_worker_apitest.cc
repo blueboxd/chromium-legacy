@@ -57,6 +57,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker_task_queue.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/common/verifier_formats.h"
@@ -1681,6 +1682,35 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   }
 
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UninstallSelf) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker": "script.js"}
+         })";
+
+  // This script uninstalls itself.
+  constexpr char kScript[] =
+      "chrome.management.uninstallSelf({showConfirmDialog: false});";
+
+  TestExtensionDir test_dir;
+
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+
+  // Consruct this before loading the extension, since the extension will
+  // immediately uninstall itself when it loads.
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+
+  base::FilePath path = test_dir.Pack();
+  scoped_refptr<const Extension> extension = LoadExtension(path);
+
+  EXPECT_EQ(extension, observer.WaitForExtensionUninstalled());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,

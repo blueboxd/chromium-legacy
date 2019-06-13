@@ -104,8 +104,8 @@ class TestJSONTraceExporter : public JSONTraceExporter {
   std::vector<perfetto::protos::TraceStats> stats;
 
  protected:
-  void ProcessPackets(
-      const std::vector<perfetto::TracePacket>& packets) override {
+  void ProcessPackets(const std::vector<perfetto::TracePacket>& packets,
+                      bool has_more) override {
     ++process_packets_calls_;
     DCHECK(packets.size() == infos_.size())
         << " different sizes of packets versus expected behaviour test set up "

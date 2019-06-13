@@ -38,27 +38,6 @@ using content::BrowserThread;
 
 namespace {
 
-void AssertInterceptedIO(
-    const GURL& url,
-    net::URLRequestJobFactory* interceptor) {
-  net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<net::URLRequestJob> job(
-      interceptor->MaybeCreateJobWithProtocolHandler(
-          url.scheme(), request.get(), context.network_delegate()));
-  ASSERT_TRUE(job.get());
-}
-
-void AssertIntercepted(
-    const GURL& url,
-    net::URLRequestJobFactory* interceptor) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(AssertInterceptedIO, url, base::Unretained(interceptor)));
-  base::RunLoop().RunUntilIdle();
-}
-
 // FakeURLRequestJobFactory returns NULL for all job creation requests and false
 // for all IsHandledProtocol() requests. FakeURLRequestJobFactory can be chained
 // to ProtocolHandlerRegistry::JobInterceptorFactory so the result of
@@ -93,26 +72,6 @@ class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
     return true;
   }
 };
-
-void AssertWillHandleIO(
-    const std::string& scheme,
-    bool expected,
-    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>(
-      new FakeURLRequestJobFactory()));
-  ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
-  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>());
-}
-
-void AssertWillHandle(
-    const std::string& scheme,
-    bool expected,
-    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(AssertWillHandleIO, scheme, expected,
-                                          base::Unretained(interceptor)));
-  base::RunLoop().RunUntilIdle();
-}
 
 std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
     const std::string& protocol,
@@ -767,27 +726,6 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("dont").size());
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  GURL url("mailto:someone@something.com");
-
-  std::unique_ptr<net::URLRequestJobFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertIntercepted(url, interceptor.get());
-}
-
-TEST_F(ProtocolHandlerRegistryTest,
-       TestIsHandledProtocolWorksOnIOThread) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(scheme, true, interceptor.get());
-}
-
 TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("mailto", "test2");
@@ -822,29 +760,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultDoesntChangeHandlers) {
 
   ASSERT_EQ(ph2, handlers[0]);
   ASSERT_EQ(ph1, handlers[1]);
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  registry()->ClearDefault(scheme);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(scheme, false, interceptor.get());
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
-  std::string mailto("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(mailto, true, interceptor.get());
-  registry()->Disable();
-  AssertWillHandle(mailto, false, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {

@@ -427,7 +427,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                               const HitTestLocation&,
                               const PhysicalOffset& adjusted_location) override;
   bool HitTestChildren(HitTestResult&,
-                       const HitTestLocation& location_in_container,
+                       const HitTestLocation&,
                        const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
@@ -500,7 +500,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool TryLayoutDoingPositionedMovementOnly();
 
   bool IsPointInOverflowControl(HitTestResult&,
-                                const PhysicalOffset& location_in_container,
+                                const PhysicalOffset&,
                                 const PhysicalOffset& accumulated_offset) const;
 
   void ComputeBlockPreferredLogicalWidths(LayoutUnit& min_logical_width,

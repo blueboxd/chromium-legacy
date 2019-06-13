@@ -29,9 +29,6 @@ class GeneratedPrefsFactory : public BrowserContextKeyedServiceFactory {
   ~GeneratedPrefsFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation.
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
-  bool ServiceIsNULLWhileTesting() const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 

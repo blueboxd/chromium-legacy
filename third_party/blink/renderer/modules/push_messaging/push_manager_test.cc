@@ -106,9 +106,8 @@ TEST(PushManagerTest, InvalidBase64SenderKey) {
   PushSubscriptionOptionsInit* options =
       MakeGarbageCollected<PushSubscriptionOptionsInit>();
   options->setApplicationServerKey(
-      ArrayBufferOrArrayBufferViewOrString::FromString(WTF::Base64Encode(
-          reinterpret_cast<const char*>(kApplicationServerKey),
-          kApplicationServerKeyLength)));
+      ArrayBufferOrArrayBufferViewOrString::FromString(
+          Base64Encode(kApplicationServerKey)));
 
   DummyExceptionStateForTesting exception_state;
   PushSubscriptionOptions* output =

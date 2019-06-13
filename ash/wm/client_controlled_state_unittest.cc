@@ -565,5 +565,20 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplayOutOfBounds) {
   EXPECT_EQ(gfx::Rect(475, 0, 100, 200), delegate()->requested_bounds());
 }
 
+TEST_F(ClientControlledStateTest, HandleBoundsEventsUpdatesPipRestoreBounds) {
+  state()->EnterNextState(window_state(), ash::WindowStateType::kPip);
+
+  EXPECT_TRUE(window_state()->IsPip());
+
+  state()->set_bounds_locally(true);
+  wm::SetBoundsEvent event(gfx::Rect(0, 0, 50, 50));
+  window_state()->OnWMEvent(&event);
+  state()->set_bounds_locally(false);
+
+  EXPECT_TRUE(window_state()->HasRestoreBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
+            window_state()->GetRestoreBoundsInParent());
+}
+
 }  // namespace wm
 }  // namespace ash

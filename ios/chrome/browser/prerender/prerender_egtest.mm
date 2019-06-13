@@ -54,7 +54,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testTapPrerenderSuggestions {
   // TODO(crbug.com/793306): Re-enable the test on iPad once the alternate
   // letters problem is fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(
         @"Disabled for iPad due to alternate letters educational screen.");
   }

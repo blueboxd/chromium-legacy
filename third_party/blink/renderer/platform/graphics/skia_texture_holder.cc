@@ -33,15 +33,11 @@ SkiaTextureHolder::SkiaTextureHolder(
       image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
-    std::unique_ptr<TextureHolder> texture_holder)
+    const MailboxTextureHolder* mailbox_texture_holder)
     : TextureHolder(SharedGpuContext::ContextProviderWrapper(),
-                    texture_holder->IsOriginTopLeft()) {
-  DCHECK(texture_holder->IsMailboxTextureHolder());
-  const gpu::Mailbox mailbox = texture_holder->GetMailbox();
-  const gpu::SyncToken sync_token = texture_holder->GetSyncToken();
-
-  auto* mailbox_texture_holder =
-      static_cast<MailboxTextureHolder*>(texture_holder.get());
+                    mailbox_texture_holder->IsOriginTopLeft()) {
+  const gpu::Mailbox mailbox = mailbox_texture_holder->GetMailbox();
+  const gpu::SyncToken sync_token = mailbox_texture_holder->GetSyncToken();
   const auto& sk_image_info = mailbox_texture_holder->sk_image_info();
   GLenum texture_target = mailbox_texture_holder->texture_target();
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -75,4 +76,8 @@ bool TabSharingInfoBarDelegate::Cancel() {
 
 bool TabSharingInfoBarDelegate::IsCloseable() const {
   return false;
+}
+
+const gfx::VectorIcon& TabSharingInfoBarDelegate::GetVectorIcon() const {
+  return vector_icons::kScreenShareIcon;
 }

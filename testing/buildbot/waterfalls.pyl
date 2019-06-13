@@ -1272,12 +1272,6 @@
           'all',
         ],
       },
-      'Chromium Mac 10.13': {
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
-      },
       'Jumbo Linux x64': {
         'additional_compile_targets': [
           'all',
@@ -1829,6 +1823,14 @@
           'isolated_scripts': 'chromium_code_coverage_isolated_scripts_and_fuzzers',
         }
       },
+      'linux-fieldtrial-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fieldtrial_browser_tests',
+        },
+      },
       'linux-tcmalloc-rel': {
         'mixins': [
           'linux-trusty',
@@ -1857,7 +1859,7 @@
             'mac_10.14_beta',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },

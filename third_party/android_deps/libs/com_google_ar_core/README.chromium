@@ -10,4 +10,4 @@ Description:
 
 
 Local Modifications:
-No modifications.
+Updated some proguard flags. The same proguard flag changes have been submitted to AR core directly and should be in any version >=1.11.

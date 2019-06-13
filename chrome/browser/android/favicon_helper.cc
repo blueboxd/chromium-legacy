@@ -80,17 +80,14 @@ void OnEnsureIconIsAvailableFinished(
       env, j_availability_callback, newly_available);
 }
 
-sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
-  sync_sessions::SessionSyncService* session_sync_service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(session_sync_service);
-  return session_sync_service->GetOpenTabsUIDelegate();
-}
-
 scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
     Profile* profile,
     const GURL& page_url) {
-  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  DCHECK(session_sync_service);
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
                    : nullptr;
 }
@@ -173,7 +170,11 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
 
   GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
 
-  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  DCHECK(session_sync_service);
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      session_sync_service->GetOpenTabsUIDelegate();
   // TODO(victorvianna): Consider passing icon types to the API.
   favicon_request_handler_.GetRawFaviconForPageURL(
       page_url, static_cast<int>(j_desired_size_in_pixel),

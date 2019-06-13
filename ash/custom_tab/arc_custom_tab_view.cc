@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/shell.h"
-#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -21,21 +19,6 @@
 namespace ash {
 
 namespace {
-
-// Tries to find the specified ARC window recursively.
-aura::Window* FindArcWindow(const aura::Window::Windows& windows,
-                            const std::string& arc_app_id) {
-  for (aura::Window* window : windows) {
-    const std::string* id = exo::GetShellApplicationId(window);
-    if (id && *id == arc_app_id)
-      return window;
-
-    aura::Window* result = FindArcWindow(window->children(), arc_app_id);
-    if (result)
-      return result;
-  }
-  return nullptr;
-}
 
 // Enumerates surfaces under the window.
 void EnumerateSurfaces(aura::Window* window, std::vector<exo::Surface*>* out) {
@@ -52,17 +35,9 @@ ArcCustomTab::ArcCustomTab() = default;
 ArcCustomTab::~ArcCustomTab() = default;
 
 // static
-std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(int32_t task_id,
+std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(aura::Window* arc_app_window,
                                                    int32_t surface_id,
                                                    int32_t top_margin) {
-  const std::string arc_app_id =
-      base::StringPrintf("org.chromium.arc.%d", task_id);
-  aura::Window* arc_app_window =
-      FindArcWindow(ash::Shell::Get()->GetAllRootWindows(), arc_app_id);
-  if (!arc_app_window) {
-    LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
-    return nullptr;
-  }
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(arc_app_window);
   if (!widget) {

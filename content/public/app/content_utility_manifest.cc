@@ -24,7 +24,6 @@ const service_manager::Manifest& GetContentUtilityManifest() {
                                 "content.mojom.ChildHistogramFetcherFactory",
                                 "content.mojom.ResourceUsageReporter",
                                 "IPC.mojom.ChannelBootstrap",
-                                "tracing.mojom.BackgroundTracingAgent",
                                 "printing.mojom.PdfToEmfConverterFactory",
                                 "printing.mojom.PdfToPwgRasterConverter",
                             })

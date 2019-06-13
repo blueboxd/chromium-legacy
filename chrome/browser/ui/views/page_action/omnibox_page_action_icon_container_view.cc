@@ -134,6 +134,13 @@ void OmniboxPageActionIconContainerView::UpdatePageActionIcon(
     icon->Update();
 }
 
+void OmniboxPageActionIconContainerView::ExecutePageActionIconForTesting(
+    PageActionIconType type) {
+  PageActionIconView* icon = GetPageActionIconView(type);
+  if (icon)
+    icon->ExecuteForTesting();
+}
+
 bool OmniboxPageActionIconContainerView::
     ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {

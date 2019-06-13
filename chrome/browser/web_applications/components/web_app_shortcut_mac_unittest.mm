@@ -415,8 +415,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
   EXPECT_EQ(product_logo.Height(), [image size].height);
 }
 
-// Disabled, sometimes crashes on "Mac10.10 tests". https://crbug.com/741642
-TEST_F(WebAppShortcutCreatorTest, DISABLED_RevealAppShimInFinder) {
+TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
   WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(destination_dir_));

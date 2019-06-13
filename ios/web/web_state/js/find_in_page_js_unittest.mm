@@ -430,9 +430,9 @@ TEST_F(FindInPageJsTest, CheckFindInPageScrollsToMatch) {
         web_state()->GetWebViewProxy().scrollViewProxy.contentOffset.y;
     return top_scroll_after_select > 0;
   }));
-  // Scroll offset should be 1035.333333 for iPhoneX and 1035.500000 for every
+  // Scroll offset should be 1032.6667 for iPhoneX and 1033 for every
   // other device.
-  EXPECT_NEAR(top_scroll_after_select, 1035.0, 0.5);
+  EXPECT_NEAR(top_scroll_after_select, 1032.75, 0.5);
 }
 
 // Tests that FindInPage is able to clear CSS and match highlighting.

@@ -19,9 +19,7 @@ CursorInfo::CursorInfo(const blink::WebCursorInfo& info)
 bool CursorInfo::operator==(const CursorInfo& other) const {
   return type == other.type && hotspot == other.hotspot &&
          image_scale_factor == other.image_scale_factor &&
-         (custom_image.getGenerationID() ==
-              other.custom_image.getGenerationID() ||
-          gfx::BitmapsAreEqual(custom_image, other.custom_image));
+         gfx::BitmapsAreEqual(custom_image, other.custom_image);
 }
 
 blink::WebCursorInfo CursorInfo::GetWebCursorInfo() const {

@@ -37,7 +37,5 @@ SupervisedUserSettingsServiceFactory::BuildServiceInstanceFor(
 SimpleFactoryKey* SupervisedUserSettingsServiceFactory::GetKeyToUse(
     SimpleFactoryKey* key) const {
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
-  if (profile_key->IsOffTheRecord())
-    return profile_key->GetOriginalKey();
-  return profile_key;
+  return profile_key->GetOriginalKey();
 }

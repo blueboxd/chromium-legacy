@@ -480,7 +480,7 @@ void AssistantUiController::UpdateUiMode(
                    due_to_interaction);
 }
 
-void AssistantUiController::OnKeyboardWorkspaceOccludedBoundsChanged(
+void AssistantUiController::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& new_bounds_in_screen) {
   DCHECK(container_view_);
 
@@ -518,7 +518,7 @@ void AssistantUiController::OnDisplayMetricsChanged(
   // inconsistency between normal virtual keyboard and accessibility keyboard in
   // changing the work area (accessibility keyboard will change the display work
   // area but virtual keyboard won't). Display metrics change with keyboard
-  // showing is instead handled by OnKeyboardWorkspaceOccludedBoundsChanged.
+  // showing is instead handled by OnKeyboardOccludedBoundsChanged.
   if (keyboard_workspace_occluded_bounds_.IsEmpty()) {
     aura::Window* root_window =
         container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();

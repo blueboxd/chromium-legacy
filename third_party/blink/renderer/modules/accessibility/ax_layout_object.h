@@ -81,6 +81,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsDefault() const override;
   bool IsEditable() const override;
   bool IsRichlyEditable() const override;
+  bool IsLineBreakingObject() const override;
   bool IsLinked() const override;
   bool IsLoaded() const override;
   bool IsOffScreen() const override;

@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 // The Life-Cycle of a SQLStatement i.e. Who's keeping the SQLStatement alive?
 // ==========================================================================

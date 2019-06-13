@@ -95,8 +95,7 @@ void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
   UpdateIconVisibility();
 }
 
-void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
-    const bool is_visible) {
+void VirtualKeyboardTray::OnKeyboardVisibilityChanged(const bool is_visible) {
   SetIsActive(is_visible);
 }
 

@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

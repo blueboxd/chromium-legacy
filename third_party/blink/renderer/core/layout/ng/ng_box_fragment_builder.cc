@@ -153,7 +153,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
 }
 
 NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
-    const NGPhysicalFragment& child_fragment) {
+    const NGPhysicalContainerFragment& child_fragment) {
   DCHECK(has_block_fragmentation_);
   if (!did_break_) {
     const auto* token = child_fragment.BreakToken();

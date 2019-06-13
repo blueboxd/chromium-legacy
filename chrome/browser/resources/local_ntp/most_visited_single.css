@@ -46,6 +46,10 @@ a:visited {
   text-decoration: none;
 }
 
+body.hide {
+  display: none;
+}
+
 #most-visited {
   margin-top: 10px;
   text-align: -webkit-center;

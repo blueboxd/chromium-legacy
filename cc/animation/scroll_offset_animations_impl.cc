@@ -34,6 +34,21 @@ ScrollOffsetAnimationsImpl::~ScrollOffsetAnimationsImpl() {
   animation_host_->RemoveAnimationTimeline(scroll_offset_timeline_.get());
 }
 
+void ScrollOffsetAnimationsImpl::AutoScrollAnimationCreate(
+    ElementId element_id,
+    const gfx::ScrollOffset& target_offset,
+    const gfx::ScrollOffset& current_offset,
+    float autoscroll_velocity) {
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve =
+      ScrollOffsetAnimationCurve::Create(
+          target_offset, LinearTimingFunction::Create(),
+          ScrollOffsetAnimationCurve::DurationBehavior::CONSTANT_VELOCITY);
+  curve->SetInitialValue(current_offset, base::TimeDelta(),
+                         autoscroll_velocity);
+  ScrollAnimationCreateInternal(element_id, std::move(curve),
+                                base::TimeDelta());
+}
+
 void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
@@ -42,10 +57,19 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
     base::TimeDelta animation_start_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
       ScrollOffsetAnimationCurve::Create(
-          target_offset, CubicBezierTimingFunction::CreatePreset(
-                             CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
+          target_offset,
+          CubicBezierTimingFunction::CreatePreset(
+              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
           ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
   curve->SetInitialValue(current_offset, delayed_by);
+  ScrollAnimationCreateInternal(element_id, std::move(curve),
+                                animation_start_offset);
+}
+
+void ScrollOffsetAnimationsImpl::ScrollAnimationCreateInternal(
+    ElementId element_id,
+    std::unique_ptr<AnimationCurve> curve,
+    base::TimeDelta animation_start_offset) {
   TRACE_EVENT_INSTANT1("cc", "ScrollAnimationCreate", TRACE_EVENT_SCOPE_THREAD,
                        "Duration", curve->Duration().InMillisecondsF());
 

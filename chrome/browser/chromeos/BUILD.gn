@@ -239,7 +239,6 @@ source_set("chromeos") {
     "//services/preferences/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/cpp/input_devices",
     "//skia",
     "//storage/browser",
     "//storage/common",
@@ -1968,6 +1967,7 @@ source_set("chromeos") {
     "supervision/onboarding_constants.h",
     "supervision/onboarding_controller_impl.cc",
     "supervision/onboarding_controller_impl.h",
+    "supervision/onboarding_delegate.h",
     "supervision/onboarding_flow_model.cc",
     "supervision/onboarding_flow_model.h",
     "supervision/onboarding_logger.cc",
@@ -2836,7 +2836,6 @@ source_set("unit_tests") {
     "//services/device/public/cpp:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/service_manager/public/cpp/test:test_support",
-    "//services/ws/public/cpp/input_devices:test_support",
     "//skia",
     "//storage/browser:test_support",
     "//testing/gmock",
@@ -2850,6 +2849,7 @@ source_set("unit_tests") {
     "//ui/base/ime/init",
     "//ui/chromeos/resources",
     "//ui/display:test_support",
+    "//ui/events/devices:test_support",
     "//ui/shell_dialogs",
   ]
   data = [

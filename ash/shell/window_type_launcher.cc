@@ -156,9 +156,8 @@ views::Widget* NonModalTransient::non_modal_transient_ = nullptr;
 
 template <class T>
 T* AddViewToLayout(views::GridLayout* layout, std::unique_ptr<T> view) {
-  T* result = view.get();
   layout->StartRow(0, 0);
-  layout->AddView(view.release());
+  T* result = layout->AddView(std::move(view));
   layout->AddPaddingRow(0, 5);
   return result;
 }

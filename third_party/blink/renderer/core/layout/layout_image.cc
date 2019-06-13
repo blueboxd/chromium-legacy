@@ -293,12 +293,12 @@ HTMLMapElement* LayoutImage::ImageMap() const {
 }
 
 bool LayoutImage::NodeAtPoint(HitTestResult& result,
-                              const HitTestLocation& location_in_container,
+                              const HitTestLocation& hit_test_location,
                               const PhysicalOffset& accumulated_offset,
                               HitTestAction hit_test_action) {
   HitTestResult temp_result(result);
   bool inside = LayoutReplaced::NodeAtPoint(
-      temp_result, location_in_container, accumulated_offset, hit_test_action);
+      temp_result, hit_test_location, accumulated_offset, hit_test_action);
 
   if (!inside && result.GetHitTestRequest().ListBased())
     result.Append(temp_result);

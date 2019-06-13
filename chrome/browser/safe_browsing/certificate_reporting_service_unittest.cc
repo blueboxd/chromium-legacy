@@ -31,10 +31,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_data_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -444,11 +440,9 @@ class CertificateReportingServiceTest : public ::testing::Test {
   }
 
  private:
-  // Must be initialized before url_request_context_getter_
   content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   std::unique_ptr<CertificateReportingService> service_;
   std::unique_ptr<base::SimpleTestClock> clock_;

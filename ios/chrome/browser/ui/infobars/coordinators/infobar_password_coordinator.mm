@@ -173,11 +173,17 @@
     self.passwordInfoBarDelegate->InfobarDismissed();
 }
 
-- (CGFloat)infobarModalContentHeight {
+- (CGFloat)infobarModalHeight {
   UITableView* tableView = self.modalViewController.tableView;
   [tableView setNeedsLayout];
   [tableView layoutIfNeeded];
-  return tableView.contentSize.height;
+
+  // Since the TableView is contained in a NavigationController get the
+  // navigation bar height.
+  CGFloat navigationBarHeight = self.modalViewController.navigationController
+                                    .navigationBar.frame.size.height;
+
+  return tableView.contentSize.height + navigationBarHeight;
 }
 
 #pragma mark - InfobarPasswordModalDelegate

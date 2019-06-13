@@ -1229,7 +1229,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   // fragmentainer break. In that case the floats associated with this line will
   // already have been processed.
   NGInlineItemResult* item_result = AddItem(item, line_info);
-  ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+  item_result->can_break_after = auto_wrap_;
   MoveToNextOf(item);
 
   // If we are currently computing our min/max-content size simply append to
@@ -1543,6 +1543,8 @@ void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
   // most cases where our support for rewinding positioned floats is not great
   // yet (see below.)
   while (item_results[new_end].item->Type() == NGInlineItem::kFloating) {
+    // We assume floats can break after, or this may cause an infinite loop.
+    DCHECK(item_results[new_end].can_break_after);
     ++new_end;
     if (new_end == item_results.size()) {
       position_ = line_info->ComputeWidth();
@@ -1555,6 +1557,8 @@ void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
   for (unsigned i = item_results.size(); i > new_end;) {
     NGInlineItemResult& rewind = item_results[--i];
     if (rewind.positioned_float) {
+      // We assume floats can break after, or this may cause an infinite loop.
+      DCHECK(rewind.can_break_after);
       // TODO(kojii): We do not have mechanism to remove once positioned floats
       // yet, and that rewinding them may lay it out twice. For now, prohibit
       // rewinding positioned floats. This may results in incorrect layout, but

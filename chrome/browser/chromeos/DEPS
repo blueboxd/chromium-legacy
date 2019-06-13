@@ -19,10 +19,6 @@ include_rules = [
   "+services/network",
   "+services/tracing/public",
   "+services/viz/public/interfaces",
-  # Chromeos should not use ozone directly, it must go through mojo as ozone
-  # does not run in process in mus.
-  "-ui/ozone/public",
-  "+ui/ozone/public/ozone_switches.h",
 
   # keyboard::KeyboardController only exists in ash and should not be accessed
   # directly from src/chrome. Use ChromeKeyboardControllerClient instead.

@@ -195,7 +195,7 @@ void SVGRootInlineBox::ReorderValueLists() {
 }
 
 bool SVGRootInlineBox::NodeAtPoint(HitTestResult& result,
-                                   const HitTestLocation& location_in_container,
+                                   const HitTestLocation& hit_test_location,
                                    const PhysicalOffset& accumulated_offset,
                                    LayoutUnit line_top,
                                    LayoutUnit line_bottom) {
@@ -203,7 +203,7 @@ bool SVGRootInlineBox::NodeAtPoint(HitTestResult& result,
   for (InlineBox* leaf = LastLeafChild(); leaf; leaf = leaf->PrevLeafChild()) {
     if (!leaf->IsSVGInlineTextBox())
       continue;
-    if (leaf->NodeAtPoint(result, location_in_container, accumulated_offset,
+    if (leaf->NodeAtPoint(result, hit_test_location, accumulated_offset,
                           line_top, line_bottom))
       return true;
   }

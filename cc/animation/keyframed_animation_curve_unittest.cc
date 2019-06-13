@@ -519,6 +519,19 @@ TEST(KeyframedAnimationCurveTest, UnsortedKeyframes) {
   EXPECT_FLOAT_EQ(8.f, curve->GetValue(base::TimeDelta::FromSecondsD(3.f)));
 }
 
+// Tests that a linear timing function works as expected.
+TEST(KeyframedAnimationCurveTest, LinearTimingFunction) {
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.f,
+                                           LinearTimingFunction::Create()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 1.f, nullptr));
+
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.f)));
+  EXPECT_FLOAT_EQ(0.75f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
+}
+
 // Tests that a cubic bezier timing function works as expected.
 TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(

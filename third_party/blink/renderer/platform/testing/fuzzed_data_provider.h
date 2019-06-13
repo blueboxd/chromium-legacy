@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -25,7 +24,7 @@ class FuzzedDataProvider {
   String ConsumeRandomLengthString(size_t max_length);
 
   // Returns a String containing all remaining bytes of the input data.
-  CString ConsumeRemainingBytes();
+  std::string ConsumeRemainingBytes();
 
   // Returns a bool, or false when no data remains.
   bool ConsumeBool() { return provider_.ConsumeBool(); }

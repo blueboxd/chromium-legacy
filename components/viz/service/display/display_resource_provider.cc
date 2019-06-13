@@ -424,7 +424,7 @@ void DisplayResourceProvider::PopulateSkBitmapWithResource(
 
 void DisplayResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                                      DeleteStyle style) {
-  TRACE_EVENT0("viz", "DosplayResourceProvider::DeleteResourceInternal");
+  TRACE_EVENT0("viz", "DisplayResourceProvider::DeleteResourceInternal");
   ChildResource* resource = &it->second;
 
   if (resource->gl_id) {

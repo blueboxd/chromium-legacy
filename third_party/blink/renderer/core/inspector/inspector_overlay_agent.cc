@@ -114,8 +114,8 @@ void InspectTool::Init(InspectorOverlayAgent* overlay,
   DoInit();
 }
 
-CString InspectTool::GetDataResourceName() {
-  return "inspect_tool_highlight.html";
+std::string InspectTool::GetDataResourceName() {
+  return std::string("inspect_tool_highlight.html");
 }
 
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
@@ -409,7 +409,7 @@ Response InspectorOverlayAgent::disable() {
   resize_timer_.Stop();
   resize_timer_active_ = false;
   frame_overlay_.reset();
-  frame_resource_name_ = CString();
+  frame_resource_name_ = std::string();
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
@@ -899,7 +899,7 @@ void InspectorOverlayAgent::LoadFrameForTool() {
   data->Append(Platform::Current()->GetDataResource("inspect_tool_common.js"));
   data->Append("</script>", static_cast<size_t>(9));
   data->Append(
-      Platform::Current()->GetDataResource(frame_resource_name_.data()));
+      Platform::Current()->GetDataResource(frame_resource_name_.c_str()));
 
   frame->ForceSynchronousDocumentInstall("text/html", data);
 

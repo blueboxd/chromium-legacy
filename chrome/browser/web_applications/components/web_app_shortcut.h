@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
@@ -39,10 +40,10 @@ struct ShortcutInfo {
   std::string version_for_display;
 
  private:
-  // ShortcutInfo must not be copied; generally it is passed around via
-  // unique_ptr. Since ImageFamily has a non-thread-safe reference count in
-  // its member and is bound to UI thread, destroy ShortcutInfo instance
-  // on UI thread.
+  // Since gfx::ImageFamily |favicon| has a non-thread-safe reference count in
+  // its member and is bound to current thread, always destroy ShortcutInfo
+  // instance on the same thread.
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(ShortcutInfo);
 };
 

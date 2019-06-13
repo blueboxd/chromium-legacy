@@ -45,8 +45,8 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
   {
     scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
     scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
-    svg1->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
-    svg2->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
+    svg1->SetInternalVisitedStrokePaint(SVGComputedStyle::InitialStrokePaint());
+    svg2->SetInternalVisitedStrokePaint(SVGComputedStyle::InitialStrokePaint());
     EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());
   }
 }

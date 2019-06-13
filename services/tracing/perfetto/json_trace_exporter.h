@@ -221,8 +221,8 @@ class JSONTraceExporter {
   // Subclasses implement this to add data from |packets| to the JSON output.
   // For example they can add traceEvents through AddTraceEvent(), or add
   // metadata through AddChromeMetadata().
-  virtual void ProcessPackets(
-      const std::vector<perfetto::TracePacket>& packets) = 0;
+  virtual void ProcessPackets(const std::vector<perfetto::TracePacket>& packets,
+                              bool has_more) = 0;
 
   // If true then all trace events should be skipped. AddTraceEvent should not
   // be called.

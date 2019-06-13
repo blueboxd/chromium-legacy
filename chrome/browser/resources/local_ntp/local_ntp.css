@@ -1005,9 +1005,7 @@ html[darkmode=true] #menu-footer {
   visibility: visible;
 }
 
-#backgrounds-menu .bg-sel-tile-bg,
-#backgrounds-image-menu .bg-sel-tile-bg,
-#colors-menu .bg-sel-tile-bg {
+#customization-menu .bg-sel-tile-bg {
   border-radius: 4px;
   height: 176px;
   margin-bottom: 45px;
@@ -1017,33 +1015,38 @@ html[darkmode=true] #menu-footer {
   width: 176px;
 }
 
-#backgrounds-image-menu .bg-sel-tile-bg,
-#colors-menu .bg-sel-tile-bg {
+#backgrounds-image-menu .bg-sel-tile-bg {
   margin-bottom: 8px;
 }
 
-.selected #backgrounds-default-icon,
-#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile,
-#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+#colors-menu .bg-sel-tile-bg {
+  height: 120px;
+}
+
+#customization-menu .bg-sel-tile-bg.selected .bg-sel-tile {
   height: 144px;
   margin: 16px 16px 0 16px;
   width: 144px;
 }
 
-#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
-#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+#colors-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  height: 88px;
+}
+
+#customization-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
   outline: none;
 }
 
-#backgrounds-menu .bg-sel-tile,
-#backgrounds-image-menu .bg-sel-tile,
-#colors-menu .bg-sel-tile {
+.using-mouse-nav .bg-sel-tile:focus {
+  outline: none;
+}
+
+#customization-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
 }
 
-#backgrounds-menu .bg-sel-tile-title,
-#colors-menu .bg-sel-tile-title {
+#customization-menu .bg-sel-tile-title {
   background-color: unset;
   color: rgb(var(--GG700-rgb));
   font-size: 13px;
@@ -1052,8 +1055,7 @@ html[darkmode=true] #menu-footer {
   padding: 8px 0 24px 0;
 }
 
-html[darkmode=true] #backgrounds-menu .bg-sel-tile-title,
-html[darkmode=true] #colors-menu .bg-sel-tile-title {
+html[darkmode=true] #customization-menu .bg-sel-tile-title {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -1065,10 +1067,13 @@ html[darkmode=true] #colors-menu .bg-sel-tile-title {
   width: 174px;
 }
 
-#backgrounds-default.selected,
-#backgrounds-image-menu .bg-sel-tile-bg.selected,
-#colors-menu .bg-sel-tile-bg.selected  {
+#customization-menu .bg-sel-tile-bg.selected  {
   background-color: rgba(var(--GB900-rgb), .08);
+}
+
+html[darkmode=true] #backgrounds-default.selected,
+html[darkmode=true] #backgrounds-image-menu .bg-sel-tile-bg.selected {
+  background-color: rgba(var(--GB200-rgb), .5);
 }
 
 #backgrounds-upload.bg-sel-tile-bg {
@@ -1137,6 +1142,14 @@ html[dir=rtl] #menu-back {
   transform: scaleX(-1);
 }
 
+#backgrounds-upload-wrapper {
+  display: inline-block;
+  left: 0;
+  opacity: 1;
+  position: relative;
+  top: 0;
+}
+
 #backgrounds-upload-icon {
   -webkit-mask-image: url(icons/upload.svg);
   -webkit-mask-repeat: no-repeat;
@@ -1171,13 +1184,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
 #customization-menu .bg-sel-tile .selected-check {
   height: 24px;
   left: initial;
-  right: 0;
-  top: 0;
+  right: 9px;
+  top: 7px;
   width: 24px;
 }
 
 html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
-  left: 0;
+  left: 9px;
   right: initial;
 }
 
@@ -1331,13 +1344,14 @@ html[dir=rtl] .sh-option-image .selected-circle {
 }
 
 .sh-option-image .selected-check {
-  left: -2px;
-  top: -2px;
+  left: initial;
+  right: 32px;
+  top: 6px;
 }
 
 html[dir=rtl] .sh-option-image .selected-check {
-  left: 0;
-  right: -2px;
+  left: 32px;
+  right: initial;
 }
 
 .sh-option-title {

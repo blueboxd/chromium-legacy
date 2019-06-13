@@ -110,7 +110,7 @@
                 "-webkit-box-pack", "-webkit-box-orient",
                 "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
                 "column-gap", "column-width", "column-rule-style",
-                "column-rule-width", "column-rule-color", "ColumnRuleColorIsCurrentColor", "VisitedLinkColumnRuleColor",
+                "column-rule-width", "column-rule-color", "ColumnRuleColorIsCurrentColor", "-internal-visited-column-rule-color",
                 "column-count", "HasAutoColumnCount", "HasAutoColumnWidth", "column-fill", "column-span",],
         methods_to_diff: [
           {
@@ -304,8 +304,8 @@
             field_dependencies: ["-internal-visited-border-top-color"]
           },
           {
-            predicate: "a.VisitedLinkOutlineColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkOutlineColor"]
+            predicate: "a.InternalVisitedOutlineColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-outline-color"]
           },
         ]
     },
@@ -414,7 +414,7 @@
         name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
         fields_to_diff: ["color", "-internal-visited-color", "text-decoration-line",
                 "text-decoration-style", "text-decoration-color",
-                "VisitedLinkTextDecorationColor", "TextEmphasisFill",
+                "-internal-visited-text-decoration-color", "TextEmphasisFill",
                 "text-underline-position", "text-decoration-skip-ink", "AppliedTextDecorations"],
         methods_to_diff: [
           {
@@ -450,8 +450,8 @@
             field_dependencies: ["caret-color"]
           },
           {
-            method: "VisitedLinkCaretColor()",
-            field_dependencies: ["VisitedLinkCaretColor"]
+            method: "InternalVisitedCaretColor()",
+            field_dependencies: ["-internal-visited-caret-color"]
           },
         ]
     },

@@ -58,7 +58,7 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
                      MapCoordinatesFlags mode = 0) const final {}
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 };

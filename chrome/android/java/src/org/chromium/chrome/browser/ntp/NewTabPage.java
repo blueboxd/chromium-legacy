@@ -38,8 +38,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -59,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -307,7 +307,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mBackgroundColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modern_primary_color);
         mIsTablet = activity.isTablet();
-        TemplateUrlService.getInstance().addObserver(this);
+        TemplateUrlServiceFactory.get().addObserver(this);
 
         mTabObserver = new EmptyTabObserver() {
             @Override
@@ -374,7 +374,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
                 mConstructedTimeNs);
     }
@@ -467,13 +467,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     private void updateSearchProviderHasLogo() {
-        mSearchProviderHasLogo = TemplateUrlService.getInstance().doesDefaultSearchEngineHaveLogo();
+        mSearchProviderHasLogo = TemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo();
     }
 
     private void onSearchEngineUpdated() {
         updateSearchProviderHasLogo();
         setSearchProviderInfoOnView(mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle());
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
         mNewTabPageLayout.loadSearchProviderLogo();
     }
 
@@ -678,7 +678,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();
-        TemplateUrlService.getInstance().removeObserver(this);
+        TemplateUrlServiceFactory.get().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;
         mFullscreenManager.removeListener(this);

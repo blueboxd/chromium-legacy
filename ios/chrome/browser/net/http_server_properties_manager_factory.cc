@@ -10,7 +10,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "net/http/http_server_properties_manager.h"
 
 namespace {

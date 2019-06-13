@@ -63,7 +63,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kECTUnknown_DEPRECATED = 8,
     kExceededMaxNavigationRestarts = 9,
     kPreviewsState_DEPRECATED = 10,
-    kMaxValue = kPreviewsState_DEPRECATED,
+    kInvalidProxyHeaders = 11,
+    kMaxValue = kInvalidProxyHeaders,
   };
 
   // The response type from the previews server. This enum must

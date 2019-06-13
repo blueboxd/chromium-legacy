@@ -597,15 +597,6 @@ void HandleWindowMinimize() {
   accelerators::ToggleMinimized();
 }
 
-bool CanHandlePositionCenter() {
-  return wm::GetActiveWindow() != nullptr;
-}
-
-void HandlePositionCenter() {
-  base::RecordAction(UserMetricsAction("Accel_Window_Position_Center"));
-  wm::CenterWindow(wm::GetActiveWindow());
-}
-
 void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
@@ -1442,8 +1433,6 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case WINDOW_CYCLE_SNAP_LEFT:
     case WINDOW_CYCLE_SNAP_RIGHT:
       return CanHandleWindowSnap();
-    case WINDOW_POSITION_CENTER:
-      return CanHandlePositionCenter();
     case FOCUS_PIP:
       return !!FindPipWidget();
 
@@ -1828,9 +1817,6 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case WINDOW_MINIMIZE:
       HandleWindowMinimize();
-      break;
-    case WINDOW_POSITION_CENTER:
-      HandlePositionCenter();
       break;
   }
 }

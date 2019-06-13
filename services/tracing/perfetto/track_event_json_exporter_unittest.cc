@@ -564,9 +564,14 @@ TEST_F(TrackEventJsonExporterTest, MainThreadNameThreadDescriptor) {
 TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
   trace_analyzer::TraceEventVector events;
+  // Thread can have no name in the first packet.
+  AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
+                            base::nullopt, kReferenceTimeUs,
+                            kReferenceThreadTimeUs, &trace_packet_protos);
   AddThreadDescriptorPacket(
       /* sort_index = */ 2, ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
-      kThreadName, kReferenceTimeUs, kReferenceThreadTimeUs,
+      "different_thread_name", kReferenceTimeUs, kReferenceThreadTimeUs,
       &trace_packet_protos);
   // This packet will be ignored because we've already emitted the sort_index of
   // 2 and thread_name kThreadName so we suppress this metadata because it
@@ -574,14 +579,9 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   ASSERT_NE("different_thread_name", kThreadName);
   AddThreadDescriptorPacket(
       /* sort_index = */ 3, ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
-      "different_thread_name", kReferenceTimeUs, kReferenceThreadTimeUs,
+      kThreadName, kReferenceTimeUs, kReferenceThreadTimeUs,
       &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
-  // Empty packet doesn't change anything.
-  AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
-                            base::nullopt, kReferenceTimeUs,
-                            kReferenceThreadTimeUs, &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
   ASSERT_EQ(2u, trace_analyzer()->FindEvents(
                     Query(Query::EVENT_CATEGORY) == Query::String("__metadata"),
@@ -591,7 +591,7 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
     if (event->name == "thread_name") {
       EXPECT_EQ(kThreadName, event->GetKnownArgAsString("name"));
     } else if (event->name == "thread_sort_index") {
-      EXPECT_EQ(2, event->GetKnownArgAsInt("sort_index"));
+      EXPECT_EQ(3, event->GetKnownArgAsInt("sort_index"));
     } else {
       ADD_FAILURE() << "Unexpected event name: " << event->name;
     }
@@ -609,7 +609,7 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   for (size_t i = 0; i < 2; ++i) {
     const auto* event = events[i];
     if (event->name == "thread_name") {
-      EXPECT_EQ(kThreadName, event->GetKnownArgAsString("name"));
+      EXPECT_EQ("different_thread_name", event->GetKnownArgAsString("name"));
     } else if (event->name == "thread_sort_index") {
       EXPECT_EQ(2, event->GetKnownArgAsInt("sort_index"));
     } else {
@@ -619,7 +619,7 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   for (size_t i = 2; i < events.size(); ++i) {
     const auto* event = events[i];
     if (event->name == "thread_name") {
-      EXPECT_EQ("different_thread_name", event->GetKnownArgAsString("name"));
+      EXPECT_EQ(kThreadName, event->GetKnownArgAsString("name"));
     } else if (event->name == "thread_sort_index") {
       EXPECT_EQ(3, event->GetKnownArgAsInt("sort_index"));
     } else {

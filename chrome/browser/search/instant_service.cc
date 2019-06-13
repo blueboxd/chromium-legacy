@@ -385,7 +385,8 @@ bool InstantService::ToggleMostVisitedOrCustomLinks() {
   pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, use_most_visited);
   most_visited_info_->use_most_visited = use_most_visited;
 
-  most_visited_sites_->EnableCustomLinks(use_most_visited);
+  // Custom links is enabled if Most Visited is disabled.
+  most_visited_sites_->EnableCustomLinks(!use_most_visited);
   return true;
 }
 

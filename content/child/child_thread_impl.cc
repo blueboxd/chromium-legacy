@@ -38,6 +38,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/child/background_tracing_agent_impl.h"
+#include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
@@ -446,9 +447,6 @@ void ChildThreadImpl::Init(const Options& options) {
   registry->AddInterface(base::Bind(&ChildThreadImpl::OnChildControlRequest,
                                     base::Unretained(this)),
                          base::ThreadTaskRunnerHandle::Get());
-  registry->AddInterface(
-      base::Bind(&tracing::BackgroundTracingAgentImpl::CreateFromRequest),
-      base::ThreadTaskRunnerHandle::Get());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
@@ -703,6 +701,16 @@ void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
     IPC::Logging::GetInstance()->Disable();
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
+
+void ChildThreadImpl::GetBackgroundTracingAgentProvider(
+    mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
+        receiver) {
+  if (!background_tracing_agent_provider_) {
+    background_tracing_agent_provider_ =
+        std::make_unique<tracing::BackgroundTracingAgentProviderImpl>();
+  }
+  background_tracing_agent_provider_->AddBinding(std::move(receiver));
+}
 
 void ChildThreadImpl::RunService(
     const std::string& service_name,

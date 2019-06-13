@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -79,9 +78,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   memory->Unlock();
 
   // Purge all unlocked memory.
-  BrowserMainLoop::GetInstance()
-      ->discardable_shared_memory_manager()
-      ->SetMemoryLimit(0);
+  discardable_memory::DiscardableSharedMemoryManager::Get()->SetMemoryLimit(0);
 
   // Should fail as memory should have been purged.
   EXPECT_FALSE(memory->Lock());
@@ -120,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   EXPECT_TRUE(memory);
   memory.reset();
 
-  EXPECT_GE(BrowserMainLoop::GetInstance()
-                ->discardable_shared_memory_manager()
+  EXPECT_GE(discardable_memory::DiscardableSharedMemoryManager::Get()
                 ->GetBytesAllocated(),
             kSize);
 
@@ -131,8 +127,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   base::TimeTicks end =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
   while (base::TimeTicks::Now() < end) {
-    if (!BrowserMainLoop::GetInstance()
-             ->discardable_shared_memory_manager()
+    if (!discardable_memory::DiscardableSharedMemoryManager::Get()
              ->GetBytesAllocated())
       break;
   }
@@ -151,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   EXPECT_TRUE(memory);
   memory.reset();
 
-  EXPECT_GE(BrowserMainLoop::GetInstance()
-                ->discardable_shared_memory_manager()
+  EXPECT_GE(discardable_memory::DiscardableSharedMemoryManager::Get()
                 ->GetBytesAllocated(),
             kSize);
 
@@ -163,8 +157,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   base::RunLoop().RunUntilIdle();
   RunAllTasksUntilIdle();
 
-  EXPECT_EQ(0U, BrowserMainLoop::GetInstance()
-                    ->discardable_shared_memory_manager()
+  EXPECT_EQ(0U, discardable_memory::DiscardableSharedMemoryManager::Get()
                     ->GetBytesAllocated());
 }
 

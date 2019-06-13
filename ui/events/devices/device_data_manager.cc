@@ -38,6 +38,7 @@ DeviceDataManager::DeviceDataManager() {
 
 DeviceDataManager::~DeviceDataManager() {
   InputDeviceManager::ClearInstance();
+  instance_ = nullptr;
 }
 
 // static
@@ -61,10 +62,7 @@ void DeviceDataManager::CreateInstance() {
 
 // static
 void DeviceDataManager::DeleteInstance() {
-  if (instance_) {
-    delete instance_;
-    instance_ = nullptr;
-  }
+  delete instance_;
 }
 
 // static

@@ -160,7 +160,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // - out of flow fragments whose css container is inline box.
   // TODO(layout-dev) Transfroms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
-  if (!physical_fragment->Children().IsEmpty()) {
+  if (!physical_fragment->Children().empty()) {
     for (const auto& child : physical_fragment->Children()) {
       PhysicalRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
@@ -280,36 +280,33 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
 }
 
 template <typename Base>
-bool LayoutNGMixin<Base>::NodeAtPoint(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestAction action) {
+bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
+                                      const HitTestLocation& hit_test_location,
+                                      const PhysicalOffset& accumulated_offset,
+                                      HitTestAction action) {
   const NGPaintFragment* paint_fragment = PaintFragment();
   if (!paint_fragment) {
-    return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
+    return LayoutBlockFlow::NodeAtPoint(result, hit_test_location,
                                         accumulated_offset, action);
   }
 
-  const PhysicalOffset physical_offset =
-      accumulated_offset + Base::PhysicalLocation();
   if (!this->IsEffectiveRootScroller()) {
     // Check if we need to do anything at all.
     // If we have clipping, then we can't have any spillout.
     PhysicalRect overflow_box = Base::HasOverflowClip()
                                     ? Base::PhysicalBorderBoxRect()
                                     : Base::PhysicalVisualOverflowRect();
-    overflow_box.Move(physical_offset);
-    if (!location_in_container.Intersects(overflow_box))
+    overflow_box.Move(accumulated_offset);
+    if (!hit_test_location.Intersects(overflow_box))
       return false;
   }
   if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
-      Base::HitTestOverflowControl(result, location_in_container,
-                                   physical_offset))
+      Base::HitTestOverflowControl(result, hit_test_location,
+                                   accumulated_offset))
     return true;
 
   return NGBoxFragmentPainter(*paint_fragment)
-      .NodeAtPoint(result, location_in_container, physical_offset, action);
+      .NodeAtPoint(result, hit_test_location, accumulated_offset, action);
 }
 
 template <typename Base>

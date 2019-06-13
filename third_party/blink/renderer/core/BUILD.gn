@@ -712,8 +712,16 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_right_color.h",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_top_color.cc",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_top_color.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_caret_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_caret_color.h",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_color.cc",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_color.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_column_rule_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_column_rule_color.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_outline_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_outline_color.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_text_decoration_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_text_decoration_color.h",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_text_emphasis_color.cc",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_text_emphasis_color.h",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_text_fill_color.cc",
@@ -1721,6 +1729,7 @@ fuzzer_test("text_resource_decoder_fuzzer") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
+    "clipboard/clipboard_utilities_test.cc",
     "content_capture/content_capture_test.cc",
     "css/css_test_helpers.cc",
     "css/css_test_helpers.h",

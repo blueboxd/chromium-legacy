@@ -353,7 +353,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
     [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
         assertWithMatcher:grey_notNil()];
 
-    if (IsIPadIdiom()) {
+    if ([ChromeEarlGrey isIPadIdiom]) {
       // Tap the tools menu to dismiss the popover.
       [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
           performAction:grey_tap()];
@@ -400,7 +400,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_CONTEXT_COPY)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CANCEL)]
         assertWithMatcher:grey_sufficientlyVisible()];

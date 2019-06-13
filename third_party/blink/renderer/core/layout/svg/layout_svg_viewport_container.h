@@ -57,7 +57,7 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
   SVGTransformChange CalculateLocalTransform() override;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_parent,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 

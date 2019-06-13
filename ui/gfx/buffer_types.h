@@ -27,8 +27,9 @@ enum class BufferFormat {
   YVU_420,
   YUV_420_BIPLANAR,
   UYVY_422,
+  P010,
 
-  LAST = UYVY_422
+  LAST = P010
 };
 
 // The usage mode affects how a buffer can be used. Only buffers created with

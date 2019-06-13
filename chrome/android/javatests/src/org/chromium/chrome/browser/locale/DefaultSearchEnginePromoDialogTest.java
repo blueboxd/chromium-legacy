@@ -19,11 +19,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -49,7 +50,7 @@ public class DefaultSearchEnginePromoDialogTest {
                 LocaleManager mockManager = new LocaleManager() {
                     @Override
                     public List<TemplateUrl> getSearchEnginesForPromoDialog(int promoType) {
-                        return TemplateUrlService.getInstance().getTemplateUrls();
+                        return TemplateUrlServiceFactory.get().getTemplateUrls();
                     }
                 };
                 LocaleManager.setInstanceForTest(mockManager);
@@ -63,11 +64,12 @@ public class DefaultSearchEnginePromoDialogTest {
     public void testOnlyOneLiveDialog() throws Exception {
         final CallbackHelper templateUrlServiceInit = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> TemplateUrlService.getInstance().registerLoadListener(
+                ()
+                        -> TemplateUrlServiceFactory.get().registerLoadListener(
                                 new TemplateUrlService.LoadListener() {
                                     @Override
                                     public void onTemplateUrlServiceLoaded() {
-                                        TemplateUrlService.getInstance().unregisterLoadListener(
+                                        TemplateUrlServiceFactory.get().unregisterLoadListener(
                                                 this);
                                         templateUrlServiceInit.notifyCalled();
                                     }

@@ -5,6 +5,7 @@ include_rules = [
   "+components/bookmarks/common/android",
   "+components/offline_items_collection/core/android/java/src",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
+  "+components/search_engines/android/java/src/org/chromium/components/search_engines",
   "+components/sync/android/java/src/org/chromium/components/sync",
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
 

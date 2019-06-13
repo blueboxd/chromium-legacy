@@ -103,6 +103,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GlobalRequestID& GetGlobalRequestID() override;
   bool IsDownload() override;
   bool IsFormSubmission() override;
+  bool WasInitiatedByLinkClick() override;
   bool IsSignedExchangeInnerResponse() override;
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;

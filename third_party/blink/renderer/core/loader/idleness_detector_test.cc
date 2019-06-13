@@ -13,9 +13,17 @@ namespace blink {
 class IdlenessDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
-    platform_time_ = CurrentTimeTicks();
+    auto task_runner = platform_->test_task_runner();
+    platform_time_ = task_runner->NowTicks();
     DCHECK(!platform_time_.is_null());
+    IdlenessDetector::SetTickClockForTesting(task_runner->GetMockTickClock());
     PageTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    PageTestBase::TearDown();
+    IdlenessDetector::SetTickClockForTesting(
+        base::DefaultTickClock::GetInstance());
   }
 
   IdlenessDetector* Detector() { return GetFrame().GetIdlenessDetector(); }

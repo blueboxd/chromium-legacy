@@ -22,4 +22,11 @@ void LoadFullBrowser() {
   Java_NativeStartupBridge_loadFullBrowser(env);
 }
 
+void HandlePostNativeStartupSynchronously() {
+  // The C++ initialization of the browser has already been done.
+  DCHECK(g_browser_process);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_NativeStartupBridge_handlePostNativeStartupSynchronously(env);
+}
+
 }  // namespace android_startup

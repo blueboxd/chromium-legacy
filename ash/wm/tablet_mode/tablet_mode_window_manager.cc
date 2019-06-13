@@ -115,6 +115,8 @@ class ScopedObserveWindowAnimation {
   DISALLOW_COPY_AND_ASSIGN(ScopedObserveWindowAnimation);
 };
 
+TabletModeWindowManager::TabletModeWindowManager() = default;
+
 TabletModeWindowManager::~TabletModeWindowManager() = default;
 
 // static
@@ -195,6 +197,11 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
     window_state_map_.erase(it);
 }
 
+void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
+  for (auto& pair : window_state_map_)
+    pair.second->set_ignore_wm_events(true);
+}
+
 void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
   if (canceled)
@@ -254,7 +261,7 @@ void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
   } else {
     // If a known window gets destroyed we need to remove all knowledge about
     // it.
-    ForgetWindow(window, true /* destroyed */);
+    ForgetWindow(window, /*destroyed=*/true);
   }
 }
 
@@ -416,13 +423,6 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   }
 }
 
-void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
-  for (auto& pair : window_state_map_)
-    pair.second->set_ignore_wm_events(true);
-}
-
-TabletModeWindowManager::TabletModeWindowManager() = default;
-
 WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
     aura::Window* window) const {
   auto iter = window_state_map_.find(window);
@@ -522,13 +522,12 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
   DCHECK(!IsTrackingWindow(window));
   window->AddObserver(this);
 
-  // We create and remember a tablet mode state which will attach itself to
-  // the provided state object. First set the map to point to a null object
-  // because on creating a TabletModeWindowState will check to see if |window|
-  // is being tracked by |this|, and we want that to return true.
-  window_state_map_.emplace(window, nullptr);
-  window_state_map_[window] = new TabletModeWindowState(
-      window, this, snap, animate_bounds_on_attach, entering_tablet_mode);
+  // Create and remember a tablet mode state which will attach itself to the
+  // provided state object.
+  window_state_map_.emplace(
+      window,
+      new TabletModeWindowState(window, this, snap, animate_bounds_on_attach,
+                                entering_tablet_mode));
 }
 
 void TabletModeWindowManager::ForgetWindow(aura::Window* window,

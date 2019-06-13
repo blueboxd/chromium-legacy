@@ -91,14 +91,10 @@
           [[getStateText_(networkProperties)]]
         </div>
       </div>
-      <paper-button class="primary-button" on-tap="onConnectTap_"
-          hidden$="[[!showConnect_(networkProperties)]]"
-          disabled="[[!enableConnect_(networkProperties)]]">
-        $i18n{networkButtonConnect}
-      </paper-button>
-      <paper-button class="primary-button" on-tap="onDisconnectTap_"
-          hidden$="[[!showDisconnect_(networkProperties)]]">
-        $i18n{networkButtonDisconnect}
+      <paper-button class="primary-button" on-tap="onConnectDisconnectTap_"
+          hidden$="[[!showConnectDisconnect_(networkProperties)]]"
+          disabled="[[!enableConnectDisconnect_(networkProperties)]]">
+        [[getConnectDisconnectText_(networkProperties)]]
       </paper-button>
     </div>
 

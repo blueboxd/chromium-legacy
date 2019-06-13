@@ -172,7 +172,7 @@
   <dialog id="customization-menu" class="customize-dialog">
     <div id="menu-header">
       <div id="menu-back-wrapper">
-        <div id="menu-back-circle" tabindex="0">
+        <div id="menu-back-circle" tabindex="0" role="button">
           <div id="menu-back"></div>
         </div>
       </div>
@@ -201,22 +201,24 @@
       </div>
     </div>
     <div id="menu-contents">
-      <div id="backgrounds-menu" class="menu-panel">
+      <div id="backgrounds-menu" class="menu-panel" tabindex="0">
         <div id="backgrounds-upload" class="bg-sel-tile-bg">
-          <div id="backgrounds-upload-icon"></div>
-          <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+          <div id="backgrounds-upload-wrapper" class="bg-sel-tile" tabindex="-1">
+            <div id="backgrounds-upload-icon"></div>
+            <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+          </div>
         </div>
         <div id="backgrounds-default" class="bg-sel-tile-bg">
-          <div id="backgrounds-default-icon" class="bg-sel-tile">
+          <div id="backgrounds-default-icon" class="bg-sel-tile" tabindex="-1">
             <div class="mini-page">
               <div class="mini-header"></div>
               <div class="mini-shortcuts"></div>
             </div>
           </div>
           <div class="bg-sel-tile-title">$i18n{noBackground}</div>
-        </div>
+          </div>
       </div>
-      <div id="backgrounds-image-menu" class="menu-panel"></div>
+      <div id="backgrounds-image-menu" class="menu-panel" tabindex="0"></div>
       <div id="shortcuts-menu" class="menu-panel">
         <div id="sh-options">
           <div class="sh-option">

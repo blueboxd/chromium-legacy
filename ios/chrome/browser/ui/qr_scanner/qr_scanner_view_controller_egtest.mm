@@ -796,7 +796,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)testReceivingQRScannerURLResultAndEditingTheURL {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
@@ -816,7 +816,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 

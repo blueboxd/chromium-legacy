@@ -44,6 +44,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -951,6 +952,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       }
     }
 
+    discardable_shared_memory_manager_ =
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
     // PowerMonitor is needed in reduced mode but is eventually passed on to
     // BrowserMainLoop.
     power_monitor_ = std::make_unique<base::PowerMonitor>(
@@ -970,9 +974,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 #endif
   }
 
-  if (should_start_service_manager_only)
+  if (should_start_service_manager_only) {
+    DVLOG(0) << "Chrome is running in ServiceManager only mode.";
     return -1;
+  }
 
+  DVLOG(0) << "Chrome is running in full browser mode.";
   is_browser_main_loop_started_ = true;
   startup_data_ = std::make_unique<StartupDataImpl>();
   startup_data_->thread = std::move(service_manager_thread_);

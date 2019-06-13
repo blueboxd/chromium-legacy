@@ -336,7 +336,10 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
     // Tracing adds too much overhead to the profiling service.
     if (service_manager::SandboxTypeFromCommandLine(*cmd_line) !=
         service_manager::SANDBOX_TYPE_PROFILING) {
-      BackgroundTracingManagerImpl::ActivateForProcess(this);
+      BackgroundTracingManagerImpl::ActivateForProcess(
+          data_.id,
+          static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+              ->child_control());
     }
   }
 

@@ -266,6 +266,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual bool OnAccessibilityEvents(const AXEventNotificationDetails& details)
       WARN_UNUSED_RESULT;
 
+  // Allows derived classes to do event pre-processing
+  virtual void BeforeAccessibilityEvents();
+
   // Allows derived classes to do event post-processing.
   virtual void FinalizeAccessibilityEvents();
 

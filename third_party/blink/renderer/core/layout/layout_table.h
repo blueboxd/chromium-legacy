@@ -448,7 +448,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
                                      LayoutUnit& max_width) const override;
   void ComputePreferredLogicalWidths() override;
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 

@@ -135,6 +135,9 @@
       <message name="IDS_MENU_ADD_TO_APPS" desc="Text to accompany icon that will navigate to a page showing a categorized view of different applications or sites">
         Add to My apps
       </message>
+      <message name="IDS_DINO_GAME_TITLE" desc="Title for the offline dino game that will appear as an icon in the launcher" translateable="false">
+        Chrome Game
+      </message>
     </messages>
   </release>
 </grit>

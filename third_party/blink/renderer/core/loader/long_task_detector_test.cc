@@ -36,9 +36,9 @@ class LongTaskDetectorTest : public testing::Test {
  public:
   // Public because it's executed on a task queue.
   void DummyTaskWithDuration(base::TimeDelta duration) {
-    dummy_task_start_time_ = CurrentTimeTicks();
+    dummy_task_start_time_ = platform_->test_task_runner()->NowTicks();
     platform_->AdvanceClock(duration);
-    dummy_task_end_time_ = CurrentTimeTicks();
+    dummy_task_end_time_ = platform_->test_task_runner()->NowTicks();
   }
 
  protected:

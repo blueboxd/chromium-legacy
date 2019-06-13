@@ -54,7 +54,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
+namespace base {
+class Clock;
+}
 
 namespace blink {
 
@@ -421,6 +424,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   WebScopedVirtualTimePauser& VirtualTimePauser() {
     return virtual_time_pauser_;
   }
+
+  // The caller owns the |clock| which must outlive the Resource.
+  static void SetClockForTesting(const base::Clock* clock);
 
  protected:
   Resource(const ResourceRequest&, ResourceType, const ResourceLoaderOptions&);

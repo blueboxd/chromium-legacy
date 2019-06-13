@@ -103,11 +103,8 @@ WlanApi& WlanApi::GetInstance() {
 }
 
 WlanApi::WlanApi() : initialized(false) {
-  // Use an absolute path to load the DLL to avoid DLL preloading attacks.
-  static const wchar_t* const kDLL = L"%WINDIR%\\system32\\wlanapi.dll";
-  wchar_t path[MAX_PATH] = {0};
-  ExpandEnvironmentStrings(kDLL, path, base::size(path));
-  module = ::LoadLibraryEx(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+  HMODULE module =
+      ::LoadLibraryEx(L"wlanapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   if (!module)
     return;
 

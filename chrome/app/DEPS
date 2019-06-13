@@ -37,7 +37,6 @@ include_rules = [
   "+sandbox",
   "+services/preferences/public",
   "+services/service_manager/public",
-  "+services/ws/public",
   "+third_party/breakpad/breakpad",
   "+third_party/crashpad/crashpad",
 ]
@@ -68,7 +67,6 @@ specific_include_rules = {
     "+services/identity",
     "+services/image_annotation/public",
     "+services/resource_coordinator/public",
-    "+services/ws/common",
     "+third_party/blink/public/mojom",
   ],
   "chrome_content_gpu_overlay_manifest\.cc": [

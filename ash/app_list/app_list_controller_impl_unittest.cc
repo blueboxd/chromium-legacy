@@ -289,6 +289,44 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
       0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 }
 
+// Tests that full screen apps list opens when user touches on or near the
+// expand view arrow. (see https://crbug.com/906858)
+TEST_F(AppListControllerImplTest,
+       EnterFullScreenModeAfterTappingNearExpandArrow) {
+  ShowAppListNow();
+  ASSERT_EQ(ash::AppListViewState::kPeeking,
+            GetAppListView()->app_list_state());
+
+  // Get in screen bounds of arrow
+  const gfx::Rect expand_arrow = GetAppListView()
+                                     ->app_list_main_view()
+                                     ->contents_view()
+                                     ->expand_arrow_view()
+                                     ->GetBoundsInScreen();
+
+  // Tap expand arrow icon and check that full screen apps view is entered.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(expand_arrow.CenterPoint());
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  // Hide the AppListView. Wait until animation is finished
+  DismissAppListNow();
+  base::RunLoop().RunUntilIdle();
+
+  // Re-enter peeking mode and test that tapping near (but not directly on)
+  // the expand arrow icon still brings up full app list view.
+  ShowAppListNow();
+  ASSERT_EQ(ash::AppListViewState::kPeeking,
+            GetAppListView()->app_list_state());
+
+  event_generator->GestureTapAt(
+      gfx::Point(expand_arrow.top_right().x(), expand_arrow.top_right().y()));
+
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+}
+
 class AppListControllerImplMetricsTest : public AshTestBase {
  public:
   AppListControllerImplMetricsTest() = default;

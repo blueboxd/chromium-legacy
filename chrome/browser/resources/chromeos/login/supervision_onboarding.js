@@ -180,7 +180,6 @@
           this.setPresentation_.bind(this));
       this.hostCallbackRouter_.loadPage.addListener(
           this.webviewLoader_.loadPage.bind(this.webviewLoader_));
-      this.hostCallbackRouter_.exitFlow.addListener(this.exitFlow_.bind(this));
 
       this.controller_.bindWebviewHost(this.hostCallbackRouter_.createProxy());
     },
@@ -222,12 +221,6 @@
     onNext_: function() {
       this.controller_.handleAction(
           chromeos.supervision.mojom.OnboardingAction.kShowNextPage);
-    },
-
-    /** @private */
-    exitFlow_: function() {
-      chrome.send(
-          'login.SupervisionOnboardingScreen.userActed', ['setup-finished']);
     },
   });
 }

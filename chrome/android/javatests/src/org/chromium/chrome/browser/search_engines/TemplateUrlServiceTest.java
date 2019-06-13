@@ -18,8 +18,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.preferences.SearchEngineAdapter;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -61,7 +63,7 @@ public class TemplateUrlServiceTest {
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return TemplateUrlService.getInstance().isLoaded();
+                return TemplateUrlServiceFactory.get().isLoaded();
             }
         }));
 
@@ -78,7 +80,7 @@ public class TemplateUrlServiceTest {
         String result = TestThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return TemplateUrlService.getInstance().getUrlForContextualSearchQuery(
+                return TemplateUrlServiceFactory.get().getUrlForContextualSearchQuery(
                         query, alternative, prefetch, protocolVersion);
             }
         });
@@ -105,7 +107,7 @@ public class TemplateUrlServiceTest {
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return TemplateUrlService.getInstance().isLoaded();
+                return TemplateUrlServiceFactory.get().isLoaded();
             }
         }));
 
@@ -113,7 +115,7 @@ public class TemplateUrlServiceTest {
         // again.
         final AtomicBoolean observerNotified = new AtomicBoolean(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TemplateUrlService service = TemplateUrlService.getInstance();
+            TemplateUrlService service = TemplateUrlServiceFactory.get();
             service.registerLoadListener(new LoadListener() {
                 @Override
                 public void onTemplateUrlServiceLoaded() {
@@ -287,7 +289,7 @@ public class TemplateUrlServiceTest {
                         new Callable<TemplateUrlService>() {
                             @Override
                             public TemplateUrlService call() {
-                                TemplateUrlService service = TemplateUrlService.getInstance();
+                                TemplateUrlService service = TemplateUrlServiceFactory.get();
                                 service.registerLoadListener(listener);
                                 service.load();
                                 return service;

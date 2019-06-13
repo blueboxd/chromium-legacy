@@ -154,7 +154,9 @@ Polymer({
   },
 
   onShowLanguageInputTap_: function() {
-    settings.navigateTo(settings.routes.LANGUAGES);
+    settings.navigateTo(
+        settings.routes.LANGUAGES,
+        /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   getExternalMetaKeyLabel_: function(hasInternalKeyboard) {

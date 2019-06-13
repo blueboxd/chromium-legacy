@@ -38,6 +38,11 @@ namespace {
       base::StringPrintf("%s.%s", histogram_base.c_str(), "TaskTime"),     \
       task_time);
 
+#define AGE_CUSTOM_UMA_HISTOGRAM_TIMES(histogram_name, time)  \
+  UMA_HISTOGRAM_CUSTOM_TIMES(histogram_name, time,            \
+                             base::TimeDelta::FromSeconds(1), \
+                             base::TimeDelta::FromDays(7), 100);
+
 // The constant integers(bucket sizes) and strings(UMA names) in this file need
 // matching with Zine's in the file
 // components/ntp_snippets/content_suggestions_metrics.cc. The purpose to have
@@ -110,8 +115,21 @@ enum class TaskType {
   kMaxValue = KUploadAllActionsForURL
 };
 
+// Values correspond to
+// third_party/feed/src/main/proto/search/now/ui/action/feed_action.proto.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ElementType {
+  KUnknownElementType = 0,
+  KCardLargeImage = 1,
+  KCardSmallImage = 2,
+  KInterestHeader = 3,
+  KTooltip = 4,
+  kMaxValue = KTooltip
+};
+
 // Each suffix here should correspond to an entry under histogram suffix
-// ContentSuggestionCategory in histograms.xml.
+// FeedSpinnerType in histograms.xml.
 std::string GetSpinnerTypeSuffix(SpinnerType spinner_type) {
   switch (spinner_type) {
     case SpinnerType::KInitialLoad:
@@ -128,6 +146,26 @@ std::string GetSpinnerTypeSuffix(SpinnerType spinner_type) {
 
   // TODO(https://crbug.com/935602): Handle new values when adding new values on
   // java side.
+  NOTREACHED();
+  return std::string();
+}
+
+// Each suffix here should correspond to an entry under histogram suffix
+// FeedElementType in histograms.xml.
+std::string GetElementTypeSuffix(ElementType element_type) {
+  switch (element_type) {
+    case ElementType::KUnknownElementType:
+      return "UnknownElementType";
+    case ElementType::KCardLargeImage:
+      return "CardLargeImage";
+    case ElementType::KCardSmallImage:
+      return "CardSmallImage";
+    case ElementType::KInterestHeader:
+      return "InterestHeader";
+    case ElementType::KTooltip:
+      return "Tooltip";
+  }
+
   NOTREACHED();
   return std::string();
 }
@@ -398,7 +436,7 @@ void CheckURLVisitedDone(int position, bool committed, bool visited) {
 }
 
 void RecordSpinnerTimeUMA(const char* base_name,
-                          base::TimeDelta time,
+                          const base::TimeDelta& time,
                           int spinner_type) {
   SpinnerType type = static_cast<SpinnerType>(spinner_type);
   std::string suffix = GetSpinnerTypeSuffix(type);
@@ -406,6 +444,32 @@ void RecordSpinnerTimeUMA(const char* base_name,
       base::StringPrintf("%s.%s", base_name, suffix.c_str()));
   base::UmaHistogramTimes(histogram_name, time);
   base::UmaHistogramTimes(base_name, time);
+}
+
+void RecordElementPositionUMA(const char* base_name,
+                              int position,
+                              int element_type) {
+  ElementType type = static_cast<ElementType>(element_type);
+  std::string suffix = GetElementTypeSuffix(type);
+  std::string histogram_name(
+      base::StringPrintf("%s.%s", base_name, suffix.c_str()));
+  base::UmaHistogramExactLinear(histogram_name, position, kMaxSuggestionsTotal);
+  base::UmaHistogramExactLinear(base_name, position, kMaxSuggestionsTotal);
+}
+
+void RecordElementTimeUMA(const char* base_name,
+                          const base::TimeDelta& time,
+                          int element_type) {
+  ElementType type = static_cast<ElementType>(element_type);
+  std::string suffix = GetElementTypeSuffix(type);
+  std::string histogram_name(
+      base::StringPrintf("%s.%s", base_name, suffix.c_str()));
+  base::UmaHistogramCustomTimes(histogram_name, time,
+                                base::TimeDelta::FromSeconds(1),
+                                base::TimeDelta::FromDays(7), 100);
+  base::UmaHistogramCustomTimes(base_name, time,
+                                base::TimeDelta::FromSeconds(1),
+                                base::TimeDelta::FromDays(7), 100);
 }
 
 }  // namespace
@@ -438,20 +502,17 @@ void FeedLoggingMetrics::OnSuggestionShown(int position,
                              kMaxSuggestionsTotal);
 
   base::TimeDelta age = clock_->Now() - publish_date;
-  UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.ContentSuggestions.ShownAge.Articles",
-                             age, base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromDays(7), 100);
+  AGE_CUSTOM_UMA_HISTOGRAM_TIMES(
+      "NewTabPage.ContentSuggestions.ShownAge.Articles", age);
 
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.ShownScoreNormalized.Articles",
       ToUMAScore(score), 11);
 
   // Records the time since the fetch time of the displayed snippet.
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched",
-      clock_->Now() - fetch_date, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromDays(7),
-      /*bucket_count=*/100);
+  base::TimeDelta fetch_age = clock_->Now() - fetch_date;
+  AGE_CUSTOM_UMA_HISTOGRAM_TIMES(
+      "NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched", fetch_age);
 
   // When the first of the articles suggestions is shown, then we count this as
   // a single usage of content suggestions.
@@ -467,9 +528,8 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
                              kMaxSuggestionsTotal);
 
   base::TimeDelta age = clock_->Now() - publish_date;
-  UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.ContentSuggestions.OpenedAge.Articles",
-                             age, base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromDays(7), 100);
+  AGE_CUSTOM_UMA_HISTOGRAM_TIMES(
+      "NewTabPage.ContentSuggestions.OpenedAge.Articles", age);
 
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.OpenedScoreNormalized.Articles",
@@ -501,9 +561,8 @@ void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
                              position, kMaxSuggestionsTotal);
 
   base::TimeDelta age = clock_->Now() - publish_date;
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "NewTabPage.ContentSuggestions.MenuOpenedAge.Articles", age,
-      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7), 100);
+  AGE_CUSTOM_UMA_HISTOGRAM_TIMES(
+      "NewTabPage.ContentSuggestions.MenuOpenedAge.Articles", age);
 
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.MenuOpenedScoreNormalized.Articles",
@@ -596,6 +655,29 @@ void FeedLoggingMetrics::OnPietFrameRenderingEvent(
     base::UmaHistogramSparse(
         "ContentSuggestions.Feed.Piet.FrameRenderingErrorCode", error_code);
   }
+}
+
+void FeedLoggingMetrics::OnVisualElementClicked(int element_type,
+                                                int position,
+                                                base::Time fetch_date) {
+  RecordElementPositionUMA("ContentSuggestions.Feed.VisualElement.Clicked",
+                           position, element_type);
+
+  RecordElementTimeUMA(
+      "ContentSuggestions.Feed.VisualElement.Clicked."
+      "TimeSinceElementFetched",
+      clock_->Now() - fetch_date, element_type);
+}
+
+void FeedLoggingMetrics::OnVisualElementViewed(int element_type,
+                                               int position,
+                                               base::Time fetch_date) {
+  RecordElementPositionUMA("ContentSuggestions.Feed.VisualElement.Viewed",
+                           position, element_type);
+
+  RecordElementTimeUMA(
+      "ContentSuggestions.Feed.VisualElement.Viewed.TimeSinceElementFetched",
+      clock_->Now() - fetch_date, element_type);
 }
 
 void FeedLoggingMetrics::OnInternalError(int internal_error) {

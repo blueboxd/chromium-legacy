@@ -37,7 +37,6 @@
 
 #ifndef NDEBUG
 #include <stdio.h>
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #endif
 
 namespace blink {

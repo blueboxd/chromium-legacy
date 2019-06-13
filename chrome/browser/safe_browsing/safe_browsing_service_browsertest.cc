@@ -85,6 +85,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "crypto/sha2.h"
 #include "net/cookies/cookie_util.h"
@@ -1267,6 +1268,12 @@ class V4SafeBrowsingServiceMetadataTest
   V4SafeBrowsingServiceMetadataTest() {}
 
  private:
+#if defined(ADDRESS_SANITIZER)
+  // TODO(lukasza): https://crbug.com/971820: Disallow renderer crashes once the
+  // bug is fixed.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceMetadataTest);
 };
 

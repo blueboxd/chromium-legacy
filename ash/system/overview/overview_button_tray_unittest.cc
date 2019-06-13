@@ -31,13 +31,13 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -87,7 +87,7 @@ class OverviewButtonTrayTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    ws::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
+    ui::DeviceDataManagerTestApi().SetKeyboardDevices({ui::InputDevice(
         3, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard")});
     base::RunLoop().RunUntilIdle();
   }

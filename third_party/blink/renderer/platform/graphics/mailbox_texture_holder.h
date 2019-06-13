@@ -16,29 +16,27 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
+class SkiaTextureHolder;
 
 class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
  public:
   ~MailboxTextureHolder() override;
 
-  bool IsSkiaTextureHolder() final { return false; }
-  bool IsMailboxTextureHolder() final { return true; }
+  // TextureHolder impl.
   IntSize Size() const final {
     return IntSize(sk_image_info_.width(), sk_image_info_.height());
   }
-  bool CurrentFrameKnownToBeOpaque() final { return false; }
+  bool CurrentFrameKnownToBeOpaque() const final { return false; }
   bool IsValid() const final;
-  bool IsCrossThread() const final;
 
-  const gpu::Mailbox& GetMailbox() const final { return mailbox_; }
-  const gpu::SyncToken& GetSyncToken() const final { return sync_token_; }
-  void UpdateSyncToken(gpu::SyncToken sync_token) final {
-    sync_token_ = sync_token;
-  }
+  bool IsCrossThread() const;
+  const gpu::Mailbox& GetMailbox() const { return mailbox_; }
+  const gpu::SyncToken& GetSyncToken() const { return sync_token_; }
+  void UpdateSyncToken(gpu::SyncToken sync_token) { sync_token_ = sync_token; }
   const SkImageInfo& sk_image_info() const { return sk_image_info_; }
   GLenum texture_target() const { return texture_target_; }
 
-  void Sync(MailboxSyncMode) final;
+  void Sync(MailboxSyncMode);
   // In WebGL's commit or transferToImageBitmap calls, it will call the
   // DrawingBuffer::transferToStaticBitmapImage function, which produces the
   // input parameters for this method.
@@ -50,7 +48,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
                        bool is_origin_top_left);
   // This function turns a texture-backed SkImage into a mailbox and a
   // syncToken.
-  MailboxTextureHolder(std::unique_ptr<TextureHolder>, GLenum filter);
+  MailboxTextureHolder(const SkiaTextureHolder*, GLenum filter);
   // This function may be used when the MailboxTextureHolder is created on a
   // different thread. The caller must provide a verified sync token if it is
   // created cross-thread.

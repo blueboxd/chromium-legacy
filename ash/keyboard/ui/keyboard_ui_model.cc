@@ -4,12 +4,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_model.h"
 
-#include <set>
-#include <utility>
-
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 
 namespace keyboard {
 
@@ -18,46 +13,43 @@ namespace {
 // Returns whether a given state transition is valid.
 // See the design document linked in https://crbug.com/71990.
 bool IsAllowedStateTransition(KeyboardUIState from, KeyboardUIState to) {
-  static const base::NoDestructor<
-      std::set<std::pair<KeyboardUIState, KeyboardUIState>>>
-      kAllowedStateTransition({
-          // The initial ShowKeyboard scenario
-          // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
-          {KeyboardUIState::kInitial, KeyboardUIState::kLoading},
-          {KeyboardUIState::kLoading, KeyboardUIState::kHidden},
-          {KeyboardUIState::kHidden, KeyboardUIState::kShown},
+  using State = KeyboardUIState;
+  switch (GetStateTransitionHash(from, to)) {
+    // The initial ShowKeyboard scenario
+    // INITIAL -> LOADING -> HIDDEN -> SHOWN.
+    case GetStateTransitionHash(State::kInitial, State::kLoading):
+    case GetStateTransitionHash(State::kLoading, State::kHidden):
+    case GetStateTransitionHash(State::kHidden, State::kShown):
 
-          // Hide scenario
-          // SHOWN -> WILL_HIDE -> HIDDEN.
-          {KeyboardUIState::kShown, KeyboardUIState::kWillHide},
-          {KeyboardUIState::kWillHide, KeyboardUIState::kHidden},
+    // Hide scenario
+    // SHOWN -> WILL_HIDE -> HIDDEN.
+    case GetStateTransitionHash(State::kShown, State::kWillHide):
+    case GetStateTransitionHash(State::kWillHide, State::kHidden):
 
-          // Focus transition scenario
-          // SHOWN -> WILL_HIDE -> SHOWN.
-          {KeyboardUIState::kWillHide, KeyboardUIState::kShown},
+    // Focus transition scenario
+    // SHOWN -> WILL_HIDE -> SHOWN.
+    case GetStateTransitionHash(State::kWillHide, State::kShown):
 
-          // HideKeyboard can be called at anytime for example on shutdown.
-          {KeyboardUIState::kShown, KeyboardUIState::kHidden},
+    // HideKeyboard can be called at anytime (for example on shutdown).
+    case GetStateTransitionHash(State::kShown, State::kHidden):
 
-          // Return to INITIAL when keyboard is disabled.
-          {KeyboardUIState::kLoading, KeyboardUIState::kInitial},
-          {KeyboardUIState::kHidden, KeyboardUIState::kInitial},
-      });
-  return kAllowedStateTransition->count(std::make_pair(from, to)) == 1;
+    // Return to INITIAL when keyboard is disabled.
+    case GetStateTransitionHash(State::kLoading, State::kInitial):
+    case GetStateTransitionHash(State::kHidden, State::kInitial):
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Records a state transition for metrics.
 void RecordStateTransition(KeyboardUIState prev, KeyboardUIState next) {
   const bool valid_transition = IsAllowedStateTransition(prev, next);
 
-  // Emit UMA
-  const int transition_record =
-      (valid_transition ? 1 : -1) *
-      (static_cast<int>(prev) * 1000 + static_cast<int>(next));
+  // Use negative hash values to indicate invalid transitions.
+  const int hash = GetStateTransitionHash(prev, next);
   base::UmaHistogramSparse("VirtualKeyboard.ControllerStateTransition",
-                           transition_record);
-  UMA_HISTOGRAM_BOOLEAN("VirtualKeyboard.ControllerStateTransitionIsValid",
-                        valid_transition);
+                           valid_transition ? hash : -hash);
 
   DCHECK(valid_transition) << "State: " << StateToStr(prev) << " -> "
                            << StateToStr(next) << " Unexpected transition";

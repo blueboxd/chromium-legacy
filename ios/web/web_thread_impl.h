@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 
 namespace web {
 

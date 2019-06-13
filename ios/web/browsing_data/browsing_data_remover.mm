@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #import "ios/web/browsing_data/browsing_data_remover_observer.h"
 #import "ios/web/public/browser_state.h"
-#import "ios/web/public/web_thread.h"
+#import "ios/web/public/thread/web_thread.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

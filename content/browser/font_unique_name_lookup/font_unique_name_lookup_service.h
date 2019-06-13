@@ -26,6 +26,9 @@ class FontUniqueNameLookupService : public blink::mojom::FontUniqueNameLookup {
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 
+  void GetUniqueNameLookupTableIfAvailable(
+      GetUniqueNameLookupTableIfAvailableCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FontUniqueNameLookupService);
   ::content::FontUniqueNameLookup& font_unique_name_lookup_;

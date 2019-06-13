@@ -133,11 +133,11 @@ void CSSPaintInterpolationType::ApplyStandardPropertyValue(
   switch (CssProperty().PropertyID()) {
     case CSSPropertyID::kFill:
       mutable_svg_style.SetFillPaint(SVGPaint(color));
-      mutable_svg_style.SetVisitedLinkFillPaint(SVGPaint(color));
+      mutable_svg_style.SetInternalVisitedFillPaint(SVGPaint(color));
       break;
     case CSSPropertyID::kStroke:
       mutable_svg_style.SetStrokePaint(SVGPaint(color));
-      mutable_svg_style.SetVisitedLinkStrokePaint(SVGPaint(color));
+      mutable_svg_style.SetInternalVisitedStrokePaint(SVGPaint(color));
       break;
     default:
       NOTREACHED();

@@ -16,9 +16,9 @@ String FuzzedDataProvider::ConsumeRandomLengthString(size_t max_length) {
   return String::FromUTF8WithLatin1Fallback(str.data(), str.length());
 }
 
-CString FuzzedDataProvider::ConsumeRemainingBytes() {
+std::string FuzzedDataProvider::ConsumeRemainingBytes() {
   std::vector<char> bytes = provider_.ConsumeRemainingBytes<char>();
-  return CString(bytes.data(), bytes.size());
+  return std::string(bytes.data(), bytes.size());
 }
 
 }  // namespace blink

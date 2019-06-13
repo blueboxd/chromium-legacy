@@ -17,6 +17,10 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class LocalFrame;
@@ -103,6 +107,9 @@ class CORE_EXPORT PaintTiming final
 
   void ReportSwapResultHistogram(WebWidgetClient::SwapResult);
 
+  // The caller owns the |clock| which must outlive the PaintTiming.
+  void SetTickClockForTesting(const base::TickClock* clock);
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -153,6 +160,8 @@ class CORE_EXPORT PaintTiming final
   TimeTicks first_meaningful_paint_candidate_;
 
   Member<FirstMeaningfulPaintDetector> fmp_detector_;
+
+  const base::TickClock* clock_;
 
   FRIEND_TEST_ALL_PREFIXES(FirstMeaningfulPaintDetectorTest, NoFirstPaint);
   FRIEND_TEST_ALL_PREFIXES(FirstMeaningfulPaintDetectorTest, OneLayout);

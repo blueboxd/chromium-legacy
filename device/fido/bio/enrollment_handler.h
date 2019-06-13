@@ -42,8 +42,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
 
   void GetModality(ResponseCallback);
   void GetSensorInfo(ResponseCallback);
-  void Enroll(ResponseCallback);
+  void EnrollTemplate(ResponseCallback);
   void Cancel(base::OnceClosure);
+  void EnumerateTemplates(ResponseCallback);
 
  private:
   // FidoRequestHandlerBase:
@@ -59,8 +60,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
                           base::Optional<pin::KeyAgreementResponse>);
   void OnHavePINToken(CtapDeviceResponseCode,
                       base::Optional<pin::TokenResponse>);
-  void OnEnroll(CtapDeviceResponseCode, base::Optional<BioEnrollmentResponse>);
+  void OnEnrollTemplate(CtapDeviceResponseCode,
+                        base::Optional<BioEnrollmentResponse>);
   void OnCancel(CtapDeviceResponseCode, base::Optional<BioEnrollmentResponse>);
+  void OnEnumerateTemplates(CtapDeviceResponseCode,
+                            base::Optional<BioEnrollmentResponse>);
 
   SEQUENCE_CHECKER(sequence_checker);
 

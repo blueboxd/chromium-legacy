@@ -18,10 +18,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/dom_distiller/core/resource_utils.h"
 #include "components/grit/components_resources.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "third_party/dom_distiller_js/dom_distiller_json_converter.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -34,7 +34,9 @@ const char* kStringifyPlaceholder = "$$STRINGIFY";
 std::string GetDistillerScriptWithOptions(
     const dom_distiller::proto::DomDistillerOptions& options,
     bool stringify_output) {
-  std::string script = GetResourceFromIdAsString(IDR_DISTILLER_JS);
+  std::string script =
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          IDR_DISTILLER_JS);
   if (script.empty()) {
     return "";
   }

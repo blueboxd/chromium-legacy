@@ -725,23 +725,21 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
 #endif
     }
 
+#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
+    // TODO(wtlee): Enable DMA-buf test for V4L2 JEA once it supports DMA-buf
+    // encoding.
+#else
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       encoder_thread.task_runner()->PostTask(
           FROM_HERE,
-          base::BindOnce(&JpegClient::StartEncode,
+          base::BindOnce(&JpegClient::StartEncodeDmaBuf,
                          base::Unretained(clients[i].get()), buffer_id));
     }
 
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-// For unaligned images, V4L2 may not be able to encode them.
-#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
-      ClientState status = notes[i]->Wait();
-      ASSERT_TRUE(status == ClientState::ENCODE_PASS ||
-                  status == ClientState::ERROR);
-#else
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
-#endif
     }
+#endif
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {

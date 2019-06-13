@@ -142,6 +142,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
@@ -175,6 +176,7 @@ uint32_t BufferFormatToFourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::UYVY_422:
+    case gfx::BufferFormat::P010:
       return libyuv::FOURCC_ANY;
   }
   NOTREACHED();

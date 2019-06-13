@@ -169,24 +169,8 @@ net::URLRequestContextGetter* CastBrowserContext::CreateRequestContext(
       this, protocol_handlers, std::move(request_interceptors));
 }
 
-net::URLRequestContextGetter*
-CastBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
 net::URLRequestContextGetter* CastBrowserContext::CreateMediaRequestContext() {
   return url_request_context_factory_->GetMediaGetter();
-}
-
-net::URLRequestContextGetter*
-CastBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return nullptr;
 }
 
 void CastBrowserContext::SetCorsOriginAccessListForOrigin(

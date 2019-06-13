@@ -32,7 +32,6 @@ include_rules = [
   "+services/preferences/public",
   "+services/service_manager/public",
   "+services/viz/public",
-  "+services/ws",
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/icu",
@@ -84,20 +83,6 @@ include_rules = [
 
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"
-
-  # ui/events/devices is tied with ozone, which is controlled by mus, and
-  # shouldn't be used by ash.
-  "-ui/events/devices",
-
-  # Enums and supporting classes or observers that are safe (should be moved to
-  # services/ws/public/cpp). http://crbug.com/747544.
-  "+ui/events/devices/device_hotplug_event_observer.h",
-  "+ui/events/devices/input_device.h",
-  "+ui/events/devices/input_device_event_observer.h",
-  "+ui/events/devices/input_device_manager.h",
-  "+ui/events/devices/stylus_state.h",
-  "+ui/events/devices/touch_device_transform.h",
-  "+ui/events/devices/touchscreen_device.h",
 
   # SessionManager/UserManager is not part of ash. Use SessionController.
   "-components/session_manager/core",

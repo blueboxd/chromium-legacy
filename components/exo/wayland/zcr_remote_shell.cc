@@ -525,6 +525,14 @@ void remote_surface_set_bounds(wl_client* client,
       gfx::Rect(x, y, width, height));
 }
 
+void remote_surface_block_ime(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetImeBlocked(true);
+}
+
+void remote_surface_unblock_ime(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetImeBlocked(false);
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -568,7 +576,9 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_orientation_lock,
     remote_surface_pip,
     remote_surface_set_bounds,
-    remote_surface_set_aspect_ratio};
+    remote_surface_set_aspect_ratio,
+    remote_surface_block_ime,
+    remote_surface_unblock_ime};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:

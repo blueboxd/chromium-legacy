@@ -165,7 +165,7 @@ TEST_F(TextInputTest, ShowVirtualKeyboardIfEnabled) {
 
   EXPECT_CALL(observer, OnShowVirtualKeyboardIfEnabled)
       .WillOnce(testing::Invoke(
-          [this]() { text_input()->OnKeyboardVisibilityStateChanged(true); }));
+          [this]() { text_input()->OnKeyboardVisibilityChanged(true); }));
   EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true)).Times(1);
   text_input()->ShowVirtualKeyboardIfEnabled();
 
@@ -182,7 +182,7 @@ TEST_F(TextInputTest, ShowVirtualKeyboardIfEnabledBeforeActivated) {
   EXPECT_CALL(observer, OnTextInputStateChanged(text_input())).Times(1);
   EXPECT_CALL(observer, OnShowVirtualKeyboardIfEnabled)
       .WillOnce(testing::Invoke(
-          [this]() { text_input()->OnKeyboardVisibilityStateChanged(true); }));
+          [this]() { text_input()->OnKeyboardVisibilityChanged(true); }));
   EXPECT_CALL(*delegate(), Activated).Times(1);
   EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true)).Times(1);
   text_input()->Activate(surface());

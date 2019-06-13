@@ -1,11 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -18,7 +14,7 @@
 
 <dom-module id="network-config">
   <template>
-    <style include="network-shared settings-shared action-link iron-flex">
+    <style include="network-shared iron-flex">
       #spinner-container {
         height: 200px;
       }
@@ -187,31 +183,6 @@
                         security_, eapProperties_.*, shareAllowEnable)]]"
               aria-labeledby="shareLabel" on-change="onShareChanged_">
           </cr-toggle>
-        </div>
-      </template>
-
-      <!-- AutoConnect (WiFi) -->
-      <template is="dom-if" if="[[configCanAutoConnect_(type)]]" restamp>
-        <div class="property-box">
-          <div id="autoConnectLabel"
-              class="start">[[i18n('networkAutoConnect')]]</div>
-          <template is="dom-if"
-              if="[[isAutoConnectEnforcedByPolicy_(globalPolicy)]]" restamp>
-            <cr-policy-indicator indicator-type="devicePolicy">
-            </cr-policy-indicator>
-          </template>
-          <cr-toggle id="autoConnect" checked="{{autoConnect_}}"
-              disabled="[[autoConnectDisabled_(globalPolicy)]]"
-              aria-labeledby="autoConnectLabel">
-          </cr-toggle>
-        </div>
-      </template>
-
-      <!-- Hidden Network Warning -->
-      <template is="dom-if" if="{{autoConnect_}}" restamp>
-        <div>
-          <iron-icon icon="cr:warning"></iron-icon>
-          [[i18nAdvanced('hiddenNetworkWarning')]]
         </div>
       </template>
     </template>

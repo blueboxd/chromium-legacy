@@ -83,6 +83,12 @@ const char* const kInvalidPolicies[] = {
     "oversized-images " ORIGIN_A "(1.a.3)",
     "fullscreen  " ORIGIN_A "()"};
 
+// Names of UMA histograms
+const char kAllowlistAttributeHistogram[] =
+    "Blink.UseCounter.FeaturePolicy.AttributeAllowlistType";
+const char kAllowlistHeaderHistogram[] =
+    "Blink.UseCounter.FeaturePolicy.HeaderAllowlistType";
+
 }  // namespace
 
 class FeaturePolicyParserTest : public testing::Test {
@@ -818,6 +824,263 @@ TEST_F(FeaturePolicyParserTest, UnsizedMediaOriginTrialFeatureUseCounter) {
         dummy->GetDocument().IsUseCounted(WebFeature::kUnsizedMediaPolicy))
         << declaration << " should trigger the origin trial use counter.";
   }
+}
+
+// Tests the use counter for comma separator in declarations.
+TEST_F(FeaturePolicyParserTest, CommaSeparatedUseCounter) {
+  Vector<String> messages;
+
+  // Declarations without a semicolon should not trigger the use counter.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment", origin_a_.get(), &messages,
+                                     &dummy->GetDocument());
+    EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kFeaturePolicyCommaSeparatedDeclarations));
+  }
+
+  // Validate that declarations which should trigger the use counter do.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment, fullscreen", origin_a_.get(),
+                                     &messages, &dummy->GetDocument());
+    EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kFeaturePolicyCommaSeparatedDeclarations))
+        << "'payment, fullscreen' should trigger the comma separated use "
+           "counter.";
+  }
+}
+
+// Tests the use counter for semicolon separator in declarations.
+TEST_F(FeaturePolicyParserTest, SemicolonSeparatedUseCounter) {
+  Vector<String> messages;
+
+  // Declarations without a semicolon should not trigger the use counter.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment", origin_a_.get(), &messages,
+                                     &dummy->GetDocument());
+    EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kFeaturePolicySemicolonSeparatedDeclarations));
+  }
+
+  // Validate that declarations which should trigger the use counter do.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
+                                     &messages, &dummy->GetDocument());
+    EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kFeaturePolicySemicolonSeparatedDeclarations))
+        << "'payment; fullscreen' should trigger the semicolon separated use "
+           "counter.";
+  }
+}
+
+// Tests that the histograms for usage of various directive options are
+// recorded correctly.
+struct AllowlistHistogramData {
+  // Name of the test
+  const char* name;
+  const char* policy_declaration;
+  int expected_total;
+  std::vector<FeaturePolicyAllowlistType> expected_buckets;
+};
+
+class FeaturePolicyAllowlistHistogramTest
+    : public FeaturePolicyParserTest,
+      public testing::WithParamInterface<AllowlistHistogramData> {
+ public:
+  static const AllowlistHistogramData kCases[];
+};
+
+const AllowlistHistogramData FeaturePolicyAllowlistHistogramTest::kCases[] = {
+    {"Empty", "fullscreen", 1, {FeaturePolicyAllowlistType::kEmpty}},
+    {"Empty_MultipleDirectivesComma",
+     "fullscreen, geolocation, payment",
+     1,
+     {FeaturePolicyAllowlistType::kEmpty}},
+    {"Empty_MultipleDirectivesSemicolon",
+     "fullscreen; payment",
+     1,
+     {FeaturePolicyAllowlistType::kEmpty}},
+    {"Star", "fullscreen *", 1, {FeaturePolicyAllowlistType::kStar}},
+    {"Star_MultipleDirectivesComma",
+     "fullscreen *, payment *",
+     1,
+     {FeaturePolicyAllowlistType::kStar}},
+    {"Star_MultipleDirectivesSemicolon",
+     "fullscreen *; payment *",
+     1,
+     {FeaturePolicyAllowlistType::kStar}},
+    {"Self", "fullscreen 'self'", 1, {FeaturePolicyAllowlistType::kSelf}},
+    {"Self_MultipleDirectives",
+     "fullscreen 'self', geolocation 'self', payment 'self'",
+     1,
+     {FeaturePolicyAllowlistType::kSelf}},
+    {"None", "fullscreen 'none'", 1, {FeaturePolicyAllowlistType::kNone}},
+    {"None_MultipleDirectives",
+     "fullscreen 'none'; payment 'none'",
+     1,
+     {FeaturePolicyAllowlistType::kNone}},
+    {"Origins",
+     "fullscreen " ORIGIN_A,
+     1,
+     {FeaturePolicyAllowlistType::kOrigins}},
+    {"Origins_MultipleDirectivesComma",
+     "fullscreen " ORIGIN_A ", payment " ORIGIN_A,
+     1,
+     {FeaturePolicyAllowlistType::kOrigins}},
+    {"Origins_MultipleDirectivesSemicolon",
+     "fullscreen " ORIGIN_A "; payment " ORIGIN_A " " ORIGIN_B,
+     1,
+     {FeaturePolicyAllowlistType::kOrigins}},
+    {"Mixed",
+     "fullscreen 'self' " ORIGIN_A,
+     1,
+     {FeaturePolicyAllowlistType::kMixed}},
+    {"Mixed_MultipleDirectives",
+     "fullscreen 'self' " ORIGIN_A ", payment 'none' " ORIGIN_A " " ORIGIN_B,
+     1,
+     {FeaturePolicyAllowlistType::kMixed}},
+    {"KeywordsOnly",
+     "fullscreen 'self' 'src'",
+     1,
+     {FeaturePolicyAllowlistType::kKeywordsOnly}},
+    {"KeywordsOnly_MultipleDirectives",
+     "fullscreen 'self' 'src'; payment 'self' 'none'",
+     1,
+     {FeaturePolicyAllowlistType::kKeywordsOnly}},
+    {"MultipleDirectives_SeparateTypes_Semicolon",
+     "fullscreen; geolocation 'self'",
+     2,
+     {FeaturePolicyAllowlistType::kEmpty, FeaturePolicyAllowlistType::kSelf}},
+    {"MultipleDirectives_SeparateTypes_Mixed",
+     "fullscreen *; geolocation 'none' " ORIGIN_A,
+     2,
+     {FeaturePolicyAllowlistType::kStar, FeaturePolicyAllowlistType::kMixed}},
+    {"MultipleDirectives_SeparateTypes_Comma",
+     "fullscreen *, geolocation 'none', payment " ORIGIN_A " " ORIGIN_B,
+     3,
+     {FeaturePolicyAllowlistType::kStar, FeaturePolicyAllowlistType::kNone,
+      FeaturePolicyAllowlistType::kOrigins}}};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    FeaturePolicyAllowlistHistogramTest,
+    ::testing::ValuesIn(FeaturePolicyAllowlistHistogramTest::kCases),
+    [](const testing::TestParamInfo<AllowlistHistogramData>& param_info) {
+      return param_info.param.name;
+    });
+
+TEST_P(FeaturePolicyAllowlistHistogramTest, HeaderHistogram) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  AllowlistHistogramData data = GetParam();
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  FeaturePolicyParser::ParseHeader(data.policy_declaration, origin_a_.get(),
+                                   &messages, &dummy->GetDocument());
+  for (FeaturePolicyAllowlistType expected_bucket : data.expected_buckets) {
+    tester.ExpectBucketCount(kAllowlistHeaderHistogram,
+                             static_cast<int>(expected_bucket), 1);
+  }
+
+  tester.ExpectTotalCount(kAllowlistHeaderHistogram, data.expected_total);
+}
+
+TEST_F(FeaturePolicyAllowlistHistogramTest, MixedInHeaderHistogram) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  const char* declaration = "fullscreen *; geolocation 'self' " ORIGIN_A;
+  FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
+                                   &dummy->GetDocument());
+
+  tester.ExpectBucketCount(kAllowlistHeaderHistogram,
+                           static_cast<int>(FeaturePolicyAllowlistType::kStar),
+                           1);
+  tester.ExpectBucketCount(kAllowlistHeaderHistogram,
+                           static_cast<int>(FeaturePolicyAllowlistType::kMixed),
+                           1);
+
+  tester.ExpectTotalCount(kAllowlistHeaderHistogram, 2);
+}
+
+TEST_P(FeaturePolicyAllowlistHistogramTest, AttributeHistogram) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  AllowlistHistogramData data = GetParam();
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  FeaturePolicyParser::ParseAttribute(data.policy_declaration, origin_a_.get(),
+                                      origin_b_.get(), &messages,
+                                      &dummy->GetDocument());
+  for (FeaturePolicyAllowlistType expected_bucket : data.expected_buckets) {
+    tester.ExpectBucketCount(kAllowlistAttributeHistogram,
+                             static_cast<int>(expected_bucket), 1);
+  }
+
+  tester.ExpectTotalCount(kAllowlistAttributeHistogram, data.expected_total);
+}
+
+TEST_F(FeaturePolicyAllowlistHistogramTest, MixedInAttributeHistogram) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  const char* declaration = "fullscreen *; geolocation 'src' " ORIGIN_A;
+  FeaturePolicyParser::ParseAttribute(declaration, origin_a_.get(),
+                                      origin_b_.get(), &messages,
+                                      &dummy->GetDocument());
+
+  tester.ExpectBucketCount(kAllowlistAttributeHistogram,
+                           static_cast<int>(FeaturePolicyAllowlistType::kStar),
+                           1);
+  tester.ExpectBucketCount(kAllowlistAttributeHistogram,
+                           static_cast<int>(FeaturePolicyAllowlistType::kMixed),
+                           1);
+
+  tester.ExpectTotalCount(kAllowlistAttributeHistogram, 2);
+}
+
+TEST_F(FeaturePolicyAllowlistHistogramTest, SrcInAttributeHistogram) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  const char* declaration = "fullscreen 'src'";
+  FeaturePolicyParser::ParseAttribute(declaration, origin_a_.get(),
+                                      origin_b_.get(), &messages,
+                                      &dummy->GetDocument());
+
+  tester.ExpectBucketCount(kAllowlistAttributeHistogram,
+                           static_cast<int>(FeaturePolicyAllowlistType::kSrc),
+                           1);
+
+  tester.ExpectTotalCount(kAllowlistAttributeHistogram, 1);
+}
+
+TEST_F(FeaturePolicyAllowlistHistogramTest, OriginTrialFeaturesNotRecorded) {
+  Vector<String> messages;
+  HistogramTester tester;
+
+  auto dummy = std::make_unique<DummyPageHolder>();
+  const char* unoptimizedimages_declaration =
+      "unoptimized-lossy-images;"
+      "unoptimized-lossless-images;"
+      "unoptimized-lossless-images-strict;"
+      "oversized-images *;";
+  const char* unsizedmedia_declaration = "unsized-media *";
+  FeaturePolicyParser::ParseHeader(unoptimizedimages_declaration,
+                                   origin_a_.get(), &messages,
+                                   &dummy->GetDocument());
+  FeaturePolicyParser::ParseHeader(unsizedmedia_declaration, origin_a_.get(),
+                                   &messages, &dummy->GetDocument());
+
+  tester.ExpectTotalCount(kAllowlistHeaderHistogram, 0);
 }
 
 // Test policy mutation methods

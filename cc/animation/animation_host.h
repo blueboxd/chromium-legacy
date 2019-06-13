@@ -164,6 +164,12 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool IsElementAnimating(ElementId element_id) const override;
   bool HasTickingKeyframeModelForTesting(ElementId element_id) const override;
 
+  void ImplOnlyAutoScrollAnimationCreate(
+      ElementId element_id,
+      const gfx::ScrollOffset& target_offset,
+      const gfx::ScrollOffset& current_offset,
+      float autoscroll_velocity) override;
+
   void ImplOnlyScrollAnimationCreate(
       ElementId element_id,
       const gfx::ScrollOffset& target_offset,

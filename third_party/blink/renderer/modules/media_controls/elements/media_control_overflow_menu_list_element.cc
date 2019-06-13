@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_list_element.h"
 
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
@@ -18,7 +19,8 @@ namespace blink {
 
 MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(
     MediaControlsImpl& media_controls)
-    : MediaControlPopupMenuElement(media_controls) {
+    : MediaControlPopupMenuElement(media_controls),
+      clock_(base::DefaultTickClock::GetInstance()) {
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list"));
   setAttribute(html_names::kRoleAttr, "menu");
@@ -45,7 +47,7 @@ void MediaControlOverflowMenuListElement::MaybeRecordTimeTaken(
                                 : "Media.Controls.Overflow.TimeToDismiss",
                             1, 100, 100);
   histogram.Count(static_cast<int32_t>(
-      (CurrentTimeTicks() - time_shown_.value()).InSeconds()));
+      (clock_->NowTicks() - time_shown_.value()).InSeconds()));
 
   time_shown_.reset();
 }
@@ -68,7 +70,7 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
   // Record the time the overflow menu was shown to a histogram.
   if (wanted) {
     DCHECK(!time_shown_);
-    time_shown_ = CurrentTimeTicks();
+    time_shown_ = clock_->NowTicks();
   } else if (time_shown_) {
     // Records the time taken to dismiss using a task runner. This ensures the
     // time to dismiss is always called after the time to action (if there is
@@ -86,6 +88,11 @@ void MediaControlOverflowMenuListElement::OnItemSelected() {
   MaybeRecordTimeTaken(kTimeToAction);
 
   MediaControlPopupMenuElement::OnItemSelected();
+}
+
+void MediaControlOverflowMenuListElement::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace blink

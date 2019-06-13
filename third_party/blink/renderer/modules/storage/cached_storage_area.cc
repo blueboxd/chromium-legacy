@@ -629,8 +629,8 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
       if (input.Is8Bit()) {
         // This code is copied from WTF::String::Utf8(), except the vector
         // doesn't have a stack-allocated capacity.
-        // We do this because there isn't a way to transform the CString we get
-        // from WTF::String::Utf8() to a Vector without an extra copy.
+        // We do this because there isn't a way to transform the std::string we
+        // get from WTF::String::Utf8() to a Vector without an extra copy.
         if (length > std::numeric_limits<unsigned>::max() / 3)
           return Vector<uint8_t>();
         Vector<uint8_t> buffer_vector(length * 3);

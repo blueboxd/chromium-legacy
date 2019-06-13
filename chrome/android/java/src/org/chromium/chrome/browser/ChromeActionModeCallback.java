@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -102,7 +102,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
      */
     @VisibleForTesting
     protected LoadUrlParams generateUrlParamsForSearch(String query) {
-        String url = TemplateUrlService.getInstance().getUrlForSearchQuery(query);
+        String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
         String headers = GeolocationHeader.getGeoHeader(url, mTab);
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);

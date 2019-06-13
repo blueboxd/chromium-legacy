@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"

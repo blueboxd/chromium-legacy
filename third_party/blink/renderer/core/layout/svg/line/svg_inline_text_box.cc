@@ -277,7 +277,7 @@ FloatRect SVGInlineTextBox::CalculateBoundaries() const {
 }
 
 bool SVGInlineTextBox::HitTestFragments(
-    const HitTestLocation& location_in_container) const {
+    const HitTestLocation& hit_test_location) const {
   auto line_layout_item = LineLayoutSVGInlineText(GetLineLayoutItem());
   const SimpleFontData* font_data = line_layout_item.ScaledFont().PrimaryFont();
   DCHECK(font_data);
@@ -289,14 +289,14 @@ bool SVGInlineTextBox::HitTestFragments(
                    line_layout_item.ScalingFactor();
   for (const SVGTextFragment& fragment : text_fragments_) {
     FloatQuad fragment_quad = fragment.BoundingQuad(baseline);
-    if (location_in_container.Intersects(fragment_quad))
+    if (hit_test_location.Intersects(fragment_quad))
       return true;
   }
   return false;
 }
 
 bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
-                                   const HitTestLocation& location_in_container,
+                                   const HitTestLocation& hit_test_location,
                                    const PhysicalOffset& accumulated_offset,
                                    LayoutUnit,
                                    LayoutUnit) {
@@ -318,12 +318,12 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
     // Currently SVGInlineTextBox doesn't flip in blocks direction.
     PhysicalRect rect{PhysicalOffset(Location()), PhysicalSize(Size())};
     rect.Move(accumulated_offset);
-    if (location_in_container.Intersects(rect)) {
-      if (HitTestFragments(location_in_container)) {
+    if (hit_test_location.Intersects(rect)) {
+      if (HitTestFragments(hit_test_location)) {
         line_layout_item.UpdateHitTestResult(
-            result, location_in_container.Point() - accumulated_offset);
+            result, hit_test_location.Point() - accumulated_offset);
         if (result.AddNodeToListBasedTestResult(line_layout_item.GetNode(),
-                                                location_in_container,
+                                                hit_test_location,
                                                 rect) == kStopHitTesting)
           return true;
       }

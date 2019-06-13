@@ -107,6 +107,9 @@
       <div class="clear settings-box"></div>
 
       <cr-action-menu>
+        <button class="dropdown-item" on-click="onRefreshNowClick_">
+          $i18n{kerberosAccountsRefreshNowLabel}
+        </button>
         <button class="dropdown-item" on-click="onSetAsActiveAccountClick_">
           $i18n{kerberosAccountsSetAsActiveAccountLabel}
         </button>
@@ -117,7 +120,7 @@
     </div>
 
     <template is="dom-if" if="[[showAddAccountDialog_]]" restamp>
-      <kerberos-add-account-dialog username="[[addAccountPresetUsername_]]"
+      <kerberos-add-account-dialog preset-account="[[selectedAccount_]]"
           on-close="onAddAccountDialogClosed_">
       </kerberos-add-account-dialog>
     </template>

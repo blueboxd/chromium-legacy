@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.searchwidget;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
@@ -22,8 +23,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -31,13 +34,16 @@ import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -171,8 +177,50 @@ public class SearchActivity extends AsyncInitializationActivity
                        .setWindow(getWindowAndroid())
                        .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                        .build();
-        mTab.initialize(WebContentsFactory.createWebContents(false, false),
-                new TabDelegateFactory(), false, null, false);
+        TabDelegateFactory factory = new TabDelegateFactory() {
+            @Override
+            public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
+                return new TabWebContentsDelegateAndroid(tab) {
+                    @Override
+                    protected boolean shouldResumeRequestsForCreatedWindow() {
+                        return false;
+                    }
+
+                    @Override
+                    protected boolean addNewContents(WebContents sourceWebContents,
+                            WebContents webContents, int disposition, Rect initialPosition,
+                            boolean userGesture) {
+                        return false;
+                    }
+
+                    @Override
+                    protected void setOverlayMode(boolean useOverlayMode) {}
+                };
+            }
+
+            @Override
+            public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
+                return null;
+            }
+
+            @Override
+            public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
+                return null;
+            }
+
+            @Override
+            public boolean canShowAppBanners() {
+                return false;
+            }
+
+            @Override
+            public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(
+                    Tab tab) {
+                return null;
+            }
+        };
+        mTab.initialize(
+                WebContentsFactory.createWebContents(false, false), factory, false, null, false);
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);

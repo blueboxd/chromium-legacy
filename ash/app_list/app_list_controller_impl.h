@@ -21,9 +21,9 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
@@ -56,7 +56,7 @@ class ASH_EXPORT AppListControllerImpl
       public ash::ShellObserver,
       public OverviewObserver,
       public TabletModeObserver,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public WallpaperControllerObserver,
       public DefaultVoiceInteractionObserver,
       public WindowTreeHostManager::Observer,
@@ -222,7 +222,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnTabletModeEnded() override;
 
   // KeyboardControllerObserver:
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;

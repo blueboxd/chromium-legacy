@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_WEB_STATE_UI_FAVICON_UTIL_H_
 #define IOS_WEB_WEB_STATE_UI_FAVICON_UTIL_H_
 
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 
 namespace base {
 class DictionaryValue;

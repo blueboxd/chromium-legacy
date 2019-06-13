@@ -235,25 +235,7 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-HeadlessBrowserContextImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  NOTREACHED();
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
 HeadlessBrowserContextImpl::CreateMediaRequestContext() {
-  NOTREACHED();
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
   NOTREACHED();
   return nullptr;
 }

@@ -455,6 +455,13 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         resourceExtractor.startExtractingResources("en");
         resourceExtractor.waitForCompletion();
         nativeSetCommandLineFlags(false);
+
+        mFullBrowserStartupDone = true;
+        mStartupSuccess = true;
+        for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
+            asyncStartupCallback.onSuccess();
+        }
+        mAsyncStartupCallbacks.clear();
     }
 
     private static native void nativeSetCommandLineFlags(boolean singleProcess);

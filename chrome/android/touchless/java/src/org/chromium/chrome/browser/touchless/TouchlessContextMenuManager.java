@@ -189,7 +189,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                 .with(TouchlessDialogProperties.ACTION_NAMES, names)
                 .with(TouchlessDialogProperties.CANCEL_ACTION, (v) -> closeTouchlessContextMenu())
                 .with(TouchlessDialogProperties.LIST_MODELS, menuItems)
-                .with(TouchlessDialogProperties.PRIORITY, TouchlessDialogProperties.Priority.HIGH);
+                .with(TouchlessDialogProperties.PRIORITY, TouchlessDialogProperties.Priority.HIGH)
+                .with(TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE, true);
         if (title != null) {
             builder.with(ModalDialogProperties.TITLE, title);
         }

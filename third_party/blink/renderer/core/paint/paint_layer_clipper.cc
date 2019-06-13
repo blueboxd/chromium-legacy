@@ -248,7 +248,7 @@ PhysicalRect PaintLayerClipper::LocalClipRect(
     clipped_rect_in_local_space.MoveBy(
         -FloatPoint(layer_.GetLayoutObject().FirstFragment().PaintOffset()));
 
-    return PhysicalRect::EnclosingRect(clipped_rect_in_local_space);
+    return PhysicalRect::FastAndLossyFromFloatRect(clipped_rect_in_local_space);
   }
 
   PhysicalRect layer_bounds;
@@ -289,7 +289,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
           fragment_data.PreTransform(),
           context.root_fragment->LocalBorderBoxProperties().Transform(),
           float_bounds);
-      layer_bounds = PhysicalRect::EnclosingRect(float_bounds);
+      layer_bounds = PhysicalRect::FastAndLossyFromFloatRect(float_bounds);
       layer_bounds.offset -= context.root_fragment->PaintOffset();
     }
   }

@@ -36,7 +36,7 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
     scoped_refptr<gfx::NativePixmap> pixmap =
         surface_factory->CreateNativePixmap(gfx::kNullAcceleratedWidget,
                                             nullptr, size, format, usage);
-    DCHECK(pixmap);
+    DCHECK(pixmap) << "Offending format: " << gfx::BufferFormatToString(format);
     if (usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE ||
         usage == gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE) {
       auto client_pixmap = client_native_pixmap_factory_->ImportFromHandle(
@@ -66,10 +66,13 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
   }
 
   int GetAdmissibleError() const {
-    return (format == gfx::BufferFormat::YVU_420 ||
-            format == gfx::BufferFormat::YUV_420_BIPLANAR)
-               ? 1
-               : 0;
+    if (format == gfx::BufferFormat::YVU_420 ||
+        format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      return 1;
+    }
+    if (format == gfx::BufferFormat::P010)
+      return 3;
+    return 0;
   }
 
  private:
@@ -100,7 +103,9 @@ using GLImageReadWriteType = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::R_8>,
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                    gfx::BufferFormat::YUV_420_BIPLANAR>>;
+                                    gfx::BufferFormat::YUV_420_BIPLANAR>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::P010>>;
 
 using GLImageBindTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
@@ -114,7 +119,9 @@ using GLImageBindTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::YUV_420_BIPLANAR>,
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                    gfx::BufferFormat::YUV_420_BIPLANAR>>;
+                                    gfx::BufferFormat::YUV_420_BIPLANAR>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                                    gfx::BufferFormat::P010>>;
 
 // These tests are disabled since the trybots are running with Ozone X11
 // implementation that doesn't support creating ClientNativePixmap.

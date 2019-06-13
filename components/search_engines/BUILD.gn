@@ -80,6 +80,17 @@ static_library("search_engines") {
     "//url",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/template_url_android.cc",
+      "android/template_url_android.h",
+      "android/template_url_service_android.cc",
+      "android/template_url_service_android.h",
+    ]
+
+    deps += [ "//components/search_engines/android:jni_headers" ]
+  }
+
   if (!is_ios) {
     sources += [
       "default_search_policy_handler.cc",

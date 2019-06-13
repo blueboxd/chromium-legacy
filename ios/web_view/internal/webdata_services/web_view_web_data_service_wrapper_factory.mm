@@ -17,8 +17,8 @@
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 

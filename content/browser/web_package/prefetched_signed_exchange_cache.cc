@@ -376,10 +376,6 @@ class PrefetchedNavigationLoaderInterceptor
       ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) override {
-    // Currently we just check the URL matching. But we should check the Vary
-    // header (eg: HttpVaryData::MatchesRequest()) and Cache-Control header.
-    // And also we shuold check the expires parameter of the signed exchange's
-    // signature. TODO(crbug.com/935267): Implement these checking logic.
     if (state_ == State::kInitial &&
         tentative_resource_request.url == exchange_->outer_url()) {
       state_ = State::kOuterRequestRequested;
@@ -470,22 +466,25 @@ bool CanStoreEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
   return true;
 }
 
-bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
+bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
+                 const base::Time& now) {
+  if (entry.signature_expire_time() < now)
+    return false;
+
   const std::unique_ptr<const network::ResourceResponseHead>& outer_response =
       entry.outer_response();
+
   // Use the prefetched entry within kPrefetchReuseMins minutes without
   // validation.
-  if (outer_response->headers->GetCurrentAge(outer_response->request_time,
-                                             outer_response->response_time,
-                                             base::Time::Now()) <
+  if (outer_response->headers->GetCurrentAge(
+          outer_response->request_time, outer_response->response_time, now) <
       base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins)) {
     return true;
   }
   // We use the prefetched entry when we don't need the validation.
   if (outer_response->headers->RequiresValidation(
-          outer_response->request_time, outer_response->response_time,
-          base::Time::Now()) != net::VALIDATION_NONE) {
-    // TODO(crbug.com/935267): Consider discarding this entry.
+          outer_response->request_time, outer_response->response_time, now) !=
+      net::VALIDATION_NONE) {
     return false;
   }
   return true;
@@ -523,6 +522,10 @@ void PrefetchedSignedExchangeCache::Entry::SetBlobDataHandle(
     std::unique_ptr<const storage::BlobDataHandle> blob_data_handle) {
   blob_data_handle_ = std::move(blob_data_handle);
 }
+void PrefetchedSignedExchangeCache::Entry::SetSignatureExpireTime(
+    const base::Time& signature_expire_time) {
+  signature_expire_time_ = signature_expire_time;
+}
 
 std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>
 PrefetchedSignedExchangeCache::Entry::Clone() const {
@@ -533,6 +536,7 @@ PrefetchedSignedExchangeCache::Entry::Clone() const {
   DCHECK(inner_response());
   DCHECK(completion_status());
   DCHECK(blob_data_handle());
+  DCHECK(!signature_expire_time().is_null());
 
   std::unique_ptr<Entry> clone = std::make_unique<Entry>();
   clone->SetOuterUrl(outer_url_);
@@ -548,6 +552,7 @@ PrefetchedSignedExchangeCache::Entry::Clone() const {
           *completion_status_));
   clone->SetBlobDataHandle(
       std::make_unique<const storage::BlobDataHandle>(*blob_data_handle_));
+  clone->SetSignatureExpireTime(signature_expire_time_);
   return clone;
 }
 
@@ -572,6 +577,7 @@ void PrefetchedSignedExchangeCache::Store(
   DCHECK(cached_exchange->inner_response());
   DCHECK(cached_exchange->completion_status());
   DCHECK(cached_exchange->blob_data_handle());
+  DCHECK(!cached_exchange->signature_expire_time().is_null());
 
   if (!CanStoreEntry(*cached_exchange))
     return;
@@ -585,12 +591,15 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   const auto it = exchanges_.find(outer_url);
   if (it == exchanges_.end())
     return nullptr;
+  const base::Time now = base::Time::Now();
   const std::unique_ptr<const Entry>& exchange = it->second;
-  if (!CanUseEntry(*exchange.get()))
+  if (!CanUseEntry(*exchange.get(), now)) {
+    exchanges_.erase(it);
     return nullptr;
+  }
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
       exchange->Clone(),
-      GetInfoListForNavigation(outer_url, exchange->inner_url()));
+      GetInfoListForNavigation(outer_url, exchange->inner_url(), now));
 }
 
 const PrefetchedSignedExchangeCache::EntryMap&
@@ -632,9 +641,9 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
 }
 
 std::vector<PrefetchedSignedExchangeInfo>
-PrefetchedSignedExchangeCache::GetInfoListForNavigation(
-    const GURL& outer_url,
-    const GURL& inner_url) const {
+PrefetchedSignedExchangeCache::GetInfoListForNavigation(const GURL& outer_url,
+                                                        const GURL& inner_url,
+                                                        const base::Time& now) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::FeatureList::IsEnabled(
@@ -648,24 +657,28 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
   const url::Origin outer_url_origin = url::Origin::Create(outer_url);
   const url::Origin inner_url_origin = url::Origin::Create(inner_url);
 
-  for (const auto& exchanges_it : exchanges_) {
-    const std::unique_ptr<const Entry>& exchange = exchanges_it.second;
-    if (!outer_url_origin.IsSameOriginWith(
-            url::Origin::Create(exchange->outer_url()))) {
-      // Restrict the main SXG and the subresources SXGs to be served from the
-      // same origin.
+  EntryMap::iterator exchanges_it = exchanges_.begin();
+  while (exchanges_it != exchanges_.end()) {
+    const std::unique_ptr<const Entry>& exchange = exchanges_it->second;
+    if (!CanUseEntry(*exchange.get(), now)) {
+      exchanges_.erase(exchanges_it++);
       continue;
     }
-    if (!CanUseEntry(*exchange.get()))
-      continue;
-    network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
-    new SubresourceSignedExchangeURLLoaderFactory(
-        mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
-        inner_url_origin);
-    info_list.emplace_back(
-        exchange->outer_url(), *exchange->header_integrity(),
-        exchange->inner_url(), *exchange->inner_response(),
-        std::move(loader_factory_info).PassHandle().release());
+
+    // Restrict the main SXG and the subresources SXGs to be served from the
+    // same origin.
+    if (outer_url_origin.IsSameOriginWith(
+            url::Origin::Create(exchange->outer_url()))) {
+      network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
+      new SubresourceSignedExchangeURLLoaderFactory(
+          mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
+          inner_url_origin);
+      info_list.emplace_back(
+          exchange->outer_url(), *exchange->header_integrity(),
+          exchange->inner_url(), *exchange->inner_response(),
+          std::move(loader_factory_info).PassHandle().release());
+    }
+    ++exchanges_it;
   }
   return info_list;
 }

@@ -14,12 +14,13 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
@@ -27,7 +28,7 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
  * {@link SingleTabActivity}.
  */
-public class WebappDelegateFactory extends TabDelegateFactory {
+public class WebappDelegateFactory extends TabDelegateFactoryImpl {
     private static class WebappWebContentsDelegateAndroid
             extends ActivityTabWebContentsDelegateAndroid {
         private final WebappActivity mActivity;
@@ -92,6 +93,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     private final WebappActivity mActivity;
 
     public WebappDelegateFactory(WebappActivity activity) {
+        super(activity);
         mActivity = activity;
     }
 
@@ -107,12 +109,11 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public void createBrowserControlsState(Tab tab) {
-        TabBrowserControlsState.create(tab,
-                new ComposedBrowserControlsVisibilityDelegate(
-                        new WebappBrowserControlsDelegate(mActivity, tab),
-                        // Ensures browser controls hiding is delayed after activity start.
-                        mActivity.getFullscreenManager().getBrowserVisibilityDelegate()));
+    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+        return new ComposedBrowserControlsVisibilityDelegate(
+                new WebappBrowserControlsDelegate(mActivity, tab),
+                // Ensures browser controls hiding is delayed after activity start.
+                mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
     }
 
     @Override

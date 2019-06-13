@@ -43,6 +43,7 @@ public final class TabHelpers {
         }
         MediaSessionTabHelper.createForTab(tab);
         TaskTabHelper.createForTab(tab, parentTab);
+        TabBrowserControlsState.createForTab(tab);
 
         // TODO(jinsukkim): Do this by having something observe new tab creation.
         if (tab.isIncognito()) CipherFactory.getInstance().triggerKeyGeneration();

@@ -426,9 +426,11 @@ std::unique_ptr<protocol::Network::WebSocketFrame> WebSocketMessageToProtocol(
       .setOpcode(op_code)
       .setMask(masked)
       // Only interpret the payload as UTF-8 when it's a text message
-      .setPayloadData(op_code == 1 ? String::FromUTF8WithLatin1Fallback(
-                                         payload, payload_length)
-                                   : Base64Encode(payload, payload_length))
+      .setPayloadData(
+          op_code == 1
+              ? String::FromUTF8WithLatin1Fallback(payload, payload_length)
+              : Base64Encode(
+                    base::as_bytes(base::make_span(payload, payload_length))))
       .build();
 }
 

@@ -19,7 +19,7 @@ const BufferFormat kBufferFormats[] = {
     BufferFormat::BGRX_1010102, BufferFormat::RGBX_1010102,
     BufferFormat::BGRA_8888,    BufferFormat::RGBA_F16,
     BufferFormat::UYVY_422,     BufferFormat::YUV_420_BIPLANAR,
-    BufferFormat::YVU_420};
+    BufferFormat::YVU_420,      BufferFormat::P010};
 
 static_assert(base::size(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
@@ -71,6 +71,10 @@ bool RowSizeForBufferFormatChecked(
       DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width;
       return true;
+    case BufferFormat::P010:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = 2 * width;
+      return true;
   }
   NOTREACHED();
   return false;
@@ -100,6 +104,7 @@ size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
     case BufferFormat::UYVY_422:
       return 1;
     case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::P010:
       return 2;
     case BufferFormat::YVU_420:
       return 3;
@@ -129,7 +134,8 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, size_t plane) {
       DCHECK_LT(static_cast<size_t>(plane), base::size(factor));
       return factor[plane];
     }
-    case BufferFormat::YUV_420_BIPLANAR: {
+    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::P010: {
       static size_t factor[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), base::size(factor));
       return factor[plane];
@@ -206,6 +212,12 @@ size_t BufferOffsetForBufferFormat(const Size& size,
       return offset_in_2x2_sub_sampling_sizes[plane] * (size.width() / 2) *
              (size.height() / 2);
     }
+    case BufferFormat::P010: {
+      static size_t offset_in_2x2_sub_sampling_sizes[] = {0, 4};
+      DCHECK_LT(plane, base::size(offset_in_2x2_sub_sampling_sizes));
+      return 2 * offset_in_2x2_sub_sampling_sizes[plane] *
+             (size.width() / 2 + size.height() / 2);
+    }
   }
   NOTREACHED();
   return 0;
@@ -243,6 +255,8 @@ const char* BufferFormatToString(BufferFormat format) {
       return "YUV_420_BIPLANAR";
     case BufferFormat::UYVY_422:
       return "UYVY_422";
+    case BufferFormat::P010:
+      return "P010";
   }
   NOTREACHED()
       << "Invalid BufferFormat: "

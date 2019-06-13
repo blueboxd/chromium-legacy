@@ -102,6 +102,18 @@ class FeedLoggingBridge {
       const base::android::JavaRef<jobject>& j_this,
       const base::android::JavaRef<jintArray>& j_piet_error_codes);
 
+  void OnVisualElementClicked(JNIEnv* j_env,
+                              const base::android::JavaRef<jobject>& j_this,
+                              const jint j_element_type,
+                              const jint j_position,
+                              const jlong j_timeContentBecameAvailableMs);
+
+  void OnVisualElementViewed(JNIEnv* j_env,
+                             const base::android::JavaRef<jobject>& j_this,
+                             const jint j_element_type,
+                             const jint j_position,
+                             const jlong j_timeContentBecameAvailableMs);
+
   void OnInternalError(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this,
                        const jint j_internal_error);

@@ -241,13 +241,24 @@ class UI_BASE_EXPORT ResourceBundle {
   base::StringPiece GetRawDataResourceForScale(int resource_id,
                                                ScaleFactor scale_factor) const;
 
+  // Return the contents of a scale independent resource, decompressed into a
+  // newly allocated string given the resource id.
+  // Todo: Look into introducing an Async version of this function in the future
+  // Bug: https://bugs.chromium.org/p/chromium/issues/detail?id=973417
+  std::string DecompressDataResource(int resource_id);
+
+  // Return the contents of a scale dependent resource, decompressed into a
+  // newly allocated string given the resource id.
+  std::string DecompressDataResourceScaled(int resource_id,
+                                           ScaleFactor scaling_factor);
+
+  // Return the contents of a localized resource, decompressed into a newly
+  // allocated string given the resource id.
+  std::string DecompressLocalizedDataResource(int resource_id);
+
   // Get a localized string given a message id.  Returns an empty string if the
   // resource_id is not found.
   base::string16 GetLocalizedString(int resource_id);
-
-  // Get a localized resource (for example, localized image logo) given a
-  // resource id.
-  base::RefCountedMemory* LoadLocalizedResourceBytes(int resource_id);
 
   // Returns a font list derived from the platform-specific "Base" font list.
   // The result is always cached and exists for the lifetime of the process.

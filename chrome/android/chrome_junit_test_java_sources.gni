@@ -169,6 +169,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/send_tab_to_self/NotificationSharedPrefManagerTest.java",
   "junit/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivityTest.java",
+  "junit/src/org/chromium/chrome/browser/signin/ChromeSigninManagerDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninManagerTest.java",
   "junit/src/org/chromium/chrome/browser/signin/SigninPromoUtilTest.java",
   "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",

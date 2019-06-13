@@ -41,6 +41,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
 
   // mojom::Application:
   void CreateAlert(mojom::AlertBridgeRequest bridge_request) override;
+  void ShowColorPanel(mojom::ColorPanelRequest request,
+                      mojom::ColorPanelHostPtr host) override;
   void CreateNativeWidgetNSWindow(
       uint64_t bridge_id,
       mojom::NativeWidgetNSWindowAssociatedRequest bridge_request,

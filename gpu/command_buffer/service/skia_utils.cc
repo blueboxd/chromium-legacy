@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/size.h"
@@ -87,6 +88,29 @@ void AddVulkanCleanupTaskForSkiaFlush(
     if (task)
       AddCleanupTaskForSkiaFlush(std::move(task), flush_info);
   }
+#endif
+}
+
+void DeleteGrBackendTexture(SharedContextState* context_state,
+                            GrBackendTexture* backend_texture) {
+  DCHECK(backend_texture && backend_texture->isValid());
+  if (!context_state->GrContextIsVulkan()) {
+    context_state->gr_context()->deleteBackendTexture(
+        std::move(*backend_texture));
+    return;
+  }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  auto* fence_helper =
+      context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](const sk_sp<GrContext>& gr_context, GrBackendTexture backend_texture,
+         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {
+        // If underlying Vulkan device is destroyed, gr_context should have been
+        // abandoned, the deleteBackendTexture() should be noop.
+        gr_context->deleteBackendTexture(std::move(backend_texture));
+      },
+      sk_ref_sp(context_state->gr_context()), std::move(*backend_texture)));
 #endif
 }
 

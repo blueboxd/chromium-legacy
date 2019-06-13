@@ -298,7 +298,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound"),
         TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner"),
-        TestCase("fileDisplayCheckSelectWithFakeItemSelected")));
+        TestCase("fileDisplayCheckSelectWithFakeItemSelected"),
+        TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
+        TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */
@@ -333,9 +335,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("imageOpenDownloads"),
                       TestCase("imageOpenDrive").DisableDriveFs(),
                       TestCase("imageOpenDrive").EnableDriveFs(),
-                      TestCase("imageOpenGalleryOpenDownloads"),
+                      TestCase("imageOpenGalleryOpenDownloads")
+#if 0  // Flaky. crbug.com/973795
+                      ,
                       TestCase("imageOpenGalleryOpenDrive").DisableDriveFs(),
-                      TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
+                      TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()
+#endif
+                          ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenSniffedFiles, /* open_sniffed_files.js */
@@ -496,7 +502,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkDeleteDisabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider()));
+        TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider(),
+        TestCase("checkContextMenuFocus").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Delete, /* delete.js */
@@ -607,7 +614,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuSharedWithMe"),
         TestCase("dirContextMenuOffline"),
         TestCase("dirContextMenuComputers"),
-        TestCase("dirContextMenuShortcut")));
+        TestCase("dirContextMenuShortcut"),
+        TestCase("dirContextMenuFocus")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */

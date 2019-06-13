@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/signin/authentication_service.h"
 
-#import <UIKit/UIKit.h>
-
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -80,12 +78,12 @@ AuthenticationService::AuthenticationService(
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       identity_service_observer_(this),
+      identity_manager_observer_(this),
       weak_pointer_factory_(this) {
   DCHECK(pref_service_);
   DCHECK(sync_setup_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
-  identity_manager_->AddObserver(this);
 }
 
 AuthenticationService::~AuthenticationService() {
@@ -123,54 +121,28 @@ void AuthenticationService::Initialize(
   }
   breakpad_helper::SetCurrentlySignedIn(is_signed_in);
 
-  OnApplicationEnterForeground();
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  foreground_observer_ =
-      [center addObserverForName:UIApplicationWillEnterForegroundNotification
-                          object:nil
-                           queue:nil
-                      usingBlock:^(NSNotification* notification) {
-                        OnApplicationEnterForeground();
-                      }];
-  background_observer_ =
-      [center addObserverForName:UIApplicationDidEnterBackgroundNotification
-                          object:nil
-                           queue:nil
-                      usingBlock:^(NSNotification* notification) {
-                        OnApplicationEnterBackground();
-                      }];
-
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
+
+  OnApplicationWillEnterForeground();
 }
 
 void AuthenticationService::Shutdown() {
-  identity_manager_->RemoveObserver(this);
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:foreground_observer_];
-  [center removeObserver:background_observer_];
-
+  identity_manager_observer_.RemoveAll();
   delegate_.reset();
 }
 
-void AuthenticationService::OnApplicationEnterForeground() {
-  if (is_in_foreground_) {
+void AuthenticationService::OnApplicationWillEnterForeground() {
+  if (identity_manager_observer_.IsObservingSources())
     return;
-  }
+
+  identity_manager_observer_.Add(identity_manager_);
 
   // As the SSO library does not send notification when the app is in the
   // background, reload the credentials and check whether any accounts have
   // changed (both are done by calling ComputeHaveAccountsChanged). After
   // that, save the current list of accounts.
-  ComputeHaveAccountsChanged();
-  StoreAccountsInPrefs();
-
-  // Set |is_in_foreground_| only after handling forgotten identity.
-  // This ensures that any changes made to the SSOAuth identities before this
-  // are correctly seen as made while in background.
-  is_in_foreground_ = true;
+  ComputeHaveAccountsChanged(/*should_prompt=*/true);
 
   if (IsAuthenticated()) {
     bool sync_enabled = sync_setup_service_->IsSyncEnabled();
@@ -196,8 +168,14 @@ void AuthenticationService::OnApplicationEnterForeground() {
   }
 }
 
-void AuthenticationService::OnApplicationEnterBackground() {
-  is_in_foreground_ = false;
+void AuthenticationService::OnApplicationDidEnterBackground() {
+  if (!identity_manager_observer_.IsObservingSources())
+    return;
+
+  // Stop observing |identity_manager_| when in the background. Note that
+  // this allows checking whether the app is in background without having a
+  // separate bool by using identity_manager_observer_.IsObservingSources().
+  identity_manager_observer_.Remove(identity_manager_);
 }
 
 void AuthenticationService::SetPromptForSignIn() {
@@ -208,33 +186,32 @@ void AuthenticationService::ResetPromptForSignIn() {
   pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
-bool AuthenticationService::ShouldPromptForSignIn() {
+bool AuthenticationService::ShouldPromptForSignIn() const {
   return pref_service_->GetBoolean(prefs::kSigninShouldPromptForSigninAgain);
 }
 
-void AuthenticationService::ComputeHaveAccountsChanged() {
+void AuthenticationService::ComputeHaveAccountsChanged(bool should_prompt) {
+  // Load accounts from preference before synchronizing the accounts with
+  // the system, otherwiser we would never detect any changes to the list
+  // of accounts.
+  std::vector<std::string> old_accounts = GetAccountsInPrefs();
+  std::sort(old_accounts.begin(), old_accounts.end());
+
   // Reload credentials to ensure the accounts from the token service are
   // up-to-date.
-  // While the AuthenticationService is in background, changes should be shown
-  // to the user and |should_prompt| is true.
-  ReloadCredentialsFromIdentities(!is_in_foreground_ /* should_prompt */);
+  ReloadCredentialsFromIdentities(should_prompt);
+
   std::vector<CoreAccountInfo> new_accounts_info =
       identity_manager_->GetAccountsWithRefreshTokens();
   std::vector<std::string> new_accounts;
   for (const CoreAccountInfo& account_info : new_accounts_info)
     new_accounts.push_back(account_info.account_id);
-  std::vector<std::string> old_accounts = GetAccountsInPrefs();
   std::sort(new_accounts.begin(), new_accounts.end());
-  std::sort(old_accounts.begin(), old_accounts.end());
+
   have_accounts_changed_ = old_accounts != new_accounts;
 }
 
-bool AuthenticationService::HaveAccountsChanged() {
-  if (!is_in_foreground_) {
-    // While AuthenticationService is in background, the value can change
-    // without warning and needs to be recomputed every time.
-    ComputeHaveAccountsChanged();
-  }
+bool AuthenticationService::HaveAccountsChanged() const {
   return have_accounts_changed_;
 }
 
@@ -292,7 +269,7 @@ std::vector<std::string> AuthenticationService::GetAccountsInPrefs() {
   return accounts;
 }
 
-ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() {
+ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() const {
   // There is no authenticated identity if there is no signed in user or if the
   // user signed in via the client login flow.
   if (!IsAuthenticated())
@@ -386,7 +363,7 @@ void AuthenticationService::SignOut(
 }
 
 NSDictionary* AuthenticationService::GetCachedMDMInfo(
-    ChromeIdentity* identity) {
+    ChromeIdentity* identity) const {
   auto it = cached_mdm_infos_.find(
       ChromeIdentityToAccountID(identity_manager_, identity));
 
@@ -405,7 +382,7 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
 }
 
 bool AuthenticationService::HasCachedMDMErrorForIdentity(
-    ChromeIdentity* identity) {
+    ChromeIdentity* identity) const {
   return GetCachedMDMInfo(identity) != nil;
 }
 
@@ -434,12 +411,10 @@ base::WeakPtr<AuthenticationService> AuthenticationService::GetWeakPtr() {
 }
 
 void AuthenticationService::OnEndBatchOfRefreshTokenStateChanges() {
-  if (is_in_foreground_) {
-    // Accounts maybe have been excluded or included from the current browser
-    // state, without any change to the identity list.
-    // Store the current list of accounts to make sure it is up-to-date.
-    StoreAccountsInPrefs();
-  }
+  // Accounts maybe have been excluded or included from the current browser
+  // state, without any change to the identity list.
+  // Store the current list of accounts to make sure it is up-to-date.
+  StoreAccountsInPrefs();
 }
 
 void AuthenticationService::OnIdentityListChanged() {
@@ -452,7 +427,8 @@ void AuthenticationService::OnIdentityListChanged() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&AuthenticationService::HandleIdentityListChanged,
-                     GetWeakPtr(), !is_in_foreground_));
+                     GetWeakPtr(),
+                     !identity_manager_observer_.IsObservingSources()));
 }
 
 bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
@@ -517,12 +493,7 @@ void AuthenticationService::OnChromeIdentityServiceWillBeDestroyed() {
 }
 
 void AuthenticationService::HandleIdentityListChanged(bool should_prompt) {
-  ReloadCredentialsFromIdentities(should_prompt);
-
-  if (is_in_foreground_) {
-    // Update the accounts currently stored in the profile prefs.
-    StoreAccountsInPrefs();
-  }
+  ComputeHaveAccountsChanged(should_prompt);
 }
 
 void AuthenticationService::HandleForgottenIdentity(
@@ -561,17 +532,11 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
   }
 }
 
-bool AuthenticationService::IsAuthenticated() {
-  if (!is_in_foreground_) {
-    // While AuthenticationService is in background, the list of accounts can
-    // change without a OnIdentityListChanged notification being fired.
-    // Reload credentials to ensure that the user is still authenticated.
-    ReloadCredentialsFromIdentities(true /* should_prompt */);
-  }
+bool AuthenticationService::IsAuthenticated() const {
   return identity_manager_->HasPrimaryAccount();
 }
 
-bool AuthenticationService::IsAuthenticatedIdentityManaged() {
+bool AuthenticationService::IsAuthenticatedIdentityManaged() const {
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccount(
           identity_manager_->GetPrimaryAccountInfo());

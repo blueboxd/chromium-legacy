@@ -68,6 +68,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -112,6 +113,10 @@ namespace {
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
 const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
+
+// This is the same as above, but packed in deprecated CRX2. It should work
+// before full deprecation of CRX2.
+const char kTestKioskCrx2App[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
 
 // This app creates a window and declares usage of the identity API in its
 // manifest, so we can test device robot token minting via the identity API.
@@ -467,10 +472,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
 class KioskTest : public OobeBaseTest {
  public:
-  KioskTest()
-      : settings_helper_(false),
-        fake_cws_(new FakeCWS),
-        verifier_format_override_(crx_file::VerifierFormat::CRX3) {
+  KioskTest() : settings_helper_(false), fake_cws_(new FakeCWS) {
     set_exit_when_last_browser_closes(false);
 
     // This test does not operate any real App, so App data does not exist.
@@ -837,8 +839,6 @@ class KioskTest : public OobeBaseTest {
   std::string test_crx_file_;
   std::unique_ptr<FakeCWS> fake_cws_;
   std::unique_ptr<MockUserManager> mock_user_manager_;
-  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
-      verifier_format_override_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
@@ -1358,6 +1358,39 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
+}
+
+class KioskCrx2Test : public KioskTest {
+ public:
+  KioskCrx2Test()
+      : KioskTest(),
+        test_install_attributes_(
+            chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
+                                                                "fake-id")) {}
+
+ private:
+  // Set up fake install attributes to make the device appeared as
+  // enterprise-managed. This is needed because CRX2 is only allowed for
+  // policy-based kiosk apps.
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskCrx2Test);
+};
+
+// Test that CRX2-packed apps still work for kiosk. This is a regression for
+// crbug.com/960428. TODO(crbug.com/740715): This test should fail in M78 after
+// full deprecation of CRX2.
+IN_PROC_BROWSER_TEST_F(KioskCrx2Test, InstallAndLaunchCrx2App) {
+  set_test_app_id(kTestKioskCrx2App);
+  set_test_crx_file(test_app_id() + ".crx");
+  set_use_consumer_kiosk_mode(false);
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchSuccess();
+  KioskAppManager::App app;
+  ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
+  EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
+  EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
 }
 
 class KioskUpdateTest : public KioskTest {

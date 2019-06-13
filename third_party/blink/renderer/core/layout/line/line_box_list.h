@@ -154,7 +154,7 @@ class CORE_EXPORT LineBoxList : public InlineBoxList<InlineFlowBox> {
 
   bool HitTest(LineLayoutBoxModel,
                HitTestResult&,
-               const HitTestLocation& location_in_container,
+               const HitTestLocation&,
                const PhysicalOffset& accumulated_offset,
                HitTestAction) const;
   bool AnyLineIntersectsRect(LineLayoutBoxModel,

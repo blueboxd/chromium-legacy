@@ -269,6 +269,28 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string}
+   * @private
+   */
+  getConnectDisconnectText_: function(networkProperties) {
+    if (this.showConnect_(networkProperties)) {
+      return this.i18n('networkButtonConnect');
+    }
+    return this.i18n('networkButtonDisconnect');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  showConnectDisconnect_: function(networkProperties) {
+    return this.showConnect_(networkProperties) ||
+        this.showDisconnect_(networkProperties);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
@@ -303,6 +325,23 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  enableConnectDisconnect_: function(networkProperties) {
+    if (!this.showConnectDisconnect_(networkProperties)) {
+      return false;
+    }
+
+    if (this.showConnect_(networkProperties)) {
+      return this.enableConnect_(networkProperties);
+    }
+
+    return true;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
@@ -314,6 +353,17 @@ Polymer({
       return false;
     }
     return true;
+  },
+
+  /** @private */
+  onConnectDisconnectTap_: function() {
+    assert(this.networkProperties);
+    if (this.showConnect_(this.networkProperties)) {
+      this.onConnectTap_();
+      return;
+    }
+
+    this.onDisconnectTap_();
   },
 
   /** @private */

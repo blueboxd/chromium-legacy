@@ -17,10 +17,6 @@
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace content {
 class WebContents;
 }
@@ -34,7 +30,6 @@ content::WebContents* GetWebContents(int render_process_id, int render_view_id);
 
 // Used to store all the information about an Android download.
 struct DownloadInfo {
-  explicit DownloadInfo(const net::URLRequest* request);
   DownloadInfo(const DownloadInfo& other);
   DownloadInfo(const GURL& url,
                const GURL& original_url,

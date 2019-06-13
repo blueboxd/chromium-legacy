@@ -213,6 +213,7 @@
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-oobe-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
+      'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
 
       'Linux Builder Goma Canary': 'release_bot',
       'Linux Builder Goma Latest Client': 'release_bot',
@@ -222,7 +223,6 @@
       'Linux x64 Goma Latest Client LocalOutputCache': 'release_bot',
 
       'mac-hermetic-upgrade-rel': 'release_bot',
-      'Chromium Mac 10.13': 'release_bot',
 
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
       'Mac Builder (dbg) Goma Canary': 'debug_bot',

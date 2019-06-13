@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/keyboard/ui/keyboard_layout_delegate.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
@@ -27,7 +27,7 @@ class ASH_EXPORT VirtualKeyboardController
     : public TabletModeObserver,
       public ui::InputDeviceEventObserver,
       public keyboard::KeyboardLayoutDelegate,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public SessionObserver {
  public:
   VirtualKeyboardController();
@@ -53,7 +53,7 @@ class ASH_EXPORT VirtualKeyboardController
   aura::Window* GetContainerForDisplay(
       const display::Display& display) override;
 
-  // keyboard::KeyboardControllerObserver:
+  // KeyboardControllerObserver:
   void OnKeyboardEnabledChanged(bool is_enabled) override;
   void OnKeyboardHidden(bool is_temporary_hide) override;
 

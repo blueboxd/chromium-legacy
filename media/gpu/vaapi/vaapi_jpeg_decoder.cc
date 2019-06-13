@@ -217,16 +217,6 @@ VaapiJpegDecoder::~VaapiJpegDecoder() {
   }
 }
 
-bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
-  vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kDecode,
-                                        VAProfileJPEGBaseline, error_uma_cb);
-  if (!vaapi_wrapper_) {
-    VLOGF(1) << "Failed initializing VAAPI";
-    return false;
-  }
-  return true;
-}
-
 scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
     base::span<const uint8_t> encoded_image,
     VaapiImageDecodeStatus* status) {
@@ -340,6 +330,10 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   return base::MakeRefCounted<VASurface>(va_surface_id_, coded_size_,
                                          va_rt_format_,
                                          base::DoNothing() /* release_cb */);
+}
+
+VaapiImageDecoder::Type VaapiJpegDecoder::GetType() const {
+  return VaapiImageDecoder::Type::kJpeg;
 }
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(

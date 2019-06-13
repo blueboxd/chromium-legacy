@@ -1557,4 +1557,67 @@ TEST_F(HintCacheStoreTest, LoadingHintUpdatesPrefCorrectly) {
   EXPECT_TRUE(hint_loaded_counts_pref()->empty());
 }
 
+TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t initial_hint_count = 10;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  base::Version version("2.0.0");
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_store()->MaybeCreateUpdateDataForComponentHints(
+          base::Version(kUpdateComponentVersion));
+  ASSERT_TRUE(update_data);
+
+  optimization_guide::proto::Hint hint1;
+  hint1.set_key("domain1.org");
+  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint1));
+  optimization_guide::proto::Hint hint2;
+  hint2.set_key("host.domain2.org");
+  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint2));
+
+  UpdateComponentHints(std::move(update_data));
+
+  // Add fetched hints to the store that expired.
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time - base::TimeDelta().FromDays(10));
+
+  optimization_guide::proto::Hint fetched_hint1;
+  fetched_hint1.set_key("domain2.org");
+  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
+  optimization_guide::proto::Hint fetched_hint2;
+  fetched_hint2.set_key("domain3.org");
+  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
+  // as fetched hints take priority.
+  std::string host_suffix = "host.domain2.org";
+  HintCacheStore::EntryKey hint_entry_key;
+  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  hint_store()->LoadHint(hint_entry_key,
+                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
+                                        base::Unretained(this)));
+
+  // OnLoadHint callback
+  db()->GetCallback(true);
+
+  // |hint_entry_key| will be a fetched hint but the entry will be empty.
+  EXPECT_EQ(last_loaded_hint_entry_key(), hint_entry_key);
+  EXPECT_FALSE(last_loaded_hint());
+  histogram_tester.ExpectBucketCount(
+      "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true, 1);
+}
+
 }  // namespace previews

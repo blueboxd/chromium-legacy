@@ -203,6 +203,8 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(result);
       return;
     }
+    // Set the pref here, after we first successfully install something
+    profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
     crostini_manager_->StartConcierge(
         base::BindOnce(&CrostiniRestarter::ConciergeStarted, this));
   }

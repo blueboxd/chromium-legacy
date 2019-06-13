@@ -3276,14 +3276,6 @@
       ]
     },
     {
-      "id": 305,
-      "description": "Disable MESA_framebuffer_flip_y until passing WebGL 2.0 Conformance tests",
-      "cr_bugs": [964010],
-      "disabled_extensions": [
-        "GL_MESA_framebuffer_flip_y"
-      ]
-    },
-    {
       "id": 306,
       "description": "Program binaries don't contain transform feedback varyings on Mali GPUs",
       "cr_bugs": [961950],

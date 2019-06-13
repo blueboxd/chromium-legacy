@@ -20,7 +20,7 @@ class ProfileKey : public SimpleFactoryKey {
   ~ProfileKey() override;
 
   // Profile-specific APIs needed in reduced mode:
-  ProfileKey* GetOriginalKey() { return original_key_; }
+  ProfileKey* GetOriginalKey();
   PrefService* GetPrefs();
   void SetPrefs(PrefService* prefs);
 

@@ -19,24 +19,6 @@ class NGInlineBreakToken;
 // Represents a break token for a block node.
 class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
  public:
-  class ChildTokenList {
-   public:
-    ChildTokenList(wtf_size_t count, const NGBreakToken* const* buffer)
-        : count_(count), buffer_(buffer) {}
-
-    wtf_size_t size() const { return count_; }
-    const NGBreakToken* operator[](wtf_size_t idx) const {
-      return buffer_[idx];
-    }
-
-    const NGBreakToken* const* begin() const { return buffer_; }
-    const NGBreakToken* const* end() const { return begin() + count_; }
-
-   private:
-    wtf_size_t count_;
-    const NGBreakToken* const* buffer_;
-  };
-
   // Creates a break token for a node which did fragment, and can potentially
   // produce more fragments.
   //
@@ -106,8 +88,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // this child).
   //
   // A child which we haven't visited yet doesn't have a break token here.
-  const ChildTokenList ChildBreakTokens() const {
-    return ChildTokenList(num_children_, &child_break_tokens_[0]);
+  const base::span<NGBreakToken* const> ChildBreakTokens() const {
+    return base::make_span(child_break_tokens_, num_children_);
   }
 
   // Find the child NGInlineBreakToken for the specified node.

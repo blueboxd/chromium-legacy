@@ -19,7 +19,7 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -186,8 +186,7 @@ public class LocationBarVoiceRecognitionHandler {
 
             RenderFrameHost renderFrameHost = webContents.getMainFrame();
             if (renderFrameHost == null) return;
-            if (TemplateUrlService.getInstance().isSearchResultsPageFromDefaultSearchProvider(
-                        url)) {
+            if (TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(url)) {
                 renderFrameHost.notifyUserActivation();
             }
         }
@@ -256,7 +255,7 @@ public class LocationBarVoiceRecognitionHandler {
 
             String url = AutocompleteController.nativeQualifyPartialURLQuery(topResultQuery);
             if (url == null) {
-                url = TemplateUrlService.getInstance().getUrlForVoiceSearchQuery(topResultQuery);
+                url = TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(topResultQuery);
             }
 
             // Since voice was used, we need to let the frame know that there was a user gesture.

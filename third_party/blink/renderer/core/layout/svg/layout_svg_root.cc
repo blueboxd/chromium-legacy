@@ -465,13 +465,11 @@ void LayoutSVGRoot::UpdateCachedBoundaries() {
 }
 
 bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
+                                const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
                                 HitTestAction hit_test_action) {
-  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
-
-  HitTestLocation local_border_box_location(location_in_container,
-                                            -adjusted_location);
+  HitTestLocation local_border_box_location(hit_test_location,
+                                            -accumulated_offset);
 
   // Only test SVG content if the point is in our content box, or in case we
   // don't clip to the viewport, the visual overflow rect.
@@ -506,10 +504,10 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
     // detect hits on the background of a <div> element.
     // If we'd return true here in the 'Foreground' phase, we are not able to
     // detect these hits anymore.
-    PhysicalRect bounds_rect(accumulated_offset + PhysicalLocation(), Size());
-    if (location_in_container.Intersects(bounds_rect)) {
+    PhysicalRect bounds_rect(accumulated_offset, Size());
+    if (hit_test_location.Intersects(bounds_rect)) {
       UpdateHitTestResult(result, local_border_box_location.Point());
-      if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,
+      if (result.AddNodeToListBasedTestResult(GetNode(), hit_test_location,
                                               bounds_rect) == kStopHitTesting)
         return true;
     }

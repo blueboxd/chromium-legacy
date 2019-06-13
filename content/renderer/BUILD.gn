@@ -42,9 +42,6 @@ target(link_target_type, "renderer") {
     "accessibility/blink_ax_tree_source.h",
     "accessibility/render_accessibility_impl.cc",
     "accessibility/render_accessibility_impl.h",
-    "android/synchronous_compositor_proxy.cc",
-    "android/synchronous_compositor_proxy.h",
-    "android/synchronous_compositor_registry.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
     "blob_storage/webblobregistry_impl.cc",
@@ -203,8 +200,8 @@ target(link_target_type, "renderer") {
     "media/renderer_webaudiodevice_impl.h",
     "media/renderer_webmediaplayer_delegate.cc",
     "media/renderer_webmediaplayer_delegate.h",
-    "media/stream/aec_dump_message_filter.cc",
-    "media/stream/aec_dump_message_filter.h",
+    "media/stream/aec_dump_agent_impl.cc",
+    "media/stream/aec_dump_agent_impl.h",
     "media/stream/apply_constraints_processor.cc",
     "media/stream/apply_constraints_processor.h",
     "media/stream/audio_service_audio_processor_proxy.cc",
@@ -661,9 +658,15 @@ target(link_target_type, "renderer") {
   }
 
   if (is_android) {
-    # Add back the Linux file which Android shares.
     set_sources_assignment_filter([])
-    sources += [ "render_view_linux.cc" ]
+    sources += [
+      "input/synchronous_compositor_proxy.cc",
+      "input/synchronous_compositor_proxy.h",
+      "input/synchronous_compositor_registry.h",
+
+      # Add back the Linux file which Android shares.
+      "render_view_linux.cc",
+    ]
     set_sources_assignment_filter(sources_assignment_filter)
 
     deps += [

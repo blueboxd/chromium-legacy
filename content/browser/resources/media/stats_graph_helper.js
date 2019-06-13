@@ -168,9 +168,6 @@ function drawSingleReport(peerConnectionElement, report, isLegacyReport) {
   if (!stats || !stats.values) {
     return;
   }
-  if (!isLegacyReport && isStandardReportBlacklisted(report)) {
-    return;
-  }
 
   const childrenBefore = peerConnectionElement.hasChildNodes() ?
       Array.from(peerConnectionElement.childNodes) :
@@ -178,10 +175,6 @@ function drawSingleReport(peerConnectionElement, report, isLegacyReport) {
 
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
-    if (!isLegacyReport && isStandardStatBlacklisted(report, rawLabel)) {
-      continue;
-    }
-
     // Propagation deltas are handled separately.
     if (rawLabel == RECEIVED_PROPAGATION_DELTA_LABEL) {
       drawReceivedPropagationDelta(
@@ -198,7 +191,6 @@ function drawSingleReport(peerConnectionElement, report, isLegacyReport) {
           [stats.values[i + 1]]);
       continue;
     }
-
     var finalDataSeriesId = rawDataSeriesId;
     var finalLabel = rawLabel;
     var finalValue = rawValue;
@@ -222,6 +214,14 @@ function drawSingleReport(peerConnectionElement, report, isLegacyReport) {
     addDataSeriesPoints(
         peerConnectionElement, finalDataSeriesId, finalLabel, [stats.timestamp],
         [finalValue]);
+
+    if (!isLegacyReport &&
+        (isStandardReportBlacklisted(report) ||
+         isStandardStatBlacklisted(report, rawLabel))) {
+      // We do not want to draw certain standard reports but still want to
+      // record them in the data series.
+      continue;
+    }
 
     // Updates the graph.
     var graphType =

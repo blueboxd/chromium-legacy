@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -16,7 +17,7 @@ namespace chromeos {
 namespace {
 
 // Fake delay for any asynchronous operation.
-constexpr auto kTaskDelay = base::TimeDelta::FromMilliseconds(500);
+constexpr auto kTaskDelay = base::TimeDelta::FromMilliseconds(100);
 
 // Fake validity lifetime for TGTs.
 constexpr base::TimeDelta kTgtValidity = base::TimeDelta::FromHours(10);
@@ -43,6 +44,16 @@ void PostResponse(base::OnceCallback<void(const TProto&)> callback,
   PostProtoResponse(std::move(callback), response);
 }
 
+// Reads the password from the file descriptor |password_fd|.
+// Not very efficient, but simple!
+std::string ReadPassword(int password_fd) {
+  std::string password;
+  char c;
+  while (base::ReadFromFD(password_fd, &c, 1))
+    password.push_back(c);
+  return password;
+}
+
 }  // namespace
 
 FakeKerberosClient::FakeKerberosClient() = default;
@@ -51,12 +62,16 @@ FakeKerberosClient::~FakeKerberosClient() = default;
 
 void FakeKerberosClient::AddAccount(const kerberos::AddAccountRequest& request,
                                     AddAccountCallback callback) {
-  if (accounts_.find(request.principal_name()) != accounts_.end()) {
+  auto it = accounts_.find(request.principal_name());
+  if (it != accounts_.end()) {
+    it->second.is_managed |= request.is_managed();
     PostResponse(std::move(callback), kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME);
     return;
   }
 
-  accounts_[request.principal_name()] = AccountData();
+  AccountData data;
+  data.is_managed = request.is_managed();
+  accounts_[request.principal_name()] = data;
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 
@@ -80,17 +95,19 @@ void FakeKerberosClient::ListAccounts(
     const kerberos::ListAccountsRequest& request,
     ListAccountsCallback callback) {
   kerberos::ListAccountsResponse response;
-  for (const auto& account : accounts_) {
-    const std::string& principal_name = account.first;
-    const AccountData& data = account.second;
+  for (const auto& it : accounts_) {
+    const std::string& principal_name = it.first;
+    const AccountData& data = it.second;
 
-    kerberos::Account* response_account = response.add_accounts();
-    response_account->set_principal_name(principal_name);
-    response_account->set_krb5conf(data.krb5conf);
-    response_account->set_tgt_validity_seconds(
-        data.has_tgt ? kTgtValidity.InSeconds() : 0);
-    response_account->set_tgt_renewal_seconds(
-        data.has_tgt ? kTgtRenewal.InSeconds() : 0);
+    kerberos::Account* account = response.add_accounts();
+    account->set_principal_name(principal_name);
+    account->set_krb5conf(data.krb5conf);
+    account->set_tgt_validity_seconds(data.has_tgt ? kTgtValidity.InSeconds()
+                                                   : 0);
+    account->set_tgt_renewal_seconds(data.has_tgt ? kTgtRenewal.InSeconds()
+                                                  : 0);
+    account->set_is_managed(data.is_managed);
+    account->set_password_was_remembered(!data.password.empty());
   }
   response.set_error(kerberos::ERROR_NONE);
   PostProtoResponse(std::move(callback), response);
@@ -115,6 +132,25 @@ void FakeKerberosClient::AcquireKerberosTgt(
   AccountData* data = GetAccountData(request.principal_name());
   if (!data) {
     PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
+    return;
+  }
+
+  // Remember password.
+  std::string password = ReadPassword(password_fd);
+  if (!password.empty() && request.remember_password())
+    data->password = password;
+
+  // Use remembered password.
+  if (password.empty())
+    password = data->password;
+
+  // Erase a previously remembered password.
+  if (!request.remember_password())
+    data->password.clear();
+
+  // Reject empty passwords.
+  if (password.empty()) {
+    PostResponse(std::move(callback), kerberos::ERROR_BAD_PASSWORD);
     return;
   }
 

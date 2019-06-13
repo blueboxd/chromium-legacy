@@ -268,6 +268,10 @@ VerifierResult Verify(
   const uint32_t version =
       ReadAndHashLittleEndianUInt32(&file, file_hash.get());
   VerifierResult result;
+  if (version == 2)
+    LOG(WARNING) << "File '" << crx_path
+                 << "' is in CRX2 format, which is deprecated and will not be "
+                    "supported in M78+";
   if (format == VerifierFormat::CRX2_OR_CRX3 &&
       (version == 2 || (diff && version == 0)))
     result = VerifyCrx2(&file, file_hash.get(), required_key_hashes,

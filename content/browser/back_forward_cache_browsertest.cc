@@ -16,6 +16,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 using testing::Each;
 using testing::Not;
@@ -404,4 +405,21 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache4) {
   EXPECT_FALSE(b2_observer.deleted());
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DisallowedFeatureOnPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page that has an unsupported feature for bfcache.
+  NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_dedicated_worker.html"));
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // Navigate away.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page with the unsupported feature should be deleted (not cached).
+  delete_rfh_a.WaitUntilDeleted();
+}
 }  // namespace content

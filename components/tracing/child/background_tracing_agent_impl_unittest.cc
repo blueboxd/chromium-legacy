@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,8 +48,9 @@ class BackgroundTracingAgentClientRecorder
 class BackgroundTracingAgentImplTest : public testing::Test {
  public:
   BackgroundTracingAgentImplTest() {
-    agent_set_.Add(std::make_unique<tracing::BackgroundTracingAgentImpl>(),
-                   agent_.BindNewPipeAndPassReceiver());
+    provider_set_.Add(
+        std::make_unique<tracing::BackgroundTracingAgentProviderImpl>(),
+        provider_.BindNewPipeAndPassReceiver());
 
     auto recorder = std::make_unique<BackgroundTracingAgentClientRecorder>();
     recorder_ = recorder.get();
@@ -57,7 +59,8 @@ class BackgroundTracingAgentImplTest : public testing::Test {
     client_set_.Add(std::move(recorder),
                     client.InitWithNewPipeAndPassReceiver());
 
-    agent_->Initialize(0, std::move(client));
+    provider_->Create(0, std::move(client),
+                      agent_.BindNewPipeAndPassReceiver());
   }
 
   tracing::mojom::BackgroundTracingAgent* agent() { return agent_.get(); }
@@ -66,8 +69,10 @@ class BackgroundTracingAgentImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider_;
   mojo::Remote<tracing::mojom::BackgroundTracingAgent> agent_;
-  mojo::UniqueReceiverSet<tracing::mojom::BackgroundTracingAgent> agent_set_;
+  mojo::UniqueReceiverSet<tracing::mojom::BackgroundTracingAgentProvider>
+      provider_set_;
   mojo::UniqueReceiverSet<tracing::mojom::BackgroundTracingAgentClient>
       client_set_;
   BackgroundTracingAgentClientRecorder* recorder_ = nullptr;

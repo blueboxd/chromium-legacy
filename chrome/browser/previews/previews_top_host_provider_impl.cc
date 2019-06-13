@@ -10,8 +10,11 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/previews/content/previews_hints_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -46,6 +49,38 @@ void PreviewsTopHostProviderImpl::InitializeHintsFetcherTopHostBlacklist() {
   // |kHintsFetcherTopHostBlacklist| dictionary should be populated with the
   // hosts currently in the Site Engagement Service.
   UpdateCurrentBlacklistState(HintsFetcherTopHostBlacklistState::kInitialized);
+}
+
+// static
+void PreviewsTopHostProviderImpl::MaybeUpdateTopHostBlacklist(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
+    return;
+
+  PrefService* pref_service =
+      Profile::FromBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext())
+          ->GetPrefs();
+
+  if (pref_service->GetInteger(kHintsFetcherTopHostBlacklistState) !=
+      static_cast<int>(HintsFetcherTopHostBlacklistState::kInitialized)) {
+    return;
+  }
+
+  DictionaryPrefUpdate blacklist_pref(pref_service,
+                                      kHintsFetcherTopHostBlacklist);
+  if (!blacklist_pref->FindKey(previews::HashHostForDictionary(
+          navigation_handle->GetURL().host()))) {
+    return;
+  }
+  blacklist_pref->RemovePath(
+      previews::HashHostForDictionary(navigation_handle->GetURL().host()));
+  if (blacklist_pref->empty()) {
+    blacklist_pref->Clear();
+    pref_service->SetInteger(
+        kHintsFetcherTopHostBlacklistState,
+        static_cast<int>(HintsFetcherTopHostBlacklistState::kEmpty));
+  }
 }
 
 HintsFetcherTopHostBlacklistState

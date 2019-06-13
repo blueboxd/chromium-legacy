@@ -75,7 +75,7 @@ void WaitForHttpAuthDialog() {
 
 // Tests Basic HTTP Authentication with correct username and password.
 - (void)testSuccessfullBasicAuth {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // EG does not allow interactions with HTTP Dialog when loading spinner is
     // animated. TODO(crbug.com/680290): Enable this test on iPad when EarlGrey
     // allows tapping dialog buttons with active page load spinner.
@@ -101,7 +101,7 @@ void WaitForHttpAuthDialog() {
 
 // Tests Basic HTTP Authentication with incorrect username and password.
 - (void)testUnsuccessfullBasicAuth {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // EG does not allow interactions with HTTP Dialog when loading spinner is
     // animated. TODO(crbug.com/680290): Enable this test on iPad when EarlGrey
     // allows tapping dialog buttons with active page load spinner.
@@ -127,7 +127,7 @@ void WaitForHttpAuthDialog() {
 
 // Tests Cancelling Basic HTTP Authentication.
 - (void)testCancellingBasicAuth {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // EG does not allow interactions with HTTP Dialog when loading spinner is
     // animated. TODO(crbug.com/680290): Enable this test on iPad when EarlGrey
     // allows tapping dialog buttons with active page load spinner.

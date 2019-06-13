@@ -133,7 +133,6 @@ jumbo_source_set("browser_sources") {
     "devtools_manager_delegate.h",
     "devtools_network_transaction_factory.h",
     "devtools_socket_factory.h",
-    "discardable_shared_memory_manager.h",
     "dom_storage_context.h",
     "download_item_utils.h",
     "download_manager.cc",

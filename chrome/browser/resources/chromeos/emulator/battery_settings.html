@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
@@ -66,13 +67,14 @@
                 <cr-checkbox checked="{{item.connected}}"></cr-checkbox>
               </td>
               <td class="control-cell">
-                <paper-button on-tap="onSetAsSourceTap"
+                <cr-button on-click="onSetAsSourceClick"
+                    class$="[[cssClassForSetAsSource_(item,
+                        selectedPowerSourceId)]]"
                     hidden$="[[!isDualRole(item)]]"
-                    raised="[[!isSelectedSource(item, selectedPowerSourceId)]]"
                     disabled="[[!canBecomeSource(
                         item, selectedPowerSourceId, powerSourceOptions.*)]]">
                   Set as source
-                </paper-button>
+                </cr-button>
                 <div hidden$="[[isDualRole(item)]]">Source</div>
               </td>
               <td class="control-cell">

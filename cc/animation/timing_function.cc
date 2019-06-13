@@ -154,4 +154,28 @@ float StepsTimingFunction::GetStepsStartOffset() const {
   }
 }
 
+std::unique_ptr<LinearTimingFunction> LinearTimingFunction::Create() {
+  return base::WrapUnique(new LinearTimingFunction());
+}
+
+LinearTimingFunction::LinearTimingFunction() = default;
+
+LinearTimingFunction::~LinearTimingFunction() = default;
+
+TimingFunction::Type LinearTimingFunction::GetType() const {
+  return Type::LINEAR;
+}
+
+std::unique_ptr<TimingFunction> LinearTimingFunction::Clone() const {
+  return base::WrapUnique(new LinearTimingFunction(*this));
+}
+
+double LinearTimingFunction::Velocity(double x) const {
+  return 0;
+}
+
+double LinearTimingFunction::GetValue(double t) const {
+  return t;
+}
+
 }  // namespace cc

@@ -1203,34 +1203,33 @@ LayoutUnit LayoutBlock::TextIndentOffset() const {
 
 bool LayoutBlock::IsPointInOverflowControl(
     HitTestResult& result,
-    const PhysicalOffset& location_in_container,
+    const PhysicalOffset& hit_test_location,
     const PhysicalOffset& accumulated_offset) const {
   if (!ScrollsOverflow())
     return false;
 
   return Layer()->GetScrollableArea()->HitTestOverflowControls(
-      result, RoundedIntPoint(location_in_container - accumulated_offset));
+      result, RoundedIntPoint(hit_test_location - accumulated_offset));
 }
 
 bool LayoutBlock::HitTestOverflowControl(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& adjusted_location) {
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      IsPointInOverflowControl(result, location_in_container.Point(),
+      IsPointInOverflowControl(result, hit_test_location.Point(),
                                adjusted_location)) {
-    UpdateHitTestResult(result,
-                        location_in_container.Point() - adjusted_location);
+    UpdateHitTestResult(result, hit_test_location.Point() - adjusted_location);
     // FIXME: isPointInOverflowControl() doesn't handle rect-based tests yet.
     if (result.AddNodeToListBasedTestResult(
-            NodeForHitTest(), location_in_container) == kStopHitTesting)
+            NodeForHitTest(), hit_test_location) == kStopHitTesting)
       return true;
   }
   return false;
 }
 
 bool LayoutBlock::HitTestChildren(HitTestResult& result,
-                                  const HitTestLocation& location_in_container,
+                                  const HitTestLocation& hit_test_location,
                                   const PhysicalOffset& accumulated_offset,
                                   HitTestAction hit_test_action) {
   // We may use legacy code to hit-test the anonymous fieldset content wrapper
@@ -1252,21 +1251,23 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
         (may_contain_rendered_legend && child->IsRenderedLegend()))
       continue;
 
+    PhysicalOffset child_accumulated_offset =
+        scrolled_offset + child->PhysicalLocation(this);
     bool did_hit;
     if (child->IsFloating()) {
       if (hit_test_action != kHitTestFloat || !IsLayoutNGObject())
         continue;
       // Hit-test the floats in regular tree order if this is LayoutNG. Only
       // legacy layout uses the FloatingObjects list.
-      did_hit = child->HitTestAllPhases(result, location_in_container,
-                                        scrolled_offset);
+      did_hit = child->HitTestAllPhases(result, hit_test_location,
+                                        child_accumulated_offset);
     } else {
-      did_hit = child->NodeAtPoint(result, location_in_container,
-                                   scrolled_offset, child_hit_test);
+      did_hit = child->NodeAtPoint(result, hit_test_location,
+                                   child_accumulated_offset, child_hit_test);
     }
     if (did_hit) {
       UpdateHitTestResult(result,
-                          location_in_container.Point() - accumulated_offset);
+                          hit_test_location.Point() - accumulated_offset);
       return true;
     }
   }

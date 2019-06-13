@@ -43,8 +43,6 @@ StyleResolverState::StyleResolverState(
       layout_parent_style_(layout_parent_style),
       is_animation_interpolation_map_ready_(false),
       is_animating_custom_properties_(false),
-      apply_property_to_regular_style_(true),
-      apply_property_to_visited_link_style_(false),
       has_dir_auto_attribute_(false),
       font_builder_(&document),
       element_style_resources_(GetElement(),

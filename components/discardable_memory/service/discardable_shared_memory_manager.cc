@@ -206,6 +206,8 @@ const int kEnforceMemoryPolicyDelayMs = 1000;
 // Global atomic to generate unique discardable shared memory IDs.
 base::AtomicSequenceNumber g_next_discardable_shared_memory_id;
 
+DiscardableSharedMemoryManager* g_instance = nullptr;
+
 }  // namespace
 
 DiscardableSharedMemoryManager::MemorySegment::MemorySegment(
@@ -228,6 +230,9 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()),
       weak_ptr_factory_(this),
       mojo_thread_weak_ptr_factory_(this) {
+  DCHECK(!g_instance)
+      << "A DiscardableSharedMemoryManager already exists in this process.";
+  g_instance = this;
   DCHECK_NE(memory_limit_, 0u);
   enforce_memory_policy_callback_ =
       base::Bind(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
@@ -265,6 +270,14 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
         event.Wait();
     }
   }
+
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::Get() {
+  return g_instance;
 }
 
 void DiscardableSharedMemoryManager::Bind(

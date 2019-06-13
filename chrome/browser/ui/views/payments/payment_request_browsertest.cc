@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
@@ -23,6 +24,11 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#endif
 
 namespace payments {
 
@@ -400,6 +406,13 @@ class PaymentRequestSettingsLinkTest : public PaymentRequestBrowserTestBase {
 
 // Tests that clicking the settings link brings the user to settings.
 IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
+#if defined(OS_CHROMEOS)
+  // Install the Settings App.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+#endif
+
   NavigateTo("/payment_request_no_shipping_test.html");
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();

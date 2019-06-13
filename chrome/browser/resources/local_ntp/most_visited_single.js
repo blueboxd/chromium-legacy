@@ -53,6 +53,7 @@ const CLASSES = {
   GRID_REORDER: 'grid-reorder',
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
+  HIDE: 'hide',        // Applied when the tiles are hidden by the user.
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
   // Applied while we are reordering. Disables hover styling.
   REORDERING: 'reordering',
@@ -218,10 +219,11 @@ let elementToReorder = null;
 
 
 /**
- * True if custom links is enabled.
+ * True if the custom links feature is enabled, i.e. when this is a Google NTP.
+ * Set when the iframe is initialized.
  * @type {boolean}
  */
-let isCustomLinksEnabled = false;
+let customLinksFeatureEnabled = false;
 
 
 /**
@@ -346,7 +348,7 @@ class Grid {
       this.order_[i] = i;
     }
 
-    if (isCustomLinksEnabled || params.enableReorder) {
+    if (isCustomLinksEnabled() || params.enableReorder) {
       // Set up reordering for all tiles except the add shortcut button.
       for (let i = 0; i < this.tiles_.length; i++) {
         if (this.tiles_[i].getAttribute('add') !== 'true') {
@@ -781,6 +783,16 @@ function logMostVisitedNavigation(
       tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime);
 }
 
+
+/**
+ * Returns true if custom links are enabled.
+ */
+function isCustomLinksEnabled() {
+  return customLinksFeatureEnabled &&
+      !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
+}
+
+
 /**
  * Down counts the DOM elements that we are waiting for the page to load.
  * When we get to 0, we send a message to the parent window.
@@ -791,8 +803,8 @@ function countLoad() {
   if (loadedCounter <= 0) {
     swapInNewTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
-    let tilesAreCustomLinks =
-        isCustomLinksEnabled && chrome.embeddedSearch.newTabPage.isCustomLinks;
+    let tilesAreCustomLinks = isCustomLinksEnabled() &&
+        chrome.embeddedSearch.newTabPage.isCustomLinks;
     // Note that it's easiest to capture this when all custom links are loaded,
     // rather than when the impression for each link is logged.
     if (tilesAreCustomLinks) {
@@ -857,6 +869,9 @@ function handleCommand(data) {
  * @param {!Object} info Data received in the message.
  */
 function showTiles(info) {
+  document.body.classList.toggle(
+      CLASSES.HIDE, !chrome.embeddedSearch.newTabPage.areShortcutsVisible);
+
   utils.setPlatformClass(document.body);
   countLoad();
 }
@@ -924,7 +939,7 @@ function swapInNewTiles() {
 
   // Add an "add new custom link" button if we haven't reached the maximum
   // number of tiles.
-  if (isCustomLinksEnabled && cur.childNodes.length < maxNumTiles) {
+  if (isCustomLinksEnabled() && cur.childNodes.length < maxNumTiles) {
     const data = {
       'rid': -1,
       'title': queryArgs['addLink'],
@@ -1042,7 +1057,7 @@ function addTile(args) {
 function blacklistTile(tile) {
   const rid = Number(tile.getAttribute('data-rid'));
 
-  if (isCustomLinksEnabled) {
+  if (isCustomLinksEnabled()) {
     chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(rid);
   } else {
     tile.classList.add('blacklisted');
@@ -1322,7 +1337,7 @@ function renderMaterialDesignTile(data) {
   if (!data.isAddButton) {
     const mdMenu = document.createElement('button');
     mdMenu.className = CLASSES.MD_MENU;
-    if (isCustomLinksEnabled) {
+    if (isCustomLinksEnabled()) {
       mdMenu.classList.add(CLASSES.MD_EDIT_MENU);
       mdMenu.title = queryArgs['editLinkTooltip'] || '';
       mdMenu.setAttribute(
@@ -1359,7 +1374,7 @@ function renderMaterialDesignTile(data) {
     return currGrid.createGridTile(mdTile, data.rid, !!data.isAddButton);
   } else {
     // Enable reordering.
-    if (isCustomLinksEnabled && !data.isAddButton) {
+    if (isCustomLinksEnabled() && !data.isAddButton) {
       mdTile.draggable = 'true';
       setupReorder(mdTile);
     }
@@ -1398,7 +1413,7 @@ function init() {
 
   // Enable custom links.
   if (queryArgs['enableCustomLinks'] == '1') {
-    isCustomLinksEnabled = true;
+    customLinksFeatureEnabled = true;
   }
 
   // Enable grid layout.
@@ -1408,7 +1423,7 @@ function init() {
   }
 
   // Set the maximum number of tiles to show.
-  if (isCustomLinksEnabled) {
+  if (isCustomLinksEnabled()) {
     maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
   }
 

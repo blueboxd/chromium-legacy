@@ -6,7 +6,6 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
-#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -34,6 +33,7 @@
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -628,13 +628,8 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
 
   unsigned num_font_files = font_unique_name_table->fonts_size();
 
-  // Sort names for using binary search on this proto in FontTableMatcher.
-  std::sort(font_unique_name_table->mutable_name_map()->begin(),
-            font_unique_name_table->mutable_name_map()->end(),
-            [](const blink::FontUniqueNameTable_UniqueNameToFontMapping& a,
-               const blink::FontUniqueNameTable_UniqueNameToFontMapping& b) {
-              return a.font_name() < b.font_name();
-            });
+  blink::FontTableMatcher::SortUniqueNameTableForSearch(
+      font_unique_name_table.get());
 
   font_table_memory_ = base::ReadOnlySharedMemoryRegion::Create(
       font_unique_name_table->ByteSizeLong());

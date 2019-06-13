@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -93,15 +94,12 @@ class AudioContextAutoplayTest
 
   void SetUp() override {
     helper_.Initialize();
-    frame_test_helpers::LoadFrame(helper_.LocalMainFrame(),
-                                  "data:text/html,<iframe></iframe>");
-
-    GetDocument().UpdateSecurityOrigin(
-        SecurityOrigin::Create("https", "example.com", 80));
-
-    ChildDocument().UpdateSecurityOrigin(
-        SecurityOrigin::Create("https", "cross-origin.com", 80));
-
+    frame_test_helpers::LoadHTMLString(helper_.LocalMainFrame(),
+                                       "<iframe></iframe>",
+                                       WebURL(KURL("https://example.com")));
+    frame_test_helpers::LoadHTMLString(
+        To<WebLocalFrameImpl>(helper_.LocalMainFrame()->FirstChild()), "",
+        WebURL(KURL("https://cross-origin.com")));
     GetDocument().GetSettings()->SetAutoplayPolicy(GetParam());
     ChildDocument().GetSettings()->SetAutoplayPolicy(GetParam());
 

@@ -32,11 +32,8 @@ namespace {
 using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
 
 base::Optional<double> GetGainControlCompressionGain(
-    const base::Optional<base::Value>& config) {
-  if (!config)
-    return base::nullopt;
-  const base::Value* found =
-      config->FindKey("gain_control_compression_gain_db");
+    const base::Value& config) {
+  const base::Value* found = config.FindKey("gain_control_compression_gain_db");
   if (!found)
     return base::nullopt;
   double gain = found->GetDouble();
@@ -44,11 +41,8 @@ base::Optional<double> GetGainControlCompressionGain(
   return gain;
 }
 
-base::Optional<double> GetPreAmplifierGainFactor(
-    const base::Optional<base::Value>& config) {
-  if (!config)
-    return base::nullopt;
-  const base::Value* found = config->FindKey("pre_amplifier_fixed_gain_factor");
+base::Optional<double> GetPreAmplifierGainFactor(const base::Value& config) {
+  const base::Value* found = config.FindKey("pre_amplifier_fixed_gain_factor");
   if (!found)
     return base::nullopt;
   double factor = found->GetDouble();
@@ -56,17 +50,30 @@ base::Optional<double> GetPreAmplifierGainFactor(
   return factor;
 }
 
-void GetExtraGainConfig(
+base::Optional<NoiseSuppression::Level> GetNoiseSuppressionLevel(
+    const base::Value& config) {
+  const base::Value* found = config.FindKey("noise_suppression_level");
+  if (!found)
+    return base::nullopt;
+  int level = found->GetInt();
+  DCHECK_GE(level, static_cast<int>(NoiseSuppression::kLow));
+  DCHECK_LE(level, static_cast<int>(NoiseSuppression::kVeryHigh));
+  return static_cast<NoiseSuppression::Level>(level);
+}
+
+void GetExtraConfigFromJson(
     const std::string& audio_processing_platform_config_json,
     base::Optional<double>* gain_control_compression_gain_db,
-    base::Optional<double>* pre_amplifier_fixed_gain_factor) {
+    base::Optional<double>* pre_amplifier_fixed_gain_factor,
+    base::Optional<NoiseSuppression::Level>* noise_suppression_level) {
   auto config = base::JSONReader::Read(audio_processing_platform_config_json);
   if (!config) {
     LOG(ERROR) << "Failed to parse platform config JSON.";
     return;
   }
-  *gain_control_compression_gain_db = GetGainControlCompressionGain(config);
-  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(config);
+  *gain_control_compression_gain_db = GetGainControlCompressionGain(*config);
+  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(*config);
+  *noise_suppression_level = GetNoiseSuppressionLevel(*config);
 }
 
 }  // namespace
@@ -224,10 +231,12 @@ void PopulateApmConfig(
   // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
   // webrtc::AudioProcessing::Config, crbug.com/895814.
   base::Optional<double> pre_amplifier_fixed_gain_factor;
+  base::Optional<NoiseSuppression::Level> noise_suppression_level;
   if (audio_processing_platform_config_json.has_value()) {
-    GetExtraGainConfig(audio_processing_platform_config_json.value(),
-                       gain_control_compression_gain_db,
-                       &pre_amplifier_fixed_gain_factor);
+    GetExtraConfigFromJson(audio_processing_platform_config_json.value(),
+                           gain_control_compression_gain_db,
+                           &pre_amplifier_fixed_gain_factor,
+                           &noise_suppression_level);
   }
 
   apm_config->high_pass_filter.enabled = properties.goog_highpass_filter;
@@ -240,7 +249,8 @@ void PopulateApmConfig(
 
   if (properties.goog_noise_suppression) {
     apm_config->noise_suppression.enabled = true;
-    apm_config->noise_suppression.level = NoiseSuppression::kHigh;
+    apm_config->noise_suppression.level =
+        noise_suppression_level.value_or(NoiseSuppression::kHigh);
   }
 
   if (properties.EchoCancellationIsWebRtcProvided()) {

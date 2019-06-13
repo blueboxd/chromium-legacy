@@ -5,6 +5,8 @@
 #ifndef ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"
 
@@ -29,8 +31,11 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
+  void AddContainer(aura::Window* window);
+
  private:
   aura::Window* owner_;
+  std::vector<aura::Window*> containers_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };

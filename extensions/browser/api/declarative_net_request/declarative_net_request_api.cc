@@ -337,4 +337,23 @@ DeclarativeNetRequestGetMatchedRulesFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+DeclarativeNetRequestSetActionCountAsBadgeTextFunction::
+    DeclarativeNetRequestSetActionCountAsBadgeTextFunction() = default;
+DeclarativeNetRequestSetActionCountAsBadgeTextFunction::
+    ~DeclarativeNetRequestSetActionCountAsBadgeTextFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
+  using Params = dnr_api::SetActionCountAsBadgeText::Params;
+
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  prefs->SetDNRUseActionCountAsBadgeText(extension_id(), params->enable);
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

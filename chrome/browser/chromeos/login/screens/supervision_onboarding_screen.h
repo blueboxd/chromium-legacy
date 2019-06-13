@@ -10,31 +10,41 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/supervision/onboarding_delegate.h"
 
 namespace chromeos {
 
 class SupervisionOnboardingScreenView;
 
-class SupervisionOnboardingScreen : public BaseScreen {
+class SupervisionOnboardingScreen : public BaseScreen,
+                                    public supervision::OnboardingDelegate {
  public:
+  enum class Result {
+    // User reached the end of the flow and exited successfully.
+    kFinished,
+    // User chose to skip the flow or we skipped the flow for internal reasons.
+    kSkipped,
+  };
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+
   SupervisionOnboardingScreen(SupervisionOnboardingScreenView* view,
-                              const base::RepeatingClosure& exit_callback);
+                              const ScreenExitCallback& exit_callback);
   ~SupervisionOnboardingScreen() override;
 
   // BaseScreen:
   void Show() override;
   void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   // Called when view is destroyed so there's no dead reference to it.
   void OnViewDestroyed(SupervisionOnboardingScreenView* view);
 
-  // Called when supervision onboarding has finished, exits the screen.
-  void Exit();
-
  private:
+  // supervision::OnboardingDelegate:
+  void SkipOnboarding() override;
+  void FinishOnboarding() override;
+
   SupervisionOnboardingScreenView* view_;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisionOnboardingScreen);
 };

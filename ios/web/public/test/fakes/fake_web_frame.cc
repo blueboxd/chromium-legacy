@@ -12,7 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 
 namespace web {
 

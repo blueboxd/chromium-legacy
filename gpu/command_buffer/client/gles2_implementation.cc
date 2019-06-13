@@ -6705,6 +6705,8 @@ bool CreateImageValidInternalFormat(GLenum internalformat,
       return capabilities.texture_norm16;
     case GL_RGB10_A2_EXT:
       return capabilities.image_xr30 || capabilities.image_xb30;
+    case GL_RGB_YCBCR_P010_CHROMIUM:
+      return capabilities.image_ycbcr_p010;
     case GL_RED:
     case GL_RG_EXT:
     case GL_RGB:

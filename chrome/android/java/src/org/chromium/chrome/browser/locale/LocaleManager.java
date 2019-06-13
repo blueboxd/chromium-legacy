@@ -27,14 +27,14 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.PromoDialog;
+import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
@@ -229,7 +229,7 @@ public class LocaleManager {
     public void showSearchEnginePromoIfNeeded(
             final Activity activity, final @Nullable Callback<Boolean> onSearchEngineFinalized) {
         assert LibraryLoader.getInstance().isInitialized();
-        TemplateUrlService.getInstance().runWhenLoaded(new Runnable() {
+        TemplateUrlServiceFactory.get().runWhenLoaded(new Runnable() {
             @Override
             public void run() {
                 handleSearchEnginePromoWithTemplateUrlsLoaded(activity, onSearchEngineFinalized);
@@ -239,7 +239,7 @@ public class LocaleManager {
 
     private void handleSearchEnginePromoWithTemplateUrlsLoaded(
             final Activity activity, final @Nullable Callback<Boolean> onSearchEngineFinalized) {
-        assert TemplateUrlService.getInstance().isLoaded();
+        assert TemplateUrlServiceFactory.get().isLoaded();
 
         final Callback<Boolean> finalizeInternalCallback = new Callback<Boolean>() {
             @Override
@@ -257,7 +257,7 @@ public class LocaleManager {
                 if (onSearchEngineFinalized != null) onSearchEngineFinalized.onResult(result);
             }
         };
-        if (TemplateUrlService.getInstance().isDefaultSearchManaged()
+        if (TemplateUrlServiceFactory.get().isDefaultSearchManaged()
                 || ApiCompatibilityUtils.isDemoUser(activity)) {
             finalizeInternalCallback.onResult(true);
             return;
@@ -411,7 +411,7 @@ public class LocaleManager {
      */
     protected void onUserSearchEngineChoiceFromPromoDialog(
             @SearchEnginePromoType int type, List<String> keywords, String keyword) {
-        TemplateUrlService.getInstance().setSearchEngine(keyword);
+        TemplateUrlServiceFactory.get().setSearchEngine(keyword);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE,

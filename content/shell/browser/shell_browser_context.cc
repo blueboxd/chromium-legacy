@@ -192,31 +192,9 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-ShellBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  scoped_refptr<ShellURLRequestContextGetter>& context_getter =
-      isolated_url_request_getters_[partition_path];
-  if (!context_getter) {
-    context_getter = CreateURLRequestContextGetter(
-        protocol_handlers, std::move(request_interceptors));
-  }
-  return context_getter.get();
-}
-
-net::URLRequestContextGetter*
     ShellBrowserContext::CreateMediaRequestContext()  {
   DCHECK(url_request_getter_.get());
   return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter*
-    ShellBrowserContext::CreateMediaRequestContextForStoragePartition(
-        const base::FilePath& partition_path,
-        bool in_memory) {
-  return nullptr;
 }
 
 ResourceContext* ShellBrowserContext::GetResourceContext()  {

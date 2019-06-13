@@ -348,15 +348,10 @@ class PLATFORM_EXPORT ResourceFetcher
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
 
-  void RequestLoadStarted(uint64_t identifier,
-                          Resource*,
-                          const FetchParameters&,
-                          RevalidationPolicy,
-                          bool is_static_data = false);
-
   void DidLoadResourceFromMemoryCache(uint64_t identifier,
                                       Resource*,
-                                      const ResourceRequest&);
+                                      const ResourceRequest&,
+                                      bool is_static_data);
 
   bool ResourceNeedsLoad(Resource*, const FetchParameters&, RevalidationPolicy);
 

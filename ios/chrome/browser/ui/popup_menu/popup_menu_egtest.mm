@@ -118,7 +118,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 - (void)testDismissToolsMenuOnDeviceRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 

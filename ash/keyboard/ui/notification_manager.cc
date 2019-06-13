@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/keyboard/ui/notification_manager.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/observer_list.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -30,7 +30,7 @@ void NotificationManager::SendNotifications(
     bool does_occluded_bounds_affect_layout,
     const gfx::Rect& visual_bounds,
     const gfx::Rect& occluded_bounds,
-    const base::ObserverList<KeyboardControllerObserver>::Unchecked&
+    const base::ObserverList<ash::KeyboardControllerObserver>::Unchecked&
         observers) {
   bool is_visible = !visual_bounds.IsEmpty();
   bool send_visibility_notification =
@@ -48,24 +48,24 @@ void NotificationManager::SendNotifications(
       ShouldSendWorkspaceDisplacementBoundsNotification(
           workspace_layout_offset_region);
 
-  KeyboardStateDescriptor state;
+  ash::KeyboardStateDescriptor state;
   state.is_visible = is_visible;
   state.visual_bounds = visual_bounds;
   state.occluded_bounds_in_screen = occluded_bounds;
   state.displaced_bounds_in_screen = workspace_layout_offset_region;
 
-  for (KeyboardControllerObserver& observer : observers) {
+  for (auto& observer : observers) {
     if (send_visibility_notification)
-      observer.OnKeyboardVisibilityStateChanged(is_visible);
+      observer.OnKeyboardVisibilityChanged(is_visible);
 
     if (send_visual_bounds_notification)
       observer.OnKeyboardVisibleBoundsChanged(visual_bounds);
 
     if (send_occluded_bounds_notification)
-      observer.OnKeyboardWorkspaceOccludedBoundsChanged(occluded_bounds);
+      observer.OnKeyboardOccludedBoundsChanged(occluded_bounds);
 
     if (send_displaced_bounds_notification) {
-      observer.OnKeyboardWorkspaceDisplacingBoundsChanged(
+      observer.OnKeyboardDisplacingBoundsChanged(
           workspace_layout_offset_region);
     }
 

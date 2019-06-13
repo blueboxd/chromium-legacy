@@ -19705,6 +19705,7 @@ Called by update_net_error_codes.py.-->
   <int value="1341" label="LOGINSCREENUI_SHOW"/>
   <int value="1342" label="LOGINSCREENUI_CLOSE"/>
   <int value="1343" label="DECLARATIVENETREQUEST_GETMATCHEDRULES"/>
+  <int value="1344" label="DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -23635,6 +23636,19 @@ Called by update_net_error_codes.py.-->
   <int value="2919" label="ScrollByPrecisionTouchPad"/>
   <int value="2920" label="PinchZoom"/>
   <int value="2921" label="BuiltInModuleSwitchImported"/>
+  <int value="2922" label="FeaturePolicyCommaSeparatedDeclarations"/>
+  <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
+</enum>
+
+<enum name="FeaturePolicyAllowlistType">
+  <int value="0" label="Empty"/>
+  <int value="1" label="None"/>
+  <int value="2" label="Self"/>
+  <int value="3" label="Src"/>
+  <int value="4" label="Star"/>
+  <int value="5" label="Origins"/>
+  <int value="6" label="KeywordsOnly"/>
+  <int value="7" label="Mixed"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -25031,6 +25045,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="swap"/>
   <int value="3" label="fallback"/>
   <int value="4" label="optional"/>
+</enum>
+
+<enum name="FontScanningResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="FT_New_Face from file failed"/>
+  <int value="2" label="Zero name table entries"/>
+  <int value="3" label="Unable to retrieve name table entry"/>
+  <int value="4" label="Name string is invalid unicode"/>
 </enum>
 
 <enum name="FormDataDeserializationStatus">
@@ -47497,6 +47519,7 @@ Called by update_net_trust_anchors.py.-->
       label="Exceeded maximum number of navigation restarts or a redirect
              loop was detected"/>
   <int value="10" label="(DEPRECATED IN M74) Disallowed by PreviewsState"/>
+  <int value="11" label="The chrome-proxy header is invalid"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

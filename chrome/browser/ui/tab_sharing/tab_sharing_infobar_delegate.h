@@ -44,6 +44,7 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   bool IsCloseable() const override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
 
   const base::string16 shared_tab_name_;
   const base::string16 app_name_;

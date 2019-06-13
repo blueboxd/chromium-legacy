@@ -113,7 +113,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 // Tests that a tab's title is based on the URL when no other information is
 // available.
 - (void)testBrowsingTabTitleSetFromURL {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Tab Title not displayed on handset.");
   }
 
@@ -133,7 +133,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
 // Tests that after a PDF is loaded, the title appears in the tab bar on iPad.
 - (void)testPDFLoadTitle {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Tab Title not displayed on handset.");
   }
 
@@ -153,7 +153,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
 // Tests that tab title is set to the specified title from a JavaScript.
 - (void)testBrowsingTabTitleSetFromScript {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Tab Title not displayed on handset.");
   }
 
@@ -391,7 +391,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 - (void)testBrowsingUserJavaScriptNavigation {
   // TODO(crbug.com/703855): Keyboard entry inside the omnibox fails only on
   // iPad.
-  if (IsIPadIdiom())
+  if ([ChromeEarlGrey isIPadIdiom])
     return;
 
   // Create map of canned responses and set up the test HTML server.
@@ -428,7 +428,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 - (void)testBrowsingUserJavaScriptWithoutNavigation {
   // TODO(crbug.com/703855): Keyboard entry inside the omnibox fails only on
   // iPad.
-  if (IsIPadIdiom())
+  if ([ChromeEarlGrey isIPadIdiom])
     return;
 
   // Create map of canned responses and set up the test HTML server.

@@ -12,7 +12,6 @@ include_rules = [
   "+jni",
   "+third_party/dom_distiller_js",
   "+third_party/re2",
-  "+third_party/zlib/google",
   "+net/base",
   "+net/http",
   "+net/traffic_annotation",

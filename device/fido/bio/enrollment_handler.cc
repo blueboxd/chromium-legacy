@@ -58,13 +58,14 @@ void BioEnrollmentHandler::GetSensorInfo(ResponseCallback callback) {
   }
 }
 
-void BioEnrollmentHandler::Enroll(ResponseCallback callback) {
+void BioEnrollmentHandler::EnrollTemplate(ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
 
   response_callback_ = std::move(callback);
   authenticator_->BioEnrollFingerprint(
-      *pin_token_response_, base::BindRepeating(&BioEnrollmentHandler::OnEnroll,
-                                                weak_factory_.GetWeakPtr()));
+      *pin_token_response_,
+      base::BindRepeating(&BioEnrollmentHandler::OnEnrollTemplate,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void BioEnrollmentHandler::Cancel(base::OnceClosure callback) {
@@ -73,6 +74,16 @@ void BioEnrollmentHandler::Cancel(base::OnceClosure callback) {
   status_callback_ = std::move(callback);
   authenticator_->BioEnrollCancel(base::BindOnce(
       &BioEnrollmentHandler::OnCancel, weak_factory_.GetWeakPtr()));
+}
+
+void BioEnrollmentHandler::EnumerateTemplates(ResponseCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+
+  response_callback_ = std::move(callback);
+  authenticator_->BioEnrollEnumerate(
+      *pin_token_response_,
+      base::BindOnce(&BioEnrollmentHandler::OnEnumerateTemplates,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void BioEnrollmentHandler::DispatchRequest(FidoAuthenticator* authenticator) {
@@ -191,9 +202,19 @@ void BioEnrollmentHandler::OnHavePINToken(
   std::move(ready_callback_).Run();
 }
 
-void BioEnrollmentHandler::OnEnroll(
+void BioEnrollmentHandler::OnEnrollTemplate(
     CtapDeviceResponseCode code,
     base::Optional<BioEnrollmentResponse> response) {
+  if (code != CtapDeviceResponseCode::kSuccess) {
+    // Response is not valid if operation was not successful.
+    std::move(response_callback_).Run(code, base::nullopt);
+    return;
+  }
+  if (!response || !response->last_status || !response->remaining_samples) {
+    std::move(response_callback_)
+        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    return;
+  }
   FIDO_LOG(DEBUG) << "Finished bio enrollment with code "
                   << static_cast<int>(code);
   std::move(response_callback_).Run(code, std::move(response));
@@ -202,6 +223,24 @@ void BioEnrollmentHandler::OnEnroll(
 void BioEnrollmentHandler::OnCancel(CtapDeviceResponseCode,
                                     base::Optional<BioEnrollmentResponse>) {
   std::move(status_callback_).Run();
+}
+
+void BioEnrollmentHandler::OnEnumerateTemplates(
+    CtapDeviceResponseCode code,
+    base::Optional<BioEnrollmentResponse> response) {
+  if (code != CtapDeviceResponseCode::kSuccess) {
+    // Response is not valid if operation was not successful.
+    // Note that an empty enumeration returns kCtap2ErrInvalidOption.
+    std::move(response_callback_).Run(code, base::nullopt);
+    return;
+  }
+  if (!response || !response->enumerated_ids) {
+    // Response must have enumerated_ids.
+    std::move(response_callback_)
+        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+    return;
+  }
+  std::move(response_callback_).Run(code, std::move(response));
 }
 
 }  // namespace device

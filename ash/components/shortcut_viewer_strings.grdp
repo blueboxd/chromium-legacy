@@ -582,9 +582,6 @@
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_MAXIMIZED" desc="Description of the command in keyboard shortcut viewer.">
     Maximize window
   </message>
-  <message name="IDS_KSV_DESCRIPTION_WINDOW_POSITION_CENTER" desc="Description of the command in keyboard shortcut viewer.">
-    Move window to center
-  </message>
   <message name="IDS_KSV_DESCRIPTION_OPEN_CROSH" desc="Description of the command in keyboard shortcut viewer.">
     Open Crosh window
   </message>

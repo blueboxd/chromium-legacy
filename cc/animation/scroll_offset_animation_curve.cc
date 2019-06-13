@@ -82,7 +82,8 @@ ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() = default;
 base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
     const gfx::Vector2dF& delta,
     DurationBehavior behavior,
-    base::TimeDelta delayed_by) {
+    base::TimeDelta delayed_by,
+    float velocity) {
   double duration = kConstantDuration;
   if (!animation_duration_for_testing_) {
     switch (behavior) {
@@ -100,6 +101,9 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
                          std::abs(MaximumDimension(delta)) * kInverseDeltaSlope,
                      kInverseDeltaMinDuration),
             kInverseDeltaMaxDuration);
+        break;
+      case DurationBehavior::CONSTANT_VELOCITY:
+        duration = MaximumDimension(delta) / velocity * kDurationDivisor;
         break;
       default:
         NOTREACHED();
@@ -119,11 +123,13 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
 
 void ScrollOffsetAnimationCurve::SetInitialValue(
     const gfx::ScrollOffset& initial_value,
-    base::TimeDelta delayed_by) {
+    base::TimeDelta delayed_by,
+    float velocity) {
   initial_value_ = initial_value;
   has_set_initial_value_ = true;
-  total_animation_duration_ = SegmentDuration(
-      target_value_.DeltaFrom(initial_value_), duration_behavior_, delayed_by);
+  total_animation_duration_ =
+      SegmentDuration(target_value_.DeltaFrom(initial_value_),
+                      duration_behavior_, delayed_by, velocity);
 }
 
 bool ScrollOffsetAnimationCurve::HasSetInitialValue() const {
@@ -233,11 +239,11 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
   gfx::Vector2dF old_delta = target_value_.DeltaFrom(initial_value_);
   gfx::Vector2dF new_delta = new_target.DeltaFrom(current_position);
 
-  // The last segement was of zero duration.
+  // The last segment was of zero duration.
   if ((total_animation_duration_ - last_retarget_).is_zero()) {
     DCHECK_EQ(t, last_retarget_);
-    total_animation_duration_ =
-        SegmentDuration(new_delta, duration_behavior_, delayed_by);
+    total_animation_duration_ = SegmentDuration(new_delta, duration_behavior_,
+                                                delayed_by, /*velocity*/ 0);
     target_value_ = new_target;
     return;
   }
@@ -250,7 +256,8 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
   // segment duration. This minimizes the "rubber-band" bouncing effect when
   // old_normalized_velocity is large and new_delta is small.
   base::TimeDelta new_duration =
-      std::min(SegmentDuration(new_delta, duration_behavior_, delayed_by),
+      std::min(SegmentDuration(new_delta, duration_behavior_, delayed_by,
+                               /*velocity*/ 0),
                VelocityBasedDurationBound(old_delta, old_normalized_velocity,
                                           old_duration, new_delta));
 

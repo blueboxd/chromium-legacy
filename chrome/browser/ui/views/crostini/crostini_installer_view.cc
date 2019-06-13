@@ -217,7 +217,6 @@ bool CrostiniInstallerView::Accept() {
   }
 
   UpdateState(State::INSTALL_START);
-  profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
   install_start_time_ = base::TimeTicks::Now();
 
   // The default value of kCrostiniContainers is set to migrate existing

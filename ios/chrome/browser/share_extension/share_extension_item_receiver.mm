@@ -21,8 +21,8 @@
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 

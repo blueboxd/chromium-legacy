@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tarfile
 
-from update import RELEASE_VERSION
+from update import RELEASE_VERSION, STAMP_FILE
 
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
@@ -30,7 +30,6 @@ LLVM_BUILD_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-build')
 LLVM_RELEASE_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts')
 EU_STRIP = os.path.join(BUILDTOOLS_DIR, 'third_party', 'eu-strip', 'bin',
                         'eu-strip')
-STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
 
 def Tee(output, logfile):

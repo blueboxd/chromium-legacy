@@ -365,7 +365,7 @@ bool WaitableEvent::PeekPort(mach_port_t port, bool dequeue) {
 //      return true;
 //    } else {
 //      MACH_CHECK(kr == KERN_FAILURE, kr) << "mach_port_peek";
-//      return false;
+      return false;
 //    }
   }
 }

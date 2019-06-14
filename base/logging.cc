@@ -934,11 +934,11 @@ LogMessage::~LogMessage() {
       }
 #endif
       // Crash the process to generate a dump.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
-      IMMEDIATE_CRASH();
-#else
-      base::debug::BreakDebugger();
-#endif
+//#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+//      IMMEDIATE_CRASH();
+//#else
+//      base::debug::BreakDebugger();
+//#endif
     }
   }
 }

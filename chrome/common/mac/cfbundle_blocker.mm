@@ -220,6 +220,7 @@ bool IsSignedWithEnforcement() {
 //
 //  return (signing_flags & kSecCodeSignatureRuntime) ||
 //         (signing_flags & kSecCodeSignatureEnforcement);
+  return true;
 }
 
 }  // namespace

@@ -115,6 +115,11 @@ void Scheduler::NotifyAnimationWorkletStateChange(AnimationWorkletState state,
   ProcessScheduledActions();
 }
 
+void Scheduler::NotifyPaintWorkletStateChange(PaintWorkletState state) {
+  state_machine_.NotifyPaintWorkletStateChange(state);
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetNeedsBeginMainFrame() {
   state_machine_.SetNeedsBeginMainFrame();
   ProcessScheduledActions();

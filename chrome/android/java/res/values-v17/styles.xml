@@ -246,6 +246,8 @@
         <item name="preferenceFragmentCompatStyle">@style/Theme.Chromium.PreferenceFragment</item>
         <item name="preferenceFragmentListStyle">@style/Theme.Chromium.PreferenceFragmentList</item>
         <item name="dialogPreferenceStyle">@style/Theme.Chromium.DialogPreference</item>
+        <item name="checkBoxPreferenceStyle">@style/Theme.Chromium.CheckBoxPreferenceCompat</item>
+        <item name="switchPreferenceCompatStyle">@style/Theme.Chromium.SwitchPreferenceCompat</item>
     </style>
 
     <style name="Theme.Chromium.PreferenceFragment">
@@ -254,6 +256,26 @@
 
     <style name="Theme.Chromium.PreferenceItem">
         <item name="android:layout">@layout/preference_compat</item>
+    </style>
+
+    <!-- TODO(crbug.com/971791): The asymmetric start and end paddings here preserve the same
+         overall padding as the pre-support library custom preference layout. Following migration to
+         the support library preferences, we should investigate simplifying these styles.-->
+    <style name="Theme.Chromium.PreferenceLayoutCompat">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceDescriptionCompat">
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceWidgetCompat">
+        <item name="android:minWidth">48dp</item>
     </style>
 
     <style name="Theme.Chromium.PreferenceFragmentList">
@@ -271,6 +293,11 @@
         <item name="android:negativeButtonText">@android:string/cancel</item>
     </style>
 
+    <style name="Theme.Chromium.CheckBoxPreferenceCompat">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
+    </style>
+
     <style name="Theme.Chromium.Preferences.AlertDialog" parent="Theme.Chromium.AlertDialog">
         <item name="buttonBarButtonStyle">@style/TextAppearance.DialogButtonCompat</item>
     </style>
@@ -281,6 +308,11 @@
          -->
     <style name="TextAppearance.DialogButtonCompat" parent="AlertDialogButtonStyle">
         <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Theme.Chromium.SwitchPreferenceCompat">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
     </style>
 
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">

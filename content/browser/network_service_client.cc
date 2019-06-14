@@ -531,6 +531,12 @@ NetworkServiceClient::NetworkServiceClient(
                               base::Unretained(this))))
 #endif
 {
+
+#if defined(OS_MACOSX)
+  if (base::MessageLoopCurrentForUI::IsSet())  // Not set in some unit tests.
+    net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
+#endif
+
   if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->AddObserver(this);
     memory_pressure_listener_ =

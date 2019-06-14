@@ -18,6 +18,7 @@ config("grpc_internal_config") {
   cflags = [
     "-Wno-implicit-fallthrough",
     "-Wno-constant-conversion",
+    "-fno-sanitize=cfi-derived-cast,cfi-unrelated-cast",
   ]
   defines = [ "GRPC_ARES=0" ]
 }

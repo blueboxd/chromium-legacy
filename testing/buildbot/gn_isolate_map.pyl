@@ -93,6 +93,10 @@
     "label": "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer",
     "type": "fuzzer",
   },
+  "android_webview_junit_tests": {
+    "label": "//android_webview/test:android_webview_junit_tests",
+    "type": "junit_test",
+  },
   "android_webview_unittests": {
     "label": "//android_webview/test:android_webview_unittests",
     "type": "console_test_launcher",

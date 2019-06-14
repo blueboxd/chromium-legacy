@@ -227,6 +227,12 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   if (!contents)
     return;
 
+  // If the toolbar should not be shown don't update the UI, as the toolbar may
+  // be animating out and it looks messy.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!browser->app_controller()->ShouldShowToolbar())
+    return;
+
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   base::string16 title, location;
   if (entry) {

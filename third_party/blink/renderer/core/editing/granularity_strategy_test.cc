@@ -25,7 +25,7 @@
 namespace blink {
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \
-  EXPECT_EQ(text, WebString(Selection().SelectedText()).Utf8())
+  EXPECT_EQ(text, Selection().SelectedText().Utf8())
 
 IntPoint VisiblePositionToContentsPoint(const VisiblePosition& pos) {
   IntPoint result = AbsoluteSelectionBoundsOf(pos).MinXMaxYCorner();

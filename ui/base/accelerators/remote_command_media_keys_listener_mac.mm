@@ -91,6 +91,10 @@ void RemoteCommandMediaKeysListenerMac::StopWatchingMediaKey(
   }
 }
 
+void RemoteCommandMediaKeysListenerMac::SetIsMediaPlaying(bool is_playing) {
+  is_media_playing_ = is_playing;
+}
+
 void RemoteCommandMediaKeysListenerMac::OnNext() {
   MaybeSend(VKEY_MEDIA_NEXT_TRACK);
 }
@@ -100,7 +104,8 @@ void RemoteCommandMediaKeysListenerMac::OnPrevious() {
 }
 
 void RemoteCommandMediaKeysListenerMac::OnPause() {
-  MaybeSend(VKEY_MEDIA_PLAY_PAUSE);
+  if (is_media_playing_)
+    MaybeSend(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void RemoteCommandMediaKeysListenerMac::OnPlayPause() {
@@ -112,7 +117,8 @@ void RemoteCommandMediaKeysListenerMac::OnStop() {
 }
 
 void RemoteCommandMediaKeysListenerMac::OnPlay() {
-  MaybeSend(VKEY_MEDIA_PLAY_PAUSE);
+  if (!is_media_playing_)
+    MaybeSend(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void RemoteCommandMediaKeysListenerMac::MaybeSend(KeyboardCode key_code) {

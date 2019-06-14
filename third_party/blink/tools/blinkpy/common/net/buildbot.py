@@ -110,11 +110,6 @@ class BuildBot(object):
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
 
-    def fetch_full_results(self, build, full=False, master=''):
-        if master:
-            return self.fetch_webdriver_test_results(build, master)
-        return self.fetch_results(build, full)
-
     @memoized
     def fetch_results(self, build, full=False):
         """Returns a WebTestResults object for results from a given Build.

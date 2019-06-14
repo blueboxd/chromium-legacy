@@ -200,6 +200,12 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   expected_providers++;  // PowerMetricsProvider
 #endif                   // defined(OS_MACOSX)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  expected_providers++;  // DesktopPlatformFeaturesMetricsProvider
+#endif                   //  defined(OS_WIN) || defined(OS_MACOSX) || \
+                         // (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
   std::unique_ptr<ChromeMetricsServiceClient> chrome_metrics_service_client =
       ChromeMetricsServiceClient::Create(metrics_state_manager_.get());
   EXPECT_EQ(expected_providers,

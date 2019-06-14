@@ -683,10 +683,6 @@ enum BoolAttribute {
   // Indicates whether this node can be grabbed for drag-and-drop operation.
   // Note: aria-grabbed is deprecated in WAI-ARIA 1.1.
   kGrabbed,
-
-  // Indicates whether this node causes a hard line-break
-  // (e.g. block level elements, or <br>)
-  kIsLineBreakingObject,
 };
 
 enum IntListAttribute {

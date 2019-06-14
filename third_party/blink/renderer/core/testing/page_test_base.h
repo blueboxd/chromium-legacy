@@ -35,7 +35,9 @@ class PageTestBase : public testing::Test {
 
   // Navigate to |url| providing an empty response but
   // URL and security origin of the Document will be set to |url|.
-  void NavigateTo(const KURL& url);
+  void NavigateTo(const KURL& url,
+                  const String& feature_policy_header = String(),
+                  const String& csp_header = String());
 
   Document& GetDocument() const;
   Page& GetPage() const;

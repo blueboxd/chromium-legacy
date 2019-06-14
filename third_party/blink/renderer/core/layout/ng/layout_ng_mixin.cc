@@ -161,6 +161,10 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // TODO(layout-dev) Transfroms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
   if (!physical_fragment->Children().empty()) {
+    LayoutUnit border_inline_start =
+        LayoutUnit(Base::StyleRef().BorderStartWidth());
+    LayoutUnit border_block_start =
+        LayoutUnit(Base::StyleRef().BorderBeforeWidth());
     for (const auto& child : physical_fragment->Children()) {
       PhysicalRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
@@ -177,7 +181,18 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
         continue;
       }
       child_scrollable_overflow.offset += child.Offset();
-      children_overflow.Unite(child_scrollable_overflow);
+
+      // Do not add overflow if fragment is not reachable by scrolling.
+      WritingMode writing_mode = Base::StyleRef().GetWritingMode();
+      LogicalOffset child_logical_end =
+          child_scrollable_overflow.offset.ConvertToLogical(
+              writing_mode, Base::StyleRef().Direction(),
+              physical_fragment->Size(), child_scrollable_overflow.size) +
+          child_scrollable_overflow.size.ConvertToLogical(writing_mode);
+
+      if (child_logical_end.inline_offset > border_inline_start &&
+          child_logical_end.block_offset > border_block_start)
+        children_overflow.Unite(child_scrollable_overflow);
     }
   }
 

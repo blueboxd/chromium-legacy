@@ -46,6 +46,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/display/manager/display_manager.h"
@@ -442,19 +443,21 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
 
 // Returns true if the user's wallpaper is to be treated as ephemeral.
 bool IsEphemeralUser(const AccountId& id) {
-  for (const auto& s : Shell::Get()->session_controller()->GetUserSessions()) {
-    if (s->user_info.account_id == id)
-      return s->user_info.is_ephemeral;
+  if (user_manager::UserManager::IsInitialized()) {
+    return user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+        id);
   }
+  NOTIMPLEMENTED();
   return false;
 }
 
 // Returns the type of the user with the specified |id| or USER_TYPE_REGULAR.
 user_manager::UserType GetUserType(const AccountId& id) {
-  for (const auto& s : Shell::Get()->session_controller()->GetUserSessions()) {
-    if (s->user_info.account_id == id)
-      return s->user_info.type;
+  if (user_manager::UserManager::IsInitialized()) {
+    if (auto* user = user_manager::UserManager::Get()->FindUser(id))
+      return user->GetType();
   }
+  NOTIMPLEMENTED();
   return user_manager::USER_TYPE_REGULAR;
 }
 

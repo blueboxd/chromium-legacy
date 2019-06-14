@@ -7,12 +7,12 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/ozone_base_export.h"
 
 namespace ui {
 
@@ -23,7 +23,7 @@ enum OverlayStatus {
   OVERLAY_STATUS_LAST = OVERLAY_STATUS_NOT
 };
 
-class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
+class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
  public:
   OverlaySurfaceCandidate();
   OverlaySurfaceCandidate(const OverlaySurfaceCandidate& other);

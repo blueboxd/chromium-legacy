@@ -8,10 +8,13 @@ crbug.com/648369 [ linux debug intel ] TraceTest_* [ RetryOnFailure ]
 # Device traces are not supported on all machines.
 DeviceTraceTest_* [ Skip ]
 
-# We do not have software H.264 decoding on Android, so it can't survive a
-# context loss which results in hardware decoder loss.
-crbug.com/580386 [ android ] TraceTest_Video_Context_Loss_MP4 [ Skip ]
-crbug.com/580386 [ android ] DeviceTraceTest_Video_Context_Loss_MP4 [ Skip ]
+# The TraceTest versions of the pixel tests' Video_Context_Loss tests
+# appear flaky on multiple platforms. These are mainly meant to run as
+# pixel tests so they're being skipped in this test suite.
+crbug.com/974077 TraceTest_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/974077 DeviceTraceTest_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/974077 TraceTest_Video_Context_Loss_VP9 [ Skip ]
+crbug.com/974077 DeviceTraceTest_Video_Context_Loss_VP9 [ Skip ]
 
 # Skip on platforms where DirectComposition isn't supported
 crbug.com/867136 [ mac ] VideoPathTraceTest_* [ Skip ]
@@ -33,5 +36,4 @@ crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOv
 
 # Flaky for unknown reason.
 crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
-crbug.com/965730 [ android qualcomm-adreno-(tm)-418 ] TraceTest_Video_Context_Loss_VP9 [ Skip ]
 crbug.com/969117 [ win10 intel ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]

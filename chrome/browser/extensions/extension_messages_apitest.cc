@@ -195,31 +195,6 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingBackgroundOnly) {
   ASSERT_TRUE(RunExtensionTest("messaging/background_only")) << message_;
 }
 
-// Tests whether an extension in an interstitial page can send messages to the
-// background page.
-IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingInterstitial) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // TODO(https://crbug.com/833429): Intermittent timeouts when run with
-  // --site-per-process on Windows.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-#endif
-  // TODO(carlosil): Completely remove this test once committed interstitials
-  // fully launch.
-  // With committed interstitials enabled, interstitials are no longer a
-  // special case, and do have a web contents, so the special conditions
-  // that are checked in this test no longer apply.
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
-    return;
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  ASSERT_TRUE(https_server.Start());
-
-  ASSERT_TRUE(RunExtensionSubtest("messaging/interstitial_component",
-                                  https_server.base_url().spec(),
-                                  kFlagLoadAsComponent)) << message_;
-}
-
 // Tests externally_connectable between a web page and an extension.
 //
 // TODO(kalman): Test between extensions. This is already tested in this file,

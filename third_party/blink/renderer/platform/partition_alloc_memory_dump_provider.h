@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
-class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
+class PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
     : public base::trace_event::MemoryDumpProvider {
   // TODO(tasak): PartitionAllocMemoryDumpProvider should be
   // USING_FAST_MALLOC. c.f. crbug.com/584196

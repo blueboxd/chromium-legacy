@@ -1,5 +1,4 @@
 rootWebArea
-++genericContainer ignored
-++++figure
-++++++staticText name='Figure'
-++++++++inlineTextBox name='Figure'
+++figure
+++++staticText name='Figure'
+++++++inlineTextBox name='Figure'

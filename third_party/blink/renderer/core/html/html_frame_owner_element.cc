@@ -358,6 +358,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
 
   embedded_content_view_ = embedded_content_view;
   FrameOwnerPropertiesChanged();
+  SetNeedsCompositingUpdate();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);
 

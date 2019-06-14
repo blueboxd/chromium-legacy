@@ -21,18 +21,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
-                                    public testing::WithParamInterface<bool> {
+class ConnectionHelpTabHelperTest : public InProcessBrowserTest {
  public:
   ConnectionHelpTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_expired_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
-    }
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_expired_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
@@ -42,10 +37,6 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
   }
 
  protected:
-  bool AreCommittedInterstitialsEnabled() {
-    return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-  }
-
   void SetHelpCenterUrl(Browser* browser, const GURL& url) {
     ConnectionHelpTabHelper::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents())
@@ -65,14 +56,10 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
-                         ConnectionHelpTabHelperTest,
-                         ::testing::Values(false, true));
-
 // Tests that the chrome://connection-help redirect is not triggered (and
 // metrics are not logged) for an interstitial on a site that is not the help
 // center.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        InterstitialOnNonSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
@@ -84,23 +71,16 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
   SetHelpCenterUrl(browser(), good_support_url);
   ui_test_utils::NavigateToURL(browser(), expired_non_support_url);
 
-  if (AreCommittedInterstitialsEnabled()) {
-    base::string16 tab_title;
-    ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
-    EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
-  } else {
-    EXPECT_TRUE(browser()
-                    ->tab_strip_model()
-                    ->GetActiveWebContents()
-                    ->ShowingInterstitialPage());
-  }
+  base::string16 tab_title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
+  EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
 
   histograms.ExpectTotalCount(kHistogramName, 0);
 }
 
 // Tests that the chrome://connection-help redirect is not triggered (and
 // metrics are logged) for the help center URL if there was no interstitial.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        SupportURLWithNoInterstitial) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
@@ -122,7 +102,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
 
 // Tests that the chrome://connection-help redirect is triggered (and metrics
 // are logged) for the help center URL if there was an interstitial.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
   base::test::ScopedFeatureList feature_list;
@@ -131,18 +111,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
   GURL expired_url = https_expired_server()->GetURL("/title2.html");
   SetHelpCenterUrl(browser(), expired_url);
 
-  // Since ui_test_utils::NavigateToURL uses a TestNavigationObserver to wait
-  // for navigations, and TestNavigationObserver counts interstitials as a
-  // navigation, we need to wait for two navigations (the interstitial, and the
-  // help content) in the non-committed interstitial case. For committed
-  // interstitials, since the redirect happens before the original navigation
-  // finishes, we only need to wait for one.
-  if (AreCommittedInterstitialsEnabled()) {
-    ui_test_utils::NavigateToURL(browser(), expired_url);
-  } else {
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-                                                              expired_url, 2);
-  }
+  ui_test_utils::NavigateToURL(browser(), expired_url);
 
   base::string16 tab_title;
   ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
@@ -157,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
 
 // Tests that histogram logs correctly when an interstitial is triggered on the
 // support URL if the feature is disabled.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        InterstitialOnSupportURLWithFeatureDisabled) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
@@ -168,16 +137,9 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
   SetHelpCenterUrl(browser(), expired_url);
   ui_test_utils::NavigateToURL(browser(), expired_url);
 
-  if (AreCommittedInterstitialsEnabled()) {
-    base::string16 tab_title;
-    ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
-    EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
-  } else {
-    EXPECT_TRUE(browser()
-                    ->tab_strip_model()
-                    ->GetActiveWebContents()
-                    ->ShowingInterstitialPage());
-  }
+  base::string16 tab_title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
+  EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
 
   histograms.ExpectUniqueSample(
       kHistogramName,
@@ -188,7 +150,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
 // Tests that a non-interstitial error on the support URL is logged correctly,
 // by setting the support URL to an invalid URL and attempting to navigate to
 // it.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
   const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
   base::HistogramTester histograms;
   GURL invalid_url("http://invalid-url.test");
@@ -202,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest, NetworkErrorOnSupportURL) {
 // Tests that if the help content site is opened with an error code that refers
 // to a certificate error, the certificate error section is automatically
 // expanded.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        CorrectlyExpandsCertErrorSection) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
@@ -212,18 +174,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
   replacements.ClearRef();
   SetHelpCenterUrl(browser(), expired_url.ReplaceComponents(replacements));
 
-  // Since ui_test_utils::NavigateToURL uses a TestNavigationObserver to wait
-  // for navigations, and TestNavigationObserver counts interstitials as a
-  // navigation, we need to wait for two navigations (the interstitial, and the
-  // help content) in the non-committed interstitial case. For committed
-  // interstitials, since the redirect happens before the original navigation
-  // finishes, we only need to wait for one.
-  if (AreCommittedInterstitialsEnabled()) {
-    ui_test_utils::NavigateToURL(browser(), expired_url);
-  } else {
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-                                                              expired_url, 2);
-  }
+  ui_test_utils::NavigateToURL(browser(), expired_url);
 
   // Check that we got redirected to the offline help content.
   base::string16 tab_title;
@@ -234,7 +185,8 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
   // Check that the cert error details section is not hidden.
   std::string cert_error_is_hidden_js =
       "var certSection = document.getElementById('details-certerror'); "
-      "window.domAutomationController.send(certSection.className == 'hidden');";
+      "window.domAutomationController.send(certSection.className == "
+      "'hidden');";
   bool cert_error_is_hidden;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -244,7 +196,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
 
 // Tests that if the help content site is opened with an error code that refers
 // to an expired certificate, the clock section is automatically expanded.
-IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
+IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest,
                        CorrectlyExpandsClockSection) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
@@ -254,18 +206,7 @@ IN_PROC_BROWSER_TEST_P(ConnectionHelpTabHelperTest,
   replacements.ClearRef();
   SetHelpCenterUrl(browser(), expired_url.ReplaceComponents(replacements));
 
-  // Since ui_test_utils::NavigateToURL uses a TestNavigationObserver to wait
-  // for navigations, and TestNavigationObserver counts interstitials as a
-  // navigation, we need to wait for two navigations (the interstitial, and the
-  // help content) in the non-committed interstitial case. For committed
-  // interstitials, since the redirect happens before the original navigation
-  // finishes, we only need to wait for one.
-  if (AreCommittedInterstitialsEnabled()) {
-    ui_test_utils::NavigateToURL(browser(), expired_url);
-  } else {
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-                                                              expired_url, 2);
-  }
+  ui_test_utils::NavigateToURL(browser(), expired_url);
 
   // Check that we got redirected to the offline help content.
   base::string16 tab_title;

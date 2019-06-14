@@ -330,13 +330,6 @@ bool WebAXObject::IsHovered() const {
   return private_->IsHovered();
 }
 
-bool WebAXObject::IsLineBreakingObject() const {
-  if (IsDetached())
-    return false;
-
-  return private_->IsLineBreakingObject();
-}
-
 bool WebAXObject::IsLinked() const {
   if (IsDetached())
     return false;

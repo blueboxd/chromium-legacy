@@ -468,7 +468,8 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle pending launch session request.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
+                                     "theDestinationId", "theNamespace",
+                                     ParseJson(R"(
       {
         "requestId": 1,
         "type": "RECEIVER_STATUS",
@@ -477,7 +478,8 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle both pending get app availability requests.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
+                                     "theDestinationId", "theNamespace",
+                                     ParseJson(R"(
       {
         "requestId": 2,
         "availability": {"theAppId": "APP_AVAILABLE"},
@@ -485,7 +487,7 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle pending set volume request (1 of 2).
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
+                                     "theDestinationId", "theNamespace",
                                      ParseJson(R"({"requestId": 3})"));
 
   // Skip request_id == 4, since it was used by the second get app availability
@@ -493,12 +495,12 @@ TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
 
   // Handle pending set volume request (2 of 2).
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
+                                     "theDestinationId", "theNamespace",
                                      ParseJson(R"({"requestId": 5})"));
 
   // Handle pending stop session request.
   handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
+                                     "theDestinationId", "theNamespace",
                                      ParseJson(R"({"requestId": 6})"));
 }
 

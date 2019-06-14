@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/service_manager_connection.h"
 
@@ -684,11 +685,10 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
     return true;
   }
 
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (!connection) {
-    LOG(ERROR) << "A ServiceManagerConnection was not available for the "
-                  "current process.";
+  service_manager::Connector* connector = content::GetSystemConnector();
+  content::ServiceManagerConnection::GetForProcess();
+  if (!connector) {
+    LOG(ERROR) << "A system Connector is not available in this environment.";
     return false;
   }
 
@@ -710,7 +710,7 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(connection, options_.mode,
+  Supervisor::GetInstance()->Start(connector, options_.mode,
                                    options_.stack_mode, sampling_rate,
                                    std::move(start_callback));
 
@@ -738,11 +738,10 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
     return true;
   }
 
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (!connection) {
-    LOG(ERROR) << "A ServiceManagerConnection was not available for the "
-                  "current process.";
+  service_manager::Connector* connector = content::GetSystemConnector();
+  content::ServiceManagerConnection::GetForProcess();
+  if (!connector) {
+    LOG(ERROR) << "A system Connector is not available in this environment.";
     return false;
   }
 
@@ -763,7 +762,7 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(connection, options_.mode,
+  Supervisor::GetInstance()->Start(connector, options_.mode,
                                    options_.stack_mode, sampling_rate,
                                    std::move(start_callback));
 

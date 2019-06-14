@@ -60,29 +60,6 @@ bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
 
 }  // namespace
 
-struct V4L2SliceVideoDecoder::InputRecord {
-  // The writable buffer got from V4L2 input queue. The value is valid from the
-  // time the surface is created, until the input buffer is enqueued into V4L2
-  // device.
-  V4L2WritableBufferRef input_buf;
-
-  explicit InputRecord(V4L2WritableBufferRef buf) : input_buf(std::move(buf)) {}
-};
-
-struct V4L2SliceVideoDecoder::OutputRecord {
-  // The DMA-buf VideoFrame. The DMA-buf will be enqueued into V4L2 device.
-  // After dequeued from V4L2 device, the frame will be sent to the client
-  // of the VideoDecoder.
-  scoped_refptr<VideoFrame> frame;
-  // The writable buffer got from V4L2 output queue. The value is valid from
-  // the time the surface is created, until the buffer is enqueued into V4L2
-  // device.
-  V4L2WritableBufferRef output_buf;
-
-  OutputRecord(scoped_refptr<VideoFrame> f, V4L2WritableBufferRef buf)
-      : frame(std::move(f)), output_buf(std::move(buf)) {}
-};
-
 struct V4L2SliceVideoDecoder::OutputRequest {
   enum OutputRequestType {
     // The surface to be outputted.
@@ -379,7 +356,6 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
-  input_record_map_.clear();
 
   // Call init_cb
   output_cb_ = output_cb;
@@ -654,12 +630,9 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
 
       case OutputRequest::kSurface:
         scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
-        auto surface_it = output_record_map_.find(surface->output_record());
-        DCHECK(surface_it != output_record_map_.end());
-        OutputRecord* output_record = surface_it->second.get();
 
-        DCHECK_NE(output_record->frame, nullptr);
-        RunOutputCB(output_record->frame);
+        DCHECK(surface->video_frame());
+        RunOutputCB(surface->video_frame());
         break;
     }
   }
@@ -676,12 +649,10 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(state_, State::kPause);
   // We change resolution after outputting all pending surfaces, there should
-  // be no V4L2DecodeSurface left. Also, the corresponding OutputRecord in
-  // |output_record_map_| is erased when the surface is released. Therefore
-  // |output_record_map_| should also be empty.
+  // be no V4L2DecodeSurface left.
   DCHECK(surfaces_at_device_.empty());
-  DCHECK(output_record_map_.empty());
-  DCHECK(input_record_map_.empty());
+  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
+  DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
 
   DCHECK(output_request_queue_.empty());
   if (!StopStreamV4L2Queue())
@@ -767,28 +738,14 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  // Record the frame and V4L2 buffers to the input and output records.
-  int input_record_id = input_buf.BufferId();
-  DCHECK(input_record_map_.find(input_record_id) == input_record_map_.end());
-  input_record_map_.insert(std::make_pair(
-      input_record_id, std::make_unique<InputRecord>(std::move(input_buf))));
-
-  int output_record_id = output_buf.BufferId();
-  DCHECK(output_record_map_.find(output_record_id) == output_record_map_.end());
-  output_record_map_.insert(std::make_pair(
-      output_record_id,
-      std::make_unique<OutputRecord>(std::move(frame), std::move(output_buf))));
-
   return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      input_record_id, output_record_id, base::DoNothing()));
+      std::move(input_buf), std::move(output_buf), std::move(frame),
+      base::DoNothing()));
 }
 
 void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DVLOGF(3) << "Reuse output surface #" << buffer->BufferId();
-
-  // Release the VideoFrame and V4L2 output buffer in the output record.
-  output_record_map_.erase(buffer->BufferId());
 
   // Resume decoding in case of ran out of surface.
   if (state_ == State::kDecoding) {
@@ -805,12 +762,8 @@ bool V4L2SliceVideoDecoder::SubmitSlice(
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DVLOGF(3);
 
-  auto surface_it = input_record_map_.find(dec_surface->input_record());
-  DCHECK(surface_it != input_record_map_.end());
-  InputRecord* input_record = surface_it->second.get();
-
-  size_t plane_size = input_record->input_buf.GetPlaneSize(0);
-  size_t bytes_used = input_record->input_buf.GetPlaneBytesUsed(0);
+  size_t plane_size = dec_surface->input_buffer().GetPlaneSize(0);
+  size_t bytes_used = dec_surface->input_buffer().GetPlaneBytesUsed(0);
   if (size > plane_size - bytes_used) {
     VLOGF(1) << "The size of submitted slice(" << size
              << ") is larger than the remaining buffer size("
@@ -819,9 +772,9 @@ bool V4L2SliceVideoDecoder::SubmitSlice(
     return false;
   }
 
-  void* mapping = input_record->input_buf.GetPlaneMapping(0);
+  void* mapping = dec_surface->input_buffer().GetPlaneMapping(0);
   memcpy(reinterpret_cast<uint8_t*>(mapping) + bytes_used, data, size);
-  input_record->input_buf.SetPlaneBytesUsed(0, bytes_used + size);
+  dec_surface->input_buffer().SetPlaneBytesUsed(0, bytes_used + size);
   return true;
 }
 
@@ -831,26 +784,19 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   DVLOGF(3);
 
   // Enqueue input_buf and output_buf
-  auto input_it = input_record_map_.find(dec_surface->input_record());
-  DCHECK(input_it != input_record_map_.end());
-  InputRecord* input_record = input_it->second.get();
-  input_record->input_buf.PrepareQueueBuffer(dec_surface);
-  if (!std::move(input_record->input_buf).QueueMMap()) {
+  dec_surface->input_buffer().PrepareQueueBuffer(dec_surface);
+  if (!std::move(dec_surface->input_buffer()).QueueMMap()) {
     SetState(State::kError);
     return;
   }
-  input_record_map_.erase(input_it);
 
-  auto surface_it = output_record_map_.find(dec_surface->output_record());
-  DCHECK(surface_it != output_record_map_.end());
-  OutputRecord* output_record = surface_it->second.get();
-  if (!IsValidFrameForQueueDMABuf(output_record->frame.get(),
+  if (!IsValidFrameForQueueDMABuf(dec_surface->video_frame().get(),
                                   num_output_planes_)) {
     SetState(State::kError);
     return;
   }
-  if (!std::move(output_record->output_buf)
-           .QueueDMABuf(output_record->frame->DmabufFds())) {
+  if (!std::move(dec_surface->output_buffer())
+           .QueueDMABuf(dec_surface->video_frame()->DmabufFds())) {
     SetState(State::kError);
     return;
   }
@@ -928,12 +874,10 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   // Streamoff input queue.
   if (input_queue_->IsStreaming())
     input_queue_->Streamoff();
-  input_record_map_.clear();
 
   // Streamoff output queue.
   if (output_queue_->IsStreaming())
     output_queue_->Streamoff();
-  output_record_map_.clear();
   while (!surfaces_at_device_.empty())
     surfaces_at_device_.pop();
 

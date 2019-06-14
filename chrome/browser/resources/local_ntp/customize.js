@@ -67,6 +67,13 @@ customize.KEYCODES = {
 };
 
 /**
+ * Array for keycodes corresponding to arrow keys.
+ * @type Array
+ * @const
+ */
+customize.arrowKeys = [/*Left*/ 37, /*Up*/ 38, /*Right*/ 39, /*Down*/ 40];
+
+/**
  * Enum for HTML element ids.
  * @enum {string}
  * @const
@@ -85,8 +92,10 @@ customize.IDS = {
   BACKGROUNDS_UPLOAD_WRAPPER: 'backgrounds-upload-wrapper',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
+  COLORS_DEFAULT: 'colors-default',
   COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
+  CUSTOM_BG: 'custom-bg',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
@@ -147,16 +156,6 @@ customize.CLASSES = {
 };
 
 /**
- * Enum for background sources.
- * @enum {number}
- * @const
- */
-customize.SOURCES = {
-  NONE: -1,
-  CHROME_BACKGROUNDS: 0,
-};
-
-/**
  * Enum for background option menu entries, in the order they appear in the UI.
  * @enum {number}
  * @const
@@ -193,12 +192,6 @@ customize.selectedTile = null;
  */
 customize.ROWS_TO_PRELOAD = 3;
 
-/* Type of collection that is being browsed, needed in order
- * to return from the image dialog.
- * @type {number}
- */
-customize.dialogCollectionsSource = customize.SOURCES.NONE;
-
 /*
  * Called when the error notification should be shown.
  * @type {?Function}
@@ -231,6 +224,12 @@ customize.selectedColorTile = null;
  * @type {boolean}
  */
 customize.colorMenuLoaded = false;
+
+/**
+ * The original NTP background. Used to restore from image previews.
+ * @type {string}
+ */
+customize.originalBackground = '';
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -369,7 +368,6 @@ customize.richerPicker_resetImageMenu = function(showMenu) {
  */
 customize.closeCollectionDialog = function(menu) {
   menu.close();
-  customize.dialogCollectionsSource = customize.SOURCES.NONE;
   customize.resetSelectionDialog();
 };
 
@@ -379,8 +377,7 @@ customize.closeCollectionDialog = function(menu) {
 customize.setBackground = function(
     url, attributionLine1, attributionLine2, attributionActionUrl) {
   if (configData.richerPicker) {
-    $(customize.IDS.CUSTOMIZATION_MENU).close();
-    customize.richerPicker_resetImageMenu(false);
+    customize.richerPicker_closeCustomizationMenu();
   } else {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
@@ -528,10 +525,8 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
 
 /**
  * Show dialog for selecting a Chrome background.
- * @param {number} collectionsSource The enum value of the source to fetch
- *              collection data from.
  */
-customize.showCollectionSelectionDialog = function(collectionsSource) {
+customize.showCollectionSelectionDialog = function() {
   const tileContainer = configData.richerPicker ?
       $(customize.IDS.BACKGROUNDS_MENU) :
       $(customize.IDS.TILES);
@@ -541,14 +536,6 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
   customize.builtTiles = true;
   const menu = configData.richerPicker ? $(customize.IDS.CUSTOMIZATION_MENU) :
                                          $(customize.IDS.MENU);
-  if (collectionsSource != customize.SOURCES.CHROME_BACKGROUNDS) {
-    console.log(
-        'showCollectionSelectionDialog() called with invalid source=' +
-        collectionsSource);
-    return;
-  }
-  customize.dialogCollectionsSource = collectionsSource;
-
   if (!menu.open) {
     menu.showModal();
   }
@@ -617,11 +604,7 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
         return;
       }
       tileOnClickInteraction(event);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -675,8 +658,32 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
 };
 
 /**
- * Apply styling to a selected tile in the richer picker and enable the done
- * button.
+ * Preview an image as a custom backgrounds.
+ * @param {!Element} tile The tile that was selected.
+ */
+customize.richerPicker_previewImage = function(tile) {
+  customize.originalBackground =
+      $(customize.IDS.CUSTOM_BG).style.backgroundImage;
+
+  // TODO(crbug/971853): add browertests for previews.
+  // Set preview images at 720p by replacing the params in the url.
+  const re = /w\d+\-h\d+/;
+  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
+      tile.style.backgroundImage.replace(re, 'w1280-h720');
+};
+
+/**
+ * Remove a preview image of a custom backgrounds.
+ * @param {!Element} tile The tile that was deselected.
+ */
+customize.richerPicker_unpreviewImage = function(tile) {
+  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
+      customize.originalBackground;
+};
+
+/**
+ * Apply styling to a selected tile in the richer picker and enable the
+ * done button.
  * @param {?Element} tile The tile to apply styling to.
  */
 customize.richerPicker_selectTile = function(tile) {
@@ -695,6 +702,8 @@ customize.richerPicker_selectTile = function(tile) {
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
   tile.appendChild(selectedCircle);
   tile.appendChild(selectedCheck);
+
+  customize.richerPicker_previewImage(tile);
 };
 
 /**
@@ -720,6 +729,8 @@ customize.richerPicker_deselectTile = function(tile) {
       --i;
     }
   }
+
+  customize.richerPicker_unpreviewImage(tile);
 };
 
 /**
@@ -845,11 +856,7 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       event.preventDefault();
       event.stopPropagation();
       tileInteraction(event.currentTarget);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -993,8 +1000,7 @@ customize.loadChromeBackgrounds = function() {
       'collection_type=background';
   collScript.onload = function() {
     if (configData.richerPicker) {
-      customize.showCollectionSelectionDialog(
-          customize.SOURCES.CHROME_BACKGROUNDS);
+      customize.showCollectionSelectionDialog();
     }
   };
   document.body.appendChild(collScript);
@@ -1076,11 +1082,19 @@ customize.richerPicker_resetCustomizationMenu = function() {
 };
 
 /**
+ * Close customization menu.
+ */
+customize.richerPicker_closeCustomizationMenu = function() {
+  $(customize.IDS.CUSTOMIZATION_MENU).close();
+  customize.richerPicker_resetCustomizationMenu();
+};
+
+/**
  * Initialize the settings menu, custom backgrounds dialogs, and custom
  * links menu items. Set the text and event handlers for the various
  * elements.
- * @param {!Function} showErrorNotification Called when the error notification
- *                    should be displayed.
+ * @param {!Function} showErrorNotification Called when the error
+ *                    notification should be displayed.
  * @param {!Function} hideCustomLinkNotification Called when the custom link
  *                    notification should be hidden.
  */
@@ -1120,8 +1134,11 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   };
 
   $(customize.IDS.MENU_CANCEL).onclick = function(event) {
-    $(customize.IDS.CUSTOMIZATION_MENU).close();
-    customize.richerPicker_resetCustomizationMenu();
+    if (customize.richerPicker_selectedOption ==
+        $(customize.IDS.COLORS_BUTTON)) {
+      customize.colorsCancel();
+    }
+    customize.richerPicker_closeCustomizationMenu();
   };
 
 
@@ -1176,11 +1193,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
     } else if (event.keyCode === customize.KEYCODES.TAB) {
       // If keyboard navigation is attempted, remove mouse-only mode.
       editDialog.classList.remove(customize.CLASSES.MOUSE_NAV);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       event.preventDefault();
       editDialog.classList.remove(customize.CLASSES.MOUSE_NAV);
     }
@@ -1349,8 +1362,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     $('ntp-collection-loader').onload = function() {
       editDialog.close();
       if (typeof coll != 'undefined' && coll.length > 0) {
-        customize.showCollectionSelectionDialog(
-            customize.SOURCES.CHROME_BACKGROUNDS);
+        customize.showCollectionSelectionDialog();
       } else {
         customize.handleError(collErrors);
       }
@@ -1397,8 +1409,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.resetSelectionDialog();
       } else {
         customize.resetSelectionDialog();
-        customize.showCollectionSelectionDialog(
-            customize.dialogCollectionsSource);
+        customize.showCollectionSelectionDialog();
       }
     }
 
@@ -1418,7 +1429,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       customize.richerPicker_resetImageMenu(true);
     }
     customize.resetSelectionDialog();
-    customize.showCollectionSelectionDialog(customize.dialogCollectionsSource);
+    customize.showCollectionSelectionDialog();
   };
   $(customize.IDS.BACK_CIRCLE).onclick = backInteraction;
   $(customize.IDS.MENU_BACK_CIRCLE).onclick = backInteraction;
@@ -1463,11 +1474,18 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (done.disabled) {
       return;
     }
-    customize.setBackground(
-        customize.selectedTile.dataset.url,
-        customize.selectedTile.dataset.attributionLine1,
-        customize.selectedTile.dataset.attributionLine2,
-        customize.selectedTile.dataset.attributionActionUrl);
+
+    if (customize.richerPicker_selectedOption ==
+        $(customize.IDS.COLORS_BUTTON)) {
+      customize.colorsDone();
+      customize.richerPicker_closeCustomizationMenu();
+    } else {
+      customize.setBackground(
+          customize.selectedTile.dataset.url,
+          customize.selectedTile.dataset.attributionLine1,
+          customize.selectedTile.dataset.attributionLine2,
+          customize.selectedTile.dataset.attributionActionUrl);
+    }
   };
   $(customize.IDS.DONE).onclick = doneInteraction;
   $(customize.IDS.MENU_DONE).onclick = doneInteraction;
@@ -1479,10 +1497,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   // On any arrow key event in the tiles area, focus the first tile.
   $(customize.IDS.TILES).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       event.preventDefault();
       if ($(customize.IDS.MENU)
               .classList.contains(customize.CLASSES.COLLECTION_DIALOG)) {
@@ -1494,19 +1509,13 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).focus();
     }
   };
 
   $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       $('img_tile_0').focus();
     }
   };
@@ -1622,16 +1631,35 @@ customize.handleError = function(errors) {
 };
 
 /**
+ * Updates what is the selected tile of the Color menu and does necessary
+ * changes for displaying the selection.
+ * @param {Object} event The event attributes for the interaction.
+ */
+customize.updateColorMenuTileSelection = function(event) {
+  if (customize.selectedColorTile) {
+    customize.richerPicker_deselectTile(customize.selectedColorTile);
+  }
+
+  customize.richerPicker_selectTile(event.target);
+  customize.selectedColorTile = event.target;
+};
+
+/**
  * Handles color tile selection.
  * @param {Object} event The event attributes for the interaction.
  */
 customize.colorTileInteraction = function(event) {
-  if (customize.selectedColorTile) {
-    customize.richerPicker_deselectTile(customize.selectedColorTile);
-  }
-  customize.richerPicker_selectTile(event.target);
-  customize.selectedColorTile = event.target;
+  customize.updateColorMenuTileSelection(event);
   ntpApiHandle.applyAutogeneratedTheme(event.target.dataset.color.split(','));
+};
+
+/**
+ * Handles default theme tile selection.
+ * @param {Object} event The event attributes for the interaction.
+ */
+customize.defaultTileInteraction = function(event) {
+  customize.updateColorMenuTileSelection(event);
+  ntpApiHandle.applyDefaultTheme();
 };
 
 /**
@@ -1654,5 +1682,26 @@ customize.loadColorTiles = function() {
         customize.colorTileInteraction);
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
+
+  // Configure the default tile.
+  $(customize.IDS.COLORS_DEFAULT).dataset.color = null;
+  $(customize.IDS.COLORS_DEFAULT).onclick = customize.defaultTileInteraction;
+
   customize.colorMenuLoaded = true;
+};
+
+/**
+ * Handles 'Done' button interaction when Colors is the current option in the
+ * customization menu.
+ */
+customize.colorsDone = function() {
+  ntpApiHandle.confirmThemeChanges();
+};
+
+/**
+ * Handles 'Cancel' button interaction when Colors is the current option in the
+ * customization menu.
+ */
+customize.colorsCancel = function() {
+  ntpApiHandle.revertThemeChanges();
 };

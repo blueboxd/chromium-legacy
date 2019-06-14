@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
 import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
@@ -391,7 +392,7 @@ public abstract class AppHooks {
      * @return A new {@link TouchlessUiCoordinator} instance.
      */
     public TouchlessUiCoordinator createTouchlessUiCoordinator(ChromeActivity activity) {
-        return null;
+        return TouchlessDelegate.getTouchlessUiCoordinator(activity);
     }
 
     /**

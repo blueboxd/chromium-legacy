@@ -248,7 +248,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
 
   {
     // Turn on the flag for test.
-    ScopedMovementXYInBlinkForTest scoped_feature(true);
+    ScopedConsolidatedMovementXYForTest scoped_feature(true);
 
     WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
         CreateTestPointerEvent(WebInputEvent::kPointerMove,
@@ -290,7 +290,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
 
   {
     // When flag is off, movementX/Y follows the value in WebPointerProperties.
-    ScopedMovementXYInBlinkForTest scoped_feature(false);
+    ScopedConsolidatedMovementXYForTest scoped_feature(false);
 
     WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
         CreateTestPointerEvent(WebInputEvent::kPointerMove,

@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/platform_util.h"

@@ -28,6 +28,20 @@
 
 namespace cast_channel {
 
+namespace {
+
+#if DCHECK_IS_ON()
+// Used to filter out PING and PONG message from logs, since there are a lot of
+// them and they're not interesting.
+bool IsPingPong(const CastMessage& message) {
+  return message.has_payload_utf8() &&
+         (message.payload_utf8() == R"({"type":"PING"})" ||
+          message.payload_utf8() == R"({"type":"PONG"})");
+}
+#endif  // DCHECK_IS_ON()
+
+}  // namespace
+
 CastTransportImpl::CastTransportImpl(Channel* channel,
                                      int channel_id,
                                      const net::IPEndPoint& ip_endpoint,
@@ -63,7 +77,6 @@ bool CastTransportImpl::IsTerminalReadState(ReadState read_state) {
   return read_state == ReadState::READ_ERROR;
 }
 
-
 void CastTransportImpl::SetReadDelegate(std::unique_ptr<Delegate> delegate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate);
@@ -85,6 +98,7 @@ void CastTransportImpl::SendMessage(const CastMessage& message,
                                     net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCastMessageValid(message));
+  DVLOG_IF(1, !IsPingPong(message)) << "Sending: " << message;
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -358,6 +372,8 @@ int CastTransportImpl::DoReadCallback() {
     return net::ERR_INVALID_RESPONSE;
   }
   SetReadState(ReadState::READ);
+  DVLOG_IF(1, !IsPingPong(*current_message_))
+      << "Received: " << *current_message_;
   delegate_->OnMessage(*current_message_);
   current_message_.reset();
   return net::OK;

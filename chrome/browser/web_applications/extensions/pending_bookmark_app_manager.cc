@@ -109,8 +109,15 @@ void PendingBookmarkAppManager::UninstallApps(
 
 std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
     web_app::InstallSource install_source) const {
-  return web_app::ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
-      profile_, install_source);
+  std::vector<GURL> installed_apps;
+  for (const auto& id_and_url :
+       web_app::ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
+           profile_->GetPrefs(), install_source)) {
+    if (registrar_->IsInstalled(id_and_url.second))
+      installed_apps.push_back(id_and_url.second);
+  }
+
+  return installed_apps;
 }
 
 base::Optional<web_app::AppId> PendingBookmarkAppManager::LookupAppId(

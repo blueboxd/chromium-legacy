@@ -51,6 +51,9 @@ class AppRegistrar {
   // method.
   virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
 
+  // Returns the app id for which the |url| is in scope of, empty if none.
+  virtual AppId FindAppIdForUrl(const GURL& url) const = 0;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 

@@ -35,7 +35,6 @@ SSLErrorNavigationThrottle::~SSLErrorNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
-  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
 
   // Check the network error code in case we are here due to a non-ssl related
@@ -65,7 +64,6 @@ SSLErrorNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillProcessResponse() {
-  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
   // If there was no certificate error, SSLInfo will be empty.
   const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());

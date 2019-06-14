@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/previews/previews_lite_page_infobar_delegate.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -82,6 +84,19 @@ void RemoveStaleBlacklistEntries(base::DictionaryValue* dict) {
 
   DCHECK_GE(kMaxBlacklistEntries, dict->DictSize());
 }
+
+void PreconnectToLitePagesServer(content::BrowserContext* browser_context) {
+  predictors::LoadingPredictor* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+
+  if (!loading_predictor || !loading_predictor->preconnect_manager())
+    return;
+
+  loading_predictor->preconnect_manager()->StartPreconnectUrl(
+      previews::params::GetLitePagePreviewsDomainURL(), true);
+}
+
 }  // namespace
 
 // This WebContentsObserver watches the rest of the current navigation shows a
@@ -151,6 +166,11 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
     return;
 
   DCHECK(!browser_context->IsOffTheRecord());
+
+  // TODO(crbug.com/971918): Remove once a more robust prober is setup.
+  if (drp_settings->IsDataReductionProxyEnabled()) {
+    PreconnectToLitePagesServer(browser_context);
+  }
 
   pref_service_ = Profile::FromBrowserContext(browser_context)->GetPrefs();
   host_bypass_blacklist_ =

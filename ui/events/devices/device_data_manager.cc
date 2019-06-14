@@ -33,20 +33,12 @@ bool InputDeviceEquals(const ui::InputDevice& a, const ui::InputDevice& b) {
 DeviceDataManager* DeviceDataManager::instance_ = nullptr;
 
 DeviceDataManager::DeviceDataManager() {
-  InputDeviceManager::SetInstance(this);
+  DCHECK(!instance_);
+  instance_ = this;
 }
 
 DeviceDataManager::~DeviceDataManager() {
-  InputDeviceManager::ClearInstance();
   instance_ = nullptr;
-}
-
-// static
-void DeviceDataManager::set_instance(DeviceDataManager* instance) {
-  DCHECK(instance)
-      << "Must reset the DeviceDataManager using DeleteInstance().";
-  DCHECK(!instance_) << "Can not set multiple instances of DeviceDataManager.";
-  instance_ = instance;
 }
 
 // static
@@ -54,7 +46,7 @@ void DeviceDataManager::CreateInstance() {
   if (instance_)
     return;
 
-  set_instance(new DeviceDataManager());
+  new DeviceDataManager();
 
   // TODO(bruthig): Replace the DeleteInstance callbacks with explicit calls.
   base::AtExitManager::RegisterTask(base::Bind(DeleteInstance));

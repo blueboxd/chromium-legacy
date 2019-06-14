@@ -715,6 +715,9 @@ public:
 	CtrlImpl() : m_pWndRibbon(T::pWndRibbon)
 	{ }
 
+	virtual ~CtrlImpl()
+	{ }
+
 	WndRibbon& GetWndRibbon()
 	{
 		return *m_pWndRibbon;
@@ -1717,8 +1720,8 @@ public:
 	ColorCtrlImpl() : m_colorType(UI_SWATCHCOLORTYPE_NOCOLOR), m_color(0x800080) /*MAGENTA*/
 	{ }
 
-	COLORREF m_color;
 	UINT32 m_colorType; // value in UI_SWATCHCOLORTYPE
+	COLORREF m_color;
 	Text m_sLabels[6]; // k_MoreColorsLabel to k_ThemeColorsCategoryLabel
 	ATL::CSimpleArray<COLORREF> m_aColors[2];
 	ATL::CSimpleArray<LPCWSTR> m_aTooltips[2];
@@ -2131,7 +2134,7 @@ public:
 		ATLASSERT(SUCCEEDED(hr));
 	}
 
-	~CRibbonImpl()
+	virtual ~CRibbonImpl()
 	{
 		::GlobalFree(m_hgRibbonSettings);
 		m_pIUIFramework.Release();
@@ -2144,8 +2147,8 @@ public:
 	}
 
 	ATL::CComPtr<IUIFramework> m_pIUIFramework;
-	HGLOBAL m_hgRibbonSettings;
 	bool m_bRibbonUI;
+	HGLOBAL m_hgRibbonSettings;
 
 	bool IsRibbonUI()
 	{
@@ -3060,7 +3063,7 @@ typedef struct
 } _ribbonCtrl;
 #pragma warning(pop)
 
-}; // namespace RibbonUI
+} // namespace RibbonUI
 
 
 ///////////////////////////////////////////////////////////////////////////////

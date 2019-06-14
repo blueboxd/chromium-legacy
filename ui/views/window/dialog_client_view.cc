@@ -347,7 +347,7 @@ void DialogClientView::SetupLayout() {
   // Clobber any existing LayoutManager since it has weak references to child
   // Views which may be removed by SetupViews().
   GridLayout* layout = button_row_container_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(button_row_container_));
+      std::make_unique<views::GridLayout>());
   layout->set_minimum_size(minimum_size_);
 
   SetupViews();

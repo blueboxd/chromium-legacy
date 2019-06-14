@@ -496,9 +496,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     WinAttributes();
     ~WinAttributes();
 
-    // Ignored state
-    bool ignored;
-
     // IAccessible role and state.
     int32_t ia_role;
     int32_t ia_state;

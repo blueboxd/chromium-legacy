@@ -2,6 +2,14 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
 <if expr="chromeos">
+  <!-- People (OS settings) -->
+  <message name="IDS_OS_SETTINGS_PROFILE_LABEL" desc="Label underneath the profile's real name, listing the email address and optionally the number of additional accounts">
+    {COUNT, plural,
+     =0 {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>}
+     =1 {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>, +1 more account}
+     other {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>, +<ph name="EXTRA_ACCOUNTS">$2<ex>2</ex></ph> more accounts}}
+  </message>
+
   <!-- Languages and Inputs (OS settings) -->
   <message name="IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE" desc="Name of the OS settings page which displays language method preferences.">
     Languages and input

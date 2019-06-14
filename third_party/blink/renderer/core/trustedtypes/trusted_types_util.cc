@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -37,6 +39,8 @@ enum TrustedTypeViolationKind {
   kTrustedScriptAssignmentAndDefaultPolicyFailed,
   kTrustedURLAssignmentAndDefaultPolicyFailed,
   kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
+  kTextNodeScriptAssignment,
+  kTextNodeScriptAssignmentAndDefaultPolicyFailed,
 };
 
 const char* GetMessage(TrustedTypeViolationKind kind) {
@@ -63,6 +67,15 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
     case kTrustedScriptURLAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScriptURL' assignment and the "
              "'default' policy failed to execute.";
+    case kTextNodeScriptAssignment:
+      return "This document requires 'TrustedScript' assignment, "
+             "and inserting a text node into a script element is equivalent to "
+             "a 'TrustedScript' assignment.";
+    case kTextNodeScriptAssignmentAndDefaultPolicyFailed:
+      return "This document requires 'TrustedScript' assignment. "
+             "Inserting a text node into a script element is equivalent to "
+             "a 'TrustedScript' assignment and the default policy failed to "
+             "execute.";
   }
   NOTREACHED();
   return "";
@@ -377,6 +390,33 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
   }
 
   return result->toString();
+}
+
+Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
+                                            Document* doc,
+                                            ExceptionState& exception_state) {
+  bool require_trusted_type = RequireTrustedTypes(doc);
+  if (!require_trusted_type)
+    return child;
+
+  TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
+  if (!default_policy) {
+    return TrustedTypeFail(kTextNodeScriptAssignment, doc, exception_state)
+               ? nullptr
+               : child;
+  }
+
+  TrustedScript* result = default_policy->CreateScript(
+      doc->GetIsolate(), child->textContent(), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return TrustedTypeFail(kTextNodeScriptAssignmentAndDefaultPolicyFailed, doc,
+                           exception_state)
+               ? nullptr
+               : child;
+  }
+
+  return Text::Create(*doc, result->toString());
 }
 
 }  // namespace blink

@@ -66,7 +66,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   }
 
   std::unique_ptr<views::View> CreateFootnoteView() {
-    return base::WrapUnique(bubble_->CreateFootnoteView());
+    return bubble_->CreateFootnoteView();
   }
 
   std::unique_ptr<BookmarkBubbleView> bubble_;

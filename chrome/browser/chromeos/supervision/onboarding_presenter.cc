@@ -10,6 +10,12 @@
 
 namespace chromeos {
 namespace supervision {
+namespace {
+
+// Minimum number of failed page loads before we show the Skip flow button.
+constexpr int kMinFailedLoadCountForSkipAction = 3;
+
+}  // namespace
 
 OnboardingPresenter::OnboardingPresenter(OnboardingFlowModel* flow_model)
     : flow_model_(flow_model) {
@@ -28,6 +34,8 @@ void OnboardingPresenter::StepStartedLoading(OnboardingFlowModel::Step step) {
 }
 
 void OnboardingPresenter::StepFinishedLoading(OnboardingFlowModel::Step step) {
+  failed_loads_count_ = 0;
+
   if (!base::FeatureList::IsEnabled(features::kSupervisionOnboardingScreens)) {
     flow_model_->ExitFlow(OnboardingFlowModel::ExitReason::kFeatureDisabled);
     return;
@@ -45,6 +53,30 @@ void OnboardingPresenter::StepFinishedLoading(OnboardingFlowModel::Step step) {
       presentation->can_show_previous_page = true;
       break;
   }
+
+  flow_model_->GetWebviewHost().SetPresentation(std::move(presentation));
+}
+
+void OnboardingPresenter::StepFailedToLoadDueToAuthError(
+    OnboardingFlowModel::Step step,
+    GoogleServiceAuthError error) {
+  PresentErrorState();
+}
+
+void OnboardingPresenter::StepFailedToLoadDueToNetworkError(
+    OnboardingFlowModel::Step step,
+    net::Error error) {
+  PresentErrorState();
+}
+
+void OnboardingPresenter::PresentErrorState() {
+  failed_loads_count_++;
+
+  auto presentation = mojom::OnboardingPresentation::New();
+  presentation->state = mojom::OnboardingPresentationState::kPageLoadFailed;
+  presentation->can_retry_page_load = true;
+  if (failed_loads_count_ >= kMinFailedLoadCountForSkipAction)
+    presentation->can_skip_flow = true;
 
   flow_model_->GetWebviewHost().SetPresentation(std::move(presentation));
 }

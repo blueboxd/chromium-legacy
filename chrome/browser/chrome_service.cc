@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -112,15 +113,14 @@ class ChromeService::ExtraParts : public ChromeBrowserMainExtraParts {
   ~ExtraParts() override = default;
 
  private:
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override {
+  void PostCreateThreads() override {
     // Initializing the connector asynchronously configures the Connector on the
     // IO thread. This needs to be done before WarmService() is called or
     // ChromeService::BindConnector() can race with ChromeService::OnStart().
     ChromeService::GetInstance()->InitConnector();
 
     // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-    connection->GetConnector()->WarmService(
+    content::GetSystemConnector()->WarmService(
         service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName));
   }
 

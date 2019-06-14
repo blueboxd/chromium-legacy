@@ -77,12 +77,12 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(false));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(false));
-  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(false));
+  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
 
   ASSERT_FALSE(sync_prefs_->IsManaged());
   ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
-  ASSERT_FALSE(sync_prefs_->IsSyncRequested());
+  ASSERT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
 
@@ -98,10 +98,10 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   sync_prefs_->ClearPreferences();
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
-  sync_prefs_->SetSyncRequested(true);
-  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(true);
+  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
@@ -135,11 +135,11 @@ TEST_F(SyncPrefsTest, Basic) {
   sync_prefs_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
 
-  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
-  sync_prefs_->SetSyncRequested(true);
   EXPECT_TRUE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(true);
+  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
 
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
   const base::Time& now = base::Time::Now();

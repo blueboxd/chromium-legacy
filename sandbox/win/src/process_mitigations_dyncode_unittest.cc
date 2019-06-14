@@ -447,17 +447,12 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCode_BaseCase) {
   if (base::win::GetVersion() < base::win::Version::WIN8_1)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
   // Expect success, no mitigation.
-  DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE, true, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE,
+                         true /* expect_success */,
+                         false /* enable_mitigation */);
 }
 
 // This test validates that setting the MITIGATION_DYNAMIC_CODE_DISABLE
@@ -466,17 +461,12 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCode_TestMitigation) {
   if (base::win::GetVersion() < base::win::Version::WIN8_1)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
   // Expect failure, with mitigation.
-  DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE, false, true);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE,
+                         false /* expect_success */,
+                         true /* enable_mitigation */);
 }
 
 //------------------------------------------------------------------------------
@@ -534,18 +524,13 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_BaseCase) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
   // Expect success, no mitigation (and therefore no thread opt-out).
   DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT,
-                         true, false, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+                         true /* expect_success */,
+                         false /* enable_mitigation */,
+                         false /* with_thread_opt_out */);
 }
 
 // This test validates that setting the
@@ -555,18 +540,13 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOut_TestMitigation) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
   // Expect failure, with mitigation, no thread opt-out.
   DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT,
-                         false, true, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+                         false /* expect_success */,
+                         true /* enable_mitigation */,
+                         false /* with_thread_opt_out */);
 }
 
 // This test validates that setting the
@@ -577,18 +557,13 @@ TEST(ProcessMitigationsTest,
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
   // Expect success, with mitigation, with thread opt-out.
   DynamicCodeTestHarness(sandbox::MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT,
-                         true, true, true);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+                         true /* expect_success */,
+                         true /* enable_mitigation */,
+                         true /* with_thread_opt_out */);
 }
 
 }  // namespace sandbox

@@ -242,7 +242,7 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
 };
 
 // Returns the id of the display on which |view| is shown.
-int64_t GetDisplayIdForView(View* view) {
+int64_t GetDisplayIdForView(const View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
@@ -385,6 +385,11 @@ void ShelfView::Init() {
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
+  if (id == ShelfID(kAppListId))
+    return GetMirroredRect(GetAppListButton()->ideal_bounds());
+  if (id == ShelfID(kBackButtonId))
+    return GetMirroredRect(GetBackButton()->ideal_bounds());
+
   int index = model_->ItemIndexByID(id);
   if (index < 0 || last_visible_index_ < 0 || index >= view_model_->view_size())
     return gfx::Rect();
@@ -395,9 +400,6 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
 
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   views::View* view = view_model_->view_at(index);
-  // The app list and back button are not ShelfAppButton subclass instances.
-  if (view == GetAppListButton() || view == GetBackButton())
-    return GetMirroredRect(ideal_bounds);
 
   CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
   ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
@@ -481,6 +483,10 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
+  if (view == back_button_)
+    return back_button_->GetAccessibleName();
+  if (view == home_button_)
+    return home_button_->GetAccessibleName();
   if (view == overflow_button_)
     return overflow_button_->GetAccessibleName();
 
@@ -607,6 +613,16 @@ void ShelfView::ButtonPressed(views::Button* sender,
     ToggleOverflowBubble();
     shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
                                                        SHELF_ACTION_NONE);
+    return;
+  }
+
+  if (sender == GetAppListButton()) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+    const app_list::AppListShowSource show_source =
+        event.IsShiftDown() ? app_list::kShelfButtonFullscreen
+                            : app_list::kShelfButton;
+    GetAppListButton()->OnPressed(show_source, event.time_stamp());
     return;
   }
 
@@ -867,6 +883,10 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
         ->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
   }
+}
+
+int64_t ShelfView::GetDisplayId() const {
+  return GetDisplayIdForView(this);
 }
 
 // static
@@ -1138,6 +1158,7 @@ void ShelfView::LayoutToIdealBounds() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
   UpdateBackButton();
   LayoutAppListAndBackButtonHighlight();
+  LayoutBackAndHomeButtons();
   LayoutOverflowButton();
   UpdateVisibleShelfItemBoundsUnion();
 }
@@ -1148,6 +1169,11 @@ bool ShelfView::IsItemPinned(const ShelfItem& item) const {
 
 void ShelfView::OnTabletModeChanged() {
   OnBoundsChanged(GetBoundsInScreen());
+}
+
+void ShelfView::LayoutBackAndHomeButtons() {
+  back_button_->SetBoundsRect(back_button_->ideal_bounds());
+  home_button_->SetBoundsRect(home_button_->ideal_bounds());
 }
 
 void ShelfView::LayoutOverflowButton() const {
@@ -1179,12 +1205,21 @@ void ShelfView::LayoutOverflowButton() const {
 
 void ShelfView::AnimateToIdealBounds() {
   CalculateIdealBounds();
-  for (int i = 0; i < view_model_->view_size(); ++i) {
+
+  // Handle back and home separately.
+  ShelfControlButton* back = GetBackButton();
+  bounds_animator_->AnimateViewTo(back, back->ideal_bounds());
+  ShelfControlButton* home = GetAppListButton();
+  bounds_animator_->AnimateViewTo(home, home->ideal_bounds());
+  if (home->border())
+    home->SetBorder(views::NullBorder());
+
+  for (int i = kAppListButtonIndex + 1; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
     bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
     // Now that the item animation starts, we have to make sure that the
     // padding of the first gets properly transferred to the new first item.
-    if (i && view->border())
+    if (view->border())
       view->SetBorder(views::NullBorder());
   }
   LayoutAppListAndBackButtonHighlight();

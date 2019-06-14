@@ -11,7 +11,6 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "services/network/public/cpp/features.h"
 
 #if defined(OS_WIN)
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -22,9 +21,7 @@ int main(int argc, char **argv) {
 
   // unit_tests don't currently work with the Network Service enabled.
   // https://crbug.com/966633.
-  content::UnitTestTestSuite test_suite(
-      new ChromeUnitTestSuite(argc, argv),
-      network::features::kNetworkServiceFeatureName);
+  content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv));
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   mojo::core::ScopedIPCSupport ipc_support(

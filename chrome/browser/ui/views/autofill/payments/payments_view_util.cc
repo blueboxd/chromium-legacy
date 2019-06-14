@@ -45,7 +45,7 @@ constexpr SkColor kTitleSeparatorColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
 TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
     const base::string16& window_title) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   // Add columns for the Google Pay icon, the separator, and the title label.

@@ -211,7 +211,7 @@ void EnterpriseStartupDialogView::SetupLayout(views::View* icon,
       views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING);
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   auto* columnset = layout->AddColumnSet(0);
   // Horizontally centre the content.
   columnset->AddPaddingColumn(1.0, 0);

@@ -980,9 +980,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAccounts) {
 
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   EXPECT_TRUE(oauth2_service_delegate_->GetAccounts().empty());
+
   oauth2_service_delegate_->UpdateCredentials(account_id1, "refresh_token1");
   oauth2_service_delegate_->UpdateCredentials(account_id2, "refresh_token2");
-  std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+  std::vector<CoreAccountId> accounts = oauth2_service_delegate_->GetAccounts();
   EXPECT_EQ(2u, accounts.size());
   EXPECT_EQ(1, count(accounts.begin(), accounts.end(), account_id1));
   EXPECT_EQ(1, count(accounts.begin(), accounts.end(), account_id2));
@@ -1144,14 +1145,17 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
   EXPECT_TRUE(oauth2_service_delegate_->GetAccounts().empty());
-  oauth2_service_delegate_->UpdateCredentials("account_id1", "refresh_token1");
-  oauth2_service_delegate_->UpdateCredentials("account_id2", "refresh_token2");
-  std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+  const CoreAccountId account_id1("account_id1");
+  const CoreAccountId account_id2("account_id2");
+
+  oauth2_service_delegate_->UpdateCredentials(account_id1, "refresh_token1");
+  oauth2_service_delegate_->UpdateCredentials(account_id2, "refresh_token2");
+  std::vector<CoreAccountId> accounts = oauth2_service_delegate_->GetAccounts();
   EXPECT_EQ(2u, accounts.size());
-  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id1"));
-  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id2"));
-  oauth2_service_delegate_->LoadCredentials("account_id1");
-  oauth2_service_delegate_->UpdateCredentials("account_id1", "refresh_token3");
+  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), account_id1));
+  EXPECT_EQ(1, count(accounts.begin(), accounts.end(), account_id2));
+  oauth2_service_delegate_->LoadCredentials(account_id1);
+  oauth2_service_delegate_->UpdateCredentials(account_id1, "refresh_token3");
   oauth2_service_delegate_->Shutdown();
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   EXPECT_TRUE(oauth2_service_delegate_->refresh_tokens_.empty());
@@ -1186,7 +1190,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     EXPECT_EQ(1, token_available_count_);
     EXPECT_EQ(1, end_batch_changes_);
 
-    std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+    std::vector<CoreAccountId> accounts =
+        oauth2_service_delegate_->GetAccounts();
     EXPECT_EQ(1u, accounts.size());
 
     EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email));
@@ -1248,7 +1253,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     EXPECT_EQ(2, token_available_count_);
     EXPECT_EQ(1, end_batch_changes_);
 
-    std::vector<std::string> accounts = oauth2_service_delegate_->GetAccounts();
+    std::vector<CoreAccountId> accounts =
+        oauth2_service_delegate_->GetAccounts();
     EXPECT_EQ(2u, accounts.size());
 
     EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(email1));

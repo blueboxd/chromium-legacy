@@ -97,7 +97,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -402,7 +402,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 
   display::Screen::GetScreen()->AddObserver(this);
 
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 
   // Login screen is moved to lock screen container when user logs in.
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -447,7 +447,7 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
     waiting_for_configuration_ = false;
   }
 
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);

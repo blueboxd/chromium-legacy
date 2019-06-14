@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
@@ -37,6 +38,11 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
 void AssistantOptInFlowScreen::Show() {
   if (!view_)
     return;
+
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    exit_callback_.Run();
+    return;
+  }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (chromeos::switches::IsAssistantEnabled() &&

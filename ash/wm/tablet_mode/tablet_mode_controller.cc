@@ -38,8 +38,8 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -216,7 +216,7 @@ TabletModeController::TabletModeController()
   if (ShouldInitTabletModeController()) {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     AccelerometerReader::GetInstance()->AddObserver(this);
-    ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
     bluetooth_devices_observer_ =
         std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
             &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
@@ -252,7 +252,7 @@ TabletModeController::~TabletModeController() {
   if (ShouldInitTabletModeController()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     AccelerometerReader::GetInstance()->RemoveObserver(this);
-    ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   }
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 
@@ -555,7 +555,7 @@ void TabletModeController::SuspendImminent(
   // input devices may be removed during suspend and cause the device enter/exit
   // tablet mode unexpectedly.
   if (ShouldInitTabletModeController()) {
-    ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
     bluetooth_devices_observer_.reset();
   }
 }
@@ -570,10 +570,10 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
         std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
             &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
             base::Unretained(this)));
-    ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
     // Call HandlePointingDeviceAddedOrRemoved() to iterate all available input
     // devices just in case we have missed all the notifications from
-    // InputDeviceManager and  BluetoothDevicesObserver when SuspendDone() is
+    // DeviceDataManager and  BluetoothDevicesObserver when SuspendDone() is
     // called.
     HandlePointingDeviceAddedOrRemoved();
   }
@@ -809,7 +809,7 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   bool has_external_pointing_device = false;
   // Check if there is an external mouse device.
   for (const ui::InputDevice& mouse :
-       ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetMouseDevices()) {
     if (mouse.type == ui::INPUT_DEVICE_USB ||
         (mouse.type == ui::INPUT_DEVICE_BLUETOOTH &&
          bluetooth_devices_observer_->IsConnectedBluetoothDevice(mouse))) {
@@ -820,7 +820,7 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   // Check if there is an external touchpad device.
   if (!has_external_pointing_device) {
     for (const ui::InputDevice& touch_pad :
-         ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+         ui::DeviceDataManager::GetInstance()->GetTouchpadDevices()) {
       if (touch_pad.type == ui::INPUT_DEVICE_USB ||
           (touch_pad.type == ui::INPUT_DEVICE_BLUETOOTH &&
            bluetooth_devices_observer_->IsConnectedBluetoothDevice(
@@ -967,6 +967,7 @@ void TabletModeController::TakeScreenshot(
       viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
       screenshot_taken_callback_.callback());
   screenshot_request->set_area(request_bounds);
+  screenshot_request->set_result_selection(request_bounds);
   screenshot_window->layer()->RequestCopyOfOutput(
       std::move(screenshot_request));
 

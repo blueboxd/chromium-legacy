@@ -89,10 +89,17 @@ class PaintedScrollbar : public Scrollbar {
   gfx::Rect rect_;
 };
 
+LayerTreeTest::RendererType const kRendererTypes[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
+};
+
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostScrollbarsPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         ::testing::ValuesIn(kRendererTypes));
 
 TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
@@ -189,7 +196,8 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type() == RENDERER_SKIA_GL)
+  if (renderer_type() == RENDERER_SKIA_GL ||
+      renderer_type() == RENDERER_SKIA_VK)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(renderer_type(), background,
@@ -256,8 +264,7 @@ class PaintedOverlayScrollbar : public PaintedScrollbar {
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostOverlayScrollbarsPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         ::testing::ValuesIn(kRendererTypes));
 
 // Simulate increasing the thickness of a painted overlay scrollbar. Ensure that
 // the scrollbar border remains crisp.

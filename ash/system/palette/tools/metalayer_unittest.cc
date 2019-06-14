@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
@@ -68,8 +69,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
       mojom::VoiceInteractionState::RUNNING};
   const mojom::AssistantAllowedState kAllowedStates[] = {
       mojom::AssistantAllowedState::ALLOWED,
-      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED,
-      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY,
+      mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
       mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
       mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
@@ -181,7 +181,8 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
 
   // Changing the state to NOT_READY should disable the tool.
   EXPECT_CALL(*palette_tool_delegate_.get(),
-              DisableTool(PaletteToolId::METALAYER));
+              DisableTool(PaletteToolId::METALAYER))
+      .Times(testing::AtLeast(1));
   VoiceInteractionController::Get()->NotifyStatusChanged(
       mojom::VoiceInteractionState::NOT_READY);
   VoiceInteractionController::Get()->FlushForTesting();

@@ -12,9 +12,6 @@ namespace network {
 namespace features {
 
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const char kNetworkServiceFeatureName[];
-
-COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kExpectCTReporting;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kNetworkErrorLogging;

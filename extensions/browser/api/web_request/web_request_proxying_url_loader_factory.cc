@@ -888,10 +888,10 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
   // Make sure we are not proxying a browser initiated non-navigation request.
   DCHECK(render_process_id_ != -1 || navigation_ui_data_);
 
-  // The request ID doesn't really matter in the Network Service path. It just
-  // needs to be unique per-BrowserContext so extensions can make sense of it.
-  // Note that |network_service_request_id_| by contrast is not necessarily
-  // unique, so we don't use it for identity here.
+  // The request ID doesn't really matter. It just needs to be unique
+  // per-BrowserContext so extensions can make sense of it.  Note that
+  // |network_service_request_id_| by contrast is not necessarily unique, so we
+  // don't use it for identity here.
   const uint64_t web_request_id = request_id_generator_->Generate();
 
   if (request_id) {

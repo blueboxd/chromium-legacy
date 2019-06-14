@@ -94,16 +94,7 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   std::string gaia_id = account_info.gaia;
   DCHECK(!gaia_id.empty());
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS has no real notion of signin, so just plumb the information
-  // through. TODO(https://crbug.com/814787): What is the right long-term
-  // solution here? Tests shouldn't need to call legacy APIs, so either the
-  // need for this test flow should be eliminated or there should be a
-  // test-only API.
-  identity_manager->LegacySetPrimaryAccount(gaia_id, email);
-#else
   primary_account_manager->SignIn(email);
-#endif
 
   DCHECK(primary_account_manager->IsAuthenticated());
   DCHECK(identity_manager->HasPrimaryAccount());

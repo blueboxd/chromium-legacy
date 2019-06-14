@@ -872,9 +872,7 @@ TEST_F(SecureChannelBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_FALSE(characteristics_finder_success_callback_.is_null());
   ASSERT_FALSE(characteristics_finder_error_callback_.is_null());
 
-  characteristics_finder_error_callback_.Run(
-      {tx_characteristic_uuid_, kTXCharacteristicID},
-      {rx_characteristic_uuid_, kRXCharacteristicID});
+  characteristics_finder_error_callback_.Run();
 
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);

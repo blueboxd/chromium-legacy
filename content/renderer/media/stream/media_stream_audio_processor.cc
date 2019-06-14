@@ -21,8 +21,6 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -278,13 +276,19 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
       typing_detected_(false),
-      aec_dump_agent_impl_(AecDumpAgentImpl::Create(this)),
+      aec_dump_message_filter_(AecDumpMessageFilter::Get()),
       stopped_(false) {
   DCHECK(main_thread_runner_);
   DETACH_FROM_THREAD(capture_thread_checker_);
   DETACH_FROM_THREAD(render_thread_checker_);
 
   InitializeAudioProcessingModule(properties);
+
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be null. We can just ignore that. Other unit tests and browser tests
+  // ensure that we do get the filter when we should.
+  if (aec_dump_message_filter_.get())
+    aec_dump_message_filter_->AddDelegate(this);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -365,7 +369,10 @@ void MediaStreamAudioProcessor::Stop() {
 
   stopped_ = true;
 
-  aec_dump_agent_impl_.reset();
+  if (aec_dump_message_filter_.get()) {
+    aec_dump_message_filter_->RemoveDelegate(this);
+    aec_dump_message_filter_ = nullptr;
+  }
 
   if (!audio_processing_.get())
     return;
@@ -387,10 +394,12 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return output_format_;
 }
 
-void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
+void MediaStreamAudioProcessor::OnAecDumpFile(
+    const IPC::PlatformFileForTransit& file_handle) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 
-  DCHECK(dump_file.IsValid());
+  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
+  DCHECK(file.IsValid());
 
   if (audio_processing_) {
     if (!worker_queue_) {
@@ -400,17 +409,14 @@ void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
     // Here tasks will be posted on the |worker_queue_|. It must be
     // kept alive until StopEchoCancellationDump is called or the
     // webrtc::AudioProcessing instance is destroyed.
-    blink::StartEchoCancellationDump(audio_processing_.get(),
-                                     std::move(dump_file), worker_queue_.get());
+    blink::StartEchoCancellationDump(audio_processing_.get(), std::move(file),
+                                     worker_queue_.get());
   } else {
-    // Post the file close to avoid blocking the main thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
-        base::BindOnce([](base::File) {}, std::move(dump_file)));
+    file.Close();
   }
 }
 
-void MediaStreamAudioProcessor::OnStopDump() {
+void MediaStreamAudioProcessor::OnDisableAecDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
     blink::StopEchoCancellationDump(audio_processing_.get());
@@ -418,6 +424,11 @@ void MediaStreamAudioProcessor::OnStopDump() {
   // Note that deleting an rtc::TaskQueue has to be done from the
   // thread that created it.
   worker_queue_.reset(nullptr);
+}
+
+void MediaStreamAudioProcessor::OnIpcClosing() {
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
+  aec_dump_message_filter_ = nullptr;
 }
 
 // static

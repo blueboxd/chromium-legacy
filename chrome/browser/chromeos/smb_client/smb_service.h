@@ -116,6 +116,10 @@ class SmbService : public KeyedService,
     disable_share_discovery_for_testing_ = true;
   }
 
+  // Run |callback| when setup had completed. If setup has already completed,
+  // |callback| will be run inline.
+  void OnSetupCompleteForTesting(base::OnceClosure callback);
+
  private:
   friend class SmbServiceTest;
 
@@ -289,6 +293,8 @@ class SmbService : public KeyedService,
   std::map<int32_t, base::OnceClosure> update_credential_replies_;
   // |file_system_id| -> |mount_id|
   std::unordered_map<std::string, int32_t> mount_id_map_;
+
+  base::OnceClosure setup_complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

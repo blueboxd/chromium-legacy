@@ -1,26 +1,17 @@
+From 23ef510bb7a3f38ecf2d05edd04ccc5bcf210c0d Mon Sep 17 00:00:00 2001
+From: Sorin Jianu <sorin@chromium.org>
+Date: Thu, 13 Jun 2019 15:45:01 -0700
+Subject: [PATCH] fix atlverify
+
+---
+ third_party/wtl/include/atlapp.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
 diff --git a/third_party/wtl/include/atlapp.h b/third_party/wtl/include/atlapp.h
-index bdb7e8bb3482..36c7544fc834 100644
+index c61be7e18faf..6c4d9b0f6e2a 100644
 --- a/third_party/wtl/include/atlapp.h
 +++ b/third_party/wtl/include/atlapp.h
-@@ -132,7 +132,7 @@
- 
- // Forward declaration for ATL11 fix
- #if (_ATL_VER >= 0x0B00)
--  namespace ATL { HRESULT AtlGetCommCtrlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor); };
-+  namespace ATL { HRESULT AtlGetCommCtrlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor); }
- #endif
- 
- #ifndef WM_MOUSEHWHEEL
-@@ -148,7 +148,7 @@
- namespace WTL
- {
- 
--DECLARE_TRACE_CATEGORY(atlTraceUI);
-+DECLARE_TRACE_CATEGORY(atlTraceUI)
- #ifdef _DEBUG
-   __declspec(selectany) ATL::CTraceCategory atlTraceUI(_T("atlTraceUI"));
- #endif // _DEBUG
-@@ -173,7 +173,7 @@ inline HFONT AtlGetDefaultGuiFont()
+@@ -187,7 +187,7 @@ inline HFONT AtlGetDefaultGuiFont()
  inline HFONT AtlCreateControlFont()
  {
  	LOGFONT lf = {};
@@ -29,7 +20,7 @@ index bdb7e8bb3482..36c7544fc834 100644
  	HFONT hFont = ::CreateFontIndirect(&lf);
  	ATLASSERT(hFont != NULL);
  	return hFont;
-@@ -185,9 +185,9 @@ inline HFONT AtlCreateBoldFont(HFONT hFont = NULL)
+@@ -199,9 +199,9 @@ inline HFONT AtlCreateBoldFont(HFONT hFont = NULL)
  {
  	LOGFONT lf = {};
  	if(hFont == NULL)
@@ -41,133 +32,6 @@ index bdb7e8bb3482..36c7544fc834 100644
  	lf.lfWeight = FW_BOLD;
  	HFONT hFontBold =  ::CreateFontIndirect(&lf);
  	ATLASSERT(hFontBold != NULL);
-@@ -363,7 +363,7 @@ namespace RunTimeHelper
- #endif
- 		return uSize;
- 	}
--};
-+}
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -390,7 +390,7 @@ namespace ModuleHelper
- 	{
- 		return ATL::_AtlWinModule.ExtractCreateWndData();
- 	}
--};
-+}
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -493,7 +493,7 @@ namespace SecureHelper
- 		va_end(args);
- 		return nRes;
- 	}
--}; // namespace SecureHelper
-+}  // namespace SecureHelper
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -526,7 +526,7 @@ namespace MinCrtHelper
- 	{
- 		return _tcsrchr(str, ch);
- 	}
--}; // namespace MinCrtHelper
-+}  // namespace MinCrtHelper
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -559,7 +559,7 @@ namespace GenericWndClass
- 	{
- 		return ::UnregisterClass(GetName(), ModuleHelper::GetModuleInstance());
- 	}
--}; // namespace GenericWndClass
-+}  // namespace GenericWndClass
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -1034,7 +1034,7 @@ public:
- 					break;
- 			}
- 		}
--		// This handle should be valid now. If it isn't, 
-+		// This handle should be valid now. If it isn't,
- 		// check if _Module.Term was called first (it shouldn't)
- 		if(::CloseHandle(m_hEventShutdown))
- 			m_hEventShutdown = NULL;
-@@ -1072,7 +1072,7 @@ public:
- 
- typedef ATL::CRegKey CRegKeyEx;
- 
--}; // namespace WTL
-+}  // namespace WTL
- 
- 
- ///////////////////////////////////////////////////////////////////////////////
-@@ -1186,7 +1186,7 @@ inline HRESULT AtlGetShellVersion(LPDWORD pdwMajor, LPDWORD pdwMinor)
- 	return hRet;
- }
- 
--}; // namespace ATL
-+}  // namespace ATL
- 
- #endif // (_ATL_VER >= 0x0B00)
- 
-diff --git a/third_party/wtl/include/atlcrack.h b/third_party/wtl/include/atlcrack.h
-index 09093a47f7b9..49fcdfb7fd07 100644
---- a/third_party/wtl/include/atlcrack.h
-+++ b/third_party/wtl/include/atlcrack.h
-@@ -35,7 +35,7 @@ public: \
- 	{ \
- 		m_bMsgHandled = bHandled; \
- 	} \
--	BOOL ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID = 0) \
-+	BOOL ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID = 0) override \
- 	{ \
- 		BOOL bOldMsgHandled = m_bMsgHandled; \
- 		BOOL bRet = _ProcessWindowMessage(hWnd, uMsg, wParam, lParam, lResult, dwMsgMapID); \
-diff --git a/third_party/wtl/include/atlgdi.h b/third_party/wtl/include/atlgdi.h
-index 9f7664c5f805..45438ef1be7b 100644
---- a/third_party/wtl/include/atlgdi.h
-+++ b/third_party/wtl/include/atlgdi.h
-@@ -3440,6 +3440,6 @@ public:
- 	}
- };
- 
--}; // namespace WTL
-+}  // namespace WTL
- 
- #endif // __ATLGDI_H__
-diff --git a/third_party/wtl/include/atluser.h b/third_party/wtl/include/atluser.h
-index 5e352340db2e..c88b20f8721f 100644
---- a/third_party/wtl/include/atluser.h
-+++ b/third_party/wtl/include/atluser.h
-@@ -1226,6 +1226,6 @@ inline bool AtlLoadString(UINT uID, BSTR& bstrText)
- 	return (bstrText != NULL) ? true : false;
- }
- 
--}; // namespace WTL
-+}  // namespace WTL
- 
- #endif // __ATLUSER_H__
-diff --git a/third_party/wtl/include/atlwinx.h b/third_party/wtl/include/atlwinx.h
-index b0d0936eda23..45c119c2579b 100644
---- a/third_party/wtl/include/atlwinx.h
-+++ b/third_party/wtl/include/atlwinx.h
-@@ -204,7 +204,7 @@ inline LRESULT WtlReflectNotificationsFiltered(HWND hWndParent, UINT uMsg, WPARA
- 	return lResult;
- }
- 
--}; // namespace WTL
-+}  // namespace WTL
- 
- // Try to prevent problems with WM_CTLCOLOR* messages when
- // the message wasn't really handled
-@@ -594,6 +594,6 @@ public:
- #endif // __ATLSTR_H__
- };
- 
--}; // namespace WTL
-+}  // namespace WTL
- 
- #endif // __ATLWINX_H__
+-- 
+2.21.0.windows.1
+

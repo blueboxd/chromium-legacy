@@ -215,8 +215,8 @@ void ProxyMain::BeginMainFrame(
   // what this does.
   layer_tree_host_->BeginMainFrame(begin_main_frame_state->begin_frame_args);
 
-  // Updates cc animations on the main-thread. This appears to be entirely
-  // duplicated by work done in LayerTreeHost::BeginMainFrame. crbug.com/762717.
+  // Updates cc animations on the main-thread. This is necessary in order
+  // to track animation states such that they are cleaned up properly.
   layer_tree_host_->AnimateLayers(
       begin_main_frame_state->begin_frame_args.frame_time);
 

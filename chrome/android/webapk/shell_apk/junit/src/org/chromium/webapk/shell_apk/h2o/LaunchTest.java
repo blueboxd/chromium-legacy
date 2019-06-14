@@ -390,6 +390,7 @@ public final class LaunchTest {
                 if (startedActivityExtras != null) {
                     relaunchIntent.putExtras(startedActivityExtras);
                 }
+                relaunchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mAppContext.startActivity(relaunchIntent);
                 continue;
             }

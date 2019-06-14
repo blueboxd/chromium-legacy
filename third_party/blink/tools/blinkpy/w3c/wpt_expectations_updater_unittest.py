@@ -41,6 +41,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'MOCK Try Trusty': {
                 'port_name': 'test-linux-trusty',
                 'specifiers': ['Trusty', 'Release'],
+                'master': 'tryserver.blink',
+                'has_webdriver_tests': True,
                 'is_try_builder': True,
             },
             'MOCK Try Precise': {
@@ -228,6 +230,63 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         results_dict = updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123))
         self.assertEqual(results_dict, {})
+
+    def test_get_failing_results_dict_webdriver_failing_results_(self):
+        host = self.mock_host()
+        host.buildbot.set_results(Build('MOCK Try Trusty', 123), WebTestResults({
+            'tests': {
+                'external': {
+                    'wpt': {
+                        'x': {
+                            'failing-test.html': {
+                                'expected': 'PASS',
+                                'actual': 'IMAGE',
+                                'is_unexpected': True,
+                            },
+                        },
+                    },
+                },
+            },
+        }))
+
+        host.buildbot.set_webdriver_test_results(Build('MOCK Try Trusty', 123), "tryserver.blink", WebTestResults({
+            'tests': {
+                'external': {
+                    'wpt': {
+                        'y': {
+                            'webdriver-fail.html': {
+                                'expected': 'PASS',
+                                'actual': 'FAIL',
+                                'is_unexpected': True,
+                            },
+                        },
+                    },
+                },
+            },
+        }))
+        updater = WPTExpectationsUpdater(host)
+        results_dict = updater.get_failing_results_dict(
+            Build('MOCK Try Trusty', 123))
+
+        self.assertEqual(len(results_dict.keys()), 2)
+        self.assertEqual(
+            results_dict,
+            {
+                'external/wpt/x/failing-test.html': {
+                    'test-linux-trusty': SimpleTestResult(
+                        actual='IMAGE',
+                        expected='PASS',
+                        bug='crbug.com/626703',
+                    ),
+                },
+                'external/wpt/y/webdriver-fail.html': {
+                    'test-linux-trusty': SimpleTestResult(
+                        actual='FAIL',
+                        expected='PASS',
+                        bug='crbug.com/626703',
+                    ),
+                },
+            })
 
     def test_merge_same_valued_keys_all_match(self):
         updater = WPTExpectationsUpdater(self.mock_host())

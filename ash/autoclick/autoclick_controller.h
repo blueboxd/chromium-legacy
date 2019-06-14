@@ -80,6 +80,12 @@ class ASH_EXPORT AutoclickController
   // Performs the given ScrollPadAction at the current scrolling point.
   void DoScrollAction(ScrollPadAction action);
 
+  // The cursor is over a scroll (up/down/left/right) button.
+  void OnEnteredScrollButton();
+
+  // The cursor has exited a scroll (up/down/left/right) button.
+  void OnExitedScrollButton();
+
   // Update the bubble menu bounds if necessary to avoid system UI.
   void UpdateAutoclickMenuBoundsIfNeeded();
 
@@ -128,6 +134,7 @@ class ASH_EXPORT AutoclickController
   bool DragInProgress() const;
   void CreateMenuBubbleController();
   bool AutoclickMenuContainsPoint(const gfx::Point& point) const;
+  bool AutoclickScrollContainsPoint(const gfx::Point& point) const;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -179,6 +186,10 @@ class ASH_EXPORT AutoclickController
   // The point at which the next scroll event will occur.
   gfx::Point scroll_location_{-kDefaultAutoclickMovementThreshold,
                               -kDefaultAutoclickMovementThreshold};
+  // Whether the cursor is currently over a scroll button. If true, new gestures
+  // will not be started. This ensures the autoclick ring is not drawn over
+  // the scroll position buttons, and extra clicks will not be generated there.
+  bool over_scroll_button_ = false;
 
   // The widget containing the autoclick ring.
   std::unique_ptr<views::Widget> ring_widget_;

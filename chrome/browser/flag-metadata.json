@@ -88,6 +88,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "android-picture-in-picture-api",
+    "owners": [ "beccahughes", "jazzhsu" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "android-site-settings-ui-refresh",
     "owners": [ "hkamila" ],
     "expiry_milestone": 76
@@ -1054,8 +1059,8 @@
   },
   {
     "name": "enable-experimental-accessibility-switch-access",
-    "owners": [ "anastasi@google.com", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 76
+    "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-experimental-accessibility-autoclick",
@@ -1230,6 +1235,11 @@
     "name": "enable-blink-gen-property-trees",
     "owners": [ "paint-dev@chromium.org" ],
     "expiry_milestone": 74
+  },
+  {
+    "name": "enable-backdrop-filter",
+    "owners": [ "masonfreed", "paint-dev@chromium.org" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-layout-ng",
@@ -2660,6 +2670,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "security-interstitials-dark-mode",
+    "owners": ["estark"],
+    "expiry_milestone": 79
+  },
+  {
     "name": "session-restore-prioritizes-background-use-cases",
     "owners": [ "chrisha" ],
     "expiry_milestone": 76
@@ -2692,6 +2707,11 @@
     "owners": [ "ftirelo", "mathp" ],
     // This is used by autofill devs to debug on Android.
     "expiry_milestone": -1
+  },
+  {
+    "name": "show-bluetooth-device-battery",
+    "owners": [ "hansberry" ],
+    "expiry_milestone": 80
   },
   {
     "name": "show-taps",

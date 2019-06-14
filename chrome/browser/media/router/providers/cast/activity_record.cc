@@ -41,8 +41,15 @@ void ActivityRecord::SetOrUpdateSession(const CastSession& session,
   DVLOG(2) << "SetOrUpdateSession old session_id = "
            << session_id_.value_or("<missing>")
            << ", new session_id = " << session.session_id();
-  session_id_ = session.session_id();
   route_.set_description(session.GetRouteDescription());
+  if (session_id_) {
+    DCHECK_EQ(*session_id_, session.session_id());
+  } else {
+    session_id_ = session.session_id();
+    OnSessionSet();
+  }
 }
+
+void ActivityRecord::OnSessionSet() {}
 
 }  // namespace media_router

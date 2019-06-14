@@ -105,6 +105,13 @@ void FidoAuthenticator::BioEnrollEnumerate(pin::TokenResponse,
   NOTREACHED();
 }
 
+void FidoAuthenticator::BioEnrollRename(pin::TokenResponse,
+                                        std::vector<uint8_t>,
+                                        std::string,
+                                        BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

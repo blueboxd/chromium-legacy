@@ -1047,6 +1047,9 @@ class CORE_EXPORT Node : public EventTarget {
   const HeapHashSet<Member<MutationObserverRegistration>>*
   TransientMutationObserverRegistry();
 
+  inline Node* TrustedTypesCheckForScriptNode(Node* child,
+                                              ExceptionState&) const;
+
   uint32_t node_flags_;
   Member<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;

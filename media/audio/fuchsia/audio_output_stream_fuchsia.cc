@@ -76,9 +76,11 @@ void AudioOutputStreamFuchsia::Start(AudioSourceCallback* callback) {
 
 void AudioOutputStreamFuchsia::Stop() {
   callback_ = nullptr;
-  reference_time_ = base::TimeTicks();
-  audio_renderer_->PauseNoReply();
-  audio_renderer_->DiscardAllPacketsNoReply();
+  if (!reference_time_.is_null()) {
+    reference_time_ = base::TimeTicks();
+    audio_renderer_->PauseNoReply();
+    audio_renderer_->DiscardAllPacketsNoReply();
+  }
   timer_.Stop();
 }
 

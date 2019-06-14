@@ -82,6 +82,30 @@ BioEnrollmentRequest BioEnrollmentRequest::ForEnumerate(
   return request;
 }
 
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForRename(
+    const pin::TokenResponse& response,
+    std::vector<uint8_t> id,
+    std::string name) {
+  BioEnrollmentRequest request;
+  request.pin_protocol = 1;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kSetFriendlyName;
+  request.params = cbor::Value::MapValue();
+  request.params->emplace(
+      static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
+      cbor::Value(std::move(id)));
+
+  std::vector<uint8_t> pin_auth =
+      *cbor::Writer::Write(cbor::Value(*request.params));
+  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.subcommand));
+  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.modality));
+
+  request.pin_auth = response.PinAuth(std::move(pin_auth));
+
+  return request;
+}
+
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
 BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;

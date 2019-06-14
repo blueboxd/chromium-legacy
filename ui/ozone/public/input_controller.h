@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
 
 namespace base {
@@ -29,7 +29,7 @@ enum class DomCode;
 // The object provides methods for the preference page to configure input
 // devices w.r.t. the user setting. On ChromeOS, this replaces the inputcontrol
 // script that is originally located at /opt/google/chrome/.
-class OZONE_BASE_EXPORT InputController {
+class COMPONENT_EXPORT(OZONE_BASE) InputController {
  public:
   using GetTouchDeviceStatusReply =
       base::OnceCallback<void(const std::string&)>;
@@ -97,7 +97,8 @@ class OZONE_BASE_EXPORT InputController {
 };
 
 // Create an input controller that does nothing.
-OZONE_BASE_EXPORT std::unique_ptr<InputController> CreateStubInputController();
+COMPONENT_EXPORT(OZONE_BASE)
+std::unique_ptr<InputController> CreateStubInputController();
 
 }  // namespace ui
 

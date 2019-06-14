@@ -3095,8 +3095,7 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
 void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   DCHECK(atk_object_);
   // We might not have a parent, in that case we don't need to send the event.
-  // We also don't want to notify if this is an ignored node
-  if (!GetParent() || GetData().HasState(ax::mojom::State::kIgnored))
+  if (!GetParent())
     return;
   g_signal_emit_by_name(GetParent(), "children-changed::add",
                         GetIndexInParent(), atk_object_);
@@ -3105,8 +3104,7 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   DCHECK(atk_object_);
   // There is a chance there won't be a parent as we're in the deletion process.
-  // We also don't want to notify if this is an ignored node
-  if (!GetParent() || GetData().HasState(ax::mojom::State::kIgnored))
+  if (!GetParent())
     return;
 
   g_signal_emit_by_name(GetParent(), "children-changed::remove",

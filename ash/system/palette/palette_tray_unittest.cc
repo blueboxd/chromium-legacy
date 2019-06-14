@@ -198,11 +198,6 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
   EXPECT_FALSE(palette_tray_->is_active());
 }
 
-TEST_F(PaletteTrayTest, NoMetalayerToolViewCreated) {
-  EXPECT_FALSE(
-      test_api_->palette_tool_manager()->HasTool(PaletteToolId::METALAYER));
-}
-
 TEST_F(PaletteTrayTest, EnableStylusPref) {
   local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
 
@@ -243,9 +238,7 @@ TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
 // Base class for tests that rely on Assistant enabled.
 class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
  public:
-  PaletteTrayTestWithVoiceInteraction() {
-    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
-  }
+  PaletteTrayTestWithVoiceInteraction() = default;
   ~PaletteTrayTestWithVoiceInteraction() override = default;
 
   // PaletteTrayTest:
@@ -262,9 +255,6 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
 
     highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
-
-    Shell::Get()->assistant_controller()->SetAssistant(
-        assistant_.CreateInterfacePtrAndBind());
   }
 
   void TearDown() override {
@@ -330,9 +320,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
   std::unique_ptr<HighlighterControllerTestApi> highlighter_test_api_;
 
  private:
-  TestAssistantService assistant_;
   base::SimpleTestTickClock simulated_clock_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithVoiceInteraction);
 };

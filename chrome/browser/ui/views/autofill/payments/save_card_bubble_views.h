@@ -41,7 +41,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   // views::BubbleDialogDelegateView:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  views::View* CreateFootnoteView() override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;

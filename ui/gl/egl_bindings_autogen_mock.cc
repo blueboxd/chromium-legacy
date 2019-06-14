@@ -314,12 +314,11 @@ MockEGLInterface::Mock_eglGetNextFrameIdANDROID(EGLDisplay dpy,
 }
 
 EGLDisplay GL_BINDING_CALL
-MockEGLInterface::Mock_eglGetPlatformDisplayEXT(EGLenum platform,
-                                                void* native_display,
-                                                const EGLint* attrib_list) {
-  MakeEglMockFunctionUnique("eglGetPlatformDisplayEXT");
-  return interface_->GetPlatformDisplayEXT(platform, native_display,
-                                           attrib_list);
+MockEGLInterface::Mock_eglGetPlatformDisplay(EGLenum platform,
+                                             void* native_display,
+                                             const EGLAttrib* attrib_list) {
+  MakeEglMockFunctionUnique("eglGetPlatformDisplay");
+  return interface_->GetPlatformDisplay(platform, native_display, attrib_list);
 }
 
 __eglMustCastToProperFunctionPointerType GL_BINDING_CALL
@@ -689,9 +688,8 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "eglGetNextFrameIdANDROID") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglGetNextFrameIdANDROID);
-  if (strcmp(name, "eglGetPlatformDisplayEXT") == 0)
-    return reinterpret_cast<GLFunctionPointerType>(
-        Mock_eglGetPlatformDisplayEXT);
+  if (strcmp(name, "eglGetPlatformDisplay") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_eglGetPlatformDisplay);
   if (strcmp(name, "eglGetProcAddress") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglGetProcAddress);
   if (strcmp(name, "eglGetSyncAttribKHR") == 0)

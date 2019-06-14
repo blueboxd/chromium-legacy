@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -251,6 +252,10 @@ class TestingProfile : public Profile {
 
   sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
+  // Sets the Profile's NetworkContext.
+  void SetNetworkContext(
+      std::unique_ptr<network::mojom::NetworkContext> network_context);
+
   // Called on the parent of an incognito |profile|. Usually called from the
   // constructor of an incognito TestingProfile, but can also be used by tests
   // to provide an OffTheRecordProfileImpl instance.
@@ -423,9 +428,8 @@ class TestingProfile : public Profile {
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
       extensions_cookie_store_;
 
-  // Holds a dummy network context request to avoid triggering connection error
-  // handler.
-  network::mojom::NetworkContextRequest network_context_request_;
+  std::unique_ptr<network::mojom::NetworkContext> network_context_;
+  mojo::BindingSet<network::mojom::NetworkContext> network_context_bindings_;
 
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;

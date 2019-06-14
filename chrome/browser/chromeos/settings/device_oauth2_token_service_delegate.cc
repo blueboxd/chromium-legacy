@@ -88,13 +88,9 @@ bool DeviceOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
          accounts.end();
 }
 
-std::vector<std::string> DeviceOAuth2TokenServiceDelegate::GetAccounts() {
-  return static_cast<const DeviceOAuth2TokenServiceDelegate&>(*this)
-      .GetAccounts();
-}
-
-std::vector<std::string> DeviceOAuth2TokenServiceDelegate::GetAccounts() const {
-  std::vector<std::string> accounts;
+std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
+    const {
+  std::vector<CoreAccountId> accounts;
   switch (state_) {
     case STATE_NO_TOKEN:
     case STATE_TOKEN_INVALID:

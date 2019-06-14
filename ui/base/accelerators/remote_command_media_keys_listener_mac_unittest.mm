@@ -118,4 +118,50 @@ TEST_F(RemoteCommandMediaKeysListenerMacTest, ListenForMultipleKeys) {
   }
 }
 
+TEST_F(RemoteCommandMediaKeysListenerMacTest,
+       DoesNotFirePlayPauseOnPauseEventWhenPaused) {
+  if (@available(macOS 10.12.2, *)) {
+    now_playing::MockRemoteCommandCenterDelegate rcc_delegate;
+    MockMediaKeysListenerDelegate delegate;
+    RemoteCommandMediaKeysListenerMac listener(&delegate);
+    listener.SetRemoteCommandCenterDelegateForTesting(&rcc_delegate);
+
+    EXPECT_CALL(rcc_delegate, AddObserver(&listener));
+    EXPECT_CALL(rcc_delegate, SetCanPlayPause(true));
+    EXPECT_CALL(rcc_delegate, SetCanPlay(true));
+    EXPECT_CALL(rcc_delegate, SetCanPause(true));
+    EXPECT_CALL(delegate, OnMediaKeysAccelerator(_)).Times(0);
+
+    listener.Initialize();
+    listener.StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+    listener.SetIsMediaPlaying(false);
+
+    // Simulate media key press.
+    listener.OnPause();
+  }
+}
+
+TEST_F(RemoteCommandMediaKeysListenerMacTest,
+       DoesNotFirePlayPauseOnPlayEventWhenPlaying) {
+  if (@available(macOS 10.12.2, *)) {
+    now_playing::MockRemoteCommandCenterDelegate rcc_delegate;
+    MockMediaKeysListenerDelegate delegate;
+    RemoteCommandMediaKeysListenerMac listener(&delegate);
+    listener.SetRemoteCommandCenterDelegateForTesting(&rcc_delegate);
+
+    EXPECT_CALL(rcc_delegate, AddObserver(&listener));
+    EXPECT_CALL(rcc_delegate, SetCanPlayPause(true));
+    EXPECT_CALL(rcc_delegate, SetCanPlay(true));
+    EXPECT_CALL(rcc_delegate, SetCanPause(true));
+    EXPECT_CALL(delegate, OnMediaKeysAccelerator(_)).Times(0);
+
+    listener.Initialize();
+    listener.StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+    listener.SetIsMediaPlaying(true);
+
+    // Simulate media key press.
+    listener.OnPlay();
+  }
+}
+
 }  // namespace ui

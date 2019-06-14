@@ -259,7 +259,7 @@ class BASE_EXPORT TaskTracker {
 
   // Event instantiated when shutdown starts and signaled when shutdown
   // completes.
-  std::unique_ptr<WaitableEvent> shutdown_event_;
+  std::unique_ptr<WaitableEvent> shutdown_event_ GUARDED_BY(shutdown_lock_);
 
   // Counter for number of tasks run so far, used to record tasks run while
   // a task queued to histogram.

@@ -172,6 +172,7 @@ class LayerTreeHostTilesTestPartialInvalidation
   scoped_refptr<PictureLayer> picture_layer_;
 };
 
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostTilesTestPartialInvalidation,
@@ -198,6 +199,7 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =
     LayerTreeHostTilesTestPartialInvalidation;
 
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostTilesTestPartialInvalidationMultiThread,
@@ -227,6 +229,7 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
 using LayerTreeHostTilesTestPartialInvalidationLowBitDepth =
     LayerTreeHostTilesTestPartialInvalidation;
 
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,

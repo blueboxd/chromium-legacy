@@ -24,12 +24,16 @@
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -54,6 +58,7 @@
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -118,6 +123,14 @@ const char kArcStatus[] = R"(
 const char kDroidGuardInfo[] = "{\"droid_guard_info\":42}";
 const char kShillFakeProfilePath[] = "/profile/user1/shill";
 const char kShillFakeUserhash[] = "user1";
+
+// Constants for Crostini reporting test cases:
+const char kCrostiniUserEmail[] = "user0@managed.com";
+const char kTerminaVmVersion[] = "1.33.7";
+const char kActualLastLaunchTimeFormatted[] = "Sat, 1 Sep 2018 11:50:50 GMT";
+const char kLastLaunchTimeWindowStartFormatted[] =
+    "Sat, 1 Sep 2018 00:00:00 GMT";
+const long kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -677,6 +690,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   base::ScopedPathOverride user_data_dir_override_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::SimpleTestClock test_clock_;
 
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
@@ -1531,20 +1546,22 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
 
-  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
   testing_profile_->GetPrefs()->SetBoolean(
       crostini::prefs::kReportCrostiniUsageEnabled, true);
   testing_profile_->GetPrefs()->SetString(
-      crostini::prefs::kCrostiniLastLaunchVersion, "1.33.7");
+      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
   testing_profile_->GetPrefs()->SetInt64(
-      crostini::prefs::kCrostiniLastLaunchTimeWindowStart, 1535760000000);
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
+      kLastLaunchTimeWindowStartInJavaTime);
 
   GetStatus();
   EXPECT_TRUE(got_session_status_);
-  EXPECT_EQ(1535760000000, session_status_.crostini_status()
-                               .last_launch_time_window_start_timestamp());
-  EXPECT_EQ("1.33.7",
+  EXPECT_EQ(kLastLaunchTimeWindowStartInJavaTime,
+            session_status_.crostini_status()
+                .last_launch_time_window_start_timestamp());
+  EXPECT_EQ(kTerminaVmVersion,
             session_status_.crostini_status().last_launch_vm_image_version());
   // In tests, GetUserDMToken returns the e-mail for easy verification.
   EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
@@ -1559,7 +1576,7 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
 
-  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
   testing_profile_->GetPrefs()->SetBoolean(
       crostini::prefs::kReportCrostiniUsageEnabled, true);
@@ -1570,6 +1587,132 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
   // UserSessionStatusRequest is filled at all. Note that this test case relies
   // on the fact that kReportArcStatusEnabled is false by default.
   EXPECT_FALSE(got_session_status_);
+}
+
+TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+
+  const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled, true);
+  testing_profile_->GetPrefs()->SetString(
+      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
+  testing_profile_->GetPrefs()->SetInt64(
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
+      kLastLaunchTimeWindowStartInJavaTime);
+
+  testing_profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                           true);
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAdditionalEnterpriseReporting);
+
+  const std::string desktop_file_id = "vim";
+  const std::string package_id =
+      "vim;2:8.0.0197-4+deb9u1;amd64;installed:debian-stable";
+
+  vm_tools::apps::ApplicationList app_list =
+      crostini::CrostiniTestHelper::BasicAppList(
+          desktop_file_id, crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName);
+  app_list.mutable_apps(0)->set_package_id(package_id);
+
+  crostini::CrostiniRegistryService* const registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          testing_profile_.get());
+  registry_service->UpdateApplicationList(app_list);
+  base::Time last_launch_time;
+  EXPECT_TRUE(base::Time::FromString(kActualLastLaunchTimeFormatted,
+                                     &last_launch_time));
+  test_clock_.SetNow(last_launch_time);
+  registry_service->SetClockForTesting(&test_clock_);
+  registry_service->AppLaunched(crostini::CrostiniTestHelper::GenerateAppId(
+      desktop_file_id, crostini::kCrostiniDefaultVmName,
+      crostini::kCrostiniDefaultContainerName));
+
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+
+  EXPECT_EQ(2, session_status_.crostini_status().installed_apps_size());
+  EXPECT_EQ(desktop_file_id,
+            session_status_.crostini_status().installed_apps()[0].app_name());
+  EXPECT_EQ(em::CROSTINI_APP_TYPE_INTERACTIVE,
+            session_status_.crostini_status().installed_apps()[0].app_type());
+  base::Time last_launch_time_coarsed;
+  EXPECT_TRUE(base::Time::FromString(kLastLaunchTimeWindowStartFormatted,
+                                     &last_launch_time_coarsed));
+  EXPECT_EQ(kLastLaunchTimeWindowStartInJavaTime,
+            session_status_.crostini_status()
+                .installed_apps()[0]
+                .last_launch_time_window_start_timestamp());
+  EXPECT_EQ(
+      "vim",
+      session_status_.crostini_status().installed_apps()[0].package_name());
+  EXPECT_EQ(
+      "2:8.0.0197-4+deb9u1",
+      session_status_.crostini_status().installed_apps()[0].package_version());
+  EXPECT_EQ("Terminal",
+            session_status_.crostini_status().installed_apps()[1].app_name());
+  EXPECT_EQ(em::CROSTINI_APP_TYPE_TERMINAL,
+            session_status_.crostini_status().installed_apps()[1].app_type());
+  EXPECT_EQ(
+      std::string(),
+      session_status_.crostini_status().installed_apps()[1].package_name());
+  EXPECT_EQ(
+      std::string(),
+      session_status_.crostini_status().installed_apps()[1].package_version());
+  EXPECT_EQ(0, session_status_.crostini_status()
+                   .installed_apps()[1]
+                   .last_launch_time_window_start_timestamp());
+
+  // In tests, GetUserDMToken returns the e-mail for easy verification.
+  EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
+}
+
+TEST_F(DeviceStatusCollectorTest,
+       TerminalAppIsNotReportedIfCrostiniHasBeenRemoved) {
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+
+  const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(
+      crostini::prefs::kReportCrostiniUsageEnabled, true);
+  testing_profile_->GetPrefs()->SetString(
+      crostini::prefs::kCrostiniLastLaunchVersion, kTerminaVmVersion);
+  testing_profile_->GetPrefs()->SetInt64(
+      crostini::prefs::kCrostiniLastLaunchTimeWindowStart,
+      kLastLaunchTimeWindowStartInJavaTime);
+
+  testing_profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                           false);
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kCrostiniAdditionalEnterpriseReporting);
+
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+
+  // crostini::prefs::kCrostiniEnabled is set to false, but there
+  // is general last launch information. This means Crostini has been
+  // disabled after it has been used. We still report general last launch
+  // information but do not want to jump into application reporting, because
+  // the registry always has the terminal, even if Crostini has been
+  // uninstalled.
+  EXPECT_EQ(kLastLaunchTimeWindowStartInJavaTime,
+            session_status_.crostini_status()
+                .last_launch_time_window_start_timestamp());
+  EXPECT_EQ(0, session_status_.crostini_status().installed_apps_size());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {

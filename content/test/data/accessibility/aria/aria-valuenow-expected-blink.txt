@@ -1,3 +1,2 @@
 rootWebArea
-++genericContainer ignored
-++++progressIndicator valueForRange=3.00
+++progressIndicator valueForRange=3.00

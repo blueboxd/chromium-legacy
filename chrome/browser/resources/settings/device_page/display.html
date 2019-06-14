@@ -64,6 +64,10 @@
         flex-grow: 1;
         margin-top: 20px;
       }
+
+      iron-collapse {
+       width: 100%;
+      }
     </style>
     <div class="settings-box first layout vertical self-stretch">
       <h2 class="layout self-start">
@@ -273,16 +277,17 @@
         </settings-dropdown-menu>
       </div>
       <!-- Custom schedule slider -->
-      <div class="settings-box indented continuation">
-        <iron-collapse id="nightLightCustomScheduleCollapse"
-            class="start text-area layout vertical"
-            opened="[[shouldOpenCustomScheduleCollapse_]]">
-          <div class="settings-box continuation self-stretch">
-            <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
-            </night-light-slider>
+      <iron-collapse id="nightLightCustomScheduleCollapse"
+           opened="[[shouldOpenCustomScheduleCollapse_]]">
+        <div class="settings-box indented continuation">
+          <div class="start text-area layout vertical">
+            <div class="settings-box continuation self-stretch">
+              <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
+              </night-light-slider>
+            </div>
           </div>
-        </iron-collapse>
-      </div>
+        </div>
+      </iron-collapse>
     </div>
 
   </template>

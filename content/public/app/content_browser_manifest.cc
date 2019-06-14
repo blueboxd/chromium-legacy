@@ -71,7 +71,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.ReportingServiceProxy",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
-                  "content.mojom.AecDumpManager",
                   "content.mojom.ClipboardHost",
                   "content.mojom.FieldTrialRecorder",
                   "content.mojom.FrameSinkProvider",

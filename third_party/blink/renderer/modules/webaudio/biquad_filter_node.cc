@@ -27,11 +27,15 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/biquad_filter_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -50,6 +54,12 @@ BiquadFilterHandler::BiquadFilterHandler(AudioNode& node,
                                                                    q,
                                                                    gain,
                                                                    detune)) {
+  DCHECK(Context());
+  DCHECK(Context()->GetExecutionContext());
+
+  task_runner_ = Context()->GetExecutionContext()->GetTaskRunner(
+      TaskType::kMediaElementEvent);
+
   // Initialize the handler so that AudioParams can be processed.
   Initialize();
 }
@@ -63,6 +73,36 @@ scoped_refptr<BiquadFilterHandler> BiquadFilterHandler::Create(
     AudioParamHandler& detune) {
   return base::AdoptRef(
       new BiquadFilterHandler(node, sample_rate, frequency, q, gain, detune));
+}
+
+void BiquadFilterHandler::Process(uint32_t frames_to_process) {
+  AudioBasicProcessorHandler::Process(frames_to_process);
+
+  if (!did_warn_bad_filter_state_) {
+    // Inform the user once if the output has a non-finite value.  This is a
+    // proxy for the filter state containing non-finite values since the output
+    // is also saved as part of the state of the filter.
+    if (HasNonFiniteOutput()) {
+      did_warn_bad_filter_state_ = true;
+
+      PostCrossThreadTask(
+          *task_runner_, FROM_HERE,
+          CrossThreadBindOnce(&BiquadFilterHandler::NotifyBadState,
+                              WrapRefCounted(this)));
+    }
+  }
+}
+
+void BiquadFilterHandler::NotifyBadState() const {
+  DCHECK(IsMainThread());
+  if (!Context() || !Context()->GetExecutionContext())
+    return;
+
+  Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning,
+      NodeTypeName() + ": state is bad, probably due to unstable filter caused "
+                       "by fast parameter automation."));
 }
 
 BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)

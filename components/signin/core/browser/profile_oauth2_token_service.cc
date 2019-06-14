@@ -86,7 +86,7 @@ void ProfileOAuth2TokenService::Shutdown() {
 }
 
 void ProfileOAuth2TokenService::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   DCHECK_EQ(SourceForRefreshTokenOperation::kUnknown,
             update_refresh_token_source_);
   update_refresh_token_source_ =
@@ -95,7 +95,7 @@ void ProfileOAuth2TokenService::LoadCredentials(
 }
 
 void ProfileOAuth2TokenService::UpdateCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& refresh_token,
     SourceForRefreshTokenOperation source) {
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
@@ -104,7 +104,7 @@ void ProfileOAuth2TokenService::UpdateCredentials(
 }
 
 void ProfileOAuth2TokenService::RevokeCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     SourceForRefreshTokenOperation source) {
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_, source);
@@ -127,7 +127,7 @@ const net::BackoffEntry* ProfileOAuth2TokenService::GetDelegateBackoffEntry() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProfileOAuth2TokenService::ExtractCredentials(
     ProfileOAuth2TokenService* to_service,
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_,
       SourceForRefreshTokenOperation::kTokenService_ExtractCredentials);

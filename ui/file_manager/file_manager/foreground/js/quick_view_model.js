@@ -17,12 +17,17 @@ class QuickViewModel extends cr.EventTarget {
     this.selectedEntry_ = null;
   }
 
-  /** @return {FileEntry} */
+  /**
+   * Returns the selected file entry.
+   * @return {FileEntry}
+   */
   getSelectedEntry() {
     return this.selectedEntry_;
   }
 
   /**
+   * Sets the selected file entry. Emits a synchronous selected-entry-changed
+   * event to immediately call MetadataBoxController.updateView_().
    * @param {!FileEntry} entry
    */
   setSelectedEntry(entry) {

@@ -587,9 +587,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   bool IsShowingInterstitial(WebContents* contents);
 
-  // Without committed interstitials, this waits for an interstitial to attach
-  // to the current WebContents. With committed interstitials, it instead
-  // asserts an interstitial is showing and waits for the render frame to be
+  // Asserts an interstitial is showing and waits for the render frame to be
   // ready.
   void WaitForInterstitial(content::WebContents* contents);
 
@@ -1062,23 +1060,16 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
 
 content::InterstitialPageDelegate::TypeID
 CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            contents);
-    if (!helper)
-      return nullptr;
-    security_interstitials::SecurityInterstitialPage* blocking_page =
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
-    if (!blocking_page)
-      return nullptr;
-    return blocking_page->GetTypeForTesting();
-  }
-  if (!contents->ShowingInterstitialPage())
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          contents);
+  if (!helper)
     return nullptr;
-  return contents->GetInterstitialPage()
-      ->GetDelegateForTesting()
-      ->GetTypeForTesting();
+  security_interstitials::SecurityInterstitialPage* blocking_page =
+      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+  if (!blocking_page)
+    return nullptr;
+  return blocking_page->GetTypeForTesting();
 }
 
 bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
@@ -1087,15 +1078,8 @@ bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
 
 void CaptivePortalBrowserTest::WaitForInterstitial(
     content::WebContents* contents) {
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    ASSERT_TRUE(IsShowingInterstitial(contents));
-    ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
-  } else {
-    content::WaitForInterstitialAttach(contents);
-    ASSERT_TRUE(IsShowingInterstitial(contents));
-    ASSERT_TRUE(WaitForRenderFrameReady(
-        contents->GetInterstitialPage()->GetMainFrame()));
-  }
+  ASSERT_TRUE(IsShowingInterstitial(contents));
+  ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
 }
 
 CaptivePortalTabReloader::State CaptivePortalBrowserTest::GetStateOfTabReloader(
@@ -1867,10 +1851,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Wait for the interstitial to load all the JavaScript code. Otherwise,
   // trying to click on a button will fail.
   content::RenderFrameHost* rfh;
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
-    rfh = broken_tab_contents->GetMainFrame();
-  else
-    rfh = broken_tab_contents->GetInterstitialPage()->GetMainFrame();
+  rfh = broken_tab_contents->GetMainFrame();
   EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
@@ -2684,20 +2665,13 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   info.unverified_cert = info.cert;
   FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    // With committed interstitials, the SSL interstitial navigation will result
-    // in the captive portal check firing (and returning no captive portal), so
-    // the state will get reset to none.
-    EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
-              GetStateOfTabReloaderAt(browser(), broken_tab_index));
-    WaitForInterstitial(broken_tab_contents);
-    portal_observer.WaitForResults(2);
-  } else {
-    EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
-              GetStateOfTabReloaderAt(browser(), broken_tab_index));
-    WaitForInterstitial(broken_tab_contents);
-    portal_observer.WaitForResults(1);
-  }
+  // The SSL interstitial navigation will result in the captive portal check
+  // firing (and returning no captive portal), so the state will get reset to
+  // none.
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            GetStateOfTabReloaderAt(browser(), broken_tab_index));
+  WaitForInterstitial(broken_tab_contents);
+  portal_observer.WaitForResults(2);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));

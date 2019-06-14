@@ -21,6 +21,19 @@ V4L2DecodeSurface::V4L2DecodeSurface(int input_record,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+V4L2DecodeSurface::V4L2DecodeSurface(V4L2WritableBufferRef input_buffer,
+                                     V4L2WritableBufferRef output_buffer,
+                                     scoped_refptr<VideoFrame> frame,
+                                     base::OnceClosure release_cb)
+    : V4L2DecodeSurface(input_buffer.BufferId(),
+                        output_buffer.BufferId(),
+                        std::move(release_cb)) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  input_buffer_ = std::move(input_buffer);
+  output_buffer_ = std::move(output_buffer);
+  video_frame_ = std::move(frame);
+}
+
 V4L2DecodeSurface::~V4L2DecodeSurface() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

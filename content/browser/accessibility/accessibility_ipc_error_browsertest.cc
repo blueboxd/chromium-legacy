@@ -39,8 +39,9 @@ class AccessibilityIpcErrorBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityIpcErrorBrowserTest);
 };
 
+// Flaky on all platforms. http://crbug.com/973946
 IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
-                       ResetBrowserAccessibilityManager) {
+                       DISABLED_ResetBrowserAccessibilityManager) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"

@@ -92,8 +92,8 @@ void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
 }
 
 void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
-  // Do not tick worklet animations on main thread. This should be removed if we
-  // skip ticking all animations on main thread in http://crbug.com/762717.
+  // Do not tick worklet animations on main thread as we will tick them on the
+  // compositor and the tick is more expensive than regular animations.
   if (!is_impl_instance_)
     return;
   if (!local_time_.has_value())

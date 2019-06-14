@@ -53,7 +53,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
       const CoreAccountId& account_id) const override;
   void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
-  std::vector<std::string> GetAccounts() override;
+  std::vector<CoreAccountId> GetAccounts() const override;
 
   void UpdateAccountList(
       JNIEnv* env,

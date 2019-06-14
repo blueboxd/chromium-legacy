@@ -40,6 +40,9 @@ class MockBluetoothGattService : public BluetoothRemoteGattService {
                      std::vector<BluetoothRemoteGattService*>());
   MOCK_CONST_METHOD1(GetCharacteristic,
                      BluetoothRemoteGattCharacteristic*(const std::string&));
+  MOCK_CONST_METHOD1(
+      GetCharacteristicsByUUID,
+      std::vector<BluetoothRemoteGattCharacteristic*>(const BluetoothUUID&));
   MOCK_METHOD1(AddIncludedService, bool(BluetoothRemoteGattService*));
   MOCK_METHOD2(Register, void(const base::Closure&, const ErrorCallback&));
   MOCK_METHOD2(Unregister, void(const base::Closure&, const ErrorCallback&));

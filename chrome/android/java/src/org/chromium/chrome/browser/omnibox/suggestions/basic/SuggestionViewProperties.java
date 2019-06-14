@@ -25,18 +25,22 @@ import java.lang.annotation.RetentionPolicy;
  * The properties associated with rendering the suggestion view.
  */
 public class SuggestionViewProperties {
-    @IntDef({SuggestionIcon.UNDEFINED, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
+    @IntDef({SuggestionIcon.UNSET, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
             SuggestionIcon.GLOBE, SuggestionIcon.MAGNIFIER, SuggestionIcon.VOICE,
-            SuggestionIcon.CALCULATOR})
+            SuggestionIcon.CALCULATOR, SuggestionIcon.FAVICON, SuggestionIcon.TOTAL_COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SuggestionIcon {
-        int UNDEFINED = -1;
-        int BOOKMARK = 0;
-        int HISTORY = 1;
-        int GLOBE = 2;
-        int MAGNIFIER = 3;
-        int VOICE = 4;
-        int CALCULATOR = 5;
+        // This enum is used to back UMA histograms, and should therefore be treated as append-only.
+        // See http://cs.chromium.org/SuggestionIconOrFaviconType
+        int UNSET = 0;
+        int BOOKMARK = 1;
+        int HISTORY = 2;
+        int GLOBE = 3;
+        int MAGNIFIER = 4;
+        int VOICE = 5;
+        int CALCULATOR = 6;
+        int FAVICON = 7;
+        int TOTAL_COUNT = 8;
     }
 
     /**

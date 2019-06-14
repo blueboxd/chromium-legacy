@@ -45,7 +45,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
     const RTCIceCandidate& candidate) {
   webrtc::JsepIceCandidate jsep_candidate("", 0);
   webrtc::SdpParseError error;
-  if (!webrtc::SdpDeserializeCandidate(WebString(candidate.candidate()).Utf8(),
+  if (!webrtc::SdpDeserializeCandidate(candidate.candidate().Utf8(),
                                        &jsep_candidate, &error)) {
     LOG(WARNING) << "Failed to deserialize candidate: " << error.description;
     return base::nullopt;
@@ -55,7 +55,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
 
 RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
   return RTCIceCandidate::Create(WebRTCICECandidate::Create(
-      WebString::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
+      String::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 
 class DtlsIceTransportAdapterCrossThreadFactory
@@ -303,19 +303,18 @@ static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
     url_strings.push_back(ice_server->url());
   }
   for (const String& url_string : url_strings) {
-    converted_ice_server.urls.push_back(WebString(url_string).Utf8());
+    converted_ice_server.urls.push_back(url_string.Utf8());
   }
-  converted_ice_server.username = WebString(ice_server->username()).Utf8();
-  converted_ice_server.password = WebString(ice_server->credential()).Utf8();
+  converted_ice_server.username = ice_server->username().Utf8();
+  converted_ice_server.password = ice_server->credential().Utf8();
   return converted_ice_server;
 }
 
 static cricket::IceParameters ConvertIceParameters(
     const RTCIceParameters* ice_parameters) {
   cricket::IceParameters converted_ice_parameters;
-  converted_ice_parameters.ufrag =
-      WebString(ice_parameters->usernameFragment()).Utf8();
-  converted_ice_parameters.pwd = WebString(ice_parameters->password()).Utf8();
+  converted_ice_parameters.ufrag = ice_parameters->usernameFragment().Utf8();
+  converted_ice_parameters.pwd = ice_parameters->password().Utf8();
   return converted_ice_parameters;
 }
 
@@ -465,9 +464,9 @@ void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
 void RTCIceTransport::GenerateLocalParameters() {
   local_parameters_ = RTCIceParameters::Create();
   local_parameters_->setUsernameFragment(
-      WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)));
+      String::FromUTF8(rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)));
   local_parameters_->setPassword(
-      WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)));
+      String::FromUTF8(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)));
 }
 
 void RTCIceTransport::OnGatheringStateChanged(

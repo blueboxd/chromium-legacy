@@ -397,9 +397,9 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         }
         ice_servers.emplace_back();
         auto& converted_ice_server = ice_servers.back();
-        converted_ice_server.urls.push_back(WebString(url).Utf8());
-        converted_ice_server.username = WebString(username).Utf8();
-        converted_ice_server.password = WebString(credential).Utf8();
+        converted_ice_server.urls.push_back(String(url).Utf8());
+        converted_ice_server.username = username.Utf8();
+        converted_ice_server.password = credential.Utf8();
       }
     }
     web_configuration.servers = ice_servers;

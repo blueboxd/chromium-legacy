@@ -18,10 +18,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
-namespace base {
-class DeferredSequencedTaskRunner;
-}
-
 namespace service_manager {
 class Connector;
 }
@@ -44,12 +40,6 @@ class CONTENT_EXPORT ServiceManagerContext {
   // called on the IO thread.
   static bool HasValidProcessForProcessGroup(
       const std::string& process_group_name);
-
-  // Starts the browser connction to the ServiceManager. It must be called after
-  // the BrowserMainLoop starts.
-  static void StartBrowserConnection();
-
-  static base::DeferredSequencedTaskRunner* GetAudioServiceRunner();
 
   // Shutdowns the ServiceManager and the connections to the ServiceManager.
   void ShutDown();

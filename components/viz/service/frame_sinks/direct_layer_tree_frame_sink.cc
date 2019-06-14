@@ -8,6 +8,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
@@ -23,11 +27,28 @@
 #include "components/viz/service/surfaces/surface.h"
 
 namespace viz {
+namespace {
+
+base::HistogramBase* GetHistogramNamed(const char* histogram_name_format,
+                                       const char* client_name) {
+  if (!client_name)
+    return nullptr;
+
+  return base::LinearHistogram::FactoryMicrosecondsTimeGet(
+      base::StringPrintf(histogram_name_format, client_name),
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(200), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+}  // namespace
 
 DirectLayerTreeFrameSink::PipelineReporting::PipelineReporting(
     const BeginFrameArgs args,
-    base::TimeTicks now)
-    : trace_id_(args.trace_id), frame_time_(now) {}
+    base::TimeTicks now,
+    base::HistogramBase* submit_begin_frame_histogram)
+    : trace_id_(args.trace_id),
+      frame_time_(now),
+      submit_begin_frame_histogram_(submit_begin_frame_histogram) {}
 
 DirectLayerTreeFrameSink::PipelineReporting::~PipelineReporting() = default;
 
@@ -36,16 +57,10 @@ void DirectLayerTreeFrameSink::PipelineReporting::Report() {
                          TRACE_ID_GLOBAL(trace_id_),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "SubmitCompositorFrame");
+  auto report_time = base::TimeTicks::Now() - frame_time_;
 
-  // Note that client_name is constant during the lifetime of the process and
-  // it's either "Browser" or "Renderer".
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      base::StringPrintf(
-          "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
-          cc::GetClientNameForMetrics()),
-      base::TimeTicks::Now() - frame_time_,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(200), 50);
+  if (submit_begin_frame_histogram_)
+    submit_begin_frame_histogram_->AddTimeMicrosecondsGranularity(report_time);
 }
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
@@ -69,6 +84,12 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       display_(display),
       display_client_(display_client),
       use_viz_hit_test_(use_viz_hit_test),
+      receive_begin_frame_histogram_(
+          GetHistogramNamed("GraphicsPipeline.%s.ReceivedBeginFrame",
+                            cc::GetClientNameForMetrics())),
+      submit_begin_frame_histogram_(GetHistogramNamed(
+          "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
+          cc::GetClientNameForMetrics())),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
@@ -272,23 +293,20 @@ void DirectLayerTreeFrameSink::OnBeginFrame(
                                        pair.second.presentation_feedback);
 
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
-  // Note that client_name is constant during the lifetime of the process and
-  // it's either "Browser" or "Renderer".
-  const char* client_name = cc::GetClientNameForMetrics();
-  if (client_name && args.trace_id != -1) {
+  if (args.trace_id != -1) {
     base::TimeTicks current_time = base::TimeTicks::Now();
-    PipelineReporting report(args, current_time);
+    PipelineReporting report(args, current_time, submit_begin_frame_histogram_);
     pipeline_reporting_frame_times_.emplace(args.trace_id, report);
     // Missed BeginFrames use the frame time of the last received BeginFrame
     // which is bogus from a reporting perspective if nothing has been updating
     // on screen for a while.
     if (args.type != BeginFrameArgs::MISSED) {
       base::TimeDelta frame_difference = current_time - args.frame_time;
-      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-          base::StringPrintf("GraphicsPipeline.%s.ReceivedBeginFrame",
-                             client_name),
-          frame_difference, base::TimeDelta::FromMicroseconds(1),
-          base::TimeDelta::FromMilliseconds(100), 50);
+
+      if (receive_begin_frame_histogram_) {
+        receive_begin_frame_histogram_->AddTimeMicrosecondsGranularity(
+            frame_difference);
+      }
     }
   }
   if (!needs_begin_frames_) {

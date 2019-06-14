@@ -47,8 +47,8 @@ struct GFX_EXPORT NativePixmapPlane {
 
   // The strides and offsets in bytes to be used when accessing the buffers via
   // a memory mapping. One per plane per entry.
-  int stride;
-  int offset;
+  uint32_t stride;
+  uint64_t offset;
   // Size in bytes of the plane.
   // This is necessary to map the buffers.
   uint64_t size;

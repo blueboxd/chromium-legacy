@@ -258,6 +258,9 @@ def main():
       # Add llvm-ar for LTO.
       'bin/llvm-ar',
 
+      # Add llvm-objcopy for partition extraction on Android.
+      'bin/llvm-objcopy',
+
       # AddressSanitizer C runtime (pure C won't link with *_cxx).
       'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
@@ -396,6 +399,7 @@ def main():
   if sys.platform.startswith('linux'):
     stripped_binaries.append('lld')
     stripped_binaries.append('llvm-ar')
+    stripped_binaries.append('llvm-objcopy')
   for f in stripped_binaries:
     if sys.platform != 'win32':
       subprocess.call(['strip', os.path.join(pdir, 'bin', f)])

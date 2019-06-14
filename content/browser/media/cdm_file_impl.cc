@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -24,10 +25,17 @@ namespace {
 
 // The CDM interface has a restriction that file names can not begin with _,
 // so use it to prefix temporary files.
-const char kTemporaryFilePrefix[] = "_";
+const char kTemporaryFilePrefix = '_';
+
+// File size limit is 512KB. Licenses saved by the CDM are typically several
+// hundreds of bytes.
+const int64_t kMaxFileSizeBytes = 512 * 1024;
+
+// Maximum length of a file name.
+const size_t kFileNameMaxLength = 256;
 
 std::string GetTempFileName(const std::string& file_name) {
-  DCHECK(!base::StartsWith(file_name, kTemporaryFilePrefix,
+  DCHECK(!base::StartsWith(file_name, std::string(1, kTemporaryFilePrefix),
                            base::CompareCase::SENSITIVE));
   return kTemporaryFilePrefix + file_name;
 }
@@ -72,18 +80,7 @@ class FileLockMap {
     return file_lock_map_.insert(key).second;
   }
 
-  // Tests whether a lock is held on |key| or not. Returns true if |key|
-  // is currently locked, false otherwise.
-  bool IsFileLockHeld(const FileLockKey& key) {
-    DVLOG(3) << __func__ << " file: " << key.file_name;
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    // Lock is held if there is an entry for |key|.
-    return file_lock_map_.count(key) > 0;
-  }
-
-  // Release the lock held on the file represented by |key|. If
-  // |on_close_callback| has been set, run it before releasing the lock.
+  // Release the lock held on the file represented by |key|.
   void ReleaseFileLock(const FileLockKey& key) {
     DVLOG(3) << __func__ << " file: " << key.file_name;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -112,7 +109,100 @@ FileLockMap* GetFileLockMap() {
   return file_lock_map;
 }
 
+// Read the contents of |file| and return it. On success, returns kSuccess and
+// |data| is updated with the contents of the file. On failure kFailure is
+// returned. This method owns |file| and it will be closed at the end.
+CdmFileImpl::Status ReadFile(base::File file, std::vector<uint8_t>* data) {
+  DCHECK(data->empty());
+
+  // Determine the size of the file (so we know how many bytes to read).
+  // Negative bytes mean failure, so problem with the file.
+  int64_t num_bytes = file.GetLength();
+  if (num_bytes < 0) {
+    DLOG(WARNING) << __func__
+                  << " Unable to get file length. result = " << num_bytes;
+    return CdmFileImpl::Status::kFailure;
+  }
+
+  // Files are limited in size, so fail if file too big.
+  if (num_bytes > kMaxFileSizeBytes) {
+    DLOG(WARNING) << __func__
+                  << " Too much data to read. #bytes = " << num_bytes;
+    return CdmFileImpl::Status::kFailure;
+  }
+
+  // If the file has 0 bytes, no need to read anything.
+  if (num_bytes == 0) {
+    return CdmFileImpl::Status::kSuccess;
+  }
+
+  // Read the contents of the file. Read() sizes (provided and returned) are
+  // type int, so cast appropriately.
+  int bytes_to_read = base::checked_cast<int>(num_bytes);
+  data->resize(num_bytes);
+
+  TRACE_EVENT0("media", "CdmFileReadFile");
+  base::TimeTicks start = base::TimeTicks::Now();
+  int bytes_read =
+      file.Read(0, reinterpret_cast<char*>(data->data()), bytes_to_read);
+  base::TimeDelta read_time = base::TimeTicks::Now() - start;
+  if (bytes_to_read != bytes_read) {
+    // Unable to read the contents of the file.
+    DLOG(WARNING) << "Failed to read file. Requested " << bytes_to_read
+                  << " bytes, got " << bytes_read;
+    return CdmFileImpl::Status::kFailure;
+  }
+
+  // Only report reading time for successful reads.
+  UMA_HISTOGRAM_TIMES("Media.EME.CdmFileIO.ReadTime", read_time);
+  return CdmFileImpl::Status::kSuccess;
+}
+
+// Write |data| to |file|. Returns kSuccess if everything works, kFailure
+// otherwise.  This method owns |file| and it will be closed at the end.
+CdmFileImpl::Status WriteFile(base::File file, std::vector<uint8_t> data) {
+  // As the temporary file should have been newly created, it should be empty.
+  CHECK_EQ(0u, file.GetLength()) << "Temporary file is not empty.";
+  int bytes_to_write = base::checked_cast<int>(data.size());
+
+  TRACE_EVENT0("media", "CdmFileWriteFile");
+  base::TimeTicks start = base::TimeTicks::Now();
+  int bytes_written =
+      file.Write(0, reinterpret_cast<const char*>(data.data()), bytes_to_write);
+  base::TimeDelta write_time = base::TimeTicks::Now() - start;
+  if (bytes_written != bytes_to_write) {
+    DLOG(WARNING) << "Failed to write file. Requested " << bytes_to_write
+                  << " bytes, wrote " << bytes_written;
+    return CdmFileImpl::Status::kFailure;
+  }
+
+  // Only report writing time for successful writes.
+  UMA_HISTOGRAM_TIMES("Media.EME.CdmFileIO.WriteTime", write_time);
+
+  return CdmFileImpl::Status::kSuccess;
+}
+
 }  // namespace
+
+// static
+bool CdmFileImpl::IsValidName(const std::string& name) {
+  // File names must only contain letters (A-Za-z), digits(0-9), or "._-",
+  // and not start with "_". It must contain at least 1 character, and not
+  // more then |kFileNameMaxLength| characters.
+  if (name.empty() || name.length() > kFileNameMaxLength ||
+      name[0] == kTemporaryFilePrefix) {
+    return false;
+  }
+
+  for (const auto ch : name) {
+    if (!base::IsAsciiAlpha(ch) && !base::IsAsciiDigit(ch) && ch != '.' &&
+        ch != '_' && ch != '-') {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 CdmFileImpl::CdmFileImpl(
     const std::string& file_name,
@@ -128,55 +218,46 @@ CdmFileImpl::CdmFileImpl(
       file_system_context_(file_system_context),
       weak_factory_(this) {
   DVLOG(3) << __func__ << " " << file_name_;
+  DCHECK(IsValidName(file_name_));
 }
 
 CdmFileImpl::~CdmFileImpl() {
   DVLOG(3) << __func__ << " " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // If a file open was started but hasn't completed by now, run the callback
-  // and report an error.
-  if (pending_open_callback_) {
-    std::move(pending_open_callback_)
-        .Run(base::File(base::File::FILE_ERROR_ABORT));
-  }
-
-  if (lock_state_ == LockState::kFileAndTempFileLocked) {
-    // Temporary file is open, so close and release it.
-    if (temporary_file_on_close_callback_)
-      std::move(temporary_file_on_close_callback_).Run();
-    ReleaseFileLock(temp_file_name_);
-  }
-  if (lock_state_ != LockState::kNone) {
-    // Original file is open, so close and release it.
-    if (on_close_callback_)
-      std::move(on_close_callback_).Run();
+  if (file_locked_)
     ReleaseFileLock(file_name_);
-  }
 }
 
-void CdmFileImpl::Initialize(OpenFileCallback callback) {
+bool CdmFileImpl::Initialize() {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(LockState::kNone, lock_state_);
-  DCHECK(!pending_open_callback_);
+  DCHECK(!file_locked_);
 
   // Grab the lock on |file_name_|. The lock will be held until this object is
   // destructed.
   if (!AcquireFileLock(file_name_)) {
-    DVLOG(3) << "File " << file_name_ << " is already in use.";
-    std::move(callback).Run(base::File(base::File::FILE_ERROR_IN_USE));
-    return;
+    DVLOG(2) << "File " << file_name_ << " is already in use.";
+    return false;
   }
 
-  // We have the lock on |file_name_|. Now open the file for reading. Since
-  // we don't know if this file exists or not, provide FLAG_OPEN_ALWAYS to
-  // create the file if it doesn't exist.
-  lock_state_ = LockState::kFileLocked;
-  pending_open_callback_ = std::move(callback);
-  OpenFile(file_name_, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ,
+  // We have the lock on |file_name_|. |file_locked_| is set to simplify
+  // validation, and to help destruction not have to check.
+  file_locked_ = true;
+  return true;
+}
+
+void CdmFileImpl::Read(ReadCallback callback) {
+  DVLOG(3) << __func__ << " file: " << file_name_;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+  DCHECK(data_.empty());
+
+  // Open the file for reading. This may fail if the file does not currently
+  // exist, which needs to be handled.
+  OpenFile(file_name_, base::File::FLAG_OPEN | base::File::FLAG_READ,
            base::BindOnce(&CdmFileImpl::OnFileOpenedForReading,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CdmFileImpl::OpenFile(const std::string& file_name,
@@ -184,9 +265,7 @@ void CdmFileImpl::OpenFile(const std::string& file_name,
                            CreateOrOpenCallback callback) {
   DVLOG(3) << __func__ << " file: " << file_name << ", flags: " << file_flags;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_NE(LockState::kNone, lock_state_);
-  DCHECK(IsFileLockHeld(file_name));
-  DCHECK(pending_open_callback_);
+  DCHECK(file_locked_);
 
   storage::FileSystemURL file_url = CreateFileSystemURL(file_name);
   storage::AsyncFileUtil* file_util = file_system_context_->GetAsyncFileUtil(
@@ -201,106 +280,117 @@ void CdmFileImpl::OpenFile(const std::string& file_name,
                           std::move(callback));
 }
 
-void CdmFileImpl::OnFileOpenedForReading(base::File file,
+void CdmFileImpl::OnFileOpenedForReading(ReadCallback callback,
+                                         base::File file,
                                          base::OnceClosure on_close_callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(LockState::kFileLocked, lock_state_);
-  DCHECK(pending_open_callback_);
+  DCHECK(file_locked_);
 
   if (!file.IsValid()) {
-    // File is invalid. Note that the lock on |file_name_| is kept until this
-    // object is destructed.
-    DLOG(WARNING) << "Unable to open file " << file_name_ << ", error: "
-                  << base::File::ErrorToString(file.error_details());
-    std::move(pending_open_callback_).Run(std::move(file));
+    // File is invalid, so assume that it is empty.
+    DVLOG(2) << "Unable to open file " << file_name_
+             << ", error: " << base::File::ErrorToString(file.error_details());
+    std::move(callback).Run(
+        file.error_details() == base::File::FILE_ERROR_NOT_FOUND
+            ? Status::kSuccess
+            : Status::kFailure,
+        std::vector<uint8_t>());
     return;
   }
 
-  // When the file is closed, |on_close_callback| will be run.
-  on_close_callback_ = std::move(on_close_callback);
-  std::move(pending_open_callback_).Run(std::move(file));
+  // Reading |file| must be done on a thread that allows blocking, so post a
+  // task to do the read on a separate thread. When that completes simply call
+  // |callback| with the results.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ReadFile, std::move(file), &data_),
+      base::BindOnce(&CdmFileImpl::OnFileRead, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
-void CdmFileImpl::OpenFileForWriting(OpenFileForWritingCallback callback) {
-  DVLOG(3) << __func__ << " " << file_name_;
+void CdmFileImpl::OnFileRead(ReadCallback callback, Status status) {
+  DVLOG(3) << __func__ << " file: " << file_name_;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
 
-  // Fail if this is called out of order. We must have opened the original
-  // file, and there should be no call in progress.
-  if (lock_state_ != LockState::kFileLocked || pending_open_callback_) {
-    std::move(callback).Run(
-        base::File(base::File::FILE_ERROR_INVALID_OPERATION));
+  std::vector<uint8_t> data;
+  data.swap(data_);
+  std::move(callback).Run(status, std::move(data));
+}
+
+void CdmFileImpl::Write(const std::vector<uint8_t>& data,
+                        WriteCallback callback) {
+  DVLOG(3) << __func__ << " file: " << file_name_ << ", size: " << data.size();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+  DCHECK(data_.empty());
+
+  // If there is no data to write, delete the file to save space.
+  if (data.empty()) {
+    DeleteFile(std::move(callback));
     return;
   }
 
-  // Grab a lock on the temporary file. The lock will be held until this
-  // new file is renamed in CommitWrite() (or this object is
-  // destructed).
-  if (!AcquireFileLock(temp_file_name_)) {
-    DVLOG(3) << "File " << temp_file_name_ << " is already in use.";
-    std::move(callback).Run(base::File(base::File::FILE_ERROR_IN_USE));
+  // Files are limited in size, so fail if file too big. This should have been
+  // checked by the caller, but we don't fully trust IPC.
+  if (data.size() > kMaxFileSizeBytes) {
+    DLOG(WARNING) << __func__
+                  << " Too much data to write. #bytes = " << data.size();
+    std::move(callback).Run(Status::kFailure);
     return;
   }
 
-  // We now have locks on both |file_name_| and |temp_file_name_|. Open the
-  // temporary file for writing. Specifying FLAG_CREATE_ALWAYS which will
-  // overwrite any existing file.
-  lock_state_ = LockState::kFileAndTempFileLocked;
-  pending_open_callback_ = std::move(callback);
-  OpenFile(temp_file_name_,
-           base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
-           base::BindOnce(&CdmFileImpl::OnTempFileOpenedForWriting,
-                          weak_factory_.GetWeakPtr()));
+  // Open the temporary file for writing. Specifying FLAG_CREATE_ALWAYS which
+  // will overwrite any existing file.
+  OpenFile(
+      temp_file_name_, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
+      base::BindOnce(&CdmFileImpl::OnTempFileOpenedForWriting,
+                     weak_factory_.GetWeakPtr(), data, std::move(callback)));
 }
 
 void CdmFileImpl::OnTempFileOpenedForWriting(
+    std::vector<uint8_t> data,
+    WriteCallback callback,
     base::File file,
     base::OnceClosure on_close_callback) {
-  DVLOG(3) << __func__ << " file: " << file_name_;
+  DVLOG(3) << __func__ << " file: " << temp_file_name_
+           << ", bytes_to_write: " << data.size();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(LockState::kFileAndTempFileLocked, lock_state_);
-  DCHECK(pending_open_callback_);
+  DCHECK(file_locked_);
 
   if (!file.IsValid()) {
     DLOG(WARNING) << "Unable to open file " << temp_file_name_ << ", error: "
                   << base::File::ErrorToString(file.error_details());
-    lock_state_ = LockState::kFileLocked;
-    ReleaseFileLock(temp_file_name_);
-    std::move(pending_open_callback_).Run(std::move(file));
+    std::move(callback).Run(Status::kFailure);
     return;
   }
 
-  temporary_file_on_close_callback_ = std::move(on_close_callback);
-  std::move(pending_open_callback_).Run(std::move(file));
+  // Writing to |file| must be done on a thread that allows blocking, so post a
+  // task to do the writing on a separate thread. When that completes we need to
+  // rename the file in order to replace any existing contents.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&WriteFile, std::move(file), std::move(data)),
+      base::BindOnce(&CdmFileImpl::OnFileWritten, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
-void CdmFileImpl::CommitWrite(CommitWriteCallback callback) {
-  DVLOG(3) << __func__ << " " << temp_file_name_ << " to " << file_name_;
+void CdmFileImpl::OnFileWritten(WriteCallback callback, Status status) {
+  DVLOG(3) << __func__ << " file: " << temp_file_name_
+           << ", status: " << status;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(LockState::kFileAndTempFileLocked, lock_state_);
-  DCHECK(IsFileLockHeld(file_name_));
-  DCHECK(IsFileLockHeld(temp_file_name_));
+  DCHECK(file_locked_);
 
-  // TODO(jrummell): Verify that the written file does not exceed the file
-  // size limit of 32MB. If it does simply delete the written file and fail.
-
-  // Fail if this is called out of order. We must have opened both the original
-  // and the temporary file, and there should be no call in progress.
-  if (lock_state_ != LockState::kFileAndTempFileLocked ||
-      pending_open_callback_) {
-    std::move(callback).Run(
-        base::File(base::File::FILE_ERROR_INVALID_OPERATION));
+  if (status != Status::kSuccess) {
+    // Write failed, so fail.
+    std::move(callback).Run(status);
     return;
   }
 
-  if (on_close_callback_)
-    std::move(on_close_callback_).Run();
-  if (temporary_file_on_close_callback_)
-    std::move(temporary_file_on_close_callback_).Run();
-
-  // OpenFile() will be called after the file is renamed, so save |callback|.
-  pending_open_callback_ = std::move(callback);
-
+  // Now rename |temp_file_name_| to |file_name_|.
   storage::FileSystemURL src_file_url = CreateFileSystemURL(temp_file_name_);
   storage::FileSystemURL dest_file_url = CreateFileSystemURL(file_name_);
   storage::AsyncFileUtil* file_util = file_system_context_->GetAsyncFileUtil(
@@ -313,30 +403,62 @@ void CdmFileImpl::CommitWrite(CommitWriteCallback callback) {
   file_util->MoveFileLocal(
       std::move(operation_context), src_file_url, dest_file_url,
       storage::FileSystemOperation::OPTION_NONE,
-      base::BindOnce(&CdmFileImpl::OnFileRenamed, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CdmFileImpl::OnFileRenamed, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
-void CdmFileImpl::OnFileRenamed(base::File::Error move_result) {
+void CdmFileImpl::OnFileRenamed(WriteCallback callback,
+                                base::File::Error move_result) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(LockState::kFileAndTempFileLocked, lock_state_);
-  DCHECK(pending_open_callback_);
-
-  // Temporary file has been renamed, so we can release the lock on it.
-  ReleaseFileLock(temp_file_name_);
-  lock_state_ = LockState::kFileLocked;
+  DCHECK(file_locked_);
 
   // Was the rename successful?
   if (move_result != base::File::FILE_OK) {
-    std::move(pending_open_callback_).Run(base::File(move_result));
+    DLOG(WARNING) << "Unable to rename file " << temp_file_name_ << " to "
+                  << file_name_
+                  << ", error: " << base::File::ErrorToString(move_result);
+    std::move(callback).Run(Status::kFailure);
     return;
   }
 
-  // Reopen the original file for reading. Specifying FLAG_OPEN as the file
-  // has to exist or something's wrong.
-  OpenFile(file_name_, base::File::FLAG_OPEN | base::File::FLAG_READ,
-           base::BindOnce(&CdmFileImpl::OnFileOpenedForReading,
-                          weak_factory_.GetWeakPtr()));
+  std::move(callback).Run(Status::kSuccess);
+}
+
+void CdmFileImpl::DeleteFile(WriteCallback callback) {
+  DVLOG(3) << __func__;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+
+  storage::FileSystemURL file_url = CreateFileSystemURL(file_name_);
+  storage::AsyncFileUtil* file_util = file_system_context_->GetAsyncFileUtil(
+      storage::kFileSystemTypePluginPrivate);
+  auto operation_context =
+      std::make_unique<storage::FileSystemOperationContext>(
+          file_system_context_.get());
+
+  DVLOG(3) << "Deleting " << file_url.DebugString();
+  file_util->DeleteFile(
+      std::move(operation_context), file_url,
+      base::BindOnce(&CdmFileImpl::OnFileDeleted, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
+}
+
+void CdmFileImpl::OnFileDeleted(WriteCallback callback,
+                                base::File::Error result) {
+  DVLOG(3) << __func__;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+
+  if (result != base::File::FILE_OK &&
+      result != base::File::FILE_ERROR_NOT_FOUND) {
+    DLOG(WARNING) << "Unable to delete file " << file_name_
+                  << ", error: " << base::File::ErrorToString(result);
+    std::move(callback).Run(Status::kFailure);
+    return;
+  }
+
+  std::move(callback).Run(Status::kSuccess);
 }
 
 storage::FileSystemURL CdmFileImpl::CreateFileSystemURL(
@@ -348,11 +470,6 @@ storage::FileSystemURL CdmFileImpl::CreateFileSystemURL(
 bool CdmFileImpl::AcquireFileLock(const std::string& file_name) {
   FileLockKey file_lock_key(file_system_id_, origin_, file_name);
   return GetFileLockMap()->AcquireFileLock(file_lock_key);
-}
-
-bool CdmFileImpl::IsFileLockHeld(const std::string& file_name) {
-  FileLockKey file_lock_key(file_system_id_, origin_, file_name);
-  return GetFileLockMap()->IsFileLockHeld(file_lock_key);
 }
 
 void CdmFileImpl::ReleaseFileLock(const std::string& file_name) {

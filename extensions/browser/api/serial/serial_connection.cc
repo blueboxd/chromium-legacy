@@ -205,7 +205,7 @@ void SerialConnection::set_send_timeout(int send_timeout) {
   send_timeout_ = send_timeout;
 }
 
-void SerialConnection::set_paused(bool paused) {
+void SerialConnection::SetPaused(bool paused) {
   DCHECK(serial_port_);
   if (paused_ == paused)
     return;
@@ -225,7 +225,7 @@ void SerialConnection::set_paused(bool paused) {
   }
 }
 
-void SerialConnection::set_connection_error_handler(
+void SerialConnection::SetConnectionErrorHandler(
     base::OnceClosure connection_error_handler) {
   if (serial_port_.encountered_error()) {
     // Already being disconnected, run client's error handler immediatelly.
@@ -397,7 +397,7 @@ void SerialConnection::StartPolling(const ReceiveEventCallback& callback) {
   DCHECK(receive_event_cb_);
   DCHECK(receive_pipe_);
   DCHECK(paused_);
-  set_paused(false);
+  SetPaused(false);
 }
 
 bool SerialConnection::Send(const std::vector<uint8_t>& data,

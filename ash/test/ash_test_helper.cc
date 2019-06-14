@@ -10,6 +10,8 @@
 #include <utility>
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_service.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
@@ -153,6 +155,10 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   session_controller_client_.reset(new TestSessionControllerClient(
       shell->session_controller(), prefs_provider_.get()));
   session_controller_client_->InitializeAndSetClient();
+
+  assistant_service_ = std::make_unique<TestAssistantService>();
+  shell->assistant_controller()->SetAssistant(
+      assistant_service_->CreateInterfacePtrAndBind());
 
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());

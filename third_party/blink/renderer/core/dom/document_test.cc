@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -567,15 +568,14 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
 }
 
 TEST_F(DocumentTest, OutgoingReferrer) {
-  GetDocument().SetURL(KURL("https://www.example.com/hoge#fuga?piyo"));
-  GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://www.example.com/")));
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"));
   EXPECT_EQ("https://www.example.com/hoge", GetDocument().OutgoingReferrer());
 }
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  GetDocument().SetURL(KURL("https://www.example.com/hoge#fuga?piyo"));
-  GetDocument().SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"), "",
+             "sandbox allow-scripts");
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
 
@@ -609,16 +609,11 @@ TEST_F(DocumentTest, StyleVersion) {
 }
 
 TEST_F(DocumentTest, EnforceSandboxFlags) {
-  scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::CreateFromString("http://example.test");
-  GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = WebSandboxFlags::kNavigation;
-  GetDocument().EnforceSandboxFlags(mask);
-  EXPECT_EQ(origin, GetDocument().GetSecurityOrigin());
+  NavigateTo(KURL("http://example.test/"), "", "sandbox allow-same-origin");
+  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  mask |= WebSandboxFlags::kOrigin;
-  GetDocument().EnforceSandboxFlags(mask);
+  NavigateTo(KURL("http://example.test/"), "", "sandbox");
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
@@ -628,22 +623,16 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
                          url::SchemeType::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
-  origin =
-      SecurityOrigin::CreateFromString("very-special-scheme://example.test");
-  GetDocument().SetSecurityOrigin(origin);
-  GetDocument().EnforceSandboxFlags(mask);
+  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
-  GetDocument().SetSecurityOrigin(origin);
-  GetDocument().EnforceSandboxFlags(mask);
+  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  origin = SecurityOrigin::CreateFromString("https://example.test");
-  GetDocument().SetSecurityOrigin(origin);
-  GetDocument().EnforceSandboxFlags(mask);
+  NavigateTo(KURL("https://example.test"), "", "sandbox");
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
@@ -892,12 +881,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 }
 
 TEST_F(DocumentTest, SandboxDisablesAppCache) {
-  scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::CreateFromString("https://test.com");
-  GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = WebSandboxFlags::kOrigin;
-  GetDocument().EnforceSandboxFlags(mask);
-  GetDocument().SetURL(KURL("https://test.com/foobar/document"));
+  NavigateTo(KURL("https://test.com/foobar/document"), "", "sandbox");
 
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
@@ -1093,13 +1077,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
 INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  constexpr SandboxFlags kSandboxMask = WebSandboxFlags::kScripts;
-  GetDocument().EnforceSandboxFlags(kSandboxMask);
-  // With FeaturePolicyForSandbox, all the sandbox flags must be explicitly
-  // converted to equivalent feature policies. Since sandbox is enforced above,
-  // the feature policies have to be reset; setting an empty header policy will
-  // internally convert the newly set sandbox flags to policies.
-  GetDocument().ApplyFeaturePolicyFromHeader("");
+  NavigateTo(KURL("https://www.example.com/"), "", "sandbox");
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);

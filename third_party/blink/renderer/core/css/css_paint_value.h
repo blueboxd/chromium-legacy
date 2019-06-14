@@ -10,13 +10,12 @@
 #include "third_party/blink/renderer/core/css/css_image_generator_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-class CrossThreadStyleValue;
 
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
@@ -50,6 +49,14 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   }
   const Vector<AtomicString>* CustomInvalidationProperties() const {
     return generator_ ? &generator_->CustomInvalidationProperties() : nullptr;
+  }
+
+  const CSSStyleValueVector* GetParsedInputArgumentsForTesting() {
+    return parsed_input_arguments_;
+  }
+  void BuildInputArgumentValuesForTesting(
+      Vector<std::unique_ptr<CrossThreadStyleValue>>& style_value) {
+    BuildInputArgumentValues(style_value);
   }
 
   void TraceAfterDispatch(blink::Visitor*);

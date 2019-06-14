@@ -11,14 +11,7 @@ This tests that aria-hidden works as expected on elements that are subclasses of
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS child.childrenCount is 6
-PASS child.childAtIndex(0).isIgnored is true
-PASS child.childAtIndex(1).isIgnored is true
-PASS child.childAtIndex(2).isIgnored is true
-PASS child.childAtIndex(3).isIgnored is true
-PASS child.childAtIndex(4).isIgnored is true
-PASS child.childAtIndex(5).isIgnored is true
-PASS child.role is 'AXRole: AXGenericContainer'
+PASS child.childrenCount is 0
 PASS child.role is 'AXRole: AXHeading'
 PASS successfullyParsed is true
 

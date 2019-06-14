@@ -399,8 +399,8 @@ void AutofillPopupItemView::CreateContent() {
   auto description_label = CreateDescriptionLabel();
 
   std::unique_ptr<views::View> all_labels = std::make_unique<views::View>();
-  views::GridLayout* grid_layout = all_labels->SetLayoutManager(
-      std::make_unique<views::GridLayout>(all_labels.get()));
+  views::GridLayout* grid_layout =
+      all_labels->SetLayoutManager(std::make_unique<views::GridLayout>());
   BuildColumnSet(grid_layout);
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(value_label.release());

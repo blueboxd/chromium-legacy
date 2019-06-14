@@ -58,7 +58,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // For a regular profile, the primary account id comes from
   // PrimaryAccountManager.
   // For a supervised user, the id comes from SupervisedUserService.
-  void LoadCredentials(const std::string& primary_account_id);
+  void LoadCredentials(const CoreAccountId& primary_account_id);
 
   // Returns true if LoadCredentials finished with no errors.
   bool HasLoadCredentialsFinishedWithNoErrors();
@@ -66,13 +66,13 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
   // and available through |LoadCredentials| after service is restarted.
   void UpdateCredentials(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& refresh_token,
       signin_metrics::SourceForRefreshTokenOperation source =
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   void RevokeCredentials(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       signin_metrics::SourceForRefreshTokenOperation source =
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
@@ -91,11 +91,11 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // server, but the OnRefreshTokenRevoked() notification is sent to the
   // observers.
   void ExtractCredentials(ProfileOAuth2TokenService* to_service,
-                          const std::string& account_id);
+                          const CoreAccountId& account_id);
 #endif
 
   // Exposes the ability to update auth errors to tests.
-  void UpdateAuthErrorForTesting(const std::string& account_id,
+  void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error) {
     UpdateAuthError(account_id, error);
   }

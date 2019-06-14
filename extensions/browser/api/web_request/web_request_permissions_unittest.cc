@@ -189,18 +189,6 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
     EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
                                                    sensitive_request_info));
   }
-
-  {
-    // Check that a request for a non-sensitive URL is rejected if it's a PAC
-    // script fetch.
-    WebRequestInfoInitParams non_sensitive_request_params =
-        create_request_params(non_sensitive_url, content::ResourceType::kScript,
-                              kRendererProcessId);
-    non_sensitive_request_params.is_pac_request = true;
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(
-        info_map.get(),
-        WebRequestInfo(std::move(non_sensitive_request_params))));
-  }
 }
 
 TEST(ExtensionWebRequestPermissions,

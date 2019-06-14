@@ -144,7 +144,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // mojom::AssistantPlatform overrides:
   void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions) override;
+            mojom::DeviceActionsPtr device_actions,
+            bool is_test) override;
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
@@ -187,6 +188,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_;
 
+  // Whether running inside a test environment.
+  bool is_test_ = false;
   // Whether the current user session is active.
   bool session_active_ = false;
   // Whether the lock screen is on.

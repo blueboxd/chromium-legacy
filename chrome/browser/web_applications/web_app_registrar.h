@@ -35,13 +35,14 @@ class WebAppRegistrar : public AppRegistrar {
   // Clears registry.
   void UnregisterAll();
 
-  // AppRegistrar
+  // AppRegistrar:
   void Init(base::OnceClosure callback) override;
   bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool HasScopeUrl(const AppId& app_id) const override;
   GURL GetScopeUrlForApp(const AppId& app_id) const override;
+  AppId FindAppIdForUrl(const GURL& url) const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

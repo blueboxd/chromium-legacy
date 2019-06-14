@@ -675,7 +675,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
       return nullptr;
     }
     // TODO(yhirano): Consider removing this.
-    if (!IsSupportedMimeType(WebString(response.MimeType()).Utf8())) {
+    if (!IsSupportedMimeType(response.MimeType().Utf8())) {
       return nullptr;
     }
   } else {

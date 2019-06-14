@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -261,6 +263,17 @@ INSTANTIATE_TEST_SUITE_P(SyncConsentTestWithParamsImpl,
 // we use WithParamInterface<bool> here.
 class SyncConsentPolicyDisabledTest : public SyncConsentTest,
                                       public testing::WithParamInterface<bool> {
+ public:
+  SyncConsentPolicyDisabledTest() {
+    // Assistant feature contains an OOBE page which is irrelevant for this
+    // test.
+    feature_list_.InitAndDisableFeature(switches::kAssistantFeature);
+  }
+  ~SyncConsentPolicyDisabledTest() = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(SyncConsentPolicyDisabledTest);
 };
 
 IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,

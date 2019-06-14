@@ -886,7 +886,7 @@ class NightLightCrtcTest : public NightLightTest {
   }
 
   void TearDown() override {
-    // DisplayChangeObserver access InputDeviceManager in its destructor, so
+    // DisplayChangeObserver access DeviceDataManager in its destructor, so
     // destroy it first.
     display_change_observer_ = nullptr;
     NightLightTest::TearDown();

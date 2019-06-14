@@ -48,8 +48,8 @@ FrameNavigationEntry::FrameNavigationEntry(
 FrameNavigationEntry::~FrameNavigationEntry() {
 }
 
-FrameNavigationEntry* FrameNavigationEntry::Clone() const {
-  FrameNavigationEntry* copy = new FrameNavigationEntry();
+scoped_refptr<FrameNavigationEntry> FrameNavigationEntry::Clone() const {
+  auto copy = base::MakeRefCounted<FrameNavigationEntry>();
 
   // Omit any fields cleared at commit time.
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,

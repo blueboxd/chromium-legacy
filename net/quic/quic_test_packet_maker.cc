@@ -9,6 +9,7 @@
 
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_http_utils.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
@@ -1204,17 +1205,43 @@ std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
     uint64_t packet_number,
     std::string* stream_data) {
-  spdy::SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
-                            quic::kDefaultMaxUncompressedHeaderSize);
-  spdy::SpdySerializedFrame spdy_frame(
-      spdy_request_framer_.SerializeFrame(settings_frame));
+  if (!quic::VersionHasStreamType(version_.transport_version)) {
+    spdy::SpdySettingsIR settings_frame;
+    settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
+                              quic::kDefaultMaxUncompressedHeaderSize);
+    spdy::SpdySerializedFrame spdy_frame(
+        spdy_request_framer_.SerializeFrame(settings_frame));
+    InitializeHeader(packet_number, /*should_include_version*/ true);
+    *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
+    quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+    return MakePacket(header_, quic::QuicFrame(quic_frame));
+  }
+  quic::QuicFrames frames;
+  // A stream frame containing stream type will be written on the control stream
+  // first.
+  char type[] = {0x00};
+  quic::QuicStreamFrame type_frame =
+      GenerateNextStreamFrame(quic::QuicUtils::GetFirstUnidirectionalStreamId(
+                                  version_.transport_version, perspective_),
+                              false, quic::QuicStringPiece(type, 1));
+  frames.push_back(quic::QuicFrame(type_frame));
+
+  quic::SettingsFrame settings;
+  settings.values[quic::kSettingsMaxHeaderListSize] =
+      quic::kDefaultMaxUncompressedHeaderSize;
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      encoder_.SerializeSettingsFrame(settings, &buffer);
   InitializeHeader(packet_number, /*should_include_version*/ true);
-  *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
+  *stream_data = std::string(type, 1) + std::string(buffer.get(), frame_length);
   quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  return MakePacket(header_, quic::QuicFrame(quic_frame));
+      quic::QuicUtils::GetFirstUnidirectionalStreamId(
+          version_.transport_version, perspective_),
+      false, quic::QuicStringPiece(buffer.get(), frame_length));
+  frames.push_back(quic::QuicFrame(quic_frame));
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>

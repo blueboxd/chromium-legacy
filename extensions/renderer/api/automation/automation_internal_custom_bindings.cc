@@ -41,6 +41,7 @@
 #include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -708,7 +709,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (GetRootOfChildTree(&node, &tree_wrapper))
           child_count = 1;
         else
-          child_count = node->GetUnignoredChildCount();
+          child_count = node->children().size();
 
         result.Set(v8::Integer::New(isolate, int32_t{child_count}));
       });
@@ -716,8 +717,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetIndexInParent",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        result.Set(v8::Integer::New(
-            isolate, int32_t{node->GetUnignoredIndexInParent()}));
+        result.Set(v8::Integer::New(isolate, int32_t{node->index_in_parent()}));
       });
   RouteNodeIDFunction(
       "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -770,15 +770,31 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (GetRootOfChildTree(&node, &tree_wrapper)) {
           child_ids.push_back(node->id());
         } else {
-          size_t child_count = node->GetUnignoredChildCount();
-          for (size_t i = 0; i < child_count; ++i)
-            child_ids.push_back(node->GetUnignoredChildAtIndex(i)->id());
+          const std::vector<ui::AXNode*>& children = node->children();
+          for (size_t i = 0; i < children.size(); ++i)
+            child_ids.push_back(children[i]->id());
         }
 
         gin::DataObjectBuilder response(isolate);
         response.Set("treeId", tree_wrapper->tree_id().ToString());
         response.Set("nodeIds", child_ids);
         result.Set(response.Build());
+      });
+  RouteNodeIDFunction(
+      "GetWordStartOffsets",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::vector<int> word_starts = ui::GetWordStartOffsets(
+            node->GetString16Attribute(ax::mojom::StringAttribute::kName));
+        result.Set(gin::ConvertToV8(isolate, word_starts));
+      });
+  RouteNodeIDFunction(
+      "GetWordEndOffsets",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::vector<int> word_ends = ui::GetWordEndOffsets(
+            node->GetString16Attribute(ax::mojom::StringAttribute::kName));
+        result.Set(gin::ConvertToV8(isolate, word_ends));
       });
 
   // Bindings that take a Tree ID and Node ID and string attribute name
@@ -1683,8 +1699,8 @@ void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
 ui::AXNode* AutomationInternalCustomBindings::GetParent(
     ui::AXNode* node,
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
-  if (node->GetUnignoredParent())
-    return node->GetUnignoredParent();
+  if (node->parent())
+    return node->parent();
 
   AutomationAXTreeWrapper* parent_tree_wrapper = nullptr;
 
@@ -1753,8 +1769,8 @@ ui::AXNode* AutomationInternalCustomBindings::GetNextInTreeOrder(
     ui::AXNode* start,
     AutomationAXTreeWrapper** in_out_tree_wrapper) const {
   ui::AXNode* walker = start;
-  if (walker->GetUnignoredChildCount())
-    return walker->GetUnignoredChildAtIndex(0);
+  if (!walker->children().empty())
+    return walker->children().front();
 
   // We also have to check child tree id.
   if (GetRootOfChildTree(&walker, in_out_tree_wrapper))
@@ -1763,11 +1779,9 @@ ui::AXNode* AutomationInternalCustomBindings::GetNextInTreeOrder(
   // Find the next branch forward.
   ui::AXNode* parent;
   while ((parent = GetParent(walker, in_out_tree_wrapper))) {
-    if ((walker->GetUnignoredIndexInParent() + 1) <
-        parent->GetUnignoredChildCount()) {
-      return parent->GetUnignoredChildAtIndex(
-          walker->GetUnignoredIndexInParent() + 1);
-    }
+    if ((walker->index_in_parent() + 1) < parent->children().size())
+      return parent->children()[walker->index_in_parent() + 1];
+
     walker = parent;
   }
 
@@ -1786,17 +1800,15 @@ ui::AXNode* AutomationInternalCustomBindings::GetPreviousInTreeOrder(
     return nullptr;
 
   // No previous sibling; parent is previous.
-  if (walker->GetUnignoredIndexInParent() == 0)
+  if (walker->index_in_parent() == 0)
     return parent;
 
-  walker =
-      parent->GetUnignoredChildAtIndex(walker->GetUnignoredIndexInParent() - 1);
+  walker = parent->children()[walker->index_in_parent() - 1];
 
   // Walks to deepest last child.
   while (true) {
-    if (walker->GetUnignoredChildCount()) {
-      walker = walker->GetUnignoredChildAtIndex(
-          walker->GetUnignoredChildCount() - 1);
+    if (!walker->children().empty()) {
+      walker = walker->children().back();
     } else if (!GetRootOfChildTree(&walker, in_out_tree_wrapper)) {
       break;
     }
@@ -1884,10 +1896,10 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
   // Check for a child tree, which is guaranteed to always be the only child.
   if (index == 0 && GetRootOfChildTree(&node, &tree_wrapper))
     child_id = node->id();
-  else if (index < 0 || size_t{index} >= node->GetUnignoredChildCount())
+  else if (index < 0 || size_t{index} >= node->children().size())
     return;
   else
-    child_id = node->GetUnignoredChildAtIndex(size_t{index})->id();
+    child_id = node->children()[size_t{index}]->id();
 
   gin::DataObjectBuilder response(GetIsolate());
   response.Set("treeId", tree_wrapper->tree_id().ToString());

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
+#include "net/base/net_errors.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
@@ -47,13 +48,8 @@ class OnboardingFlowModel {
   enum class ExitReason {
     // The user navigated through the whole flow and exited successfully.
     kUserReachedEnd,
-    // User chose to skip the flow during its introduction.
+    // User chose to skip the flow.
     kFlowSkipped,
-    // We found an authentication error before we attempted to load the first
-    // onboarding page.
-    kAuthError,
-    // The webview that presents the pages found a network problem.
-    kWebviewNetworkError,
     // The user is not eligible to see the flow.
     kUserNotEligible,
     // The onboarding flow screens should not be shown since their feature is
@@ -69,6 +65,11 @@ class OnboardingFlowModel {
     // methods after receiving these notifications.
     virtual void StepStartedLoading(Step step) {}
     virtual void StepFinishedLoading(Step step) {}
+
+    virtual void StepFailedToLoadDueToAuthError(Step step,
+                                                GoogleServiceAuthError error) {}
+    virtual void StepFailedToLoadDueToNetworkError(Step step,
+                                                   net::Error error) {}
 
     // If we are exiting the flow for any reason, we first notify our observers
     // through this method. Observers should *NOT* call other methods in the
@@ -89,7 +90,6 @@ class OnboardingFlowModel {
   mojom::OnboardingPagePtr MakePage(Step step, const std::string& access_token);
   void ShowNextPage();
   void ShowPreviousPage();
-  void SkipFlow();
 
   void LoadStep(Step step);
 

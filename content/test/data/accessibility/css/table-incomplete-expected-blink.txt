@@ -1,10 +1,9 @@
 rootWebArea
-++genericContainer ignored
-++++table
-++++++row selected=false
-++++++++cell name='Fred' selected=false
-++++++++++staticText name='Fred'
-++++++++++++inlineTextBox name='Fred'
-++++++++cell name='Jackson' selected=false
-++++++++++staticText name='Jackson'
-++++++++++++inlineTextBox name='Jackson'
+++table
+++++row selected=false
+++++++cell name='Fred' selected=false
+++++++++staticText name='Fred'
+++++++++++inlineTextBox name='Fred'
+++++++cell name='Jackson' selected=false
+++++++++staticText name='Jackson'
+++++++++++inlineTextBox name='Jackson'

@@ -146,6 +146,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     return mailbox_texture_holder_.get();
   }
 
+  scoped_refptr<TextureHolder::MailboxRef> mailbox_ref_;
+
   // The image is created with one of the texture holders below while the other
   // one is created lazily if needed and then persisted for the lifetime of the
   // image on a particular thread.
@@ -165,8 +167,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   scoped_refptr<base::SingleThreadTaskRunner> original_skia_image_task_runner_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
-
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 
 }  // namespace blink

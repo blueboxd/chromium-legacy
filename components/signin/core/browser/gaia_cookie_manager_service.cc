@@ -251,9 +251,11 @@ GaiaCookieManagerService::ExternalCcResultFetcher::GetExternalCcResult() {
   return base::JoinString(results, ",");
 }
 
-void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
+void GaiaCookieManagerService::ExternalCcResultFetcher::Start(
+    base::OnceClosure callback) {
   DCHECK(!helper_->external_cc_result_fetched_);
   m_external_cc_result_start_time_ = base::Time::Now();
+  callback_ = std::move(callback);
 
   CleanupTransientState();
   results_.clear();
@@ -440,11 +442,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
                                              time_to_check_connections);
 
   helper_->external_cc_result_fetched_ = true;
-  // Since the ExternalCCResultFetcher is only Started in place of calling
-  // StartFetchingMergeSession, we can assume we need to call
-  // StartFetchingMergeSession. If this assumption becomes invalid, a Callback
-  // will need to be passed to Start() and Run() here.
-  helper_->StartFetchingMergeSession();
+  std::move(callback_).Run();
 }
 
 GaiaCookieManagerService::GaiaCookieManagerService(
@@ -507,11 +505,7 @@ void GaiaCookieManagerService::SetAccountsInCookie(
   }
   if (requests_.size() == 1) {
     fetcher_retries_ = 0;
-    // Unretained is safe because GaiaCookieManagerService owns the helper.
-    oauth_multilogin_helper_ = std::make_unique<signin::OAuthMultiloginHelper>(
-        signin_client_, token_service_, account_ids,
-        base::BindOnce(&GaiaCookieManagerService::OnSetAccountsFinished,
-                       base::Unretained(this)));
+    StartSetAccounts();
   }
 }
 
@@ -770,7 +764,9 @@ void GaiaCookieManagerService::OnUbertokenFetchComplete(
 
   if (!external_cc_result_fetched_ &&
       !external_cc_result_fetcher_.IsRunning()) {
-    external_cc_result_fetcher_.Start();
+    external_cc_result_fetcher_.Start(
+        base::BindOnce(&GaiaCookieManagerService::StartFetchingMergeSession,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -973,6 +969,32 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
   gaia_auth_fetcher_->StartListAccounts();
 }
 
+void GaiaCookieManagerService::StartSetAccounts() {
+  DCHECK(!requests_.empty());
+  DCHECK_EQ(GaiaCookieRequestType::SET_ACCOUNTS,
+            requests_.front().request_type());
+  DCHECK(!requests_.front().accounts().empty());
+
+  if (!external_cc_result_fetched_ &&
+      !external_cc_result_fetcher_.IsRunning()) {
+    external_cc_result_fetcher_.Start(
+        base::BindOnce(&GaiaCookieManagerService::StartSetAccounts,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // TODO(triploblastic): remove this block in the second part of the fix.
+  std::vector<std::string> account_ids;
+  for (const auto& id : requests_.front().accounts())
+    account_ids.push_back(id.first.id);
+
+  oauth_multilogin_helper_ = std::make_unique<signin::OAuthMultiloginHelper>(
+      signin_client_, token_service_, account_ids,
+      external_cc_result_fetcher_.GetExternalCcResult(),
+      base::BindOnce(&GaiaCookieManagerService::OnSetAccountsFinished,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void GaiaCookieManagerService::OnSetAccountsFinished(
     signin::SetAccountsInCookieResult result) {
   MarkListAccountsStale();
@@ -1009,18 +1031,7 @@ void GaiaCookieManagerService::HandleNextRequest() {
                            weak_ptr_factory_.GetWeakPtr()));
         break;
       case GaiaCookieRequestType::SET_ACCOUNTS: {
-        DCHECK(!requests_.front().accounts().empty());
-
-        // TODO(triploblastic): remove this block in the second part of the fix.
-        std::vector<std::string> account_ids;
-        for (const auto& id : requests_.front().accounts())
-          account_ids.push_back(id.first.id);
-
-        oauth_multilogin_helper_ =
-            std::make_unique<signin::OAuthMultiloginHelper>(
-                signin_client_, token_service_, account_ids,
-                base::BindOnce(&GaiaCookieManagerService::OnSetAccountsFinished,
-                               weak_ptr_factory_.GetWeakPtr()));
+        StartSetAccounts();
         break;
       }
       case GaiaCookieRequestType::LOG_OUT:

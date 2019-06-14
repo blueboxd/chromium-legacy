@@ -27,6 +27,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kFreezeUserAgent;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
 BLINK_COMMON_EXPORT extern const base::Feature kJankTrackingSweepLine;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkGenPropertyTrees;
+BLINK_COMMON_EXPORT extern const base::Feature kCSSBackdropFilter;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kFastBorderRadius;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;

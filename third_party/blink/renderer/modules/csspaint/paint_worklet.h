@@ -31,7 +31,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   static const char kSupplementName[];
 
   // At this moment, paint worklet allows at most two global scopes at any time.
-  static const wtf_size_t kNumGlobalScopes;
+  static const wtf_size_t kNumGlobalScopesPerThread;
   static PaintWorklet* From(LocalDOMWindow&);
 
   explicit PaintWorklet(LocalFrame*);
@@ -73,6 +73,20 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
       Vector<String> custom_properties,
       Vector<CSSSyntaxDescriptor> input_argument_types,
       double alpha);
+
+  HeapVector<Member<WorkletGlobalScopeProxy>>& GetGlobalScopesForTesting() {
+    return proxies_;
+  }
+
+  void AddGlobalScopeForTesting() { proxies_.push_back(CreateGlobalScope()); }
+
+  bool NeedsToCreateGlobalScopeForTesting() {
+    return NeedsToCreateGlobalScope();
+  }
+
+  void SetProxyClientForTesting(PaintWorkletProxyClient* proxy_client) {
+    proxy_client_ = proxy_client;
+  }
 
  protected:
   // Since paint worklet has more than one global scope, we MUST override this

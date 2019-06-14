@@ -265,8 +265,10 @@ class Writer(object):
     def cleanup_files(self, output_dir):
         for file_name in self._cleanup:
             path = os.path.join(output_dir, file_name)
-            if os.path.exists(path):
+            try:
                 os.remove(path)
+            except OSError:
+                pass
 
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path

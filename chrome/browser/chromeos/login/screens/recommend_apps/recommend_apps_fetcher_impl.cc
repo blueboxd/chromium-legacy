@@ -29,8 +29,8 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -65,15 +65,13 @@ enum RecommendAppsResponseParseResult {
 };
 
 bool HasTouchScreen() {
-  return !ui::InputDeviceManager::GetInstance()
-              ->GetTouchscreenDevices()
-              .empty();
+  return !ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices().empty();
 }
 
 bool HasStylusInput() {
   // Check to see if the hardware reports it is stylus capable.
   for (const ui::TouchscreenDevice& device :
-       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.has_stylus &&
         device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
       return true;
@@ -84,12 +82,12 @@ bool HasStylusInput() {
 }
 
 bool HasKeyboard() {
-  return !ui::InputDeviceManager::GetInstance()->GetKeyboardDevices().empty();
+  return !ui::DeviceDataManager::GetInstance()->GetKeyboardDevices().empty();
 }
 
 bool HasHardKeyboard() {
   for (const ui::InputDevice& device :
-       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (!device.phys.empty())
       return true;
   }

@@ -34,14 +34,11 @@
           on-keys-pressed="onKeysPress_"></iron-a11y-keys>
       <cr-input id="newWord" value="{{newWordValue_}}"
           placeholder="$i18n{addDictionaryWordLabel}"
-          invalid="[[isWordInvalid_(newWordValue_)]]"
-          error-message="[[isWordInvalid_(newWordValue_,
-              '$i18nPolymer{addDictionaryWordDuplicateError}',
-              '$i18nPolymer{addDictionaryWordLengthError}')]]"
+          invalid="[[isWordInvalid_(newWordValue_, words_.*)]]"
+          error-message="[[getErrorMessage_(newWordValue_, words_.*)]]"
           spellcheck="false">
-        <cr-button on-click="onAddWordTap_"
-            disabled="[[disableAddButton_(newWordValue_)]]" id="addWord"
-            slot="suffix">
+        <cr-button on-click="onAddWordTap_" id="addWord" slot="suffix"
+            disabled$="[[disableAddButton_(newWordValue_, words_.*)]]">
           $i18n{addDictionaryWordButton}
         </cr-button>
       </cr-input>

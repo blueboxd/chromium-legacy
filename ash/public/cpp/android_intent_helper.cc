@@ -22,7 +22,7 @@ AndroidIntentHelper::AndroidIntentHelper() {
 
 AndroidIntentHelper::~AndroidIntentHelper() {
   DCHECK_EQ(g_android_intent_helper, this);
-  g_android_intent_helper = this;
+  g_android_intent_helper = nullptr;
 }
 
 }  // namespace ash

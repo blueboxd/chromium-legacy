@@ -6,9 +6,13 @@
 
 #include <math.h>  // std::ceil
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,6 +61,17 @@ void AppListButton::OnVoiceInteractionAvailabilityChanged() {
 
 bool AppListButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
+}
+
+void AppListButton::OnPressed(app_list::AppListShowSource show_source,
+                              base::TimeTicks time_stamp) {
+  ShelfAction shelf_action =
+      Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+          shelf_view()->GetDisplayId(), show_source, time_stamp);
+  if (shelf_action == SHELF_ACTION_APP_LIST_DISMISSED) {
+    GetInkDrop()->SnapToActivated();
+    GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
+  }
 }
 
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -311,6 +312,9 @@ class UserSessionManager
   // save in a keyring. Before the function exits, it will clear the user
   // password from the UserContext regardless of the value of |send_password|.
   void OnUserNetworkPolicyParsed(bool send_password);
+
+  // Shows U2F notification if necessary.
+  void MaybeShowU2FNotification();
 
  private:
   friend class test::UserSessionManagerTestApi;
@@ -610,6 +614,8 @@ class UserSessionManager
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 
   std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
+
+  std::unique_ptr<U2FNotification> u2f_notification_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

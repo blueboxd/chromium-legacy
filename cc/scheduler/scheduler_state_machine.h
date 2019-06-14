@@ -283,6 +283,7 @@ class CC_EXPORT SchedulerStateMachine {
   void NotifyReadyToDraw();
 
   enum class AnimationWorkletState { PROCESSING, IDLE };
+  enum class PaintWorkletState { PROCESSING, IDLE };
   enum class TreeType { ACTIVE, PENDING };
 
   // Indicates if currently processing animation worklets for the active or
@@ -290,6 +291,11 @@ class CC_EXPORT SchedulerStateMachine {
   // extended or activation delayed.
   void NotifyAnimationWorkletStateChange(AnimationWorkletState state,
                                          TreeType tree);
+
+  // Sets whether asynchronous paint worklets are running. Paint worklets
+  // running should block activation of the pending tree, as it isn't fully
+  // painted until they are done.
+  void NotifyPaintWorkletStateChange(PaintWorkletState state);
 
   void SetNeedsImplSideInvalidation(bool needs_first_draw_on_activation);
 
@@ -451,6 +457,9 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates if an aysnc mutation cycle is in-flight or queued for the pending
   // tree.  Only one can be running or queued at any time.
   bool processing_animation_worklets_for_pending_tree_ = false;
+  // Indicates if asychronous paint worklet painting is ongoing for the pending
+  // tree. During this time we should not activate the pending tree.
+  bool processing_paint_worklets_for_pending_tree_ = false;
 
   // Set to true if the main thread fails to respond with a commit or abort the
   // main frame before the draw deadline on the previous impl frame.

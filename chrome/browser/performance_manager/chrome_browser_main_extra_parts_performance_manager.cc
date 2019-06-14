@@ -16,11 +16,8 @@ ChromeBrowserMainExtraPartsPerformanceManager::
 ChromeBrowserMainExtraPartsPerformanceManager::
     ~ChromeBrowserMainExtraPartsPerformanceManager() = default;
 
-void ChromeBrowserMainExtraPartsPerformanceManager::
-    ServiceManagerConnectionStarted(
-        content::ServiceManagerConnection* connection) {
+void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   performance_manager_ = performance_manager::PerformanceManager::Create();
-
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
 }

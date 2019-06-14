@@ -309,13 +309,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   EXPECT_EQ("Button 1",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
-  // (60, 60) -> No button there, hits the ignored <body> node
+  // (60, 60) -> No button there
   hit_node = TapAndWaitForResult(gfx::Point(60, 60));
-  EXPECT_NE(nullptr, hit_node);
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
-  EXPECT_TRUE(hit_node->HasState(ax::mojom::State::kIgnored));
-  EXPECT_EQ("body",
-            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag));
+  EXPECT_TRUE(hit_node == nullptr);
 
   // (10, 60) -> "Button 2"
   hit_node = TapAndWaitForResult(gfx::Point(10, 60));

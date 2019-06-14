@@ -31,7 +31,7 @@ simplicity.
 public class SimpleMenuCoordinator {
 
     public SimpleMenuCoordinator(Context context, ListView listView) {
-        ModelListAdapter adapter = new ModelListAdapter(context);
+        ModelListAdapter adapter = new ModelListAdapter();
 
         final LayoutInflater layoutInflater = context.getSystemService(LAYOUT_INFLATER_SERVICE);
 

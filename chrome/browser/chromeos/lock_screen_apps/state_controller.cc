@@ -39,7 +39,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/wm/core/window_animations.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
@@ -231,7 +231,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   first_app_run_toast_manager_ =
       std::make_unique<FirstAppRunToastManager>(profile);
 
-  input_devices_observer_.Add(ui::InputDeviceManager::GetInstance());
+  input_devices_observer_.Add(ui::DeviceDataManager::GetInstance());
 
   // Do not start state controller if stylus input is not present as lock
   // screen notes apps are geared towards stylus.

@@ -25,13 +25,13 @@ class SysmemNativePixmap : public gfx::NativePixmap {
     NOTREACHED();
     return -1;
   }
-  int GetDmaBufPitch(size_t plane) const override {
+  uint32_t GetDmaBufPitch(size_t plane) const override {
     NOTREACHED();
-    return 0;
+    return 0u;
   }
-  int GetDmaBufOffset(size_t plane) const override {
+  size_t GetDmaBufOffset(size_t plane) const override {
     NOTREACHED();
-    return 0;
+    return 0u;
   }
   size_t GetDmaBufPlaneSize(size_t plane) const override {
     NOTREACHED();

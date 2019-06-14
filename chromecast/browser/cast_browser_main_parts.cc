@@ -60,6 +60,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
@@ -710,21 +711,20 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 #endif
 }
 
-void CastBrowserMainParts::PostDestroyThreads() {
-#if !defined(OS_ANDROID)
-  cast_content_browser_client_->ResetMediaResourceTracker();
-#endif  // !defined(OS_ANDROID)
-}
-
-void CastBrowserMainParts::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
+void CastBrowserMainParts::PostCreateThreads() {
 #if !defined(OS_FUCHSIA)
   heap_profiling::Supervisor* supervisor =
       heap_profiling::Supervisor::GetInstance();
   supervisor->SetClientConnectionManagerConstructor(
       &CreateClientConnectionManager);
-  supervisor->Start(connection, base::NullCallback());
+  supervisor->Start(content::GetSystemConnector(), base::NullCallback());
 #endif  // !defined(OS_FUCHSIA)
+}
+
+void CastBrowserMainParts::PostDestroyThreads() {
+#if !defined(OS_ANDROID)
+  cast_content_browser_client_->ResetMediaResourceTracker();
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace shell

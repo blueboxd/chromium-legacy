@@ -467,8 +467,7 @@ int CastSocketImpl::DoAuthChallengeSend() {
 
   CastMessage challenge_message;
   CreateAuthChallengeMessage(&challenge_message, auth_context_);
-  VLOG_WITH_CONNECTION(1) << "Sending challenge: "
-                          << CastMessageToString(challenge_message);
+  VLOG_WITH_CONNECTION(1) << "Sending challenge: " << challenge_message;
 
   ResetConnectLoopCallback();
 

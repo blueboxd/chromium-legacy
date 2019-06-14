@@ -1833,20 +1833,23 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
   base::FilePath ref_img2 = test_data_dir().AppendASCII("BackgroundBlur2.png");
   SkBitmap bitmap;
 
+  // 25% of image can have up to a difference of 3.
+  cc::FuzzyPixelComparator fuzzy_comparator(true, 25.f, 0.0f, 3.f, 3, 0);
+
   l0->Add(l1.get());
   l0->Add(l2.get());
   DrawTree(l0.get());
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img1, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, fuzzy_comparator));
 
   l0->StackAtTop(l1.get());
   DrawTree(l0.get());
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, fuzzy_comparator));
 }
 
 // Checks that background blur bounds rect gets properly updated when device
@@ -1875,6 +1878,9 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
       test_data_dir().AppendASCII("BackgroundBlur1_zoom.png");
   SkBitmap bitmap;
 
+  // 25% of image can have up to a difference of 3.
+  cc::FuzzyPixelComparator fuzzy_comparator(true, 25.f, 0.0f, 3.f, 3, 0);
+
   l0->Add(l1.get());
   l0->Add(l2.get());
   DrawTree(l0.get());
@@ -1882,7 +1888,7 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   ASSERT_FALSE(bitmap.empty());
   // See LayerWithRealCompositorTest.BackgroundBlur test to rewrite this
   // baseline.
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, fuzzy_comparator));
 
   allocator.GenerateId();
   // Now change the scale, and make sure the bounds are still correct.
@@ -1893,7 +1899,7 @@ TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2, false);
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, fuzzy_comparator));
 }
 
 // It is really hard to write pixel test on text rendering,

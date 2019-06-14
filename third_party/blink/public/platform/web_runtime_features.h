@@ -245,6 +245,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDisplayLocking(bool);
   BLINK_PLATFORM_EXPORT static void
   EnablePauseExecutionContextOnBackgroundFreeze(bool);
+  BLINK_PLATFORM_EXPORT static void EnableConsolidatedMovementXY(bool);
 
  private:
   WebRuntimeFeatures();

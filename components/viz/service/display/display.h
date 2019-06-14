@@ -98,6 +98,14 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
 
+  // Stop drawing until Resize() is called with a new size. If the display
+  // hasn't drawn a frame at the current size *and* it's possible to immediately
+  // draw then this will run DrawAndSwap() first.
+  //
+  // |no_pending_swaps_callback| will be run there are no more swaps pending and
+  // may be run immediately.
+  void DisableSwapUntilResize(base::OnceClosure no_pending_swaps_callback);
+
   // Sets the color matrix that will be used to transform the output of this
   // display. This is only supported for GPU compositing.
   void SetColorMatrix(const SkMatrix44& matrix);
@@ -196,6 +204,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   base::circular_deque<
       std::pair<base::TimeTicks, std::vector<Surface::PresentedCallback>>>
       pending_presented_callbacks_;
+
+  // Callback that will be run after all pending swaps have acked.
+  base::OnceClosure no_pending_swaps_callback_;
 
   int64_t swapped_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;

@@ -159,6 +159,11 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   else
     out->inquiry_tx_power.reset();
 
+  if (device.battery_percentage())
+    out->battery_percentage.reset(new int(device.battery_percentage().value()));
+  else
+    out->battery_percentage.reset();
+
 #if defined(OS_LINUX)
   ConvertTransportToApi(device.GetType(), &(out->transport));
 #endif

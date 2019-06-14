@@ -29,7 +29,6 @@ class WebAppTabHelper : public WebAppTabHelperBase {
   // WebAppTabHelperBase:
   WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
-  AppId FindAppIdInScopeOfUrl(const GURL& url) override;
   bool IsInAppWindow() const override;
   bool IsUserInstalled() const override;
   bool IsFromInstallButton() const override;

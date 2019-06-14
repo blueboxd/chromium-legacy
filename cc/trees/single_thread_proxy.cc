@@ -533,6 +533,12 @@ void SingleThreadProxy::NotifyAnimationWorkletStateChange(
   layer_tree_host_->NotifyAnimationWorkletStateChange(state, element_list_type);
 }
 
+void SingleThreadProxy::NotifyPaintWorkletStateChange(
+    Scheduler::PaintWorkletState state) {
+  // Off-Thread PaintWorklet is only supported on the threaded compositor.
+  NOTREACHED();
+}
+
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->SetMainThreadWantsBeginMainFrameNotExpected(

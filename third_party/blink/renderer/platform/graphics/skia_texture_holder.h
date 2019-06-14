@@ -40,7 +40,6 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   // The image_ should always be texture-backed.
   sk_sp<SkImage> image_;
 
-  GLuint shared_image_texture_id_ = 0u;
   THREAD_CHECKER(thread_checker_);
 };
 

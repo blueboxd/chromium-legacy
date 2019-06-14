@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.widget.Toast;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -193,6 +194,19 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         if (InstantAppsHandler.getInstance().handleIncomingIntent(
                     mActivity, mIntent, mIsCustomTabIntent, false)) {
             return Action.FINISH_ACTIVITY;
+        }
+
+        // Check if we should launch a WebApk to handle the intent.
+        // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
+        if (FeatureUtilities.isNoTouchModeEnabled() && url != null
+                && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
+            String packageName = WebApkValidator.queryFirstWebApkPackage(
+                    ContextUtils.getApplicationContext(), url);
+            if (packageName != null) {
+                mActivity.startActivity(WebApkValidator.createWebApkIntentForUrlAndOptionalPackage(
+                        url, packageName));
+                return Action.FINISH_ACTIVITY;
+            }
         }
 
         // Check if we should push the user through First Run.

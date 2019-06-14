@@ -210,11 +210,11 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   SetBorder(views::CreateEmptyBorder(content_insets.top(), 0,
                                      content_insets.bottom(), 0));
   views::GridLayout* dialog_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.
-  views::GridLayout* prompt_layout = prompt_bar->SetLayoutManager(
-      std::make_unique<views::GridLayout>(prompt_bar));
+  views::GridLayout* prompt_layout =
+      prompt_bar->SetLayoutManager(std::make_unique<views::GridLayout>());
   prompt_bar->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));

@@ -4,6 +4,7 @@
 
 #include "ash/media/media_controller_impl.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
@@ -12,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -48,6 +50,14 @@ void MediaControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 PrefRegistry::PUBLIC);
 }
 
+// static
+bool MediaControllerImpl::AreLockScreenMediaKeysEnabled() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  return prefs->GetBoolean(prefs::kLockScreenMediaKeysEnabled) &&
+         base::FeatureList::IsEnabled(features::kLockScreenMediaKeys);
+}
+
 void MediaControllerImpl::AddObserver(MediaCaptureObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -75,8 +85,10 @@ void MediaControllerImpl::NotifyCaptureState(
 }
 
 void MediaControllerImpl::HandleMediaPlayPause() {
-  if (Shell::Get()->session_controller()->IsScreenLocked())
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
     return;
+  }
 
   // If the |client_| is force handling the keys then we should forward them.
   if (client_ && force_media_client_key_handling_) {
@@ -111,8 +123,10 @@ void MediaControllerImpl::HandleMediaPlayPause() {
 }
 
 void MediaControllerImpl::HandleMediaNextTrack() {
-  if (Shell::Get()->session_controller()->IsScreenLocked())
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
     return;
+  }
 
   ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kNextTrack);
 
@@ -134,8 +148,10 @@ void MediaControllerImpl::HandleMediaNextTrack() {
 }
 
 void MediaControllerImpl::HandleMediaPrevTrack() {
-  if (Shell::Get()->session_controller()->IsScreenLocked())
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
     return;
+  }
 
   ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPreviousTrack);
 

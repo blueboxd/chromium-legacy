@@ -978,18 +978,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   LoadInitialAccessibilityTreeFromHtml(
       "<div role=group style='visibility: hidden'>text</div>");
 
-  // Trigger Event::kDocumentTitleChanged, the <body> can receive an
-  // Event::kChildrenChanged after the document is loaded, but before
-  // modifying visibility below. This will make sure that we wait for
-  // the Event::kChildrenChanged that we care about for this test.
-  AccessibilityNotificationWaiter document_waiter(
-      shell()->web_contents(), ui::kAXModeComplete,
-      ax::mojom::Event::kDocumentTitleChanged);
-  ExecuteScript(L"document.title = 'document'");
-  document_waiter.WaitForNotification();
-
   // Check the accessible tree of the browser.
-  AccessibleChecker document_checker(L"document", ROLE_SYSTEM_DOCUMENT,
+  AccessibleChecker document_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                      std::wstring());
   document_checker.CheckAccessible(GetRendererAccessible());
 

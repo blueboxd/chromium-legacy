@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
@@ -74,7 +75,9 @@ void ScrollLongPageToTop(const GURL& url) {
 - (void)setUp {
   [super setUp];
 
-  _server.ServeFilesFromSourceDirectory(base::FilePath(FILE_PATH_LITERAL(".")));
+  NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
+  _server.ServeFilesFromDirectory(
+      base::FilePath(base::SysNSStringToUTF8(bundlePath)));
   GREYAssert(_server.Start(), @"EmbeddedTestServer failed to start.");
 }
 

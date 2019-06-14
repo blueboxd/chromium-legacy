@@ -28,7 +28,6 @@ class DownloadStatusUpdater;
 class GpuModeManager;
 class IconManager;
 class IntranetRedirectDetector;
-class IOThread;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
 class NotificationUIManager;
@@ -159,16 +158,6 @@ class BrowserProcess {
   // NotificationPlatformBridge + NotificationDisplayService
   virtual NotificationUIManager* notification_ui_manager() = 0;
   virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
-
-  // Returns the state object for the thread that we perform I/O
-  // coordination on (network requests, communication with renderers,
-  // etc.
-  //
-  // Can be NULL close to startup and shutdown.
-  //
-  // NOTE: If you want to post a task to the IO thread, see
-  // browser_task_traits.h.
-  virtual IOThread* io_thread() = 0;
 
   // Replacement for IOThread (And ChromeNetLog). It owns and manages the
   // NetworkContext which will use the network service when the network service

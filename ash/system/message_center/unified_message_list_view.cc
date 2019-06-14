@@ -488,9 +488,7 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 void UnifiedMessageListView::UpdateBorders() {
   // The top notification is drawn with rounded corners when the stacking bar is
   // not shown.
-  bool is_top = (!features::IsNotificationStackingBarRedesignEnabled() ||
-                 children().size() == 1) &&
-                state_ != State::MOVE_DOWN;
+  bool is_top = children().size() == 1 && state_ != State::MOVE_DOWN;
   for (auto* child : children()) {
     AsMVC(child)->UpdateBorder(is_top, child == children().back());
     is_top = false;

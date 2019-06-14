@@ -623,6 +623,12 @@ void LayerTreeHost::SetAnimationEvents(
     std::unique_ptr<MutatorEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   mutator_host_->SetAnimationEvents(std::move(events));
+
+  // Events are added to a queue to be dispatched but we need a main frame
+  // in order to dispatch the events. Also, finished animations require
+  // a commit in order to clean up their KeyframeModels but without a main
+  // frame we could indefinitely delay cleaning up the animation.
+  SetNeedsAnimate();
 }
 
 void LayerTreeHost::SetDebugState(
@@ -990,22 +996,21 @@ void LayerTreeHost::UpdateBrowserControlsState(
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
-  // We do not need to animate on the main thread in this case because all
-  // relevant changes will be processed on the compositor thread, or proxy,
-  // and propagated back to the correct trees.
-  // TODO(majidvp): We should be able to eliminate this in the non-
-  // slimming path and will do so in a follow up. (762717)
-  if (IsUsingLayerLists())
-    return;
-
   std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
 
   if (mutator_host_->TickAnimations(monotonic_time,
                                     property_trees()->scroll_tree, true))
     mutator_host_->UpdateAnimationState(true, events.get());
 
-  if (!events->IsEmpty())
-    property_trees_.needs_rebuild = true;
+  if (!events->IsEmpty()) {
+    // If not using layer lists, animation state changes will require
+    // rebuilding property trees to track them.
+    if (!IsUsingLayerLists())
+      property_trees_.needs_rebuild = true;
+
+    // A commit is required to push animation changes to the compositor.
+    SetNeedsCommit();
+  }
 }
 
 int LayerTreeHost::ScheduleMicroBenchmark(

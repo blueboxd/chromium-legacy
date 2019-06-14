@@ -108,9 +108,11 @@ class CastActivityManager : public CastActivityManagerBase,
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;
 
-  // cast_channel::CastMessageHandler::Observer override.
+  // cast_channel::CastMessageHandler::Observer overrides.
   void OnAppMessage(int channel_id,
                     const cast_channel::CastMessage& message) override;
+  void OnInternalMessage(int channel_id,
+                         const cast_channel::InternalMessage& message) override;
 
   // CastSessionTracker::Observer implementation.
   void OnSessionAddedOrUpdated(const MediaSinkInternal& sink,

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -61,8 +62,8 @@ struct ImageContext {
   // The promise image which is used on display thread.
   sk_sp<SkImage> image;
 
-  // Fallback SkImage in case we cannot produce a |representation|.
-  sk_sp<SkImage> fallback_image;
+  // Fallback in case we cannot produce a |representation|.
+  GrBackendTexture fallback_texture;
 
   // |sync_token| is only accessed on display thread.
   gpu::SyncToken sync_token;

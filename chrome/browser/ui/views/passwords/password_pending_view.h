@@ -42,7 +42,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
   // PasswordBubbleViewBase:
-  views::View* CreateFootnoteView() override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;

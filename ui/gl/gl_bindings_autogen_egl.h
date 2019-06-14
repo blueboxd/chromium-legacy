@@ -147,10 +147,10 @@ typedef EGLBoolean(GL_BINDING_CALL* eglGetNextFrameIdANDROIDProc)(
     EGLDisplay dpy,
     EGLSurface surface,
     EGLuint64KHR* frameId);
-typedef EGLDisplay(GL_BINDING_CALL* eglGetPlatformDisplayEXTProc)(
+typedef EGLDisplay(GL_BINDING_CALL* eglGetPlatformDisplayProc)(
     EGLenum platform,
     void* native_display,
-    const EGLint* attrib_list);
+    const EGLAttrib* attrib_list);
 typedef __eglMustCastToProperFunctionPointerType(
     GL_BINDING_CALL* eglGetProcAddressProc)(const char* procname);
 typedef EGLBoolean(GL_BINDING_CALL* eglGetSyncAttribKHRProc)(EGLDisplay dpy,
@@ -272,7 +272,6 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
 
 struct ExtensionsEGL {
   bool b_EGL_ANGLE_feature_control;
-  bool b_EGL_EXT_platform_base;
   bool b_EGL_KHR_debug;
   bool b_EGL_ANDROID_blob_cache;
   bool b_EGL_ANDROID_get_frame_timestamps;
@@ -339,7 +338,7 @@ struct ProcsEGL {
       eglGetFrameTimestampSupportedANDROIDFn;
   eglGetNativeClientBufferANDROIDProc eglGetNativeClientBufferANDROIDFn;
   eglGetNextFrameIdANDROIDProc eglGetNextFrameIdANDROIDFn;
-  eglGetPlatformDisplayEXTProc eglGetPlatformDisplayEXTFn;
+  eglGetPlatformDisplayProc eglGetPlatformDisplayFn;
   eglGetProcAddressProc eglGetProcAddressFn;
   eglGetSyncAttribKHRProc eglGetSyncAttribKHRFn;
   eglGetSyncValuesCHROMIUMProc eglGetSyncValuesCHROMIUMFn;
@@ -500,9 +499,9 @@ class GL_EXPORT EGLApi {
   virtual EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
                                                 EGLSurface surface,
                                                 EGLuint64KHR* frameId) = 0;
-  virtual EGLDisplay eglGetPlatformDisplayEXTFn(EGLenum platform,
-                                                void* native_display,
-                                                const EGLint* attrib_list) = 0;
+  virtual EGLDisplay eglGetPlatformDisplayFn(EGLenum platform,
+                                             void* native_display,
+                                             const EGLAttrib* attrib_list) = 0;
   virtual __eglMustCastToProperFunctionPointerType eglGetProcAddressFn(
       const char* procname) = 0;
   virtual EGLBoolean eglGetSyncAttribKHRFn(EGLDisplay dpy,
@@ -663,8 +662,8 @@ class GL_EXPORT EGLApi {
   ::gl::g_current_egl_context->eglGetNativeClientBufferANDROIDFn
 #define eglGetNextFrameIdANDROID \
   ::gl::g_current_egl_context->eglGetNextFrameIdANDROIDFn
-#define eglGetPlatformDisplayEXT \
-  ::gl::g_current_egl_context->eglGetPlatformDisplayEXTFn
+#define eglGetPlatformDisplay \
+  ::gl::g_current_egl_context->eglGetPlatformDisplayFn
 #define eglGetProcAddress ::gl::g_current_egl_context->eglGetProcAddressFn
 #define eglGetSyncAttribKHR ::gl::g_current_egl_context->eglGetSyncAttribKHRFn
 #define eglGetSyncValuesCHROMIUM \

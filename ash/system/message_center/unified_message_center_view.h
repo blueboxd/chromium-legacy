@@ -49,8 +49,7 @@ enum class UnifiedMessageCenterAnimationState {
 };
 
 // The header shown above the notification list displaying the number of hidden
-// notifications. There are currently two UI implementations toggled by the
-// NotificationStackingBarRedesign feature flag.
+// notifications.
 class StackingNotificationCounterView : public views::View {
  public:
   explicit StackingNotificationCounterView(views::ButtonListener* listener);
@@ -77,10 +76,8 @@ class StackingNotificationCounterView : public views::View {
   UnifiedMessageCenterAnimationState animation_state_ =
       UnifiedMessageCenterAnimationState::IDLE;
 
-  // These UI elements are only created and shown when the
-  // NotificationStackingBarRedesign feature is enabled.
-  views::Label* count_label_ = nullptr;
-  views::Button* clear_all_button_ = nullptr;
+  views::Label* const count_label_;
+  views::Button* const clear_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
 };

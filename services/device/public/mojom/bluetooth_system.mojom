@@ -11,6 +11,12 @@ struct BluetoothAddress {
   array<uint8, 6> address;
 };
 
+// These fields are placed in a struct to be nullable.
+struct BluetoothDeviceBatteryInfo {
+  // The remaining battery of the device.
+  uint8 battery_percentage;
+};
+
 // Holds information about a Bluetooth Device.
 struct BluetoothDeviceInfo {
   enum ConnectionState {
@@ -60,6 +66,8 @@ struct BluetoothDeviceInfo {
   // [1] https://www.bluetooth.com/specifications/assigned-numbers/baseband
   // [2] https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.gap.appearance.xml
   DeviceType device_type;
+
+  BluetoothDeviceBatteryInfo? battery_info;
 };
 
 // Factory to get an instance of the BluetoothSystem interface.

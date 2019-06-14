@@ -101,10 +101,18 @@ struct VirtualConnection {
 };
 
 struct InternalMessage {
-  InternalMessage(CastMessageType type, base::Value message);
+  InternalMessage(CastMessageType type,
+                  const std::string& message_namespace,
+                  base::Value message);
   ~InternalMessage();
 
   CastMessageType type;
+  // TODO(jrw): This field is only needed to communicate the namespace
+  // information from CastMessageHandler::OnMessage to
+  // MirroringActivityRecord::OnInternalMessage.  Maybe there's a better way?
+  // One possibility is to derive namespace when it's needed based on the
+  // context and/or message type.
+  std::string message_namespace;
   base::Value message;
 };
 
@@ -179,6 +187,19 @@ class CastMessageHandler : public CastSocket::Observer {
                            const std::string& session_id,
                            const base::Optional<std::string>& client_id,
                            ResultCallback callback);
+
+  // Sends |message| to the device given by |channel_id|. The caller may use
+  // this method to forward app messages from the SDK client to the device.
+  //
+  // TODO(jrw): Could this be merged with SendAppMessage()?  Note from mfoltz:
+  //
+  // The two differences between an app message and a protocol message:
+  // - app message has a sender ID that comes from the clientId of the SDK
+  // - app message has a custom (non-Cast) namespace
+  //
+  // So if you added senderId to CastMessage, it seems like you could have one
+  // method for both.
+  virtual Result SendCastMessage(int channel_id, const CastMessage& message);
 
   // Sends |message| to the device given by |channel_id|. The caller may use
   // this method to forward app messages from the SDK client to the device. It
@@ -266,7 +287,7 @@ class CastMessageHandler : public CastSocket::Observer {
 
   // Sends |message| over |socket|. This also ensures the necessary virtual
   // connection exists before sending the message.
-  void SendCastMessage(CastSocket* socket, const CastMessage& message);
+  void SendCastMessageToSocket(CastSocket* socket, const CastMessage& message);
 
   // Sends a virtual connection request to |socket| if the virtual connection
   // for (|source_id|, |destination_id|) does not yet exist.
@@ -280,6 +301,7 @@ class CastMessageHandler : public CastSocket::Observer {
   void HandleCastInternalMessage(int channel_id,
                                  const std::string& source_id,
                                  const std::string& destination_id,
+                                 const std::string& namespace_,
                                  base::Value payload);
 
   // Set of pending requests keyed by socket ID.

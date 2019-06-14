@@ -25,6 +25,7 @@ source_set("navigation") {
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/download",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/security",
@@ -39,6 +40,8 @@ source_set("navigation") {
   ]
 
   sources = [
+    "crw_js_navigation_handler.h",
+    "crw_js_navigation_handler.mm",
     "crw_navigation_item_holder.h",
     "crw_navigation_item_holder.mm",
     "crw_pending_navigation_info.h",

@@ -31,6 +31,7 @@ AudioServiceAudioProcessorProxy::AudioServiceAudioProcessorProxy(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : main_thread_runner_(std::move(main_thread_task_runner)),
       target_stats_interval_(kMaxStatsInterval),
+      aec_dump_message_filter_(AecDumpMessageFilter::Get()),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 }
@@ -43,7 +44,10 @@ AudioServiceAudioProcessorProxy::~AudioServiceAudioProcessorProxy() {
 void AudioServiceAudioProcessorProxy::Stop() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 
-  aec_dump_agent_impl_.reset();
+  if (aec_dump_message_filter_.get()) {
+    aec_dump_message_filter_->RemoveDelegate(this);
+    aec_dump_message_filter_ = nullptr;
+  }
 
   if (processor_controls_) {
     processor_controls_->StopEchoCancellationDump();
@@ -53,23 +57,31 @@ void AudioServiceAudioProcessorProxy::Stop() {
   stats_update_timer_.Stop();
 }
 
-void AudioServiceAudioProcessorProxy::OnStartDump(base::File dump_file) {
+void AudioServiceAudioProcessorProxy::OnAecDumpFile(
+    const IPC::PlatformFileForTransit& file_handle) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  DCHECK(dump_file.IsValid());
+  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
+  DCHECK(file.IsValid());
   if (processor_controls_) {
-    processor_controls_->StartEchoCancellationDump(std::move(dump_file));
+    processor_controls_->StartEchoCancellationDump(std::move(file));
   } else {
     // Post the file close to avoid blocking the main thread.
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
-        base::BindOnce([](base::File) {}, std::move(dump_file)));
+        base::BindOnce([](base::File) {}, std::move(file)));
   }
 }
 
-void AudioServiceAudioProcessorProxy::OnStopDump() {
+void AudioServiceAudioProcessorProxy::OnDisableAecDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (processor_controls_)
     processor_controls_->StopEchoCancellationDump();
+}
+
+void AudioServiceAudioProcessorProxy::OnIpcClosing() {
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
+  aec_dump_message_filter_->RemoveDelegate(this);
+  aec_dump_message_filter_ = nullptr;
 }
 
 void AudioServiceAudioProcessorProxy::SetControls(
@@ -84,9 +96,11 @@ void AudioServiceAudioProcessorProxy::SetControls(
   last_stats_request_time_ = base::TimeTicks::Now();
   stats_update_timer_.SetTaskRunner(main_thread_runner_);
   RescheduleStatsUpdateTimer(target_stats_interval_);
-
-  // Can be null in unit tests. That's okay.
-  aec_dump_agent_impl_ = AecDumpAgentImpl::Create(this);
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be null. We can just ignore that. Other unit tests and browser tests
+  // ensure that we do get the filter when we should.
+  if (aec_dump_message_filter_)
+    aec_dump_message_filter_->AddDelegate(this);
 }
 
 webrtc::AudioProcessorInterface::AudioProcessorStatistics

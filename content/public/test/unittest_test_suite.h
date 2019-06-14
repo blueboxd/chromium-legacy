@@ -27,10 +27,7 @@ class TestHostResolver;
 class UnitTestTestSuite {
  public:
   // Takes ownership of |test_suite|.
-  // |disabled_features| is an optional comma-separated list of features to
-  // disable.
-  UnitTestTestSuite(base::TestSuite* test_suite,
-                    const std::string& disabled_features = std::string());
+  explicit UnitTestTestSuite(base::TestSuite* test_suite);
   ~UnitTestTestSuite();
 
   int Run();

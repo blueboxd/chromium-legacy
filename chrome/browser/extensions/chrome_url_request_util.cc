@@ -31,8 +31,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_simple_job.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -92,83 +90,6 @@ scoped_refptr<base::RefCountedMemory> GetResource(
 
   return base::RefCountedString::TakeString(&temp_str);
 }
-
-// A request for an extension resource in a Chrome .pak file. These are used
-// by component extensions.
-class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
- public:
-  URLRequestResourceBundleJob(net::URLRequest* request,
-                              net::NetworkDelegate* network_delegate,
-                              const base::FilePath& filename,
-                              int resource_id,
-                              const std::string& content_security_policy,
-                              bool send_cors_header)
-      : net::URLRequestSimpleJob(request, network_delegate),
-        filename_(filename),
-        resource_id_(resource_id),
-        weak_factory_(this) {
-    // Leave cache headers out of resource bundle requests.
-    response_info_.headers = extensions::BuildHttpHeaders(
-        content_security_policy, send_cors_header, base::Time());
-  }
-
-  // Overridden from URLRequestSimpleJob:
-  int GetRefCountedData(std::string* mime_type,
-                        std::string* charset,
-                        scoped_refptr<base::RefCountedMemory>* data,
-                        net::CompletionOnceCallback callback) const override {
-    *data = GetResource(resource_id_, request()->url().host());
-
-    // Add the Content-Length header now that we know the resource length.
-    response_info_.headers->AddHeader(
-        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                           base::NumberToString((*data)->size()).c_str()));
-
-    std::string* read_mime_type = new std::string;
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&net::GetMimeTypeFromFile, filename_,
-                       base::Unretained(read_mime_type)),
-        base::BindOnce(&URLRequestResourceBundleJob::OnMimeTypeRead,
-                       weak_factory_.GetWeakPtr(), mime_type, charset, *data,
-                       base::Owned(read_mime_type), std::move(callback)));
-
-    return net::ERR_IO_PENDING;
-  }
-
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    *info = response_info_;
-  }
-
- private:
-  ~URLRequestResourceBundleJob() override {}
-
-  void OnMimeTypeRead(std::string* out_mime_type,
-                      std::string* charset,
-                      scoped_refptr<base::RefCountedMemory> data,
-                      std::string* read_mime_type,
-                      net::CompletionOnceCallback callback,
-                      bool read_result) {
-    if (read_result) {
-      response_info_.headers->AddHeader(
-          base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             read_mime_type->c_str()));
-    }
-    *out_mime_type = *read_mime_type;
-    DetermineCharset(*read_mime_type, data.get(), charset);
-    std::move(callback).Run(net::OK);
-  }
-
-  // We need the filename of the resource to determine the mime type.
-  base::FilePath filename_;
-
-  // The resource bundle id to load.
-  int resource_id_;
-
-  net::HttpResponseInfo response_info_;
-
-  mutable base::WeakPtrFactory<URLRequestResourceBundleJob> weak_factory_;
-};
 
 // Loads an extension resource in a Chrome .pak file. These are used by
 // component extensions.
@@ -335,39 +256,6 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   // Couldn't determine if the resource is allowed or not.
   return false;
-}
-
-net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const base::FilePath& directory_path,
-    const std::string& content_security_policy,
-    bool send_cors_header) {
-  base::FilePath resources_path;
-  base::FilePath relative_path;
-  // Try to load extension resources from chrome resource file if
-  // directory_path is a descendant of resources_path. resources_path
-  // corresponds to src/chrome/browser/resources in source tree.
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
-      // Since component extension resources are included in
-      // component_extension_resources.pak file in resources_path, calculate
-      // extension relative path against resources_path.
-      resources_path.AppendRelativePath(directory_path, &relative_path)) {
-    base::FilePath request_path =
-        extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
-    int resource_id = 0;
-    if (ExtensionsBrowserClient::Get()
-            ->GetComponentExtensionResourceManager()
-            ->IsComponentExtensionResource(directory_path, request_path,
-                                           &resource_id)) {
-      relative_path = relative_path.Append(request_path);
-      relative_path = relative_path.NormalizePathSeparators();
-      return new URLRequestResourceBundleJob(
-          request, network_delegate, relative_path, resource_id,
-          content_security_policy, send_cors_header);
-    }
-  }
-  return NULL;
 }
 
 base::FilePath GetBundleResourcePath(

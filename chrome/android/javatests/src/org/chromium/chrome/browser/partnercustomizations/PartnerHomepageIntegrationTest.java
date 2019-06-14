@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.SwitchCompat;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +28,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.HomepageEditor;
 import org.chromium.chrome.browser.preferences.HomepagePreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -44,7 +45,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -117,17 +117,9 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testHomepageButtonEnableDisable() {
         // Disable homepage.
-        Preferences homepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepagePreferences.class.getName());
-        SwitchCompat homepageSwitch =
-                (SwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
-        Assert.assertNotNull(homepageSwitch);
-        TouchCommon.singleClickView(homepageSwitch);
-        waitForCheckedState(homepagePreferenceActivity, false);
-        homepagePreferenceActivity.finish();
+        toggleHomepageSwitchPreference(false);
 
         // Assert no homepage button.
         Assert.assertFalse(HomepageManager.isHomepageEnabled());
@@ -137,13 +129,7 @@ public class PartnerHomepageIntegrationTest {
         });
 
         // Enable homepage.
-        homepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepagePreferences.class.getName());
-        homepageSwitch = (SwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
-        Assert.assertNotNull(homepageSwitch);
-        TouchCommon.singleClickView(homepageSwitch);
-        waitForCheckedState(homepagePreferenceActivity, true);
-        homepagePreferenceActivity.finish();
+        toggleHomepageSwitchPreference(true);
 
         // Assert homepage button.
         Assert.assertTrue(HomepageManager.isHomepageEnabled());
@@ -151,19 +137,6 @@ public class PartnerHomepageIntegrationTest {
             Assert.assertEquals("Homepage button is shown", View.VISIBLE,
                     mActivityTestRule.getActivity().findViewById(R.id.home_button).getVisibility());
         });
-    }
-
-    private void waitForCheckedState(final Preferences preferenceActivity, boolean isChecked) {
-        CriteriaHelper.pollUiThread(Criteria.equals(isChecked, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                // The underlying switch view in the preference can change, so we need to fetch
-                // it each time to ensure we are checking the activity view.
-                SwitchCompat homepageSwitch =
-                        (SwitchCompat) preferenceActivity.findViewById(R.id.switch_widget);
-                return homepageSwitch.isChecked();
-            }
-        }));
     }
 
     /**
@@ -259,5 +232,31 @@ public class PartnerHomepageIntegrationTest {
         Assert.assertTrue("Activity was not closed.",
                 mActivityTestRule.getActivity().isFinishing()
                         || mActivityTestRule.getActivity().isDestroyed());
+    }
+
+    /**
+     * Toggle the state of the homepage switch preference in settings by performing a click on it.
+     *
+     * @param expected Expected checked state of the preference switch after clicking.
+     */
+    private void toggleHomepageSwitchPreference(boolean expected) {
+        // Launch preference activity with Homepage settings fragment.
+        Preferences homepagePreferenceActivity =
+                mActivityTestRule.startPreferences(HomepagePreferences.class.getName());
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
+                        .findFragmentById(android.R.id.content);
+        ChromeSwitchPreferenceCompat preference =
+                (ChromeSwitchPreferenceCompat) fragment.findPreference(
+                        HomepagePreferences.PREF_HOMEPAGE_SWITCH);
+        Assert.assertNotNull(preference);
+
+        // Click toggle and verify that checked state matches expectation.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            preference.performClick();
+            Assert.assertEquals(preference.isChecked(), expected);
+        });
+
+        homepagePreferenceActivity.finish();
     }
 }

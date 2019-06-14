@@ -47,6 +47,10 @@ class ASH_EXPORT MediaControllerImpl
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Determine if lock screen media keys are enabled based on feature flag and
+  // user preference.
+  static bool AreLockScreenMediaKeysEnabled();
+
   void AddObserver(MediaCaptureObserver* observer);
   void RemoveObserver(MediaCaptureObserver* observer);
 

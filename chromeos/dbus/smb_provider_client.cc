@@ -73,26 +73,23 @@ class SmbProviderClientImpl : public SmbProviderClient {
   ~SmbProviderClientImpl() override {}
 
   void Mount(const base::FilePath& share_path,
-             bool ntlm_enabled,
-             const std::string& workgroup,
-             const std::string& username,
+             const MountOptions& options,
              base::ScopedFD password_fd,
-             bool skip_connect,
              MountCallback callback) override {
-    smbprovider::MountOptionsProto options;
-    options.set_path(share_path.value());
-    options.set_workgroup(workgroup);
-    options.set_username(username);
-    options.set_skip_connect(skip_connect);
+    smbprovider::MountOptionsProto options_proto;
+    options_proto.set_path(share_path.value());
+    options_proto.set_workgroup(options.workgroup);
+    options_proto.set_username(options.username);
+    options_proto.set_skip_connect(options.skip_connect);
 
     std::unique_ptr<smbprovider::MountConfigProto> config =
-        CreateMountConfigProto(ntlm_enabled);
-    options.set_allocated_mount_config(config.release());
+        CreateMountConfigProto(options.ntlm_enabled);
+    options_proto.set_allocated_mount_config(config.release());
 
     dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
                                  smbprovider::kMountMethod);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(options);
+    writer.AppendProtoAsArrayOfBytes(options_proto);
     writer.AppendFileDescriptor(password_fd.get());
     CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
                &callback);

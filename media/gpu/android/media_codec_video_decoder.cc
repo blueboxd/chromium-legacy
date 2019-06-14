@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
@@ -231,7 +232,6 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   TRACE_EVENT0("media", "MediaCodecVideoDecoder::~MediaCodecVideoDecoder");
   ReleaseCodec();
-  codec_allocator_->StopThread(this);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
@@ -393,7 +393,6 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   TRACE_EVENT0("media", "MediaCodecVideoDecoder::StartLazyInit");
   lazy_init_pending_ = false;
-  codec_allocator_->StartThread(this);
 
   // Only ask for promotion hints if we can actually switch surfaces, since we
   // wouldn't be able to do anything with them. Also, if threaded texture
@@ -538,17 +537,15 @@ void MediaCodecVideoDecoder::CreateCodec() {
   DCHECK(target_surface_bundle_);
   DCHECK_EQ(state_, State::kRunning);
 
-  scoped_refptr<CodecConfig> config = new CodecConfig();
+  auto config = std::make_unique<VideoCodecConfig>();
+  if (requires_secure_codec_)
+    config->codec_type = CodecType::kSecure;
   config->codec = decoder_config_.codec();
   config->csd0 = csd0_;
   config->csd1 = csd1_;
-  config->requires_secure_codec = requires_secure_codec_;
-  // TODO(liberato): per android_util.h, remove JavaObjectPtr.
-  config->media_crypto =
-      std::make_unique<base::android::ScopedJavaGlobalRef<jobject>>(
-          media_crypto_);
+  config->surface = target_surface_bundle_->GetJavaSurface();
+  config->media_crypto = media_crypto_;
   config->initial_expected_coded_size = decoder_config_.coded_size();
-  config->surface_bundle = target_surface_bundle_;
   config->container_color_space = decoder_config_.color_space_info();
   config->hdr_metadata = decoder_config_.hdr_metadata();
 
@@ -564,12 +561,33 @@ void MediaCodecVideoDecoder::CreateCodec() {
   // we're reinitializing the codec without changing surfaces.  That's fine.
   video_frame_factory_->SetSurfaceBundle(target_surface_bundle_);
   codec_allocator_->CreateMediaCodecAsync(
-      codec_allocator_weak_factory_.GetWeakPtr(), std::move(config));
+      base::BindOnce(&MediaCodecVideoDecoder::OnCodecConfiguredInternal,
+                     codec_allocator_weak_factory_.GetWeakPtr(),
+                     codec_allocator_, target_surface_bundle_),
+      std::move(config));
+}
+
+// static
+void MediaCodecVideoDecoder::OnCodecConfiguredInternal(
+    base::WeakPtr<MediaCodecVideoDecoder> weak_this,
+    CodecAllocator* codec_allocator,
+    scoped_refptr<CodecSurfaceBundle> surface_bundle,
+    std::unique_ptr<MediaCodecBridge> codec) {
+  if (!weak_this) {
+    codec_allocator->ReleaseMediaCodec(
+        std::move(codec),
+        base::BindOnce(
+            &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
+            base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
+            std::move(surface_bundle)));
+    return;
+  }
+  weak_this->OnCodecConfigured(std::move(surface_bundle), std::move(codec));
 }
 
 void MediaCodecVideoDecoder::OnCodecConfigured(
-    std::unique_ptr<MediaCodecBridge> codec,
-    scoped_refptr<CodecSurfaceBundle> surface_bundle) {
+    scoped_refptr<CodecSurfaceBundle> surface_bundle,
+    std::unique_ptr<MediaCodecBridge> codec) {
   DCHECK(!codec_);
   DCHECK_EQ(state_, State::kRunning);
 
@@ -985,8 +1003,12 @@ void MediaCodecVideoDecoder::ReleaseCodec() {
     return;
   auto pair = codec_->TakeCodecSurfacePair();
   codec_ = nullptr;
-  codec_allocator_->ReleaseMediaCodec(std::move(pair.first),
-                                      std::move(pair.second));
+  codec_allocator_->ReleaseMediaCodec(
+      std::move(pair.first),
+      base::BindOnce(
+          &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
+          base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
+          std::move(pair.second)));
 }
 
 AndroidOverlayFactoryCB MediaCodecVideoDecoder::CreateOverlayFactoryCb() {

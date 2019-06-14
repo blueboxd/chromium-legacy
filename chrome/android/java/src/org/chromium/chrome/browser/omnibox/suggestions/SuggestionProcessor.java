@@ -46,4 +46,21 @@ public interface SuggestionProcessor {
      * @param position The position of the suggestion in the list.
      */
     void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position);
+
+    /**
+     * Record histograms for presented suggestion.
+     * Purpose of this function is bookkeeping of presented suggestions at the time user finishes
+     * interacting with omnibox (whether navigating somewhere, turning off screen, leaving omnibox
+     * or closing the app).
+     * This call is invoked only on Processor responsible for managing specific omnibox suggestion
+     * type.
+     */
+    void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model);
+
+    /**
+     * Record histograms for used suggestion.
+     * Invoked whenever user uses particular suggestion to navigate somewhere.
+     * Only the processor responsible for managing specific suggestion receives this call.
+     */
+    void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model);
 }

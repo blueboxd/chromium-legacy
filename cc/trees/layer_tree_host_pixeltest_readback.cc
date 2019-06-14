@@ -29,9 +29,6 @@ enum ReadbackType {
 };
 
 struct ReadbackTestConfig {
-  ReadbackTestConfig(LayerTreeTest::RendererType renderer_type_,
-                     ReadbackType readback_type_)
-      : renderer_type(renderer_type_), readback_type(readback_type_) {}
   LayerTreeTest::RendererType renderer_type;
   ReadbackType readback_type;
 };
@@ -191,7 +188,11 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayerWithChild) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSubtreeSurroundsTargetLayer) {
+using LayerTreeHostReadbackPixelTestMaybeVulkan =
+    LayerTreeHostReadbackPixelTest;
+
+TEST_P(LayerTreeHostReadbackPixelTestMaybeVulkan,
+       ReadbackSubtreeSurroundsTargetLayer) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
@@ -379,7 +380,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
-TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootOrFirstLayer) {
+TEST_P(LayerTreeHostReadbackPixelTestMaybeVulkan, ReadbackNonRootOrFirstLayer) {
   // This test has 3 render passes with the copy request on the render pass in
   // the middle. This test caught an issue where copy requests on non-root
   // non-first render passes were being treated differently from the first
@@ -415,15 +416,40 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostReadbackPixelTest,
-    ::testing::Values(
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
+// TODO(crbug.com/963446): Enable these tests for Skia Vulkan using texture
+// readback.
+ReadbackTestConfig const kTestConfigs[] = {
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostReadbackPixelTest,
+                         ::testing::ValuesIn(kTestConfigs));
+
+// TODO(crbug.com/974283): These tests are crashing with vulkan when TSan or
+// MSan are used.
+ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
+#if defined(ENABLE_CC_VULKAN_TESTS) && !defined(THREAD_SANITIZER) && \
+    !defined(MEMORY_SANITIZER)
+    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostReadbackPixelTestMaybeVulkan,
+                         ::testing::ValuesIn(kMaybeVulkanTestConfigs));
 
 class LayerTreeHostReadbackDeviceScalePixelTest
     : public LayerTreeHostReadbackPixelTest {
@@ -510,15 +536,9 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostReadbackDeviceScalePixelTest,
-    ::testing::Values(
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostReadbackDeviceScalePixelTest,
+                         ::testing::ValuesIn(kTestConfigs));
 
 class LayerTreeHostReadbackColorSpacePixelTest
     : public LayerTreeHostReadbackPixelTest {
@@ -556,15 +576,9 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
                base::FilePath(FILE_PATH_LITERAL("srgb_green_in_p3.png")));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostReadbackColorSpacePixelTest,
-    ::testing::Values(
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_TEXTURE),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP),
-        ReadbackTestConfig(LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE)));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostReadbackColorSpacePixelTest,
+                         ::testing::ValuesIn(kTestConfigs));
 
 }  // namespace
 }  // namespace cc

@@ -51,6 +51,8 @@ void SafeBrowsingQuietErrorUI::PopulateStringsForHtml(
     base::DictionaryValue* load_time_data) {
   DCHECK(load_time_data);
 
+  common_string_util::PopulateDarkModeDisplaySetting(load_time_data);
+
   load_time_data->SetString("type", "SAFEBROWSING");
   load_time_data->SetString(
       "tabTitle", l10n_util::GetStringUTF16(IDS_SAFEBROWSING_V3_TITLE));

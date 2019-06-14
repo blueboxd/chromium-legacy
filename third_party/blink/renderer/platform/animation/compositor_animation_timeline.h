@@ -12,7 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_timeline.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 

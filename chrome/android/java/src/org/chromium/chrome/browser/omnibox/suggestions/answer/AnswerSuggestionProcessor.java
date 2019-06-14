@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -112,6 +113,21 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         if (!hasFocus && mImageFetcher != null) {
             mImageFetcher.clear();
         }
+    }
+
+    @Override
+    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
+        // Note: At the time of writing this functionality, AiS was offering at most one answer to
+        // any query. If this changes before the metric is expired, the code below may need either
+        // revisiting or a secondary metric telling us how many answer suggestions have been shown.
+        RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
+                suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+    }
+
+    @Override
+    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {
+        // Bookkeeping handled in C++:
+        // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
     }
 
     private void maybeFetchAnswerIcon(OmniboxSuggestion suggestion, PropertyModel model) {

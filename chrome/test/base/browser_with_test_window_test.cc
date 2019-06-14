@@ -57,7 +57,7 @@ void BrowserWithTestWindowTest::SetUp() {
 #endif
 
   // This must be created after ash_test_helper_ is set up so that it doesn't
-  // create an InputDeviceManager.
+  // create an DeviceDataManager.
   rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
 
 #if defined(TOOLKIT_VIEWS)

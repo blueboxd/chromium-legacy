@@ -54,13 +54,13 @@
 // <include src="../../../../webui/resources/js/cr/ui/autocomplete_list.js">
 
 // <include src="../../../../webui/resources/js/cr/ui/splitter.js">
-// <include src="../../../../webui/resources/js/cr/ui/table/table_splitter.js">
+// <include src="ui/table/table_splitter.js">
 //
-// <include src="../../../../webui/resources/js/cr/ui/table/table_column.js">
-// <include src="../../../../webui/resources/js/cr/ui/table/table_column_model.js">
-// <include src="../../../../webui/resources/js/cr/ui/table/table_header.js">
-// <include src="../../../../webui/resources/js/cr/ui/table/table_list.js">
-// <include src="../../../../webui/resources/js/cr/ui/table.js">
+// <include src="ui/table/table_column.js">
+// <include src="ui/table/table_column_model.js">
+// <include src="ui/table/table_header.js">
+// <include src="ui/table/table_list.js">
+// <include src="ui/table/table.js">
 //
 // <include src="../../../../webui/resources/js/cr/ui/grid.js">
 //

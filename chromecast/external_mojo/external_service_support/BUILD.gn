@@ -26,6 +26,7 @@ source_set("process_setup") {
   ]
   deps = [
     "//base",
+    "//base:base_static",
   ]
 }
 

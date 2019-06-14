@@ -265,7 +265,7 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy.
   webrtc::RtpEncodingParameters webrtc_encoding;
   if (encoding->hasRid()) {
-    webrtc_encoding.rid = WebString(encoding->rid()).Utf8();
+    webrtc_encoding.rid = encoding->rid().Utf8();
   }
   webrtc_encoding.active = encoding->active();
   webrtc_encoding.bitrate_priority = PriorityToDouble(encoding->priority());

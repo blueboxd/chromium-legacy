@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -19,6 +20,7 @@
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
@@ -40,9 +42,13 @@ namespace {
 const char kThreadName[] = "VizCompositorThread";
 
 std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
+  const base::ThreadPriority thread_priority =
+      base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
+          ? base::ThreadPriority::DISPLAY
+          : base::ThreadPriority::NORMAL;
 #if defined(OS_ANDROID)
   auto thread = std::make_unique<base::android::JavaHandlerThread>(
-      kThreadName, base::ThreadPriority::DISPLAY);
+      kThreadName, thread_priority);
   thread->Start();
   return thread;
 #else  // !defined(OS_ANDROID)
@@ -54,9 +60,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   thread_options.message_loop_type =
       ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
 #endif
-#if defined(OS_CHROMEOS) || defined(USE_OZONE)
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
+  thread_options.priority = thread_priority;
 
   CHECK(thread->StartWithOptions(thread_options));
   return thread;

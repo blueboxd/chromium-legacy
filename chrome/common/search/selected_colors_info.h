@@ -12,8 +12,8 @@
 namespace chrome_colors {
 
 struct ColorInfo {
-  ColorInfo(int id, SkColor color, const char* label)
-      : id(id), color(color), label(label) {}
+  constexpr ColorInfo(int id, SkColor color, const char* label)
+      : ColorInfo(id, color, label, nullptr) {}
   constexpr ColorInfo(int id,
                       SkColor color,
                       const char* label,
@@ -27,7 +27,11 @@ struct ColorInfo {
 
 // TODO(gayane): Add colors selected by UX.
 // List of preselected colors to show in Chrome Colors menu.
-const ColorInfo kSelectedColorsInfo[] = {};
+constexpr ColorInfo kSelectedColorsInfo[] = {
+    ColorInfo(0, SkColorSetRGB(120, 0, 120), "purple"),
+    ColorInfo(1, SkColorSetRGB(0, 100, 100), "teal"),
+    ColorInfo(2, SkColorSetRGB(200, 50, 100), "pretty"),
+    ColorInfo(3, SkColorSetRGB(70, 50, 170), "bluish")};
 
 }  // namespace chrome_colors
 

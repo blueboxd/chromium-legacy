@@ -1,5 +1,4 @@
 rootWebArea
-++genericContainer ignored
-++++checkBox checkedState=true
-++++checkBox checkedState=false
-++++checkBox checkedState=mixed
+++checkBox checkedState=true
+++checkBox checkedState=false
+++checkBox checkedState=mixed

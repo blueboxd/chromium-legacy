@@ -53,7 +53,9 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     std::unique_ptr<AuthenticatorRequestDialogModel> model)
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
-      sheet_(nullptr) {
+      sheet_(nullptr),
+      web_contents_hidden_(web_contents->GetVisibility() ==
+                           content::Visibility::HIDDEN) {
   DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
 
@@ -259,9 +261,18 @@ void AuthenticatorRequestDialogView::Show() {
     constrained_window::ShowWebModalDialogViews(this, web_contents());
     DCHECK(GetWidget());
     first_shown_ = true;
-  } else {
-    GetWidget()->Show();
+    return;
   }
+
+  if (web_contents_hidden_) {
+    // Calling Widget::Show() while the tab is not in foreground shows the
+    // dialog on the foreground tab (https://crbug/969153). Instead, wait for
+    // OnVisibilityChanged() to signal the tab going into foreground again, and
+    // then show the widget.
+    return;
+  }
+
+  GetWidget()->Show();
 }
 
 void AuthenticatorRequestDialogView::OnSheetModelChanged() {
@@ -285,6 +296,19 @@ void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
       other_transports_button_->GetWidget(), nullptr /* MenuButtonController */,
       anchor_bounds, views::MenuAnchorPosition::kTopLeft,
       ui::MENU_SOURCE_MOUSE);
+}
+
+void AuthenticatorRequestDialogView::OnVisibilityChanged(
+    content::Visibility visibility) {
+  const bool web_contents_was_hidden = web_contents_hidden_;
+  web_contents_hidden_ = visibility == content::Visibility::HIDDEN;
+
+  // Show() does not actually show the dialog while the parent WebContents are
+  // hidden. Instead, show it when the WebContents become visible again.
+  if (web_contents_was_hidden && !web_contents_hidden_ &&
+      !model_->should_dialog_be_hidden() && !GetWidget()->IsVisible()) {
+    GetWidget()->Show();
+  }
 }
 
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(

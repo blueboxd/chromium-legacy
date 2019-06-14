@@ -19,7 +19,8 @@ goog.provide('__crWeb.navigation');
 __gCrWeb['dispatchPopstateEvent'] = function(stateObject) {
   var popstateEvent = window.document.createEvent('HTMLEvents');
   popstateEvent.initEvent('popstate', true, false);
-  if (stateObject) popstateEvent.state = JSON.parse(stateObject);
+  if (stateObject)
+    popstateEvent.state = JSON.parse(stateObject);
 
   // setTimeout() is used in order to return immediately. Otherwise the
   // dispatchEvent call waits for all event handlers to return, which could
@@ -36,8 +37,10 @@ __gCrWeb['dispatchPopstateEvent'] = function(stateObject) {
 __gCrWeb['dispatchHashchangeEvent'] = function(oldURL, newURL) {
   var hashchangeEvent = window.document.createEvent('HTMLEvents');
   hashchangeEvent.initEvent('hashchange', true, false);
-  if (oldURL) hashchangeEvent.oldURL = oldURL;
-  if (newURL) hashchangeEvent.newURL = newURL;
+  if (oldURL)
+    hashchangeEvent.oldURL = oldURL;
+  if (newURL)
+    hashchangeEvent.newURL = newURL;
 
   // setTimeout() is used in order to return immediately. Otherwise the
   // dispatchEvent call waits for all event handlers to return, which could
@@ -69,9 +72,9 @@ __gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
  * called for same-document navigation.
  */
 window.history.pushState = function(stateObject, pageTitle, pageUrl) {
-  __gCrWeb.message.invokeOnHost({'command': 'window.history.willChangeState'});
+  __gCrWeb.message.invokeOnHost({'command': 'navigation.willChangeState'});
   // Calling stringify() on undefined causes a JSON parse error.
-  var serializedState = typeof(stateObject) == 'undefined' ?
+  var serializedState = typeof (stateObject) == 'undefined' ?
       '' :
       __gCrWeb.common.JSONStringify(stateObject);
   pageUrl = pageUrl || window.location.href;
@@ -85,10 +88,10 @@ window.history.pushState = function(stateObject, pageTitle, pageUrl) {
 };
 
 window.history.replaceState = function(stateObject, pageTitle, pageUrl) {
-  __gCrWeb.message.invokeOnHost({'command': 'window.history.willChangeState'});
+  __gCrWeb.message.invokeOnHost({'command': 'navigation.willChangeState'});
 
   // Calling stringify() on undefined causes a JSON parse error.
-  var serializedState = typeof(stateObject) == 'undefined' ?
+  var serializedState = typeof (stateObject) == 'undefined' ?
       '' :
       __gCrWeb.common.JSONStringify(stateObject);
   pageUrl = pageUrl || window.location.href;
@@ -110,12 +113,11 @@ window.addEventListener('hashchange', function(evt) {
     'favicons': __gCrWeb.common.getFavicons()
   });
 
-  __gCrWeb.message.invokeOnHost({'command': 'window.hashchange'});
+  __gCrWeb.message.invokeOnHost({'command': 'navigation.hashchange'});
 });
 
 /** Flush the message queue. */
 if (__gCrWeb.message) {
   __gCrWeb.message.invokeQueues();
 }
-
 }());  // End of anonymouse object

@@ -51,16 +51,22 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate,
+                                   Agent* agent,
+                                   OriginTrialContext* origin_trial_context)
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       agent_(agent),
+      origin_trial_context_(origin_trial_context),
       window_interaction_tokens_(0),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      invalidator_(std::make_unique<InterfaceInvalidator>()) {}
+      invalidator_(std::make_unique<InterfaceInvalidator>()) {
+  if (origin_trial_context_)
+    origin_trial_context_->BindExecutionContext(this);
+}
 
 ExecutionContext::~ExecutionContext() = default;
 
@@ -101,11 +107,6 @@ void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
-}
-
-bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
-  const OriginTrialContext* context = OriginTrialContext::From(this);
-  return context && context->IsFeatureEnabled(feature);
 }
 
 void ExecutionContext::AddConsoleMessage(mojom::ConsoleMessageSource source,
@@ -265,6 +266,7 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);
   visitor->Trace(agent_);
+  visitor->Trace(origin_trial_context_);
   ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
@@ -286,6 +288,23 @@ v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
     return nullptr;
   DCHECK(agent_->event_loop());
   return agent_->event_loop()->microtask_queue();
+}
+
+bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+  return origin_trial_context_ &&
+         origin_trial_context_->IsFeatureEnabled(feature);
+}
+
+void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {
+  UseCounter::Count(*this, feature);
+}
+
+bool ExecutionContext::FeaturePolicyFeatureObserved(
+    mojom::FeaturePolicyFeature feature) {
+  if (parsed_feature_policies_[static_cast<size_t>(feature)])
+    return true;
+  parsed_feature_policies_.set(static_cast<size_t>(feature));
+  return false;
 }
 
 }  // namespace blink

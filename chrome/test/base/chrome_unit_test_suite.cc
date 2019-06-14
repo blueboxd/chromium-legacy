@@ -43,6 +43,30 @@
 
 namespace {
 
+class ChromeContentBrowserClientWithoutNetworkServiceInitialization
+    : public ChromeContentBrowserClient {
+ public:
+  // content::ContentBrowserClient:
+  // Skip some production Network Service code that doesn't work in unit tests.
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override {}
+  // Overridden to skip a call to ProfileIOData::FromResourceContext downstream
+  // of ProxyingURLLoaderFactory, which assumes the ResourceContext is a
+  // ProfileIOData::ResourceContext, but in unit tests it's a mock.
+  bool WillCreateURLLoaderFactory(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* frame,
+      int render_process_id,
+      bool is_navigation,
+      bool is_download,
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      bool* bypass_redirect_checks) override {
+    return false;
+  }
+};
+
 // Creates a TestingBrowserProcess for each test.
 class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
  public:
@@ -53,7 +77,8 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
 
-    browser_content_client_.reset(new ChromeContentBrowserClient());
+    browser_content_client_.reset(
+        new ChromeContentBrowserClientWithoutNetworkServiceInitialization());
     content::SetBrowserClientForTesting(browser_content_client_.get());
     utility_content_client_.reset(new ChromeContentUtilityClient());
     content::SetUtilityClientForTesting(utility_content_client_.get());

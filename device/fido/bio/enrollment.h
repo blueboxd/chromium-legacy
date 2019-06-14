@@ -108,7 +108,10 @@ struct BioEnrollmentRequest {
       const pin::TokenResponse& pin_token,
       std::vector<uint8_t> template_id);
   static BioEnrollmentRequest ForCancel();
-  static BioEnrollmentRequest ForEnumerate(const pin::TokenResponse&);
+  static BioEnrollmentRequest ForEnumerate(const pin::TokenResponse& token);
+  static BioEnrollmentRequest ForRename(const pin::TokenResponse& token,
+                                        std::vector<uint8_t> id,
+                                        std::string name);
 
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentSubCommand> subcommand;

@@ -131,13 +131,26 @@ class WPTExpectationsUpdater(object):
             # All tests passed, so there should be no failing results.
             return {}
 
-        master = self.host.builders.master_for_builder(build.builder_name)
-        web_test_results = self.host.buildbot.fetch_full_results(build, master=master)
-        if web_test_results is None:
+        test_result_list = [self.host.buildbot.fetch_results(build)]
+        has_webdriver_tests = self.host.builders.has_webdriver_tests_for_builder(
+            build.builder_name)
+        if has_webdriver_tests:
+            master = self.host.builders.master_for_builder(
+                build.builder_name)
+            test_result_list.append(
+                self.host.buildbot.fetch_webdriver_test_results(build, master))
+
+        test_result_list = filter(None, test_result_list)
+        if not test_result_list:
             _log.warning('No results for build %s', build)
             self.ports_with_no_results.add(self.port_name(build))
             return {}
-        failing_test_results = [result for result in web_test_results.didnt_run_as_expected_results() if not result.did_pass()]
+
+        failing_test_results = []
+        for test_result in test_result_list:
+            failing_test_results += [
+                result for result in test_result.didnt_run_as_expected_results() if not result.did_pass()]
+
         return self.generate_results_dict(self.port_name(build), failing_test_results)
 
     @memoized

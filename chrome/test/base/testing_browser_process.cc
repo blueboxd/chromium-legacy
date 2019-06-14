@@ -86,7 +86,6 @@ TestingBrowserProcess::TestingBrowserProcess()
       app_locale_("en"),
       is_shutting_down_(false),
       local_state_(nullptr),
-      io_thread_(nullptr),
       rappor_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()),
       test_network_connection_tracker_(
@@ -144,10 +143,6 @@ metrics::MetricsService* TestingBrowserProcess::metrics_service() {
 
 rappor::RapporServiceImpl* TestingBrowserProcess::rappor_service() {
   return rappor_service_;
-}
-
-IOThread* TestingBrowserProcess::io_thread() {
-  return io_thread_;
 }
 
 SystemNetworkContextManager*
@@ -475,10 +470,6 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
     created_browser_policy_connector_ = false;
   }
   local_state_ = local_state;
-}
-
-void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
-  io_thread_ = io_thread;
 }
 
 void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {

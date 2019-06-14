@@ -466,6 +466,20 @@ var GetDetectedLanguage = natives.GetDetectedLanguage;
 var GetLanguageAnnotationForStringAttribute =
     natives.GetLanguageAnnotationForStringAttribute;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetWordStartOffsets = natives.GetWordStartOffsets;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetWordEndOffsets = natives.GetWordEndOffsets;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -856,6 +870,14 @@ AutomationNodeImpl.prototype = {
     var impl = privates(AutomationRootNodeImpl.get(info.treeId)).impl;
     if (impl)
       return impl.get(info.nodeId);
+  },
+
+  wordStartOffsets: function() {
+    return GetWordStartOffsets(this.treeID, this.id);
+  },
+
+  wordEndOffsets: function() {
+    return GetWordEndOffsets(this.treeID, this.id);
   },
 
   addEventListener: function(eventType, callback, capture) {
@@ -1679,6 +1701,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'toString',
     'boundsForRange',
     'languageAnnotationForStringAttribute',
+    'wordStartOffsets',
+    'wordEndOffsets',
   ],
   readonly: $Array.concat(
       publicAttributes,

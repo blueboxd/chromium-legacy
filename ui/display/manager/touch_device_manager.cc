@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace display {
@@ -721,7 +721,7 @@ std::ostream& operator<<(std::ostream& os,
 
 bool HasExternalTouchscreenDevice() {
   for (const auto& device :
-       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.type == ui::InputDeviceType::INPUT_DEVICE_USB ||
         device.type == ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH) {
       return true;
@@ -732,7 +732,7 @@ bool HasExternalTouchscreenDevice() {
 
 bool IsInternalTouchscreenDevice(const TouchDeviceIdentifier& identifier) {
   for (const auto& device :
-       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (TouchDeviceIdentifier::FromDevice(device) == identifier)
       return device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
   }

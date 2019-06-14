@@ -104,8 +104,7 @@ class FlexibleView : public View {
 class GridLayoutTest : public testing::Test {
  public:
   GridLayoutTest() : host_(std::make_unique<View>()) {
-    layout_ = host_->SetLayoutManager(
-        std::make_unique<views::GridLayout>(host_.get()));
+    layout_ = host_->SetLayoutManager(std::make_unique<views::GridLayout>());
   }
 
   gfx::Size GetPreferredSize() {
@@ -123,8 +122,7 @@ class GridLayoutTest : public testing::Test {
 class GridLayoutAlignmentTest : public testing::Test {
  public:
   GridLayoutAlignmentTest() : host_(std::make_unique<View>()) {
-    layout_ = host_->SetLayoutManager(
-        std::make_unique<views::GridLayout>(host_.get()));
+    layout_ = host_->SetLayoutManager(std::make_unique<views::GridLayout>());
   }
 
   void TestAlignment(GridLayout::Alignment alignment, gfx::Rect* bounds) {

@@ -94,7 +94,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
-  if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
+  if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
     // TODO(eirage): pointerrawupdate event's movements are not calculated.
     pointer_event_init->setMovementX(web_pointer_event.PositionInScreen().x -

@@ -51,7 +51,7 @@ namespace {
 
 static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   views::GridLayout* overlay_layout =
-      overlay->SetLayoutManager(std::make_unique<views::GridLayout>(overlay));
+      overlay->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = overlay_layout->AddColumnSet(0);
   // The throbber's checkmark is 18dp.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
@@ -224,19 +224,21 @@ views::View* CardUnmaskPromptViews::GetContentsView() {
   return this;
 }
 
-views::View* CardUnmaskPromptViews::CreateFootnoteView() {
+std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
   if (!controller_->CanStoreLocally())
     return nullptr;
 
-  storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-  storage_checkbox_->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-  storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
-  storage_checkbox_->SetEnabledTextColors(views::style::GetColor(
+  auto storage_checkbox =
+      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+  storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
+  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
       *storage_checkbox_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
       STYLE_SECONDARY));
+  storage_checkbox_ = storage_checkbox.get();
 
-  return storage_checkbox_;
+  return storage_checkbox;
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {

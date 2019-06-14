@@ -8658,6 +8658,39 @@ TEST_F(URLRequestTest, CatchFilteredCookies) {
   }
 }
 
+TEST_F(URLRequestTestHTTP, AuthChallengeCancelCookieCollect) {
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL url_requiring_auth =
+      http_test_server()->GetURL("/auth-basic?set-cookie-if-challenged");
+
+  FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+      std::make_unique<TestNetworkDelegate>());
+  filtering_network_delegate.SetCookieFilter("got_challenged");
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&filtering_network_delegate);
+  context.Init();
+
+  TestDelegate delegate;
+
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &delegate,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->set_site_for_cookies(url_requiring_auth);
+  request->Start();
+
+  delegate.RunUntilAuthRequired();
+  ASSERT_EQ(1u, request->not_stored_cookies().size());
+  EXPECT_EQ(
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+      request->not_stored_cookies()[0].status);
+  EXPECT_EQ("got_challenged=true",
+            request->not_stored_cookies()[0].cookie_string);
+
+  // This shouldn't DCHECK-fail.
+  request->CancelAuth();
+  delegate.RunUntilComplete();
+}
+
 TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
   ASSERT_TRUE(http_test_server()->Start());
 

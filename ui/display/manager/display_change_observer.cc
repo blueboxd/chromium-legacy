@@ -28,7 +28,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"
 #include "ui/display/util/edid_parser.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -161,11 +161,11 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
 
 DisplayChangeObserver::DisplayChangeObserver(DisplayManager* display_manager)
     : display_manager_(display_manager) {
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 DisplayChangeObserver::~DisplayChangeObserver() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
 MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
@@ -203,8 +203,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   }
 
   display_manager_->touch_device_manager()->AssociateTouchscreens(
-      &displays,
-      ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices());
+      &displays, ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices());
   display_manager_->OnNativeDisplaysChanged(displays);
 
   // For the purposes of user activity detection, ignore synthetic mouse events

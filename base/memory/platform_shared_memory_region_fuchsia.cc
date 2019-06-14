@@ -141,8 +141,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
                                      "lead to this region being non-modifiable";
 
   zx::vmo vmo;
-  zx_status_t status =
-      zx::vmo::create(rounded_size, ZX_VMO_NON_RESIZABLE, &vmo);
+  zx_status_t status = zx::vmo::create(rounded_size, 0, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return {};

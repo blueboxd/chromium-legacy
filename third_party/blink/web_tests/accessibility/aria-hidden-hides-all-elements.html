@@ -26,45 +26,17 @@
 
 <script>
 test(function(t) {
-    var content = accessibilityController.accessibleElementById("main");
-    assert_equals(content.childrenCount, 8);
-    assert_true(content.isIgnored);
-    assert_false(content.childAtIndex(0).isIgnored);
-    assert_false(content.childAtIndex(1).isIgnored);
-    assert_false(content.childAtIndex(2).isIgnored);
-    assert_false(content.childAtIndex(3).isIgnored);
-    assert_true(content.childAtIndex(4).isIgnored);
-    assert_true(content.childAtIndex(5).isIgnored);
-    assert_false(content.childAtIndex(6).isIgnored);
-    assert_false(content.childAtIndex(7).isIgnored);
+    var content = accessibilityController.accessibleElementById("content");
+    assert_equals(content.childrenCount, 6);
 
     document.getElementById("ul").tabIndex = -1;
 
-    assert_equals(content.childrenCount, 8,
-                      "Making list focusable should not impact if it's hidden");
-    assert_true(content.isIgnored);
-    assert_false(content.childAtIndex(0).isIgnored);
-    assert_false(content.childAtIndex(1).isIgnored);
-    assert_false(content.childAtIndex(2).isIgnored);
-    assert_false(content.childAtIndex(3).isIgnored);
-    assert_true(content.childAtIndex(4).isIgnored);
-    assert_false(content.childAtIndex(5).isIgnored);
-    assert_false(content.childAtIndex(6).isIgnored);
-    assert_false(content.childAtIndex(7).isIgnored);
-
+    assert_equals(content.childrenCount, 7,
+                      "Making list focusable should make it not hidden");
     document.getElementById("ul").removeAttribute("tabindex");
 
-    assert_equals(content.childrenCount, 8,
+    assert_equals(content.childrenCount, 6,
                           "Making list unfocusable should make it hidden again");
-    assert_true(content.isIgnored);
-    assert_false(content.childAtIndex(0).isIgnored);
-    assert_false(content.childAtIndex(1).isIgnored);
-    assert_false(content.childAtIndex(2).isIgnored);
-    assert_false(content.childAtIndex(3).isIgnored);
-    assert_true(content.childAtIndex(4).isIgnored);
-    assert_true(content.childAtIndex(5).isIgnored);
-    assert_false(content.childAtIndex(6).isIgnored);
-    assert_false(content.childAtIndex(7).isIgnored);
 });
 </script>
 

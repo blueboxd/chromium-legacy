@@ -40,6 +40,8 @@ const char kFromPeripheralCharUUID[] = "5539ED10-0483-11E5-8418-1697F925EC7B";
 const char kToPeripheralCharID[] = "to peripheral id";
 const char kFromPeripheralCharID[] = "from peripheral id";
 
+const char kServiceID[] = "service id";
+
 const device::BluetoothRemoteGattCharacteristic::Properties
     kCharacteristicProperties =
         device::BluetoothRemoteGattCharacteristic::PROPERTY_BROADCAST |
@@ -73,7 +75,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
                                                           false)),
         service_(new NiceMock<device::MockBluetoothGattService>(
             device_.get(),
-            "",
+            kServiceID,
             device::BluetoothUUID(kServiceUUID),
             true,
             false)),
@@ -99,8 +101,7 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
                void(const RemoteAttribute&,
                     const RemoteAttribute&,
                     const RemoteAttribute&));
-  MOCK_METHOD2(OnCharacteristicsFinderError,
-               void(const RemoteAttribute&, const RemoteAttribute&));
+  MOCK_METHOD0(OnCharacteristicsFinderError, void());
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic>
   ExpectToFindCharacteristic(const device::BluetoothUUID& uuid,
@@ -117,6 +118,22 @@ class SecureChannelBluetoothLowEnergyCharacteristicFinderTest
     ON_CALL(*characteristic.get(), GetService())
         .WillByDefault(Return(service_.get()));
     return characteristic;
+  }
+
+  void SetUpServiceWithCharacteristics(
+      std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics,
+      bool is_discovery_complete) {
+    std::vector<device::BluetoothRemoteGattService*> services{service_.get()};
+    ON_CALL(*device_, GetGattServices()).WillByDefault(Return(services));
+    ON_CALL(*device_, IsGattServicesDiscoveryComplete())
+        .WillByDefault(Return(is_discovery_complete));
+
+    for (auto* characteristic : characteristics) {
+      std::vector<device::BluetoothRemoteGattCharacteristic*> chars_for_uuid{
+          characteristic};
+      ON_CALL(*service_, GetCharacteristicsByUUID(characteristic->GetUUID()))
+          .WillByDefault(Return(chars_for_uuid));
+    }
   }
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
@@ -141,9 +158,8 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
       from_peripheral_char_, success_callback_, error_callback_);
-  // Upcasting |characteristic_finder| to access the virtual protected methods
-  // from Observer: GattCharacteristicAdded() and
-  // GattDiscoveryCompleteForService().
+  // Upcasting |characteristic_finder| to access the virtual protected method
+  // from Observer: GattServicesDiscovered().
   device::BluetoothAdapter::Observer* observer =
       static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
@@ -151,24 +167,23 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&found_to_char), SaveArg<2>(&found_from_char)));
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _)).Times(0);
+  EXPECT_CALL(*this, OnCharacteristicsFinderError()).Times(0);
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> from_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kFromPeripheralCharUUID),
                                  kFromPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), from_char.get());
-
   std::unique_ptr<device::MockBluetoothGattCharacteristic> to_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kToPeripheralCharUUID),
                                  kToPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), to_char.get());
+
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      from_char.get(), to_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, false);
+
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
-
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
 // Tests that CharacteristicFinder ignores events for other devices.
@@ -181,9 +196,6 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device.get(), remote_service_, to_peripheral_char_,
       from_peripheral_char_, success_callback_, error_callback_);
-  // Upcasting |characteristic_finder| to access the virtual protected methods
-  // from Observer: GattCharacteristicAdded() and
-  // GattDiscoveryCompleteForService().
   device::BluetoothAdapter::Observer* observer =
       static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
@@ -191,21 +203,20 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   // These shouldn't be called at all since the GATT events below are for other
   // devices.
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _)).Times(0);
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _)).Times(0);
+  EXPECT_CALL(*this, OnCharacteristicsFinderError()).Times(0);
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> from_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kFromPeripheralCharUUID),
                                  kFromPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), from_char.get());
-
   std::unique_ptr<device::MockBluetoothGattCharacteristic> to_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kToPeripheralCharUUID),
                                  kToPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), to_char.get());
 
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      from_char.get(), to_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, false);
+
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -217,16 +228,16 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
       static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _)).Times(0);
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _));
+  EXPECT_CALL(*this, OnCharacteristicsFinderError());
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> other_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kOtherCharUUID),
                                  kOtherCharID, false);
-  observer->GattCharacteristicAdded(adapter_.get(), other_char.get());
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      other_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, false);
 
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -238,16 +249,8 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
       static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _)).Times(0);
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _));
+  EXPECT_CALL(*this, OnCharacteristicsFinderError());
 
-  std::unique_ptr<device::MockBluetoothGattCharacteristic> other_char =
-      ExpectToFindCharacteristic(device::BluetoothUUID(kOtherCharUUID),
-                                 kOtherCharID, false);
-  observer->GattCharacteristicAdded(adapter_.get(), other_char.get());
-
-  // GattServicesDiscovered event is fired but the service that contains the
-  // characteristics has not been found. OnCharacteristicsFinderError is
-  // expected to be called.
   observer->GattServicesDiscovered(adapter_.get(), device_.get());
 }
 
@@ -259,21 +262,17 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   device::BluetoothAdapter::Observer* observer =
       static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
-  RemoteAttribute found_to_char, found_from_char;
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _)).Times(0);
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _))
-      .WillOnce(
-          DoAll(SaveArg<0>(&found_to_char), SaveArg<1>(&found_from_char)));
+  EXPECT_CALL(*this, OnCharacteristicsFinderError());
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> from_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kFromPeripheralCharUUID),
                                  kFromPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), from_char.get());
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      from_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, true);
 
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
-  EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -288,29 +287,25 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&found_to_char), SaveArg<2>(&found_from_char)));
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _)).Times(0);
+  EXPECT_CALL(*this, OnCharacteristicsFinderError()).Times(0);
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> other_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kOtherCharUUID),
                                  kOtherCharID, false);
-  observer->GattCharacteristicAdded(adapter_.get(), other_char.get());
-
   std::unique_ptr<device::MockBluetoothGattCharacteristic> from_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kFromPeripheralCharUUID),
                                  kFromPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), from_char.get());
-
   std::unique_ptr<device::MockBluetoothGattCharacteristic> to_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kToPeripheralCharUUID),
                                  kToPeripheralCharID, true);
-  observer->GattCharacteristicAdded(adapter_.get(), to_char.get());
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      other_char.get(), from_char.get(), to_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, false);
+
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
-
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
 TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
@@ -319,7 +314,7 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&found_to_char), SaveArg<2>(&found_from_char)));
-  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _)).Times(0);
+  EXPECT_CALL(*this, OnCharacteristicsFinderError()).Times(0);
 
   std::unique_ptr<device::MockBluetoothGattCharacteristic> from_char =
       ExpectToFindCharacteristic(device::BluetoothUUID(kFromPeripheralCharUUID),
@@ -329,28 +324,16 @@ TEST_F(SecureChannelBluetoothLowEnergyCharacteristicFinderTest,
       ExpectToFindCharacteristic(device::BluetoothUUID(kToPeripheralCharUUID),
                                  kToPeripheralCharID, true);
 
-  std::vector<device::BluetoothRemoteGattService*> services;
-  services.push_back(service_.get());
-  ON_CALL(*device_, GetGattServices()).WillByDefault(Return(services));
-
-  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
-  characteristics.push_back(from_char.get());
-  characteristics.push_back(to_char.get());
-  ON_CALL(*service_, GetCharacteristics())
-      .WillByDefault(Return(characteristics));
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics{
+      from_char.get(), to_char.get()};
+  SetUpServiceWithCharacteristics(characteristics, true);
 
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
       from_peripheral_char_, success_callback_, error_callback_);
-  device::BluetoothAdapter::Observer* observer =
-      static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
 
   EXPECT_EQ(kToPeripheralCharID, found_to_char.id);
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
-
-  EXPECT_CALL(*service_, GetUUID())
-      .WillOnce(Return(device::BluetoothUUID(kServiceUUID)));
-  observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
 }  // namespace secure_channel

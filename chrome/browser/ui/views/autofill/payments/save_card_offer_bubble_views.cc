@@ -80,15 +80,16 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   return upload_explanation_tooltip;
 }
 
-views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
+std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
     return nullptr;
 
-  legal_message_view_ =
-      new LegalMessageView(controller()->GetLegalMessageLines(), this);
+  auto legal_message_view = std::make_unique<LegalMessageView>(
+      controller()->GetLegalMessageLines(), this);
 
+  legal_message_view_ = legal_message_view.get();
   InitFootnoteView(legal_message_view_);
-  return legal_message_view_;
+  return legal_message_view;
 }
 
 bool SaveCardOfferBubbleViews::Accept() {

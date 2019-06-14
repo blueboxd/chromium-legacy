@@ -40,7 +40,7 @@ class TestSerialConnection : public SerialConnection {
   }
 
   void StartPolling(const ReceiveEventCallback& callback) override {
-    set_paused(false);
+    SetPaused(false);
     callback.Run(std::move(receive_buffer_), api::serial::RECEIVE_ERROR_NONE);
     receive_buffer_.clear();
   }

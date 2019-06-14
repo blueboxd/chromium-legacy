@@ -121,7 +121,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     SetBackground(views::CreateStandardPanelBackground());
 
     views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     if (!shell_->hide_toolbar())
@@ -136,7 +136,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       layout->AddPaddingRow(0, 2);
       layout->StartRow(0, 0);
       views::GridLayout* toolbar_layout = toolbar_view_->SetLayoutManager(
-          std::make_unique<views::GridLayout>(toolbar_view_));
+          std::make_unique<views::GridLayout>());
 
       views::ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);

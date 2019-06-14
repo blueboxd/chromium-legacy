@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 suite('InternetPage', function() {
-  /** @type {InternetPageElement} */
+  /** @type {?InternetPageElement} */
   let internetPage = null;
 
-  /** @type {NetworkSummaryElement} */
+  /** @type {?NetworkSummaryElement} */
   let networkSummary_ = null;
 
-  /** @type {NetworkingPrivate} */
+  /** @type {?NetworkingPrivate} */
   let api_;
+
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  let mojoApi_;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -43,6 +46,8 @@ suite('InternetPage', function() {
     };
 
     api_ = new chrome.FakeNetworkingPrivate();
+    mojoApi_ = new FakeNetworkConfig(api_);
+    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
@@ -83,7 +88,7 @@ suite('InternetPage', function() {
 
   teardown(function() {
     internetPage.remove();
-    delete internetPage;
+    internetPage = null;
     // Navigating to the details page changes the Route state.
     settings.resetRouteForTesting();
   });

@@ -128,24 +128,26 @@ class BuilderTest(LoggingTestCase):
         buildbot = BuildBot()
         self.assertIsNone(buildbot.fetch_webdriver_test_results(
             Build('builder', None), 'bar'))
-        self.assertLog(['DEBUG: Builder name or build number or master is None\n'])
+        self.assertLog(
+            ['DEBUG: Builder name or build number or master is None\n'])
 
     def test_fetch_webdriver_results_without_master(self):
         buildbot = BuildBot()
         self.assertIsNone(buildbot.fetch_webdriver_test_results(
             Build('builder', 1), ''))
-        self.assertLog(['DEBUG: Builder name or build number or master is None\n'])
+        self.assertLog(
+            ['DEBUG: Builder name or build number or master is None\n'])
 
     def test_fetch_webdriver_test_results_with_no_results(self):
         buildbot = BuildBot()
         buildbot.web = MockWeb()
         results = buildbot.fetch_webdriver_test_results(
-            Build('linux-rel', 123), 'tryserver.chromium.linux')
+            Build('bar-rel', 123), 'foo.chrome')
         self.assertIsNone(results)
         self.assertLog([
             'DEBUG: Got 404 response from:\n'
             'https://test-results.appspot.com/testfile?buildnumber=123&'
-            'master=tryserver.chromium.linux&builder=linux-rel&'
+            'master=foo.chrome&builder=bar-rel&'
             'testtype=webdriver_tests_suite+%28with+patch%29&name=full_results.json\n'
         ])
 
@@ -153,48 +155,13 @@ class BuilderTest(LoggingTestCase):
         buildbot = BuildBot()
         buildbot.web = MockWeb(urls={
             'https://test-results.appspot.com/testfile?buildnumber=123&'
-            'master=tryserver.chromium.linux&builder=linux-rel&'
+            'master=foo.chrome&builder=bar-rel&'
             'testtype=webdriver_tests_suite+%28with+patch%29&'
             'name=full_results.json':
                 json.dumps({'passed': True}),
         })
         results = buildbot.fetch_webdriver_test_results(
-            Build('linux-rel', 123), 'tryserver.chromium.linux')
-        self.assertEqual(results._results, {  # pylint: disable=protected-access
-            'passed': True
-        })
-        self.assertLog([])
-
-    def test_fetch_full_results_webdriver(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb(urls={
-            'https://test-results.appspot.com/testfile?buildnumber=321&'
-            'master=tryserver.chromium.linux&builder=foo&'
-            'testtype=webdriver_tests_suite+%28with+patch%29&'
-            'name=full_results.json':
-                json.dumps({'passed': True}),
-        })
-        results = buildbot.fetch_full_results(
-            Build('foo', 321), master='tryserver.chromium.linux')
-        self.assertEqual(results._results, {  # pylint: disable=protected-access
-            'passed': True
-        })
-        self.assertLog([])
-
-    def test_fetch_full_results_web_tests(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb(urls={
-            'https://test-results.appspot.com/testfile?buildnumber=123&'
-            'callback=ADD_RESULTS&builder=builder&name=full_results.json':
-                'ADD_RESULTS(%s);' % (json.dumps(
-                    [{"TestType": "webkit_layout_tests on Intel GPU (with patch)"},
-                     {"TestType": "base_unittests (with patch)"}])),
-            'https://test-results.appspot.com/data/layout_results/builder/123/'
-            'webkit_layout_tests%20on%20Intel%20GPU%20%28with%20patch%29/'
-            'layout-test-results/failing_results.json':
-                json.dumps({'passed': True}),
-        })
-        results = buildbot.fetch_full_results(Build('builder', 123), master='')
+            Build('bar-rel', 123), 'foo.chrome')
         self.assertEqual(results._results, {  # pylint: disable=protected-access
             'passed': True
         })

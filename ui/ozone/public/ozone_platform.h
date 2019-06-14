@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/ozone/ozone_export.h"
 
 namespace display {
 class NativeDisplayDelegate;
@@ -56,7 +56,7 @@ struct PlatformWindowInitProperties;
 // interface depending on the context. You can, for example, create
 // different objects depending on the underlying hardware, command
 // line flags, or whatever is appropriate for the platform.
-class OZONE_EXPORT OzonePlatform {
+class COMPONENT_EXPORT(OZONE) OzonePlatform {
  public:
   OzonePlatform();
   virtual ~OzonePlatform();

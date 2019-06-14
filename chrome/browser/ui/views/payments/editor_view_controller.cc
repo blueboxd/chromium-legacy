@@ -256,8 +256,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   constexpr int kShortFieldMinimumWidth = 176;
   constexpr int kLongFieldMinimumWidth = 272;
 
-  views::GridLayout* editor_layout = editor_view->SetLayoutManager(
-      std::make_unique<views::GridLayout>(editor_view.get()));
+  views::GridLayout* editor_layout =
+      editor_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   // Column set for short fields.
   views::ColumnSet* columns_short = editor_layout->AddColumnSet(0);
   columns_short->AddColumn(

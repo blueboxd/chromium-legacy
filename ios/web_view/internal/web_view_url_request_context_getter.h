@@ -14,8 +14,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
-class NetworkDelegate;
 class NetLog;
+class NetworkDelegate;
 class ProxyConfigService;
 class TransportSecurityPersister;
 class URLRequestContext;
@@ -29,6 +29,7 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   WebViewURLRequestContextGetter(
       const base::FilePath& base_path,
+      net::NetLog* net_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
 
   // net::URLRequestContextGetter implementation.
@@ -44,13 +45,14 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   ~WebViewURLRequestContextGetter() override;
 
  private:
+  // Member list should be maintained to ensure proper destruction order.
   base::FilePath base_path_;
+  net::NetLog* net_log_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::NetworkDelegate> network_delegate_;
-  std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
-  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
 

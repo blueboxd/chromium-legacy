@@ -31,7 +31,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    ":shared",
     "fake_client_channel.cc",
     "fake_client_channel.h",
     "fake_client_channel_observer.cc",

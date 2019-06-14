@@ -1,5 +1,4 @@
 rootWebArea
-++genericContainer ignored
-++++searchBox value='ARIA role searchbox.'
-++++++staticText name='ARIA role searchbox.'
-++++++++inlineTextBox name='ARIA role searchbox.'
+++searchBox value='ARIA role searchbox.'
+++++staticText name='ARIA role searchbox.'
+++++++inlineTextBox name='ARIA role searchbox.'

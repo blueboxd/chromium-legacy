@@ -19,6 +19,8 @@
 	#error atlprint.h requires atlwin.h to be included first
 #endif
 
+#include <winspool.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Classes in this file:
@@ -1096,6 +1098,6 @@ public:
 
 #endif // __ATLSCRL_H__
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLPRINT_H__

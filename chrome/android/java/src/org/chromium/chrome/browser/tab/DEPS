@@ -7,7 +7,7 @@ specific_include_rules = {
   'Tab\.java': [
     "+chrome/android/java/src/org/chromium/chrome/browser/night_mode",
     "+chrome/android/java/src/org/chromium/chrome/browser/tab",
-    "+chrome/android/java/src/org/chromium/chrome/browser/util",
+    "+chrome/lib/util/public",
     "-components",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/view",
     "+components/navigation_interception/android/java/src/org/chromium/components/navigation_interception",

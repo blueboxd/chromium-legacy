@@ -63,7 +63,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
       this, ui::NativeTheme::kColorId_DialogBackground));
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);

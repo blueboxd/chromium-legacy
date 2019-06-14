@@ -629,7 +629,7 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:
-  // Needed to make sure the InputDeviceManager is cleaned up between test runs.
+  // Needed to make sure the DeviceDataManager is cleaned up between test runs.
   std::unique_ptr<base::ShadowingAtExitManager> at_exit_manager_;
   std::unique_ptr<TooltipController> controller_;
 

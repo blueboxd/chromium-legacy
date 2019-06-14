@@ -156,6 +156,9 @@ class MEDIA_EXPORT MediaCodecBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) = 0;
 
+  // Returns the CodecType this codec was created with.
+  virtual CodecType GetCodecType() const = 0;
+
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);
 };
 

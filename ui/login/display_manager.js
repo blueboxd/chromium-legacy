@@ -774,6 +774,10 @@ cr.define('cr.ui.login', function() {
           // Set screen dimensions to maximum dimensions within this group.
           for (let j = 0; j < screenGroup.length; ++j) {
             let screen2 = $(screenGroup[j]);
+            // Other screens in this screen group might be missing if we're not
+            // in OOBE.
+            if (!screen2)
+              continue;
             width = Math.max(width, screen2.getPreferredSize().width);
             height = Math.max(height, screen2.getPreferredSize().height);
           }

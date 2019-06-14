@@ -383,20 +383,29 @@ void AdsPageLoadMetricsObserver::MediaStartedPlaying(
 
 void AdsPageLoadMetricsObserver::OnFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host)
+    return;
+
   const auto& id_and_data =
       ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
   if (id_and_data == ad_frames_data_.end())
     return;
 
-  FrameData* ancestor_data = &*id_and_data->second;
+  FrameData* ancestor_data = nullptr;
+  if (id_and_data->second != ad_frames_data_storage_.end())
+    ancestor_data = &*id_and_data->second;
+
+  DCHECK_EQ(id_and_data->second == ad_frames_data_storage_.end(),
+            !ancestor_data);
 
   // If the root ad frame has been deleted, flush histograms for the frame and
   // remove it from storage. All child frames should be deleted by this point.
-  if (ancestor_data->frame_tree_node_id() ==
-      render_frame_host->GetFrameTreeNodeId()) {
+  if (ancestor_data && ancestor_data->frame_tree_node_id() ==
+                           render_frame_host->GetFrameTreeNodeId()) {
     RecordPerFrameHistogramsForAdTagging(*ancestor_data);
     RecordPerFrameHistogramsForCpuUsage(*ancestor_data);
     ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate()->GetSourceId());
+    DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
   }
 

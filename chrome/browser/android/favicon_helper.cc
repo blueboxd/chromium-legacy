@@ -16,8 +16,8 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_request_handler_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -175,16 +175,17 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
   DCHECK(session_sync_service);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
-  // TODO(victorvianna): Consider passing icon types to the API.
-  favicon_request_handler_.GetRawFaviconForPageURL(
+  favicon::FaviconRequestHandler* favicon_request_handler =
+      FaviconRequestHandlerFactory::GetForBrowserContext(profile);
+  // Can be null in tests.
+  if (!favicon_request_handler)
+    return false;
+  favicon_request_handler->GetRawFaviconForPageURL(
       page_url, static_cast<int>(j_desired_size_in_pixel),
       base::BindOnce(&OnFaviconBitmapResultAvailable,
                      ScopedJavaGlobalRef<jobject>(j_favicon_image_callback)),
       favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
       favicon::FaviconRequestPlatform::kMobile,
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      LargeIconServiceFactory::GetForBrowserContext(profile),
       /*icon_url_for_uma=*/
       open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL(),
       base::BindOnce(&GetSyncedFaviconForPageURL, profile),

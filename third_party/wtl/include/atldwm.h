@@ -493,6 +493,6 @@ public:
 
 #endif // __ATLTHEME_H__
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLDWM_H__

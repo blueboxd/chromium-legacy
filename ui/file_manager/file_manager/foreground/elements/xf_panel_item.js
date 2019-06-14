@@ -14,6 +14,20 @@ class PanelItem extends HTMLElement {
 
     /** @private {Element} */
     this.indicator_ = this.shadowRoot.querySelector('#indicator');
+
+    /**
+     * TODO(crbug.com/947388) make this a closure enum.
+     * @const
+     */
+    this.panelTypeDefault = -1;
+    this.panelTypeProgress = 0;
+    this.panelTypeSummary = 1;
+    this.panelTypeDone = 2;
+    this.panelTypeError = 3;
+    this.panelTypeInfo = 4;
+
+    /** @private {number} */
+    this.panelType_ = this.panelTypeDefault;
   }
 
   /**
@@ -22,23 +36,107 @@ class PanelItem extends HTMLElement {
    * @return {string}
    */
   static get template_() {
-    return `<link rel='stylesheet' href='files_visual_signals.css'>
+    return `<link rel='stylesheet'
+              href='foreground/elements/files_xf_elements.css'>
                 <div class='xf-panel-item'>
+                    <xf-circular-progress id='indicator'>
+                    </xf-circular-progress>
                     <div class='xf-panel-text'>
                         <span class='xf-panel-label-text'>
-                                Placeholder text</span>
+                                Placeholder text
+                        </span>
                         <br/>
                     </div>
                     <div class='xf-padder-24'></div>
-                    <button class='xf-button' src='pause-icon.png'
-                            tabindex='-1'>
-                    </button>
-                    <div class='xf-padder-4'></div>
-                    <button class='xf-button' src='cancel-icon.png'
-                            tabindex='-1'>
-                    </button>
+                    <xf-button id='secondary-action' tabindex='-1'>
+                    </xf-button>
+                    <div id='button-gap' class='xf-padder-4'></div>
+                    <xf-button id='primary-action' tabindex='-1'>
+                    </xf-button>
                     <div class='xf-padder-16'></div>
                 </div>`;
+  }
+
+  /**
+   * Remove an element from the panel using it's id.
+   * @private
+   */
+  removePanelElementById_(id) {
+    const element = this.shadowRoot.querySelector(id);
+    if (element) {
+      element.remove();
+    }
+  }
+
+  /**
+   * Sets up the different panel types. Panels have per-type configuration
+   * templates, but can be further customized using individual attributes.
+   * @param {number} type The enumerated panel type to set up.
+   * @private
+   */
+  setPanelType(type) {
+    if (this.panelType_ === type) {
+      return;
+    }
+
+    // Remove the indicators/buttons that can change.
+    this.removePanelElementById_('#indicator');
+    this.removePanelElementById_('#primary-action');
+    this.removePanelElementById_('#secondary-action');
+
+    // Mark the indicator as empty so it recreates on setAttribute.
+    this.setAttribute('indicator', 'empty');
+
+    const buttonSpacer = this.shadowRoot.querySelector('#button-gap');
+
+    // Setup the panel configuration for the panel type.
+    // TOOD(crbug.com/947388) Simplify this switch breaking out common cases.
+    switch (type) {
+      case this.panelTypeProgress:
+        this.setAttribute('indicator', 'progress');
+        let primaryButton = document.createElement('xf-button');
+        primaryButton.id = 'primary-action';
+        primaryButton.setAttribute('category', 'pause');
+        buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
+
+        let secondaryButton = document.createElement('xf-button');
+        secondaryButton.id = 'secondary-action';
+        secondaryButton.setAttribute('category', 'cancel');
+        buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
+        break;
+      case this.panelTypeSummary:
+        this.setAttribute('indicator', 'largeprogress');
+        primaryButton = document.createElement('xf-button');
+        primaryButton.id = 'primary-action';
+        primaryButton.setAttribute('category', 'expand');
+        buttonSpacer.insertAdjacentElement('afterend', primaryButton);
+        break;
+      case this.panelTypeDone:
+        this.setAttribute('indicator', 'status');
+        this.setAttribute('status', 'success');
+        primaryButton = document.createElement('xf-button');
+        primaryButton.id = 'primary-action';
+        primaryButton.setAttribute('category', 'dismiss');
+        buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
+
+        secondaryButton = document.createElement('xf-button');
+        secondaryButton.id = 'secondary-action';
+        secondaryButton.setAttribute('category', 'undo');
+        buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
+        break;
+      case this.panelTypeError:
+        this.setAttribute('indicator', 'status');
+        this.setAttribute('status', 'failure');
+        secondaryButton = document.createElement('xf-button');
+        secondaryButton.id = 'secondary-action';
+        secondaryButton.setAttribute('category', 'retry');
+        buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
+        break;
+      case this.panelTypeInfo:
+        break;
+    }
+
+    this.panelType_ = type;
   }
 
   /**
@@ -47,34 +145,45 @@ class PanelItem extends HTMLElement {
    */
   static get observedAttributes() {
     return [
-      'indicator', 'progress', 'status', 'primary-text', 'secondary-text'
+      'count',
+      'indicator',
+      'panel-type',
+      'primary-text',
+      'progress',
+      'secondary-text',
+      'status',
     ];
   }
 
   /**
    * Callback triggered by the browser when our attribute values change.
    * @param {string} name Attribute that's changed.
-   * @param {string} oldValue Old value of the attribute.
-   * @param {string} newValue New value of the attribute.
+   * @param {?string} oldValue Old value of the attribute.
+   * @param {?string} newValue New value of the attribute.
    * @private
    */
   attributeChangedCallback(name, oldValue, newValue) {
     /** @type {HTMLElement} */
-    let indicator;
+    let indicator = null;
     /** @type {HTMLSpanElement} */
     let textNode;
     if (oldValue === newValue) {
       return;
     }
+    // TODO(adanilo) Chop out each attribute handler into a function.
     switch (name) {
+      case 'count':
+        if (this.indicator_) {
+          this.indicator_.setAttribute('label', newValue);
+        }
+        break;
       case 'indicator':
-        // Get rid of any existing indicator.
+        // Get rid of any existing indicator
         const oldIndicator = this.shadowRoot.querySelector('#indicator');
         if (oldIndicator) {
           oldIndicator.remove();
         }
         switch (newValue) {
-          default:  // Always set something so the panel doesn't shrink.
           case 'progress':
           case 'largeprogress':
             indicator = document.createElement('xf-circular-progress');
@@ -92,22 +201,30 @@ class PanelItem extends HTMLElement {
             }
             break;
         }
+        this.indicator_ = indicator;
         if (indicator) {
           const itemRoot = this.shadowRoot.querySelector('.xf-panel-item');
           indicator.setAttribute('id', 'indicator');
           itemRoot.prepend(indicator);
         }
         break;
+      case 'panel-type':
+        this.setPanelType(Number(newValue));
+        if (this.parent && this.parent.updateSummaryPanel) {
+          this.parent.updateSummaryPanel();
+        }
+        break;
       case 'progress':
-        indicator = this.shadowRoot.querySelector('xf-circular-progress');
-        if (indicator) {
-          indicator.progress = Number(newValue);
+        if (this.indicator_) {
+          this.indicator_.progress = Number(newValue);
+          if (this.parent && this.parent.updateProgress) {
+            this.parent.updateProgress();
+          }
         }
         break;
       case 'status':
-        indicator = this.shadowRoot.querySelector('#indicator');
-        if (indicator) {
-          indicator.status = newValue;
+        if (this.indicator_) {
+          this.indicator_.status = newValue;
         }
         break;
       case 'primary-text':
@@ -142,7 +259,6 @@ class PanelItem extends HTMLElement {
    * @param {string} indicator Progress (optionally large) or status.
    */
   set indicator(indicator) {
-    // Reflect the status property into the attribute.
     this.setAttribute('indicator', indicator);
   }
 
@@ -151,7 +267,6 @@ class PanelItem extends HTMLElement {
    * @param {string} status Status value being set.
    */
   set status(status) {
-    // Reflect the status property into the attribute.
     this.setAttribute('status', status);
   }
 
@@ -161,8 +276,14 @@ class PanelItem extends HTMLElement {
    * @public
    */
   set progress(progress) {
-    // Reflect the progress property into the attribute.
     this.setAttribute('progress', progress);
+  }
+
+  /**
+   *  Getter for the progress indicator percentage.
+   */
+  get progress() {
+    return this.indicator_.progress || 0;
   }
 
   /**
@@ -170,7 +291,6 @@ class PanelItem extends HTMLElement {
    * @param {string} text Text to be shown.
    */
   set primaryText(text) {
-    // Reflect the status property into the attribute.
     this.setAttribute('primary-text', text);
   }
 
@@ -179,8 +299,37 @@ class PanelItem extends HTMLElement {
    * @param {string} text Text to be shown.
    */
   set secondaryText(text) {
-    // Reflect the status property into the attribute.
     this.setAttribute('secondary-text', text);
+  }
+
+  /**
+   * Setter to set the panel type.
+   * @param {number} type Enum value for the panel type.
+   */
+  set panelType(type) {
+    this.setAttribute('panel-type', type);
+  }
+
+  /**
+   * Getter for the panel type.
+   * TODO(crbug.com/947388) Add closure annotations to getters.
+   */
+  get panelType() {
+    return this.panelType_;
+  }
+
+  /**
+   * Getter for the primary action button.
+   */
+  get primaryButton() {
+    return this.shadowRoot.querySelector('#primary-action');
+  }
+
+  /**
+   * Getter for the secondary action button.
+   */
+  get secondaryButton() {
+    return this.shadowRoot.querySelector('#secondary-action');
   }
 }
 

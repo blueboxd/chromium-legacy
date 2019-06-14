@@ -98,10 +98,11 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     PlatformThreadId context_thread_id,
     bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-    : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
-      release_callback_(std::move(release_callback)) {
+    : mailbox_ref_(base::MakeRefCounted<TextureHolder::MailboxRef>(
+          std::move(release_callback))),
+      paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   mailbox_texture_holder_ = std::make_unique<MailboxTextureHolder>(
-      mailbox, sync_token, std::move(context_provider_wrapper),
+      mailbox, sync_token, std::move(context_provider_wrapper), mailbox_ref_,
       context_thread_id, sk_image_info, texture_target, is_origin_top_left);
 }
 
@@ -131,11 +132,6 @@ void DestroySkImageOnOriginalThread(
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (release_callback_) {
-    DCHECK(mailbox_texture_holder_);
-    release_callback_->Run(GetSyncToken(), false /* is_lost */);
-  }
 
   // If the original SkImage was retained, it must be destroyed on the thread
   // where it came from. In the same thread case, there is nothing to do because

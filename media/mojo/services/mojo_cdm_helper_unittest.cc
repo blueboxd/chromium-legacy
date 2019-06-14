@@ -5,9 +5,6 @@
 #include "media/mojo/services/mojo_cdm_helper.h"
 
 #include "base/bind.h"
-#include "base/files/file.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -35,25 +32,38 @@ class MockFileIOClient : public cdm::FileIOClient {
   MOCK_METHOD1(OnWriteComplete, void(Status));
 };
 
+class TestCdmFile : public mojom::CdmFile {
+ public:
+  TestCdmFile() = default;
+  ~TestCdmFile() override = default;
+
+  // Reading always succeeds with a 3-byte buffer.
+  void Read(ReadCallback callback) override {
+    std::move(callback).Run(Status::kSuccess, {1, 2, 3});
+  }
+
+  // Writing always succeeds.
+  void Write(const std::vector<uint8_t>& data,
+             WriteCallback callback) override {
+    std::move(callback).Run(Status::kSuccess);
+  }
+};
+
 class MockCdmStorage : public mojom::CdmStorage {
  public:
-  MockCdmStorage() { CHECK(temp_directory_.CreateUniqueTempDir()); }
+  MockCdmStorage() : client_binding_(&cdm_file_) {}
   ~MockCdmStorage() override = default;
 
-  // MojoCdmFileIO calls CdmStorage::Open() to actually open the file.
-  // Simulate this by creating a file in the temp directory and returning it.
   void Open(const std::string& file_name, OpenCallback callback) override {
-    base::FilePath temp_file = temp_directory_.GetPath().AppendASCII(file_name);
-    DVLOG(1) << __func__ << " " << temp_file;
-    base::File file(temp_file, base::File::FLAG_CREATE_ALWAYS |
-                                   base::File::FLAG_READ |
-                                   base::File::FLAG_WRITE);
+    mojom::CdmFileAssociatedPtrInfo client_ptr_info;
+    client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
     std::move(callback).Run(mojom::CdmStorage::Status::kSuccess,
-                            std::move(file), nullptr);
+                            std::move(client_ptr_info));
   }
 
  private:
-  base::ScopedTempDir temp_directory_;
+  TestCdmFile cdm_file_;
+  mojo::AssociatedBinding<mojom::CdmFile> client_binding_;
 };
 
 void CreateCdmStorage(mojom::CdmStorageRequest request) {

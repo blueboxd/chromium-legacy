@@ -46,8 +46,10 @@ const CGFloat kTopInset = 10;
 #pragma mark - initializers
 
 - (instancetype)init {
-  self = [super
-      initWithCollectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
+  UICollectionViewFlowLayout* layout =
+      [[UICollectionViewFlowLayout alloc] init];
+  layout.sectionInset = UIEdgeInsetsMake(kTopInset, 0, 0, 0);
+  self = [super initWithCollectionViewLayout:layout];
   if (self) {
     self.collectionView.backgroundColor = [UIColor clearColor];
     [self.collectionView registerClass:[MostVisitedShortcutCell class]
@@ -68,27 +70,16 @@ const CGFloat kTopInset = 10;
   // Promote the latest most visited items to the displayed ones and reload the
   // collection view data.
   self.displayedMostVisitedItems = self.latestMostVisitedItems;
-  [self.collectionView reloadData];
 
   [self configureLayout:base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
-                            self.collectionViewLayout)
-             targetSize:self.view.bounds.size];
+                            self.collectionViewLayout)];
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
 
-  [coordinator
-      animateAlongsideTransition:^(
-          id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self configureLayout:base::mac::ObjCCastStrict<
-                                  UICollectionViewFlowLayout>(
-                                  self.collectionViewLayout)
-                   targetSize:self.view.bounds.size];
-      }
-                      completion:nil];
+  [self configureLayout:base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
+                            self.collectionViewLayout)];
 }
 
 #pragma mark - ShortcutsConsumer
@@ -255,19 +246,12 @@ const CGFloat kTopInset = 10;
 
 #pragma mark - Private
 
-- (void)configureLayout:(UICollectionViewFlowLayout*)layout
-             targetSize:(CGSize)size {
-  // Calculate insets to center the items in the view.
-  CGFloat widthInsets =
-      CenteredTilesMarginForWidth(self.traitCollection, size.width);
-
+- (void)configureLayout:(UICollectionViewFlowLayout*)layout {
   layout.minimumLineSpacing = kNtpTilesVerticalSpacing;
   layout.minimumInteritemSpacing =
       NtpTilesHorizontalSpacing(self.traitCollection);
   layout.itemSize =
       MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
-  layout.sectionInset =
-      UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
 }
 
 @end

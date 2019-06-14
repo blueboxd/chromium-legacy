@@ -381,15 +381,17 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
   // TODO(falken): Remove this mechanism after OOB-CORS ships.
-  if ((resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCors ||
-       resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
-      (!resource_request_.request_initiator.has_value() ||
-       !resource_request_.request_initiator->IsSameOriginWith(
-           url::Origin::Create(resource_request_.url)))) {
+  if (!network::features::ShouldEnableOutOfBlinkCors() &&
+      ((resource_request_.fetch_request_mode ==
+            network::mojom::FetchRequestMode::kCors ||
+        resource_request_.fetch_request_mode ==
+            network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
+       (!resource_request_.request_initiator.has_value() ||
+        !resource_request_.request_initiator->IsSameOriginWith(
+            url::Origin::Create(resource_request_.url))))) {
     TRACE_EVENT_WITH_FLOW0(
-        "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback",
+        "ServiceWorker",
+        "ServiceWorkerSubresourceLoader::OnFallback - CORS workaround",
         TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                             TRACE_ID_LOCAL(request_id_)),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);

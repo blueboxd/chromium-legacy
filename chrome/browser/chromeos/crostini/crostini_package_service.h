@@ -26,7 +26,8 @@ namespace crostini {
 
 class CrostiniPackageService : public KeyedService,
                                public LinuxPackageOperationProgressObserver,
-                               public PendingAppListUpdatesObserver {
+                               public PendingAppListUpdatesObserver,
+                               public VmShutdownObserver {
  public:
   using StateChangeCallback =
       base::RepeatingCallback<void(PackageOperationStatus)>;
@@ -86,6 +87,9 @@ class CrostiniPackageService : public KeyedService,
   void OnPendingAppListUpdates(const std::string& vm_name,
                                const std::string& container_name,
                                int count) override;
+
+  // VmShutdownObserver
+  void OnVmShutdown(const std::string& vm_name) override;
 
   // (Eventually) uninstall the package identified by |app_id|. If successfully
   // started, a system notification will be used to display further updates.

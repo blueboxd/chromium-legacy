@@ -810,11 +810,11 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
-  EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
+  EXPECT_EQ(1, (int)oauth2_service_->token_cache().size());
 
   oauth2_service_->ClearCache();
 
-  EXPECT_EQ(0, (int)oauth2_service_->token_cache_.size());
+  EXPECT_EQ(0, (int)oauth2_service_->token_cache().size());
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       kEmail, "refreshToken");
   SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
@@ -823,7 +823,7 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
-  EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
+  EXPECT_EQ(1, (int)oauth2_service_->token_cache().size());
 }
 
 TEST_F(OAuth2TokenServiceTest, FixRequestErrorIfPossible) {

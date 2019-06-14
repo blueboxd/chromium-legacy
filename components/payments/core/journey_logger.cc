@@ -79,16 +79,12 @@ JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
       source_id_(source_id) {}
 
 JourneyLogger::~JourneyLogger() {
+  // has_recorded_ is false in cases that the page gets closed. To see more
+  // details about this case please check sample crash link from
+  // dumpWithoutCrash:
+  // https://crash.corp.google.com/browse?q=reportid=%27c1268a7104b25de2%27
   UMA_HISTOGRAM_BOOLEAN("PaymentRequest.JourneyLoggerHasRecorded",
                         has_recorded_);
-  if (!has_recorded_) {
-    static base::debug::CrashKeyString* journey_logger_no_record =
-        base::debug::AllocateCrashKeyString("journey_logger_no_record",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(journey_logger_no_record,
-                                   base::StringPrintf("%d", events_));
-    base::debug::DumpWithoutCrashing();
-  }
 }
 
 void JourneyLogger::IncrementSelectionAdds(Section section) {

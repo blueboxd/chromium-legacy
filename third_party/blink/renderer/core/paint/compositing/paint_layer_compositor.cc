@@ -129,6 +129,9 @@ void PaintLayerCompositor::EnableCompositingModeIfNeeded() {
 bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
   if (!has_accelerated_compositing_)
     return false;
+  // Should not composite if not attached to a frame view.
+  if (!layout_view_.GetFrameView())
+    return false;
   return layout_view_.GetFrame()->IsLocalRoot() ||
          CompositingReasonFinder::RequiresCompositingForScrollableFrame(
              layout_view_);

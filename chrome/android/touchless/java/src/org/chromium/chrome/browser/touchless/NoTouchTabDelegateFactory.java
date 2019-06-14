@@ -4,16 +4,20 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 
 /**
  * TabDelegateFactory for all touchless activities.
  */
-public class NoTouchTabDelegateFactory extends TabDelegateFactory {
+public class NoTouchTabDelegateFactory extends TabDelegateFactoryImpl {
     private final BrowserControlsVisibilityDelegate mDelegate;
 
-    public NoTouchTabDelegateFactory(BrowserControlsVisibilityDelegate delegate) {
+    public NoTouchTabDelegateFactory(
+            ChromeActivity activity, BrowserControlsVisibilityDelegate delegate) {
+        super(activity);
         mDelegate = delegate;
     }
 

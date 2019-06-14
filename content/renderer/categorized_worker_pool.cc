@@ -169,6 +169,9 @@ void CategorizedWorkerPool::Start(int num_threads) {
   foreground_categories.push_back(cc::TASK_CATEGORY_FOREGROUND);
 
   for (int i = 0; i < num_threads; i++) {
+    base::SimpleThread::Options thread_options;
+    // Use same priority for foreground workers as compositor thread.
+    thread_options.priority = base::PlatformThread::GetCurrentThreadPriority();
     std::unique_ptr<base::SimpleThread> thread(new CategorizedWorkerPoolThread(
         base::StringPrintf("CompositorTileWorker%d", i + 1).c_str(),
         base::SimpleThread::Options(), this, foreground_categories,

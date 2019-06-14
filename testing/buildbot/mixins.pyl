@@ -384,14 +384,6 @@
       },
     },
   },
-  'mac_mini_intel_gpu_10.12': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:0a2e',
-        'os': 'Mac-10.12.6',
-      },
-    },
-  },
   'mac_mini_intel_gpu_experimental': {
     'swarming': {
       'dimensions': {

@@ -31,8 +31,12 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
 
   bool IsCrossThread() const;
   const gpu::Mailbox& GetMailbox() const { return mailbox_; }
-  const gpu::SyncToken& GetSyncToken() const { return sync_token_; }
-  void UpdateSyncToken(gpu::SyncToken sync_token) { sync_token_ = sync_token; }
+  const gpu::SyncToken& GetSyncToken() const {
+    return mailbox_ref()->sync_token();
+  }
+  void UpdateSyncToken(gpu::SyncToken sync_token) {
+    mailbox_ref()->set_sync_token(sync_token);
+  }
   const SkImageInfo& sk_image_info() const { return sk_image_info_; }
   GLenum texture_target() const { return texture_target_; }
 
@@ -55,6 +59,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   MailboxTextureHolder(const gpu::Mailbox&,
                        const gpu::SyncToken&,
                        base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
+                       scoped_refptr<MailboxRef> mailbox_ref,
                        PlatformThreadId context_thread_id,
                        const SkImageInfo& sk_image_info,
                        GLenum texture_target,
@@ -64,7 +69,6 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   void InitCommon();
 
   gpu::Mailbox mailbox_;
-  gpu::SyncToken sync_token_;
   unsigned texture_id_;
   bool is_converted_from_skia_texture_;
   scoped_refptr<base::SingleThreadTaskRunner> texture_thread_task_runner_;

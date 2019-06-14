@@ -106,6 +106,8 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   bool was_top_most_session = audio_focus_stack_.back()->id() == id;
 
   auto row = RemoveFocusEntryIfPresent(id);
+  if (!row)
+    return;
 
   EnforceAudioFocus();
   MaybeUpdateActiveSession();

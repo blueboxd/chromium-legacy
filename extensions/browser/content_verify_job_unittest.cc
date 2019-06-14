@@ -21,8 +21,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -64,14 +62,12 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     ExtensionsTest::SetUp();
 
     extension_info_map_ = new InfoMap();
-    old_factory_ = test_url_request_context_.job_factory();
     content_verifier_ = new ContentVerifier(
         &testing_context_, std::make_unique<MockContentVerifierDelegate>());
     extension_info_map_->SetContentVerifier(content_verifier_.get());
   }
 
   void TearDown() override {
-    test_url_request_context_.set_job_factory(old_factory_);
     content_verifier_->Shutdown();
 
     ExtensionsTest::TearDown();
@@ -159,9 +155,6 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
   }
 
   scoped_refptr<InfoMap> extension_info_map_;
-  net::URLRequestJobFactoryImpl job_factory_;
-  const net::URLRequestJobFactory* old_factory_;
-  net::TestURLRequestContext test_url_request_context_;
   scoped_refptr<ContentVerifier> content_verifier_;
   content::TestBrowserContext testing_context_;
 

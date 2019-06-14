@@ -1568,8 +1568,6 @@ jumbo_static_library("test_support") {
     "testing/weburl_loader_mock.h",
     "testing/weburl_loader_mock_factory_impl.cc",
     "testing/weburl_loader_mock_factory_impl.h",
-    "testing/wtf/scoped_mock_clock.cc",
-    "testing/wtf/scoped_mock_clock.h",
   ]
 
   configs += [

@@ -19,7 +19,7 @@ class ListValue;
 }
 
 namespace ui {
-class InputDeviceManager;
+class DeviceDataManager;
 }
 
 namespace chromeos {
@@ -64,7 +64,7 @@ class StylusHandler : public ::settings::SettingsPageUIHandler,
 
   // Observer registration.
   ScopedObserver<NoteTakingHelper, NoteTakingHelper::Observer> note_observer_;
-  ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>
+  ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
       input_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StylusHandler);

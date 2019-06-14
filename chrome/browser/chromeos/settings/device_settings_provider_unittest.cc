@@ -194,7 +194,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   }
 
   void VerifyPolicyValue(const char* policy_key,
-                         const base::Value* const ptr_to_expected_value) {
+                         const base::Value* ptr_to_expected_value) {
     // The pointer might be null, so check before dereferencing.
     if (ptr_to_expected_value)
       EXPECT_EQ(*ptr_to_expected_value, *provider_->Get(policy_key));
@@ -211,8 +211,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   }
 
   // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
-  void VerifyDomainAutoComplete(
-      const base::Value* const ptr_to_expected_value) {
+  void VerifyDomainAutoComplete(const base::Value* ptr_to_expected_value) {
     VerifyPolicyValue(kAccountsPrefLoginScreenDomainAutoComplete,
                       ptr_to_expected_value);
   }
@@ -289,7 +288,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   // Helper routine that sets the device DeviceWilcoDtcAllowed policy.
   void SetDeviceWilcoDtcAllowedSetting(bool device_wilco_dtc_allowed) {
-    em::DeviceWilcoDtcAllowedProto* const proto =
+    em::DeviceWilcoDtcAllowedProto* proto =
         device_policy_->payload().mutable_device_wilco_dtc_allowed();
     proto->set_device_wilco_dtc_allowed(device_wilco_dtc_allowed);
     BuildAndInstallDevicePolicy();
@@ -298,9 +297,17 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void SetDeviceDockMacAddressSourceSetting(
       em::DeviceDockMacAddressSourceProto::Source
           device_dock_mac_address_source) {
-    em::DeviceDockMacAddressSourceProto* const proto =
+    em::DeviceDockMacAddressSourceProto* proto =
         device_policy_->payload().mutable_device_dock_mac_address_source();
     proto->set_source(device_dock_mac_address_source);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetDeviceSecondFactorAuthenticationModeSetting(
+      em::DeviceSecondFactorAuthenticationProto::U2fMode mode) {
+    em::DeviceSecondFactorAuthenticationProto* proto =
+        device_policy_->payload().mutable_device_second_factor_authentication();
+    proto->set_mode(mode);
     BuildAndInstallDevicePolicy();
   }
 
@@ -791,6 +798,31 @@ TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
   SetDeviceDockMacAddressSourceSetting(
       em::DeviceDockMacAddressSourceProto::DOCK_NIC_MAC_ADDRESS);
   EXPECT_EQ(base::Value(3), *provider_->Get(kDeviceDockMacAddressSource));
+}
+
+TEST_F(DeviceSettingsProviderTest,
+       DeviceSecondFactorAuthenticationModeSetting) {
+  VerifyPolicyValue(kDeviceSecondFactorAuthenticationMode, nullptr);
+
+  SetDeviceSecondFactorAuthenticationModeSetting(
+      em::DeviceSecondFactorAuthenticationProto::UNSET);
+  EXPECT_EQ(base::Value(0),
+            *provider_->Get(kDeviceSecondFactorAuthenticationMode));
+
+  SetDeviceSecondFactorAuthenticationModeSetting(
+      em::DeviceSecondFactorAuthenticationProto::DISABLED);
+  EXPECT_EQ(base::Value(1),
+            *provider_->Get(kDeviceSecondFactorAuthenticationMode));
+
+  SetDeviceSecondFactorAuthenticationModeSetting(
+      em::DeviceSecondFactorAuthenticationProto::U2F);
+  EXPECT_EQ(base::Value(2),
+            *provider_->Get(kDeviceSecondFactorAuthenticationMode));
+
+  SetDeviceSecondFactorAuthenticationModeSetting(
+      em::DeviceSecondFactorAuthenticationProto::U2F_EXTENDED);
+  EXPECT_EQ(base::Value(3),
+            *provider_->Get(kDeviceSecondFactorAuthenticationMode));
 }
 
 }  // namespace chromeos

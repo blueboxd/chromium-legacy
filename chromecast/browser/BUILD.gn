@@ -291,8 +291,6 @@ cast_source_set("browser") {
       "cast_extension_url_loader_factory.h",
       "extension_page.cc",
       "extension_page.h",
-      "extension_request_protocol_handler.cc",
-      "extension_request_protocol_handler.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
       "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/chromecast_automation_internal_api_delegate.cc",

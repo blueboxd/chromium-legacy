@@ -138,6 +138,12 @@ public class CompositorViewHolder extends FrameLayout
     private ContentCaptureConsumer mContentCaptureConsumer;
 
     /**
+     * Last MOVE MotionEvent dispatched to this object for a currently active gesture. If there is
+     * no active gesture, this is null.
+     */
+    private @Nullable MotionEvent mLastMoveEvent;
+
+    /**
      * This view is created on demand to display debugging information.
      */
     private static class DebugOverlay extends View {
@@ -236,6 +242,37 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onContentChanged(Tab tab) {
                 CompositorViewHolder.this.onContentChanged();
+            }
+
+            @Override
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                /**
+                 * After swapping web contents, any gesture active in the old ContentView is
+                 * cancelled. We still want to continue a previously running gesture in the new
+                 * ContentView, so we synthetically dispatch a new ACTION_DOWN MotionEvent with the
+                 * coordinates of where we estimate the pointer currently is (the coordinates of
+                 * the last ACTION_MOVE MotionEvent received before the swap).
+                 *
+                 * We wait for layout to happen as the newly created ContentView currently has a
+                 * width and height of zero, which would result in the event not being dispatched.
+                 */
+                mView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                            int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                        v.removeOnLayoutChangeListener(this);
+                        if (mLastMoveEvent == null) return;
+                        MotionEvent downEvent = MotionEvent.obtain(mLastMoveEvent);
+                        downEvent.setAction(MotionEvent.ACTION_DOWN);
+                        CompositorViewHolder.this.dispatchTouchEvent(downEvent);
+                        for (int i = 1; i < mLastMoveEvent.getPointerCount(); i++) {
+                            MotionEvent pointerDownEvent = MotionEvent.obtain(mLastMoveEvent);
+                            pointerDownEvent.setAction(MotionEvent.ACTION_POINTER_DOWN
+                                    | (i << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
+                            CompositorViewHolder.this.dispatchTouchEvent(pointerDownEvent);
+                        }
+                    }
+                });
             }
         };
 
@@ -556,6 +593,22 @@ public class CompositorViewHolder extends FrameLayout
         boolean ret = super.dispatchDragEvent(e);
         mEventOffsetHandler.onPostDispatchDragEvent(e.getAction());
         return ret;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        updateLastMoveEvent(e);
+        return super.dispatchTouchEvent(e);
+    }
+
+    private void updateLastMoveEvent(MotionEvent e) {
+        if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            mLastMoveEvent = e;
+        }
+        if (e.getActionMasked() == MotionEvent.ACTION_CANCEL
+                || e.getActionMasked() == MotionEvent.ACTION_UP) {
+            mLastMoveEvent = null;
+        }
     }
 
     /**

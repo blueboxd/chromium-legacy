@@ -24,8 +24,8 @@ bool IsSendingEnabled();
 // Returns true if the SendTabToSelf sync datatype is active.
 bool IsUserSyncTypeActive(Profile* profile);
 
-// Returns true if the user syncing on two or more devices.
-bool IsSyncingOnMultipleDevices(Profile* profile);
+// Returns true if the user has one or more valid device to share to.
+bool HasValidTargetDevice(Profile* profile);
 
 // Returns true if the tab and web content requirements are met:
 //  User is viewing an HTTP or HTTPS page.

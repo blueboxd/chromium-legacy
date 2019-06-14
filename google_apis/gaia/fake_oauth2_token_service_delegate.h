@@ -35,7 +35,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
       const CoreAccountId& account_id) const override;
   void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
-  std::vector<std::string> GetAccounts() override;
+  std::vector<CoreAccountId> GetAccounts() const override;
   void RevokeAllCredentials() override;
   void LoadCredentials(const CoreAccountId& primary_account_id) override;
   void UpdateCredentials(const CoreAccountId& account_id,

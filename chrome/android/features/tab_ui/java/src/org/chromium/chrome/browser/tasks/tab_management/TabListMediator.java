@@ -385,6 +385,13 @@ class TabListMediator {
 
                     if (!isValidMovePosition(srcIndex) || !isValidMovePosition(desIndex)) return;
                     mModel.removeAt(srcIndex);
+
+                    desIndex = srcIndex > desIndex ? desIndex : desIndex - 1;
+                    Tab newSelectedTab = mTabModelSelector.getTabModelFilterProvider()
+                                                 .getCurrentTabModelFilter()
+                                                 .getTabAt(desIndex);
+                    boolean isSelected = mTabModelSelector.getCurrentTab() == newSelectedTab;
+                    updateTab(desIndex, newSelectedTab, isSelected, true, false);
                 }
 
                 @Override
@@ -482,9 +489,8 @@ class TabListMediator {
             }
         };
 
-        mTabGridItemTouchHelperCallback =
-                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
-                        this::updateTab, mComponentName, mActionsOnAllRelatedTabs);
+        mTabGridItemTouchHelperCallback = new TabGridItemTouchHelperCallback(mModel,
+                mTabModelSelector, mTabClosedListener, mComponentName, mActionsOnAllRelatedTabs);
     }
 
     private void onTabClosedFrom(int tabId, String fromComponent) {
@@ -585,19 +591,8 @@ class TabListMediator {
 
             for (int i = 0; i < tabs.size(); i++) {
                 Tab tab = tabs.get(i);
-
-                mModel.get(i).set(TabProperties.IS_HIDDEN, false);
-
                 boolean isSelected = mTabModelSelector.getCurrentTab() == tab;
-                mModel.get(i).set(TabProperties.IS_SELECTED, isSelected);
-
-                if (mThumbnailProvider != null && isSelected && !quickMode) {
-                    ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, true);
-                    mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, callback);
-                }
-
-                mModel.get(i).set(TabProperties.CREATE_GROUP_LISTENER,
-                        getCreateGroupButtonListener(tab, isSelected));
+                updateTab(i, tab, isSelected, false, quickMode);
             }
             return true;
         }
@@ -623,9 +618,12 @@ class TabListMediator {
         }
     }
 
-    private void updateTab(int index, Tab tab, boolean isSelected) {
+    private void updateTab(
+            int index, Tab tab, boolean isSelected, boolean isUpdatingId, boolean quickMode) {
         if (index < 0 || index >= mModel.size()) return;
-        mModel.get(index).set(TabProperties.TAB_ID, tab.getId());
+        if (isUpdatingId) {
+            mModel.get(index).set(TabProperties.TAB_ID, tab.getId());
+        }
         TabActionListener tabSelectedListener;
         if (mGridCardOnClickListenerProvider == null
                 || getRelatedTabsForId(tab.getId()).size() == 1) {
@@ -634,11 +632,25 @@ class TabListMediator {
             tabSelectedListener = mGridCardOnClickListenerProvider.getGridCardOnClickListener(tab);
         }
         mModel.get(index).set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
-        mModel.get(index).set(TabProperties.CREATE_GROUP_LISTENER,
-                isSelected ? mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab)
-                           : null);
+        mModel.get(index).set(
+                TabProperties.CREATE_GROUP_LISTENER, getCreateGroupButtonListener(tab, isSelected));
         mModel.get(index).set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(tab));
+        mModel.get(index).set(TabProperties.IS_HIDDEN, false);
+
+        Callback<Drawable> faviconCallback = drawable -> {
+            int modelIndex = mModel.indexFromId(tab.getId());
+            if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
+                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
+            }
+        };
+
+        mTabListFaviconProvider.getFaviconForUrlAsync(
+                tab.getUrl(), tab.isIncognito(), faviconCallback);
+        if (mThumbnailProvider != null && !quickMode && (isSelected || isUpdatingId)) {
+            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected);
+            mModel.get(index).set(TabProperties.THUMBNAIL_FETCHER, callback);
+        }
     }
 
     /**

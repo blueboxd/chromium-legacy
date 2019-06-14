@@ -91,8 +91,12 @@ Polymer({
     if (device.connecting) {
       return this.i18n('bluetoothConnecting');
     }
-    return this.i18n(
-        device.connected ? 'bluetoothConnected' : 'bluetoothNotConnected');
+    if (!device.connected) {
+      return this.i18n('bluetoothNotConnected');
+    }
+    return device.batteryPercentage !== undefined ?
+        this.i18n('bluetoothConnectedWithBattery', device.batteryPercentage) :
+        this.i18n('bluetoothConnected');
   },
 
   /**

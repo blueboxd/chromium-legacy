@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/system_monitor.h"
 #include "base/time/default_tick_clock.h"
@@ -81,6 +83,13 @@ Service::~Service() {
   audio_manager_accessor_->Shutdown();
   g_service_state_for_crashing.Set("destructing - did shut down manager");
   magic_bytes_ = 0xDEADBEEFu;
+}
+
+// static
+base::DeferredSequencedTaskRunner* Service::GetInProcessTaskRunner() {
+  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
+      instance(base::MakeRefCounted<base::DeferredSequencedTaskRunner>());
+  return instance->get();
 }
 
 void Service::OnStart() {

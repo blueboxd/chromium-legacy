@@ -72,6 +72,7 @@ enum class CrostiniResult {
   CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED,
   CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE,
   NOT_ALLOWED,
+  CONTAINER_EXPORT_IMPORT_FAILED_SPACE,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -102,6 +103,7 @@ enum class ImportContainerProgressStatus {
   UPLOAD,
   UNPACK,
   FAILURE_ARCHITECTURE,
+  FAILURE_SPACE,
 };
 
 struct VmInfo {
@@ -199,13 +201,21 @@ class ImportContainerProgressObserver {
       int progress_percent,
       uint64_t progress_speed,
       const std::string& architecture_device,
-      const std::string& architecture_container) = 0;
+      const std::string& architecture_container,
+      uint64_t available_space,
+      uint64_t minimum_required_space) = 0;
 };
 
 class InstallerViewStatusObserver : public base::CheckedObserver {
  public:
   // Called when the CrostiniInstallerView is opened or closed.
   virtual void OnCrostiniInstallerViewStatusChanged(bool open) = 0;
+};
+
+class VmShutdownObserver : public base::CheckedObserver {
+ public:
+  // Called when the given VM has shutdown.
+  virtual void OnVmShutdown(const std::string& vm_name) = 0;
 };
 
 // CrostiniManager is a singleton which is used to check arguments for
@@ -590,6 +600,10 @@ class CrostiniManager : public KeyedService,
   void RemoveImportContainerProgressObserver(
       ImportContainerProgressObserver* observer);
 
+  // Add/remove vm shutdown observers.
+  void AddVmShutdownObserver(VmShutdownObserver* observer);
+  void RemoveVmShutdownObserver(VmShutdownObserver* observer);
+
   // ConciergeClient::Observer:
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
@@ -912,6 +926,8 @@ class CrostiniManager : public KeyedService,
       export_container_progress_observers_;
   base::ObserverList<ImportContainerProgressObserver>::Unchecked
       import_container_progress_observers_;
+
+  base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
 
   // Restarts by <vm_name, container_name>. Only one restarter flow is actually
   // running for a given container, other restarters will just have their

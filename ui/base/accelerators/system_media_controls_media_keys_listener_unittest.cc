@@ -132,4 +132,36 @@ TEST_F(SystemMediaControlsMediaKeysListenerTest, ListenForMultipleKeys) {
   listener()->OnPrevious();
 }
 
+TEST_F(SystemMediaControlsMediaKeysListenerTest,
+       DoesNotFirePlayPauseOnPauseEventWhenPaused) {
+  // Should be set to true when we start listening for the key.
+  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+
+  EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
+
+  ASSERT_TRUE(listener()->Initialize());
+  listener()->StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+  listener()->SetIsMediaPlaying(false);
+
+  // Simulate media key press.
+  listener()->OnPause();
+}
+
+TEST_F(SystemMediaControlsMediaKeysListenerTest,
+       DoesNotFirePlayPauseOnPlayEventWhenPlaying) {
+  // Should be set to true when we start listening for the key.
+  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+
+  EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
+
+  ASSERT_TRUE(listener()->Initialize());
+  listener()->StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+  listener()->SetIsMediaPlaying(true);
+
+  // Simulate media key press.
+  listener()->OnPlay();
+}
+
 }  // namespace ui

@@ -111,13 +111,6 @@ public class CaptivePortalTest {
         ChromeTabUtils.loadUrlOnUiThread(
                 tab, mServer.getURL("/chrome/test/data/android/navigate/simple.html"));
 
-        // If committed interstitials are enabled, the interstitial is a regular navigation, so we
-        // skip interstitial specific checks, and just check the page title.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SSL_COMMITTED_INTERSTITIALS)) {
-            waitForInterstitial(tab.getWebContents(), true);
-            Assert.assertTrue(tab.isShowingInterstitialPage());
-        }
-
         new TabTitleObserver(tab, CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX) {
             @Override
             protected boolean doesTitleMatch(String expectedTitle, String actualTitle) {
@@ -184,13 +177,6 @@ public class CaptivePortalTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.loadUrlOnUiThread(
                 tab, mServer.getURL("/chrome/test/data/android/navigate/simple.html"));
-
-        // If committed interstitials are enabled, the interstitial is a regular navigation, so we
-        // skip interstitial specific checks, and just check the page title.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SSL_COMMITTED_INTERSTITIALS)) {
-            waitForInterstitial(tab.getWebContents(), true);
-            Assert.assertTrue(tab.isShowingInterstitialPage());
-        }
 
         new TabTitleObserver(tab, SSL_INTERSTITIAL_TITLE)
                 .waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);

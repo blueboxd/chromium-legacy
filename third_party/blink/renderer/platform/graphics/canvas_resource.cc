@@ -770,6 +770,10 @@ void CanvasResourceSharedImage::Abandon() {
 void CanvasResourceSharedImage::WillDraw() {
   DCHECK(!is_cross_thread())
       << "Write access is only allowed on the owning thread";
+  // If skia is accessing the resource, it can modify the texture's filter
+  // params. Make sure to set them to the desired value before sending the
+  // resource to the display compositor.
+  needs_gl_filter_reset_ = true;
   mailbox_needs_new_sync_token_ = true;
 }
 
@@ -854,16 +858,16 @@ const gpu::Mailbox& CanvasResourceSharedImage::GetOrCreateGpuMailbox(
 void CanvasResourceSharedImage::SetGLFilterIfNeeded() {
   DCHECK(!is_cross_thread());
 
-  if (!needs_gl_filter_reset_ || !ContextGL())
+  if (!needs_gl_filter_reset_ || !ContextGL() || !WeakProvider())
     return;
 
   ContextGL()->BindTexture(TextureTarget(), GetTextureIdForBackendTexture());
   ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLFilter());
   ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLFilter());
   ContextGL()->BindTexture(TextureTarget(), 0u);
-  // TODO(khushalsagar): Inform skia about the param modification.
   mailbox_needs_new_sync_token_ = true;
   needs_gl_filter_reset_ = false;
+  Provider()->NotifyTexParamsModified(this);
 }
 
 bool CanvasResourceSharedImage::HasGpuMailbox() const {

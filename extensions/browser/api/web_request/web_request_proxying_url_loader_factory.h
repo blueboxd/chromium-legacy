@@ -39,9 +39,8 @@ class InfoMap;
 // Service enabled. This is loosely controlled by the WebRequestAPI on the UI
 // thread, but does all its real work on the IO thread. This is only because
 // it is tightly coupled to ExtensionsWebRequestEventRouter, and that object
-// must stay on the IO thread until we can deprecate the non-Network Service
-// path. Once Network Service is the only path, we can move all this stuff to
-// the UI thread.
+// must stay on the IO thread.
+// TODO(http://crbug.com/824840): Move this to the UI thread.
 class WebRequestProxyingURLLoaderFactory
     : public WebRequestAPI::Proxy,
       public network::mojom::URLLoaderFactory,
@@ -150,8 +149,6 @@ class WebRequestProxyingURLLoaderFactory
     // |OnHeadersReceived()| and request completion or restart. Pointers to
     // these fields are stored in a |BlockedRequest| (created and owned by
     // ExtensionWebRequestEventRouter) through much of the request's lifetime.
-    // That code supports both Network Service and non-Network Service behavior,
-    // which is why this weirdness exists here.
     network::ResourceResponseHead current_response_;
     scoped_refptr<net::HttpResponseHeaders> override_headers_;
     GURL redirect_url_;

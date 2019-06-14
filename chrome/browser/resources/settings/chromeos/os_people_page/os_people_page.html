@@ -15,6 +15,7 @@
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../icons.html">
 <link rel="import" href="../../people_page/account_manager.html">
+<link rel="import" href="../../people_page/account_manager_browser_proxy.html">
 <link rel="import" href="../../people_page/change_picture.html">
 <link rel="import" href="../../people_page/fingerprint_list.html">
 <link rel="import" href="../../people_page/kerberos_accounts.html">
@@ -97,22 +98,24 @@
     <settings-animated-pages id="pages" section="people"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-          <div id="picture-subpage-trigger" class="settings-box first two-line">
+          <div class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
-              <div id="profile-icon" on-click="onProfileTap_" actionable
+              <div id="profile-icon" on-click="onProfileIconTap_" actionable
                   style="background-image: [[getIconImageSet_(
                       profileIconUrl_)]]">
               </div>
-              <div class="middle two-line no-min-width" on-click="onProfileTap_"
+              <div class="middle two-line no-min-width"
+                  on-click="onAccountManagerTap_"
                   actionable>
                 <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
-                  <div class="secondary" hidden="[[!syncStatus.signedIn]]">
-                    [[syncStatus.signedInUsername]]
+                  <div id="profile-label" class="secondary">
+                    [[profileLabel_]]
                   </div>
                 </div>
                 <cr-icon-button class="subpage-arrow"
-                    aria-label="$i18n{changePictureTitle}"
+                    id="account-manager-subpage-trigger"
+                    aria-label="$i18n{accountManagerSubMenuLabel}"
                     aria-describedby="profile-name"></cr-icon-button>
               </div>
             </template>
@@ -163,12 +166,6 @@
             label="[[selectLockScreenTitleString(hasPinLogin)]]"
             sub-label="[[getPasswordState_(hasPin,
                 prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
-
-        <template is="dom-if" if="[[isAccountManagerEnabled_]]">
-          <cr-link-row id="account-manager-subpage-trigger" class="hr"
-              on-click="onAccountManagerTap_"
-              label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
-        </template>
 
         <template is="dom-if" if="[[isKerberosEnabled_]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
@@ -237,19 +234,17 @@
       </template>
       <template is="dom-if" route-path="/changePicture">
         <settings-subpage
-          associated-control="[[$$('#picture-subpage-trigger')]]"
+          associated-control="[[$$('#profile-icon')]]"
           page-title="$i18n{changePictureTitle}">
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[isAccountManagerEnabled_]]">
-        <template is="dom-if" route-path="/accountManager">
-          <settings-subpage
-              associated-control="[[$$('#account-manager-subpage-trigger')]]"
-              page-title="$i18n{accountManagerPageTitle}">
-            <settings-account-manager></settings-account-manager>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/accountManager">
+        <settings-subpage
+            associated-control="[[$$('#account-manager-subpage-trigger')]]"
+            page-title="$i18n{accountManagerPageTitle}">
+          <settings-account-manager></settings-account-manager>
+        </settings-subpage>
       </template>
       <template is="dom-if" if="[[isKerberosEnabled_]]">
         <template is="dom-if" route-path="/kerberosAccounts">

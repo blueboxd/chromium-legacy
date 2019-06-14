@@ -4354,8 +4354,8 @@ class MojoTestHelper {
   MojoTestHelper(const String& test_file,
                  frame_test_helpers::WebViewHelper& web_view_helper)
       : web_view_helper_(web_view_helper) {
-    web_view_ = web_view_helper.InitializeAndLoad(WebString(test_file).Utf8(),
-                                                  &web_frame_client_);
+    web_view_ =
+        web_view_helper.InitializeAndLoad(test_file.Utf8(), &web_frame_client_);
   }
 
   ~MojoTestHelper() {
@@ -4370,7 +4370,7 @@ class MojoTestHelper {
     // Set up our Mock Mojo API.
     test_api_.reset(new service_manager::InterfaceProvider::TestApi(
         web_frame_client_.GetInterfaceProvider()));
-    test_api_->SetBinderForName(WebString(name).Utf8(), callback);
+    test_api_->SetBinderForName(name.Utf8(), callback);
   }
   WebViewImpl* WebView() const { return web_view_; }
 

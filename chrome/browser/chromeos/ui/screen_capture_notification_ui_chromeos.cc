@@ -30,8 +30,9 @@ gfx::NativeViewId ScreenCaptureNotificationUIChromeOS::OnStarted(
       base::BindRepeating(
           &ScreenCaptureNotificationUIChromeOS::ProcessStopRequestFromUI,
           base::Unretained(this)),
-      base::BindRepeating(std::move(source_callback),
-                          content::DesktopMediaID()),
+      source_callback ? base::BindRepeating(std::move(source_callback),
+                                            content::DesktopMediaID())
+                      : base::RepeatingClosure(),
       text_);
   return 0;
 }

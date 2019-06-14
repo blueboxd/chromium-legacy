@@ -27,6 +27,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
+class DeferredSequencedTaskRunner;
 class SystemMonitor;
 }
 
@@ -76,6 +77,10 @@ class Service : public service_manager::Service {
           std::unique_ptr<service_manager::BinderMap> extra_binders,
           mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~Service() final;
+
+  // Returns a DeferredSequencedTaskRunner to be used to run the audio service
+  // when launched in the browser process.
+  static base::DeferredSequencedTaskRunner* GetInProcessTaskRunner();
 
   // service_manager::Service implementation.
   void OnStart() final;

@@ -1,12 +1,6 @@
 rootWebArea
-++genericContainer ignored invisible
-++++region ignored invisible
-++++++popUpButton collapsed ignored invisible value='This should be pruned out of the tree.'
-++++button ignored invisible name='This button should not be in the tree.'
-++genericContainer ignored invisible
-++dialog ignored invisible
-++genericContainer
 ++dialog
 ++++staticText name='This is the now active dialog. Of course it should be in the tree. '
 ++++++inlineTextBox name='This is the now active dialog. Of course it should be in the tree. '
 ++++button name='This is in the active dialog and should be in the tree.'
+++genericContainer

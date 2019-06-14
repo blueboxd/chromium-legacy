@@ -12,6 +12,8 @@
 
 namespace ash {
 
+class AutoclickScrollBubbleController;
+
 // Manages the bubble which contains an AutoclickMenuView.
 class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
                                       public LocaleChangeObserver {
@@ -36,9 +38,15 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
   // Performs a mouse event on the bubble at the given location in DIPs.
   void ClickOnBubble(gfx::Point location_in_dips, int mouse_event_flags);
 
+  // Performs a mouse event on the scroll bubble at the given location in DIPs.
+  void ClickOnScrollBubble(gfx::Point location_in_dips, int mouse_event_flags);
+
   // Whether the the bubble, if the bubble exists, contains the given screen
   // point.
   bool ContainsPointInScreen(const gfx::Point& point);
+
+  // Whether the scroll bubble exists and contains the given screen point.
+  bool ScrollBubbleContainsPointInScreen(const gfx::Point& point);
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
@@ -56,6 +64,11 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
   mojom::AutoclickMenuPosition position_ = kDefaultAutoclickMenuPosition;
 
   views::Widget* bubble_widget_ = nullptr;
+
+  // The controller for the scroll bubble. Only exists during a scroll. Owned
+  // by this class so that positioning calculations can take place using both
+  // classes at once.
+  std::unique_ptr<AutoclickScrollBubbleController> scroll_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickMenuBubbleController);
 };

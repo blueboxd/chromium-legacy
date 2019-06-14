@@ -261,9 +261,6 @@ const CGFloat kButtonTrailingSpacing = 10;
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
 
   _accessibleElements = [[NSMutableArray alloc] init];
-  if (IsInfobarUIRebootEnabled()) {
-    [_accessibleElements addObject:_leadingButton];
-  }
   [_accessibleElements addObject:_locationButton];
   [_accessibleElements addObject:_trailingButton];
 
@@ -319,6 +316,19 @@ const CGFloat kButtonTrailingSpacing = 10;
   }
   _securityLevelAccessibilityString = [string copy];
   [self updateAccessibility];
+}
+
+- (void)displayBadge:(BOOL)display animated:(BOOL)animated {
+  if (display) {
+    // Adding InfobarBadge button as an accessibility element behind location
+    // label. Thus, there should be at least one object alreading in
+    // |accessibleElements|.
+    DCHECK([self.accessibleElements count] > 0);
+    [self.accessibleElements insertObject:self.leadingButton atIndex:1];
+  } else {
+    [self.accessibleElements removeObject:self.leadingButton];
+  }
+  [self.leadingButton displayBadge:display animated:animated];
 }
 
 #pragma mark - UIResponder

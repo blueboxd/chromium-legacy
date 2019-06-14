@@ -33,7 +33,7 @@
 
 #include "third_party/blink/renderer/core/html/imports/html_import_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/tree_node.h"
 
 namespace blink {

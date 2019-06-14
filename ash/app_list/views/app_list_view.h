@@ -440,6 +440,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   bool ShouldUpdateChildViewsDuringAnimation(
       ash::AppListViewState target_state) const;
 
+  // Returns whether AppList's rounded corners should be hidden based on
+  // |bounds|.
+  bool ShouldHideRoundedCorners(const gfx::Rect& bounds) const;
+
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.

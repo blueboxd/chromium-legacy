@@ -28,9 +28,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
     Vector<String>* messages,
-    ExecutionContext* execution_context) {
+    FeaturePolicyParserDelegate* delegate) {
   return Parse(policy, origin, nullptr, messages, GetDefaultFeatureNameMap(),
-               execution_context);
+               delegate);
 }
 
 ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
@@ -49,7 +49,7 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names,
-    ExecutionContext* execution_context) {
+    FeaturePolicyParserDelegate* delegate) {
   ParsedFeaturePolicy allowlists;
   std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
       features_specified;
@@ -61,18 +61,16 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
   Vector<String> policy_items;
   // policy_items = [ policy *( "," [ policy ] ) ]
   policy.Split(',', policy_items);
-  if (policy_items.size() > 1) {
-    UseCounter::Count(
-        execution_context,
+  if (policy_items.size() > 1 && delegate) {
+    delegate->CountFeaturePolicyUsage(
         mojom::WebFeature::kFeaturePolicyCommaSeparatedDeclarations);
   }
   for (const String& item : policy_items) {
     Vector<String> entry_list;
     // entry_list = [ entry *( ";" [ entry ] ) ]
     item.Split(';', entry_list);
-    if (entry_list.size() > 1) {
-      UseCounter::Count(
-          execution_context,
+    if (entry_list.size() > 1 && delegate) {
+      delegate->CountFeaturePolicyUsage(
           mojom::WebFeature::kFeaturePolicySemicolonSeparatedDeclarations);
     }
     for (const String& entry : entry_list) {
@@ -92,7 +90,7 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
         continue;
       }
 
-      if (DisabledByOriginTrial(feature_name, execution_context)) {
+      if (DisabledByOriginTrial(feature_name, delegate)) {
         if (messages) {
           messages->push_back("Origin trial controlled feature not enabled: '" +
                               tokens[0] + "'.");
@@ -110,13 +108,9 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
 
       // Count the use of this feature policy.
       if (src_origin) {
-        Document* document = DynamicTo<Document>(execution_context);
-        if (!document || !document->IsParsedFeaturePolicy(feature)) {
+        if (!delegate || !delegate->FeaturePolicyFeatureObserved(feature)) {
           UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Allow",
                                     feature);
-          if (document) {
-            document->SetParsedFeaturePolicy(feature);
-          }
         }
       } else {
         UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header",
@@ -139,16 +133,20 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
           feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
           feature ==
               mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
-        UseCounter::Count(execution_context,
-                          mojom::WebFeature::kUnoptimizedImagePolicies);
+        if (delegate) {
+          delegate->CountFeaturePolicyUsage(
+              mojom::WebFeature::kUnoptimizedImagePolicies);
+        }
         // Don't analyze allowlists for origin trial features.
         count_allowlist_type = false;
       }
 
       // Detect usage of UnsizedMediaPolicy origin trial
       if (feature == mojom::FeaturePolicyFeature::kUnsizedMedia) {
-        UseCounter::Count(execution_context,
-                          mojom::WebFeature::kUnsizedMediaPolicy);
+        if (delegate) {
+          delegate->CountFeaturePolicyUsage(
+              mojom::WebFeature::kUnsizedMediaPolicy);
+        }
         // Don't analyze allowlists for origin trial features.
         count_allowlist_type = false;
       }

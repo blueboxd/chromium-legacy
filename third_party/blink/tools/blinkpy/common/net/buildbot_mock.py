@@ -36,7 +36,9 @@ class MockBuildBot(BuildBot):
         super(MockBuildBot, self).__init__()
         self._canned_results = {}
         self._canned_retry_summary_json = {}
+        self._webdriver_results = {}
         self.fetched_builds = []
+        self.fetched_webdriver_builds = []
         self._layout_test_step_name = 'webkit_layout_tests (with patch)'
 
     def set_results(self, build, results):
@@ -45,6 +47,13 @@ class MockBuildBot(BuildBot):
     def fetch_results(self, build, full=False):
         self.fetched_builds.append(build)
         return self._canned_results.get(build)
+
+    def set_webdriver_test_results(self, build, master, results):
+        self._webdriver_results[(build, master)] = results
+
+    def fetch_webdriver_test_results(self, build, master):
+        self.fetched_webdriver_builds.append((build, master))
+        return self._webdriver_results.get((build, master))
 
     def set_retry_sumary_json(self, build, content):
         self._canned_retry_summary_json[build] = content

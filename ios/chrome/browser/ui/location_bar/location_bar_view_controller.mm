@@ -266,7 +266,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
              metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder {
   self.infobarMetricsRecorder = metricsRecorder;
   self.shouldShowLeadingButton = display;
-  [self.locationBarSteadyView.leadingButton displayBadge:display animated:YES];
+  [self.locationBarSteadyView displayBadge:display animated:YES];
 }
 
 #pragma mark - LocationBarAnimatee
@@ -300,13 +300,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)hideSteadyViewLeadingButton {
-  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
+  [self.locationBarSteadyView displayBadge:NO animated:NO];
 }
 
 - (void)showSteadyViewLeadingButtonIfNeeded {
-  [self.locationBarSteadyView.leadingButton
-      displayBadge:self.shouldShowLeadingButton
-          animated:NO];
+  [self.locationBarSteadyView displayBadge:self.shouldShowLeadingButton
+                                  animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {

@@ -147,10 +147,6 @@ void LaunchDateAndTimeSettingsImpl() {
 }
 #endif
 
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-}
-
 }  // namespace
 
 SSLErrorControllerClient::SSLErrorControllerClient(
@@ -177,11 +173,6 @@ SSLErrorControllerClient::SSLErrorControllerClient(
 SSLErrorControllerClient::~SSLErrorControllerClient() {}
 
 void SSLErrorControllerClient::GoBack() {
-  if (!AreCommittedInterstitialsEnabled()) {
-    SecurityInterstitialControllerClient::GoBack();
-    return;
-  }
-
   SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted();
 }
 
@@ -200,11 +191,6 @@ void SSLErrorControllerClient::Proceed() {
   if (web_app::AppBrowserController::IsForWebAppBrowser(browser))
     chrome::OpenInChrome(browser);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-  if (!AreCommittedInterstitialsEnabled()) {
-    SecurityInterstitialControllerClient::Proceed();
-    return;
-  }
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());

@@ -47,11 +47,12 @@ namespace WTL
 #define SPLIT_RIGHTALIGNED		0x00000004
 #define SPLIT_BOTTOMALIGNED		SPLIT_RIGHTALIGNED
 #define SPLIT_GRADIENTBAR		0x00000008
+#define SPLIT_FLATBAR			0x00000020
 #define SPLIT_FIXEDBARSIZE		0x00000010
 
 // Note: SPLIT_PROPORTIONAL and SPLIT_RIGHTALIGNED/SPLIT_BOTTOMALIGNED are 
 // mutually exclusive. If both are set, splitter defaults to SPLIT_PROPORTIONAL.
-// SPLIT_GRADIENTBAR doesn't work with _ATL_NO_MSIMG
+// Also, SPLIT_FLATBAR overrides SPLIT_GRADIENTBAR if both are set.
 
 
 template <class T>
@@ -476,8 +477,23 @@ public:
 		{
 			dc.FillRect(&rect, COLOR_3DFACE);
 
-#ifndef _ATL_NO_MSIMG
-			if((m_dwExtendedStyle & SPLIT_GRADIENTBAR) != 0)
+			if((m_dwExtendedStyle & SPLIT_FLATBAR) != 0)
+			{
+				RECT rect1 = rect;
+				if(m_bVertical)
+					rect1.right = rect1.left + 1;
+				else
+					rect1.bottom = rect1.top + 1;
+				dc.FillRect(&rect1, COLOR_WINDOW);
+
+				rect1 = rect;
+				if(m_bVertical)
+					rect1.left = rect1.right - 1;
+				else
+					rect1.top = rect1.bottom - 1;
+				dc.FillRect(&rect1, COLOR_3DSHADOW);
+			}
+			else if((m_dwExtendedStyle & SPLIT_GRADIENTBAR) != 0)
 			{
 				RECT rect2 = rect;
 				if(m_bVertical)
@@ -487,7 +503,7 @@ public:
 
 				dc.GradientFillRect(rect2, ::GetSysColor(COLOR_3DFACE), ::GetSysColor(COLOR_3DSHADOW), m_bVertical);
 			}
-#endif
+
 			// draw 3D edge if needed
 			T* pT = static_cast<T*>(this);
 			if((pT->GetExStyle() & WS_EX_CLIENTEDGE) != 0)
@@ -1099,17 +1115,7 @@ template <bool t_bVertical = true>
 class CSplitterWindowT : public CSplitterWindowImpl<CSplitterWindowT<t_bVertical> >
 {
 public:
-	// This is instead of DECLARE_WND_CLASS_EX(_T("WTL_SplitterWindow"), CS_DBLCLKS, COLOR_WINDOW)
-	static ATL::CWndClassInfo& GetWndClassInfo()
-	{
-		static ATL::CWndClassInfo wc = 
-		{
-			{ sizeof(WNDCLASSEX), CS_DBLCLKS, ATL::CWindowImplBase::StartWindowProc,
-			  0, 0, NULL, NULL, NULL, (HBRUSH)(COLOR_WINDOW + 1), NULL, _T("WTL_SplitterWindow"), NULL },
-			NULL, NULL, IDC_ARROW, TRUE, 0, _T("")
-		};
-		return wc;
-	}
+	DECLARE_WND_CLASS_EX2(_T("WTL_SplitterWindow"), CSplitterWindowT<t_bVertical>, CS_DBLCLKS, COLOR_WINDOW)
 
 	CSplitterWindowT() : CSplitterWindowImpl<CSplitterWindowT<t_bVertical> >(t_bVertical)
 	{ }
@@ -1118,6 +1124,6 @@ public:
 typedef CSplitterWindowT<true>    CSplitterWindow;
 typedef CSplitterWindowT<false>   CHorSplitterWindow;
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLSPLIT_H__

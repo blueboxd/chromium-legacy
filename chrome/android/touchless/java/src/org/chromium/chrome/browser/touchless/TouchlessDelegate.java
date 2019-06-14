@@ -44,4 +44,8 @@ public class TouchlessDelegate {
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
         return TouchlessPermissionDialogModel.getModel(controller, delegate);
     }
+
+    public static TouchlessUiCoordinator getTouchlessUiCoordinator(ChromeActivity activity) {
+        return new TouchlessUiCoordinatorImpl(activity);
+    }
 }

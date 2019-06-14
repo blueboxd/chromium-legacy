@@ -64,7 +64,7 @@ class ToolbarRowView : public views::View {
             views::View* forward,
             views::View* reload,
             views::View* location_bar) {
-    GridLayout* layout = SetLayoutManager(std::make_unique<GridLayout>(this));
+    GridLayout* layout = SetLayoutManager(std::make_unique<GridLayout>());
 
     const int related_horizontal_spacing =
         ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -200,7 +200,7 @@ void SimpleWebViewDialog::Init() {
   toolbar_row->Init(back_, forward_, reload_, location_bar_);
 
   // Layout.
-  GridLayout* layout = SetLayoutManager(std::make_unique<GridLayout>(this));
+  GridLayout* layout = SetLayoutManager(std::make_unique<GridLayout>());
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,

@@ -103,7 +103,6 @@
         android:id="@+id/button_init_not_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="120dp"
         android:singleLine="true"
         android:gravity="center"
         android:text="@string/cancel"
@@ -119,10 +118,9 @@
         android:id="@+id/button_init_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="120dp"
         android:singleLine="true"
         android:gravity="center"
         android:text="@string/init_ok"
-        style="FilledButton" />
+        style="@style/FilledButton.Flat" />
     </LinearLayout>
 </LinearLayout>

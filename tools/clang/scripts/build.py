@@ -47,7 +47,8 @@ ANDROID_NDK_DIR = os.path.join(
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 
-BUG_REPORT_URL = ('https://crbug.com and run tools/clang/scripts/upload_crash.py'
+BUG_REPORT_URL = ('https://crbug.com and run'
+                  ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
 
 

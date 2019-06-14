@@ -97,7 +97,7 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
          std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
          base::WaitableEvent* event) {
         if (!images.empty())
-          impl_on_gpu->ReleaseSkImages(std::move(images));
+          impl_on_gpu->ReleaseImageContexts(std::move(images));
         if (!render_passes.empty())
           impl_on_gpu->RemoveRenderPassResource(std::move(render_passes));
         impl_on_gpu = nullptr;
@@ -319,9 +319,9 @@ void SkiaOutputSurfaceImpl::ReleaseCachedResources(
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ReleaseSkImages,
-                                 base::Unretained(impl_on_gpu_.get()),
-                                 std::move(image_contexts));
+  auto callback = base::BindOnce(
+      &SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
+      base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 

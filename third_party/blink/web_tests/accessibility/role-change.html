@@ -33,7 +33,7 @@ function axElementById(id) {
 
 test(function(t) {
     const axPresentation = axElementById('row1');
-    assert_true(axPresentation.isIgnored);
+    assert_equals(axPresentation, undefined);
 
     // Change role attribute
     document.getElementById('row1').setAttribute('role', 'row');

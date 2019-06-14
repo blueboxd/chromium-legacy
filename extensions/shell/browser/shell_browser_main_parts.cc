@@ -184,7 +184,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   shell::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   // Initialize our "profile" equivalent.
-  browser_context_ = std::make_unique<ShellBrowserContext>(this);
+  browser_context_ = std::make_unique<ShellBrowserContext>();
 
   // app_shell only supports a single user, so all preferences live in the user
   // data directory, including the device-wide local state.

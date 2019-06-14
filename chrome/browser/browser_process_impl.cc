@@ -49,7 +49,6 @@
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/switch_utils.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
@@ -373,12 +372,6 @@ void BrowserProcessImpl::StartTearDown() {
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
 
-  // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
-  // NetworkTimeTracker, and SafeBrowsing ClientSideDetectionService
-  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
-  // since their destructors can call the URLFetcher destructor, which does a
-  // PostDelayedTask operation on the IO thread. (The IO thread will handle
-  // that URLFetcher operation before going away.)
   metrics_services_manager_.reset();
   intranet_redirect_detector_.reset();
   if (safe_browsing_service_.get())
@@ -391,7 +384,7 @@ void BrowserProcessImpl::StartTearDown() {
   system_notification_helper_.reset();
 
 #if !defined(OS_CHROMEOS)
-  // Need to clear the desktop notification balloons before the io_thread_ and
+  // Need to clear the desktop notification balloons before the IO thread and
   // before the profiles, since if there are any still showing we will access
   // those things during teardown.
   notification_ui_manager_.reset();
@@ -407,7 +400,7 @@ void BrowserProcessImpl::StartTearDown() {
 
   battery_metrics_.reset();
 
-  // Need to clear profiles (download managers) before the io_thread_.
+  // Need to clear profiles (download managers) before the IO thread.
   {
     TRACE_EVENT0("shutdown",
                  "BrowserProcessImpl::StartTearDown:ProfileManager");
@@ -470,15 +463,6 @@ void BrowserProcessImpl::PostDestroyThreads() {
 
   // Must outlive the worker threads.
   webrtc_log_uploader_.reset();
-
-  // Reset associated state right after actual thread is stopped,
-  // as io_thread_.global_ cleanup happens in CleanUp on the IO
-  // thread, i.e. as the thread exits its message loop.
-  //
-  // This is important also because in various places, the
-  // IOThread object being NULL is considered synonymous with the
-  // IO thread having stopped.
-  io_thread_.reset();
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -665,12 +649,6 @@ rappor::RapporServiceImpl* BrowserProcessImpl::rappor_service() {
   return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
-IOThread* BrowserProcessImpl::io_thread() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(io_thread_.get());
-  return io_thread_.get();
-}
-
 SystemNetworkContextManager*
 BrowserProcessImpl::system_network_context_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -685,7 +663,6 @@ BrowserProcessImpl::shared_url_loader_factory() {
 
 network::NetworkQualityTracker* BrowserProcessImpl::network_quality_tracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(io_thread_);
   if (!network_quality_tracker_) {
     network_quality_tracker_ = std::make_unique<network::NetworkQualityTracker>(
         base::BindRepeating(&content::GetNetworkService));
@@ -1143,6 +1120,8 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
+  battery_metrics_ = std::make_unique<BatteryMetrics>();
+
   secure_origin_prefs_observer_ =
       std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
@@ -1166,18 +1145,9 @@ void BrowserProcessImpl::PreCreateThreads(
         command_line.GetCommandLineString(), chrome::GetChannelName());
   }
 
-  // Must be created before the IOThread.
-  // TODO(mmenke): Once IOThread class is no longer needed (not the thread
-  // itself), this can be created on first use.
+  // TODO(mmenke): This can be created on first use.
   if (!SystemNetworkContextManager::GetInstance())
     SystemNetworkContextManager::CreateInstance(local_state());
-  io_thread_ = std::make_unique<IOThread>(net_log_.get());
-}
-
-void BrowserProcessImpl::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  // This uses the service manager so it must happen after it's started.
-  battery_metrics_ = std::make_unique<BatteryMetrics>();
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

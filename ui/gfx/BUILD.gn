@@ -23,6 +23,22 @@ source_set("gfx_export") {
   ]
 }
 
+# Used for color generation at build time without importing all the gfx.
+jumbo_component("color_utils") {
+  sources = [
+    "color_palette.h",
+    "color_utils.cc",
+    "color_utils.h",
+  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
+  public_deps = [
+    ":gfx_export",
+    "//base",
+    "//skia",
+    "//ui/gfx/geometry",
+  ]
+}
+
 jumbo_component("geometry_skia") {
   sources = [
     "geometry_skia_export.h",
@@ -53,11 +69,8 @@ jumbo_component("gfx") {
     "break_list.h",
     "color_analysis.cc",
     "color_analysis.h",
-    "color_palette.h",
     "color_transform.cc",
     "color_transform.h",
-    "color_utils.cc",
-    "color_utils.h",
     "decorated_text.cc",
     "decorated_text.h",
     "decorated_text_mac.h",
@@ -242,6 +255,7 @@ jumbo_component("gfx") {
 
   public_deps = [
     ":color_space",
+    ":color_utils",
     ":geometry_skia",
     ":gfx_switches",
     ":memory_buffer_sources",

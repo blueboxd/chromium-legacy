@@ -24,8 +24,7 @@ class ChromeBrowserMainExtraPartsPerformanceManager
 
  private:
   // ChromeBrowserMainExtraParts overrides.
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
+  void PostCreateThreads() override;
   void PostMainMessageLoopRun() override;
 
   std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;

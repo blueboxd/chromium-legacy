@@ -60,6 +60,12 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   // ui::MediaKeysListener::Delegate:
   void OnMediaKeysAccelerator(const ui::Accelerator& accelerator) override;
 
+  // Informs the MediaKeysListener whether or not media is playing.
+  // TODO(https://crbug.com/974035): Once the MediaKeysListenerManager has been
+  // refactored to work with system media controls this should no longer be
+  // needed and should be deleted.
+  void SetIsMediaPlaying(bool is_playing);
+
   HardwareKeyMediaController* hardware_key_media_controller_for_testing() {
     return hardware_key_media_controller_.get();
   }
@@ -117,6 +123,8 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
 
   // True if auxiliary services have already been started.
   bool auxiliary_services_started_;
+
+  bool is_media_playing_ = false;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<NowPlayingInfoCenterNotifier>

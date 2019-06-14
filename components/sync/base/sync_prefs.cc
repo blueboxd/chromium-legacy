@@ -148,7 +148,7 @@ void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Actual user-controlled preferences.
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
-  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, true);
+  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     RegisterTypeSelectedPref(registry, type);

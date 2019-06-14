@@ -39,7 +39,6 @@ js_type_check("ui_resources") {
     ":splitter",
     ":store",
     ":store_client",
-    ":table",
     ":tabs",
     ":tree",
   ]
@@ -254,16 +253,6 @@ js_library("store_client") {
   deps = [
     ":store",
     "../..:cr",
-  ]
-}
-
-js_library("table") {
-  deps = [
-    ":list",
-    ":list_single_selection_model",
-    "table:table_column_model",
-    "table:table_header",
-    "table:table_list",
   ]
 }
 

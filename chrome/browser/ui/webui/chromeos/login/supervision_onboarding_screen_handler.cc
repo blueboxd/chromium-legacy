@@ -37,6 +37,12 @@ void SupervisionOnboardingScreenHandler::DeclareLocalizedValues(
                IDS_SUPERVISION_ONBOARDING_SKIP_BUTTON);
   builder->Add("supervisionOnboardingBackButtonLabel",
                IDS_SUPERVISION_ONBOARDING_BACK_BUTTON);
+  builder->Add("supervisionOnboardingRetryButtonLabel",
+               IDS_SUPERVISION_ONBOARDING_RETRY_BUTTON);
+  builder->Add("supervisionOnboardingRetryDialogTitle",
+               IDS_SUPERVISION_ONBOARDING_RETRY_DIALOG_TITLE);
+  builder->Add("supervisionOnboardingRetryDialogMessage",
+               IDS_SUPERVISION_ONBOARDING_RETRY_DIALOG_MESSAGE);
 }
 
 void SupervisionOnboardingScreenHandler::Bind(

@@ -275,7 +275,6 @@ ios_web_view_deps = [
   "//components/language/core/browser",
   "//components/language/core/common",
   "//components/leveldb_proto",
-  "//components/net_log",
   "//services/network:network_service",
   "//components/password_manager/core/browser",
   "//components/password_manager/core/browser/form_parsing:form_parsing",

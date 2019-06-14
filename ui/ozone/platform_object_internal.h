@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/memory/ptr_util.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform_constructor_list.h"
 #include "ui/ozone/platform_object.h"
 #include "ui/ozone/platform_selection.h"

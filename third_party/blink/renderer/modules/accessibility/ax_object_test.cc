@@ -45,7 +45,7 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
                    <p id="paragraph">hello<br id="br">there</p>
                    <button id="button">button</button>)HTML");
 
-  const AXObject* root = GetAXRootObject()->FirstChild();
+  const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);
@@ -71,8 +71,8 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(ax::mojom::Role::kStaticText,
             paragraph->DeepestLastChild()->RoleValue());
 
-  EXPECT_EQ(nullptr, paragraph->PreviousSibling());
-  EXPECT_EQ(nullptr, input->NextSibling());
+  EXPECT_EQ(paragraph->PreviousSibling(), input);
+  EXPECT_EQ(paragraph, input->NextSibling());
   ASSERT_NE(nullptr, br->NextSibling());
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());

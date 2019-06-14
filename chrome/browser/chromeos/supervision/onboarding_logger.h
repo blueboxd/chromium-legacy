@@ -26,6 +26,10 @@ class OnboardingLogger : public OnboardingFlowModel::Observer {
   // OnboardingFlowModel::Observer:
   void StepStartedLoading(OnboardingFlowModel::Step step) override;
   void StepFinishedLoading(OnboardingFlowModel::Step step) override;
+  void StepFailedToLoadDueToAuthError(OnboardingFlowModel::Step step,
+                                      GoogleServiceAuthError error) override;
+  void StepFailedToLoadDueToNetworkError(OnboardingFlowModel::Step step,
+                                         net::Error error) override;
   void WillExitFlow(OnboardingFlowModel::Step step,
                     OnboardingFlowModel::ExitReason reason) override;
 

@@ -36,10 +36,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.partial_swap_enabled;
   }
 
-  static bool finish_rendering_on_resize(const viz::RendererSettings& input) {
-    return input.finish_rendering_on_resize;
-  }
-
   static bool should_clear_root_render_pass(
       const viz::RendererSettings& input) {
     return input.should_clear_root_render_pass;

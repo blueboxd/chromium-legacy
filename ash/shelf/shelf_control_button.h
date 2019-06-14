@@ -27,6 +27,10 @@ class ASH_EXPORT ShelfControlButton : public ShelfButton {
   // drops.
   gfx::Point GetCenterPoint() const;
 
+  const gfx::Rect& ideal_bounds() const { return ideal_bounds_; }
+
+  void set_ideal_bounds(const gfx::Rect& bounds) { ideal_bounds_ = bounds; }
+
  protected:
   // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
@@ -41,6 +45,7 @@ class ASH_EXPORT ShelfControlButton : public ShelfButton {
 
  private:
   Shelf* shelf_;
+  gfx::Rect ideal_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfControlButton);
 };

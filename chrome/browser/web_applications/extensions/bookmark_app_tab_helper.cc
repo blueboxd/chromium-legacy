@@ -40,21 +40,6 @@ web_app::WebAppTabHelperBase* BookmarkAppTabHelper::CloneForWebContents(
   return new_tab_helper;
 }
 
-web_app::AppId BookmarkAppTabHelper::FindAppIdInScopeOfUrl(const GURL& url) {
-  content::BrowserContext* browser_context =
-      web_contents()->GetBrowserContext();
-
-  const Extension* extension =
-      util::GetInstalledPwaForUrl(browser_context, url);
-
-  if (!extension) {
-    // Check if there is a shortcut app for this |url|.
-    extension = GetInstalledShortcutForUrl(browser_context, url);
-  }
-
-  return extension ? extension->id() : web_app::AppId();
-}
-
 bool BookmarkAppTabHelper::IsInAppWindow() const {
   return util::IsWebContentsInAppWindow(web_contents());
 }

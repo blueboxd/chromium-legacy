@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"
@@ -182,11 +183,14 @@ TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
   auto handler = MakeHandler();
   ready_callback_.WaitForCallback();
 
-  test::TestCallbackReceiver<> cb;
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb;
   handler->Cancel(cb.callback());
   cb.WaitForCallback();
+
+  EXPECT_EQ(cb.value(), CtapDeviceResponseCode::kSuccess);
 }
 
+// Tests enumerating enrollments expecting a list of size 1.
 TEST_F(BioEnrollmentHandlerTest, Enumerate) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
@@ -213,6 +217,32 @@ TEST_F(BioEnrollmentHandlerTest, Enumerate) {
       std::vector<std::pair<std::vector<uint8_t>, std::string>>{
           {{0, 0, 0, 1}, "Template0001"}};
   EXPECT_EQ(v, expected);
+}
+
+// Tests renaming an enrollment (success and failure).
+TEST_F(BioEnrollmentHandlerTest, Rename) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.bio_enrollment_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
+
+  // Rename existing enrollment.
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb0;
+  handler->RenameTemplate({0, 0, 0, 1}, "OtherFingerprint1", cb0.callback());
+
+  cb0.WaitForCallback();
+  EXPECT_EQ(cb0.value(), CtapDeviceResponseCode::kSuccess);
+
+  // Rename non-existent enrollment.
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb1;
+  handler->RenameTemplate({0, 0, 0, 2}, "OtherFingerprint2", cb1.callback());
+
+  cb1.WaitForCallback();
+  EXPECT_EQ(cb1.value(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
 }
 
 }  // namespace

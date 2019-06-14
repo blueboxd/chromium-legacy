@@ -190,8 +190,8 @@ void PopulateSheetHeaderView(bool show_back_arrow,
                              std::unique_ptr<views::Background> background) {
   SkColor background_color = background->get_color();
   container->SetBackground(std::move(background));
-  views::GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  views::GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   constexpr int kVerticalInset = 14;
   constexpr int kHeaderHorizontalInset = 16;

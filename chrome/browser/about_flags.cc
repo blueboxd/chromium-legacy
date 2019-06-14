@@ -84,6 +84,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
 #include "components/safe_browsing/features.h"
+#include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
@@ -1406,6 +1407,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
+    {"show-bluetooth-device-battery",
+     flag_descriptions::kShowBluetoothDeviceBatteryName,
+     flag_descriptions::kShowBluetoothDeviceBatteryDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShowBluetoothDeviceBattery)},
     {"show-taps", flag_descriptions::kShowTapsName,
      flag_descriptions::kShowTapsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kShowTaps)},
@@ -1944,6 +1949,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOnTheFlyMhtmlHashComputationName,
      flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
+    {"android-picture-in-picture-api",
+     flag_descriptions::kAndroidPictureInPictureAPIName,
+     flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(media::kPictureInPictureAPI)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -2998,6 +3007,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkGenPropertyTreesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kBlinkGenPropertyTrees)},
 
+    {"enable-backdrop-filter", flag_descriptions::kEnableCSSBackdropFilterName,
+     flag_descriptions::kEnableCSSBackdropFilterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSBackdropFilter)},
+
     {"enable-display-locking", flag_descriptions::kEnableDisplayLockingName,
      flag_descriptions::kEnableDisplayLockingDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDisplayLocking)},
@@ -3645,13 +3658,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseImprovedLabelDisambiguation)},
 
-#if defined(OS_CHROMEOS)
-    {"ash-notification-stacking-bar-redesign",
-     flag_descriptions::kAshNotificationStackingBarRedesignName,
-     flag_descriptions::kAshNotificationStackingBarRedesignDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationStackingBarRedesign)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_ANDROID)
     {"cct-target-translate-language",
      flag_descriptions::kCCTTargetTranslateLanguageName,
@@ -3915,6 +3921,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
+
+    {"security-interstitials-dark-mode",
+     flag_descriptions::kSecurityInterstitialsDarkModeName,
+     flag_descriptions::kSecurityInterstitialsDarkModeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         security_interstitials::kSecurityInterstitialsDarkMode)},
 
     {"enable-autofill-credit-card-upload-feedback",
      flag_descriptions::kEnableAutofillCreditCardUploadFeedbackName,

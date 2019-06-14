@@ -253,9 +253,9 @@ void SecurityPolicy::AddOriginAccessAllowListEntry(
     const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddAllowListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), port, domain_match_mode,
-      port_match_mode, priority);
+      source_origin.ToUrlOrigin(), destination_protocol.Utf8(),
+      destination_domain.Utf8(), port, domain_match_mode, port_match_mode,
+      priority);
 }
 
 void SecurityPolicy::AddOriginAccessBlockListEntry(
@@ -268,9 +268,9 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
     const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddBlockListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), port, domain_match_mode,
-      port_match_mode, priority);
+      source_origin.ToUrlOrigin(), destination_protocol.Utf8(),
+      destination_domain.Utf8(), port, domain_match_mode, port_match_mode,
+      priority);
 }
 
 void SecurityPolicy::ClearOriginAccessListForOrigin(

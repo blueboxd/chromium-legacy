@@ -6,16 +6,19 @@
 
 #include <memory>
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/content/content_platform_specific_tab_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "extensions/browser/extension_registry.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/tab_loader.h"
@@ -24,6 +27,35 @@
 using content::NavigationController;
 using content::SessionStorageNamespace;
 using content::WebContents;
+
+namespace {
+
+// |app_name| can could be for an app that has been uninstalled. In that
+// case we don't want to open an app window. Note that |app_name| is also used
+// for other types of windows like dev tools and we always want to open an
+// app window in those cases.
+bool ShouldCreateAppWindowForAppName(Profile* profile,
+                                     const std::string& app_name) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (app_name.empty())
+    return false;
+
+  // Only need to check that the app is installed if |app_name| is for an
+  // extension. (|app_name| could also be for a devtools windows.)
+  const std::string app_id = web_app::GetAppIdFromApplicationName(app_name);
+  if (app_id.empty())
+    return true;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          app_id);
+  return extension;
+#else
+  return !app_name.empty();
+#endif
+}
+
+}  // namespace
 
 void BrowserLiveTabContext::ShowBrowserWindow() {
   browser_->window()->Show();
@@ -148,17 +180,18 @@ sessions::LiveTabContext* BrowserLiveTabContext::Create(
     ui::WindowShowState show_state,
     const std::string& workspace) {
   std::unique_ptr<Browser::CreateParams> create_params;
-  if (app_name.empty()) {
-    create_params = std::make_unique<Browser::CreateParams>(
-        Browser::CreateParams(profile, true));
-    create_params->initial_bounds = bounds;
-  } else {
+  if (ShouldCreateAppWindowForAppName(profile, app_name)) {
     // Only trusted app popup windows should ever be restored.
     create_params = std::make_unique<Browser::CreateParams>(
         Browser::CreateParams::CreateForApp(app_name, true /* trusted_source */,
                                             bounds, profile,
                                             true /* user_gesture */));
+  } else {
+    create_params = std::make_unique<Browser::CreateParams>(
+        Browser::CreateParams(profile, true));
+    create_params->initial_bounds = bounds;
   }
+
   create_params->initial_show_state = show_state;
   create_params->initial_workspace = workspace;
   Browser* browser = new Browser(*create_params.get());

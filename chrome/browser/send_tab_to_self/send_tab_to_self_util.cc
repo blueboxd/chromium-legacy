@@ -42,12 +42,11 @@ bool IsUserSyncTypeActive(Profile* profile) {
          service->GetSendTabToSelfModel()->IsReady();
 }
 
-bool IsSyncingOnMultipleDevices(Profile* profile) {
-  syncer::DeviceInfoSyncService* device_sync_service =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile);
-
-  return device_sync_service && device_sync_service->GetDeviceInfoTracker() &&
-         device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
+bool HasValidTargetDevice(Profile* profile) {
+  SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
+  return service && service->GetSendTabToSelfModel() &&
+         service->GetSendTabToSelfModel()->HasValidTargetDevice();
 }
 
 bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
@@ -66,7 +65,7 @@ bool ShouldOfferFeature(content::WebContents* web_contents) {
 
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
-         IsSyncingOnMultipleDevices(profile) &&
+         HasValidTargetDevice(profile) &&
          IsContentRequirementsMet(web_contents->GetURL(), profile);
 }
 
@@ -77,7 +76,7 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
-         IsSyncingOnMultipleDevices(profile) &&
+         HasValidTargetDevice(profile) &&
          (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
           IsContentRequirementsMet(link_url, profile));
 }

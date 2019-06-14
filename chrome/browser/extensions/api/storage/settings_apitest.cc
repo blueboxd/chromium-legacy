@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -31,6 +32,7 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/syncable_service.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
@@ -111,19 +113,65 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         settings_namespace, normal_action, incognito_action, NULL, true);
   }
 
-  syncer::SyncableService* GetSyncableService() {
-    return settings_sync_util::GetSyncableService(browser()->profile(),
-                                                  kModelType);
+  static void InitSyncOnBackgroundSequence(
+      base::OnceCallback<base::WeakPtr<syncer::SyncableService>()>
+          syncable_service_provider,
+      syncer::SyncChangeProcessor* sync_processor) {
+    DCHECK(GetBackendTaskRunner()->RunsTasksInCurrentSequence());
+
+    base::WeakPtr<syncer::SyncableService> syncable_service =
+        std::move(syncable_service_provider).Run();
+    DCHECK(syncable_service.get());
+    EXPECT_FALSE(
+        syncable_service
+            ->MergeDataAndStartSyncing(
+                kModelType, syncer::SyncDataList(),
+                std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
+                    sync_processor),
+                std::make_unique<syncer::SyncErrorFactoryMock>())
+            .error()
+            .IsSet());
   }
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
     base::RunLoop().RunUntilIdle();
-    InitSyncWithSyncableService(sync_processor, GetSyncableService());
+
+    base::RunLoop loop;
+    GetBackendTaskRunner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&InitSyncOnBackgroundSequence,
+                       settings_sync_util::GetSyncableServiceProvider(
+                           profile(), kModelType),
+                       sync_processor),
+        loop.QuitClosure());
+    loop.Run();
+  }
+
+  static void SendChangesOnBackgroundSequence(
+      base::OnceCallback<base::WeakPtr<syncer::SyncableService>()>
+          syncable_service_provider,
+      const syncer::SyncChangeList& change_list) {
+    DCHECK(GetBackendTaskRunner()->RunsTasksInCurrentSequence());
+
+    base::WeakPtr<syncer::SyncableService> syncable_service =
+        std::move(syncable_service_provider).Run();
+    DCHECK(syncable_service.get());
+    EXPECT_FALSE(
+        syncable_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {
     base::RunLoop().RunUntilIdle();
-    SendChangesToSyncableService(change_list, GetSyncableService());
+
+    base::RunLoop loop;
+    GetBackendTaskRunner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&SendChangesOnBackgroundSequence,
+                       settings_sync_util::GetSyncableServiceProvider(
+                           profile(), kModelType),
+                       change_list),
+        loop.QuitClosure());
+    loop.Run();
   }
 
   void SetPolicies(const base::DictionaryValue& policies) {
@@ -178,26 +226,9 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     return message_json;
   }
 
-  void InitSyncWithSyncableService(
-      syncer::SyncChangeProcessor* sync_processor,
-      syncer::SyncableService* settings_service) {
-    EXPECT_FALSE(settings_service
-                     ->MergeDataAndStartSyncing(
-                         kModelType, syncer::SyncDataList(),
-                         std::unique_ptr<syncer::SyncChangeProcessor>(
-                             new syncer::SyncChangeProcessorWrapperForTest(
-                                 sync_processor)),
-                         std::unique_ptr<syncer::SyncErrorFactory>(
-                             new syncer::SyncErrorFactoryMock()))
-                     .error()
-                     .IsSet());
-  }
-
   void SendChangesToSyncableService(
       const syncer::SyncChangeList& change_list,
       syncer::SyncableService* settings_service) {
-    EXPECT_FALSE(
-        settings_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   }
 
  protected:

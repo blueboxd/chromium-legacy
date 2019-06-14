@@ -478,7 +478,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return kGrabbedStateUndefined;
   }
   virtual bool IsHovered() const { return false; }
-  virtual bool IsLineBreakingObject() const { return false; }
   virtual bool IsLinked() const { return false; }
   virtual bool IsLoaded() const { return false; }
   virtual bool IsModal() const { return false; }
@@ -499,9 +498,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool CanSetValueAttribute() const;
 
   // Whether objects are ignored, i.e. hidden from the AT.
+  // TODO(janewman) Ignored nodes that are included in the tree should be marked
+  // with ax::mojom::State::kIgnored
   bool AccessibilityIsIgnored() const;
-  // Whether objects are ignored but included in the tree.
-  bool AccessibilityIsIgnoredButIncludedInTree() const;
 
   // Whether objects are included in the tree. Nodes that are included in the
   // tree are serialized, even if they are ignored. This allows browser-side
@@ -523,8 +522,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsDescendantOfLeafNode() const;
   AXObject* LeafNodeAncestor() const;
   bool IsDescendantOfDisabledNode() const;
-  bool ComputeAccessibilityIsIgnoredPassThrough(
-      const IgnoredReasons& ignored_reasons) const;
   const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
   const AXObject* DisabledAncestor() const;
   bool LastKnownIsIgnoredValue() const;
@@ -813,7 +810,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXObject* ComputeParentIfExists() const { return nullptr; }
   AXObject* CachedParentObject() const { return parent_; }
   AXObject* ParentObjectUnignored() const;
-  AXObject* ParentObjectIncludedInTree() const;
   AXObject* ContainerWidget() const;
   bool IsContainerWidget() const;
 
@@ -1042,7 +1038,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable int last_modification_count_;
   mutable RGBA32 cached_background_color_;
   mutable bool cached_is_ignored_ : 1;
-  mutable bool cached_is_ignored_pass_through_ : 1;
 
   mutable bool cached_is_inert_or_aria_hidden_ : 1;
   mutable bool cached_is_descendant_of_leaf_node_ : 1;
@@ -1062,7 +1057,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void UpdateCachedAttributeValuesIfNeeded() const;
 
  private:
-  void UpdateDistributionForFlatTreeTraversal() const;
   bool IsARIAControlledByTextboxWithActiveDescendant() const;
   bool AncestorExposesActiveDescendant() const;
   bool IsCheckable() const;

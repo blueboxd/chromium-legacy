@@ -16,7 +16,7 @@
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {
-class InputDeviceManager;
+class DeviceDataManager;
 enum class StylusState;
 }  // namespace ui
 
@@ -97,7 +97,7 @@ class ASH_EXPORT TrayAction : public mojom::TrayAction,
 
   mojom::TrayActionClientPtr tray_action_client_;
 
-  ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>
+  ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
       stylus_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAction);

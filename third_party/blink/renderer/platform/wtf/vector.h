@@ -1141,13 +1141,13 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   //     Insert a single element constructed as T(args...) to the back. The
   //     element is constructed directly on the backing buffer with placement
   //     new.
-  // append(buffer, size)
-  // appendVector(vector)
-  // appendRange(begin, end)
+  // Append(buffer, size)
+  // AppendVector(vector)
+  // AppendRange(begin, end)
   //     Insert multiple elements represented by (1) |buffer| and |size|
-  //     (for append), (2) |vector| (for appendVector), or (3) a pair of
-  //     iterators (for appendRange) to the back. The elements will be copied.
-  // uncheckedAppend(value)
+  //     (for append), (2) |vector| (for AppendVector), or (3) a pair of
+  //     iterators (for AppendRange) to the back. The elements will be copied.
+  // UncheckedAppend(value)
   //     Insert a single element like push_back(), but this function assumes
   //     the vector has enough capacity such that it can store the new element
   //     without a reallocation. Using this function could improve the
@@ -1197,7 +1197,7 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // push_front(value)
   //     Insert a single element to the front.
   // push_front(buffer, size)
-  // prependVector(vector)
+  // PrependVector(vector)
   //     Insert multiple elements represented by either |buffer| and |size| or
   //     |vector| to the front. The elements will be copied.
   template <typename U>
@@ -1227,10 +1227,10 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // growed as a result of this call, those events may invalidate some
   // iterators. See comments for shrink() and grow().
   //
-  // fill(value, size) will resize the Vector to |size|, and then copy-assign
+  // Fill(value, size) will resize the Vector to |size|, and then copy-assign
   // or copy-initialize all the elements.
   //
-  // fill(value) is a synonym for fill(value, size()).
+  // Fill(value) is a synonym for Fill(value, size()).
   void Fill(const T&, wtf_size_t);
   void Fill(const T& val) { Fill(val, size()); }
 

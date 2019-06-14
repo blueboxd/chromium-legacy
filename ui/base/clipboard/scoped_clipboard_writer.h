@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file declares the ScopedClipboardWriter class, a wrapper around
-// the Clipboard class which simplifies writing data to the system clipboard.
-// Upon deletion the class atomically writes all data to the clipboard,
-// avoiding any potential race condition with other processes that are also
-// writing to the system clipboard.
-
 #ifndef UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
 #define UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
 
@@ -25,8 +19,14 @@ class Pickle;
 
 namespace ui {
 
-// This class is a wrapper for |Clipboard| that handles packing data
-// into a Clipboard::ObjectMap.
+// |ScopedClipboardWriter|:
+// - is a wrapper for |Clipboard|.
+// - simplifies writing data to the system clipboard.
+// - handles packing data into a Clipboard::ObjectMap.
+//
+// Upon deletion, the class atomically writes all data to the clipboard,
+// avoiding any potential race condition with other processes that are also
+// writing to the system clipboard.
 class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around the clipboard of the

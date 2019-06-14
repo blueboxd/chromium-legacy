@@ -46,6 +46,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

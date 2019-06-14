@@ -245,10 +245,10 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   initializer->setClientX(client_point.X());
   initializer->setClientY(client_point.Y());
 
-  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
-  // do that here and round it to the int again it causes inconsistencies
-  // between screenX/Y and cumulative movementX/Y.
-  if (!RuntimeEnabledFeatures::MovementXYInBlinkEnabled()) {
+  if (!RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
+    // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
+    // do that here and round it to the int again it causes inconsistencies
+    // between screenX/Y and cumulative movementX/Y.
     initializer->setMovementX(web_pointer_properties.movement_x);
     initializer->setMovementY(web_pointer_properties.movement_y);
   }

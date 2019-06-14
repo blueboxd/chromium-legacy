@@ -160,7 +160,7 @@ void LabelExample::AddCustomLabel(View* container) {
   control_container->SetBorder(CreateSolidBorder(2, SK_ColorGRAY));
   control_container->SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
   GridLayout* layout = control_container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(control_container.get()));
+      std::make_unique<views::GridLayout>());
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,

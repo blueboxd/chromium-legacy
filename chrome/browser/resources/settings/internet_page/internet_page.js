@@ -174,12 +174,23 @@ Polymer({
   /** @private {Function} */
   onExtensionDisabledListener_: null,
 
-  /** @private  {settings.InternetPageBrowserProxy} */
+  /** @private  {?settings.InternetPageBrowserProxy} */
   browserProxy_: null,
+
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
 
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /** @override */
@@ -295,11 +306,9 @@ Polymer({
    * @private
    */
   onDeviceEnabledToggled_: function(event) {
-    if (event.detail.enabled) {
-      this.networkingPrivate.enableNetworkType(event.detail.type);
-    } else {
-      this.networkingPrivate.disableNetworkType(event.detail.type);
-    }
+    this.networkConfigProxy_.setNetworkTypeEnabledState(
+        OncMojo.getNetworkTypeFromString(event.detail.type),
+        event.detail.enabled);
   },
 
   /**
@@ -595,8 +604,7 @@ Polymer({
    * @return {string}
    */
   getAddThirdPartyVpnLabel_: function(provider) {
-    return this.i18n(
-        'internetAddThirdPartyVPN', provider.ProviderName || '');
+    return this.i18n('internetAddThirdPartyVPN', provider.ProviderName || '');
   },
 
   /**

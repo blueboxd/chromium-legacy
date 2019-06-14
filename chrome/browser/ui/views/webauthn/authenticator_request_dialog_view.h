@@ -88,6 +88,8 @@ class AuthenticatorRequestDialogView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void OnVisibilityChanged(content::Visibility visibility) override;
+
  private:
   friend class test::AuthenticatorRequestDialogViewTestApi;
   friend void ShowAuthenticatorRequestDialog(
@@ -108,6 +110,11 @@ class AuthenticatorRequestDialogView
   views::Button* other_transports_button_ = nullptr;
   std::unique_ptr<views::MenuRunner> other_transports_menu_runner_;
   bool first_shown_ = false;
+
+  // web_contents_hidden_ is true if the |WebContents| that this dialog should
+  // attach to is currently hidden. In this case, the dialog won't be shown
+  // when requested, but will wait until the WebContents is visible again.
+  bool web_contents_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogView);
 };

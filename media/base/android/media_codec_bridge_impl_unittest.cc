@@ -288,10 +288,12 @@ AudioDecoderConfig NewAudioConfig(
 TEST(MediaCodecBridgeTest, CreateH264Decoder) {
   SKIP_TEST_IF_MEDIA_CODEC_IS_NOT_AVAILABLE();
 
-  MediaCodecBridgeImpl::CreateVideoDecoder(
-      kCodecH264, CodecType::kAny, gfx::Size(640, 480), nullptr, nullptr,
-      std::vector<uint8_t>(), std::vector<uint8_t>(), VideoColorSpace(),
-      HDRMetadata());
+  VideoCodecConfig config;
+  config.codec = kCodecH264;
+  config.codec_type = CodecType::kAny;
+  config.initial_expected_coded_size = gfx::Size(640, 480);
+
+  MediaCodecBridgeImpl::CreateVideoDecoder(config);
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
@@ -397,11 +399,12 @@ TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
     return;
   }
 
-  std::unique_ptr<MediaCodecBridge> media_codec(
-      MediaCodecBridgeImpl::CreateVideoDecoder(
-          kCodecVP8, CodecType::kAny, gfx::Size(320, 240), nullptr, nullptr,
-          std::vector<uint8_t>(), std::vector<uint8_t>(), VideoColorSpace(),
-          HDRMetadata()));
+  VideoCodecConfig config;
+  config.codec = kCodecVP8;
+  config.codec_type = CodecType::kAny;
+  config.initial_expected_coded_size = gfx::Size(320, 240);
+
+  auto media_codec = MediaCodecBridgeImpl::CreateVideoDecoder(config);
   ASSERT_THAT(media_codec, NotNull());
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vp8-I-frame-320x240");
   DecodeMediaFrame(media_codec.get(), buffer->data(), buffer->data_size(),
@@ -428,11 +431,12 @@ TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
   EXPECT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
                   NewAudioConfig(kUnknownAudioCodec), nullptr),
               IsNull());
-  EXPECT_THAT(MediaCodecBridgeImpl::CreateVideoDecoder(
-                  kUnknownVideoCodec, CodecType::kAny, gfx::Size(320, 240),
-                  nullptr, nullptr, std::vector<uint8_t>(),
-                  std::vector<uint8_t>(), VideoColorSpace(), HDRMetadata()),
-              IsNull());
+
+  VideoCodecConfig config;
+  config.codec = kUnknownVideoCodec;
+  config.codec_type = CodecType::kAny;
+  config.initial_expected_coded_size = gfx::Size(320, 240);
+  EXPECT_THAT(MediaCodecBridgeImpl::CreateVideoDecoder(config), IsNull());
 }
 
 // Test MediaCodec HW H264 encoding and validate the format of encoded frames.

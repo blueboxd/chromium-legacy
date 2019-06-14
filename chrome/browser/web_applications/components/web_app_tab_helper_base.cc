@@ -79,7 +79,7 @@ void WebAppTabHelperBase::SetAudioFocusIdMap(
 
 void WebAppTabHelperBase::OnWebAppInstalled(const AppId& installed_app_id) {
   // Check if current web_contents url is in scope for the newly installed app.
-  const web_app::AppId app_id = FindAppIdInScopeOfUrl(web_contents()->GetURL());
+  AppId app_id = FindAppIdInScopeOfUrl(web_contents()->GetURL());
   if (app_id == installed_app_id)
     SetAppId(app_id);
 }
@@ -130,6 +130,13 @@ void WebAppTabHelperBase::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
     return;
 
   provider->policy_manager()->ReinstallPlaceholderAppIfNecessary(url);
+}
+
+AppId WebAppTabHelperBase::FindAppIdInScopeOfUrl(const GURL& url) const {
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  DCHECK(provider);
+  return provider->registrar().FindAppIdForUrl(url);
 }
 
 }  // namespace web_app

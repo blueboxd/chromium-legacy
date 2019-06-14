@@ -76,11 +76,10 @@ class OriginTrialContextTest : public testing::Test,
  protected:
   OriginTrialContextTest()
       : ScopedOriginTrialsForTest(true),
-        execution_context_(MakeGarbageCollected<NullExecutionContext>()),
         token_validator_(new MockTokenValidator),
-        origin_trial_context_(MakeGarbageCollected<OriginTrialContext>(
-            *execution_context_,
-            std::unique_ptr<MockTokenValidator>(token_validator_))),
+        execution_context_(MakeGarbageCollected<NullExecutionContext>(
+            MakeGarbageCollected<OriginTrialContext>(
+                std::unique_ptr<MockTokenValidator>(token_validator_)))),
         histogram_tester_(new HistogramTester()) {}
 
   MockTokenValidator* TokenValidator() { return token_validator_; }
@@ -96,17 +95,21 @@ class OriginTrialContextTest : public testing::Test,
   bool IsFeatureEnabled(const String& origin, OriginTrialFeature feature) {
     UpdateSecurityOrigin(origin);
     // Need at least one token to ensure the token validator is called.
-    origin_trial_context_->AddToken(kTokenPlaceholder);
-    return origin_trial_context_->IsFeatureEnabled(feature);
+    execution_context_->GetOriginTrialContext()->AddToken(kTokenPlaceholder);
+    return execution_context_->GetOriginTrialContext()->IsFeatureEnabled(
+        feature);
   }
 
   std::unique_ptr<Vector<OriginTrialFeature>> GetEnabledNavigationFeatures() {
-    return origin_trial_context_->GetEnabledNavigationFeatures();
+    return execution_context_->GetOriginTrialContext()
+        ->GetEnabledNavigationFeatures();
   }
 
   bool ActivateNavigationFeature(OriginTrialFeature feature) {
-    origin_trial_context_->ActivateNavigationFeaturesFromInitiator({feature});
-    return origin_trial_context_->IsNavigationFeatureActivated(feature);
+    execution_context_->GetOriginTrialContext()
+        ->ActivateNavigationFeaturesFromInitiator({feature});
+    return execution_context_->GetOriginTrialContext()
+        ->IsNavigationFeatureActivated(feature);
   }
 
   void ExpectStatusUniqueMetric(OriginTrialTokenStatus status, int count) {
@@ -119,9 +122,8 @@ class OriginTrialContextTest : public testing::Test,
   }
 
  private:
-  Persistent<NullExecutionContext> execution_context_;
   MockTokenValidator* token_validator_;
-  Persistent<OriginTrialContext> origin_trial_context_;
+  Persistent<NullExecutionContext> execution_context_;
   std::unique_ptr<HistogramTester> histogram_tester_;
 };
 
@@ -242,7 +244,7 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
   // Create a dummy document with an OriginTrialContext.
   auto dummy = std::make_unique<DummyPageHolder>();
   Document* document = &dummy->GetDocument();
-  OriginTrialContext* context = OriginTrialContext::FromOrCreate(document);
+  OriginTrialContext* context = document->GetOriginTrialContext();
 
   // Enable the sample origin trial API ("Frobulate").
   context->AddFeature(OriginTrialFeature::kOriginTrialsSampleAPI);

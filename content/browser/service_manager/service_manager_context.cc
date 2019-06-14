@@ -55,6 +55,7 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/service.h"
 #include "services/audio/service_factory.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/device_service.h"
@@ -364,7 +365,7 @@ void RunServiceInstanceOnIOThread(
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
   if (!AudioServiceOutOfProcess() &&
       identity.name() == audio::mojom::kServiceName) {
-    CreateInProcessAudioService(ServiceManagerContext::GetAudioServiceRunner(),
+    CreateInProcessAudioService(audio::Service::GetInProcessTaskRunner(),
                                 std::move(*receiver));
     return;
   }
@@ -516,7 +517,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
  private:
   friend class base::RefCountedThreadSafe<InProcessServiceManagerContext>;
 
-  ~InProcessServiceManagerContext() {}
+  ~InProcessServiceManagerContext() = default;
 
   void StartOnServiceManagerThread(
       std::vector<service_manager::Manifest> manifests,
@@ -730,28 +731,6 @@ bool ServiceManagerContext::HasValidProcessForProcessGroup(
   if (iter == g_active_process_groups.Get().end() || !iter->second)
     return false;
   return iter->second->GetData().GetProcess().IsValid();
-}
-
-// static
-void ServiceManagerContext::StartBrowserConnection() {
-  auto* system_connection = ServiceManagerConnection::GetForProcess();
-  RegisterCommonBrowserInterfaces(system_connection);
-  system_connection->Start();
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  // Create the in-process NetworkService object so that its getter is
-  // available on the IO thread.
-  GetNetworkService();
-}
-
-// static
-base::DeferredSequencedTaskRunner*
-ServiceManagerContext::GetAudioServiceRunner() {
-  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
-      instance(new base::DeferredSequencedTaskRunner);
-  return (*instance).get();
 }
 
 void ServiceManagerContext::RunServiceInstance(

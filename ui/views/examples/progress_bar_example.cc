@@ -30,8 +30,8 @@ ProgressBarExample::ProgressBarExample() : ExampleBase("Progress Bar") {}
 ProgressBarExample::~ProgressBarExample() = default;
 
 void ProgressBarExample::CreateExampleView(View* container) {
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,

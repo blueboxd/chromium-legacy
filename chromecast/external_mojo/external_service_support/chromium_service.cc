@@ -55,8 +55,13 @@ ChromiumServiceWrapper::~ChromiumServiceWrapper() = default;
 void ChromiumServiceWrapper::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  chromium_service_->OnBindInterface(service_manager::BindSourceInfo(),
-                                     interface_name, std::move(interface_pipe));
+  chromium_service_->OnBindInterface(
+      service_manager::BindSourceInfo(
+          service_manager::Identity("unique", base::Token::CreateRandom(),
+                                    base::Token::CreateRandom(),
+                                    base::Token::CreateRandom()),
+          service_manager::CapabilitySet()),
+      interface_name, std::move(interface_pipe));
 }
 
 service_manager::mojom::ServiceRequest CreateChromiumServiceRequest(

@@ -82,6 +82,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void DismissEntry(const std::string& guid) override;
   void MarkEntryOpened(const std::string& guid) override;
   bool IsReady() override;
+  bool HasValidTargetDevice() override;
   std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
       override;
 

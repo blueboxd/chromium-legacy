@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/assistant/test/test_assistant_service.h"
 #include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
@@ -124,7 +125,7 @@ class AshTestHelper {
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
   std::unique_ptr<TestSystemTrayClient> system_tray_client_;
   std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
-
+  std::unique_ptr<TestAssistantService> assistant_service_;
   std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;

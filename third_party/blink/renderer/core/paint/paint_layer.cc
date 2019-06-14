@@ -3338,11 +3338,22 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   }
   float zoom = style.EffectiveZoom();
   FloatRect reference_box = BackdropFilterReferenceBox();
+  // Tack on regular filter values here - they need to be applied to the
+  // backdrop image as well, in addition to being applied to the painted content
+  // and children of the element. This is a bit of a hack - according to the
+  // spec, filters should apply to the entire render pass as a whole, including
+  // the backdrop-filtered content. However, because in the case that we have
+  // both filters and backdrop-filters on a single element, we create two effect
+  // nodes, and two render surfaces, and the backdrop-filter node comes first.
+  // To get around that, we add the "regular" filters to the backdrop filters to
+  // approximate.
+  FilterOperations filter_operations = style.BackdropFilter();
+  filter_operations.Operations().AppendVector(style.Filter().Operations());
   // Use kClamp tile mode to avoid pixel moving filters bringing in black
   // transparent pixels from the viewport edge.
   return_value = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
                                      SkBlurImageFilter::kClamp_TileMode)
-                     .BuildFilterOperations(style.BackdropFilter());
+                     .BuildFilterOperations(filter_operations);
   DCHECK(!return_value.IsEmpty());
   return return_value;
 }

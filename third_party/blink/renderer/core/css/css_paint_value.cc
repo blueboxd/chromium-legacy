@@ -95,6 +95,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
 void CSSPaintValue::BuildInputArgumentValues(
     Vector<std::unique_ptr<CrossThreadStyleValue>>&
         cross_thread_input_arguments) {
+  if (!parsed_input_arguments_)
+    return;
   for (const auto& style_value : *parsed_input_arguments_) {
     std::unique_ptr<CrossThreadStyleValue> cross_thread_style =
         ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(style_value);

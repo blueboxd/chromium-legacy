@@ -887,6 +887,20 @@ TEST_F(AdsPageLoadMetricsObserverTest,
                  0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
 }
 
+// Tests that a non ad frame that is deleted does not cause any unspecified
+// behavior (see https://crbug.com/973954).
+TEST_F(AdsPageLoadMetricsObserverTest, NonAdFrameDestroyed_FrameDeleted) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* vanilla_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
+
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  content::RenderFrameHostTester::For(vanilla_frame)->Detach();
+
+  NavigateMainFrame(kNonAdUrl);
+}
+
 // Tests that main frame ad bytes are recorded correctly.
 TEST_F(AdsPageLoadMetricsObserverTest, MainFrameAdBytesRecorded) {
   NavigateMainFrame(kNonAdUrl);

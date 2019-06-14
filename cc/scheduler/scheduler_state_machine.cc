@@ -241,6 +241,8 @@ void SchedulerStateMachine::AsValueInto(
                     processing_animation_worklets_for_active_tree_);
   state->SetBoolean("processing_animation_worklets_for_pending_tree",
                     processing_animation_worklets_for_pending_tree_);
+  state->SetBoolean("processing_paint_worklets_for_pending_tree",
+                    processing_paint_worklets_for_pending_tree_);
   state->EndDictionary();
 }
 
@@ -377,6 +379,15 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
   // Even if we need to force activation of the pending tree, we should abort
   // drawing the active tree first.
   if (active_tree_needs_first_draw_)
+    return false;
+
+  // Delay pending tree activation until paint worklets have completed painting
+  // the pending tree. This must occur before the |ShouldAbortCurrentFrame|
+  // check as we cannot have an unpainted active tree.
+  //
+  // Note that paint worklets continue to paint when the page is not visible, so
+  // any abort will eventually happen when they complete.
+  if (processing_paint_worklets_for_pending_tree_)
     return false;
 
   if (ShouldAbortCurrentFrame())
@@ -847,6 +858,11 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
 }
 
 void SchedulerStateMachine::WillActivate() {
+  // We cannot activate the pending tree while paint worklets are still being
+  // processed; the pending tree *must* be fully painted before it can ever be
+  // activated because we cannot paint the active tree.
+  DCHECK(!processing_paint_worklets_for_pending_tree_);
+
   if (layer_tree_frame_sink_state_ ==
       LayerTreeFrameSinkState::WAITING_FOR_FIRST_ACTIVATION)
     layer_tree_frame_sink_state_ = LayerTreeFrameSinkState::ACTIVE;
@@ -1415,6 +1431,12 @@ void SchedulerStateMachine::DidLoseLayerTreeFrameSink() {
 }
 
 bool SchedulerStateMachine::NotifyReadyToActivate() {
+  // It is not valid for clients to try and activate the pending tree whilst
+  // paint worklets are still being processed; the pending tree *must* be fully
+  // painted before it can ever be activated (even if e.g. it is not visible),
+  // because we cannot paint the active tree.
+  DCHECK(!processing_paint_worklets_for_pending_tree_);
+
   if (!has_pending_tree_ || pending_tree_is_ready_for_activation_)
     return false;
 
@@ -1446,6 +1468,16 @@ void SchedulerStateMachine::NotifyAnimationWorkletStateChange(
     processing_animation_worklets_for_pending_tree_ =
         (state == AnimationWorkletState::PROCESSING);
   }
+}
+
+void SchedulerStateMachine::NotifyPaintWorkletStateChange(
+    PaintWorkletState state) {
+  bool processing_paint_worklets_for_pending_tree =
+      (state == PaintWorkletState::PROCESSING);
+  DCHECK_NE(processing_paint_worklets_for_pending_tree,
+            processing_paint_worklets_for_pending_tree_);
+  processing_paint_worklets_for_pending_tree_ =
+      processing_paint_worklets_for_pending_tree;
 }
 
 void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {

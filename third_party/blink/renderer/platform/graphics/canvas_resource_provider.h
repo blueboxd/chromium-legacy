@@ -167,6 +167,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  // Notifies the provider when the texture params associated with |resource|
+  // are modified externally from the provider's SkSurface.
+  virtual void NotifyTexParamsModified(const CanvasResource* resource) {}
+
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
   GrContext* GetGrContext() const;

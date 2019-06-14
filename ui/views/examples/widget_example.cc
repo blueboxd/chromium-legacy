@@ -29,7 +29,7 @@ class WidgetDialogExample : public DialogDelegateView {
   ~WidgetDialogExample() override;
   base::string16 GetWindowTitle() const override;
   std::unique_ptr<View> CreateExtraView() override;
-  View* CreateFootnoteView() override;
+  std::unique_ptr<View> CreateFootnoteView() override;
 };
 
 class ModalDialogExample : public WidgetDialogExample {
@@ -62,8 +62,8 @@ std::unique_ptr<View> WidgetDialogExample::CreateExtraView() {
   return view;
 }
 
-View* WidgetDialogExample::CreateFootnoteView() {
-  return new Label(ASCIIToUTF16("Footnote label!"));
+std::unique_ptr<View> WidgetDialogExample::CreateFootnoteView() {
+  return std::make_unique<Label>(ASCIIToUTF16("Footnote label!"));
 }
 
 }  // namespace

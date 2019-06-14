@@ -135,14 +135,6 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   } else {
     // Launch a flinging session.
     auto* activity_ptr = AddCastActivityRecord(route, app_id);
-    NotifyAllOnRoutesUpdated();
-    base::TimeDelta launch_timeout = cast_source.launch_timeout();
-    message_handler_->LaunchSession(
-        sink.cast_data().cast_channel_id, app_id, launch_timeout,
-        base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
-                       weak_ptr_factory_.GetWeakPtr(), route_id, sink,
-                       cast_source));
-
     const std::string& client_id = cast_source.client_id();
     if (!client_id.empty()) {
       presentation_connection =
@@ -152,6 +144,14 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
           CreateReceiverActionCastMessage(client_id, sink, hash_token_));
     }
   }
+
+  NotifyAllOnRoutesUpdated();
+  base::TimeDelta launch_timeout = cast_source.launch_timeout();
+  message_handler_->LaunchSession(
+      sink.cast_data().cast_channel_id, app_id, launch_timeout,
+      base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
+                     weak_ptr_factory_.GetWeakPtr(), route_id, sink,
+                     cast_source));
 
   std::move(params.callback)
       .Run(route, std::move(presentation_connection),
@@ -368,7 +368,7 @@ void CastActivityManager::TerminateSession(
   // There is no session associated with the route, e.g. the launch request is
   // still pending.
   if (!session_id) {
-    DVLOG(2) << "Terminated route has no session ID.";
+    DLOG(WARNING) << "Terminated route has no session ID.";
     RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
@@ -448,6 +448,18 @@ void CastActivityManager::OnAppMessage(
     return;
   }
   it->second->OnAppMessage(message);
+}
+
+void CastActivityManager::OnInternalMessage(
+    int channel_id,
+    const cast_channel::InternalMessage& message) {
+  DVLOG(2) << "Received internal message on cast channel " << channel_id;
+  auto it = FindActivityByChannelId(channel_id);
+  if (it == activities_.end()) {
+    DVLOG(2) << "No activity associated with channel!";
+    return;
+  }
+  it->second->OnInternalMessage(message);
 }
 
 void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,

@@ -163,7 +163,7 @@ void EnrollmentDialogView::InitDialog() {
   label->SetAllowCharacterBreak(true);
 
   views::GridLayout* grid_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL,      // Horizontal resize.

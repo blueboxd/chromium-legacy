@@ -593,6 +593,10 @@ bool NativeThemeWin::SystemDarkModeEnabled() const {
   return NativeTheme::SystemDarkModeEnabled();
 }
 
+bool NativeThemeWin::SystemDarkModeSupported() const {
+  return hkcu_themes_regkey_.Valid();
+}
+
 void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
                                    Part part,
                                    State state,

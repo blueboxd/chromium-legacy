@@ -52,6 +52,16 @@ using content::Referrer;
 
 namespace {
 
+content::InterstitialPageDelegate* GetInterstitialDelegate(
+    content::WebContents* tab) {
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          tab);
+  if (!helper)
+    return nullptr;
+  return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+}
+
 // Tests that a cross origin navigation triggering a login prompt should cause:
 // - A login interstitial being displayed.
 // - The destination URL being shown in the omnibox.
@@ -1503,18 +1513,17 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   // Redirect to a broken SSL page. This redirect should not accidentally
   // proceed through the SSL interstitial.
-  content::TestNavigationObserver nav_observer(contents);
+  content::TestNavigationObserver ssl_observer(contents);
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       std::string("window.location = '") + broken_ssl_page.spec() + "'"));
-  nav_observer.Wait();
-  security_interstitials::SecurityInterstitialTabHelper* helper =
-      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-          contents);
-  ASSERT_TRUE(helper);
-  EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
-            helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-                ->GetTypeForTesting());
+  ssl_observer.Wait();
+
+  content::InterstitialPageDelegate* delegate =
+      GetInterstitialDelegate(contents);
+
+  EXPECT_TRUE(delegate);
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting, delegate->GetTypeForTesting());
 }
 
 // Test where Basic HTTP authentication is disabled.

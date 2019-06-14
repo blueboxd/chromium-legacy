@@ -351,8 +351,7 @@ class BluetoothLowEnergyWeaveClientConnection
   void OnCharacteristicsFound(const RemoteAttribute& service,
                               const RemoteAttribute& tx_characteristic,
                               const RemoteAttribute& rx_characteristic);
-  void OnCharacteristicsFinderError(const RemoteAttribute& tx_characteristic,
-                                    const RemoteAttribute& rx_characteristic);
+  void OnCharacteristicsFinderError();
   void StartNotifySession();
   void OnNotifySessionStarted(
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);

@@ -68,7 +68,7 @@ void BioEnrollmentHandler::EnrollTemplate(ResponseCallback callback) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void BioEnrollmentHandler::Cancel(base::OnceClosure callback) {
+void BioEnrollmentHandler::Cancel(StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
 
   status_callback_ = std::move(callback);
@@ -83,6 +83,18 @@ void BioEnrollmentHandler::EnumerateTemplates(ResponseCallback callback) {
   authenticator_->BioEnrollEnumerate(
       *pin_token_response_,
       base::BindOnce(&BioEnrollmentHandler::OnEnumerateTemplates,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void BioEnrollmentHandler::RenameTemplate(std::vector<uint8_t> id,
+                                          std::string name,
+                                          StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+
+  status_callback_ = std::move(callback);
+  authenticator_->BioEnrollRename(
+      *pin_token_response_, std::move(id), std::move(name),
+      base::BindOnce(&BioEnrollmentHandler::OnRenameTemplate,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -220,9 +232,9 @@ void BioEnrollmentHandler::OnEnrollTemplate(
   std::move(response_callback_).Run(code, std::move(response));
 }
 
-void BioEnrollmentHandler::OnCancel(CtapDeviceResponseCode,
+void BioEnrollmentHandler::OnCancel(CtapDeviceResponseCode code,
                                     base::Optional<BioEnrollmentResponse>) {
-  std::move(status_callback_).Run();
+  std::move(status_callback_).Run(code);
 }
 
 void BioEnrollmentHandler::OnEnumerateTemplates(
@@ -241,6 +253,12 @@ void BioEnrollmentHandler::OnEnumerateTemplates(
     return;
   }
   std::move(response_callback_).Run(code, std::move(response));
+}
+
+void BioEnrollmentHandler::OnRenameTemplate(
+    CtapDeviceResponseCode code,
+    base::Optional<BioEnrollmentResponse> response) {
+  std::move(status_callback_).Run(code);
 }
 
 }  // namespace device

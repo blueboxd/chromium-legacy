@@ -4002,6 +4002,6 @@ public:
 	DECLARE_WND_SUPERCLASS(_T("WTL_MDICommandBar"), GetWndClassName())
 };
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLCTRLW_H__

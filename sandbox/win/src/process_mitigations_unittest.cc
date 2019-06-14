@@ -689,7 +689,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadSuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  TestWin10NonSystemFont(true);
+  TestWin10NonSystemFont(true /* is_success_test */);
 }
 
 // This test validates that setting the MITIGATION_NON_SYSTEM_FONTS_DISABLE
@@ -698,7 +698,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadFailure) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  TestWin10NonSystemFont(false);
+  TestWin10NonSystemFont(false /* is_success_test */);
 }
 
 //------------------------------------------------------------------------------
@@ -742,17 +742,11 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  // Expect success; Do not enable mitigation; Use non MS-signed binary.
-  TestWin10MsSigned(true, false, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10MsSigned(true /* expect_success */,
+                    false /* enable_mitigation */,
+                    false /* use_ms_signed_binary */);
 }
 
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
@@ -761,17 +755,11 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  // Expect failure; Enable mitigation; Use non MS-signed binary.
-  TestWin10MsSigned(false, true, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10MsSigned(false /* expect_success */,
+                    true /* enable_mitigation */,
+                    false /* use_ms_signed_binary */);
 }
 
 // This test validates that we can load a signed Microsoft DLL if the
@@ -781,17 +769,11 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  // Expect success; Do not enable mitigation; Use MS-signed binary.
-  TestWin10MsSigned(true, false, true);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10MsSigned(true /* expect_success */,
+                    false /* enable_mitigation */,
+                    true /* use_ms_signed_binary */);
 }
 
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
@@ -800,17 +782,11 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsSuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  HANDLE mutex =
-      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  // Expect success; Enable mitigation; Use MS-signed binary.
-  TestWin10MsSigned(true, true, true);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10MsSigned(true /* expect_success */,
+                    true /* enable_mitigation */,
+                    true /* use_ms_signed_binary */);
 }
 
 //------------------------------------------------------------------------------

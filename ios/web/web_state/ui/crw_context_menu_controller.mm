@@ -59,7 +59,7 @@ enum class ContextMenuElementFrame {
 
 // Name of the histogram for recording when the gesture recognizer recognizes a
 // long press before the DOM element details are available.
-const std::string kContextMenuDelayedElementDetailsHistogram =
+const char kContextMenuDelayedElementDetailsHistogram[] =
     "ContextMenu.DelayedElementDetails";
 
 // Enum used to record resulting action when the gesture recognizer recognizes a

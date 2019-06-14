@@ -130,7 +130,7 @@ bool DialogDelegate::GetExtraViewPadding(int* padding) {
   return false;
 }
 
-View* DialogDelegate::CreateFootnoteView() {
+std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
   return nullptr;
 }
 
@@ -229,7 +229,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
               ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
               : 2);
     }
-    frame->SetFootnoteView(delegate->CreateFootnoteView());
+    frame->SetFootnoteView(delegate->CreateFootnoteView().release());
   }
   frame->SetBubbleBorder(std::move(border));
   return frame;

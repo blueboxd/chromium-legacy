@@ -14,7 +14,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,10 +29,6 @@ namespace {
 
 std::unique_ptr<ShelfModel> CreateKioskNextShelfModel() {
   auto shelf_model = std::make_unique<ShelfModel>();
-
-  shelf_model->SetShelfItemDelegate(ShelfID(kBackButtonId), nullptr);
-  shelf_model->SetShelfItemDelegate(ShelfID(kAppListId),
-                                    std::make_unique<HomeButtonDelegate>());
 
   DCHECK_EQ(0, shelf_model->ItemIndexByID(ShelfID(kBackButtonId)));
   DCHECK_EQ(1, shelf_model->ItemIndexByID(ShelfID(kAppListId)));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
+#include <memory>
+
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
@@ -67,6 +70,9 @@ class ScreenLockerUnitTest : public testing::Test {
         std::make_unique<SessionControllerClientImpl>();
     session_controller_client_->Init();
 
+    // Initialize AssistantClient:
+    assistant_client_ = std::make_unique<AssistantClient>();
+
     // Initialize AccessibilityManager and dependencies:
     observer_ = std::make_unique<audio::TestObserver>((base::DoNothing()));
     audio::AudioStreamHandler::SetObserverForTesting(observer_.get());
@@ -95,6 +101,7 @@ class ScreenLockerUnitTest : public testing::Test {
   void TearDown() override {
     input_method::InputMethodManager::Shutdown();
     audio::SoundsManager::Shutdown();
+    assistant_client_.reset();
     session_controller_client_.reset();
     LoginState::Shutdown();
     CryptohomeClient::Shutdown();
@@ -137,6 +144,7 @@ class ScreenLockerUnitTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   TestSessionController test_session_controller_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
+  std::unique_ptr<AssistantClient> assistant_client_;
 
   std::unique_ptr<audio::TestObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerUnitTest);

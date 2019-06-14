@@ -27,7 +27,7 @@ class MirroringActivityRecord : public ActivityRecord,
                                 public mirroring::mojom::SessionObserver,
                                 public mirroring::mojom::CastMessageChannel {
  public:
-  using OnStopCallback = base::OnceCallback<void()>;
+  using OnStopCallback = base::OnceClosure;
 
   MirroringActivityRecord(const MediaRoute& route,
                           const std::string& app_id,
@@ -74,6 +74,10 @@ class MirroringActivityRecord : public ActivityRecord,
       blink::mojom::PresentationConnectionCloseReason close_reason) override;
   void TerminatePresentationConnections() override;
   void OnAppMessage(const cast_channel::CastMessage& message) override;
+  void OnInternalMessage(const cast_channel::InternalMessage& message) override;
+
+ protected:
+  void OnSessionSet() override;
 
  private:
   enum class MirroringType {
@@ -99,6 +103,7 @@ class MirroringActivityRecord : public ActivityRecord,
   const int channel_id_;
   const MirroringType mirroring_type_;
   OnStopCallback on_stop_;
+  base::OnceCallback<void()> on_session_set_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };
 

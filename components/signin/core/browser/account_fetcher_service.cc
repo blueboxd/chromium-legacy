@@ -109,7 +109,7 @@ bool AccountFetcherService::IsAllUserInfoFetched() const {
 }
 
 void AccountFetcherService::ForceRefreshOfAccountInfo(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(network_fetches_enabled_);
   RefreshAccountInfo(account_id, false);
 }
@@ -137,10 +137,8 @@ void AccountFetcherService::EnableAccountRemovalForTest() {
 }
 
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
-  std::vector<std::string> accounts = token_service_->GetAccounts();
-  for (std::vector<std::string>::const_iterator it = accounts.begin();
-       it != accounts.end(); ++it) {
-    RefreshAccountInfo(*it, only_fetch_if_invalid);
+  for (const auto& account : token_service_->GetAccounts()) {
+    RefreshAccountInfo(account, only_fetch_if_invalid);
   }
 }
 
@@ -152,9 +150,9 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
 #if defined(OS_ANDROID)
 void AccountFetcherService::UpdateChildInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<std::string> accounts = token_service_->GetAccounts();
+  std::vector<CoreAccountId> accounts = token_service_->GetAccounts();
   if (accounts.size() == 1) {
-    const std::string& candidate = accounts[0];
+    const CoreAccountId& candidate = accounts[0];
     if (candidate == child_request_account_id_)
       return;
     if (!child_request_account_id_.empty())
@@ -208,7 +206,7 @@ void AccountFetcherService::ScheduleNextRefresh() {
 
 // Starts fetching user information. This is called periodically to refresh.
 void AccountFetcherService::StartFetchingUserInfo(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_fetches_enabled_);
 
@@ -228,7 +226,7 @@ void AccountFetcherService::StartFetchingUserInfo(
 #if defined(OS_ANDROID)
 // Starts fetching whether this is a child account. Handles refresh internally.
 void AccountFetcherService::StartFetchingChildInfo(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   child_info_request_ =
       ChildAccountInfoFetcherAndroid::Create(this, child_request_account_id_);
 }
@@ -236,18 +234,18 @@ void AccountFetcherService::StartFetchingChildInfo(
 void AccountFetcherService::ResetChildInfo() {
   if (!child_request_account_id_.empty())
     SetIsChildAccount(child_request_account_id_, false);
-  child_request_account_id_.clear();
+  child_request_account_id_ = CoreAccountId();
   child_info_request_.reset();
 }
 
-void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
+void AccountFetcherService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
   if (child_request_account_id_ == account_id)
     account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
 }
 #endif
 
-void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
+void AccountFetcherService::RefreshAccountInfo(const CoreAccountId& account_id,
                                                bool only_fetch_if_invalid) {
   DCHECK(network_fetches_enabled_);
   account_tracker_service_->StartTrackingAccount(account_id);
@@ -268,7 +266,7 @@ void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
 }
 
 void AccountFetcherService::OnUserInfoFetchSuccess(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     std::unique_ptr<base::DictionaryValue> user_info) {
   account_tracker_service_->SetAccountInfoFromUserInfo(account_id,
                                                        user_info.get());
@@ -287,7 +285,7 @@ AccountFetcherService::GetOrCreateImageFetcher() {
   return image_fetcher_.get();
 }
 
-void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
+void AccountFetcherService::FetchAccountImage(const CoreAccountId& account_id) {
   DCHECK(signin_client_);
   std::string picture_url_string =
       account_tracker_service_->GetAccountInfo(account_id).picture_url;
@@ -329,7 +327,7 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   LOG(WARNING) << "Failed to get UserInfo for " << account_id;
   user_info_requests_.erase(account_id);
 }
@@ -383,8 +381,8 @@ void AccountFetcherService::OnRefreshTokensLoaded() {
 }
 
 void AccountFetcherService::OnImageFetched(
-    const std::string& id,
+    const CoreAccountId& account_id,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata&) {
-  account_tracker_service_->SetAccountImage(id, image);
+  account_tracker_service_->SetAccountImage(account_id, image);
 }

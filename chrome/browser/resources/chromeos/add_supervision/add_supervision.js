@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     url.searchParams.set('platformVersion', platformVersion);
     url.searchParams.set('accessToken', accessToken);
 
+    // Allow guest webview content to open links in new windows.
+    webview.addEventListener('newwindow', function(e) {
+      window.open(e.targetUrl);
+    });
+
     // Block any requests to URLs other than one specified
     // by eventOriginFilter.
     webview.request.onBeforeRequest.addListener(function(details) {

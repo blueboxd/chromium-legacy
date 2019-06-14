@@ -31,6 +31,9 @@ class UI_DEVTOOLS_EXPORT UIElement {
  public:
   using UIElements = std::vector<UIElement*>;
 
+  // resets node ids to 0 so that they are reusable
+  static void ResetNodeId();
+
   virtual ~UIElement();
   int node_id() const { return node_id_; }
   std::string GetTypeName() const;

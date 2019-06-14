@@ -240,7 +240,7 @@ BubbleHeaderView::BubbleHeaderView(
     : button_listener_(button_listener),
       styled_label_listener_(styled_label_listener) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int label_column_status = 1;
   AddColumnWithSideMargin(layout, side_margin, label_column_status);
@@ -532,7 +532,7 @@ PageInfoBubbleView::PageInfoBubbleView(
   set_margins(gfx::Insets(margins().top(), 0, bottom_margin, 0));
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   constexpr int kColumnId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
@@ -726,7 +726,7 @@ void PageInfoBubbleView::SetPermissionInfo(
     return;
 
   views::GridLayout* layout = permissions_view_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(permissions_view_));
+      std::make_unique<views::GridLayout>());
   const bool is_list_empty =
       permission_info_list.empty() && chosen_object_info_list.empty();
   LayoutPermissionsLikeUiRow(layout, is_list_empty, kPermissionColumnSetId);

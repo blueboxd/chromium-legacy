@@ -113,7 +113,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'simple-blob-measure-async.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
     self.assertEquals(len(results.FindAllTraceValues()), 1)
 
     blob_requests = results.FindAllPageSpecificValuesNamed(
@@ -151,7 +151,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'lifecycle-methods.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
 
 
 # pylint: disable=protected-access

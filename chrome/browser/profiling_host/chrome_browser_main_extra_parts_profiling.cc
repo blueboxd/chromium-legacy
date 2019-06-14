@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
+#include "content/public/browser/system_connector.h"
 
 namespace {
 
@@ -29,22 +30,19 @@ ChromeBrowserMainExtraPartsProfiling::ChromeBrowserMainExtraPartsProfiling() =
 ChromeBrowserMainExtraPartsProfiling::~ChromeBrowserMainExtraPartsProfiling() =
     default;
 
-void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
+void ChromeBrowserMainExtraPartsProfiling::PostCreateThreads() {
   heap_profiling::Supervisor::GetInstance()
       ->SetClientConnectionManagerConstructor(&CreateClientConnectionManager);
 
-#if defined(ADDRESS_SANITIZER)
+#if !defined(ADDRESS_SANITIZER)
   // Memory sanitizers are using large memory shadow to keep track of memory
   // state. Using memlog and memory sanitizers at the same time is slowing down
   // user experience, causing the browser to be barely responsive. In theory,
   // memlog and memory sanitizers are compatible and can run at the same time.
-  (void)connection;  // Unused variable.
-#else
   heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
   if (mode != heap_profiling::Mode::kNone) {
     heap_profiling::Supervisor::GetInstance()->Start(
-        connection,
+        content::GetSystemConnector(),
         base::BindOnce(
             &heap_profiling::ProfilingProcessHost::Start,
             base::Unretained(

@@ -499,9 +499,10 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation();
         mMediator.setActionOnAllRelatedTabsForTest(true);
 
-        // Assume that moveTab in TabModel is finished.
+        // Assume that moveTab in TabModel is finished. Selected tab in the group becomes mTab1.
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
         doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
         // Assume that reset in TabGroupModelFilter is finished.
@@ -518,8 +519,8 @@ public class TabListMediatorUnitTest {
         mTabGroupModelFilterObserverCaptor.getValue().didMergeTabToGroup(mTab1, TAB2_ID);
 
         assertThat(mModel.size(), equalTo(1));
-        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
-        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB1_TITLE));
     }
 
     @Test

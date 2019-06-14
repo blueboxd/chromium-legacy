@@ -81,6 +81,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
+#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -2179,6 +2180,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
 
+  // Show legacy U2F notification if applicable.
+  MaybeShowU2FNotification();
+
   g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->GetTPMAutoUpdateModePolicyHandler()
@@ -2289,6 +2293,7 @@ void UserSessionManager::Shutdown() {
   token_handle_util_.reset();
   first_run::GoodiesDisplayer::Delete();
   always_on_vpn_manager_.reset();
+  u2f_notification_.reset();
 }
 
 void UserSessionManager::SetSwitchesForUser(
@@ -2309,6 +2314,13 @@ void UserSessionManager::SetSwitchesForUser(
   SessionManagerClient::Get()->SetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       all_switches);
+}
+
+void UserSessionManager::MaybeShowU2FNotification() {
+  if (!u2f_notification_) {
+    u2f_notification_ = std::make_unique<U2FNotification>();
+    u2f_notification_->Check();
+  }
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {

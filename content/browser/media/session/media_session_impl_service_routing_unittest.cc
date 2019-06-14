@@ -871,4 +871,37 @@ TEST_F(MediaSessionImplServiceRoutingTest,
                                        empty_images);
 }
 
+TEST_F(MediaSessionImplServiceRoutingTest, StopBehaviourDefault) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kStop))
+      .Times(0);
+
+  MediaSessionImpl::Get(contents())->Stop(MediaSession::SuspendType::kUI);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, StopBehaviourWhenActionEnabled) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_));
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kStop))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kStop);
+
+  MediaSessionImpl::Get(contents())->Stop(MediaSession::SuspendType::kUI);
+  run_loop.Run();
+}
+
 }  // namespace content

@@ -234,7 +234,7 @@ TEST_F(BacklightsForcedOffSetterTest,
   touch_device_transform.device_id = internal_touchdevice.id;
   transforms.push_back(touch_device_transform);
 
-  // Initialize the transforms and the InputDeviceManager.
+  // Initialize the transforms and the DeviceDataManager.
   display::test::TouchTransformControllerTestApi(
       ash::Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()
@@ -273,7 +273,7 @@ TEST_F(BacklightsForcedOffSetterTest, TouchscreensDisableOnBrightnessChange) {
   touch_device_transform.device_id = internal_touchdevice.id;
   transforms.push_back(touch_device_transform);
 
-  // Initialize the transforms and the InputDeviceManager.
+  // Initialize the transforms and the DeviceDataManager.
   display::test::TouchTransformControllerTestApi(
       ash::Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()

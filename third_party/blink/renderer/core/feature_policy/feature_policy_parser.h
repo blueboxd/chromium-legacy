@@ -20,6 +20,7 @@ namespace blink {
 
 class Document;
 class ExecutionContext;
+class FeaturePolicyParserDelegate;
 
 // These values match the "FeaturePolicyAllowlistType" enum in
 // tools/metrics/histograms/enums.xml. Entries should not be renumbered and
@@ -63,7 +64,7 @@ class CORE_EXPORT FeaturePolicyParser {
       const String& policy,
       scoped_refptr<const SecurityOrigin>,
       Vector<String>* messages,
-      ExecutionContext* execution_context = nullptr);
+      FeaturePolicyParserDelegate* delegate = nullptr);
 
   // Converts a container policy string into a vector of allowlists, given self
   // and src origins provided, one for each feature specified. Unrecognized
@@ -90,7 +91,7 @@ class CORE_EXPORT FeaturePolicyParser {
       scoped_refptr<const SecurityOrigin> src_origin,
       Vector<String>* messages,
       const FeatureNameMap& feature_names,
-      ExecutionContext* execution_context = nullptr);
+      FeaturePolicyParserDelegate* delegate = nullptr);
 
   // Used for LLVM fuzzer test
   static void ParseValueForFuzzer(mojom::PolicyValueType, const String&);

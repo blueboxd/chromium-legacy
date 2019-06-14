@@ -807,7 +807,9 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   EXPECT_CALL(helper, StartFetchingMergeSession());
-  result_fetcher.Start();
+  result_fetcher.Start(base::BindOnce(
+      &InstrumentedGaiaCookieManagerService::StartFetchingMergeSession,
+      base::Unretained(&helper)));
 
   // Simulate a successful completion of GetCheckConnctionInfo.
   SimulateGetCheckConnectionInfoSuccess(
@@ -832,7 +834,9 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   EXPECT_CALL(helper, StartFetchingMergeSession());
-  result_fetcher.Start();
+  result_fetcher.Start(base::BindOnce(
+      &InstrumentedGaiaCookieManagerService::StartFetchingMergeSession,
+      base::Unretained(&helper)));
 
   // Simulate a successful completion of GetCheckConnctionInfo.
   SimulateGetCheckConnectionInfoSuccess(
@@ -861,7 +865,9 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
   EXPECT_CALL(helper, StartFetchingMergeSession());
-  result_fetcher.Start();
+  result_fetcher.Start(base::BindOnce(
+      &InstrumentedGaiaCookieManagerService::StartFetchingMergeSession,
+      base::Unretained(&helper)));
 
   // Simulate a successful completion of GetCheckConnctionInfo.
   SimulateGetCheckConnectionInfoSuccess(
@@ -903,7 +909,9 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCC) {
 TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCCOnce) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
 
-  helper.external_cc_result_fetcher_for_testing()->Start();
+  helper.external_cc_result_fetcher_for_testing()->Start(base::BindOnce(
+      &InstrumentedGaiaCookieManagerService::StartFetchingMergeSession,
+      base::Unretained(&helper)));
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   helper.AddAccountToCookie(

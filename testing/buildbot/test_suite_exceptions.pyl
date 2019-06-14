@@ -363,17 +363,6 @@
       }
     }
   },
-  'chrome_sizes': {
-    'modifications': {
-      # TODO(crbug.com/961548): Swarm this if/when there's available Mac
-      # capacity in chrome-swarming's general test pool.
-      'mac-google-rel': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-    },
-  },
   'chromedriver_py_tests': {
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).

@@ -43,10 +43,6 @@ per-file nocompile_driver.py=wychen@chromium.org
 
 per-file remove_stale_pyc_files.py=dtu@chromium.org
 
-per-file roll_angle.py=kbr@chromium.org
-per-file roll_angle.py=geofflang@chromium.org
-per-file roll_swiftshader.py=capn@chromium.org
-per-file roll_swiftshader.py=sugoi@chromium.org
 per-file roll_webgl_conformance.py=bajones@chromium.org
 per-file roll_webgl_conformance.py=kbr@chromium.org
 per-file roll_webgl_conformance.py=geofflang@chromium.org

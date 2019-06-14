@@ -58,14 +58,8 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);
-  viz::ReportFirstSurfaceActivation should_report_first_surface_activation =
-      viz::ReportFirstSurfaceActivation::kNo;
-#ifdef OS_CHROMEOS
-  should_report_first_surface_activation =
-      viz::ReportFirstSurfaceActivation::kYes;
-#endif
   host_frame_sink_manager_->RegisterFrameSinkId(
-      frame_sink_id_, this, should_report_first_surface_activation);
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   host_frame_sink_manager_->EnableSynchronizationReporting(
       frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
@@ -278,15 +272,10 @@ void DelegatedFrameHost::EmbedSurface(
     return;
   }
 
-#ifdef OS_CHROMEOS
-  if (seen_first_activation_)
-    frame_evictor_->OnNewSurfaceEmbedded();
-#else
   // Ignore empty frames. Extensions often create empty background page frames
   // which shouldn't count against the saved frames.
   if (!new_dip_size.IsEmpty())
     frame_evictor_->OnNewSurfaceEmbedded();
-#endif
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != local_surface_id_) {
@@ -352,13 +341,7 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-#ifdef OS_CHROMEOS
-  if (!seen_first_activation_)
-    frame_evictor_->OnNewSurfaceEmbedded();
-  seen_first_activation_ = true;
-#else
   NOTREACHED();
-#endif
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {

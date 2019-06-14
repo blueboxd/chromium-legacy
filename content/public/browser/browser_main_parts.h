@@ -10,8 +10,6 @@
 
 namespace content {
 
-class ServiceManagerConnection;
-
 // This class contains different "stages" to be executed by |BrowserMain()|,
 // Each stage is represented by a single BrowserMainParts method, called from
 // the corresponding method in |BrowserMainLoop| (e.g., EarlyInitialization())
@@ -78,9 +76,6 @@ class CONTENT_EXPORT BrowserMainParts {
   // This is called right after all child threads owned by the content framework
   // are created.
   virtual void PostCreateThreads() {}
-
-  virtual void ServiceManagerConnectionStarted(
-      ServiceManagerConnection* connection) {}
 
   // This is called just before the main message loop is run.  The
   // various browser threads have all been created at this point

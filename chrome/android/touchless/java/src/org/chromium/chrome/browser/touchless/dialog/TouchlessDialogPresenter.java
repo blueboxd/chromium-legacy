@@ -92,7 +92,7 @@ public class TouchlessDialogPresenter extends Presenter {
         });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
-        ModelListAdapter adapter = new ModelListAdapter(mActivity);
+        ModelListAdapter adapter = new ModelListAdapter();
         adapter.registerType(ListItemType.DEFAULT,
                 () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
                 TouchlessDialogPresenter::bindListItem);

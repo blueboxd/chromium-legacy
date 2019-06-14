@@ -82,7 +82,9 @@ class DOMAgentTest : public views::ViewsTestBase {
     return widget->native_widget_private();
   }
 
-  std::unique_ptr<views::Widget> CreateTestWidget(const gfx::Rect& bounds) {
+  std::unique_ptr<views::Widget> CreateTestWidget(
+      const gfx::Rect& bounds,
+      const std::string* name = nullptr) {
     auto widget = std::make_unique<views::Widget>();
     views::Widget::InitParams params;
     params.delegate = nullptr;
@@ -91,6 +93,8 @@ class DOMAgentTest : public views::ViewsTestBase {
 #if defined(USE_AURA)
     params.parent = GetContext();
 #endif
+    if (name)
+      params.name = *name;
     widget->Init(params);
     widget->Show();
     return widget;
@@ -552,6 +556,100 @@ TEST_F(DOMAgentTest, ViewRearrangedRemovedAndInserted) {
   target_view->AddChildView(child_view);
   EXPECT_TRUE(WasChildNodeRemoved(parent_view, child_id));
   EXPECT_TRUE(WasChildNodeInserted(target_view));
+}
+
+// Tests to ensure dom search for native UI is working
+TEST_F(DOMAgentTest, SimpleDomSearch) {
+  std::unique_ptr<views::Widget> widget_a(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
+  widget_a->GetRootView()->AddChildView(new TestView("child_a1"));
+  widget_a->GetRootView()->AddChildView(new TestView("child_a2"));
+
+  std::unique_ptr<DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  std::string search_id;
+  int result_count = 0;
+  std::unique_ptr<protocol::Array<int>> node_ids = nullptr;
+
+  // 1 match
+  dom_agent()->performSearch("child_a1", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 1);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->length(), 1u);
+  dom_agent()->discardSearchResults(search_id);
+  node_ids.reset();
+
+  // no match
+  dom_agent()->performSearch("child_a12", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 0);
+  dom_agent()->getSearchResults(search_id, 0, 1, &node_ids);
+  EXPECT_TRUE(!node_ids);
+}
+
+TEST_F(DOMAgentTest, ExactDomSearch) {
+  std::unique_ptr<views::Widget> widget_a(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
+  widget_a->GetRootView()->AddChildView(new TestView("child_a"));
+  widget_a->GetRootView()->AddChildView(new TestView("child_aa"));
+
+  std::unique_ptr<DOM::Node> root;
+  dom_agent()->getDocument(&root);
+  std::string search_id;
+  int result_count = 0;
+  std::unique_ptr<protocol::Array<int>> node_ids = nullptr;
+
+  // substring matches
+  dom_agent()->performSearch("child_a", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 2);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->length(), 2u);
+  dom_agent()->discardSearchResults(search_id);
+  node_ids.reset();
+
+  // exact string matches
+  dom_agent()->performSearch("\"child_a\"", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 1);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->length(), 1u);
+  dom_agent()->discardSearchResults(search_id);
+  node_ids.reset();
+
+  dom_agent()->performSearch("\"child\"", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 0);
+  dom_agent()->getSearchResults(search_id, 0, 1, &node_ids);
+  EXPECT_TRUE(!node_ids);
+}
+
+TEST_F(DOMAgentTest, TagDomSearch) {
+  std::string widget_name = "TestElement";
+  std::unique_ptr<views::Widget> widget_a(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80), &widget_name));
+  std::unique_ptr<views::Widget> widget_b(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80), &widget_name));
+  std::unique_ptr<views::Widget> widget_c(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80), &widget_name));
+  widget_a->GetRootView()->AddChildView(new TestView("WidgetView"));
+
+  std::unique_ptr<DOM::Node> root;
+  dom_agent()->getDocument(&root);
+  std::string search_id;
+  int result_count = 0;
+  std::unique_ptr<protocol::Array<int>> node_ids = nullptr;
+
+  // normal search looks for any "widget" substrings
+  dom_agent()->performSearch("widget", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 4);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->length(), 4u);
+  dom_agent()->discardSearchResults(search_id);
+  node_ids.reset();
+
+  // tag search only looks for <widget...>
+  dom_agent()->performSearch("<widget>", false, &search_id, &result_count);
+  EXPECT_EQ(result_count, 3);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->length(), 3u);
 }
 
 }  // namespace ui_devtools

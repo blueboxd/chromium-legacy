@@ -35,6 +35,10 @@ bool TestSendTabToSelfModel::IsReady() {
   return false;
 }
 
+bool TestSendTabToSelfModel::HasValidTargetDevice() {
+  return false;
+}
+
 std::map<std::string, TargetDeviceInfo>
 TestSendTabToSelfModel::GetTargetDeviceNameToCacheInfoMap() {
   return {};

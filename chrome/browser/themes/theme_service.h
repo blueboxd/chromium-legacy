@@ -303,6 +303,8 @@ class ThemeService : public content::NotificationObserver,
   void SetThemePrefsForExtension(const extensions::Extension* extension);
   void SetThemePrefsForColor(SkColor color);
 
+  bool DisableExtension(const std::string& extension_id);
+
   ui::ResourceBundle& rb_;
   Profile* profile_;
 

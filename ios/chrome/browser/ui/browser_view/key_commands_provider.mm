@@ -156,7 +156,17 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_IOS_TOOLS_MENU_CLOSE_TAB)
                                     action:^{
-                                      [weakDispatcher closeCurrentTab];
+                                      // -closeCurrentTab might destroy the
+                                      // object that implements this shortcut
+                                      // (BVC), so this selector might not be
+                                      // registered with the dispatcher anymore.
+                                      // Check if it's still available. See
+                                      // crbug.com/967637 for context.
+                                      if ([weakDispatcher
+                                              respondsToSelector:@selector
+                                              (closeCurrentTab)]) {
+                                        [weakDispatcher closeCurrentTab];
+                                      }
                                     }],
       [UIKeyCommand
           cr_keyCommandWithInput:@"d"

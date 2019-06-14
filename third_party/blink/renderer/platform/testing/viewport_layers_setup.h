@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace cc {
 class AnimationHost;

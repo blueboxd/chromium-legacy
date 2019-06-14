@@ -157,6 +157,9 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/691029
     "deadlock:libGLX.so*\n"
 
+    //  http://crbug.com/973947
+    "deadlock:libnvidia-glsi.so*\n"
+
     // http://crbug.com/695929
     "race:base::i18n::IsRTL\n"
     "race:base::i18n::SetICUDefaultLocale\n"

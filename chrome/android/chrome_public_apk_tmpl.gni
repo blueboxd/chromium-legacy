@@ -421,24 +421,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       png_to_webp = true
     }
 
-    # Adding ArCore to make AR integration tests work.
-    # TODO(crbug.com/951065): Remove once AR tests migrated to single integration test APK.
-    if (invoker.target_type == "android_apk" && enable_arcore) {
-      _deps += [
-        "//chrome/browser/android/vr:ar_java",
-        "//third_party/android_deps:com_google_ar_core_java",
-      ]
-
-      # We store this as a separate .so in the APK and only load as needed.
-      if (android_64bit_target_cpu && build_apk_secondary_abi) {
-        secondary_abi_loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      } else {
-        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      }
-    }
-
     if (!defined(deps)) {
       deps = []
     }

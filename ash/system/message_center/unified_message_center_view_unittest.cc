@@ -18,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -33,7 +32,6 @@ namespace ash {
 
 namespace {
 
-constexpr int kDefaultTrayMenuWidth = 360;
 constexpr int kDefaultMaxHeight = 500;
 
 class DummyEvent : public ui::Event {
@@ -74,10 +72,6 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     model_ = std::make_unique<UnifiedSystemTrayModel>();
-
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndDisableFeature(
-        features::kNotificationStackingBarRedesign);
   }
 
   void TearDown() override {
@@ -200,12 +194,6 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return focused_message_view;
   }
 
-  void EnableNotificationStackingBarRedesign() {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(
-        features::kNotificationStackingBarRedesign);
-  }
-
   TestUnifiedMessageCenterView* message_center_view() {
     return message_center_view_.get();
   }
@@ -215,7 +203,6 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
  private:
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   int id_ = 0;
   int size_changed_count_ = 0;
 
@@ -364,22 +351,7 @@ TEST_F(UnifiedMessageCenterViewTest, ClearAllPressed) {
   AddNotification();
   CreateMessageCenterView();
   EXPECT_TRUE(message_center_view()->GetVisible());
-
-  // ScrollView fills MessageCenterView.
-  EXPECT_EQ(message_center_view()->bounds(), GetScroller()->bounds());
-  EXPECT_EQ(GetMessageListView()->GetPreferredSize().width(),
-            message_center_view()->GetPreferredSize().width());
-
-  // MessageCenterView returns smaller height to hide Clear All button.
-  EXPECT_EQ(kUnifiedNotificationCenterSpacing,
-            message_center_view()->GetPreferredSize().height() -
-                GetMessageListView()->GetPreferredSize().height());
-
-  // ScrollView has larger height than MessageListView because it has Clear All
-  // button.
-  EXPECT_EQ(4 * kUnifiedNotificationCenterSpacing,
-            GetScrollerContents()->GetPreferredSize().height() -
-                GetMessageListView()->GetPreferredSize().height());
+  EXPECT_TRUE(GetStackingCounter()->GetVisible());
 
   // When Clear All button is pressed, all notifications are removed and the
   // view becomes invisible.
@@ -465,86 +437,6 @@ TEST_F(UnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
 }
 
 TEST_F(UnifiedMessageCenterViewTest, StackingCounterLayout) {
-  for (size_t i = 0; i < 6; ++i)
-    AddNotification();
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  // MessageCenterView is maxed out.
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_EQ(0, GetStackingCounter()->bounds().y());
-  EXPECT_EQ(GetStackingCounter()->bounds().bottom(),
-            GetScroller()->bounds().y());
-
-  // Scroll to the top, making the counter invisbile.
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
-  EXPECT_EQ(0, GetScroller()->bounds().y());
-}
-
-TEST_F(UnifiedMessageCenterViewTest,
-       StackingCounterNotAffectingMessageViewBounds) {
-  for (size_t i = 0; i < 6; ++i)
-    AddNotification();
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  // MessageCenterView is maxed out.
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-
-  // Scroll to the top, making the counter invisbile.
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
-  message_center_view()->OnMessageCenterScrolled();
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
-
-  gfx::Rect previous_bounds = GetMessageViewVisibleBounds(2);
-
-  const int scroll_amount = GetMessageViewVisibleBounds(0).height() -
-                            kStackingNotificationCounterHeight + 1;
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  // The offset change matches with the scroll amount plus the stacking bar
-  // height.
-  EXPECT_EQ(
-      previous_bounds -
-          gfx::Vector2d(0, scroll_amount + kStackingNotificationCounterHeight),
-      GetMessageViewVisibleBounds(2));
-
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount - 1);
-  message_center_view()->OnMessageCenterScrolled();
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
-}
-
-TEST_F(UnifiedMessageCenterViewTest, StackingCounterRemovedWithNotifications) {
-  std::vector<std::string> ids;
-  for (size_t i = 0; i < 6; ++i)
-    ids.push_back(AddNotification());
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  // MessageCenterView is maxed out.
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  for (size_t i = 0; i < 5; ++i) {
-    MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
-    AnimateMessageListToEnd();
-  }
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
-}
-
-TEST_F(UnifiedMessageCenterViewTest, RedesignedStackingCounterLayout) {
-  EnableNotificationStackingBarRedesign();
-
   for (size_t i = 0; i < 10; ++i)
     AddNotification();
 
@@ -570,10 +462,7 @@ TEST_F(UnifiedMessageCenterViewTest, RedesignedStackingCounterLayout) {
   EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
 }
 
-TEST_F(UnifiedMessageCenterViewTest,
-       RedesignedStackingCounterMessageListScrolled) {
-  EnableNotificationStackingBarRedesign();
-
+TEST_F(UnifiedMessageCenterViewTest, StackingCounterMessageListScrolled) {
   for (size_t i = 0; i < 10; ++i)
     AddNotification();
   CreateMessageCenterView();
@@ -613,10 +502,7 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
 }
 
-TEST_F(UnifiedMessageCenterViewTest,
-       RedesignedStackingCounterNotificationRemoval) {
-  EnableNotificationStackingBarRedesign();
-
+TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
   std::vector<std::string> ids;
   for (size_t i = 0; i < 6; ++i)
     ids.push_back(AddNotification());
@@ -639,7 +525,7 @@ TEST_F(UnifiedMessageCenterViewTest,
 
   // The MessageCenterView should be tall enough to contain the bar, two
   // notifications, and extra padding.
-  EXPECT_EQ(kStackingNotificationCounterWithClearAllHeight +
+  EXPECT_EQ(kStackingNotificationCounterHeight +
                 GetMessageListView()->height() +
                 kUnifiedNotificationCenterSpacing,
             message_center_view()->height());
@@ -667,10 +553,7 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_FALSE(GetStackingCounter()->GetVisible());
 }
 
-TEST_F(UnifiedMessageCenterViewTest,
-       RedesignedStackingCounter_LabelRelaidOutOnScroll) {
-  EnableNotificationStackingBarRedesign();
-
+TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   // Open the message center at the top of the notification list so the stacking
   // bar is hidden by default.
   std::string id = AddNotification();
@@ -814,40 +697,6 @@ TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
   EXPECT_FALSE(message_center_view()->GetFocusManager()->GetFocusedView());
 
   widget->GetRootView()->RemoveChildView(message_center_view());
-}
-
-TEST_F(UnifiedMessageCenterViewTest, FocusChangeUpdatesStackingBar) {
-  CreateMessageCenterView();
-
-  // We need to create a widget in order to initialize a FocusManager.
-  auto widget = CreateTestWidget();
-  widget->GetRootView()->AddChildView(message_center_view());
-  widget->SetSize(gfx::Size(kDefaultTrayMenuWidth, kDefaultMaxHeight));
-  widget->Show();
-
-  // Add notifications such that the stacking counter is shown.
-  std::string first_notification_id = AddNotification();
-  for (int i = 0; i < 6; ++i)
-    AddNotification();
-  std::string last_notification_id = AddNotification();
-
-  // The ListView should be taller than the MessageCenterView so we can scroll
-  // and show the stacking counter.
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-
-  // Advancing focus causes list to scroll to the top, which hides the counter.
-  auto* message_view =
-      ToggleFocusToMessageView(0 /* index */, false /* reverse */);
-  EXPECT_EQ(first_notification_id, message_view->notification_id());
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
-
-  // Reversing the focus more scrolls the list to the bottom, reshowing the
-  // counter.
-  message_view = ToggleFocusToMessageView(7 /* index */, false /* reverse */);
-  EXPECT_EQ(last_notification_id, message_view->notification_id());
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
 }
 
 }  // namespace ash

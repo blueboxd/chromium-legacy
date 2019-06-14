@@ -1357,7 +1357,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // entry instead of looking at the pending entry, because the pending entry
   // does not have any subframe history items.
   if (is_same_document && GetLastCommittedEntry()) {
-    FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
+    auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
         rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
         params.url, (params.url_is_unreachable) ? nullptr : &params.origin,
@@ -1381,9 +1381,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       }
     }
 
-    // We expect |frame_entry| to be owned by |new_entry|.  This should never
-    // fail, because it's the main frame.
-    CHECK(frame_entry->HasOneRef());
+    // It is expected that |frame_entry| is now owned by |new_entry|. This means
+    // that |frame_entry| should now have a reference count of exactly 2: one
+    // due to the local variable |frame_entry|, and another due to |new_entry|
+    // also retaining one. This should never fail, because it's the main frame.
+    CHECK(!frame_entry->HasOneRef() && frame_entry->HasAtLeastOneRef());
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
 
@@ -1767,17 +1769,18 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // CopyReplacedNavigationEntryDataIfPreviouslyEmpty()).
   DCHECK(!replace_entry);
 
-  // Make sure we don't leak frame_entry if new_entry doesn't take ownership.
-  scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
+  // This FrameNavigationEntry might not end up being used in the
+  // CloneAndReplace() call below, if a spot can't be found for it in the tree.
+  auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
       params.url, (params.url_is_unreachable) ? nullptr : &params.origin,
       params.referrer, params.redirects, params.page_state, params.method,
-      params.post_id, nullptr /* blob_url_loader_factory */));
+      params.post_id, nullptr /* blob_url_loader_factory */);
 
   std::unique_ptr<NavigationEntryImpl> new_entry =
       GetLastCommittedEntry()->CloneAndReplace(
-          frame_entry.get(), is_same_document, rfh->frame_tree_node(),
+          std::move(frame_entry), is_same_document, rfh->frame_tree_node(),
           delegate_->GetFrameTree()->root());
 
   SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
@@ -1785,9 +1788,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
                                        handle->IsRendererInitiated());
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
-  // to replace, which can happen due to a unique name change.  See
-  // https://crbug.com/607205.  For now, frame_entry will be deleted when it
-  // goes out of scope if it doesn't get used.
+  // to replace, which can happen due to a unique name change. See
+  // https://crbug.com/607205. For now, the call to CloneAndReplace() will
+  // delete the |frame_entry| when the function exits if it doesn't get used.
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);
 }
@@ -2274,7 +2277,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   // further in https://crbug.com/536906.
   scoped_refptr<FrameNavigationEntry> frame_entry(entry->GetFrameEntry(node));
   if (!frame_entry) {
-    frame_entry = new FrameNavigationEntry(
+    frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
         node->unique_name(), -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
         nullptr /* origin */, referrer, std::vector<GURL>(), PageState(),

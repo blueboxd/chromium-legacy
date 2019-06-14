@@ -99,6 +99,7 @@ class CrosUsbNotificationDelegate
     if (detector) {
       detector->AttachUsbDeviceToVm(crostini::kCrostiniDefaultVmName,
                                     device_info_->guid, base::DoNothing());
+      return;
     }
     Close(false);
   }

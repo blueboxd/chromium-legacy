@@ -396,6 +396,7 @@ public class ContentTextSelectionTest {
     @Test
     @MediumTest
     @Feature({"TextInput", "SmartSelection"})
+    @DisabledTest(message = "https://crbug.com/973865")
     public void testSmartSelectionReset() throws Throwable {
         SelectionClient.Result result = new SelectionClient.Result();
         result.startAdjust = -5;

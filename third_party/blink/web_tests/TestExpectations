@@ -1933,6 +1933,8 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.ht
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.html [ Failure ]
 crbug.com/921318 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
+crbug.com/974139 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
+crbug.com/970200 external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-026.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-028.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-tailoring-001.html [ Failure ]
@@ -2872,9 +2874,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-s
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
@@ -3162,7 +3161,6 @@ crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central
 crbug.com/626703 [ Win10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Failure Crash ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-1b.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/file_upload.sub.html [ Skip ]
@@ -5600,7 +5598,7 @@ crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Fail
 # Sheriff 2019-03-25
 crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
-crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure Timeout ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
 crbug.com/945665 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
@@ -5803,6 +5801,7 @@ crbug.com/943636 html5lib/generated/run-tests18-data.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests18-write.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests7-data.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests7-write.html [ Pass Failure ]
+crbug.com/966932 http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
 crbug.com/943636 http/tests/devtools/console/console-eval-object-literal.js [ Pass Failure ]
 crbug.com/943636 http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
 crbug.com/943636 http/tests/devtools/console/console-log-eval-syntax-error.js [ Pass Failure ]
@@ -5819,9 +5818,6 @@ crbug.com/943636 virtual/mouseevent_fractional/fast/events/attribute-listener-de
 crbug.com/943636 virtual/mouseevent_fractional/fast/events/set-attribute-listener-window-onerror-crash.html [ Pass Failure ]
 crbug.com/943636 virtual/mouseevent_fractional/fast/events/window-onerror-05.html [ Pass Failure ]
 crbug.com/943636 virtual/omt-worker-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
-
-# Sheriff 2019-05-24
-crbug.com/966932 [ Linux ] http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
 
 # Sheriff 2019-05-27
 crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
@@ -5843,7 +5839,6 @@ crbug.com/970142 http/tests/security/mixedContent/insecure-css-resources.html [ 
 crbug.com/970142 virtual/blink-cors/http/tests/security/mixedContent/insecure-css-resources.html [ Failure ]
 
 # Sheriff 2019-06-05
-crbug.com/971252 [ Mac ] external/wpt/media-source/mediasource-play.html [ Pass Timeout ]
 crbug.com/971259 media/controls/volumechange-stopimmediatepropagation.html [ Pass Failure ]
 crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Timeout ]
 crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]

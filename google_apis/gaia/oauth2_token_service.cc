@@ -23,6 +23,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -393,6 +394,7 @@ OAuth2TokenService::OAuth2TokenService(
     : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
   DCHECK(delegate_);
   AddObserver(this);
+  token_manager_ = std::make_unique<OAuth2AccessTokenManager>();
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -408,6 +410,10 @@ OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
 
 const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
+}
+
+OAuth2TokenService::TokenCache& OAuth2TokenService::token_cache() {
+  return token_manager_->token_cache();
 }
 
 void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
@@ -591,9 +597,9 @@ bool OAuth2TokenService::AreAllCredentialsLoaded() const {
   return all_credentials_loaded_;
 }
 
-std::vector<std::string> OAuth2TokenService::GetAccounts() const {
+std::vector<CoreAccountId> OAuth2TokenService::GetAccounts() const {
   if (!AreAllCredentialsLoaded())
-    return std::vector<std::string>();
+    return std::vector<CoreAccountId>();
 
   return delegate_->GetAccounts();
 }
@@ -718,28 +724,21 @@ const OAuth2AccessTokenConsumer::TokenResponse*
 OAuth2TokenService::GetCachedTokenResponse(
     const RequestParameters& request_parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
-  if (token_iterator == token_cache_.end())
-    return nullptr;
-  if (token_iterator->second.expiration_time <= base::Time::Now()) {
-    token_cache_.erase(token_iterator);
-    return nullptr;
-  }
-  return &token_iterator->second;
+  return token_manager_->GetCachedTokenResponse(request_parameters);
 }
 
 bool OAuth2TokenService::RemoveCachedTokenResponse(
     const RequestParameters& request_parameters,
     const std::string& token_to_remove) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
-  if (token_iterator != token_cache_.end() &&
+  TokenCache::iterator token_iterator = token_cache().find(request_parameters);
+  if (token_iterator != token_cache().end() &&
       token_iterator->second.access_token == token_to_remove) {
     for (auto& observer : diagnostics_observer_list_) {
       observer.OnAccessTokenRemoved(request_parameters.account_id,
                                     request_parameters.scopes);
     }
-    token_cache_.erase(token_iterator);
+    token_cache().erase(token_iterator);
     return true;
   }
   return false;
@@ -760,30 +759,29 @@ void OAuth2TokenService::RegisterTokenResponse(
     const ScopeSet& scopes,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  token_cache_[RequestParameters(client_id, account_id, scopes)] =
-      token_response;
+  token_manager_->RegisterTokenResponse(client_id, account_id, scopes,
+                                        token_response);
 }
 
 void OAuth2TokenService::ClearCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (const auto& entry : token_cache_) {
+  for (const auto& entry : token_cache()) {
     for (auto& observer : diagnostics_observer_list_)
       observer.OnAccessTokenRemoved(entry.first.account_id, entry.first.scopes);
   }
 
-  token_cache_.clear();
+  token_cache().clear();
 }
 
 void OAuth2TokenService::ClearCacheForAccount(const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (TokenCache::iterator iter = token_cache_.begin();
-       iter != token_cache_.end();
+  for (TokenCache::iterator iter = token_cache().begin();
+       iter != token_cache().end();
        /* iter incremented in body */) {
     if (iter->first.account_id == account_id) {
       for (auto& observer : diagnostics_observer_list_)
         observer.OnAccessTokenRemoved(account_id, iter->first.scopes);
-      token_cache_.erase(iter++);
+      token_cache().erase(iter++);
     } else {
       ++iter;
     }

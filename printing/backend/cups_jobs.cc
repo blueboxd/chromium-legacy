@@ -429,18 +429,18 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
   }
 }
 
-bool GetPrinterInfo(const std::string& address,
-                    const int port,
-                    const std::string& resource,
-                    bool encrypted,
-                    PrinterInfo* printer_info) {
+PrinterQueryResult GetPrinterInfo(const std::string& address,
+                                  const int port,
+                                  const std::string& resource,
+                                  bool encrypted,
+                                  PrinterInfo* printer_info) {
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
       encrypted ? HTTP_ENCRYPTION_ALWAYS : HTTP_ENCRYPTION_IF_REQUESTED, 0,
       kHttpConnectTimeoutMs, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
-    return false;
+    return PrinterQueryResult::UNREACHABLE;
   }
 
   // TODO(crbug.com/821497): Use a library to canonicalize the URL.
@@ -459,10 +459,13 @@ bool GetPrinterInfo(const std::string& address,
                            kPrinterInfo.size(), kPrinterInfo.data(), &status);
   if (status != IPP_STATUS_OK || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
-    return false;
+    return PrinterQueryResult::UNKNOWN_FAILURE;
   }
 
-  return ParsePrinterInfo(response.get(), printer_info);
+  if (ParsePrinterInfo(response.get(), printer_info)) {
+    return PrinterQueryResult::SUCCESS;
+  }
+  return PrinterQueryResult::UNKNOWN_FAILURE;
 }
 
 bool GetPrinterStatus(http_t* http,

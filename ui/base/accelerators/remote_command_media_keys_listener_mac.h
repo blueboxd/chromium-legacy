@@ -37,6 +37,7 @@ class UI_BASE_EXPORT API_AVAILABLE(macos(10.12.2))
   // MediaKeysListener implementation.
   bool StartWatchingMediaKey(KeyboardCode key_code) override;
   void StopWatchingMediaKey(KeyboardCode key_code) override;
+  void SetIsMediaPlaying(bool is_playing) override;
 
   // now_playing::RemoteCommandCenterDelegateObserver implementation.
   void OnNext() override;
@@ -61,6 +62,7 @@ class UI_BASE_EXPORT API_AVAILABLE(macos(10.12.2))
   base::flat_set<KeyboardCode> key_codes_;
   now_playing::RemoteCommandCenterDelegate* remote_command_center_delegate_ =
       nullptr;
+  bool is_media_playing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandMediaKeysListenerMac);
 };

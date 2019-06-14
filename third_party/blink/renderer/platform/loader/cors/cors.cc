@@ -31,7 +31,7 @@ namespace {
 base::Optional<std::string> GetHeaderValue(const HTTPHeaderMap& header_map,
                                            const AtomicString& header_name) {
   if (header_map.Contains(header_name)) {
-    return WebString(header_map.Get(header_name)).Latin1();
+    return header_map.Get(header_name).Latin1();
   }
   return base::nullopt;
 }
@@ -317,36 +317,34 @@ bool CalculateCredentialsFlag(
 
 bool IsCorsSafelistedMethod(const String& method) {
   DCHECK(!method.IsNull());
-  return network::cors::IsCorsSafelistedMethod(WebString(method).Latin1());
+  return network::cors::IsCorsSafelistedMethod(method.Latin1());
 }
 
 bool IsCorsSafelistedContentType(const String& media_type) {
-  return network::cors::IsCorsSafelistedContentType(
-      WebString(media_type).Latin1());
+  return network::cors::IsCorsSafelistedContentType(media_type.Latin1());
 }
 
 bool IsNoCorsSafelistedHeaderName(const String& name) {
   DCHECK(!name.IsNull());
-  return network::cors::IsNoCorsSafelistedHeaderName(WebString(name).Latin1());
+  return network::cors::IsNoCorsSafelistedHeaderName(name.Latin1());
 }
 
 bool IsPrivilegedNoCorsHeaderName(const String& name) {
   DCHECK(!name.IsNull());
-  return network::cors::IsPrivilegedNoCorsHeaderName(WebString(name).Latin1());
+  return network::cors::IsPrivilegedNoCorsHeaderName(name.Latin1());
 }
 
 bool IsNoCorsSafelistedHeader(const String& name, const String& value) {
   DCHECK(!name.IsNull());
   DCHECK(!value.IsNull());
-  return network::cors::IsNoCorsSafelistedHeader(WebString(name).Latin1(),
-                                                 WebString(value).Latin1());
+  return network::cors::IsNoCorsSafelistedHeader(name.Latin1(), value.Latin1());
 }
 
 Vector<String> CorsUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
   net::HttpRequestHeaders::HeaderVector in;
   for (const auto& entry : headers) {
     in.push_back(net::HttpRequestHeaders::HeaderKeyValuePair(
-        WebString(entry.key).Latin1(), WebString(entry.value).Latin1()));
+        entry.key.Latin1(), entry.value.Latin1()));
   }
 
   Vector<String> header_names;
@@ -356,7 +354,7 @@ Vector<String> CorsUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
 }
 
 bool IsForbiddenHeaderName(const String& name) {
-  return network::cors::IsForbiddenHeader(WebString(name).Latin1());
+  return network::cors::IsForbiddenHeader(name.Latin1());
 }
 
 bool ContainsOnlyCorsSafelistedHeaders(const HTTPHeaderMap& header_map) {
@@ -371,7 +369,7 @@ bool ContainsOnlyCorsSafelistedOrForbiddenHeaders(
   net::HttpRequestHeaders::HeaderVector in;
   for (const auto& entry : headers) {
     in.push_back(net::HttpRequestHeaders::HeaderKeyValuePair(
-        WebString(entry.key).Latin1(), WebString(entry.value).Latin1()));
+        entry.key.Latin1(), entry.value.Latin1()));
   }
   // |is_revalidating| is not needed for blink-side CORS.
   constexpr bool is_revalidating = false;
@@ -412,8 +410,8 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   }
 
   WebHTTPHeaderSet header_set;
-  HTTPHeaderNameListParser parser(response.HttpHeaderField(
-      WebString(http_names::kAccessControlExposeHeaders)));
+  HTTPHeaderNameListParser parser(
+      response.HttpHeaderField(http_names::kAccessControlExposeHeaders));
   parser.Parse(header_set);
 
   if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&

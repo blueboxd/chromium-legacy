@@ -90,7 +90,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   // shadow host.  This method should be used only when |assigned_nodes_| is
   // dirty.  e.g. To detect a slotchange event in DOM mutations.
   bool HasAssignedNodesSlow() const;
-  bool FindHostChildWithSameSlotName() const;
 
   bool SupportsAssignment() const { return IsInV1ShadowTree(); }
 

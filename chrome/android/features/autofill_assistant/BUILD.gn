@@ -154,6 +154,7 @@ android_library("test_java") {
   testonly = true
 
   java_files = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestTestHelper.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestUiTest.java",
@@ -167,12 +168,14 @@ android_library("test_java") {
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
+    "//chrome/lib/image_fetcher/public/android:java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 
 class BrowserProcessPlatformPartTestApi;
 class Profile;
@@ -65,13 +66,13 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   // Initializes all services that need the primary profile. Gets called as soon
   // as the primary profile is available, which implies that the primary user
-  // has logged in.
+  // has logged in. The services are shut down automatically when the primary
+  // profile is destroyed.
   // Use this for simple 'leaf-type' services with no or negligible inter-
   // dependencies. If your service has more complex dependencies, consider using
   // a BrowserContextKeyedService and restricting service creation to the
   // primary profile.
-  void InitializePrimaryProfileServices(const Profile* primary_profile);
-  void ShutdownPrimaryProfileServices();
+  void InitializePrimaryProfileServices(Profile* primary_profile);
 
   // Disable the offline interstitial easter egg if the device is enterprise
   // enrolled.
@@ -127,6 +128,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   void CreateProfileHelper();
 
+  void ShutdownPrimaryProfileServices();
+
   std::unique_ptr<chromeos::ChromeSessionManager> session_manager_;
 
   bool created_profile_helper_;
@@ -160,6 +163,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<chromeos::KerberosCredentialsManager>
       kerberos_credentials_manager_;
+
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      primary_profile_shutdown_subscription_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

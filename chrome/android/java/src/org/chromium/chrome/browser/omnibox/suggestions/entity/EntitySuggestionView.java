@@ -5,8 +5,13 @@
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -45,6 +50,9 @@ public class EntitySuggestionView extends RelativeLayout {
         void onRefine();
     }
 
+    /** Length of the transition animation used to animate appearance of the entity image. */
+    private static final int IMAGE_TRANSITION_ANIMATION_LENGTH_MS = 300;
+
     private EventListener mEventListener;
     private View mEntityView;
     private TextView mSubjectText;
@@ -53,6 +61,7 @@ public class EntitySuggestionView extends RelativeLayout {
     private ImageView mRefineView;
     private boolean mUseDarkColors;
     private boolean mUseSuggestionImage;
+    private Drawable mCurrentImage;
 
     /**
      * Container view for omnibox suggestions allowing soft focus from keyboard.
@@ -82,7 +91,6 @@ public class EntitySuggestionView extends RelativeLayout {
         mEntityImageView = findViewById(R.id.omnibox_entity_image);
         mEntityView = findViewById(R.id.omnibox_entity);
         mRefineView = findViewById(R.id.omnibox_entity_refine_icon);
-
         showSearchIcon();
     }
 
@@ -145,13 +153,34 @@ public class EntitySuggestionView extends RelativeLayout {
     }
 
     /**
-     * Specify image to be shown beside suggestion text.
-     * @param drawable Image to be rendered.
+     * Specify image bitmap to be shown beside suggestion text.
+     * Image will be resized and decorated with rounded corners.
+     *
+     * @param bitmap Image to be rendered.
      */
-    void setSuggestionImage(Drawable drawable) {
+    void setSuggestionImage(Bitmap bitmap) {
+        Resources res = getContext().getResources();
+        int edgeLength = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_entity_icon_size);
+        int radiusLength = res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
+
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, edgeLength, edgeLength, true);
+        RoundedBitmapDrawable roundedDrawable =
+                RoundedBitmapDrawableFactory.create(res, scaledBitmap);
+        roundedDrawable.setCornerRadius(radiusLength);
         mUseSuggestionImage = true;
-        mEntityImageView.setImageDrawable(drawable);
+
+        Drawable presentedDrawable = roundedDrawable;
+
+        if (mCurrentImage != null && !(mCurrentImage instanceof TransitionDrawable)) {
+            TransitionDrawable transition =
+                    new TransitionDrawable(new Drawable[] {mCurrentImage, roundedDrawable});
+            transition.setCrossFadeEnabled(true);
+            transition.startTransition(IMAGE_TRANSITION_ANIMATION_LENGTH_MS);
+            presentedDrawable = transition;
+        }
+        mEntityImageView.setImageDrawable(presentedDrawable);
         mEntityImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        mCurrentImage = roundedDrawable;
     }
 
     /**
@@ -163,6 +192,7 @@ public class EntitySuggestionView extends RelativeLayout {
     }
 
     private void showSearchIcon() {
+        mCurrentImage = null;
         mEntityImageView.setImageDrawable(TintedDrawable.constructTintedDrawable(getContext(),
                 R.drawable.ic_suggestion_magnifier,
                 mUseDarkColors ? R.color.default_icon_color_secondary_list

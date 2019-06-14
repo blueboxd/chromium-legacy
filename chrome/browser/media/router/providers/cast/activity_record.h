@@ -128,6 +128,8 @@ class ActivityRecord {
 
   // Handles a message forwarded by CastActivityManager.
   virtual void OnAppMessage(const cast_channel::CastMessage& message) = 0;
+  virtual void OnInternalMessage(
+      const cast_channel::InternalMessage& message) = 0;
 
   // Closes / Terminates the PresentationConnections of all clients connected
   // to this activity.
@@ -136,6 +138,9 @@ class ActivityRecord {
   virtual void TerminatePresentationConnections() = 0;
 
  protected:
+  // Function called the first time session_id_ has been set.
+  virtual void OnSessionSet();
+
   CastSession* GetSession() const;
 
   MediaRoute route_;

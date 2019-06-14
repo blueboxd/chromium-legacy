@@ -30,6 +30,9 @@ class DeviceActions : public ash::AndroidIntentHelper,
   void SetNightLightEnabled(bool enabled) override;
   void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
                       OpenAndroidAppCallback callback) override;
+  void VerifyAndroidApp(
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+      VerifyAndroidAppCallback callback) override;
   void LaunchAndroidIntent(const std::string& intent) override;
   void AddAppListEventSubscriber(
       chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)

@@ -63,7 +63,7 @@ void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
   global_scopes_.push_back(To<PaintWorkletGlobalScope>(global_scope));
 
   // Wait for all global scopes to be set before registering.
-  if (global_scopes_.size() < PaintWorklet::kNumGlobalScopes) {
+  if (global_scopes_.size() < PaintWorklet::kNumGlobalScopesPerThread) {
     return;
   }
 
@@ -108,7 +108,7 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
   // Notify the main thread only once all global scopes have registered the same
   // named paint definition (with the same definition as well).
   if (document_definition->GetRegisteredDefinitionCount() ==
-      PaintWorklet::kNumGlobalScopes) {
+      PaintWorklet::kNumGlobalScopesPerThread) {
     const Vector<AtomicString>& custom_properties =
         definition->CustomInvalidationProperties();
     // Make a deep copy of the |custom_properties| into a Vector<String> so that
@@ -161,9 +161,9 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   // TODO(smcgruer): Once we are passing bundles of PaintWorklets here, we
   // should shuffle the bundle randomly and then assign half to the first global
   // scope, and half to the rest.
-  DCHECK_EQ(global_scopes_.size(), PaintWorklet::kNumGlobalScopes);
-  PaintWorkletGlobalScope* global_scope =
-      global_scopes_[base::RandInt(0, PaintWorklet::kNumGlobalScopes - 1)];
+  DCHECK_EQ(global_scopes_.size(), PaintWorklet::kNumGlobalScopesPerThread);
+  PaintWorkletGlobalScope* global_scope = global_scopes_[base::RandInt(
+      0, (PaintWorklet::kNumGlobalScopesPerThread)-1)];
 
   const PaintWorkletInput* input =
       static_cast<const PaintWorkletInput*>(compositor_input);

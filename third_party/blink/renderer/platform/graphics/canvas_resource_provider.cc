@@ -503,6 +503,17 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
         ColorParams(), is_overlay_candidate_, is_origin_top_left_);
   }
 
+  void NotifyTexParamsModified(const CanvasResource* resource) override {
+    if (resource_.get() == resource) {
+      DCHECK(!current_resource_has_write_access_);
+      // Note that the call below is guarenteed to not issue any GPU work for
+      // the backend texture since we ensure that all skia work on the resource
+      // is issued before releasing write access.
+      surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess)
+          .glTextureParametersModified();
+    }
+  }
+
  protected:
   scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     TRACE_EVENT0("blink",
@@ -902,8 +913,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
-        // TODO(khushalsagar): Enable this once the shared image work is done.
-#if 0
         // TODO(khushalsagar): Also kAcceleratedDirect2DResourceUsage when we
         // switch it to use shared images.
         const bool is_overlay_candidate =
@@ -915,8 +924,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         provider = std::make_unique<CanvasResourceProviderSharedImage>(
             size, msaa_sample_count, color_params, context_provider_wrapper,
             resource_dispatcher, is_origin_top_left, is_overlay_candidate);
-#endif
-        continue;
       } break;
     }
     if (!provider->IsValid())

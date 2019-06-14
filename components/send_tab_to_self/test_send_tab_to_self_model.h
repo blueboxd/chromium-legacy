@@ -36,6 +36,7 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
   void MarkEntryOpened(const std::string& guid) override;
 
   bool IsReady() override;
+  bool HasValidTargetDevice() override;
   std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
       override;
 };

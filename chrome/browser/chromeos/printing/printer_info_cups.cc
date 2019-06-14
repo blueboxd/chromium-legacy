@@ -16,7 +16,6 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
-#include "printing/backend/cups_jobs.h"
 
 namespace {
 
@@ -27,6 +26,13 @@ const char kPwgRasterMimeType[] = "image/pwg-raster";
 // string parsing.  Keep in UPPER CASE as that's how matches are performed.
 const std::array<const char* const, 4> kMultiWordManufacturers{
     {"FUJI XEROX", "KODAK FUNAI", "KONICA MINOLTA", "TEXAS INSTRUMENTS"}};
+
+// Wraps a PrinterQueryResult and a PrinterInfo so that we can use
+// PostTaskAndResplyWithResult.
+struct QueryResult {
+  ::printing::PrinterQueryResult result;
+  ::printing::PrinterInfo printer_info;
+};
 
 // Returns the length of the portion of |make_and_model| representing the
 // manufacturer.  This is either a value from kMultiWordManufacaturers or the
@@ -78,31 +84,34 @@ bool IsAutoconf(const ::printing::PrinterInfo& info) {
 
 // Dispatches an IPP request to |host| to retrieve printer information.  Returns
 // a nullptr if the request fails.
-std::unique_ptr<::printing::PrinterInfo> QueryPrinterImpl(
-    const std::string& host,
-    const int port,
-    const std::string& path,
-    bool encrypted) {
-  auto info = std::make_unique<::printing::PrinterInfo>();
-  if (!::printing::GetPrinterInfo(host, port, path, encrypted, info.get())) {
+QueryResult QueryPrinterImpl(const std::string& host,
+                             const int port,
+                             const std::string& path,
+                             bool encrypted) {
+  QueryResult result;
+  result.result = ::printing::GetPrinterInfo(host, port, path, encrypted,
+                                             &result.printer_info);
+  if (result.result != ::printing::PrinterQueryResult::SUCCESS) {
     LOG(ERROR) << "Could not retrieve printer info";
-    return nullptr;
   }
 
-  return info;
+  return result;
 }
 
 // Handles the request for |info|.  Parses make and model information before
 // calling |callback|.
 void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
-                      std::unique_ptr<::printing::PrinterInfo> info) {
-  if (!info) {
+                      const QueryResult& query_result) {
+  const ::printing::PrinterQueryResult& result = query_result.result;
+  const ::printing::PrinterInfo& printer_info = query_result.printer_info;
+  if (result != ::printing::PrinterQueryResult::SUCCESS) {
     VLOG(1) << "Could not reach printer";
-    callback.Run(false, std::string(), std::string(), std::string(), {}, false);
+    callback.Run(result, std::string(), std::string(), std::string(), {},
+                 false);
     return;
   }
 
-  base::StringPiece make_and_model(info->make_and_model);
+  base::StringPiece make_and_model(printer_info.make_and_model);
   base::StringPiece make;
   base::StringPiece model;
 
@@ -115,8 +124,9 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
     model = make_and_model;
   }
 
-  callback.Run(true, make.as_string(), model.as_string(), info->make_and_model,
-               info->document_formats, IsAutoconf(*info));
+  callback.Run(result, make.as_string(), model.as_string(),
+               printer_info.make_and_model, printer_info.document_formats,
+               IsAutoconf(printer_info));
 }
 
 }  // namespace

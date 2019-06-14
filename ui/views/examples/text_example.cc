@@ -150,8 +150,8 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
 void TextExample::CreateExampleView(View* container) {
   auto text_view = std::make_unique<TextExampleView>();
   text_view->SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
   layout->AddPaddingRow(0, 8);
 
   ColumnSet* column_set = layout->AddColumnSet(0);

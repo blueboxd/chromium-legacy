@@ -106,16 +106,6 @@ bool CastExtensionsBrowserClient::CanExtensionCrossIncognito(
   return false;
 }
 
-net::URLRequestJob*
-CastExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const base::FilePath& directory_path,
-    const std::string& content_security_policy,
-    bool send_cors_header) {
-  return nullptr;
-}
-
 base::FilePath CastExtensionsBrowserClient::GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
@@ -264,12 +254,6 @@ ExtensionWebContentsObserver*
 CastExtensionsBrowserClient::GetExtensionWebContentsObserver(
     content::WebContents* web_contents) {
   return CastExtensionWebContentsObserver::FromWebContents(web_contents);
-}
-
-ExtensionNavigationUIData*
-CastExtensionsBrowserClient::GetExtensionNavigationUIData(
-    net::URLRequest* request) {
-  return nullptr;
 }
 
 KioskDelegate* CastExtensionsBrowserClient::GetKioskDelegate() {

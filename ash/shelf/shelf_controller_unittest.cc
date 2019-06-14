@@ -60,7 +60,6 @@ TEST_F(ShelfControllerTest, InitializesBackButtonAndAppListItemDelegate) {
   EXPECT_EQ(kBackButtonId, model->items()[0].id.app_id);
   EXPECT_FALSE(model->GetShelfItemDelegate(ShelfID(kBackButtonId)));
   EXPECT_EQ(kAppListId, model->items()[1].id.app_id);
-  EXPECT_TRUE(model->GetShelfItemDelegate(ShelfID(kAppListId)));
 }
 
 TEST_F(ShelfControllerTest, Shutdown) {

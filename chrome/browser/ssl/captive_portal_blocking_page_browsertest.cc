@@ -73,10 +73,6 @@ enum ExpectLoginURL {
   EXPECT_LOGIN_URL_YES
 };
 
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-}
-
 class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
  public:
   CaptivePortalBlockingPageForTesting(
@@ -107,8 +103,7 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
 };
 
 // A NavigationThrottle that observes failed requests and shows a captive portal
-// interstitial, either transient or committed depending on whether committed
-// interstitials are enabled.
+// interstitial.
 class CaptivePortalTestingNavigationThrottle
     : public content::NavigationThrottle {
  public:
@@ -160,28 +155,14 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
           base::Callback<void(content::CertificateRequestResultType)>(),
           is_wifi_connection_, wifi_ssid_);
 
-  if (AreCommittedInterstitialsEnabled()) {
-    std::string html = blocking_page->GetHTMLContents();
-    // Hand the blocking page back to the WebContents's
-    // security_interstitials::SecurityInterstitialTabHelper to own.
-    security_interstitials::SecurityInterstitialTabHelper::
-        AssociateBlockingPage(
-            navigation_handle()->GetWebContents(),
-            navigation_handle()->GetNavigationId(),
-            std::unique_ptr<CaptivePortalBlockingPage>(blocking_page));
-    return {CANCEL, net::ERR_CERT_COMMON_NAME_INVALID, html};
-  }
-
-  // |blocking_page| is owned by the interstitial.
-  blocking_page->Show();
-  WaitForInterstitialAttach(navigation_handle()->GetWebContents());
-  EXPECT_TRUE(WaitForRenderFrameReady(navigation_handle()
-                                          ->GetWebContents()
-                                          ->GetInterstitialPage()
-                                          ->GetMainFrame()));
-  // When committed interstitials are disabled, defer the navigation while the
-  // interstitial is showing.
-  return DEFER;
+  std::string html = blocking_page->GetHTMLContents();
+  // Hand the blocking page back to the WebContents's
+  // security_interstitials::SecurityInterstitialTabHelper to own.
+  security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
+      navigation_handle()->GetWebContents(),
+      navigation_handle()->GetNavigationId(),
+      std::unique_ptr<CaptivePortalBlockingPage>(blocking_page));
+  return {CANCEL, net::ERR_CERT_COMMON_NAME_INVALID, html};
 }
 
 // A WebContentsObserver which installs a navigation throttle that creates
@@ -233,8 +214,7 @@ void AddURLRequestFilterOnIOThread() {
 
 }  // namespace
 
-class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
-                                      public testing::WithParamInterface<bool> {
+class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
  public:
   CaptivePortalBlockingPageTest() {
     CertReportHelper::SetFakeOfficialBuildForTesting();
@@ -250,11 +230,6 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
     variations::testing::VariationParamsManager::AppendVariationParams(
         "ReportCertificateErrors", "ShowAndPossiblySend",
         {{"sendingThreshold", "1.0"}}, command_line);
-
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
-    }
   }
 
   void TestInterstitial(bool is_wifi_connection,
@@ -289,10 +264,6 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
-                         CaptivePortalBlockingPageTest,
-                         ::testing::Values(false, true));
-
 void CaptivePortalBlockingPageTest::TestInterstitial(
     bool is_wifi_connection,
     const std::string& wifi_ssid,
@@ -317,13 +288,8 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
       browser(),
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_BLOCKED_BY_CLIENT));
   content::RenderFrameHost* frame;
-  if (!AreCommittedInterstitialsEnabled()) {
-    ASSERT_TRUE(contents->GetInterstitialPage());
-    frame = contents->GetInterstitialPage()->GetMainFrame();
-  } else {
-    frame = contents->GetMainFrame();
-    ASSERT_TRUE(WaitForRenderFrameReady(frame));
-  }
+  frame = contents->GetMainFrame();
+  ASSERT_TRUE(WaitForRenderFrameReady(frame));
 
   EXPECT_EQ(expect_wifi == EXPECT_WIFI_YES,
             IsInterstitialDisplayingText(frame, "Wi-Fi"));
@@ -335,19 +301,6 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
             IsInterstitialDisplayingText(frame, expected_login_hostname));
   EXPECT_EQ(expect_login_url == EXPECT_LOGIN_URL_NO,
             IsInterstitialDisplayingText(frame, kGenericLoginURLText));
-
-  // Check that a red/dangerous lock icon is showing on the interstitial. This
-  // only occurs when committed interstitials are disabled. With committed
-  // interstitials enabled, the NavigationEntry's SSLStatus is updated to
-  // reflect a certificate error by the navigation stack, not by the blocking
-  // page itself, and that navigation code isn't exercised by this test. (It's
-  // covered by other tests in ssl_browsertest.cc).
-  if (!AreCommittedInterstitialsEnabled()) {
-    SecurityStateTabHelper* helper =
-        SecurityStateTabHelper::FromWebContents(contents);
-    ASSERT_TRUE(helper);
-    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  }
 }
 
 void CaptivePortalBlockingPageTest::TestInterstitial(
@@ -412,7 +365,7 @@ void CaptivePortalBlockingPageTest::TestCertReporting(
 
 // If the connection is not a Wi-Fi connection, the wired network version of the
 // captive portal interstitial should be displayed.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiredNetwork_LoginURL) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiredNetwork_LoginURL) {
   TestInterstitial(false, std::string(),
                    GURL("http://captive.portal/landing_url"), EXPECT_WIFI_NO,
                    EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
@@ -420,7 +373,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiredNetwork_LoginURL) {
 
 // Same as above, but SSID is available, so the connection should be assumed to
 // be Wi-Fi.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_LoginURL_With_SSID) {
   TestInterstitial(false, kWiFiSSID, GURL("http://captive.portal/landing_url"),
                    EXPECT_WIFI_YES, EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_YES);
@@ -429,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
 // Same as above, expect the login URL is the same as the captive portal ping
 // url (i.e. the portal intercepts requests without using HTTP redirects), in
 // which case the login URL shouldn't be displayed.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiredNetwork_NoLoginURL) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiredNetwork_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(false, std::string(), kLandingUrl, EXPECT_WIFI_NO,
                    EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
@@ -437,7 +390,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiredNetwork_NoLoginURL) {
 
 // Same as above, but SSID is available, so the connection should be assumed to
 // be Wi-Fi.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_NoLoginURL_With_SSID) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(false, kWiFiSSID, kLandingUrl, EXPECT_WIFI_YES,
@@ -446,7 +399,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
 
 // If the connection is a Wi-Fi connection, the Wi-Fi version of the captive
 // portal interstitial should be displayed.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
   TestInterstitial(true, kWiFiSSID, GURL("http://captive.portal/landing_url"),
                    EXPECT_WIFI_YES, EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_YES);
 }
@@ -459,7 +412,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
 #endif
 
 // Same as above, with login URL but no SSID.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        MAYBE_WiFi_NoSSID_LoginURL) {
   TestInterstitial(true, std::string(),
                    GURL("http://captive.portal/landing_url"), EXPECT_WIFI_YES,
@@ -474,7 +427,7 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
 #endif
 
 // Same as above, with SSID but no login URL.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        MAYBE_WiFi_SSID_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(true, kWiFiSSID, kLandingUrl,
@@ -482,18 +435,18 @@ IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest,
 }
 
 // Same as above, with no SSID and no login URL.
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, WiFi_NoSSID_NoLoginURL) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiFi_NoSSID_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(true, std::string(), kLandingUrl, EXPECT_WIFI_YES,
                    EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
 }
 
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, CertReportingOptIn) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptIn) {
   TestCertReporting(
       certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
 }
 
-IN_PROC_BROWSER_TEST_P(CaptivePortalBlockingPageTest, CertReportingOptOut) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptOut) {
   TestCertReporting(
       certificate_reporting_test_utils::EXTENDED_REPORTING_DO_NOT_OPT_IN);
 }

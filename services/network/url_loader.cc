@@ -745,6 +745,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     raw_response_headers_ = nullptr;
   }
 
+  ReportFlaggedResponseCookies();
+
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
@@ -851,6 +853,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
 
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   DCHECK(url_request == url_request_.get());
+
+  ReportFlaggedResponseCookies();
 
   if (net_error != net::OK) {
     NotifyCompleted(net_error);
@@ -1134,32 +1138,6 @@ int URLLoader::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  if (network_service_client_) {
-    // For now we're only using excluded/flagged cookies pertaining to the
-    // samesite-by-default and samesite-none-must-be-secure features, so the
-    // flagged cookies are being further filtered beofre sending.
-    net::CookieAndLineStatusList flagged_cookies;
-    for (const auto& cookie_line_and_status :
-         url_request_->not_stored_cookies()) {
-      if (cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-          cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_NONE_INSECURE) {
-        flagged_cookies.emplace_back(cookie_line_and_status.cookie,
-                                     cookie_line_and_status.cookie_string,
-                                     cookie_line_and_status.status);
-      }
-    }
-
-    if (!flagged_cookies.empty()) {
-      // TODO(crbug.com/856777): add OnRawResponse once implemented
-      network_service_client_->OnFlaggedResponseCookies(
-          GetProcessId(), GetRenderFrameId(), flagged_cookies);
-    }
-  }
-
   if (header_client_) {
     header_client_->OnHeadersReceived(
         original_response_headers->raw_headers(),
@@ -1227,6 +1205,9 @@ void URLLoader::OnAuthCredentials(
   if (!credentials.has_value()) {
     url_request_->CancelAuth();
   } else {
+    // CancelAuth will proceed to the body, so cookies only need to be reported
+    // here.
+    ReportFlaggedResponseCookies();
     url_request_->SetAuth(credentials.value());
   }
 }
@@ -1551,6 +1532,35 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
       FROM_HERE,
       base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
   return kWillCancelRequest;
+}
+
+void URLLoader::ReportFlaggedResponseCookies() {
+  if (network_service_client_) {
+    // For now we're only using excluded/flagged cookies pertaining to the
+    // samesite-by-default and samesite-none-must-be-secure features, so the
+    // flagged cookies are being further filtered beofre sending.
+    net::CookieAndLineStatusList flagged_cookies;
+    for (const auto& cookie_line_and_status :
+         url_request_->not_stored_cookies()) {
+      if (cookie_line_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
+          cookie_line_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_NONE_INSECURE) {
+        flagged_cookies.emplace_back(cookie_line_and_status.cookie,
+                                     cookie_line_and_status.cookie_string,
+                                     cookie_line_and_status.status);
+      }
+    }
+
+    if (!flagged_cookies.empty()) {
+      // TODO(crbug.com/856777): add OnRawResponse once implemented.
+      // (might want to change method name at that point).
+      network_service_client_->OnFlaggedResponseCookies(
+          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    }
+  }
 }
 
 }  // namespace network

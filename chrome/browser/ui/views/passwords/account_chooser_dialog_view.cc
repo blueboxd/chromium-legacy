@@ -145,10 +145,10 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(message_id);
 }
 
-views::View* AccountChooserDialogView::CreateFootnoteView() {
+std::unique_ptr<views::View> AccountChooserDialogView::CreateFootnoteView() {
   if (!controller_->ShouldShowFooter())
     return nullptr;
-  views::Label* label = new views::Label(
+  auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
       ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
   label->SetMultiLine(true);

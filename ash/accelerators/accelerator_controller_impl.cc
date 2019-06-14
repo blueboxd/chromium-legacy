@@ -22,6 +22,7 @@
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -42,7 +43,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -92,8 +93,8 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 
@@ -544,11 +545,10 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  HomeButtonDelegate::PerformHomeButtonAction(
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
-          .id(),
-      show_source, accelerator.time_stamp());
+  Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
+      ->shelf_widget()
+      ->GetAppListButton()
+      ->OnPressed(show_source, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
@@ -679,7 +679,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
   } else if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
     // Search+A shortcut is disabled on device with an assistant key.
-    if (ui::DeviceUsesKeyboardLayout2())
+    if (ui::DeviceKeyboardHasAssistantKey())
       return;
 
     base::RecordAction(
@@ -705,7 +705,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
           l10n_util::GetStringUTF16(
               IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_POLICY:
       // Show a toast if voice interaction is disabled due to enterprise policy.
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
@@ -725,12 +725,24 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
     case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE));
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
+      // supervised user is deprecated, wait for the code clean up.
+      NOTREACHED();
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE));
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
-      // TODO(xiaohuic): show a specific toast.
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
     case mojom::AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.
@@ -1963,7 +1975,7 @@ bool AcceleratorControllerImpl::IsInternalKeyboardOrUncategorizedDevice(
     return false;
 
   for (const ui::InputDevice& keyboard :
-       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL &&
         keyboard.id == source_device_id) {
       return true;
@@ -1971,7 +1983,7 @@ bool AcceleratorControllerImpl::IsInternalKeyboardOrUncategorizedDevice(
   }
 
   for (const ui::InputDevice& uncategorized_device :
-       ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetUncategorizedDevices()) {
     if (uncategorized_device.id == source_device_id &&
         uncategorized_device.type ==
             ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {

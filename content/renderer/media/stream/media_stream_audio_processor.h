@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/aec_dump_agent_impl.h"
+#include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
@@ -51,7 +51,7 @@ using webrtc::AudioProcessorInterface;
 class CONTENT_EXPORT MediaStreamAudioProcessor
     : public WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
-      public AecDumpAgentImpl::Delegate {
+      public AecDumpMessageFilter::AecDumpDelegate {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
@@ -105,10 +105,11 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // Accessor to check if the audio processing is enabled or not.
   bool has_audio_processing() const { return audio_processing_ != NULL; }
 
-  // AecDumpAgentImpl::Delegate implementation.
+  // AecDumpMessageFilter::AecDumpDelegate implementation.
   // Called on the main render thread.
-  void OnStartDump(base::File dump_file) override;
-  void OnStopDump() override;
+  void OnAecDumpFile(const IPC::PlatformFileForTransit& file_handle) override;
+  void OnDisableAecDump() override;
+  void OnIpcClosing() override;
 
   // Returns true if MediaStreamAudioProcessor would modify the audio signal,
   // based on |properties|. If the audio signal would not be modified, there is
@@ -204,7 +205,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   base::subtle::Atomic32 typing_detected_;
 
   // Communication with browser for AEC dump.
-  std::unique_ptr<AecDumpAgentImpl> aec_dump_agent_impl_;
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 
   // Flag to avoid executing Stop() more than once.
   bool stopped_;

@@ -48,13 +48,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "services/network/public/cpp/features.h"
 
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-#include "chromecast/browser/extension_request_protocol_handler.h"
-#include "extensions/browser/extension_protocols.h"  // nogncheck
-#include "extensions/browser/extension_system.h"     // nogncheck
-#include "extensions/common/constants.h"             // nogncheck
-#endif
-
 namespace chromecast {
 namespace shell {
 
@@ -199,10 +192,6 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!main_getter_.get())
       << "Main URLRequestContextGetter already initialized";
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  (*protocol_handlers)[extensions::kExtensionScheme] =
-      std::make_unique<ExtensionRequestProtocolHandler>(browser_context);
-#endif
   main_getter_ =
       new MainURLRequestContextGetter(this, browser_context, protocol_handlers,
                                       std::move(request_interceptors));

@@ -151,6 +151,8 @@ class AssistantManagerServiceImpl
   void OnShowNotification(const action::Notification& notification) override;
   void OnOpenAndroidApp(const action::AndroidAppInfo& app_info,
                         const action::InteractionInfo& interaction) override;
+  void OnVerifyAndroidApp(const std::vector<action::AndroidAppInfo>& apps_info,
+                          const action::InteractionInfo& interaction) override;
 
   // AssistantEventObserver overrides:
   void OnSpeechLevelUpdated(float speech_level) override;
@@ -221,6 +223,9 @@ class AssistantManagerServiceImpl
 
   void HandleOpenAndroidAppResponse(const action::InteractionInfo& interaction,
                                     bool app_opened);
+  void HandleVerifyAndroidAppResponse(
+      const action::InteractionInfo& interaction,
+      std::vector<mojom::AndroidAppInfoPtr> apps_info);
 
   void HandleLaunchMediaIntentResponse(bool app_opened);
 

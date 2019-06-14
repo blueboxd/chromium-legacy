@@ -116,9 +116,9 @@ EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
 EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
                                       EGLSurface surface,
                                       EGLuint64KHR* frameId) override;
-EGLDisplay eglGetPlatformDisplayEXTFn(EGLenum platform,
-                                      void* native_display,
-                                      const EGLint* attrib_list) override;
+EGLDisplay eglGetPlatformDisplayFn(EGLenum platform,
+                                   void* native_display,
+                                   const EGLAttrib* attrib_list) override;
 __eglMustCastToProperFunctionPointerType eglGetProcAddressFn(
     const char* procname) override;
 EGLBoolean eglGetSyncAttribKHRFn(EGLDisplay dpy,

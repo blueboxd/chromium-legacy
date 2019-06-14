@@ -204,7 +204,7 @@ inline LRESULT WtlReflectNotificationsFiltered(HWND hWndParent, UINT uMsg, WPARA
 	return lResult;
 }
 
-}  // namespace WTL
+} // namespace WTL
 
 // Try to prevent problems with WM_CTLCOLOR* messages when
 // the message wasn't really handled
@@ -594,6 +594,6 @@ public:
 #endif // __ATLSTR_H__
 };
 
-}  // namespace WTL
+} // namespace WTL
 
 #endif // __ATLWINX_H__

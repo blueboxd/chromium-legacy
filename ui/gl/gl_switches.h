@@ -49,6 +49,8 @@ GL_EXPORT extern const char kEnableGPUServiceTracing[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 
 GL_EXPORT extern const char kUseANGLE[];
+GL_EXPORT extern const char kEnableANGLEFeatures[];
+GL_EXPORT extern const char kDisableANGLEFeatures[];
 GL_EXPORT extern const char kUseGL[];
 GL_EXPORT extern const char kTestGLLib[];
 GL_EXPORT extern const char kUseGpuInTests[];

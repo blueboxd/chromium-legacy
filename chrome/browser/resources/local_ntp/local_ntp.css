@@ -1395,3 +1395,10 @@ html[dir=rtl] .sh-option-image .selected-check {
   margin-inline-end: 20px;
   margin-inline-start: auto;
 }
+
+#colors-default-icon {
+  background-image: url(icons/default-theme.svg);
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 1;
+}

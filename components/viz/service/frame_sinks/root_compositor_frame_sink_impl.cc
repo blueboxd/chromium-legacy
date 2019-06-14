@@ -156,8 +156,7 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
 
 void RootCompositorFrameSinkImpl::DisableSwapUntilResize(
     DisableSwapUntilResizeCallback callback) {
-  display_->Resize(gfx::Size());
-  std::move(callback).Run();
+  display_->DisableSwapUntilResize(std::move(callback));
 }
 
 void RootCompositorFrameSinkImpl::Resize(const gfx::Size& size) {

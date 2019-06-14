@@ -225,7 +225,7 @@ body.tablet-landscape .actions-group {
   height: calc(var(--modes-height) - var(--modes-gradient-padding) * 2);
   justify-content: flex-start;
   overflow: scroll;
-  padding: var(--modes-gradient-padding) 3px;
+  padding: var(--modes-gradient-padding) 8px;
   pointer-events: auto;
 }
 
@@ -244,13 +244,20 @@ div.mode-item>span {
   line-height: 32px;
   margin: 8px 0;
   padding: 0 12px;
+  position: relative;
   text-shadow: 0 2px 3px rgba(32, 33, 36, 0.3);
+  z-index: 0;
 }
 
 .mode-item>input {
   height: 100%;
   position: absolute;
   width: 100%;
+  z-index: 1;
+}
+
+.mode-item>input:focus::after {
+  display: none;
 }
 
 .mode-item>input:checked + span {
@@ -259,8 +266,15 @@ div.mode-item>span {
   text-shadow: none;
 }
 
-.mode-item>input:focus + span {
-  margin-bottom: 6px;
+.mode-item>input:focus + span::after {
+  border: 2px solid rgba(37, 129, 223, 0.7);
+  border-radius: 20px/50%;
+  bottom: -7px;
+  content: '';
+  left: -7px;
+  position: absolute;
+  right: -7px;
+  top: -7px;
 }
 
 button.shutter {

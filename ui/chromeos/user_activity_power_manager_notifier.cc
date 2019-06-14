@@ -7,7 +7,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -48,7 +48,7 @@ UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
     service_manager::Connector* connector)
     : detector_(detector), fingerprint_observer_binding_(this) {
   detector_->AddObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   // Connector can be null in tests.
@@ -64,7 +64,7 @@ UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
 
 UserActivityPowerManagerNotifier::~UserActivityPowerManagerNotifier() {
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   detector_->RemoveObserver(this);
 }
 

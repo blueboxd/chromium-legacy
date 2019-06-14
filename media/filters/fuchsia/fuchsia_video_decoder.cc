@@ -56,7 +56,7 @@ zx::vmo CreateContiguousVmo(size_t size, const zx::handle& bti_handle) {
 
 zx::vmo CreateVmo(size_t size) {
   zx::vmo vmo;
-  zx_status_t status = zx::vmo::create(size, ZX_VMO_NON_RESIZABLE, &vmo);
+  zx_status_t status = zx::vmo::create(size, 0, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return zx::vmo();

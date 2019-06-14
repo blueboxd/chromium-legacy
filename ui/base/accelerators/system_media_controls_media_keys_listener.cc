@@ -104,6 +104,10 @@ void SystemMediaControlsMediaKeysListener::StopWatchingMediaKey(
   }
 }
 
+void SystemMediaControlsMediaKeysListener::SetIsMediaPlaying(bool is_playing) {
+  is_media_playing_ = is_playing;
+}
+
 void SystemMediaControlsMediaKeysListener::OnNext() {
   MaybeSendKeyCode(VKEY_MEDIA_NEXT_TRACK);
 }
@@ -113,7 +117,8 @@ void SystemMediaControlsMediaKeysListener::OnPrevious() {
 }
 
 void SystemMediaControlsMediaKeysListener::OnPause() {
-  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+  if (is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void SystemMediaControlsMediaKeysListener::OnStop() {
@@ -121,7 +126,8 @@ void SystemMediaControlsMediaKeysListener::OnStop() {
 }
 
 void SystemMediaControlsMediaKeysListener::OnPlay() {
-  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+  if (!is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void SystemMediaControlsMediaKeysListener::MaybeSendKeyCode(

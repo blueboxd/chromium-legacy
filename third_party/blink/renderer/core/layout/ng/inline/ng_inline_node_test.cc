@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
@@ -731,6 +732,25 @@ TEST_P(NodeInsertTest, NeedsCollectInlinesOnInsert) {
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 }
 
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnInsertToOutOfFlowButton) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #xflex { display: flex; }
+    </style>
+    <div id="container">
+      <button id="flex" style="position: absolute"></button>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = ElementTraversal::FirstChild(*container);
+  Element* child = GetDocument().CreateRawElement(html_names::kDivTag);
+  parent->appendChild(child);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+}
+
 class NodeRemoveTest : public NGInlineNodeTest,
                        public testing::WithParamInterface<const char*> {};
 
@@ -801,6 +821,30 @@ TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnForceLayout) {
   child->ForceLayout();
   EXPECT_FALSE(container->NeedsCollectInlines());
   EXPECT_FALSE(target->NeedsCollectInlines());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      text
+    </div>
+  )HTML");
+
+  // Appending a child should set |NeedsCollectInlines|.
+  Element* container = GetElementById("container");
+  container->appendChild(GetDocument().createTextNode("add"));
+  auto* block_flow = To<LayoutBlockFlow>(container->GetLayoutObject());
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(block_flow->NeedsCollectInlines());
+
+  // |IsEmptyInline| should run |CollectInlines|.
+  NGInlineNode node(block_flow);
+  node.IsEmptyInline();
+  EXPECT_FALSE(block_flow->NeedsCollectInlines());
+
+  // Running |CollectInlines| should not clear |FirstInlineFragment|.
+  LayoutObject* first_child = container->firstChild()->GetLayoutObject();
+  EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
 }
 
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {

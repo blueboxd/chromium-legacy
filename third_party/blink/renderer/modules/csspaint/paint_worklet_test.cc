@@ -34,7 +34,7 @@ class TestPaintWorklet : public PaintWorklet {
   // was switched in the test.
   wtf_size_t SelectNewGlobalScope() override {
     return (GetActiveGlobalScopeForTesting() + 1) %
-           PaintWorklet::kNumGlobalScopes;
+           PaintWorklet::kNumGlobalScopesPerThread;
   }
 
   size_t GetActiveGlobalScope() { return GetActiveGlobalScopeForTesting(); }

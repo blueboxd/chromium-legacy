@@ -67,6 +67,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
 
 NGPhysicalContainerFragment::~NGPhysicalContainerFragment() = default;
 
+// additional_offset must be offset from the containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     Vector<PhysicalRect>* outline_rects,
     const PhysicalOffset& additional_offset,
@@ -95,6 +96,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
   }
 }
 
+// additional_offset must be offset from the containing_block because
+// LocalToAncestorRect returns rects wrt containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     const NGLink& descendant,
     Vector<PhysicalRect>* outline_rects,

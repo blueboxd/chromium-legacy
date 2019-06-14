@@ -82,6 +82,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFBridge {
   // Remove InputMethodDelegate instance from TSFTextStore when not in focus.
   virtual void RemoveInputMethodDelegate() = 0;
 
+  // Returns whether the system's input language is CJK.
+  virtual bool IsInputLanguageCJK() = 0;
+
   // Obtains current thread manager.
   virtual Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() = 0;
 

@@ -32,6 +32,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -244,6 +246,7 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
 };
+
 // A test implementation of the WallpaperControllerObserver interface.
 class TestWallpaperControllerObserver : public WallpaperControllerObserver {
  public:
@@ -278,11 +281,16 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
 
 class WallpaperControllerTest : public AshTestBase {
  public:
-  WallpaperControllerTest() : controller_(nullptr) {}
+  WallpaperControllerTest() = default;
   ~WallpaperControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
+    auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+    fake_user_manager_ = fake_user_manager.get();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(fake_user_manager));
+
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
     Shell::Get()
@@ -522,12 +530,15 @@ class WallpaperControllerTest : public AshTestBase {
     return controller_->GetWallpaperContainerId(controller_->locked_);
   }
 
-  WallpaperControllerImpl* controller_;  // Not owned.
+  WallpaperControllerImpl* controller_ = nullptr;  // Not owned.
 
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir online_wallpaper_dir_;
   base::ScopedTempDir custom_wallpaper_dir_;
   base::ScopedTempDir default_wallpaper_dir_;
+
+  user_manager::FakeUserManager* fake_user_manager_ = nullptr;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerTest);
@@ -1281,7 +1292,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForChildAccount) {
   const std::string child_email = "child@test.com";
   const AccountId child_account_id = AccountId::FromUserEmail(child_email);
   const std::string child_wallpaper_files_id = GetDummyFileId(child_account_id);
-  SimulateUserLogin(child_email, user_manager::USER_TYPE_CHILD);
+  fake_user_manager_->AddChildUser(child_account_id);
 
   // Verify the large child wallpaper is set successfully with the correct file
   // path.
@@ -1327,9 +1338,9 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
                                        base::Time::Now().LocalMidnight());
   EXPECT_NE(wallpaper_info.type, default_wallpaper_info.type);
 
-  SimulateGuestLogin();
   const AccountId guest_id =
       AccountId::FromUserEmail(user_manager::kGuestUserName);
+  fake_user_manager_->AddGuestUser(guest_id);
 
   // Verify that during a guest session, |SetDefaultWallpaper| removes the user
   // custom wallpaper info, but a guest specific wallpaper should be set,

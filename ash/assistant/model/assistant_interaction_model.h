@@ -134,7 +134,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModel {
   void NotifyCommittedQueryChanged();
   void NotifyCommittedQueryCleared();
   void NotifyPendingQueryChanged();
-  void NotifyPendingQueryCleared();
+  void NotifyPendingQueryCleared(bool due_to_commit);
   void NotifyResponseChanged();
   void NotifyResponseCleared();
   void NotifySpeechLevelChanged(float speech_level_db);

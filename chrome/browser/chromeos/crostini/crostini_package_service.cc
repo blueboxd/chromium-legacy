@@ -109,6 +109,7 @@ CrostiniPackageService::CrostiniPackageService(Profile* profile)
 
   manager->AddLinuxPackageOperationProgressObserver(this);
   manager->AddPendingAppListUpdatesObserver(this);
+  manager->AddVmShutdownObserver(this);
 }
 
 CrostiniPackageService::~CrostiniPackageService() = default;
@@ -117,6 +118,7 @@ void CrostiniPackageService::Shutdown() {
   CrostiniManager* manager = CrostiniManager::GetForProfile(profile_);
   manager->RemoveLinuxPackageOperationProgressObserver(this);
   manager->RemovePendingAppListUpdatesObserver(this);
+  manager->RemoveVmShutdownObserver(this);
 }
 
 void CrostiniPackageService::SetNotificationStateChangeCallbackForTesting(
@@ -201,6 +203,26 @@ void CrostiniPackageService::OnUninstallPackageProgress(
   UpdatePackageOperationStatus(ContainerId(vm_name, container_name),
                                UninstallStatusToOperationStatus(status),
                                progress_percent);
+}
+
+void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {
+  // Making a notification as failed removes it from |running_notifications_|,
+  // which invalidates the iterators. To avoid this, we record all the
+  // containers that just shut down before removing any notifications.
+  std::vector<ContainerId> to_remove;
+  for (auto iter = running_notifications_.begin();
+       iter != running_notifications_.end(); iter++) {
+    if (iter->first.first == vm_name) {
+      to_remove.push_back(iter->first);
+    }
+  }
+  for (auto iter : to_remove) {
+    // Use a loop because removing a notification from the running set can cause
+    // a queued operation to start, which will also need to be removed.
+    while (ContainerHasRunningOperation(iter)) {
+      UpdatePackageOperationStatus(iter, PackageOperationStatus::FAILED, 0);
+    }
+  }
 }
 
 void CrostiniPackageService::QueueUninstallApplication(

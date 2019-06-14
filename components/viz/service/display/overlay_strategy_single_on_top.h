@@ -31,12 +31,17 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
   OverlayStrategy GetUMAEnum() const override;
 
  private:
+  static constexpr size_t kMaxFrameCandidateWithSameResourceId = 3;
+
   bool TryOverlay(QuadList* quad_list,
                   OverlayCandidateList* candidate_list,
                   const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);
 
   OverlayCandidateValidator* capability_checker_;  // Weak.
+
+  ResourceId previous_frame_resource_id_ = kInvalidResourceId;
+  size_t same_resource_id_frames_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategySingleOnTop);
 };

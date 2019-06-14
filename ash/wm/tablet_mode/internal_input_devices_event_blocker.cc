@@ -7,8 +7,8 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/touch/touch_devices_controller.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -16,11 +16,11 @@
 namespace ash {
 
 InternalInputDevicesEventBlocker::InternalInputDevicesEventBlocker() {
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 InternalInputDevicesEventBlocker::~InternalInputDevicesEventBlocker() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   if (should_be_blocked_)
     UpdateInternalInputDevices(/*should_block=*/false);
 }
@@ -45,7 +45,7 @@ void InternalInputDevicesEventBlocker::UpdateInternalInputDevices(
 
 bool InternalInputDevicesEventBlocker::HasInternalTouchpad() {
   for (const ui::InputDevice& touchpad :
-       ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchpadDevices()) {
     if (touchpad.type == ui::INPUT_DEVICE_INTERNAL)
       return true;
   }
@@ -54,7 +54,7 @@ bool InternalInputDevicesEventBlocker::HasInternalTouchpad() {
 
 bool InternalInputDevicesEventBlocker::HasInternalKeyboard() {
   for (const ui::InputDevice& keyboard :
-       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (keyboard.type == ui::INPUT_DEVICE_INTERNAL)
       return true;
   }

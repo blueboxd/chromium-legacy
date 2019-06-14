@@ -126,7 +126,7 @@
         Now
       </message>
       <message name="IDS_NTP_ALL_APPS" desc="Text to accompany icon that will navigate to a page showing a categorized view of different applications or sites">
-        All apps
+        Explore apps
       </message>
       <message name="IDS_MORE_ARTICLES" desc="Message at the bottom of a list of news items prompting the user to load more.">
         More articles

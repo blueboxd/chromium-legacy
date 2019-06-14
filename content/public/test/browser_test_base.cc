@@ -25,9 +25,11 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
@@ -61,6 +63,7 @@
 #if defined(OS_ANDROID)
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"  // nogncheck
 #include "content/app/mojo/mojo_init.h"
+#include "content/app/service_manager_environment.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_paths.h"
@@ -398,6 +401,10 @@ void BrowserTestBase::SetUp() {
   discardable_shared_memory_manager_ =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
+  service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
+      BrowserTaskExecutor::CreateIOThread());
+  auto startup_data = service_manager_environment_->CreateBrowserStartupData();
+
   // ContentMain would normally call RunProcess() on the delegate and fallback
   // to BrowserMain() if it did not run it (or equivalent) itself. On Android,
   // RunProcess() will return 0 so we don't have to fallback to BrowserMain().
@@ -405,6 +412,7 @@ void BrowserTestBase::SetUp() {
     MainFunctionParams params(*command_line);
     params.ui_task = ui_task.release();
     params.created_main_parts_closure = created_main_parts_closure.release();
+    params.startup_data = startup_data.get();
     // Passing "" as the process type to indicate the browser process.
     int exit_code = delegate->RunProcess("", params);
     DCHECK_EQ(exit_code, 0);
@@ -414,6 +422,8 @@ void BrowserTestBase::SetUp() {
   // don't go through shutdown, so this doesn't happen there. We do need it
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
+
+  BrowserMainLoop::GetInstance()->ShutdownThreadsAndCleanUp();
 
   BrowserTaskExecutor::ResetForTesting();
 #else

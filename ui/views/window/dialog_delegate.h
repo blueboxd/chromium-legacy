@@ -80,7 +80,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Override this function to display a footnote view below the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
-  virtual View* CreateFootnoteView();
+  virtual std::unique_ptr<View> CreateFootnoteView();
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
   // this is called when the user presses the "Cancel" button.

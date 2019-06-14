@@ -16,7 +16,6 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -188,7 +187,6 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;
 
-  favicon::FaviconRequestHandler favicon_request_handler_;
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModel);

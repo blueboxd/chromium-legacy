@@ -290,8 +290,8 @@ void ExtensionInstallDialogView::AddedToWidget() {
   auto title_container = std::make_unique<views::View>();
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  views::GridLayout* layout = title_container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(title_container.get()));
+  views::GridLayout* layout =
+      title_container->SetLayoutManager(std::make_unique<views::GridLayout>());
   constexpr int kTitleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kTitleColumnSetId);
   constexpr int icon_size = extension_misc::EXTENSION_ICON_SMALL;
@@ -604,7 +604,7 @@ ExpandableContainerView::ExpandableContainerView(
   DCHECK(!details.empty());
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   constexpr int kColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
 

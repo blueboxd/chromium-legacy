@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -142,6 +143,7 @@ class ExtensionCrashRecoveryTest : public extensions::ExtensionBrowserTest {
   std::string first_extension_id_;
   std::string second_extension_id_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {

@@ -442,6 +442,11 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels) {
+  // The compositor is deleted from WM_DESTROY, but we don't delete things until
+  // WM_NCDESTROY, and it must be possible to still get some messages between
+  // these two.
+  if (!compositor_)
+    return;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();

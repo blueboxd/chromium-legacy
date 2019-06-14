@@ -15337,7 +15337,7 @@
 
       If the policy is enabled, Google Assistant would listen for the voice activation phrase.
       If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, users can decide whether to allow Google Assistant to listen for the voice activation phrase.
       ''',
     },
     {

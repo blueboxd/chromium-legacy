@@ -16,9 +16,7 @@ test((t) => {
     var body = document.getElementById("body");
     body.focus();
 
-    var listBox = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
-    assert_equals(listBox.role, "AXRole: AXListBox");
-
+    var listBox = accessibilityController.focusedElement.childAtIndex(0);
     var firstChild = listBox.childAtIndex(0);
     var secondChild = listBox.childAtIndex(1);
     assert_equals(firstChild.role, "AXRole: AXListBoxOption");

@@ -85,8 +85,14 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // Call this to submit a compositor frame.
   void SubmitCompositorFrame();
 
+  // Call this to submit an empty compositor frame. This may be useful if
+  // the surface tree is becoming invisible but the resources (e.g. buffers)
+  // need to be released back to the client.
+  void SubmitEmptyCompositorFrame();
+
  private:
   void UpdateHostWindowBounds();
+  viz::CompositorFrame PrepareToSubmitCompositorFrame();
 
   Surface* root_surface_ = nullptr;
 

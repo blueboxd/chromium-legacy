@@ -42,10 +42,12 @@ OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
     OAuth2TokenService* token_service,
     const std::vector<std::string>& account_ids,
+    const std::string& external_cc_result,
     base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
       token_service_(token_service),
       account_ids_(account_ids),
+      external_cc_result_(external_cc_result),
       callback_(std::move(callback)),
       weak_ptr_factory_(this) {
   DCHECK(signin_client_);
@@ -102,7 +104,8 @@ void OAuthMultiloginHelper::StartFetchingMultiLogin() {
   DCHECK_EQ(token_id_pairs_.size(), account_ids_.size());
   gaia_auth_fetcher_ =
       signin_client_->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
-  gaia_auth_fetcher_->StartOAuthMultilogin(token_id_pairs_);
+  gaia_auth_fetcher_->StartOAuthMultilogin(token_id_pairs_,
+                                           external_cc_result_);
 }
 
 void OAuthMultiloginHelper::OnOAuthMultiloginFinished(

@@ -80,6 +80,10 @@ class SamplingState {
   // On macOS, the first use of a thread_local variable on a new thread will
   // cause a malloc(), causing infinite recursion. Instead, use pthread TLS to
   // store the counter.
+  //
+  // TODO: This is not necessary for PartitionAlloc and likely slower, refactor
+  // SamplingState to be able to use pthread TLS for malloc() and thread_local
+  // for PartitionAlloc in this case.
   ALWAYS_INLINE size_t GetCounter() {
     return reinterpret_cast<size_t>(pthread_getspecific(tls_key_));
   }

@@ -11,6 +11,38 @@
 <script src="chrome://oobe/supervision/onboarding_controller.mojom-lite.js">
 </script>
 
+<iron-iconset-svg name="supervision-onboarding-retry-32" size="32">
+  <svg>
+    <defs>
+      <g id="alert" fill-rule="evenodd">
+        <defs>
+          <path id="a" d="M14.667 20h2.666v2.667h-2.666V20zm0-10.667h2.666v8h-2.666v-8zm1.32-6.666C8.627 2.667 2.667 8.64 2.667 16s5.96 13.333 13.32 13.333c7.373 0 13.346-5.973 13.346-13.333S23.36 2.667 15.987 2.667zm.013 24c-5.893 0-10.667-4.774-10.667-10.667S10.107 5.333 16 5.333 26.667 10.107 26.667 16 21.893 26.667 16 26.667z"></path>
+        </defs>
+        <g fill="none" fill-rule="evenodd">
+          <path d="M0 0h32v32H0z"></path>
+          <use fill="#1A73E8" fill-rule="nonzero" xlink:href="#a"></use>
+        </g>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
+<iron-iconset-svg name="supervision-onboarding-retry-64" size="64">
+  <svg>
+    <defs>
+      <g id="alert" fill-rule="evenodd">
+        <defs>
+          <path id="a" d="M29.333 40h5.334v5.333h-5.334V40zm0-21.333h5.334v16h-5.334v-16zm2.64-13.334C17.253 5.333 5.333 17.28 5.333 32c0 14.72 11.92 26.667 26.64 26.667C46.72 58.667 58.667 46.72 58.667 32c0-14.72-11.947-26.667-26.694-26.667zm.027 48c-11.787 0-21.333-9.546-21.333-21.333 0-11.787 9.546-21.333 21.333-21.333 11.787 0 21.333 9.546 21.333 21.333 0 11.787-9.546 21.333-21.333 21.333z"></path>
+        </defs>
+        <g fill="none" fill-rule="evenodd">
+          <path d="M0 0h64v64H0z"></path>
+          <use fill="#1A73E8" fill-rule="nonzero" xlink:href="#a"></use>
+        </g>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
 <!--
   UI for the Supervision Onboarding flow that's displayed for the first login
   or OOBE of supervised users. -->
@@ -19,15 +51,55 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="supervision_onboarding.css">
     <div id="supervision-onboarding-flow-container">
+
+      <!--
+        Loading dialog. Shown while we load the onboarding page.
+        It just shows a spinner with a "Please wait" message. -->
       <oobe-dialog id="loading-dialog" role="dialog" no-header no-footer-padding
-          hidden="[[isReady_]]">
+          hidden="[[hideLoadingDialog_]]">
         <div slot="footer" class="flex layout vertical center center-justified">
           <throbber-notice text="$i18n{supervisionOnboardingWaitMessage}">
           </throbber-notice>
         </div>
       </oobe-dialog>
+
+      <!--
+        Retry dialog. Shown when we fail to load the onboarding page.
+        It shows a "Try again" button, but if the user keeps trying and we
+        keep failing, we add a button to skip the whole flow. -->
+      <oobe-dialog id="supervision-onboarding-retry-dialog" role="dialog"
+          aria-label$="$i18n{supervisionOnboardingRetryDialogTitle}"
+          has-buttons hidden="[[hideRetryDialog_]]">
+        <hd-iron-icon slot="oobe-icon" aria-hidden="true"
+            icon1x="supervision-onboarding-retry-32:alert"
+            icon2x="supervision-onboarding-retry-64:alert">
+        </hd-iron-icon>
+        <h1 slot="title">
+          $i18n{supervisionOnboardingRetryDialogTitle}
+        </h1>
+        <div slot="subtitle">
+          $i18n{supervisionOnboardingRetryDialogMessage}
+        </div>
+        <div slot="bottom-buttons" class="layout horizontal end-justified">
+          <div class="flex">
+          </div>
+          <oobe-text-button id="supervision-onboarding-bail-button" border
+              hidden="[[hideSkipButton_]]" on-tap="onSkip_">
+            <div i18n-content="supervisionOnboardingSkipButtonLabel"></div>
+          </oobe-text-button>
+          <oobe-text-button id="supervision-onboarding-retry-button" inverse
+              hidden="[[hideRetryButton_]]" on-tap="onRetry_">
+            <div i18n-content="supervisionOnboardingRetryButtonLabel"></div>
+          </oobe-text-button>
+        </div>
+      </oobe-dialog>
+
+      <!--
+        Content dialog. Shown when we successfully load an onboarding page.
+        It has up to three buttons to control the flow that depend on the
+        page.-->
       <oobe-dialog id="supervision-onboarding-content" role="dialog" no-header
-          no-footer-padding has-buttons hidden="[[!isReady_]]">
+          no-footer-padding has-buttons hidden="[[hideContent_]]">
         <webview id="supervisionOnboardingWebview" slot="footer">
         </webview>
         <div id="supervision-onboarding-flow-buttons" slot="bottom-buttons"

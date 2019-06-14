@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -21,6 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/bubble/bubble_border.h"
 
 namespace ash {
 
@@ -29,6 +31,42 @@ namespace {
 const int kAutoclickMenuWidth = 321;
 const int kAutoclickMenuWidthWithScroll = 371;
 const int kAutoclickMenuHeight = 64;
+
+mojom::AutoclickMenuPosition DefaultSystemPosition() {
+  return base::i18n::IsRTL() ? mojom::AutoclickMenuPosition::kBottomLeft
+                             : mojom::AutoclickMenuPosition::kBottomRight;
+}
+
+views::BubbleBorder::Arrow GetScrollAnchorAlignmentForPosition(
+    mojom::AutoclickMenuPosition position) {
+  // If this is the default system position, pick the position based on the
+  // language direction.
+  if (position == mojom::AutoclickMenuPosition::kSystemDefault) {
+    position = DefaultSystemPosition();
+  }
+  // Mirror arrow in RTL languages so that it always stays near the screen
+  // edge.
+  switch (position) {
+    case mojom::AutoclickMenuPosition::kBottomLeft:
+      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_RIGHT
+                                 : views::BubbleBorder::Arrow::TOP_LEFT;
+    case mojom::AutoclickMenuPosition::kTopLeft:
+      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_RIGHT
+                                 : views::BubbleBorder::Arrow::BOTTOM_LEFT;
+    case mojom::AutoclickMenuPosition::kBottomRight:
+      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::TOP_LEFT
+                                 : views::BubbleBorder::Arrow::TOP_RIGHT;
+    case mojom::AutoclickMenuPosition::kTopRight:
+      return base::i18n::IsRTL() ? views::BubbleBorder::Arrow::BOTTOM_LEFT
+                                 : views::BubbleBorder::Arrow::BOTTOM_RIGHT;
+    case mojom::AutoclickMenuPosition::kSystemDefault:
+      // It's not possible for position to be kSystemDefault here because we've
+      // set it via DefaultSystemPosition() above if it was kSystemDefault.
+      NOTREACHED();
+      return views::BubbleBorder::Arrow::TOP_LEFT;
+  }
+}
+
 }  // namespace
 
 AutoclickMenuBubbleController::AutoclickMenuBubbleController() {
@@ -39,12 +77,29 @@ AutoclickMenuBubbleController::~AutoclickMenuBubbleController() {
   if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
   Shell::Get()->locale_update_controller()->RemoveObserver(this);
+  scroll_bubble_controller_.reset();
 }
 
 void AutoclickMenuBubbleController::SetEventType(
     mojom::AutoclickEventType type) {
   if (menu_view_) {
     menu_view_->UpdateEventType(type);
+  }
+
+  if (type == mojom::AutoclickEventType::kScroll) {
+    // If the type is scroll, show the scroll bubble using the
+    // scroll_bubble_controller_.
+    if (!scroll_bubble_controller_) {
+      scroll_bubble_controller_ =
+          std::make_unique<AutoclickScrollBubbleController>();
+    }
+    gfx::Rect anchor_rect = bubble_view_->GetBoundsInScreen();
+    anchor_rect.Inset(-kCollisionWindowWorkAreaInsetsDp,
+                      -kCollisionWindowWorkAreaInsetsDp);
+    scroll_bubble_controller_->ShowBubble(
+        anchor_rect, GetScrollAnchorAlignmentForPosition(position_));
+  } else {
+    scroll_bubble_controller_ = nullptr;
   }
 }
 
@@ -64,9 +119,7 @@ void AutoclickMenuBubbleController::SetPosition(
   // If this is the default system position, pick the position based on the
   // language direction.
   if (new_position == mojom::AutoclickMenuPosition::kSystemDefault) {
-    new_position = base::i18n::IsRTL()
-                       ? mojom::AutoclickMenuPosition::kBottomLeft
-                       : mojom::AutoclickMenuPosition::kBottomRight;
+    new_position = DefaultSystemPosition();
   }
 
   // Calculates the ideal bounds.
@@ -123,6 +176,13 @@ void AutoclickMenuBubbleController::SetPosition(
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   bubble_widget_->SetBounds(resting_bounds);
+
+  if (!scroll_bubble_controller_)
+    return;
+
+  // Position the scroll bubble with respect to the menu.
+  scroll_bubble_controller_->UpdateAnchorRect(
+      resting_bounds, GetScrollAnchorAlignmentForPosition(new_position));
 }
 
 void AutoclickMenuBubbleController::ShowBubble(
@@ -188,6 +248,10 @@ void AutoclickMenuBubbleController::SetBubbleVisibility(bool is_visible) {
     bubble_widget_->Show();
   else
     bubble_widget_->Hide();
+
+  if (!scroll_bubble_controller_)
+    return;
+  scroll_bubble_controller_->SetBubbleVisibility(is_visible);
 }
 
 void AutoclickMenuBubbleController::ClickOnBubble(gfx::Point location_in_dips,
@@ -213,9 +277,24 @@ void AutoclickMenuBubbleController::ClickOnBubble(gfx::Point location_in_dips,
   bubble_widget_->GetRootView()->OnMouseReleased(release_event);
 }
 
+void AutoclickMenuBubbleController::ClickOnScrollBubble(
+    gfx::Point location_in_dips,
+    int mouse_event_flags) {
+  if (!scroll_bubble_controller_)
+    return;
+
+  scroll_bubble_controller_->ClickOnBubble(location_in_dips, mouse_event_flags);
+}
+
 bool AutoclickMenuBubbleController::ContainsPointInScreen(
     const gfx::Point& point) {
   return bubble_view_ && bubble_view_->GetBoundsInScreen().Contains(point);
+}
+
+bool AutoclickMenuBubbleController::ScrollBubbleContainsPointInScreen(
+    const gfx::Point& point) {
+  return scroll_bubble_controller_ &&
+         scroll_bubble_controller_->ContainsPointInScreen(point);
 }
 
 void AutoclickMenuBubbleController::BubbleViewDestroyed() {

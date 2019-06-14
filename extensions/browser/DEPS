@@ -20,6 +20,7 @@ include_rules = [
   "+gpu/config",
   "+grit/extensions_strings.h",
   "+net",
+  "-net/url_request",
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/buildflags",
   "+services/data_decoder/public",

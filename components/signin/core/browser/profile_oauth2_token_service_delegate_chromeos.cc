@@ -42,17 +42,17 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 // and non-Gaia accounts. Non-Gaia accounts will be filtered out.
 // |account_keys| is the set of accounts that need to be translated.
 // |account_tracker_service| is an unowned pointer.
-std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
+std::vector<CoreAccountId> GetOAuthAccountIdsFromAccountKeys(
     const std::set<chromeos::AccountManager::AccountKey>& account_keys,
     const AccountTrackerService* const account_tracker_service) {
-  std::vector<std::string> accounts;
+  std::vector<CoreAccountId> accounts;
   for (auto& account_key : account_keys) {
     if (account_key.account_type !=
         chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
       continue;
     }
 
-    std::string account_id =
+    CoreAccountId account_id =
         account_tracker_service
             ->FindAccountInfoByGaiaId(account_key.id /* gaia_id */)
             .account_id;
@@ -185,8 +185,8 @@ GoogleServiceAuthError ProfileOAuth2TokenServiceDelegateChromeOS::GetAuthError(
 // |RefreshTokenIsAvailable|. See crbug.com/919793 for details. At the time of
 // writing, both |GetAccounts| and |RefreshTokenIsAvailable| use
 // |GetOAuthAccountIdsFromAccountKeys|.
-std::vector<std::string>
-ProfileOAuth2TokenServiceDelegateChromeOS::GetAccounts() {
+std::vector<CoreAccountId>
+ProfileOAuth2TokenServiceDelegateChromeOS::GetAccounts() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |GetAccounts| intentionally does not care about the state of

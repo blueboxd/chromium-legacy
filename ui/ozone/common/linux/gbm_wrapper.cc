@@ -126,11 +126,11 @@ class Buffer final : public ui::GbmBuffer {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].fd.get();
   }
-  int GetPlaneStride(size_t plane) const override {
+  uint32_t GetPlaneStride(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].stride;
   }
-  int GetPlaneOffset(size_t plane) const override {
+  size_t GetPlaneOffset(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].offset;
   }
@@ -261,7 +261,7 @@ class Device final : public ui::GbmDevice {
       uint32_t format,
       const gfx::Size& size,
       gfx::NativePixmapHandle handle) override {
-    DCHECK_EQ(handle.planes[0].offset, 0);
+    DCHECK_EQ(handle.planes[0].offset, 0u);
 
     // Try to use scanout if supported.
     int gbm_flags = GBM_BO_USE_SCANOUT;

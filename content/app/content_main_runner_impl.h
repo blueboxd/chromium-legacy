@@ -12,12 +12,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "build/build_config.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -36,6 +36,7 @@ class DiscardableSharedMemoryManager;
 namespace content {
 class ContentMainDelegate;
 struct ContentMainParams;
+class ServiceManagerEnvironment;
 
 class ContentMainRunnerImpl : public ContentMainRunner {
  public:
@@ -62,9 +63,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       discardable_shared_memory_manager_;
   std::unique_ptr<StartupDataImpl> startup_data_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  std::unique_ptr<BrowserProcessSubThread> service_manager_thread_;
-  std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<ServiceManagerEnvironment> service_manager_environment_;
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   // True if the runner has been initialized.

@@ -40,6 +40,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/escape.h"
 #include "net/base/features.h"
@@ -786,6 +787,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
   std::unique_ptr<TestPrerender> test_prerender =
       prerender_contents_factory()->ExpectPrerenderContents(
           FINAL_STATUS_RENDERER_CRASHED);
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   std::unique_ptr<PrerenderHandle> prerender_handle(
       GetPrerenderManager()->AddPrerenderFromExternalRequest(
           GURL(content::kChromeUICrashURL), content::Referrer(),

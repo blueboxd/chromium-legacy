@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hdc.h"
 #include "printing/backend/printing_info_win.h"
@@ -145,7 +145,7 @@ TEST_F(PrintingContextTest, PrintAll) {
   if (IsTestCaseDisabled())
     return;
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
       123, false, false,
@@ -160,7 +160,7 @@ TEST_F(PrintingContextTest, Color) {
   if (IsTestCaseDisabled())
     return;
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
       123, false, false,

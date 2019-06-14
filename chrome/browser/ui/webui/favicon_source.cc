@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/favicon/favicon_request_handler_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -159,17 +160,21 @@ void FaviconSource::StartDataRequest(
         }
       }
     }
+    favicon::FaviconRequestHandler* favicon_request_handler =
+        FaviconRequestHandlerFactory::GetForBrowserContext(profile_);
+    if (!favicon_request_handler) {
+      SendDefaultResponse(callback);
+      return;
+    }
     sync_sessions::OpenTabsUIDelegate* open_tabs =
         GetOpenTabsUIDelegate(profile_);
-    favicon_request_handler_.GetRawFaviconForPageURL(
+    favicon_request_handler->GetRawFaviconForPageURL(
         url, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
                        base::Unretained(this),
                        IconRequest(callback, url, parsed.size_in_dip,
                                    parsed.device_scale_factor)),
         unsafe_request_origin, favicon::FaviconRequestPlatform::kDesktop,
-        favicon_service,
-        LargeIconServiceFactory::GetForBrowserContext(profile_),
         /*icon_url_for_uma=*/
         open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
         base::BindOnce(&GetSyncedFaviconForPageURL, base::Unretained(profile_)),

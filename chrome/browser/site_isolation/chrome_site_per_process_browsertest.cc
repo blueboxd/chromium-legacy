@@ -207,18 +207,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIExpiredCertBrowserTest,
 
   content::RenderFrameHost* interstitial_frame_host;
 
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    interstitial_frame_host = active_web_contents->GetMainFrame();
-  } else {
-    WaitForInterstitialAttach(active_web_contents);
-    EXPECT_TRUE(active_web_contents->ShowingInterstitialPage());
-
-    // Here we check the device scale factor in use via the interstitial's
-    // RenderFrameHost; doing the check directly via the 'active web contents'
-    // does not give us the device scale factor for the interstitial.
-    interstitial_frame_host =
-        active_web_contents->GetInterstitialPage()->GetMainFrame();
-  }
+  interstitial_frame_host = active_web_contents->GetMainFrame();
 
   EXPECT_EQ(SitePerProcessHighDPIExpiredCertBrowserTest::kDeviceScaleFactor,
             GetFrameDeviceScaleFactor(interstitial_frame_host));

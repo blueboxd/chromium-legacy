@@ -75,9 +75,6 @@ const base::Feature kSupervisedUserDeprecationNotice{
 const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNotificationStackingBarRedesign{
-    "NotificationStackingBarRedesign", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSystemTrayFeaturePodsPagination{
     "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -143,10 +140,6 @@ bool IsSupervisedUserDeprecationNoticeEnabled() {
 
 bool ShouldUseShaderRoundedCorner() {
   return base::FeatureList::IsEnabled(kUseShaderRoundedCorner);
-}
-
-bool IsNotificationStackingBarRedesignEnabled() {
-  return base::FeatureList::IsEnabled(kNotificationStackingBarRedesign);
 }
 
 bool IsSystemTrayFeaturePodsPaginationEnabled() {

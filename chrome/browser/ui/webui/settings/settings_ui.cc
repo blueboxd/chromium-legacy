@@ -119,8 +119,10 @@
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #else  // !defined(OS_CHROMEOS)
@@ -147,6 +149,24 @@
 
 namespace settings {
 
+namespace {
+
+#if defined(OS_CHROMEOS)
+bool ShouldShowParentalControls(Profile* profile) {
+  // Show Parental controls for regular and child accounts that are the
+  // primary profile.  Do not show it to any secondary profiles, managed
+  // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
+  // OTR accounts, or legacy supervised user accounts.
+  return chromeos::switches::IsParentalControlsSettingsEnabled() &&
+         profile == ProfileManager::GetPrimaryUserProfile() &&
+         !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
+         (profile->IsChild() ||
+          !profile->GetProfilePolicyConnector()->IsManaged());
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
+
 // static
 void SettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -158,7 +178,11 @@ void SettingsUI::RegisterProfilePrefs(
 }
 
 SettingsUI::SettingsUI(content::WebUI* web_ui)
+#if defined(OS_CHROMEOS)
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send =*/true),
+#else
     : content::WebUIController(web_ui),
+#endif
       webui_load_timer_(web_ui->GetWebContents(),
                         "Settings.LoadDocumentTime.MD",
                         "Settings.LoadCompletedTime.MD") {
@@ -321,29 +345,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);
-}
-
-SettingsUI::~SettingsUI() {}
 
 #if defined(OS_CHROMEOS)
-bool SettingsUI::ShouldShowParentalControls(Profile* profile) {
-  // Show Parental controls for regular and child accounts that are the
-  // primary profile.  Do not show it to any secondary profiles, managed
-  // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
-  // OTR accounts, or legacy supervised user accounts.
-  return chromeos::switches::IsParentalControlsSettingsEnabled() &&
-         profile == ProfileManager::GetPrimaryUserProfile() &&
-         !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
-         (profile->IsChild() ||
-          !profile->GetProfilePolicyConnector()->IsManaged());
+  AddHandlerToRegistry(base::BindRepeating(&SettingsUI::BindCrosNetworkConfig,
+                                           base::Unretained(this)));
+#endif  // defined (OS_CHROMEOS)
 }
-#endif
 
-void SettingsUI::AddSettingsPageUIHandler(
-    std::unique_ptr<content::WebUIMessageHandler> handler) {
-  DCHECK(handler);
-  web_ui()->AddMessageHandler(std::move(handler));
-}
+SettingsUI::~SettingsUI() = default;
 
 #if defined(OS_CHROMEOS)
 // static
@@ -515,6 +524,22 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
 
   html_source->AddBoolean("showParentalControlsSettings",
                           ShouldShowParentalControls(profile));
+}
+#endif  // defined(OS_CHROMEOS)
+
+void SettingsUI::AddSettingsPageUIHandler(
+    std::unique_ptr<content::WebUIMessageHandler> handler) {
+  DCHECK(handler);
+  web_ui()->AddMessageHandler(std::move(handler));
+}
+
+#if defined(OS_CHROMEOS)
+void SettingsUI::BindCrosNetworkConfig(
+    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
+  content::BrowserContext::GetConnectorFor(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindInterface(chromeos::network_config::mojom::kServiceName,
+                      std::move(request));
 }
 #endif  // defined(OS_CHROMEOS)
 

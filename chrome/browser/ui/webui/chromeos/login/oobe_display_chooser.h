@@ -12,7 +12,7 @@
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {
-class InputDeviceManager;
+class DeviceDataManager;
 }
 
 namespace chromeos {
@@ -43,7 +43,7 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
   void OnTouchDeviceAssociationChanged() override;
   void OnDeviceListsComplete() override;
 
-  ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>
+  ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
       scoped_observer_;
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
 

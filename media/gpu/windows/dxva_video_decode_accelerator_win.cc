@@ -1446,13 +1446,17 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
               {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
                gfx::Size(7680, 4320), gfx::Size(8192, 4320),
                gfx::Size(8192, 8192)});
-          max_vp9_profile2_resolutions = GetMaxResolutionsForGUIDs(
-              max_vp9_profile2_resolutions.first, video_device.Get(),
-              {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
-              {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-               gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-               gfx::Size(8192, 8192)},
-              DXGI_FORMAT_P010);
+
+          // RS3 has issues with VP9.2 decoding. See https://crbug.com/937108.
+          if (base::win::GetVersion() != base::win::Version::WIN10_RS3) {
+            max_vp9_profile2_resolutions = GetMaxResolutionsForGUIDs(
+                max_vp9_profile2_resolutions.first, video_device.Get(),
+                {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
+                {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
+                 gfx::Size(7680, 4320), gfx::Size(8192, 4320),
+                 gfx::Size(8192, 8192)},
+                DXGI_FORMAT_P010);
+          }
         }
       }
     }

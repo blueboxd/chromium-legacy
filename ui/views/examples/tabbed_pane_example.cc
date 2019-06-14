@@ -27,8 +27,8 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   auto select_at =
       std::make_unique<LabelButton>(this, ASCIIToUTF16("Select At 1"));
 
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int tabbed_pane_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);

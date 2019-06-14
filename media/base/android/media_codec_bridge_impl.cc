@@ -179,6 +179,9 @@ bool GetCodecSpecificDataForAudio(AudioCodec codec,
 
 }  // namespace
 
+VideoCodecConfig::VideoCodecConfig() = default;
+VideoCodecConfig::~VideoCodecConfig() = default;
+
 // static
 std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateAudioDecoder(
     const AudioDecoderConfig& config,
@@ -231,56 +234,45 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateAudioDecoder(
   if (j_bridge.is_null())
     return nullptr;
 
-  return base::WrapUnique(new MediaCodecBridgeImpl(
-      std::move(j_bridge), std::move(on_buffers_available_cb)));
+  return base::WrapUnique(
+      new MediaCodecBridgeImpl(CodecType::kAny, std::move(j_bridge),
+                               std::move(on_buffers_available_cb)));
 }
 
 // static
 std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoDecoder(
-    VideoCodec codec,
-    CodecType codec_type,
-    const gfx::Size& size,
-    const JavaRef<jobject>& surface,
-    const JavaRef<jobject>& media_crypto,
-    const CodecSpecificData& csd0,
-    const CodecSpecificData& csd1,
-    const VideoColorSpace& color_space,
-    const base::Optional<HDRMetadata>& hdr_metadata,
-    bool allow_adaptive_playback,
-    base::RepeatingClosure on_buffers_available_cb) {
+    const VideoCodecConfig& config) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return nullptr;
 
-  const std::string mime = MediaCodecUtil::CodecToAndroidMimeType(codec);
+  const std::string mime = MediaCodecUtil::CodecToAndroidMimeType(config.codec);
   if (mime.empty())
     return nullptr;
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-
-  ScopedJavaLocalRef<jbyteArray> j_csd0 =
-      ToJavaByteArray(env, csd0.data(), csd0.size());
-  ScopedJavaLocalRef<jbyteArray> j_csd1 =
-      ToJavaByteArray(env, csd1.data(), csd1.size());
+  auto j_mime = ConvertUTF8ToJavaString(env, mime);
+  auto j_csd0 = ToJavaByteArray(env, config.csd0.data(), config.csd0.size());
+  auto j_csd1 = ToJavaByteArray(env, config.csd1.data(), config.csd1.size());
 
   std::unique_ptr<JniHdrMetadata> jni_hdr_metadata;
-  if (hdr_metadata.has_value()) {
-    jni_hdr_metadata.reset(
-        new JniHdrMetadata(color_space, hdr_metadata.value()));
+  if (config.hdr_metadata.has_value()) {
+    jni_hdr_metadata = std::make_unique<JniHdrMetadata>(
+        config.container_color_space, config.hdr_metadata.value());
   }
-  ScopedJavaLocalRef<jobject> j_hdr_metadata(
-      jni_hdr_metadata ? jni_hdr_metadata->obj() : nullptr);
+  auto j_hdr_metadata = jni_hdr_metadata ? jni_hdr_metadata->obj() : nullptr;
 
   ScopedJavaGlobalRef<jobject> j_bridge(
       Java_MediaCodecBridgeBuilder_createVideoDecoder(
-          env, j_mime, static_cast<int>(codec_type), media_crypto, size.width(),
-          size.height(), surface, j_csd0, j_csd1, j_hdr_metadata,
-          allow_adaptive_playback, !!on_buffers_available_cb));
+          env, j_mime, static_cast<int>(config.codec_type), config.media_crypto,
+          config.initial_expected_coded_size.width(),
+          config.initial_expected_coded_size.height(), config.surface, j_csd0,
+          j_csd1, j_hdr_metadata, true /* allow_adaptive_playback */,
+          !!config.on_buffers_available_cb));
   if (j_bridge.is_null())
     return nullptr;
 
   return base::WrapUnique(new MediaCodecBridgeImpl(
-      std::move(j_bridge), std::move(on_buffers_available_cb)));
+      config.codec_type, std::move(j_bridge), config.on_buffers_available_cb));
 }
 
 // static
@@ -308,7 +300,8 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoEncoder(
   if (j_bridge.is_null())
     return nullptr;
 
-  return base::WrapUnique(new MediaCodecBridgeImpl(std::move(j_bridge)));
+  return base::WrapUnique(
+      new MediaCodecBridgeImpl(CodecType::kAny, std::move(j_bridge)));
 }
 
 // static
@@ -324,9 +317,11 @@ void MediaCodecBridgeImpl::SetupCallbackHandlerForTesting() {
 }
 
 MediaCodecBridgeImpl::MediaCodecBridgeImpl(
+    CodecType codec_type,
     ScopedJavaGlobalRef<jobject> j_bridge,
     base::RepeatingClosure on_buffers_available_cb)
-    : on_buffers_available_cb_(std::move(on_buffers_available_cb)),
+    : codec_type_(codec_type),
+      on_buffers_available_cb_(std::move(on_buffers_available_cb)),
       j_bridge_(std::move(j_bridge)) {
   DCHECK(!j_bridge_.is_null());
 
@@ -616,6 +611,10 @@ void MediaCodecBridgeImpl::SetVideoBitrate(int bps, int frame_rate) {
 void MediaCodecBridgeImpl::RequestKeyFrameSoon() {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_requestKeyFrameSoon(env, j_bridge_);
+}
+
+CodecType MediaCodecBridgeImpl::GetCodecType() const {
+  return codec_type_;
 }
 
 bool MediaCodecBridgeImpl::FillInputBuffer(int index,

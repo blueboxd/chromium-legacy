@@ -23,6 +23,8 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
+#include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
+#include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -37,9 +39,6 @@
 #include "chromeos/services/assistant/utils.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#else
-#include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #endif
 
 namespace chromeos {
@@ -272,7 +271,9 @@ void Service::BindAssistantSettingsManager(
 }
 
 void Service::Init(mojom::ClientPtr client,
-                   mojom::DeviceActionsPtr device_actions) {
+                   mojom::DeviceActionsPtr device_actions,
+                   bool is_test) {
+  is_test_ = is_test;
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
   assistant_state_.Init(service_binding_.GetConnector());
@@ -346,6 +347,13 @@ void Service::RetryRefreshToken() {
 
 void Service::CreateAssistantManagerService() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  if (is_test_) {
+    // Use fake service in browser tests.
+    assistant_manager_service_ =
+        std::make_unique<FakeAssistantManagerServiceImpl>();
+    return;
+  }
+
   device::mojom::BatteryMonitorPtr battery_monitor;
   service_binding_.GetConnector()->BindInterface(
       device::mojom::kServiceName, mojo::MakeRequest(&battery_monitor));

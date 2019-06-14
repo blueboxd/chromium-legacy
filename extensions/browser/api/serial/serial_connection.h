@@ -91,10 +91,10 @@ class SerialConnection : public ApiResource,
   void set_send_timeout(int send_timeout);
   int send_timeout() const { return send_timeout_; }
 
-  void set_paused(bool paused);
+  void SetPaused(bool paused);
   bool paused() const { return paused_; }
 
-  void set_connection_error_handler(base::OnceClosure connection_error_handler);
+  void SetConnectionErrorHandler(base::OnceClosure connection_error_handler);
 
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive

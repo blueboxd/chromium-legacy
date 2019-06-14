@@ -13,7 +13,6 @@
 #include "base/test/scoped_command_line.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,34 +58,31 @@ class BrowserMainLoopTest : public testing::Test {
 // Verify that a single-process browser process has at least as many threads as
 // the number of cores in its foreground pool.
 TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
-  {
-    MainFunctionParams main_function_params(GetProcessCommandLine());
+  MainFunctionParams main_function_params(GetProcessCommandLine());
 
-    BrowserMainLoop browser_main_loop(
-        main_function_params,
-        std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>());
-    browser_main_loop.MainMessageLoopStart();
-    browser_main_loop.Init();
-    browser_main_loop.CreateThreads();
-    EXPECT_GE(base::ThreadPoolInstance::Get()
-                  ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-                      {base::TaskPriority::USER_VISIBLE}),
-              base::SysInfo::NumberOfProcessors() - 1);
-    browser_main_loop.ShutdownThreadsAndCleanUp();
-  }
+  StartupDataImpl startup_data;
+  startup_data.ipc_thread = BrowserTaskExecutor::CreateIOThread();
+  main_function_params.startup_data = &startup_data;
+
+  BrowserMainLoop browser_main_loop(
+      main_function_params,
+      std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>());
+  browser_main_loop.MainMessageLoopStart();
+  browser_main_loop.Init();
+  browser_main_loop.CreateThreads();
+  EXPECT_GE(base::ThreadPoolInstance::Get()
+                ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
+                    {base::TaskPriority::USER_VISIBLE}),
+            base::SysInfo::NumberOfProcessors() - 1);
+  browser_main_loop.ShutdownThreadsAndCleanUp();
 }
 
 TEST_F(BrowserMainLoopTest,
        PostTaskToIOThreadBeforeThreadCreationDoesNotRunTask) {
   MainFunctionParams main_function_params(GetProcessCommandLine());
 
-  auto service_manager_thread = BrowserTaskExecutor::CreateIOThread();
-  ServiceManagerContext service_manager_context(
-      service_manager_thread->task_runner());
-
   StartupDataImpl startup_data;
-  startup_data.thread = std::move(service_manager_thread);
-  startup_data.service_manager_context = &service_manager_context;
+  startup_data.ipc_thread = BrowserTaskExecutor::CreateIOThread();
   main_function_params.startup_data = &startup_data;
 
   BrowserMainLoop browser_main_loop(

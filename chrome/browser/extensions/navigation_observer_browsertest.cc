@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -21,6 +22,11 @@ namespace extensions {
 // re-enable it.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        PromptToReEnableExtensionsOnNavigation) {
+  // TODO(lukasza): https://crbug.com/970917: We should not terminate a renderer
+  // that hosts a disabled extension.  Once that is fixed, we should remove
+  // ScopedAllowRendererCrashes below.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   NavigationObserver::SetAllowedRepeatedPromptingForTesting(true);
   base::ScopedClosureRunner reset_repeated_prompting(base::BindOnce([]() {
     NavigationObserver::SetAllowedRepeatedPromptingForTesting(false);

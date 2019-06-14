@@ -4,13 +4,24 @@
 
 #include "components/ui_devtools/dom_agent.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"
+
+namespace {
+
+std::string CreateIdentifier() {
+  static int last_used_identifier;
+  return base::NumberToString(++last_used_identifier);
+}
+
+}  // namespace
 
 namespace ui_devtools {
 
@@ -30,7 +41,9 @@ Response DOMAgent::disable() {
 }
 
 Response DOMAgent::getDocument(std::unique_ptr<Node>* out_root) {
+  element_root_->ResetNodeId();
   *out_root = BuildInitialTree();
+  is_document_created_ = true;
   return Response::OK();
 }
 
@@ -122,8 +135,6 @@ int DOMAgent::GetParentIdOfNodeId(int node_id) const {
   return 0;
 }
 
-// TODO(mhashmi): Make ids reusable
-
 std::unique_ptr<Node> DOMAgent::BuildNode(
     const std::string& name,
     std::unique_ptr<Array<std::string>> attributes,
@@ -183,6 +194,119 @@ void DOMAgent::Reset() {
   element_root_.reset();
   node_id_to_ui_element_.clear();
   observers_.Clear();
+  is_document_created_ = false;
+  search_results_.clear();
+}
+
+// code is based on InspectorDOMAgent::performSearch() from
+// src/third_party/blink/renderer/core/inspector/inspector_dom_agent.cc
+Response DOMAgent::performSearch(
+    const protocol::String& whitespace_trimmed_query,
+    protocol::Maybe<bool> optional_include_user_agent_shadow_dom,
+    protocol::String* search_id,
+    int* result_count) {
+  protocol::String query = whitespace_trimmed_query;
+  std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+
+  unsigned query_length = query.length();
+  bool start_tag_found = !query.find('<');
+  bool end_tag_found = query.rfind('>') + 1 == query_length;
+  bool start_quote_found = !query.find('"');
+  bool end_quote_found = query.rfind('"') + 1 == query_length;
+  bool exact_attribute_match = start_quote_found && end_quote_found;
+
+  protocol::String tag_name_query = query;
+  protocol::String attribute_query = query;
+  if (start_tag_found)
+    tag_name_query = tag_name_query.substr(1, tag_name_query.length() - 1);
+  if (end_tag_found)
+    tag_name_query = tag_name_query.substr(0, tag_name_query.length() - 1);
+  if (start_quote_found)
+    attribute_query = attribute_query.substr(1, attribute_query.length() - 1);
+  if (end_quote_found)
+    attribute_query = attribute_query.substr(0, attribute_query.length() - 1);
+
+  std::vector<int> result_collector;
+  std::vector<UIElement*> stack;
+
+  // root node from element_root() is not a real node from DOM tree
+  // the children of the root node are the 'actual' roots of the DOM tree
+  UIElement* root = element_root();
+  std::vector<UIElement*> root_list = root->children();
+  DCHECK(root_list.size());
+  // Children are accessed from bottom to top. So iterate backwards.
+  for (auto* root : base::Reversed(root_list))
+    stack.push_back(root);
+
+  // Manual plain text search. DFS traversal.
+  while (!stack.empty()) {
+    UIElement* node = stack.back();
+    stack.pop_back();
+    protocol::String node_name = node->GetTypeName();
+    std::transform(node_name.begin(), node_name.end(), node_name.begin(),
+                   ::tolower);
+
+    std::vector<UIElement*> children_array = node->children();
+    // Children are accessed from bottom to top. So iterate backwards.
+    for (auto* child : base::Reversed(children_array))
+      stack.push_back(child);
+
+    if (node_name.find(query) != protocol::String::npos ||
+        node_name == tag_name_query) {
+      result_collector.push_back(node->node_id());
+      continue;
+    }
+
+    std::unique_ptr<protocol::Array<std::string>> attribute_array =
+        node->GetAttributes();
+    if (!attribute_array->length())
+      continue;
+    for (size_t i = 0; i < attribute_array->length(); ++i) {
+      protocol::String data = attribute_array->get(i);
+      std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+      if (data.find(query) != protocol::String::npos) {
+        result_collector.push_back(node->node_id());
+        break;
+      }
+      if (data.find(attribute_query) != protocol::String::npos) {
+        if (!exact_attribute_match ||
+            data.length() == attribute_query.length()) {
+          result_collector.push_back(node->node_id());
+        }
+        break;
+      }
+    }
+  }
+
+  *search_id = CreateIdentifier();
+  *result_count = result_collector.size();
+  search_results_.insert(
+      std::make_pair(*search_id, std::move(result_collector)));
+  return Response::OK();
+}
+
+Response DOMAgent::getSearchResults(
+    const protocol::String& search_id,
+    int from_index,
+    int to_index,
+    std::unique_ptr<protocol::Array<int>>* node_ids) {
+  SearchResults::iterator it = search_results_.find(search_id);
+  if (it == search_results_.end())
+    return Response::Error("No search session with given id found");
+
+  int size = it->second.size();
+  if (from_index < 0 || to_index > size || from_index >= to_index)
+    return Response::Error("Invalid search result range");
+
+  *node_ids = protocol::Array<int>::create();
+  for (int i = from_index; i < to_index; ++i)
+    (*node_ids)->addItem((it->second)[i]);
+  return Response::OK();
+}
+
+Response DOMAgent::discardSearchResults(const protocol::String& search_id) {
+  search_results_.erase(search_id);
+  return Response::OK();
 }
 
 }  // namespace ui_devtools

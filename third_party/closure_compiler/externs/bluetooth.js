@@ -94,7 +94,8 @@ chrome.bluetooth.AdapterState;
  *   uuids: (!Array<string>|undefined),
  *   inquiryRssi: (number|undefined),
  *   inquiryTxPower: (number|undefined),
- *   transport: (!chrome.bluetooth.Transport|undefined)
+ *   transport: (!chrome.bluetooth.Transport|undefined),
+ *   batteryPercentage: (number|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/bluetooth#type-Device
  */

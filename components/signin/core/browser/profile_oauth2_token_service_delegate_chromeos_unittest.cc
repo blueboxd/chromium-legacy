@@ -434,7 +434,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccounts) {
 
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
-  std::vector<std::string> accounts = delegate_->GetAccounts();
+  std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(account_info_.account_id, accounts[0]);
 }
@@ -447,7 +447,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
                                  chromeos::AccountManager::kInvalidToken);
 
-  std::vector<std::string> accounts = delegate_->GetAccounts();
+  std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(account_info_.account_id, accounts[0]);
 }
@@ -477,11 +477,11 @@ TEST_F(CrOSOAuthDelegateTest,
       chromeos::AccountManager::kActiveDirectoryDummyToken);
 
   // Verify.
-  const std::vector<std::string> accounts = delegate_->GetAccounts();
+  const std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
   // 2 Gaia accounts should be returned.
   EXPECT_EQ(2UL, accounts.size());
   // And |RefreshTokenIsAvailable| should return true for these accounts.
-  for (const std::string& account : accounts) {
+  for (const CoreAccountId& account : accounts) {
     EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account));
   }
 }
@@ -491,7 +491,7 @@ TEST_F(CrOSOAuthDelegateTest, UpdateCredentialsSucceeds) {
 
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
-  std::vector<std::string> accounts = delegate_->GetAccounts();
+  std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(account_info_.account_id, accounts[0]);
 }

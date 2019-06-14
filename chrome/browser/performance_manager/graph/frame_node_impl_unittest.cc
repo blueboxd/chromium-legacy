@@ -207,4 +207,46 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   graph()->RemoveFrameNodeObserver(&obs);
 }
 
+TEST_F(FrameNodeImplTest, PublicInterface) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  const FrameNode* public_frame_node = frame_node.get();
+
+  // Simply test that the public interface impls yield the same result as their
+  // private counterpart.
+
+  EXPECT_EQ(static_cast<const FrameNode*>(frame_node->parent_frame_node()),
+            public_frame_node->GetParentFrameNode());
+  EXPECT_EQ(static_cast<const PageNode*>(frame_node->page_node()),
+            public_frame_node->GetPageNode());
+  EXPECT_EQ(static_cast<const ProcessNode*>(frame_node->process_node()),
+            public_frame_node->GetProcessNode());
+  EXPECT_EQ(frame_node->frame_tree_node_id(),
+            public_frame_node->GetFrameTreeNodeId());
+  EXPECT_EQ(frame_node->dev_tools_token(),
+            public_frame_node->GetDevToolsToken());
+  EXPECT_EQ(frame_node->browsing_instance_id(),
+            public_frame_node->GetBrowsingInstanceId());
+  EXPECT_EQ(frame_node->site_instance_id(),
+            public_frame_node->GetSiteInstanceId());
+
+  auto child_frame_nodes = public_frame_node->GetChildFrameNodes();
+  for (auto* child_frame_node : frame_node->child_frame_nodes()) {
+    const FrameNode* child = child_frame_node;
+    EXPECT_TRUE(base::Contains(child_frame_nodes, child));
+  }
+  EXPECT_EQ(child_frame_nodes.size(), frame_node->child_frame_nodes().size());
+
+  EXPECT_EQ(frame_node->lifecycle_state(),
+            public_frame_node->GetLifecycleState());
+  EXPECT_EQ(frame_node->has_nonempty_beforeunload(),
+            public_frame_node->HasNonemptyBeforeUnload());
+  EXPECT_EQ(frame_node->url(), public_frame_node->GetURL());
+  EXPECT_EQ(frame_node->is_current(), public_frame_node->IsCurrent());
+  EXPECT_EQ(frame_node->network_almost_idle(),
+            public_frame_node->GetNetworkAlmostIdle());
+  EXPECT_EQ(frame_node->is_ad_frame(), public_frame_node->IsAdFrame());
+}
+
 }  // namespace performance_manager

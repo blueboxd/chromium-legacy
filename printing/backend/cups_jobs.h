@@ -143,6 +143,13 @@ enum JobCompletionState {
   PROCESSING  // only jobs that are being processed
 };
 
+// Specifies query status codes.
+enum PRINTING_EXPORT PrinterQueryResult {
+  UNKNOWN_FAILURE,  // catchall error
+  SUCCESS,          // successful
+  UNREACHABLE,      // failed to reach the host
+};
+
 // Extracts structured job information from the |response| for |printer_id|.
 // Extracted jobs are added to |jobs|.
 void ParseJobsResponse(ipp_t* response,
@@ -155,11 +162,11 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status);
 // Queries the printer at |address| on |port| with a Get-Printer-Attributes
 // request to populate |printer_info|. If |encrypted| is true, request is made
 // using ipps, otherwise, ipp is used. Returns false if the request failed.
-bool PRINTING_EXPORT GetPrinterInfo(const std::string& address,
-                                    const int port,
-                                    const std::string& resource,
-                                    bool encrypted,
-                                    PrinterInfo* printer_info);
+PrinterQueryResult PRINTING_EXPORT GetPrinterInfo(const std::string& address,
+                                                  const int port,
+                                                  const std::string& resource,
+                                                  bool encrypted,
+                                                  PrinterInfo* printer_info);
 
 // Attempts to retrieve printer status using connection |http| for |printer_id|.
 // Returns true if succcssful and updates the fields in |printer_status| as

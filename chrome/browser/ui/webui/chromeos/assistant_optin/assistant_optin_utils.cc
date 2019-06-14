@@ -270,9 +270,11 @@ bool IsHotwordDspAvailable() {
   chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
   for (const chromeos::AudioDevice& device : devices) {
     if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
+      VLOG(1) << "Hotword dsp device detected.";
       return true;
     }
   }
+  VLOG(1) << "No hotword dsp device detected.";
   return false;
 }
 

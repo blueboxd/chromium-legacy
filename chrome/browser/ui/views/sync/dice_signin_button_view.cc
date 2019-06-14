@@ -48,7 +48,7 @@ DiceSigninButtonView::DiceSigninButtonView(
     bool use_account_name_as_title)
     : account_(account) {
   views::GridLayout* grid_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
   grid_layout->StartRow(views::GridLayout::kFixedSize, 0);
 

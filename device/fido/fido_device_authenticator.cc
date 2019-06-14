@@ -527,6 +527,23 @@ void FidoDeviceAuthenticator::BioEnrollFingerprint(
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
+void FidoDeviceAuthenticator::BioEnrollRename(pin::TokenResponse token,
+                                              std::vector<uint8_t> id,
+                                              std::string name,
+                                              BioEnrollmentCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(),
+      BioEnrollmentRequest::ForRename(token, std::move(id), std::move(name)),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::OnBioEnroll(
     pin::TokenResponse token,
     BioEnrollmentCallback callback,

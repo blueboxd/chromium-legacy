@@ -1,8 +1,7 @@
 rootWebArea
-++genericContainer ignored
-++++textField value='TextBox1'
-++++++staticText name='TextBox1'
-++++++++inlineTextBox name='TextBox1'
-++++textField multiline value='TextBox2'
-++++++staticText name='TextBox2'
-++++++++inlineTextBox name='TextBox2'
+++textField value='TextBox1'
+++++staticText name='TextBox1'
+++++++inlineTextBox name='TextBox1'
+++textField multiline value='TextBox2'
+++++staticText name='TextBox2'
+++++++inlineTextBox name='TextBox2'

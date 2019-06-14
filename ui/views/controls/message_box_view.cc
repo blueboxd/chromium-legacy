@@ -232,8 +232,7 @@ void MessageBoxView::Init(const InitParams& params) {
 
 void MessageBoxView::ResetLayoutManager() {
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+  GridLayout* layout = SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Add the column set for the message displayed at the top of the dialog box.
   constexpr int kMessageViewColumnSetId = 0;

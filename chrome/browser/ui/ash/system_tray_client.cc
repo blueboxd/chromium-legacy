@@ -389,10 +389,17 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   }
 
   std::string page = chrome::kInternetSubPage;
-  if (!network_id.empty()) {
+  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
+  if (!network_id.empty() && network_state) {
     page = chrome::kNetworkDetailSubPage;
     page += "?guid=";
     page += net::EscapeUrlEncodedData(network_id, true);
+    page += "&name=";
+    page += net::EscapeUrlEncodedData(network_state->name(), true);
+    page += "&type=";
+    page += net::EscapeUrlEncodedData(
+        chromeos::network_util::TranslateShillTypeToONC(network_state->type()),
+        true);
     if (show_configure)
       page += "&showConfigure=true";
   }

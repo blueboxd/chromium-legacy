@@ -98,7 +98,7 @@ class CastSessionTrackerTest : public testing::Test {
     session_tracker_.OnInternalMessage(
         sink_.cast_data().cast_channel_id,
         cast_channel::InternalMessage(
-            cast_channel::CastMessageType::kReceiverStatus,
+            cast_channel::CastMessageType::kReceiverStatus, "theNamespace",
             std::move(*ParseJsonDeprecated(kReceiverStatus))));
 
     session_ = session_tracker_.GetSessions().begin()->second.get();
@@ -144,7 +144,7 @@ TEST_F(CastSessionTrackerTest, RemoveSession) {
   session_tracker_.OnInternalMessage(
       sink_.cast_data().cast_channel_id,
       cast_channel::InternalMessage(
-          cast_channel::CastMessageType::kReceiverStatus,
+          cast_channel::CastMessageType::kReceiverStatus, "theNamespace",
           std::move(*ParseJsonDeprecated(kIdleReceiverStatus))));
 }
 
@@ -192,6 +192,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
   session_tracker_.OnInternalMessage(
       sink_.cast_data().cast_channel_id,
       cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
+                                    "theNamespace",
                                     std::move(*ParseJsonDeprecated(R"({
     "status": [{
         "playerState": "anything but IDLE",
@@ -247,6 +248,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
   session_tracker_.OnInternalMessage(
       sink_.cast_data().cast_channel_id,
       cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
+                                    "theNamespace",
                                     std::move(*ParseJsonDeprecated(R"({
     "requestId": 12345,
     "status": [{
@@ -278,6 +280,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
   session_tracker_.OnInternalMessage(
       sink_.cast_data().cast_channel_id,
       cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
+                                    "theNamespace",
                                     std::move(*ParseJsonDeprecated(R"({
     "status": [{
         "media": "theMedia",
@@ -324,6 +327,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
   session_tracker_.OnInternalMessage(
       sink_.cast_data().cast_channel_id,
       cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
+                                    "theNamespace",
                                     std::move(*ParseJsonDeprecated(R"({
     "status": [{
         "mediaSessionId": 345,

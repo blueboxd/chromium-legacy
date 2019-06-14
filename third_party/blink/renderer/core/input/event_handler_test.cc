@@ -244,10 +244,10 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
           ->GetEditor()
           .IsSelectTrailingWhitespaceEnabled()) {
     EXPECT_EQ(Position(line, 4), Selection().GetSelectionInDOMTree().Extent());
-    EXPECT_EQ("One ", WebString(Selection().SelectedText()).Utf8());
+    EXPECT_EQ("One ", Selection().SelectedText().Utf8());
   } else {
     EXPECT_EQ(Position(line, 3), Selection().GetSelectionInDOMTree().Extent());
-    EXPECT_EQ("One", WebString(Selection().SelectedText()).Utf8());
+    EXPECT_EQ("One", Selection().SelectedText().Utf8());
   }
 
   TapEventBuilder triple_tap_event(FloatPoint(0, 0), 3);
@@ -256,7 +256,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
   EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
   EXPECT_EQ(Position(line, 13), Selection().GetSelectionInDOMTree().Extent());
-  EXPECT_EQ("One Two Three", WebString(Selection().SelectedText()).Utf8());
+  EXPECT_EQ("One Two Three", Selection().SelectedText().Utf8());
 }
 
 TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {

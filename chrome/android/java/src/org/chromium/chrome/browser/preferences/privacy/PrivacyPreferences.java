@@ -5,12 +5,11 @@
 package org.chromium.chrome.browser.preferences.privacy;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,8 +20,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -36,8 +35,8 @@ import org.chromium.ui.text.SpanApplier;
 /**
  * Fragment to keep track of the all the privacy related preferences.
  */
-public class PrivacyPreferences extends PreferenceFragment
-        implements OnPreferenceChangeListener {
+public class PrivacyPreferences
+        extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
@@ -54,11 +53,10 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
     private static final String PREF_USAGE_STATS = "usage_stats_reporting";
 
-    private ManagedPreferenceDelegate mManagedPreferenceDelegate;
+    private ManagedPreferenceDelegateCompat mManagedPreferenceDelegate;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PrivacyPreferencesManager privacyPrefManager = PrivacyPreferencesManager.getInstance();
         privacyPrefManager.migrateNetworkPredictionPreferences();
         PreferenceUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
@@ -69,12 +67,12 @@ public class PrivacyPreferences extends PreferenceFragment
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
 
-        ChromeBaseCheckBoxPreference canMakePaymentPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
+        ChromeBaseCheckBoxPreferenceCompat canMakePaymentPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
 
-        ChromeBaseCheckBoxPreference networkPredictionPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
+        ChromeBaseCheckBoxPreferenceCompat networkPredictionPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_NETWORK_PREDICTIONS);
         networkPredictionPref.setChecked(prefServiceBridge.getNetworkPredictionEnabled());
         networkPredictionPref.setOnPreferenceChangeListener(this);
         networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
@@ -117,13 +115,13 @@ public class PrivacyPreferences extends PreferenceFragment
         preferenceScreen.removePreference(findPreference(PREF_SYNC_AND_SERVICES_LINK_DIVIDER));
         preferenceScreen.removePreference(findPreference(PREF_SYNC_AND_SERVICES_LINK));
 
-        ChromeBaseCheckBoxPreference navigationErrorPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_NAVIGATION_ERROR);
+        ChromeBaseCheckBoxPreferenceCompat navigationErrorPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_NAVIGATION_ERROR);
         navigationErrorPref.setOnPreferenceChangeListener(this);
         navigationErrorPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        ChromeBaseCheckBoxPreference searchSuggestionsPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
+        ChromeBaseCheckBoxPreferenceCompat searchSuggestionsPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_SEARCH_SUGGESTIONS);
         searchSuggestionsPref.setOnPreferenceChangeListener(this);
         searchSuggestionsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -132,13 +130,14 @@ public class PrivacyPreferences extends PreferenceFragment
         }
 
         // Listen to changes to the Extended Reporting pref.
-        ChromeBaseCheckBoxPreference scoutReportingPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
+        ChromeBaseCheckBoxPreferenceCompat scoutReportingPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(
+                        PREF_SAFE_BROWSING_SCOUT_REPORTING);
         scoutReportingPref.setOnPreferenceChangeListener(this);
         scoutReportingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        ChromeBaseCheckBoxPreference safeBrowsingPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
+        ChromeBaseCheckBoxPreferenceCompat safeBrowsingPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_SAFE_BROWSING);
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -261,7 +260,7 @@ public class PrivacyPreferences extends PreferenceFragment
         }
     }
 
-    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
+    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();

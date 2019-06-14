@@ -155,6 +155,16 @@ void MediaKeysListenerManagerImpl::OnMediaKeysAccelerator(
     delegate.OnMediaKeysAccelerator(accelerator);
 }
 
+void MediaKeysListenerManagerImpl::SetIsMediaPlaying(bool is_playing) {
+  if (is_media_playing_ == is_playing)
+    return;
+
+  is_media_playing_ = is_playing;
+
+  if (media_keys_listener_)
+    media_keys_listener_->SetIsMediaPlaying(is_media_playing_);
+}
+
 void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
   if (auxiliary_services_started_)
     return;
@@ -200,6 +210,8 @@ void MediaKeysListenerManagerImpl::EnsureMediaKeysListener() {
   media_keys_listener_ = ui::MediaKeysListener::Create(
       this, ui::MediaKeysListener::Scope::kGlobal);
   DCHECK(media_keys_listener_);
+
+  media_keys_listener_->SetIsMediaPlaying(is_media_playing_);
 }
 
 MediaKeysListenerManagerImpl::ListeningData*

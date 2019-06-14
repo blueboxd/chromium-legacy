@@ -243,7 +243,7 @@ bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
   }
 
   bool result;
-  DLOG(ERROR) << "Run JavaScript: " << js_expression;
+  DLOG(INFO) << "Run JavaScript: " << js_expression;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
       "window.domAutomationController.send(" + js_expression + ")", &result))

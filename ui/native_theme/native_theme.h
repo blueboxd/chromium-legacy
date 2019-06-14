@@ -415,6 +415,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Whether OS-level dark mode (as in macOS Mojave or Windows 10) is enabled.
   virtual bool SystemDarkModeEnabled() const;
 
+  // Whether OS-level dark mode is available in the current OS.
+  virtual bool SystemDarkModeSupported() const;
+
   // Returns the system's caption style.
   virtual CaptionStyle GetSystemCaptionStyle() const;
 

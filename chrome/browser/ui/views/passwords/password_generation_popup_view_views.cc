@@ -46,7 +46,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
             const base::string16& suggestion,
             PasswordGenerationPopupController::GenerationUIState state) {
     views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
     BuildColumnSet(layout);
     layout->StartRow(views::GridLayout::kFixedSize, 0);
 

@@ -63,6 +63,7 @@ source_set("exo") {
   deps = [
     "//base",
     "//cc",
+    "//components/viz/host",
     "//components/viz/service",
     "//device/gamepad",
     "//device/gamepad/public/cpp:shared_with_blink",

@@ -121,22 +121,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest, IsActive) {
   EXPECT_TRUE(send_tab_to_self::IsUserSyncTypeActive(GetProfile(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest, IsOnMultipleDevices) {
+IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest, HasValidTargetDevice) {
   ASSERT_TRUE(SetupSync());
 
-  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
-      ->GetDeviceInfoTracker()
-      ->ForcePulseForTest();
-  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
-      ->GetDeviceInfoTracker()
-      ->ForcePulseForTest();
+  static_cast<send_tab_to_self::SendTabToSelfBridge*>(
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
+          ->GetSendTabToSelfModel())
+      ->SetLocalDeviceNameForTest("device1");
+  static_cast<send_tab_to_self::SendTabToSelfBridge*>(
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
+          ->GetSendTabToSelfModel())
+      ->SetLocalDeviceNameForTest("device2");
 
-  ASSERT_TRUE(send_tab_to_self_helper::SendTabToSelfMultiDeviceActiveChecker(
-                  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
-                      ->GetDeviceInfoTracker())
-                  .Wait());
-
-  EXPECT_TRUE(send_tab_to_self::IsSyncingOnMultipleDevices(GetProfile(0)));
+  EXPECT_TRUE(send_tab_to_self::HasValidTargetDevice(GetProfile(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,

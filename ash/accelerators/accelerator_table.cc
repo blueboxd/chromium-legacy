@@ -153,6 +153,9 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,   // Control+F7
     MAGNIFIER_ZOOM_OUT,  // Control+F6
+    MEDIA_NEXT_TRACK,
+    MEDIA_PLAY_PAUSE,
+    MEDIA_PREV_TRACK,
     PRINT_UI_HIERARCHIES,
     ROTATE_SCREEN,
     SCALE_UI_DOWN,

@@ -1611,8 +1611,9 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
   ElementId element_id = ElementId(2);
   test_layer->SetElementId(element_id);
 
-  // Expect additional call due to has-animation check.
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  // Expect additional calls due to has-animation check and initialization
+  // of keyframes.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(7);
   scoped_refptr<AnimationTimeline> timeline =
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(timeline);

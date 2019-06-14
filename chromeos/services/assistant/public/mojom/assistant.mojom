@@ -145,7 +145,7 @@ interface AssistantPlatform {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
   Init(Client assistant_client_interface,
-       DeviceActions device_actions_interface);
+       DeviceActions device_actions_interface, bool is_test);
 };
 
 // Interface for assistant to call into client.
@@ -180,6 +180,10 @@ interface DeviceActions {
 
   // Open the Android app if the app is available.
   OpenAndroidApp(AndroidAppInfo app_info) => (bool app_opened);
+
+  // Verify the status of the Android apps.
+  VerifyAndroidApp(array<AndroidAppInfo> apps_info) => (array<AndroidAppInfo>
+                                                        apps_info);
 
   // Launch Android intent. The intent is encoded as a URI string.
   // See Intent.toUri().

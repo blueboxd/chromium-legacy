@@ -19,8 +19,6 @@ TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
-  const AXObject* body = root->FirstChild();
-  ASSERT_NE(nullptr, body);
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);
   const AXObject* paragraph = GetAXObjectByElementId("paragraph");
@@ -36,10 +34,10 @@ TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
   const AXObject* button = GetAXObjectByElementId("button");
   ASSERT_NE(nullptr, button);
 
-  EXPECT_EQ(body, AXRange(AXPosition::CreateFirstPositionInObject(*input),
+  EXPECT_EQ(root, AXRange(AXPosition::CreateFirstPositionInObject(*input),
                           AXPosition::CreateLastPositionInObject(*button))
                       .CommonAncestorContainer());
-  EXPECT_EQ(body, AXRange(AXPosition::CreateFirstPositionInObject(*br),
+  EXPECT_EQ(root, AXRange(AXPosition::CreateFirstPositionInObject(*br),
                           AXPosition::CreateFirstPositionInObject(*button))
                       .CommonAncestorContainer());
   EXPECT_EQ(paragraph, AXRange(AXPosition::CreatePositionBeforeObject(*text1),

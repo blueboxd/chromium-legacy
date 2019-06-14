@@ -242,7 +242,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
         CreatePasswordViewButton(this, are_passwords_revealed_).release();
 
     views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
 
     BuildCredentialRows(layout, username_dropdown_, password_dropdown_,
                         password_view_button_);
@@ -304,10 +304,10 @@ void PasswordPendingView::OnContentChanged(
   }
 }
 
-views::View* PasswordPendingView::CreateFootnoteView() {
+std::unique_ptr<views::View> PasswordPendingView::CreateFootnoteView() {
   if (sign_in_promo_ || !model()->ShouldShowFooter())
     return nullptr;
-  views::Label* label = new views::Label(
+  auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
       ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
   label->SetMultiLine(true);

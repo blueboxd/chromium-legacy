@@ -225,7 +225,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   view->SetPaintToLayer();
 
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view.get()));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -253,7 +253,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   auto pane = std::make_unique<views::View>();
   pane_ = pane.get();
   views::GridLayout* pane_layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane.get()));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
@@ -429,8 +429,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   container->SetBorder(
       views::CreateEmptyBorder(kInset, kInset, kInset, kInset));
 
-  views::GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container.get()));
+  views::GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,

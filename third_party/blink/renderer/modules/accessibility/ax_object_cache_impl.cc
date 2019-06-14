@@ -520,6 +520,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
   inline_text_box_object_mapping_.Set(inline_text_box, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+
   return new_obj;
 }
 
@@ -826,10 +827,10 @@ void AXObjectCacheImpl::FocusableChangedWithCleanLayout(Element* element) {
     // hidden element's focusable state changes, it's ignored state must be
     // recomputed.
     ChildrenChangedWithCleanLayout(element->parentNode());
+  } else {
+    // Refresh the focusable state on the exposed object.
+    MarkAXObjectDirty(obj, false);
   }
-
-  // Refresh the focusable state and State::kIgnored on the exposed object.
-  MarkAXObjectDirty(obj, false);
 }
 
 void AXObjectCacheImpl::DocumentTitleChanged() {

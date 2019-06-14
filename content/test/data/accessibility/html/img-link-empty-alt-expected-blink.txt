@@ -1,7 +1,6 @@
 rootWebArea
 ++genericContainer
 ++++link name='unread '
-++++++presentational ignored name=''
 ++++++staticText name='unread '
 ++++++++inlineTextBox name='unread '
 ++++link name='read '

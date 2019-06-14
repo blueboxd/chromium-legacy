@@ -464,7 +464,8 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
   timeline_->AttachAnimation(animation_);
   animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
-  EXPECT_FALSE(client_.mutators_need_commit());
+  EXPECT_TRUE(client_.mutators_need_commit());
+  client_.set_mutators_need_commit(false);
 
   const int keyframe_model_id = AddOpacityTransitionToAnimation(
       animation_.get(), 1., .7f, .3f, false, keyframe_effect_id_);

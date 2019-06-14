@@ -35,7 +35,7 @@
 
 #if DCHECK_IS_ON()
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace WTF {

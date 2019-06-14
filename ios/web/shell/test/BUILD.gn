@@ -173,6 +173,7 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/testing:http_server_bundle_data",
     "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
@@ -231,6 +232,4 @@ ios_eg2_test("ios_web_shell_eg2tests_module") {
     # Test support libraries.
     ":eg_tests+eg2",
   ]
-
-  bundle_deps = [ "//ios/testing:http_server_bundle_data" ]
 }

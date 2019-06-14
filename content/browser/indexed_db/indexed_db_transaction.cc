@@ -250,14 +250,19 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
 
+  // |TransactionFinished| can delete the database, which owns the connection,
+  // which owns this transaction.  Grab a weak pointer to the connection so we
+  // can test it later.
+  base::WeakPtr<IndexedDBConnection> connection = connection_;
+
   if (database_)
     database_->TransactionFinished(mode_, false);
 
   // RemoveTransaction will delete |this|.
   // Note: During force-close situations, the connection can be destroyed during
   // the |IndexedDBDatabase::TransactionFinished| call
-  if (connection_)
-    connection_->RemoveTransaction(id_);
+  if (connection)
+    connection->RemoveTransaction(id_);
 }
 
 bool IndexedDBTransaction::IsTaskQueueEmpty() const {

@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainStage
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
   void OnPendingQueryChanged(const AssistantQuery& query) override;
-  void OnPendingQueryCleared() override;
+  void OnPendingQueryCleared(bool due_to_commit) override;
   void OnResponseChanged(
       const std::shared_ptr<AssistantResponse>& response) override;
 

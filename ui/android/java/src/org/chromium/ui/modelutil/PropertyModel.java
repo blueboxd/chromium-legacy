@@ -368,6 +368,26 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     }
 
     /**
+     * Determines whether the value for the provided key is the same in this model and a different
+     * model.
+     * @param otherModel The other {@link PropertyModel} to check.
+     * @param key The {@link PropertyKey} to check.
+     * @return Whether this model and {@code otherModel} have the same value set for {@code key}.
+     */
+    public boolean compareValue(PropertyModel otherModel, PropertyKey key) {
+        validateKey(key);
+        otherModel.validateKey(key);
+        if (!mData.containsKey(key) || !otherModel.mData.containsKey(key)) return false;
+
+        if (key instanceof WritableObjectPropertyKey
+                && ((WritableObjectPropertyKey) key).mSkipEquality) {
+            return false;
+        }
+
+        return ObjectsCompat.equals(mData.get(key), otherModel.mData.get(key));
+    }
+
+    /**
      * Allows constructing a new {@link PropertyModel} with read-only properties.
      */
     public static class Builder {
@@ -481,6 +501,12 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         public String toString() {
             return value + " in " + super.toString();
         }
+
+        @Override
+        public boolean equals(Object other) {
+            return other != null && other instanceof FloatContainer
+                    && ((FloatContainer) other).value == value;
+        }
     }
 
     private static class IntContainer extends ValueContainer {
@@ -489,6 +515,12 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         @Override
         public String toString() {
             return value + " in " + super.toString();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other != null && other instanceof IntContainer
+                    && ((IntContainer) other).value == value;
         }
     }
 
@@ -499,6 +531,12 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         public String toString() {
             return value + " in " + super.toString();
         }
+
+        @Override
+        public boolean equals(Object other) {
+            return other != null && other instanceof BooleanContainer
+                    && ((BooleanContainer) other).value == value;
+        }
     }
 
     private static class ObjectContainer<T> extends ValueContainer {
@@ -507,6 +545,12 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         @Override
         public String toString() {
             return value + " in " + super.toString();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other != null && other instanceof ObjectContainer
+                    && ObjectsCompat.equals(((ObjectContainer) other).value, value);
         }
     }
 }

@@ -621,6 +621,7 @@ blink_core_tests("unit_tests") {
     "resolver/match_result_test.cc",
     "resolver/selector_filter_parent_scope_test.cc",
     "resolver/style_adjuster_test.cc",
+    "resolver/style_resolver_test.cc",
     "rule_feature_set_test.cc",
     "rule_set_test.cc",
     "selector_query_test.cc",

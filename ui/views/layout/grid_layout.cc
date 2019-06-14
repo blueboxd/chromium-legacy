@@ -772,9 +772,7 @@ bool ColumnSet::CanUseMinimum(const ViewState& view_state) const {
 
 // GridLayout -------------------------------------------------------------
 
-GridLayout::GridLayout(View* host) : host_(host) {
-  DCHECK(host);
-}
+GridLayout::GridLayout() = default;
 
 GridLayout::~GridLayout() = default;
 
@@ -819,6 +817,7 @@ void GridLayout::SkipColumns(int col_count) {
 }
 
 void GridLayout::AddView(View* view, int col_span, int row_span) {
+  DCHECK(host_);
   DCHECK(current_row_col_set_ &&
          next_column_ < current_row_col_set_->num_columns());
   Column* column = current_row_col_set_->columns_[next_column_].get();
@@ -873,7 +872,7 @@ static void CalculateSize(int pref_size, GridLayout::Alignment alignment,
 }
 
 void GridLayout::Installed(View* host) {
-  DCHECK(host_ == host);
+  host_ = host;
 }
 
 void GridLayout::ViewAdded(View* host, View* view) {

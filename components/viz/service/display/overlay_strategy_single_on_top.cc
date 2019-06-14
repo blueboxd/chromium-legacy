@@ -35,6 +35,15 @@ bool OverlayStrategySingleOnTop::Attempt(
     if (OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
                                        *it, &candidate) &&
         !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
+      // If the candidate has been promoted previously and has not changed
+      // (resource ID is the same) for 3 frames, do not use it as Overlay as
+      // flattening it to the main fb will be more power efficient when the
+      // contents don't change.
+      if (candidate.resource_id == previous_frame_resource_id_ &&
+          ++same_resource_id_frames_count_ >
+              kMaxFrameCandidateWithSameResourceId) {
+        continue;
+      }
       if (candidate.display_rect.size().GetArea() >
           best_candidate.display_rect.size().GetArea()) {
         best_candidate = candidate;
@@ -45,10 +54,17 @@ bool OverlayStrategySingleOnTop::Attempt(
   if (best_quad_it == quad_list->end())
     return false;
 
-  if (TryOverlay(quad_list, candidate_list, best_candidate, best_quad_it))
+  if (TryOverlay(quad_list, candidate_list, best_candidate, best_quad_it)) {
+    if (previous_frame_resource_id_ != best_candidate.resource_id) {
+      previous_frame_resource_id_ = best_candidate.resource_id;
+      same_resource_id_frames_count_ = 1;
+    }
     return true;
-
-  return false;
+  } else {
+    previous_frame_resource_id_ = kInvalidResourceId;
+    same_resource_id_frames_count_ = 0;
+    return false;
+  }
 }
 
 bool OverlayStrategySingleOnTop::TryOverlay(

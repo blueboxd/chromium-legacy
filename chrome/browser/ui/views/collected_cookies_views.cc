@@ -393,7 +393,7 @@ CollectedCookiesViews::~CollectedCookiesViews() {
 
 void CollectedCookiesViews::Init() {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   // Add margin above the content. The left, right, and bottom margins are added
@@ -462,7 +462,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
 
   auto pane = std::make_unique<views::View>();
   views::GridLayout* layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane.get()));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
@@ -529,7 +529,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
 
   auto pane = std::make_unique<views::View>();
   views::GridLayout* layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane.get()));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>());
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
@@ -567,8 +567,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
 
   {
     auto allowed = std::make_unique<views::View>();
-    views::GridLayout* layout = allowed->SetLayoutManager(
-        std::make_unique<views::GridLayout>(allowed.get()));
+    views::GridLayout* layout =
+        allowed->SetLayoutManager(std::make_unique<views::GridLayout>());
 
     std::unique_ptr<views::LabelButton> block_allowed_button =
         views::MdTextButton::CreateSecondaryUiButton(
@@ -586,8 +586,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
 
   {
     auto blocked = std::make_unique<views::View>();
-    views::GridLayout* layout = blocked->SetLayoutManager(
-        std::make_unique<views::GridLayout>(blocked.get()));
+    views::GridLayout* layout =
+        blocked->SetLayoutManager(std::make_unique<views::GridLayout>());
     blocked->SetVisible(false);
 
     std::unique_ptr<views::LabelButton> allow_blocked_button =

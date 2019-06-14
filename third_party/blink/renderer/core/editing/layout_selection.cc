@@ -762,6 +762,13 @@ static NewPaintRangeAndSelectedNodes CalcSelectionRangeAndSetSelectionState(
     if (!layout_object || !layout_object->CanBeSelectionLeaf())
       continue;
 
+    if (UNLIKELY(layout_object->NeedsLayout())) {
+      // TODO(crbug.com/973226): This is a workaround for missing layout on
+      // |node|. We should eliminate such missing layout eventually.
+      NOTREACHED() << node;
+      continue;
+    }
+
     if (!start_node) {
       DCHECK(!end_node);
       start_node = end_node = &node;

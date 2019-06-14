@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
@@ -15,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -35,12 +37,10 @@ std::unique_ptr<base::Thread> CreateAndStartIOThread() {
   // TODO(sad): We do not need the IO thread once gpu has a separate process.
   // It should be possible to use |main_task_runner_| for doing IO tasks.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // TODO(reveman): Remove this in favor of setting it explicitly for each
   // type of process.
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
+  if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
+    thread_options.priority = base::ThreadPriority::DISPLAY;
   auto io_thread = std::make_unique<base::Thread>("GpuIOThread");
   CHECK(io_thread->StartWithOptions(thread_options));
   return io_thread;

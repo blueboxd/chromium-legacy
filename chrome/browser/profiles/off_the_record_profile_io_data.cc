@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -122,8 +121,8 @@ void OffTheRecordProfileIOData::InitializeExtensionsCookieStore(
   content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ = content::CreateCookieStore(
-      cookie_config, profile_params->io_thread->net_log());
+  extensions_cookie_store_ =
+      content::CreateCookieStore(cookie_config, g_browser_process->net_log());
 }
 
 net::CookieStore* OffTheRecordProfileIOData::GetExtensionsCookieStore() const {

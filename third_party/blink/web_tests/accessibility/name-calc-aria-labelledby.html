@@ -121,7 +121,7 @@ test(function(t){
 
 <script>
 test(function(t){
-    assert_true(accessibilityController.accessibleElementById("label7").isIgnored);
+    assert_equals(accessibilityController.accessibleElementById("label7"), undefined);
     var axLabelledby7 = accessibilityController.accessibleElementById("labelledby7");
     assert_equals(axLabelledby7.name, "Invisible label");
     assert_equals(axLabelledby7.nameFrom, "relatedElement");

@@ -14,6 +14,7 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/i18n/number_formatting.h"
+#include "base/strings/string_number_conversions.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -114,12 +115,21 @@ void BluetoothFeaturePodController::UpdateButton() {
         IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP,
         device_count));
   } else if (connected_devices.size() == 1) {
+    const device::mojom::BluetoothDeviceInfoPtr& device =
+        connected_devices.back();
     const base::string16 device_name =
-        device::GetBluetoothDeviceNameForDisplay(connected_devices.back());
+        device::GetBluetoothDeviceNameForDisplay(device);
     button_->SetVectorIcon(kUnifiedMenuBluetoothConnectedIcon);
     button_->SetLabel(device_name);
-    button_->SetSubLabel(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL));
+
+    if (device->battery_info) {
+      button_->SetSubLabel(l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_LABEL,
+          base::NumberToString16(device->battery_info->battery_percentage)));
+    } else {
+      button_->SetSubLabel(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL));
+    }
     SetTooltipState(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_TOOLTIP, device_name));
   } else {

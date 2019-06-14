@@ -266,6 +266,13 @@ void NativeThemeMac::PaintMenuItemBackground(
   }
 }
 
+bool NativeThemeMac::SystemDarkModeSupported() const {
+  if (@available(macOS 10.14, *)) {
+    return true;
+  }
+  return false;
+}
+
 NativeThemeMac::NativeThemeMac() {
   InitializeDarkModeStateAndObserver();
 

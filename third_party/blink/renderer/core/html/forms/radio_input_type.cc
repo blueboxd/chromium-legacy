@@ -151,8 +151,6 @@ void RadioInputType::HandleKeyupEvent(KeyboardEvent& event) {
        event.key() == "Enter")) {
     DispatchSimulatedClickIfActive(event);
   }
-
-  DispatchSimulatedClickIfActive(event);
 }
 
 bool RadioInputType::IsKeyboardFocusable() const {

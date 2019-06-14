@@ -102,8 +102,14 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
 
     @Override
     public ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(
-                new TouchlessDialogPresenter(mActivity, mModelCoordinator), ModalDialogType.APP);
+        TouchlessDialogPresenter dialogPresenter =
+                new TouchlessDialogPresenter(mActivity, mModelCoordinator);
+        ModalDialogManager modalDialogManager =
+                new ModalDialogManager(dialogPresenter, ModalDialogType.APP);
+        // Some tests need a presenter for ModalDialogType.TAB. Refer to
+        // PermissionTestRule$DialogShownCriteria#isSatisfied.
+        modalDialogManager.registerPresenter(dialogPresenter, ModalDialogType.TAB);
+        return modalDialogManager;
     }
 
     protected TouchlessModelCoordinator getModelCoordinator() {

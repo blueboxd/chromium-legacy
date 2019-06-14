@@ -57,7 +57,12 @@ class LayerTreeHostSynchronousPixelTest
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostSynchronousPixelTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                                           LayerTreeTest::RENDERER_SKIA_GL
+#if defined(ENABLE_CC_VULKAN_TESTS)
+                                           ,
+                                           LayerTreeTest::RENDERER_SKIA_VK
+#endif
+                                           ));
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerZeroCopy) {
   use_zero_copy_ = true;

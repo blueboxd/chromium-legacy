@@ -3,18 +3,16 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- TODO(chouinard): For now this supports simple text-only preferences, but more children will be
-     added to this layout in the near future as we migrate more complex preferences. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/PreferenceLayout"
+    style="@style/Theme.Chromium.PreferenceLayoutCompat"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground"
     android:focusable="true"
     android:baselineAligned="false">
 
     <RelativeLayout
+        style="@style/Theme.Chromium.PreferenceDescriptionCompat"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1">
@@ -32,5 +30,12 @@
             android:layout_alignStart="@android:id/title" />
 
     </RelativeLayout>
+
+    <LinearLayout android:id="@android:id/widget_frame"
+        style="@style/Theme.Chromium.PreferenceWidgetCompat"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical" />
 
 </LinearLayout>

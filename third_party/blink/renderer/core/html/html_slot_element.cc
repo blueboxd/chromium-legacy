@@ -524,14 +524,6 @@ bool HTMLSlotElement::HasAssignedNodesSlow() const {
   return assignment.FindHostChildBySlotName(GetName());
 }
 
-bool HTMLSlotElement::FindHostChildWithSameSlotName() const {
-  ShadowRoot* root = ContainingShadowRoot();
-  DCHECK(root);
-  DCHECK(root->IsV1());
-  SlotAssignment& assignment = root->GetSlotAssignment();
-  return assignment.FindHostChildBySlotName(GetName());
-}
-
 int HTMLSlotElement::tabIndex() const {
   return Element::tabIndex();
 }

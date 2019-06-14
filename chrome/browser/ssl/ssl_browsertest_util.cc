@@ -20,8 +20,7 @@ namespace AuthState {
 
 void Check(content::NavigationEntry* entry, int expected_authentication_state) {
   if (expected_authentication_state == AuthState::SHOWING_ERROR ||
-      (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials) &&
-       expected_authentication_state == AuthState::SHOWING_INTERSTITIAL)) {
+      expected_authentication_state == AuthState::SHOWING_INTERSTITIAL) {
     EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
   } else {
     EXPECT_EQ(

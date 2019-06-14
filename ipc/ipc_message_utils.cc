@@ -266,8 +266,7 @@ bool ReadValue(const base::Pickle* m,
       break;
     }
     default:
-      // TODO(crbug.com/859477): Remove after root cause is found.
-      CHECK(false);
+      NOTREACHED();
       return false;
   }
 

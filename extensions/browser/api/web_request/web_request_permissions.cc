@@ -245,11 +245,6 @@ bool WebRequestPermissions::HideRequest(
   if (request.is_web_view)
     return false;
 
-  // Requests from PAC scripts are always hidden.
-  // See https://crbug.com/794674
-  if (request.is_pac_request)
-    return true;
-
   bool is_request_from_browser = request.render_process_id == -1;
 
   if (is_request_from_browser) {

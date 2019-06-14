@@ -206,6 +206,14 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
   std::move(callback).Run(!!app);
 }
 
+void DeviceActions::VerifyAndroidApp(std::vector<AndroidAppInfoPtr> apps_info,
+                                     VerifyAndroidAppCallback callback) {
+  for (const auto& app_info : apps_info) {
+    app_info->status = GetAndroidAppStatus(app_info->package_name);
+  }
+  std::move(callback).Run(std::move(apps_info));
+}
+
 void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
       arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);

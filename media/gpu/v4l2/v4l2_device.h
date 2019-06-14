@@ -24,7 +24,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,6 +46,7 @@ namespace media {
 class V4L2Queue;
 class V4L2BufferRefBase;
 class V4L2BuffersList;
+class V4L2DecodeSurface;
 
 // A unique reference to a buffer for clients to prepare and submit.
 //

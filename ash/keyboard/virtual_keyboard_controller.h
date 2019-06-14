@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
-#include "ash/keyboard/ui/keyboard_layout_delegate.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -26,7 +25,6 @@ namespace ash {
 class ASH_EXPORT VirtualKeyboardController
     : public TabletModeObserver,
       public ui::InputDeviceEventObserver,
-      public keyboard::KeyboardLayoutDelegate,
       public KeyboardControllerObserver,
       public SessionObserver {
  public:
@@ -47,11 +45,6 @@ class ASH_EXPORT VirtualKeyboardController
   // Toggles whether the presence of an external keyboard should be ignored
   // when determining whether or not to show the on-screen keyboard.
   void ToggleIgnoreExternalKeyboard();
-
-  // keyboard::KeyboardLayoutDelegate:
-  aura::Window* GetContainerForDefaultDisplay() override;
-  aura::Window* GetContainerForDisplay(
-      const display::Display& display) override;
 
   // KeyboardControllerObserver:
   void OnKeyboardEnabledChanged(bool is_enabled) override;

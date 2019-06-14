@@ -18,8 +18,10 @@
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/http/http_auth.h"
@@ -28,6 +30,8 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -51,10 +55,37 @@ const char kGAIACookieDomain[] = "google.com";
 const char kSAMLIdPCookieDomain[] = "example.com";
 const char kSAMLIdPCookieDomainWithWildcard[] = ".example.com";
 
+class TestingProfileWithNetworkContext : public TestingProfile {
+ public:
+  explicit TestingProfileWithNetworkContext(
+      network::NetworkService* network_service) {
+    auto network_context = std::make_unique<network::NetworkContext>(
+        network_service, mojo::MakeRequest(&network_context_ptr_),
+        network::mojom::NetworkContextParams::New());
+    network_context_ = network_context.get();
+    SetNetworkContext(std::move(network_context));
+  }
+
+  network::NetworkContext* network_context() { return network_context_; }
+
+ private:
+  network::mojom::NetworkContextPtr network_context_ptr_;
+  network::NetworkContext* network_context_;
+};
+
+network::NetworkService* GetNetworkService() {
+  content::GetNetworkService();
+  // Wait for the Network Service to initialize on the IO thread.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  return network::NetworkService::GetNetworkServiceForTesting();
+}
+
 }  // namespace
 
 class ProfileAuthDataTest : public testing::Test {
  public:
+  ProfileAuthDataTest();
+
   // testing::Test:
   void SetUp() override;
 
@@ -70,21 +101,25 @@ class ProfileAuthDataTest : public testing::Test {
                          const std::string& expected_saml_idp_cookie_value);
 
  private:
-  void PopulateBrowserContext(content::BrowserContext* browser_context,
+  void PopulateBrowserContext(TestingProfileWithNetworkContext* browser_context,
                               const std::string& proxy_auth_password,
                               const std::string& cookie_value);
 
-  net::URLRequestContext* GetRequestContext(
-      content::BrowserContext* browser_context);
-  net::HttpAuthCache* GetProxyAuth(content::BrowserContext* browser_context);
+  net::HttpAuthCache* GetProxyAuth(network::NetworkContext* network_context);
   network::mojom::CookieManager* GetCookies(
       content::BrowserContext* browser_context);
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  TestingProfile login_browser_context_;
-  TestingProfile user_browser_context_;
+  network::NetworkService* network_service_;
+  TestingProfileWithNetworkContext login_browser_context_;
+  TestingProfileWithNetworkContext user_browser_context_;
 };
+
+ProfileAuthDataTest::ProfileAuthDataTest()
+    : network_service_(GetNetworkService()),
+      login_browser_context_(network_service_),
+      user_browser_context_(network_service_) {}
 
 void ProfileAuthDataTest::SetUp() {
   PopulateBrowserContext(&login_browser_context_, kProxyAuthPassword1,
@@ -132,7 +167,7 @@ net::CookieList ProfileAuthDataTest::GetUserCookies() {
 
 void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
   net::HttpAuthCache::Entry* entry =
-      GetProxyAuth(&user_browser_context_)
+      GetProxyAuth(user_browser_context_.network_context())
           ->Lookup(GURL(kProxyAuthURL), kProxyAuthRealm,
                    net::HttpAuth::AUTH_SCHEME_BASIC);
   ASSERT_TRUE(entry);
@@ -164,10 +199,10 @@ void ProfileAuthDataTest::VerifyUserCookies(
 }
 
 void ProfileAuthDataTest::PopulateBrowserContext(
-    content::BrowserContext* browser_context,
+    TestingProfileWithNetworkContext* browser_context,
     const std::string& proxy_auth_password,
     const std::string& cookie_value) {
-  GetProxyAuth(browser_context)
+  GetProxyAuth(browser_context->network_context())
       ->Add(GURL(kProxyAuthURL), kProxyAuthRealm,
             net::HttpAuth::AUTH_SCHEME_BASIC, kProxyAuthChallenge,
             net::AuthCredentials(base::string16(),
@@ -206,16 +241,9 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       "https", options, base::DoNothing());
 }
 
-net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(
-    content::BrowserContext* browser_context) {
-  return content::BrowserContext::GetDefaultStoragePartition(browser_context)
-      ->GetURLRequestContext()
-      ->GetURLRequestContext();
-}
-
 net::HttpAuthCache* ProfileAuthDataTest::GetProxyAuth(
-    content::BrowserContext* browser_context) {
-  return GetRequestContext(browser_context)
+    network::NetworkContext* network_context) {
+  return network_context->url_request_context()
       ->http_transaction_factory()
       ->GetSession()
       ->http_auth_cache();

@@ -94,6 +94,7 @@ LogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
 LogicalRect ExpandSelectionRectToLineHeight(
     const LogicalRect& rect,
     const NGPaintFragment& paint_fragment) {
+  // Compute the rect of the containing line box relative to |paint_fragment|.
   const NGPaintFragment* current_line = paint_fragment.ContainerLineBox();
   DCHECK(current_line);
   const PhysicalRect line_physical_rect(
@@ -102,8 +103,14 @@ LogicalRect ExpandSelectionRectToLineHeight(
       current_line->Size());
   const LogicalRect line_logical_rect =
       ComputeLogicalRectFor(line_physical_rect, paint_fragment);
-  return {{rect.offset.inline_offset, line_logical_rect.offset.block_offset},
-          {rect.size.inline_size, line_logical_rect.size.block_size}};
+
+  // Unite the rect only in the block direction.
+  LayoutUnit selection_top =
+      std::min(rect.offset.block_offset, line_logical_rect.offset.block_offset);
+  LayoutUnit selection_bottom =
+      std::max(rect.BlockEndOffset(), line_logical_rect.BlockEndOffset());
+  return {{rect.offset.inline_offset, selection_top},
+          {rect.size.inline_size, selection_bottom - selection_top}};
 }
 
 LogicalOffset ChildLogicalOffsetInParent(const NGPaintFragment& child) {

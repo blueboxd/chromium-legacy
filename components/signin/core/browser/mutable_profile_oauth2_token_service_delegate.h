@@ -61,7 +61,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
-  std::vector<std::string> GetAccounts() override;
+  std::vector<CoreAccountId> GetAccounts() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
   void LoadCredentials(const CoreAccountId& primary_account_id) override;

@@ -13,14 +13,12 @@ namespace ui {
 
 // This test ensures that PlatformScreen fetches display.
 TEST(X11ScreenOzoneTest, FetchDisplay) {
-  constexpr uint32_t kNumberOfDisplays = 1;
-
-  std::unique_ptr<X11ScreenOzone> platform_screen =
-      std::make_unique<X11ScreenOzone>();
+  constexpr uint32_t kMinNumberOfDisplays = 1;
+  X11ScreenOzone platform_screen;
 
   // Ensure there is only one display, which is the primary one.
-  auto& all_displays = platform_screen->GetAllDisplays();
-  EXPECT_EQ(all_displays.size(), kNumberOfDisplays);
+  auto& all_displays = platform_screen.GetAllDisplays();
+  EXPECT_GE(all_displays.size(), kMinNumberOfDisplays);
 }
 
 }  // namespace ui

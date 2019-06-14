@@ -68,10 +68,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsActive) {
   EXPECT_TRUE(send_tab_to_self::IsUserSyncTypeActive(GetProfile(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsOnMultipleDevices) {
+IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
+                       HasValidTargetDevice) {
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_FALSE(send_tab_to_self::IsSyncingOnMultipleDevices(GetProfile(0)));
+  EXPECT_FALSE(send_tab_to_self::HasValidTargetDevice(GetProfile(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsFlagEnabled) {

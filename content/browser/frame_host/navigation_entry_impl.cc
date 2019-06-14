@@ -65,7 +65,7 @@ void RecursivelyGenerateFrameEntries(
   EncodePageState(page_state, &data);
   DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
 
-  node->frame_entry = new FrameNavigationEntry(
+  node->frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       UTF16ToUTF8(state.target.value_or(base::string16())),
       state.item_sequence_number, state.document_sequence_number, nullptr,
       nullptr, GURL(state.url_string.value_or(base::string16())),
@@ -145,9 +145,10 @@ bool InSameTreePosition(FrameTreeNode* frame_tree_node,
 
 }  // namespace
 
-NavigationEntryImpl::TreeNode::TreeNode(TreeNode* parent,
-                                        FrameNavigationEntry* frame_entry)
-    : parent(parent), frame_entry(frame_entry) {}
+NavigationEntryImpl::TreeNode::TreeNode(
+    TreeNode* parent,
+    scoped_refptr<FrameNavigationEntry> frame_entry)
+    : parent(parent), frame_entry(std::move(frame_entry)) {}
 
 NavigationEntryImpl::TreeNode::~TreeNode() {
 }
@@ -165,7 +166,7 @@ bool NavigationEntryImpl::TreeNode::MatchesFrame(
 
 std::unique_ptr<NavigationEntryImpl::TreeNode>
 NavigationEntryImpl::TreeNode::CloneAndReplace(
-    FrameNavigationEntry* frame_navigation_entry,
+    scoped_refptr<FrameNavigationEntry> frame_navigation_entry,
     bool clone_children_of_target,
     FrameTreeNode* target_frame_tree_node,
     FrameTreeNode* current_frame_tree_node,
@@ -258,9 +259,9 @@ NavigationEntryImpl::NavigationEntryImpl(
     ui::PageTransition transition_type,
     bool is_renderer_initiated,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-    : frame_tree_(new TreeNode(
-          nullptr,
-          new FrameNavigationEntry("",
+    : frame_tree_(new TreeNode(nullptr,
+                               base::MakeRefCounted<FrameNavigationEntry>(
+                                   "",
                                    -1,
                                    -1,
                                    std::move(instance),
@@ -609,7 +610,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
 }
 
 std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
-    FrameNavigationEntry* frame_navigation_entry,
+    scoped_refptr<FrameNavigationEntry> frame_navigation_entry,
     bool clone_children_of_target,
     FrameTreeNode* target_frame_tree_node,
     FrameTreeNode* root_frame_tree_node) const {
@@ -619,8 +620,8 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.
   copy->frame_tree_ = frame_tree_->CloneAndReplace(
-      frame_navigation_entry, clone_children_of_target, target_frame_tree_node,
-      root_frame_tree_node, nullptr);
+      std::move(frame_navigation_entry), clone_children_of_target,
+      target_frame_tree_node, root_frame_tree_node, nullptr);
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.
@@ -828,14 +829,14 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // No entry exists yet, so create a new one.
   // Unordered list, since we expect to look up entries by frame sequence number
   // or unique name.
-  FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
+  auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       unique_name, item_sequence_number, document_sequence_number,
       site_instance, std::move(source_site_instance), url,
       base::OptionalOrNullptr(origin), referrer, redirect_chain, page_state,
       method, post_id, std::move(blob_url_loader_factory));
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
-                                                      frame_entry));
+                                                      std::move(frame_entry)));
 }
 
 FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(

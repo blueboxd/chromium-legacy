@@ -441,6 +441,13 @@ bool SendTabToSelfBridge::IsReady() {
   return change_processor()->IsTrackingMetadata();
 }
 
+bool SendTabToSelfBridge::HasValidTargetDevice() {
+  if (ShouldUpdateTargetDeviceNameToCacheInfoMap()) {
+    SetTargetDeviceNameToCacheInfoMap();
+  }
+  return target_device_name_to_cache_info_.size() > 0;
+}
+
 std::map<std::string, TargetDeviceInfo>
 SendTabToSelfBridge::GetTargetDeviceNameToCacheInfoMap() {
   if (ShouldUpdateTargetDeviceNameToCacheInfoMap()) {

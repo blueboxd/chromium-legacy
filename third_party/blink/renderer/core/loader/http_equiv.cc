@@ -122,7 +122,7 @@ void HttpEquiv::Process(Document& document,
       document.GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
   } else if (EqualIgnoringASCIICase(equiv, http_names::kOriginTrial)) {
     if (in_document_head_element)
-      OriginTrialContext::FromOrCreate(&document)->AddToken(content);
+      document.GetOriginTrialContext()->AddToken(content);
   }
 }
 

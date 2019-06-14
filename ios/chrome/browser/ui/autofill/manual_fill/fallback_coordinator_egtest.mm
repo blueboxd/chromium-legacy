@@ -606,8 +606,7 @@ void DockKeyboard() {
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the
@@ -627,7 +626,6 @@ void DockKeyboard() {
 // autorelease pool, and some times a DCHECK will be hit.
 - (void)testOpeningIncognitoTabsDoNotLeak {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
   std::string webViewText("Profile form");
   AddAutofillProfile(_personalDataManager);
 
@@ -642,7 +640,7 @@ void DockKeyboard() {
 
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -672,7 +670,7 @@ void DockKeyboard() {
 
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   // Bring up the keyboard by tapping the city, which is the element before the
@@ -716,8 +714,7 @@ void DockKeyboard() {
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the

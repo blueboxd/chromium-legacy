@@ -22,7 +22,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
@@ -107,7 +107,7 @@ std::string ExtractBluetoothAddressFromPath(const std::string& path) {
 bool IsStylusDevice(const std::string& path, const std::string& model_name) {
   std::string identifier = ExtractIdentifier(path);
   for (const ui::TouchscreenDevice& device :
-       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.has_stylus &&
         (device.name == model_name ||
          device.name.find(model_name) != std::string::npos) &&

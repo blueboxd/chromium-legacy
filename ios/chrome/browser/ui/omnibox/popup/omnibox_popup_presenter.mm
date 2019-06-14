@@ -131,7 +131,6 @@ const CGFloat kVerticalOffset = 6;
     topConstraint,
   ]];
 
-  [popup layoutIfNeeded];
   [[popup superview] layoutIfNeeded];
 }
 

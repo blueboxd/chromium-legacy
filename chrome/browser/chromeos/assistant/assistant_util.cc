@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom-shared.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -84,11 +86,14 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
   }
 
+  if (prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy))
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
+
   // Bypass the account type check when using fake gaia login, e.g. in Tast
   // tests, or the account is logged in a device with a physical Assistant key
   // on keyboard.
   if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !ui::DeviceUsesKeyboardLayout2()) {
+      !ui::DeviceKeyboardHasAssistantKey()) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =

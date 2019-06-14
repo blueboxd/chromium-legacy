@@ -35,6 +35,7 @@ class UI_BASE_EXPORT MprisMediaKeysListener
   // MediaKeysListener implementation.
   bool StartWatchingMediaKey(KeyboardCode key_code) override;
   void StopWatchingMediaKey(KeyboardCode key_code) override;
+  void SetIsMediaPlaying(bool is_playing) override;
 
   // mpris::MprisServiceObserver implementation.
   void OnNext() override;
@@ -57,6 +58,7 @@ class UI_BASE_EXPORT MprisMediaKeysListener
   MediaKeysListener::Delegate* delegate_;
   base::flat_set<KeyboardCode> key_codes_;
   mpris::MprisService* service_ = nullptr;
+  bool is_media_playing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MprisMediaKeysListener);
 };

@@ -23,7 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_FORM_DATA_ENCODER_H_
 
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace WTF {

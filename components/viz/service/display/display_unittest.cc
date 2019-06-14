@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
@@ -142,18 +143,11 @@ class DisplayTest : public testing::Test {
                                      std::move(output_surface));
   }
 
-  void SetUpGpuDisplay(const RendererSettings& settings,
-                       std::unique_ptr<TestGLES2Interface> context = nullptr) {
-    std::unique_ptr<FakeOutputSurface> output_surface;
-    scoped_refptr<TestContextProvider> provider;
-    if (context) {
-      provider = TestContextProvider::Create(std::move(context));
-
-    } else {
-      provider = TestContextProvider::Create();
-    }
+  void SetUpGpuDisplay(const RendererSettings& settings) {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
     provider->BindToCurrentThread();
-    output_surface = FakeOutputSurface::Create3d(std::move(provider));
+    std::unique_ptr<FakeOutputSurface> output_surface =
+        FakeOutputSurface::Create3d(std::move(provider));
     output_surface_ = output_surface.get();
 
     CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
@@ -237,7 +231,6 @@ class DisplayTest : public testing::Test {
 TEST_F(DisplayTest, DisplayDamaged) {
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  settings.finish_rendering_on_resize = true;
   SetUpSoftwareDisplay(settings);
   gfx::ColorSpace color_space_1 = gfx::ColorSpace::CreateXYZD50();
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
@@ -458,7 +451,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
   }
 
-  // Resize should cause a swap if no frame was swapped at the previous size.
+  // DisableSwapUntilResize() should cause a swap if no frame was swapped at the
+  // previous size.
   {
     id_allocator_.GenerateId();
     display_->SetLocalSurfaceId(
@@ -484,6 +478,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_FALSE(scheduler_->has_new_root_surface);
 
     scheduler_->swapped = false;
+    display_->DisableSwapUntilResize(base::OnceClosure());
     display_->Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler_->swapped);
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
@@ -530,9 +525,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
 // Verifies latency info is stored only up to a limit if a swap fails.
 void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
-  RendererSettings settings;
-  settings.finish_rendering_on_resize = true;
-  SetUpSoftwareDisplay(settings);
+  SetUpSoftwareDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -582,6 +575,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   CompositorFrame frame3 =
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame3));
+  EXPECT_TRUE(display_->DrawAndSwap());
 
   // Verify whether or not LatencyInfo was dropped.
   size_t expected_size = 1;  // The Display adds its own latency info.
@@ -602,12 +596,7 @@ TEST_F(DisplayTest, OverLatencyInfoCap) {
   LatencyInfoCapTest(true);
 }
 
-class MockedGLES2Interface : public TestGLES2Interface {
- public:
-  MOCK_METHOD0(ShallowFinishCHROMIUM, void());
-};
-
-TEST_F(DisplayTest, Finish) {
+TEST_F(DisplayTest, DisableSwapUntilResize) {
   id_allocator_.GenerateId();
   LocalSurfaceId local_surface_id1(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
@@ -617,13 +606,8 @@ TEST_F(DisplayTest, Finish) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  settings.finish_rendering_on_resize = true;
 
-  auto gl = std::make_unique<MockedGLES2Interface>();
-  MockedGLES2Interface* gl_ptr = gl.get();
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
-
-  SetUpGpuDisplay(settings, std::move(gl));
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -643,22 +627,26 @@ TEST_F(DisplayTest, Finish) {
     SubmitCompositorFrame(&pass_list, local_surface_id1);
   }
 
-  display_->DrawAndSwap();
+  EXPECT_FALSE(scheduler_->swapped);
 
-  // First resize and draw shouldn't finish.
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  // DisableSwapUntilResize() should trigger a swap because we have a frame of
+  // the correct size and haven't swapped at that size yet.
+  bool swap_callback_run = false;
+  display_->DisableSwapUntilResize(base::BindLambdaForTesting(
+      [&swap_callback_run]() { swap_callback_run = true; }));
+  EXPECT_TRUE(scheduler_->swapped);
+  EXPECT_TRUE(swap_callback_run);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
   display_->Resize(gfx::Size(150, 150));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  scheduler_->swapped = false;
 
-  // Another resize without a swap doesn't need to finish.
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
+  // DisableSwapUntilResize() won't trigger a swap because there is no frame
+  // of the correct size to draw.
   display_->SetLocalSurfaceId(local_surface_id2, 1.f);
+  display_->DisableSwapUntilResize(base::OnceClosure());
+  EXPECT_FALSE(scheduler_->swapped);
   display_->Resize(gfx::Size(200, 200));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
   {
     RenderPassList pass_list;
     auto pass = RenderPass::Create();
@@ -670,13 +658,16 @@ TEST_F(DisplayTest, Finish) {
     SubmitCompositorFrame(&pass_list, local_surface_id2);
   }
 
+  // DrawAndSwap() should trigger a swap at current size.
   display_->DrawAndSwap();
+  EXPECT_TRUE(scheduler_->swapped);
+  scheduler_->swapped = false;
 
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  // DisableSwapUntilResize() won't trigger another swap because we already
+  // swapped a frame at the current size.
+  display_->DisableSwapUntilResize(base::OnceClosure());
+  EXPECT_FALSE(scheduler_->swapped);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
-  display_->Resize(gfx::Size(250, 250));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
   TearDownDisplay();
 }
 

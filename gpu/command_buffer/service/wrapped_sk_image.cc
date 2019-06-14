@@ -125,33 +125,21 @@ class WrappedSkImage : public SharedImageBacking {
 
     context_state_->set_need_context_state_reset(true);
 
+    // Initializing to bright green makes it obvious if the pixels are not
+    // properly set before they are displayed (e.g. https://crbug.com/956555).
+    // We don't do this on release builds because there is a slight overhead.
+#if DCHECK_IS_ON()
+    backend_texture_ = context_state_->gr_context()->createBackendTexture(
+        size().width(), size().height(), GetSkColorType(), SkColors::kGreen,
+        GrMipMapped::kNo, GrRenderable::kYes);
+#else
     backend_texture_ = context_state_->gr_context()->createBackendTexture(
         size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
         GrRenderable::kYes);
+#endif
 
     if (!backend_texture_.isValid())
       return false;
-
-#if DCHECK_IS_ON()
-    bool need_temporary_surface = true;
-#else
-    bool need_temporary_surface = !data.empty();
-#endif
-
-    sk_sp<SkSurface> surface =
-        need_temporary_surface
-            ? SkSurface::MakeFromBackendTexture(
-                  context_state_->gr_context(), backend_texture_,
-                  kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/0, GetSkColorType(),
-                  color_space().ToSkColorSpace(), /*surfaceProps=*/nullptr)
-            : nullptr;
-
-#if DCHECK_IS_ON()
-    {
-      auto* canvas = surface->getCanvas();
-      canvas->clear(SK_ColorGREEN);
-    }
-#endif
 
     if (!data.empty()) {
       SkBitmap bitmap;
@@ -159,6 +147,10 @@ class WrappedSkImage : public SharedImageBacking {
                                 info.minRowBytes())) {
         return false;
       }
+      sk_sp<SkSurface> surface = SkSurface::MakeFromBackendTexture(
+          context_state_->gr_context(), backend_texture_,
+          kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/0, GetSkColorType(),
+          color_space().ToSkColorSpace(), /*surfaceProps=*/nullptr);
       surface->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
     }
 

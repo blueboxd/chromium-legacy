@@ -77,8 +77,7 @@ import java.lang.annotation.RetentionPolicy;
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  * This class is not intended to be extended.
  */
-public class Tab
-        implements ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener {
+public class Tab {
     public static final int INVALID_TAB_ID = -1;
 
     /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
@@ -1171,8 +1170,6 @@ public class Tab
             mWebContents.setImportance(mImportance);
             ContentUtils.setUserAgentOverride(mWebContents);
 
-            mContentView.setOnHierarchyChangeListener(this);
-            mContentView.setOnSystemUiVisibilityChangeListener(this);
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
 
@@ -1565,8 +1562,6 @@ public class Tab
     private final void destroyWebContents(boolean deleteNativeWebContents) {
         if (mWebContents == null) return;
 
-        mContentView.setOnHierarchyChangeListener(null);
-        mContentView.setOnSystemUiVisibilityChangeListener(null);
         mContentView.removeOnAttachStateChangeListener(mAttachStateChangeListener);
         mContentView = null;
         updateInteractableState();
@@ -1818,33 +1813,6 @@ public class Tab
         assert mNativeTabAndroid != 0 && getNativePage() != null;
         nativeSetActiveNavigationEntryTitleForUrl(mNativeTabAndroid, getNativePage().getUrl(),
                 getNativePage().getTitle());
-    }
-
-    @Override
-    public void onChildViewRemoved(View parent, View child) {
-        // TODO(jinsukkim): Consider updating |ContentView| to allow multiple
-        //         OnHierarchyChangeListener and OnSystemUiVisibilityChangeListener
-        //         to be added to not allow FullscreenManager to get the contentview
-        //         and add its own observers as needed.
-        updateContentViewChildrenState();
-    }
-
-    @Override
-    public void onChildViewAdded(View parent, View child) {
-        updateContentViewChildrenState();
-    }
-
-    private void updateContentViewChildrenState() {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) observers.next().onContentViewChildrenStateUpdated(this);
-    }
-
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onContentViewSystemUiVisibilityChanged(this, visibility);
-        }
     }
 
     /**

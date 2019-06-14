@@ -98,6 +98,11 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables showing the battery level in the System Tray and Settings
+// UI for supported Bluetooth Devices.
+const base::Feature kShowBluetoothDeviceBattery{
+    "ShowBluetoothDeviceBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
 // (~2018-11) model.
 const base::Feature kSmartDimModelV3{"SmartDimModelV3",

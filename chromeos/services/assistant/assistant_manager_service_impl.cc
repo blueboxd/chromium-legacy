@@ -98,6 +98,21 @@ bool IsScreenContextAllowed(ash::AssistantStateBase* assistant_state) {
          assistant_state->context_enabled().value_or(false);
 }
 
+action::AppStatus GetActionAppStatus(mojom::AppStatus status) {
+  switch (status) {
+    case mojom::AppStatus::UNKNOWN:
+      return action::UNKNOWN;
+    case mojom::AppStatus::AVAILABLE:
+      return action::AVAILABLE;
+    case mojom::AppStatus::UNAVAILABLE:
+      return action::UNAVAILABLE;
+    case mojom::AppStatus::VERSION_MISMATCH:
+      return action::VERSION_MISMATCH;
+    case mojom::AppStatus::DISABLED:
+      return action::DISABLED;
+  }
+}
+
 ash::mojom::AssistantTimerState GetTimerState(
     assistant_client::Timer::State state) {
   switch (state) {
@@ -625,6 +640,24 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
                      weak_factory_.GetWeakPtr(), interaction));
 }
 
+void AssistantManagerServiceImpl::OnVerifyAndroidApp(
+    const std::vector<action::AndroidAppInfo>& apps_info,
+    const action::InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnVerifyAndroidApp,
+                     apps_info, interaction);
+  std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
+  for (auto& app_info : apps_info) {
+    mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
+    app_info_ptr->package_name = app_info.package_name;
+    apps_info_list.push_back(std::move(app_info_ptr));
+  }
+  service_->device_actions()->VerifyAndroidApp(
+      std::move(apps_info_list),
+      base::BindOnce(
+          &AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse,
+          weak_factory_.GetWeakPtr(), interaction));
+}
+
 void AssistantManagerServiceImpl::OnOpenMediaAndroidIntentOnMainThread(
     const std::string play_media_args_proto,
     action::AndroidAppInfo* android_app_info) {
@@ -1034,6 +1067,28 @@ void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(
 
   assistant_manager_internal_->SendVoicelessInteraction(
       interaction_proto, "open_provider_response", options, [](auto) {});
+}
+
+void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
+    const action::InteractionInfo& interaction,
+    std::vector<mojom::AndroidAppInfoPtr> apps_info) {
+  std::vector<action::AndroidAppInfo> action_apps_info;
+  for (const auto& app_info : apps_info) {
+    action_apps_info.push_back({app_info->package_name, app_info->version,
+                                app_info->localized_app_name, app_info->intent,
+                                GetActionAppStatus(app_info->status)});
+  }
+  std::string interaction_proto = CreateVerifyProviderResponseInteraction(
+      interaction.interaction_id, action_apps_info);
+
+  assistant_client::VoicelessOptions options;
+  options.obfuscated_gaia_id = interaction.user_id;
+  // Set the request to be user initiated so that a new conversation will be
+  // created to handle the client OPs in the response of this request.
+  options.is_user_initiated = true;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction_proto, "verify_provider_response", options, [](auto) {});
 }
 
 // assistant_client::DeviceStateListener overrides

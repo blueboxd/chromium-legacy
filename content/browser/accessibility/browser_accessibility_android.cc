@@ -164,8 +164,8 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
   return value;
 }
 
-bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
-  if (BrowserAccessibility::PlatformIsLeafIncludingIgnored())
+bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
+  if (BrowserAccessibility::PlatformIsLeaf())
     return true;
 
   // Iframes are always allowed to contain children.

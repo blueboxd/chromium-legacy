@@ -302,7 +302,7 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteSuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  TestWin10ImageLoadRemote(true);
+  TestWin10ImageLoadRemote(true /* is_success_test */);
 }
 
 // This test validates that setting the MITIGATION_IMAGE_LOAD_NO_REMOTE
@@ -314,7 +314,7 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin10ImageLoadNoRemoteFailure) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  TestWin10ImageLoadRemote(false);
+  TestWin10ImageLoadRemote(false /* is_success_test */);
 }
 
 //------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelSuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  TestWin10ImageLoadLowLabel(true);
+  TestWin10ImageLoadLowLabel(true /* is_success_test */);
 }
 
 // This test validates that setting the MITIGATION_IMAGE_LOAD_NO_LOW_LABEL
@@ -370,7 +370,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelFailure) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  TestWin10ImageLoadLowLabel(false);
+  TestWin10ImageLoadLowLabel(false /* is_success_test */);
 }
 
 //------------------------------------------------------------------------------
@@ -421,16 +421,11 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Baseline) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(g_hijack_dlls_mutex);
 
   // Baseline test, and expect the DLL to NOT be in system32.
-  TestWin10ImageLoadPreferSys32(true, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10ImageLoadPreferSys32(true /* baseline_test */,
+                                false /* expect_sys32_path */);
 }
 
 // This test validates that import hijacking succeeds, if the
@@ -442,16 +437,11 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Success) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(g_hijack_dlls_mutex);
 
   // Not a baseline test, and expect the DLL to be in system32.
-  TestWin10ImageLoadPreferSys32(false, true);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10ImageLoadPreferSys32(false /* baseline_test */,
+                                true /* expect_sys32_path */);
 }
 
 // This test validates that setting the MITIGATION_IMAGE_LOAD_PREFER_SYS32
@@ -462,16 +452,11 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Failure) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex);
-  EXPECT_EQ(WAIT_OBJECT_0,
-            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+  ScopedTestMutex mutex(g_hijack_dlls_mutex);
 
   // Not a baseline test, and expect the DLL to NOT be in system32.
-  TestWin10ImageLoadPreferSys32(false, false);
-
-  EXPECT_TRUE(::ReleaseMutex(mutex));
-  EXPECT_TRUE(::CloseHandle(mutex));
+  TestWin10ImageLoadPreferSys32(false /* baseline_test */,
+                                false /* expect_sys32_path */);
 }
 
 }  // namespace sandbox

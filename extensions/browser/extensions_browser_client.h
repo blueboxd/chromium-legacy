@@ -38,12 +38,6 @@ class RenderFrameHost;
 class WebContents;
 }
 
-namespace net {
-class NetworkDelegate;
-class URLRequest;
-class URLRequestJob;
-}
-
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -63,7 +57,6 @@ class ExtensionError;
 class ExtensionHostDelegate;
 class ExtensionApiFrameIdMap;
 class ExtensionApiFrameIdMapHelper;
-class ExtensionNavigationUIData;
 class ExtensionSet;
 class ExtensionSystem;
 class ExtensionSystemProvider;
@@ -151,17 +144,6 @@ class ExtensionsBrowserClient {
   virtual bool CanExtensionCrossIncognito(
       const extensions::Extension* extension,
       content::BrowserContext* context) const = 0;
-
-  // Returns an URLRequestJob to load an extension resource from the embedder's
-  // resource bundle (.pak) files. Returns NULL if the request is not for a
-  // resource bundle resource or if the embedder does not support this feature.
-  // Used for component extensions. Called on the IO thread.
-  virtual net::URLRequestJob* MaybeCreateResourceBundleRequestJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const base::FilePath& directory_path,
-      const std::string& content_security_policy,
-      bool send_cors_header) = 0;
 
   // Return the resource relative path and id for the given request.
   virtual base::FilePath GetBundleResourcePath(
@@ -314,9 +296,6 @@ class ExtensionsBrowserClient {
 
   // Returns true if activity logging is enabled for the given |context|.
   virtual bool IsActivityLoggingEnabled(content::BrowserContext* context);
-
-  virtual ExtensionNavigationUIData* GetExtensionNavigationUIData(
-      net::URLRequest* request);
 
   // Retrives the embedder's notion of tab and window ID for a given
   // WebContents. May return -1 for either or both values if the embedder does

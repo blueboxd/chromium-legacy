@@ -327,14 +327,16 @@ void TaskTracker::StartShutdown() {
   }
 }
 
-void TaskTracker::CompleteShutdown() {
-  DCHECK(shutdown_event_);
+// TODO(gab): Figure out why TS_UNCHECKED_READ is insufficient to make thread
+// analysis of |shutdown_event_| happy on POSIX.
+void TaskTracker::CompleteShutdown() NO_THREAD_SAFETY_ANALYSIS {
   // It is safe to access |shutdown_event_| without holding |lock_| because the
   // pointer never changes after being set by StartShutdown(), which must be
   // called before this.
+  DCHECK(TS_UNCHECKED_READ(shutdown_event_));
   {
     base::ScopedAllowBaseSyncPrimitives allow_wait;
-    shutdown_event_->Wait();
+    TS_UNCHECKED_READ(shutdown_event_)->Wait();
   }
 
   // Unblock FlushForTesting() and perform the FlushAsyncForTesting callback
@@ -389,6 +391,7 @@ bool TaskTracker::WillPostTask(Task* task,
 
     // A BLOCK_SHUTDOWN task posted after shutdown has completed is an
     // ordering bug. This aims to catch those early.
+    CheckedAutoLock auto_lock(shutdown_lock_);
     DCHECK(shutdown_event_);
     // TODO(http://crbug.com/698140): Atomically shutdown the service thread
     // to prevent racily posting BLOCK_SHUTDOWN tasks in response to a
@@ -615,10 +618,10 @@ bool TaskTracker::BeforeQueueTaskSource(
     const bool shutdown_started = state_->IncrementNumItemsBlockingShutdown();
 
     if (shutdown_started) {
-      CheckedAutoLock auto_lock(shutdown_lock_);
 
       // A BLOCK_SHUTDOWN task posted after shutdown has completed is an
       // ordering bug. This aims to catch those early.
+      CheckedAutoLock auto_lock(shutdown_lock_);
       DCHECK(shutdown_event_);
       // TODO(http://crbug.com/698140): Atomically shutdown the service thread
       // to prevent racily posting BLOCK_SHUTDOWN tasks in response to a
@@ -705,11 +708,7 @@ void TaskTracker::DecrementNumItemsBlockingShutdown() {
     return;
 
   CheckedAutoLock auto_lock(shutdown_lock_);
-
-  // This method can only be called after shutdown has started.
-  DCHECK(state_->HasShutdownStarted());
   DCHECK(shutdown_event_);
-
   shutdown_event_->Signal();
 }
 

@@ -25,7 +25,6 @@
 #include "printing/buildflags/buildflags.h"
 
 class BackgroundModeManager;
-class IOThread;
 class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;
@@ -75,7 +74,6 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
-  IOThread* io_thread() override;
   SystemNetworkContextManager* system_network_context_manager() override;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
@@ -144,7 +142,6 @@ class TestingBrowserProcess : public BrowserProcess {
   // afterwards (using ScopedTestingLocalState, for example).
   void SetLocalState(PrefService* local_state);
   void SetProfileManager(ProfileManager* profile_manager);
-  void SetIOThread(IOThread* io_thread);
   void SetSafeBrowsingService(safe_browsing::SafeBrowsingService* sb_service);
   void SetRulesetService(
       std::unique_ptr<subresource_filter::RulesetService> ruleset_service);
@@ -204,7 +201,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;
-  IOThread* io_thread_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   rappor::RapporServiceImpl* rappor_service_;
 

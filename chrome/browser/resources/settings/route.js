@@ -308,10 +308,11 @@ cr.define('settings', function() {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
       r.CROSTINI_EXPORT_IMPORT =
-          r.CROSTINI.createChild('/crostini/exportImport');
-      r.CROSTINI_SHARED_PATHS = r.CROSTINI.createChild('/crostini/sharedPaths');
+          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      r.CROSTINI_SHARED_PATHS =
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
-          r.CROSTINI.createChild('/crostini/sharedUsbDevices');
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
     }
 
     if (loadTimeData.valueExists('showPluginVm') &&

@@ -73,15 +73,15 @@ const net::BackoffEntry* FakeOAuth2TokenServiceDelegate::BackoffEntry() const {
   return &backoff_entry_;
 }
 
-std::vector<std::string> FakeOAuth2TokenServiceDelegate::GetAccounts() {
-  std::vector<std::string> account_ids;
+std::vector<CoreAccountId> FakeOAuth2TokenServiceDelegate::GetAccounts() const {
+  std::vector<CoreAccountId> account_ids;
   for (const auto& token : refresh_tokens_)
     account_ids.push_back(token.first);
   return account_ids;
 }
 
 void FakeOAuth2TokenServiceDelegate::RevokeAllCredentials() {
-  std::vector<std::string> account_ids = GetAccounts();
+  std::vector<CoreAccountId> account_ids = GetAccounts();
   for (const auto& account : account_ids)
     RevokeCredentials(account);
 }

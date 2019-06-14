@@ -129,6 +129,14 @@ void InputMethodWinTSF::DetachTextInputClient(TextInputClient* client) {
   ui::TSFBridge::GetInstance()->RemoveFocusedClient(client);
 }
 
+bool InputMethodWinTSF::IsInputLocaleCJK() const {
+  if (!ui::TSFBridge::GetInstance()) {
+    return false;
+  }
+
+  return ui::TSFBridge::GetInstance()->IsInputLanguageCJK();
+}
+
 bool InputMethodWinTSF::IsCandidatePopupOpen() const {
   return tsf_event_observer_->IsCandidatePopupOpen();
 }

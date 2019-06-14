@@ -803,7 +803,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingSessionId) {
              GetPreviousClientDirectivePolicyReferenceForTest());
 
   SyncKeysResponse sync_keys_response = BuildSyncKeysResponse();
-  sync_keys_response.release_random_session_id();
+  sync_keys_response.clear_random_session_id();
 
   SendSyncKeysResponse(sync_keys_response);
 
@@ -820,7 +820,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingClientDirective) {
              GetPreviousClientDirectivePolicyReferenceForTest());
 
   SyncKeysResponse sync_keys_response = BuildSyncKeysResponse();
-  sync_keys_response.release_client_directive();
+  sync_keys_response.clear_client_directive();
 
   SendSyncKeysResponse(sync_keys_response);
 
@@ -979,7 +979,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
           SyncSingleKeyResponse::ACTIVE /* new_key_creation */,
           KeyType::RAW256 /* new_key_type */,
           base::nullopt /* new_key_directive */)});
-  sync_keys_response.release_server_ephemeral_dh();
+  sync_keys_response.clear_server_ephemeral_dh();
 
   SendSyncKeysResponse(sync_keys_response);
 

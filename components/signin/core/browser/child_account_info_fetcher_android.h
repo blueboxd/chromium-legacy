@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "google_apis/gaia/core_account_id.h"
 
 class AccountFetcherService;
 
@@ -16,14 +17,14 @@ class ChildAccountInfoFetcherAndroid {
  public:
   static std::unique_ptr<ChildAccountInfoFetcherAndroid> Create(
       AccountFetcherService* service,
-      const std::string& account_id);
+      const CoreAccountId& account_id);
   ~ChildAccountInfoFetcherAndroid();
 
   static void InitializeForTests();
 
  private:
   ChildAccountInfoFetcherAndroid(AccountFetcherService* service,
-                                 const std::string& account_id,
+                                 const CoreAccountId& account_id,
                                  const std::string& account_name);
 
   base::android::ScopedJavaGlobalRef<jobject> j_child_account_info_fetcher_;

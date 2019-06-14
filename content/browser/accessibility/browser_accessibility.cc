@@ -71,13 +71,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   if (InternalChildCount() == 0)
     return true;
 
-  return PlatformIsLeafIncludingIgnored();
-}
-
-bool BrowserAccessibility::PlatformIsLeafIncludingIgnored() const {
-  if (node()->children().size() == 0)
-    return true;
-
   // These types of objects may have children that we use as internal
   // implementation details, but we want to expose them as leaves to platform
   // accessibility APIs because screen readers might be confused if they find
@@ -108,7 +101,7 @@ bool BrowserAccessibility::CanFireEvents() const {
   if (!instance_active())
     return false;
   // Allow events unless this object would be trimmed away.
-  return !PlatformIsChildOfLeafIncludingIgnored();
+  return !PlatformIsChildOfLeaf();
 }
 
 uint32_t BrowserAccessibility::PlatformChildCount() const {
@@ -202,18 +195,6 @@ bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
 
   while (ancestor) {
     if (ancestor->PlatformIsLeaf())
-      return true;
-    ancestor = ancestor->InternalGetParent();
-  }
-
-  return false;
-}
-
-bool BrowserAccessibility::PlatformIsChildOfLeafIncludingIgnored() const {
-  BrowserAccessibility* ancestor = InternalGetParent();
-
-  while (ancestor) {
-    if (ancestor->PlatformIsLeafIncludingIgnored())
       return true;
     ancestor = ancestor->InternalGetParent();
   }

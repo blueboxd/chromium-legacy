@@ -35,7 +35,7 @@ ChosenObjectView::ChosenObjectView(
   // Where the icon and close button columns are fixed widths.
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   const int column_set_id = 0;
 
   const int related_label_padding =

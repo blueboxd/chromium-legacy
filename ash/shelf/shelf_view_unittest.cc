@@ -4038,11 +4038,13 @@ TEST_F(KioskNextShelfViewTest, ControlButtonsCentered) {
                   ShelfConstants::shelf_size());
     expected_button_area_bounds.ClampToCenteredSize(expected_button_area_size);
 
-    const gfx::Rect back_button_bounds = test_api_->GetIdealBoundsByIndex(0);
+    const gfx::Rect back_button_bounds =
+        shelf_view_->GetBackButton()->ideal_bounds();
     EXPECT_FALSE(back_button_bounds.IsEmpty());
     EXPECT_TRUE(expected_button_area_bounds.Contains(back_button_bounds));
 
-    const gfx::Rect home_button_bounds = test_api_->GetIdealBoundsByIndex(1);
+    const gfx::Rect home_button_bounds =
+        shelf_view_->GetAppListButton()->ideal_bounds();
     EXPECT_FALSE(home_button_bounds.IsEmpty());
     EXPECT_TRUE(expected_button_area_bounds.Contains(home_button_bounds));
 

@@ -46,8 +46,15 @@ struct CORE_EXPORT LogicalRect {
   LogicalOffset offset;
   LogicalSize size;
 
-  LogicalOffset EndOffset() const { return offset + size; }
   constexpr bool IsEmpty() const { return size.IsEmpty(); }
+
+  LayoutUnit InlineEndOffset() const {
+    return offset.inline_offset + size.inline_size;
+  }
+  LayoutUnit BlockEndOffset() const {
+    return offset.block_offset + size.block_size;
+  }
+  LogicalOffset EndOffset() const { return offset + size; }
 
   constexpr bool operator==(const LogicalRect& other) const {
     return other.offset == offset && other.size == size;

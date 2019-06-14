@@ -65,7 +65,7 @@ class AccountFetcherService : public OAuth2TokenServiceObserver {
   // there are still unfininshed fetchers.
   virtual bool IsAllUserInfoFetched() const;
 
-  void ForceRefreshOfAccountInfo(const std::string& account_id);
+  void ForceRefreshOfAccountInfo(const CoreAccountId& account_id);
 
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
@@ -88,7 +88,8 @@ class AccountFetcherService : public OAuth2TokenServiceObserver {
 
 #if defined(OS_ANDROID)
   // Called by ChildAccountInfoFetcherAndroid.
-  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
+  void SetIsChildAccount(const CoreAccountId& account_id,
+                         bool is_child_account);
 #endif
 
   // OAuth2TokenServiceObserver implementation.
@@ -114,9 +115,9 @@ class AccountFetcherService : public OAuth2TokenServiceObserver {
   // Virtual so that tests can override the network fetching behaviour.
   // Further the two fetches are managed by a different refresh logic and
   // thus, can not be combined.
-  void StartFetchingUserInfo(const std::string& account_id);
+  void StartFetchingUserInfo(const CoreAccountId& account_id);
 #if defined(OS_ANDROID)
-  void StartFetchingChildInfo(const std::string& account_id);
+  void StartFetchingChildInfo(const CoreAccountId& account_id);
 
   // If there is more than one account in a profile, we forcibly reset the
   // child status for an account to be false.
@@ -124,20 +125,20 @@ class AccountFetcherService : public OAuth2TokenServiceObserver {
 #endif
 
   // Refreshes the AccountInfo associated with |account_id|.
-  void RefreshAccountInfo(const std::string& account_id,
+  void RefreshAccountInfo(const CoreAccountId& account_id,
                           bool only_fetch_if_invalid);
 
   // Called by AccountInfoFetcher.
-  void OnUserInfoFetchSuccess(const std::string& account_id,
+  void OnUserInfoFetchSuccess(const CoreAccountId& account_id,
                               std::unique_ptr<base::DictionaryValue> user_info);
-  void OnUserInfoFetchFailure(const std::string& account_id);
+  void OnUserInfoFetchFailure(const CoreAccountId& account_id);
 
   image_fetcher::ImageFetcherImpl* GetOrCreateImageFetcher();
 
   // Called in |OnUserInfoFetchSuccess| after the account info has been fetched.
-  void FetchAccountImage(const std::string& account_id);
+  void FetchAccountImage(const CoreAccountId& account_id);
 
-  void OnImageFetched(const std::string& id,
+  void OnImageFetched(const CoreAccountId& account_id,
                       const gfx::Image& image,
                       const image_fetcher::RequestMetadata& image_metadata);
 
@@ -153,12 +154,12 @@ class AccountFetcherService : public OAuth2TokenServiceObserver {
   base::OneShotTimer timer_;
 
 #if defined(OS_ANDROID)
-  std::string child_request_account_id_;
+  CoreAccountId child_request_account_id_;
   std::unique_ptr<ChildAccountInfoFetcherAndroid> child_info_request_;
 #endif
 
   // Holds references to account info fetchers keyed by account_id.
-  std::unordered_map<std::string, std::unique_ptr<AccountInfoFetcher>>
+  std::unordered_map<CoreAccountId, std::unique_ptr<AccountInfoFetcher>>
       user_info_requests_;
 
   // Used for fetching the account images.

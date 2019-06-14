@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/supervision/onboarding_logger.h"
 
 #include "base/logging.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
 namespace supervision {
@@ -27,27 +28,10 @@ const char* ExitReasonDescription(OnboardingFlowModel::ExitReason reason) {
       return "User reached the end of the flow successfuly.";
     case OnboardingFlowModel::ExitReason::kFlowSkipped:
       return "User chose to skip the flow.";
-    case OnboardingFlowModel::ExitReason::kAuthError:
-      return "Found an error getting an access token.";
-    case OnboardingFlowModel::ExitReason::kWebviewNetworkError:
-      return "Webview found a network error.";
     case OnboardingFlowModel::ExitReason::kUserNotEligible:
       return "User is not eligible to go through the flow.";
     case OnboardingFlowModel::ExitReason::kFeatureDisabled:
       return "Feature is disabled, we can't present flow pages.";
-  }
-}
-
-bool ExitedDueToError(OnboardingFlowModel::ExitReason reason) {
-  switch (reason) {
-    case OnboardingFlowModel::ExitReason::kUserReachedEnd:
-    case OnboardingFlowModel::ExitReason::kFlowSkipped:
-    case OnboardingFlowModel::ExitReason::kUserNotEligible:
-    case OnboardingFlowModel::ExitReason::kFeatureDisabled:
-      return false;
-    case OnboardingFlowModel::ExitReason::kAuthError:
-    case OnboardingFlowModel::ExitReason::kWebviewNetworkError:
-      return true;
   }
 }
 
@@ -72,15 +56,25 @@ void OnboardingLogger::StepFinishedLoading(OnboardingFlowModel::Step step) {
            << StepDescription(step);
 }
 
+void OnboardingLogger::StepFailedToLoadDueToAuthError(
+    OnboardingFlowModel::Step step,
+    GoogleServiceAuthError error) {
+  LOG(WARNING)
+      << "Supervision Onboarding step failed to load due to auth error. "
+      << "Step: " << StepDescription(step)
+      << " Error: " << error.error_message();
+}
+
+void OnboardingLogger::StepFailedToLoadDueToNetworkError(
+    OnboardingFlowModel::Step step,
+    net::Error error) {
+  LOG(WARNING) << "Supervision Onboarding step failed to load due to a network "
+               << "error. Step: " << StepDescription(step)
+               << " Error: " << net::ErrorToString(error);
+}
+
 void OnboardingLogger::WillExitFlow(OnboardingFlowModel::Step step,
                                     OnboardingFlowModel::ExitReason reason) {
-  if (ExitedDueToError(reason)) {
-    LOG(ERROR)
-        << "Supervision Onboarding is exiting because it found an error: "
-        << ExitReasonDescription(reason);
-    return;
-  }
-
   DVLOG(1) << "Supervision Onboarding exiting. "
            << ExitReasonDescription(reason);
 }

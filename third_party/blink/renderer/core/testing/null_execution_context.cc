@@ -14,8 +14,11 @@
 
 namespace blink {
 
-NullExecutionContext::NullExecutionContext()
-    : ExecutionContext(v8::Isolate::GetCurrent(), nullptr),
+NullExecutionContext::NullExecutionContext(
+    OriginTrialContext* origin_trial_context)
+    : ExecutionContext(v8::Isolate::GetCurrent(),
+                       nullptr,
+                       origin_trial_context),
       tasks_need_pause_(false),
       is_secure_context_(true),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}

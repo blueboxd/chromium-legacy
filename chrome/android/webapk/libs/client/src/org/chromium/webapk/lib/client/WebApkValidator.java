@@ -130,24 +130,8 @@ public class WebApkValidator {
      */
     private static List<ResolveInfo> resolveInfosForUrlAndOptionalPackage(
             Context context, String url, @Nullable String applicationPackage) {
-        Intent intent;
-        try {
-            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-        } catch (Exception e) {
-            return new LinkedList<>();
-        }
-
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        if (applicationPackage != null) {
-            intent.setPackage(applicationPackage);
-        } else {
-            intent.setComponent(null);
-        }
-        Intent selector = intent.getSelector();
-        if (selector != null) {
-            selector.addCategory(Intent.CATEGORY_BROWSABLE);
-            selector.setComponent(null);
-        }
+        Intent intent = createWebApkIntentForUrlAndOptionalPackage(url, applicationPackage);
+        if (intent == null) return new LinkedList<>();
 
         // StrictMode is relaxed due to https://crbug.com/843092.
         StrictMode.ThreadPolicy policy = StrictMode.allowThreadDiskReads();
@@ -226,6 +210,36 @@ public class WebApkValidator {
             return true;
         }
         return verifyCommentSignedWebApk(packageInfo);
+    }
+
+    /**
+     * @param url A Url that might launch a WebApk.
+     * @param applicationPackage The package of the WebApk to restrict the launch to.
+     * @return An intent that could launch a WebApk for the provided URL (and package), if such a
+     *         WebApk exists. If package isn't specified, the intent may create a disambiguation
+     *         dialog when started.
+     */
+    public static Intent createWebApkIntentForUrlAndOptionalPackage(
+            String url, @Nullable String applicationPackage) {
+        Intent intent;
+        try {
+            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+        } catch (Exception e) {
+            return null;
+        }
+
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        if (applicationPackage != null) {
+            intent.setPackage(applicationPackage);
+        } else {
+            intent.setComponent(null);
+        }
+        Intent selector = intent.getSelector();
+        if (selector != null) {
+            selector.addCategory(Intent.CATEGORY_BROWSABLE);
+            selector.setComponent(null);
+        }
+        return intent;
     }
 
     /** Determine quickly whether this is definitely not a WebAPK */

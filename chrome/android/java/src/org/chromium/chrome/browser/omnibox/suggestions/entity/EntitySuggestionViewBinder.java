@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.view.MotionEvent;
 
@@ -78,9 +76,14 @@ public class EntitySuggestionViewBinder {
         int color = model.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR);
 
         if (bitmap != null) {
-            view.setSuggestionImage(new BitmapDrawable(bitmap));
+            view.setSuggestionImage(bitmap);
         } else if (color != NO_DOMINANT_COLOR) {
-            view.setSuggestionImage(new ColorDrawable(color));
+            // Note: we deliberately don't use ColorDrawable here to allow presenting
+            // fallback color as a rounded-corners rectangle.
+            // See EntitySuggestionView#setSuggestionImage for more details.
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            bitmap.eraseColor(color);
+            view.setSuggestionImage(bitmap);
         } else {
             view.clearSuggestionImage();
         }

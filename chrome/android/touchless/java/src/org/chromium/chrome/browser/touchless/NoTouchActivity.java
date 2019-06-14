@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -211,8 +212,8 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     protected TabDelegateFactory createTabDelegateFactory() {
-        return new NoBrowserControlsTabDelegateFactory(
-                getFullscreenManager().getBrowserVisibilityDelegate());
+        return new NoTouchTabDelegateFactory(
+                this, getFullscreenManager().getBrowserVisibilityDelegate());
     }
 
     @Override

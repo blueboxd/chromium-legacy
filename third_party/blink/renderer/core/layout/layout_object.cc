@@ -983,11 +983,14 @@ void LayoutObject::SetChildNeedsCollectInlines() {
     if (object->NeedsCollectInlines())
       break;
     object->SetNeedsCollectInlines(true);
-    if (object->IsLayoutBlockFlow() ||
-        // Some LayoutReplaced have children (e.g., LayoutSVGRoot). Stop marking
-        // because their children belong to different context.
-        object->IsAtomicInlineLevel())
+
+    // Stop marking at the inline formatting context root. This is usually a
+    // |LayoutBlockFlow|, but some other classes can have children; e.g.,
+    // |LayoutButton| or |LayoutSVGRoot|. |LayoutInline| is the only class we
+    // collect recursively (see |CollectInlines|). Use the same condition here.
+    if (!object->IsLayoutInline())
       break;
+
     object = object->Parent();
   } while (object);
 }

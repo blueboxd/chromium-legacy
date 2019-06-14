@@ -156,6 +156,18 @@ public class SuggestionViewViewBinder {
 
             int drawableId = R.drawable.ic_omnibox_page;
             switch (type) {
+                case SuggestionIcon.UNSET:
+                case SuggestionIcon.FAVICON:
+                    // At this point there is no suggestion icon available - yet.
+                    // - UNSET indicates we have yet to identify adequate SuggestionIcon type,
+                    // - FAVICON indicates suggestion is about to receive a favicon bitmap, but
+                    //   that has not yet happened.
+                    // This path will be triggered as a result of USE_DARK_COLORS or
+                    // SHOW_SUGGESTION_ICONS properties being set before we had the chance to
+                    // update SUGGESTION_ICON_TYPE, or adapter copying keys to a new model.
+                    // This is not an error.
+                    return;
+
                 case SuggestionIcon.GLOBE:
                     drawableId = R.drawable.ic_globe_24dp;
                     break;
@@ -174,11 +186,6 @@ public class SuggestionViewViewBinder {
                 case SuggestionIcon.CALCULATOR:
                     drawableId = R.drawable.ic_equals_sign_round;
                     allowTint = false;
-                    break;
-                case SuggestionIcon.UNDEFINED:
-                    // Since SuggestionViews may be re-used, there is a risk we would be
-                    // presenting an stale favicon already.
-                    assert false : "Unknown suggestion icon type.";
                     break;
                 default:
                     break;

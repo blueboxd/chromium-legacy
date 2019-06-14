@@ -112,6 +112,7 @@ class SyntheticBeginFrameSource;
 }  // namespace viz
 
 namespace content {
+class AecDumpMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
@@ -591,6 +592,12 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
+
+  // Used for communicating registering AEC dump consumers with the browser and
+  // receving AEC dump file handles when AEC dump is enabled. An AEC dump is
+  // diagnostic audio data for WebRTC stored locally when enabled by the user in
+  // chrome://webrtc-internals.
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 
   // Filter out unfreezable messages and pass it to unfreezable task runners.
   scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;

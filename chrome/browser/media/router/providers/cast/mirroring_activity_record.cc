@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -69,10 +70,10 @@ MirroringActivityRecord::MirroringActivityRecord(
                                               mojo::MakeRequest(&host_));
 
   // Create Mojo bindings for the interfaces this object implements.
-  SessionObserverPtr observer_ptr_;
-  observer_binding_.Bind(mojo::MakeRequest(&observer_ptr_));
-  CastMessageChannelPtr channel_ptr_;
-  channel_binding_.Bind(mojo::MakeRequest(&channel_ptr_));
+  SessionObserverPtr observer_ptr;
+  observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
+  CastMessageChannelPtr channel_ptr;
+  channel_binding_.Bind(mojo::MakeRequest(&channel_ptr));
 
   // Derive session type from capabilities.
   const bool has_audio = (cast_data.capabilities &
@@ -85,11 +86,13 @@ MirroringActivityRecord::MirroringActivityRecord(
           ? SessionType::AUDIO_AND_VIDEO
           : has_audio ? SessionType::AUDIO_ONLY : SessionType::VIDEO_ONLY;
 
-  // Start mirroring.
-  host_->Start(
+  // Arrange to start mirroring once the session is set.
+  on_session_set_ = base::BindOnce(
+      &mirroring::mojom::MirroringServiceHost::Start,
+      base::Unretained(host_.get()),
       SessionParameters::New(session_type, cast_data.ip_endpoint.address(),
                              cast_data.model_name),
-      std::move(observer_ptr_), std::move(channel_ptr_),
+      std::move(observer_ptr), std::move(channel_ptr),
       mojo::MakeRequest(&channel_to_service_));
 }
 
@@ -112,6 +115,9 @@ void MirroringActivityRecord::DidStop() {
 }
 
 void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
+  DCHECK(message);
+  DVLOG(2) << "Relaying message to receiver: " << message->json_format_data;
+
   data_decoder_->ParseJson(
       message->json_format_data,
       base::BindRepeating(
@@ -119,18 +125,18 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
             if (!self)
               return;
 
-            auto internal_message = CastInternalMessage::From(std::move(value));
             CastSession* session = self->GetSession();
+            DCHECK(session);
 
             // TODO(jrw): Can some of this logic be shared with
             // CastActivityRecord::SendAppMessageToReceiver?
-            cast_channel::CastMessage app_message =
+            cast_channel::CastMessage cast_message =
                 cast_channel::CreateCastMessage(
-                    internal_message->app_message_namespace(),
-                    internal_message->app_message_body(),
-                    internal_message->client_id(), session->transport_id());
-            self->message_handler_->SendAppMessage(self->channel_id_,
-                                                   app_message);
+                    mirroring::mojom::kWebRtcNamespace, std::move(value),
+                    self->message_handler_->sender_id(),
+                    session->transport_id());
+            self->message_handler_->SendCastMessage(self->channel_id_,
+                                                    cast_message);
           },
           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(
@@ -142,32 +148,17 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
           route().media_route_id()));
 }
 
-mojom::RoutePresentationConnectionPtr MirroringActivityRecord::AddClient(
-    const CastMediaSource& source,
-    const url::Origin& origin,
-    int tab_id) {
-  // This method seems to only be called on CastActivityRecord instances.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-void MirroringActivityRecord::RemoveClient(const std::string& client_id) {
-  // TODO(jrw): This method is never called, and it should probably only ever
-  // be called on CastActivityRecord instances.
-  NOTIMPLEMENTED();
-}
-
 Result MirroringActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
   // This method is only called from CastSessionClient.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return Result::kOk;
 }
 
 base::Optional<int> MirroringActivityRecord::SendMediaRequestToReceiver(
     const CastInternalMessage& cast_message) {
   // This method is only called from CastSessionClient.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return base::nullopt;
 }
 
@@ -182,7 +173,7 @@ void MirroringActivityRecord::SendSetVolumeRequestToReceiver(
   // this. I think the implementation is shared between CastActivityRecord and
   // MirroringActivityRecord, so it could be put in the ActivityRecord base
   // class if we wanted to.
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void MirroringActivityRecord::SendStopSessionMessageToReceiver(
@@ -195,7 +186,22 @@ void MirroringActivityRecord::SendStopSessionMessageToReceiver(
 
 void MirroringActivityRecord::HandleLeaveSession(const std::string& client_id) {
   // This method is only called from CastSessionClient.
-  NOTIMPLEMENTED();
+  NOTREACHED();
+}
+
+mojom::RoutePresentationConnectionPtr MirroringActivityRecord::AddClient(
+    const CastMediaSource& source,
+    const url::Origin& origin,
+    int tab_id) {
+  // This method seems to only be called on CastActivityRecord instances.
+  NOTREACHED();
+  return nullptr;
+}
+
+void MirroringActivityRecord::RemoveClient(const std::string& client_id) {
+  // This method is never called, and it should probably only ever be called on
+  // CastActivityRecord instances.
+  NOTREACHED();
 }
 
 void MirroringActivityRecord::SendMessageToClient(
@@ -218,6 +224,7 @@ void MirroringActivityRecord::OnAppMessage(
     // Ignore message with wrong namespace.
     return;
   }
+  DVLOG(2) << "Relaying app message from receiver: " << message;
   DCHECK(message.has_payload_utf8());
   DCHECK_EQ(message.protocol_version(),
             cast_channel::CastMessage_ProtocolVersion_CASTV2_1_0);
@@ -227,6 +234,24 @@ void MirroringActivityRecord::OnAppMessage(
   // TODO(jrw): Do something with message.source_id() and
   // message.destination_id()?
   channel_to_service_->Send(std::move(ptr));
+}
+
+void MirroringActivityRecord::OnInternalMessage(
+    const cast_channel::InternalMessage& message) {
+  DVLOG(2) << "Relaying internal message from receiver: " << message.message;
+  mirroring::mojom::CastMessagePtr ptr = mirroring::mojom::CastMessage::New();
+  ptr->message_namespace = message.message_namespace;
+
+  // TODO(jrw): This line re-serializes a JSON string that was parsed by the
+  // caller of this method.  Yuck!  This is probably a necessary evil as long as
+  // the extension needs to communicate with the mirroring service.
+  CHECK(base::JSONWriter::Write(message.message, &ptr->json_format_data));
+
+  channel_to_service_->Send(std::move(ptr));
+}
+
+void MirroringActivityRecord::OnSessionSet() {
+  std::move(on_session_set_).Run();
 }
 
 void MirroringActivityRecord::StopMirroring() {

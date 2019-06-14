@@ -81,6 +81,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
   bool SystemDarkModeEnabled() const override;
+  bool SystemDarkModeSupported() const override;
 
  protected:
   friend class NativeTheme;

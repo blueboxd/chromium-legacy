@@ -19,7 +19,6 @@
 	#error atldlgs.h requires atlwin.h to be included first
 #endif
 
-#include <commdlg.h>
 #include <shlobj.h>
 
 #if (_WIN32_WINNT >= 0x0600)
@@ -1202,6 +1201,9 @@ public:
 			this->_Init(lpszFileName, dwOptions, lpszDefExt, arrFilterSpec, uFilterSpecCount);
 	}
 
+	virtual ~CShellFileOpenDialogImpl()
+	{ }
+
 	IFileOpenDialog* GetPtr()
 	{
 		return m_spFileDlg;
@@ -1220,6 +1222,9 @@ public:
 	                     LPCWSTR lpszDefExt = NULL, 
 	                     const COMDLG_FILTERSPEC* arrFilterSpec = NULL, 
 	                     UINT uFilterSpecCount = 0U) : CShellFileOpenDialogImpl<CShellFileOpenDialog>(lpszFileName, dwOptions, lpszDefExt, arrFilterSpec, uFilterSpecCount)
+	{ }
+
+	virtual ~CShellFileOpenDialog()
 	{ }
 
 // Implementation (remove _Advise/_Unadvise code using template magic)
@@ -1252,6 +1257,9 @@ public:
 			this->_Init(lpszFileName, dwOptions, lpszDefExt, arrFilterSpec, uFilterSpecCount);
 	}
 
+	virtual ~CShellFileSaveDialogImpl()
+	{ }
+
 	IFileSaveDialog* GetPtr()
 	{
 		return m_spFileDlg;
@@ -1270,6 +1278,9 @@ public:
 	                     LPCWSTR lpszDefExt = NULL, 
 	                     const COMDLG_FILTERSPEC* arrFilterSpec = NULL, 
 	                     UINT uFilterSpecCount = 0U) : CShellFileSaveDialogImpl<CShellFileSaveDialog>(lpszFileName, dwOptions, lpszDefExt, arrFilterSpec, uFilterSpecCount)
+	{ }
+
+	virtual ~CShellFileSaveDialog()
 	{ }
 
 // Implementation (remove _Advise/_Unadvise code using template magic)
@@ -2357,7 +2368,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 // CPrintDialogExImpl - new print dialog for Windows 2000
 
-}; // namespace WTL
+} // namespace WTL
 
 #include <atlcom.h>
 
@@ -6215,6 +6226,6 @@ public:
 
 #endif // (_WIN32_WINNT >= 0x0600) || defined(_WTL_TASKDIALOG)
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLDLGS_H__

@@ -732,7 +732,8 @@ void GaiaAuthFetcher::StartListAccounts() {
 }
 
 void GaiaAuthFetcher::StartOAuthMultilogin(
-    const std::vector<MultiloginTokenIDPair>& accounts) {
+    const std::vector<MultiloginTokenIDPair>& accounts,
+    const std::string& external_cc_result) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   UMA_HISTOGRAM_COUNTS_100("Signin.Multilogin.NumberOfAccounts",
@@ -748,8 +749,13 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
       kOAuthMultiBearerHeaderFormat,
       base::JoinString(authorization_header_parts, ",").c_str());
 
-  std::string parameters = base::StringPrintf(
-      "?source=%s", net::EscapeUrlEncodedData(source_, true).c_str());
+  std::string source_string = net::EscapeUrlEncodedData(source_, true);
+  std::string parameters =
+      external_cc_result.empty()
+          ? base::StringPrintf("?source=%s", source_string.c_str())
+          : base::StringPrintf(
+                "?source=%s&externalCcResult=%s", source_string.c_str(),
+                net::EscapeUrlEncodedData(external_cc_result, true).c_str());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gaia_auth_multilogin", R"(

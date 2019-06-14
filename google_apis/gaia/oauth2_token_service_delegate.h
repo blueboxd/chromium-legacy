@@ -64,7 +64,7 @@ class OAuth2TokenServiceDelegate {
   // |this| instance.
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
   // Also, see |RefreshTokenIsAvailable|.
-  virtual std::vector<std::string> GetAccounts();
+  virtual std::vector<CoreAccountId> GetAccounts() const;
   virtual void RevokeAllCredentials() {}
 
   virtual void InvalidateAccessToken(const CoreAccountId& account_id,

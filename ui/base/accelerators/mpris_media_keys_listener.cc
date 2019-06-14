@@ -88,6 +88,10 @@ void MprisMediaKeysListener::StopWatchingMediaKey(KeyboardCode key_code) {
   }
 }
 
+void MprisMediaKeysListener::SetIsMediaPlaying(bool is_playing) {
+  is_media_playing_ = is_playing;
+}
+
 void MprisMediaKeysListener::OnNext() {
   MaybeSendKeyCode(VKEY_MEDIA_NEXT_TRACK);
 }
@@ -97,7 +101,8 @@ void MprisMediaKeysListener::OnPrevious() {
 }
 
 void MprisMediaKeysListener::OnPause() {
-  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+  if (is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void MprisMediaKeysListener::OnPlayPause() {
@@ -109,7 +114,8 @@ void MprisMediaKeysListener::OnStop() {
 }
 
 void MprisMediaKeysListener::OnPlay() {
-  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+  if (!is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
 void MprisMediaKeysListener::MaybeSendKeyCode(KeyboardCode key_code) {

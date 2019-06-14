@@ -34,20 +34,41 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
  public:
   ~GpuWatchdogThread() override;
 
-  static std::unique_ptr<GpuWatchdogThread> Create(bool start_backgrounded);
-
   // Must be called after a PowerMonitor has been created. Can be called from
   // any thread.
-  void AddPowerObserver();
-
-  // gl::ProgressReporter implementation:
-  void ReportProgress() override;
+  virtual void AddPowerObserver() = 0;
 
   // Notifies the watchdog when Chrome is backgrounded / foregrounded. Should
   // only be used if Chrome is completely backgrounded and not expected to
   // render (all windows backgrounded and not producing frames).
-  void OnBackgrounded();
-  void OnForegrounded();
+  virtual void OnBackgrounded() = 0;
+  virtual void OnForegrounded() = 0;
+
+ protected:
+  GpuWatchdogThread();
+
+  // Do not change this name. This is used for [GPU HANG] carsh reports
+  virtual void DeliberatelyTerminateToRecoverFromHang() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
+};
+
+class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
+    : public GpuWatchdogThread {
+ public:
+  ~GpuWatchdogThreadImplV1() override;
+
+  static std::unique_ptr<GpuWatchdogThreadImplV1> Create(
+      bool start_backgrounded);
+
+  void AddPowerObserver() override;
+
+  // gl::ProgressReporter implementation:
+  void ReportProgress() override;
+
+  void OnBackgrounded() override;
+  void OnForegrounded() override;
 
   // Test only functions. Not thread safe - set before arming.
   void SetAlternativeTerminateFunctionForTesting(
@@ -64,7 +85,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   class GpuWatchdogTaskObserver
       : public base::MessageLoopCurrent::TaskObserver {
    public:
-    explicit GpuWatchdogTaskObserver(GpuWatchdogThread* watchdog);
+    explicit GpuWatchdogTaskObserver(GpuWatchdogThreadImplV1* watchdog);
     ~GpuWatchdogTaskObserver() override;
 
     // Implements MessageLoopCurrent::TaskObserver.
@@ -72,7 +93,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
     void DidProcessTask(const base::PendingTask& pending_task) override;
 
    private:
-    GpuWatchdogThread* watchdog_;
+    GpuWatchdogThreadImplV1* watchdog_;
   };
 
   // A helper class which allows multiple clients to suspend/resume the
@@ -81,7 +102,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // of suspend requests.
   class SuspensionCounter {
    public:
-    SuspensionCounter(GpuWatchdogThread* watchdog_thread);
+    SuspensionCounter(GpuWatchdogThreadImplV1* watchdog_thread);
 
     class SuspensionCounterRef {
      public:
@@ -103,20 +124,19 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
    private:
     void OnAddRef();
     void OnReleaseRef();
-    GpuWatchdogThread* watchdog_thread_;
+    GpuWatchdogThreadImplV1* watchdog_thread_;
     uint32_t suspend_count_ = 0;
 
     SEQUENCE_CHECKER(watchdog_thread_sequence_checker_);
   };
-
-  GpuWatchdogThread();
+  GpuWatchdogThreadImplV1();
 
   void CheckArmed();
 
   void OnAcknowledge();
   void OnCheck(bool after_suspend);
   void OnCheckTimeout();
-  void DeliberatelyTerminateToRecoverFromHang();
+  void DeliberatelyTerminateToRecoverFromHang() override;
 #if defined(USE_X11)
   void SetupXServer();
   void SetupXChangeProp();
@@ -197,9 +217,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
 
   base::RepeatingClosure alternative_terminate_for_testing_;
 
-  base::WeakPtrFactory<GpuWatchdogThread> weak_factory_;
+  base::WeakPtrFactory<GpuWatchdogThreadImplV1> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
+  DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThreadImplV1);
 };
 
 }  // namespace gpu

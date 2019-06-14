@@ -29,6 +29,16 @@ namespace blink {
 
 namespace {
 
+// Controls whether we use ThreadPriority::DISPLAY for compositor thread.
+const base::Feature kBlinkCompositorUseDisplayThreadPriority {
+  "BlinkCompositorUseDisplayThreadPriority",
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // Thread-local storage for "blink::Thread"s.
 Thread*& ThreadTLSSlot() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<Thread*>, thread_tls_slot,
@@ -112,9 +122,9 @@ void Thread::CreateAndSetCompositorThread() {
   DCHECK(!GetCompositorThread());
 
   ThreadCreationParams params(WebThreadType::kCompositorThread);
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
-  params.thread_priority = base::ThreadPriority::DISPLAY;
-#endif
+  if (base::FeatureList::IsEnabled(kBlinkCompositorUseDisplayThreadPriority))
+    params.thread_priority = base::ThreadPriority::DISPLAY;
+
   auto compositor_thread =
       std::make_unique<scheduler::CompositorThread>(params);
   compositor_thread->Init();

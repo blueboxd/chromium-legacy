@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "ui/ozone/ozone_base_export.h"
 
 namespace ui {
 
@@ -19,7 +19,7 @@ namespace ui {
 // data with other applications on the host system. The most familiar use for
 // it is handling copy and paste operations.
 //
-class OZONE_BASE_EXPORT PlatformClipboard {
+class COMPONENT_EXPORT(OZONE_BASE) PlatformClipboard {
  public:
   virtual ~PlatformClipboard() {}
 

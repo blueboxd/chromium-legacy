@@ -235,6 +235,12 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
     }
 
+    @Override
+    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {}
+
+    @Override
+    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {}
+
     /**
      * Updates the profile used for extracting website favicons.
      * @param profile The profile to be used.

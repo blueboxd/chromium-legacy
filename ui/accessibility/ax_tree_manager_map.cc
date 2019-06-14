@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/ax_tree_manager_map.h"
 
+#include "base/stl_util.h"
+
 namespace ui {
 
 AXTreeManagerMap::AXTreeManagerMap() {}
@@ -27,10 +29,10 @@ void AXTreeManagerMap::RemoveTreeManager(AXTreeID tree_id) {
 }
 
 AXTreeManager* AXTreeManagerMap::GetManager(AXTreeID tree_id) {
-  if (tree_id == AXTreeIDUnknown())
+  if (tree_id == AXTreeIDUnknown() || !base::Contains(map_, tree_id))
     return nullptr;
 
-  return map_[tree_id];
+  return map_.at(tree_id);
 }
 
 AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(

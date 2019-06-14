@@ -31,6 +31,7 @@ class DiscardableSharedMemoryManager;
 namespace content {
 
 class BrowserMainParts;
+class ServiceManagerEnvironment;
 class WebContents;
 
 class BrowserTestBase : public testing::Test {
@@ -168,9 +169,10 @@ class BrowserTestBase : public testing::Test {
 
 #if defined(OS_ANDROID)
   // On Android we don't use ContentMainRunner for browser tests, so we bring
-  // our own DiscardableSharedMemoryManager instance.
+  // our own DiscardableSharedMemoryManager and ServiceManagerEnvironment.
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
+  std::unique_ptr<ServiceManagerEnvironment> service_manager_environment_;
 #endif
 
   // Testing server, started on demand.

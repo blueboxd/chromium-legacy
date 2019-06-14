@@ -1900,8 +1900,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ShelfModelInitialization) {
   EXPECT_EQ(3, shelf_model()->item_count());
   EXPECT_EQ(ash::kBackButtonId, shelf_model()->items()[0].id.app_id);
   EXPECT_EQ(ash::kAppListId, shelf_model()->items()[1].id.app_id);
-  EXPECT_TRUE(
-      shelf_model()->GetShelfItemDelegate(shelf_model()->items()[1].id));
   EXPECT_EQ(extension_misc::kChromeAppId, shelf_model()->items()[2].id.app_id);
   EXPECT_TRUE(
       shelf_model()->GetShelfItemDelegate(shelf_model()->items()[2].id));

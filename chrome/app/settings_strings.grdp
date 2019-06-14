@@ -220,7 +220,7 @@
     <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_LABEL" desc="Label for the toggle which enables automatic scanning between elements in Switch Access.">
       Enable auto-scan
     </message>
-    <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL" desc="Label for slider which sets the time interval for automatically scanning to the next element. Will be immediately followed by the numeric value of the interval.">
+    <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL" desc="Label for slider which sets the time interval for Switch Access to automatically scan to the next element.">
       Scanning speed: <ph name="SPEED_WITH_UNITS">$1<ex>1.5s</ex></ph>
     </message>
     <message name="IDS_SETTINGS_DURATION_IN_SECONDS" desc="A duration in seconds. Should be short.">
@@ -1061,6 +1061,9 @@
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
       Connected
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED_WITH_BATTERY" desc="In Bluetooth device list, this label is shown below a device which is already connected and has a known battery percentage.">
+      Connected, <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is not connected.">
       Not connected

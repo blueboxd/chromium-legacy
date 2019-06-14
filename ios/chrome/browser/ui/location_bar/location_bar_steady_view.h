@@ -39,11 +39,17 @@
 // Sets the location label's text.
 - (void)setLocationLabelText:(NSString*)string;
 
+// Displays the location InfobarBadgeButton if |display| is YES, hides it if
+// |display| is NO. Will animate change if |animated| is YES.
+- (void)displayBadge:(BOOL)display animated:(BOOL)animated;
+
 // The tappable button representing the location bar.
 @property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.
 @property(nonatomic, strong) UILabel* locationLabel;
 // The InfobarBadgeButton displayed in the leading corner of the view.
+// Call displayBadge:animated: in this class instead of InfobarBadgeButton's
+// directly.
 // TODO(crbug.com/935804): This button is currently only being used in the
 // Infobar redesign.
 @property(nonatomic, strong) InfobarBadgeButton* leadingButton;

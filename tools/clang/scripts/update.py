@@ -14,6 +14,7 @@ near-tip-of-tree clang version:
 
 # TODO: Running stand-alone won't work on Windows due to the dia dll copying.
 
+from __future__ import division
 from __future__ import print_function
 import argparse
 import os
@@ -25,10 +26,10 @@ import tempfile
 import time
 
 try:
-  import urllib2 as urllib
+  from urllib2 import HTTPError, URLError, urlopen
 except ImportError: # For Py3 compatibility
-  import urllib.request as urllib
-  import urllib.error as urllib
+  from urllib.error import HTTPError, URLError
+  from urllib.request import urlopen
 
 import zipfile
 
@@ -38,7 +39,7 @@ import zipfile
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION = '80fee25776c2fb61e74c1ecb1a523375c2500b69'
 CLANG_SVN_REVISION = '362913'
-CLANG_SUB_REVISION = 1
+CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
                                 CLANG_SUB_REVISION)
@@ -99,8 +100,8 @@ def DownloadUrl(url, output_file):
     try:
       sys.stdout.write('Downloading %s ' % url)
       sys.stdout.flush()
-      response = urllib.urlopen(url)
-      total_size = int(response.info().getheader('Content-Length').strip())
+      response = urlopen(url)
+      total_size = int(response.info().get('Content-Length').strip())
       bytes_done = 0
       dots_printed = 0
       while True:
@@ -109,19 +110,19 @@ def DownloadUrl(url, output_file):
           break
         output_file.write(chunk)
         bytes_done += len(chunk)
-        num_dots = TOTAL_DOTS * bytes_done / total_size
+        num_dots = TOTAL_DOTS * bytes_done // total_size
         sys.stdout.write('.' * (num_dots - dots_printed))
         sys.stdout.flush()
         dots_printed = num_dots
       if bytes_done != total_size:
-        raise urllib.URLError("only got %d of %d bytes" %
-                              (bytes_done, total_size))
+        raise URLError("only got %d of %d bytes" %
+                       (bytes_done, total_size))
       print(' Done.')
       return
-    except urllib.URLError as e:
+    except URLError as e:
       sys.stdout.write('\n')
       print(e)
-      if num_retries == 0 or isinstance(e, urllib.HTTPError) and e.code == 404:
+      if num_retries == 0 or isinstance(e, HTTPError) and e.code == 404:
         raise e
       num_retries -= 1
       print('Retrying in %d s ...' % retry_wait_s)
@@ -171,7 +172,7 @@ def DownloadAndUnpackClangPackage(platform, output_dir, runtimes_only=False):
     if runtimes_only:
       path_prefix = 'lib/clang/' + RELEASE_VERSION + '/lib/'
     DownloadAndUnpack(cds_full_url, output_dir, path_prefix)
-  except urllib.URLError:
+  except URLError:
     print('Failed to download prebuilt clang %s' % cds_file)
     print('Use --force-local-build if you want to build locally.')
     print('Exiting.')

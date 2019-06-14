@@ -28,6 +28,8 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
@@ -98,7 +100,6 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy) {
-  DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
   auto* global_scope = MakeGarbageCollected<PaintWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy);
   global_scope->ScriptController()->Initialize(NullURL());
@@ -134,7 +135,7 @@ PaintWorkletGlobalScope::~PaintWorkletGlobalScope() = default;
 
 void PaintWorkletGlobalScope::Dispose() {
   DCHECK(IsContextThread());
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+  if (!WTF::IsMainThread()) {
     if (PaintWorkletProxyClient* proxy_client =
             PaintWorkletProxyClient::From(Clients()))
       proxy_client->Dispose();
@@ -214,7 +215,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       input_argument_types, context_settings);
   paint_definitions_.Set(name, definition);
 
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+  if (!WTF::IsMainThread()) {
     PaintWorkletProxyClient* proxy_client =
         PaintWorkletProxyClient::From(Clients());
     proxy_client->RegisterCSSPaintDefinition(name, definition, exception_state);
@@ -234,9 +235,7 @@ CSSPaintDefinition* PaintWorkletGlobalScope::FindDefinition(
 double PaintWorkletGlobalScope::devicePixelRatio() const {
   // TODO(smcgruer): Implement |devicePixelRatio| for worklet-thread bound
   // PaintWorkletGlobalScope.
-  return RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
-             ? 1.0
-             : GetFrame()->DevicePixelRatio();
+  return WTF::IsMainThread() ? GetFrame()->DevicePixelRatio() : 1.0;
 }
 
 void PaintWorkletGlobalScope::Trace(blink::Visitor* visitor) {
@@ -245,7 +244,7 @@ void PaintWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 }
 
 void PaintWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
-  if (registered_ || !RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+  if (registered_ || WTF::IsMainThread())
     return;
 
   if (PaintWorkletProxyClient* proxy_client =

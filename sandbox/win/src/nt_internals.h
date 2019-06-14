@@ -695,6 +695,11 @@ typedef NTSTATUS(WINAPI* NtSignalAndWaitForSingleObjectFunction)(
     IN BOOLEAN Alertable,
     IN PLARGE_INTEGER Timeout OPTIONAL);
 
+typedef NTSTATUS(WINAPI* NtWaitForSingleObjectFunction)(
+    IN HANDLE ObjectHandle,
+    IN BOOLEAN Alertable,
+    IN PLARGE_INTEGER TimeOut OPTIONAL);
+
 typedef NTSTATUS(WINAPI* NtQuerySystemInformation)(
     IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
     OUT PVOID SystemInformation,

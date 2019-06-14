@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/events_devices_export.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/devices/touchscreen_device.h"
 
@@ -26,8 +25,7 @@ class InputDeviceEventObserver;
 
 // Keeps track of device mappings and event transformations.
 class EVENTS_DEVICES_EXPORT DeviceDataManager
-    : public InputDeviceManager,
-      public DeviceHotplugEventObserver {
+    : public DeviceHotplugEventObserver {
  public:
   static const int kMaxDeviceNum = 128;
   ~DeviceDataManager() override;
@@ -51,22 +49,26 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
   void SetTouchscreensEnabled(bool enabled);
 
-  // InputDeviceManager:
-  const std::vector<TouchscreenDevice>& GetTouchscreenDevices() const override;
-  const std::vector<InputDevice>& GetKeyboardDevices() const override;
-  const std::vector<InputDevice>& GetMouseDevices() const override;
-  const std::vector<InputDevice>& GetTouchpadDevices() const override;
-  const std::vector<InputDevice>& GetUncategorizedDevices() const override;
-  bool AreDeviceListsComplete() const override;
-  bool AreTouchscreensEnabled() const override;
-  bool AreTouchscreenTargetDisplaysValid() const override;
-  void AddObserver(InputDeviceEventObserver* observer) override;
-  void RemoveObserver(InputDeviceEventObserver* observer) override;
+  const std::vector<TouchscreenDevice>& GetTouchscreenDevices() const;
+  const std::vector<InputDevice>& GetKeyboardDevices() const;
+  const std::vector<InputDevice>& GetMouseDevices() const;
+  const std::vector<InputDevice>& GetTouchpadDevices() const;
+
+  // Returns all the uncategorized input devices, which means input devices
+  // besides keyboards, touchscreens, mice and touchpads.
+  const std::vector<InputDevice>& GetUncategorizedDevices() const;
+  bool AreDeviceListsComplete() const;
+  bool AreTouchscreensEnabled() const;
+
+  // Returns true if the |target_display_id| of the TouchscreenDevices returned
+  // from GetTouchscreenDevices() is valid.
+  bool AreTouchscreenTargetDisplaysValid() const;
+
+  void AddObserver(InputDeviceEventObserver* observer);
+  void RemoveObserver(InputDeviceEventObserver* observer);
 
  protected:
   DeviceDataManager();
-
-  static void set_instance(DeviceDataManager* instance);
 
   // DeviceHotplugEventObserver:
   void OnTouchscreenDevicesUpdated(

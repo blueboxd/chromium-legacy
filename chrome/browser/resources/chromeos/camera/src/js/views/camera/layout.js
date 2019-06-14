@@ -115,9 +115,9 @@ cca.views.camera.Layout.prototype.update = function() {
     var modeWidth =
         document.querySelector('#modes-group').getBoundingClientRect().width;
     var layoutToggled = false;
-    [[modeWidth + 40, 'w-letterbox-s'],
-     [modeWidth + 40 + 72, 'w-letterbox-m'],
-     [(modeWidth + 40) * 2, 'w-letterbox-l'],
+    [[modeWidth + 30, 'w-letterbox-s'],
+     [modeWidth + 30 + 72, 'w-letterbox-m'],
+     [(modeWidth + 30) * 2, 'w-letterbox-l'],
      [Infinity, 'w-letterbox-xl'],
     ]
         .forEach(

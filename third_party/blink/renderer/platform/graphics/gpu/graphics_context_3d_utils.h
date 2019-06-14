@@ -9,7 +9,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
@@ -38,6 +38,7 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
                             GLenum&,
                             const sk_sp<SkImage>&,
                             GLenum filter);
+  void RegisterMailbox(GrTexture*, const gpu::Mailbox&);
   void RemoveCachedMailbox(GrTexture*);
 
   bool Accelerated2DCanvasFeatureEnabled();

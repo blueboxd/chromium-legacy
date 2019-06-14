@@ -8,7 +8,7 @@
 // TODO(xiaochengh): Rename this file to |bidi_adjustment.h|
 
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 

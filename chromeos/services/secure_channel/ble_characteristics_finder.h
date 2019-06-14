@@ -37,14 +37,9 @@ class BluetoothLowEnergyCharacteristicsFinder
                               const RemoteAttribute&)>
       SuccessCallback;
 
-  // This callback takes as arguments (in this order): |to_peripheral_char_| and
-  // |from_peripheral_char_|. A blank id field in the characteristics indicate
-  // that the characteristics was not found in the remote service.
-  // TODO(sacomoto): Remove RemoteAttributes and add an error message instead.
-  // The caller of this object should not care if only a subset of the
-  // characteristics was found. See crbug.com/495511.
-  typedef base::Callback<void(const RemoteAttribute&, const RemoteAttribute&)>
-      ErrorCallback;
+  // Error callback indicating that no valid GATT service with all required
+  // characteristic was found on the |device_|.
+  typedef base::Callback<void()> ErrorCallback;
 
   // Constructs the object and registers itself as an observer for |adapter|,
   // waiting for |to_peripheral_char| and |from_peripheral_char| to be found.
@@ -65,37 +60,22 @@ class BluetoothLowEnergyCharacteristicsFinder
 
  protected:
   // device::BluetoothAdapter::Observer:
-  void GattDiscoveryCompleteForService(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothRemoteGattService* service) override;
   void GattServicesDiscovered(device::BluetoothAdapter* adapter,
                               device::BluetoothDevice* device) override;
-  void GattCharacteristicAdded(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothRemoteGattCharacteristic* characteristic) override;
 
   // For testing. Used to mock this class.
   BluetoothLowEnergyCharacteristicsFinder();
 
  private:
-  // Handles the discovery of a new characteristic. Returns whether all
-  // characteristics were found.
-  bool HandleCharacteristicUpdate(
-      device::BluetoothRemoteGattCharacteristic* characteristic);
+  // Scans the remote chracteristics of the service with |remote_service_.uuid|
+  // in |device| and triggers the success or error callback.
+  void ScanRemoteCharacteristics();
 
-  // Ends the characteristic discovery and calls error callback if necessary.
-  void OnCharacteristicDiscoveryEnded(device::BluetoothDevice* device);
-
-  // Scans the remote chracteristics of the service with |uuid| in |device|
-  // calling HandleCharacteristicUpdate() for each of them.
-  void ScanRemoteCharacteristics(device::BluetoothDevice* device,
-                                 const device::BluetoothUUID& uuid);
-
-  // Updates the value of |to_peripheral_char_| and
-  // |from_peripheral_char_|
-  // when |characteristic| was found.
-  void UpdateCharacteristicsStatus(
-      device::BluetoothRemoteGattCharacteristic* characteristic);
+  // Sets proper identifiers on the service and characteristics and triggers the
+  // |success_callback_|.
+  void NotifySuccess(std::string service_id,
+                     std::string tx_id,
+                     std::string rx_id);
 
   // The Bluetooth adapter where the connection was established.
   scoped_refptr<device::BluetoothAdapter> adapter_;

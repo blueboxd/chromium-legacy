@@ -1,4 +1,2 @@
 rootWebArea
-++genericContainer ignored
-++++main name='oranges'
-++++paragraph ignored invisible
+++main name='oranges'

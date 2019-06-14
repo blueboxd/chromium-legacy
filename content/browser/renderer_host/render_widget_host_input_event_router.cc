@@ -487,9 +487,9 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   gfx::PointF transformed_point;
   if (!target) {
     latched_target = false;
-    auto result = FindViewAtLocation(
-        root_view, event.PositionInWidget(), event.PositionInScreen(),
-        viz::EventSource::MOUSE, &transformed_point);
+    auto result =
+        FindViewAtLocation(root_view, event.PositionInWidget(),
+                           viz::EventSource::MOUSE, &transformed_point);
     // Due to performance concerns we do not verify mouse move events.
     should_verify_result = (event.GetType() == blink::WebInputEvent::kMouseMove)
                                ? false
@@ -530,9 +530,9 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   }
 
   if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
-    auto result = FindViewAtLocation(
-        root_view, event.PositionInWidget(), event.PositionInScreen(),
-        viz::EventSource::MOUSE, &transformed_point);
+    auto result =
+        FindViewAtLocation(root_view, event.PositionInWidget(),
+                           viz::EventSource::MOUSE, &transformed_point);
     return {result.view, result.should_query_view, transformed_point, false,
             result.should_verify_result};
   }
@@ -541,11 +541,9 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   return {nullptr, false, base::nullopt, true, false};
 }
 
-// TODO(crbug.com/966952): Get rid of |point_in_screen| since it's not used.
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
-    const gfx::PointF& point_in_screen,
     viz::EventSource source,
     gfx::PointF* transformed_point) const {
   // Short circuit if owner_map has only one RenderWidgetHostView, no need for
@@ -813,11 +811,10 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindTouchEventTarget(
 
   active_touches_ += CountChangedTouchPoints(event);
   gfx::PointF original_point = gfx::PointF(event.touches[0].PositionInWidget());
-  gfx::PointF original_point_in_screen(event.touches[0].PositionInScreen());
   gfx::PointF transformed_point;
 
-  return FindViewAtLocation(root_view, original_point, original_point_in_screen,
-                            viz::EventSource::TOUCH, &transformed_point);
+  return FindViewAtLocation(root_view, original_point, viz::EventSource::TOUCH,
+                            &transformed_point);
 }
 
 void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
@@ -1381,12 +1378,10 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
     gfx::PointF* transformed_point) {
   if (!root_view)
     return nullptr;
-  gfx::PointF point_in_screen =
-      point + root_view->GetViewBounds().OffsetFromOrigin();
-  return RenderWidgetHostImpl::From(
-      FindViewAtLocation(root_view, point, point_in_screen,
-                         viz::EventSource::MOUSE, transformed_point)
-          .view->GetRenderWidgetHost());
+  return RenderWidgetHostImpl::From(FindViewAtLocation(root_view, point,
+                                                       viz::EventSource::MOUSE,
+                                                       transformed_point)
+                                        .view->GetRenderWidgetHost());
 }
 
 RenderWidgetTargetResult
@@ -1404,10 +1399,8 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   if (gesture_event.unique_touch_event_id == 0) {
     gfx::PointF transformed_point;
     gfx::PointF original_point(gesture_event.PositionInWidget());
-    gfx::PointF original_point_in_screen(gesture_event.PositionInScreen());
     return FindViewAtLocation(root_view, original_point,
-                              original_point_in_screen, viz::EventSource::TOUCH,
-                              &transformed_point);
+                              viz::EventSource::TOUCH, &transformed_point);
   }
 
   // Remaining gesture events will defer to the gesture event target queue
@@ -1546,10 +1539,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // It is still safe to continue; we will recalculate the target.
     gfx::PointF transformed_point;
     gfx::PointF original_point(gesture_event.PositionInWidget());
-    gfx::PointF original_point_in_screen(gesture_event.PositionInScreen());
-    auto result =
-        FindViewAtLocation(root_view, original_point, original_point_in_screen,
-                           viz::EventSource::TOUCH, &transformed_point);
+    auto result = FindViewAtLocation(
+        root_view, original_point, viz::EventSource::TOUCH, &transformed_point);
     // Re https://crbug.com/796656): Since we are already in an error case,
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
@@ -1638,8 +1629,7 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
 
   gfx::PointF transformed_point;
   return FindViewAtLocation(root_view, event.PositionInWidget(),
-                            event.PositionInScreen(), viz::EventSource::MOUSE,
-                            &transformed_point);
+                            viz::EventSource::MOUSE, &transformed_point);
 }
 
 void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(

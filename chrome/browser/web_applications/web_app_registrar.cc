@@ -100,4 +100,9 @@ GURL WebAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
   return GURL();
 }
 
+AppId WebAppRegistrar::FindAppIdForUrl(const GURL& url) const {
+  NOTIMPLEMENTED();
+  return AppId();
+}
+
 }  // namespace web_app

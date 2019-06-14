@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/ash_export.h"
 #include "ash/shelf/app_list_button_controller.h"
 #include "ash/shelf/shelf_control_button.h"
@@ -43,6 +44,9 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
 
   // True if the app list is shown for the display containing this button.
   bool IsShowingAppList() const;
+
+  virtual void OnPressed(app_list::AppListShowSource show_source,
+                         base::TimeTicks time_stamp);
 
  protected:
   // views::Button:

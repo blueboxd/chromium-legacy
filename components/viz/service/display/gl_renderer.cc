@@ -734,37 +734,10 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       params->contents_device_transform, scaled_region.BoundingBox()));
 
-  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
-    SkMatrix matrix;
-    // |filters_scale| is the ratio of render pass physical pixels to root layer
-    // layer space, including content-to-target-space scale and device pixel
-    // ratio.
-    matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-    if (FlippedFramebuffer()) {
-      // TODO(jbroman): This probably isn't the right way to account for this.
-      // Probably some combination of current_frame()->projection_matrix,
-      // current_frame()->window_matrix and contents_device_transform?
-      // Likely this should be window_matrix*projection_matrix.
-      matrix.postScale(1, -1);
-    }
-    // |backdrop_rect| is now expanded for pixel moving backdrop_filters, offset
-    // by any backdrop-filter drop-shadow offset (flipped if
-    // FlippedFramebuffer()). Note that scale is not applied to the
-    // backdrop_rect itself, only the sigma or x/y offset of filters.
-    backdrop_rect =
-        params->backdrop_filters->MapRectReverse(backdrop_rect, matrix);
-  }
-
-  if (!backdrop_rect.IsEmpty() && params->use_aa) {
-    const int kOutsetForAntialiasing = 1;
-    backdrop_rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
-  }
-
-  if (params->filters) {
-    DCHECK(!params->filters->IsEmpty());
-    // If we have regular filters, grab an extra one-pixel border around the
-    // background, so texture edge clamping gives us a transparent border
-    // in case the filter expands the result.
+  if (!backdrop_rect.IsEmpty() && (params->filters || params->use_aa)) {
+    // If we have regular filters or antialiasing, grab an extra one-pixel
+    // border around the background, so texture edge clamping gives us a
+    // transparent border.
     backdrop_rect.Inset(-1, -1, -1, -1);
   }
 
@@ -843,6 +816,19 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
   return texture_id;
 }
 
+static sk_sp<SkImage> FinalizeImage(sk_sp<SkSurface> surface) {
+  // Flush the drawing before source texture read lock goes out of scope.
+  // Skia API does not guarantee that when the SkImage goes out of scope,
+  // its externally referenced resources would force the rendering to be
+  // flushed.
+  surface->getCanvas()->flush();
+  sk_sp<SkImage> image = surface->makeImageSnapshot();
+  if (!image || !image->isTextureBacked()) {
+    return nullptr;
+  }
+  return image;
+}
+
 sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     DrawRenderPassDrawQuadParams* params,
     const gfx::Rect& unclipped_rect,
@@ -857,21 +843,19 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
       (params->background_rect.top_right() - unclipped_rect.top_right()) +
       (params->background_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects =
+  // Update the backdrop filter to include opacity.
+  cc::FilterOperations backdrop_filters_plus_opacity =
       *params->backdrop_filters;
-  if (params->filters) {
-    for (const auto& filter_op : params->filters->operations())
-      backdrop_filters_plus_effects.Append(filter_op);
-  }
+  DCHECK(!params->filters)
+      << "Filters should always be in a separate Effect node";
   if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_effects.Append(
+    backdrop_filters_plus_opacity.Append(
         cc::FilterOperation::CreateOpacityFilter(
             quad->shared_quad_state->opacity));
   }
 
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters_plus_effects, gfx::SizeF(params->background_rect.size()),
+      backdrop_filters_plus_opacity, gfx::SizeF(params->background_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -920,11 +904,19 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   surface->getCanvas()->drawImageRect(src_image, RectFToSkRect(src_image_rect),
                                       dest_rect, nullptr);
 
-  // Can't crop here, because the crop rect is applied prior to filtering, and
-  // some filters move pixels and need to process the full image.
-  // TODO(916314): this could probably be put back to just using
-  // drawImageRect on the unfiltered image, with &paint last argument to handle
-  // filters and opacity. Would be cleaner.
+  if (backdrop_filter_bounds.has_value()) {
+    // Crop the source image to the backdrop_filter_bounds.
+    gfx::Rect filter_clip = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
+        backdrop_filter_bounds_transform, backdrop_filter_bounds->rect()));
+    filter_clip.Intersect(gfx::Rect(src_image->width(), src_image->height()));
+    if (filter_clip.IsEmpty())
+      return FinalizeImage(surface);
+    src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
+    src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
+    dest_rect = RectToSkRect(
+        ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+  }
+
   SkIPoint offset;
   SkIRect subset;
   sk_sp<SkImage> filtered_image = SkiaHelper::ApplyImageFilter(
@@ -951,17 +943,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     surface->getCanvas()->restore();
   }
 
-  // Flush the drawing before source texture read lock goes out of scope.
-  // Skia API does not guarantee that when the SkImage goes out of scope,
-  // its externally referenced resources would force the rendering to be
-  // flushed.
-  surface->getCanvas()->flush();
-  sk_sp<SkImage> image = surface->makeImageSnapshot();
-  if (!image || !image->isTextureBacked()) {
-    return nullptr;
-  }
-
-  return image;
+  return FinalizeImage(surface);
 }
 
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {

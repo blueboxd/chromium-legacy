@@ -38,10 +38,10 @@
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
@@ -128,12 +128,11 @@ bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
   return true;
 }
 
-void AwBrowserMainParts::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
+void AwBrowserMainParts::PostCreateThreads() {
   heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
   if (mode != heap_profiling::Mode::kNone) {
-    heap_profiling::Supervisor::GetInstance()->Start(connection,
-                                                     base::OnceClosure());
+    heap_profiling::Supervisor::GetInstance()->Start(
+        content::GetSystemConnector(), base::OnceClosure());
   }
 }
 

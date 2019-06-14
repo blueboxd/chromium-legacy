@@ -16,7 +16,8 @@ class DestructionObserver;
 // DestructionObservable is a base class for testing that lets you set
 // expectations on its lifetime without keeping a reference to it. Each
 // observable can create a single DestructionObserver pointing to it.
-struct DestructionObservable {
+class DestructionObservable {
+ public:
   DestructionObservable();
   virtual ~DestructionObservable();
   std::unique_ptr<DestructionObserver> CreateDestructionObserver();

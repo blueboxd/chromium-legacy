@@ -818,35 +818,35 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
 
 TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
   CopyType copy_type = GetParam();
-  GLint src_formats[] = {GL_ALPHA,     GL_RGB,             GL_RGBA,
-                         GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
-  GLint dest_formats[] = {GL_RGB, GL_RGBA, GL_BGRA_EXT};
+  constexpr GLint src_formats[] = {
+      GL_ALPHA, GL_RGB, GL_RGBA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
+  constexpr GLint dest_formats[] = {GL_RGB, GL_RGBA, GL_BGRA_EXT};
 
-  for (size_t src_index = 0; src_index < base::size(src_formats); src_index++) {
-    for (size_t dest_index = 0; dest_index < base::size(dest_formats);
-         dest_index++) {
+  for (const auto src_format : src_formats) {
+    for (const auto dst_format : dest_formats) {
       CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textures_[0]);
-      glTexImage2D(GL_TEXTURE_2D, 0, src_formats[src_index], 1, 1, 0,
-                   src_formats[src_index], GL_UNSIGNED_BYTE, nullptr);
+      glTexImage2D(GL_TEXTURE_2D, 0, src_format, 1, 1, 0, src_format,
+                   GL_UNSIGNED_BYTE, nullptr);
       EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
       if (copy_type == TexImage) {
         glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
-                              dest_formats[dest_index], GL_UNSIGNED_BYTE, false,
-                              false, false);
+                              dst_format, GL_UNSIGNED_BYTE, false, false,
+                              false);
       } else {
         glBindTexture(GL_TEXTURE_2D, textures_[1]);
-        glTexImage2D(GL_TEXTURE_2D, 0, dest_formats[dest_index], 1, 1, 0,
-                     dest_formats[dest_index], GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, dst_format, 1, 1, 0, dst_format,
+                     GL_UNSIGNED_BYTE, nullptr);
         EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
         glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1],
                                  0, 0, 0, 0, 0, 1, 1, false, false, false);
       }
 
-      EXPECT_TRUE(GL_NO_ERROR == glGetError()) << "src_index:" << src_index
-                                               << " dest_index:" << dest_index;
+      EXPECT_TRUE(GL_NO_ERROR == glGetError())
+          << "src_format: " << gl::GLEnums::GetStringEnum(src_format)
+          << " dst_format: " << gl::GLEnums::GetStringEnum(dst_format);
       glDeleteTextures(2, textures_);
       glDeleteFramebuffers(1, &framebuffer_id_);
     }

@@ -48,6 +48,8 @@ enum class CastMessageType {
   kReceiverStatus,
   kMediaStatus,
   kLaunchError,
+  kOffer,
+  kAnswer,
   kOther,  // Add new types above |kOther|.
   kMaxValue = kOther,
 };
@@ -73,6 +75,8 @@ enum class V2MessageType {
   kOther,  // Add new types above |kOther|.
   kMaxValue = kOther,
 };
+
+std::ostream& operator<<(std::ostream& lhs, const CastMessage& rhs);
 
 // Checks if the contents of |message_proto| are valid.
 bool IsCastMessageValid(const CastMessage& message_proto);

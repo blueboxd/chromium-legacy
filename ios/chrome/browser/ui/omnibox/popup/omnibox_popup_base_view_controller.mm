@@ -7,6 +7,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
@@ -23,8 +24,7 @@ namespace {
 const CGFloat kTopAndBottomPadding = 8.0;
 }  // namespace
 
-@interface OmniboxPopupBaseViewController () <UITableViewDelegate,
-                                              UITableViewDataSource>
+@interface OmniboxPopupBaseViewController () <UITableViewDataSource>
 
 #pragma mark Redeclaration of Internal properties
 
@@ -51,6 +51,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
 // Time the view appeared on screen. Used to record a metric of how long this
 // view controller was on screen.
 @property(nonatomic, assign) base::TimeTicks viewAppearanceTime;
+
+@property(nonatomic, strong) NSLayoutConstraint* shortcutsViewEdgeConstraint;
 
 @end
 
@@ -114,6 +116,33 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [self updateBackgroundColor];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  // Update the leading edge constraints for the shortcuts cell when the view
+  // rotates.
+  if (self.shortcutsEnabled && self.currentResult.count == 0) {
+    __weak __typeof(self) weakSelf = self;
+    [coordinator
+        animateAlongsideTransition:^(
+            id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
+          __typeof(self) strongSelf = weakSelf;
+          if (!strongSelf) {
+            return;
+          }
+          CGFloat widthInsets = CenteredTilesMarginForWidth(
+              strongSelf.traitCollection,
+              size.width - strongSelf.view.safeAreaInsets.left -
+                  strongSelf.view.safeAreaInsets.right);
+          strongSelf.shortcutsViewEdgeConstraint.constant = widthInsets;
+          [strongSelf.shortcutsCell layoutIfNeeded];
+        }
+                        completion:nil];
+  }
+}
+
 #pragma mark - View lifecycle
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -156,7 +185,18 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [cell.contentView addSubview:self.shortcutsViewController.view];
   self.shortcutsViewController.view.translatesAutoresizingMaskIntoConstraints =
       NO;
-  AddSameConstraints(self.shortcutsViewController.view, cell.contentView);
+  AddSameConstraintsToSides(self.shortcutsViewController.view, cell.contentView,
+                            (LayoutSides::kTop | LayoutSides::kBottom));
+  AddSameCenterXConstraint(self.shortcutsViewController.view, cell.contentView);
+  self.shortcutsViewEdgeConstraint =
+      [self.shortcutsViewController.view.leadingAnchor
+          constraintEqualToAnchor:cell.contentView.safeAreaLayoutGuide
+                                      .leadingAnchor];
+  // When the device is rotating, the constraints are slightly off for one
+  // runloop. Lower the priority here to prevent unable to satisfy constraints
+  // warning.
+  self.shortcutsViewEdgeConstraint.priority = UILayoutPriorityRequired - 1;
+  self.shortcutsViewEdgeConstraint.active = YES;
   [self.shortcutsViewController didMoveToParentViewController:self];
   cell.accessibilityIdentifier = kShortcutsAccessibilityIdentifier;
   return cell;
@@ -292,6 +332,29 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [self.delegate autocompleteResultConsumer:self didSelectRow:row];
 }
 
+- (void)tableView:(UITableView*)tableView
+      willDisplayCell:(UITableViewCell*)cell
+    forRowAtIndexPath:(NSIndexPath*)indexPath {
+  // Update the leading edge constraints for the shortcuts cell before it is
+  // displayed.
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      self.currentResult.count == 0) {
+    CGFloat widthInsets = CenteredTilesMarginForWidth(
+        self.traitCollection, self.view.bounds.size.width -
+                                  self.view.safeAreaInsets.left -
+                                  self.view.safeAreaInsets.right);
+    if (widthInsets != self.shortcutsViewEdgeConstraint.constant) {
+      self.shortcutsViewEdgeConstraint.constant = widthInsets;
+      // If the insets have changed, the collection view (and thus the table
+      // view) may have changed heights. This could happen due to dynamic type
+      // changing the height of the collection view. It is also necessary for
+      // the first load.
+      [self.shortcutsViewController.collectionView layoutIfNeeded];
+      [self.tableView reloadData];
+    }
+  }
+}
+
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
@@ -321,6 +384,7 @@ const CGFloat kTopAndBottomPadding = 8.0;
   }
   return self.currentResult.count;
 }
+
 // Customize the appearance of table view cells.
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {

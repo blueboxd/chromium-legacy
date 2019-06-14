@@ -773,6 +773,23 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineHeight) {
                                 "foo bar b^a|</div>"));
 }
 
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectNegativeLeading) {
+  LoadAhem();
+  SetSelectionAndUpdateLayoutSelection(R"HTML(
+    <div id="container" style="font: 10px/10px Ahem">
+      ^
+      <span id="span" style="display: inline-block; line-height: 1px">
+        Text
+      </span>
+      |
+    </div>
+  )HTML");
+  LayoutObject* span = GetLayoutObjectByElementId("span");
+  LayoutObject* text = span->SlowFirstChild();
+  EXPECT_EQ(PhysicalRect(0, -5, LayoutNGEnabled() ? 40 : 50, 10),
+            text->LocalSelectionVisualRect());
+}
+
 TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineHeightVertical) {
   LoadAhem();
   EXPECT_EQ(LayoutNGEnabled() ? PhysicalRect(0, 10, 50, 10)

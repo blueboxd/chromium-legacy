@@ -57,7 +57,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <p>
           This sample demonstrates use of a non-immersive XRSession to present
           'Magic Window' content prior to entering XR presentation with an
-          immersive session.
+          immersive session. Click and drag with the mouse on this page to
+          adjust the viewer pose.
         </p>
         <p>
           <a class="back" href="./index.html">Back</a>
@@ -80,6 +81,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {Gltf2Node} from './js/cottontail/src/nodes/gltf2.js';
       import {QueryArgs} from './js/cottontail/src/util/query-args.js';
       import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
+      import {mat4, vec3, quat} from './js/cottontail/src/math/gl-matrix.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -201,6 +203,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
+      let lookYaw = 0;
+      let lookPitch = 0;
+      const lookSpeed = 0.0025;
+      window.addEventListener('mousemove', (ev) => {
+        // Only rotate when the left button is pressed
+        if (ev.buttons && 1) {
+          lookYaw += ev.movementX * lookSpeed;
+          lookPitch += ev.movementY * lookSpeed;
+          if (lookPitch < -Math.PI*0.5)
+              lookPitch = -Math.PI*0.5;
+          if (lookPitch > Math.PI*0.5)
+              lookPitch = Math.PI*0.5;
+        }
+      });
+
       // Called every time a XRSession requests that a new frame be drawn.
       function onXRFrame(t, frame) {
         let session = frame.session;
@@ -208,10 +225,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let refSpace = session.mode.startsWith('immersive') ?
                          xrImmersiveRefSpace :
                          xrNonImmersiveRefSpace;
+
+        // Account for the click-and-drag mouse movement when calculating the
+        // viewer pose.
+        let invOrientation = quat.create();
+        quat.rotateX(invOrientation, invOrientation, -lookPitch);
+        quat.rotateY(invOrientation, invOrientation, -lookYaw);
+        let xform = new XRRigidTransform(
+            {x: 0, y: 0, z: 0},
+            {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
+        refSpace = refSpace.getOffsetReferenceSpace(xform);
         let pose = frame.getViewerPose(refSpace);
 
         scene.startFrame();
-
         session.requestAnimationFrame(onXRFrame);
 
         if (pose) {

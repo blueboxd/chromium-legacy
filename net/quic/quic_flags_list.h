@@ -114,9 +114,6 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 // Mechanism to override version label and ALPN for IETF interop.
 QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 
-// If true, enable QUIC v44.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
-
 // Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
 // instead rely on the existing check that bytes_in_flight > 0
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
@@ -186,9 +183,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation2,
           true)
-
-// If true, enable QUIC version 46.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, true)
 
 // When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
 // CalculateCongestionWindow()

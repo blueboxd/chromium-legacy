@@ -357,24 +357,16 @@ class LeftMouseClick {
 
 #endif
 
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-}
-
 bool IsShowingInterstitial(content::WebContents* tab) {
-  if (AreCommittedInterstitialsEnabled()) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            tab);
-    if (!helper) {
-      return false;
-    } else {
-      return helper
-                 ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
-             nullptr;
-    }
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          tab);
+  if (!helper) {
+    return false;
+  } else {
+    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
+           nullptr;
   }
-  return tab->GetInterstitialPage() != nullptr;
 }
 
 }  // namespace
@@ -749,16 +741,12 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         GetGuestViewManager()->WaitForSingleGuestCreated();
     ASSERT_TRUE(
         guest_web_contents->GetMainFrame()->GetProcess()->IsForGuestsOnly());
-    if (AreCommittedInterstitialsEnabled()) {
-      GURL target_url = https_server.GetURL(
-          "/extensions/platform_apps/web_view/interstitial_teardown/"
-          "https_page.html");
-      content::TestNavigationObserver observer(target_url);
-      observer.WatchExistingWebContents();
-      observer.WaitForNavigationFinished();
-    } else {
-      content::WaitForInterstitialAttach(guest_web_contents);
-    }
+    GURL target_url = https_server.GetURL(
+        "/extensions/platform_apps/web_view/interstitial_teardown/"
+        "https_page.html");
+    content::TestNavigationObserver observer(target_url);
+    observer.WatchExistingWebContents();
+    observer.WaitForNavigationFinished();
   }
 
   // Runs media_access/allow tests.
@@ -1884,17 +1872,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPage) {
 
   content::WebContents* guest_web_contents =
       GetGuestViewManager()->WaitForSingleGuestCreated();
-  if (AreCommittedInterstitialsEnabled()) {
-    EXPECT_TRUE(IsShowingInterstitial(guest_web_contents));
-  } else {
-    EXPECT_TRUE(guest_web_contents->ShowingInterstitialPage());
-    EXPECT_TRUE(guest_web_contents->GetInterstitialPage()
-                    ->GetMainFrame()
-                    ->GetView()
-                    ->IsShowing());
-    EXPECT_TRUE(content::IsInnerInterstitialPageConnected(
-        guest_web_contents->GetInterstitialPage()));
-  }
+  EXPECT_TRUE(IsShowingInterstitial(guest_web_contents));
 }
 
 // Test makes sure that interstitial pages are registered in the
@@ -1912,87 +1890,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageRouteEvents) {
 
   InterstitialTestHelper();
 
-  content::WebContents* outer_web_contents = GetFirstAppWindowWebContents();
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
 
   std::vector<content::RenderWidgetHostView*> hosts =
-      content::GetInputEventRouterRenderWidgetHostViews(outer_web_contents);
+      content::GetInputEventRouterRenderWidgetHostViews(web_contents);
 
-  if (AreCommittedInterstitialsEnabled()) {
-    // With committed interstitials, interstitials are no longer a special case
-    // so we can just use the main frame from the WebContents.
-    EXPECT_TRUE(
-        base::Contains(hosts, outer_web_contents->GetMainFrame()->GetView()));
-  } else {
-    EXPECT_TRUE(base::Contains(
-        hosts,
-        guest_web_contents->GetInterstitialPage()->GetMainFrame()->GetView()));
-  }
-}
-
-// Test makes sure that interstitial pages will receive input events and can be
-// focused.
-// Flaky on Win dbg: crbug.com/779973
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_InterstitialPageFocusedWidget \
-  DISABLED_InterstitialPageFocusedWidget
-#else
-#define MAYBE_InterstitialPageFocusedWidget InterstitialPageFocusedWidget
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageFocusedWidget) {
-  // The purpose of this test is to ensure that the InterstitialPageImpl was
-  // properly attached to the guest which happens in
-  // WebContentsImpl::AttachInterstitialPage. With committed interstitials this
-  // is no longer necessary.
-  // TODO(carlosil): Remove this test once commited interstitials ships.
-  // https://crbug.com/755632.
-  if (AreCommittedInterstitialsEnabled())
-    return;
-
-  // This test tests that a inner WebContents' InterstitialPage is properly
-  // connected to an outer WebContents through a CrossProcessFrameConnector.
-  InterstitialTestHelper();
-
-  content::WebContents* outer_web_contents = GetFirstAppWindowWebContents();
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
-
-  content::RenderFrameHost* interstitial_main_frame =
-      guest_web_contents->GetInterstitialPage()->GetMainFrame();
-  content::RenderWidgetHost* interstitial_widget =
-      interstitial_main_frame->GetRenderViewHost()->GetWidget();
-
-  content::WaitForHitTestDataOrChildSurfaceReady(interstitial_main_frame);
-
-  EXPECT_NE(interstitial_widget,
-            content::GetFocusedRenderWidgetHost(guest_web_contents));
-  EXPECT_NE(interstitial_widget,
-            content::GetFocusedRenderWidgetHost(outer_web_contents));
-
-  // Send mouse down.
-  blink::WebMouseEvent event;
-  event.button = blink::WebPointerProperties::Button::kLeft;
-  event.SetType(blink::WebInputEvent::kMouseDown);
-  event.SetPositionInWidget(10, 10);
-  content::RouteMouseEvent(outer_web_contents, &event);
-
-  // Wait a frame.
-  content::MainThreadFrameObserver observer(interstitial_widget);
-  observer.Wait();
-
-  // Send mouse up.
-  event.SetType(blink::WebInputEvent::kMouseUp);
-  event.SetPositionInWidget(10, 10);
-  content::RouteMouseEvent(outer_web_contents, &event);
-
-  // Wait another frame.
-  observer.Wait();
-
-  EXPECT_EQ(interstitial_widget,
-            content::GetFocusedRenderWidgetHost(guest_web_contents));
-  EXPECT_EQ(interstitial_widget,
-            content::GetFocusedRenderWidgetHost(outer_web_contents));
+  EXPECT_TRUE(base::Contains(hosts, web_contents->GetMainFrame()->GetView()));
 }
 
 // Test makes sure that the browser does not crash when a <webview> navigates

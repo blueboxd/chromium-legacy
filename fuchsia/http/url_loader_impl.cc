@@ -32,8 +32,7 @@ oldhttp::URLBodyPtr CreateURLBodyFromBuffer(net::GrowableIOBuffer* buffer) {
 
   ::fuchsia::mem::Buffer mem_buffer;
   mem_buffer.size = total_size;
-  zx_status_t result =
-      zx::vmo::create(total_size, ZX_VMO_NON_RESIZABLE, &mem_buffer.vmo);
+  zx_status_t result = zx::vmo::create(total_size, 0, &mem_buffer.vmo);
   if (result != ZX_OK) {
     ZX_DLOG(WARNING, result) << "zx_vmo_create";
     return nullptr;

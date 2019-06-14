@@ -32,7 +32,6 @@
 #include "net/base/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 
 using base::CaseInsensitiveCompareASCII;
 using base::DictionaryValue;

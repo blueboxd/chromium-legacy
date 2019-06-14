@@ -560,9 +560,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
     HandleAppDownloadingScreen();
   }
 
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
-    HandleAssistantOptInScreen();
-  }
+  HandleAssistantOptInScreen();
 
   WaitForLoginDisplayHostShutdown();
 }
@@ -774,9 +772,7 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
     HandleAppDownloadingScreen();
   }
 
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
-    HandleAssistantOptInScreen();
-  }
+  HandleAssistantOptInScreen();
 
   WaitForActiveSession();
 }

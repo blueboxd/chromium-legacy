@@ -119,7 +119,7 @@ h1 {
 }
 
 @media (prefers-color-scheme: dark) {
-  .icon {
+  .dark-mode-available .icon {
     filter: invert(1);
   }
 }

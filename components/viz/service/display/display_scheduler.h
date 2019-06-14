@@ -44,6 +44,8 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
                    bool wait_for_all_surfaces_before_draw = false);
   ~DisplayScheduler() override;
 
+  int pending_swaps() const { return pending_swaps_; }
+
   void SetClient(DisplaySchedulerClient* client);
 
   void SetVisible(bool visible);

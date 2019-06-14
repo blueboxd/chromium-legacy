@@ -20,6 +20,8 @@
 #include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace sandbox {
+
 namespace {
 
 class ScopedTerminateProcess {
@@ -253,3 +255,5 @@ TEST(WinUtils, ConvertToLongPath) {
 
   return;
 }
+
+}  // namespace sandbox

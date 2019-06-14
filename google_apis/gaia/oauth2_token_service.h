@@ -30,13 +30,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 class GoogleServiceAuthError;
 class OAuth2AccessTokenFetcher;
 class OAuth2TokenServiceDelegate;
+class OAuth2AccessTokenManager;
 
 // Abstract base class for a service that fetches and caches OAuth2 access
 // tokens. Concrete subclasses should implement GetRefreshToken to return
@@ -130,6 +127,25 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
         const std::string& source) {}
   };
 
+  // The parameters used to fetch an OAuth2 access token.
+  struct RequestParameters {
+    RequestParameters(const std::string& client_id,
+                      const std::string& account_id,
+                      const ScopeSet& scopes);
+    RequestParameters(const RequestParameters& other);
+    ~RequestParameters();
+    bool operator<(const RequestParameters& params) const;
+
+    // OAuth2 client id.
+    std::string client_id;
+    // Account id for which the request is made.
+    std::string account_id;
+    // URL scopes for the requested access token.
+    ScopeSet scopes;
+  };
+  typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
+      TokenCache;
+
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~OAuth2TokenService() override;
@@ -191,7 +207,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
   // will return true.
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
-  std::vector<std::string> GetAccounts() const;
+  std::vector<CoreAccountId> GetAccounts() const;
 
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
@@ -238,6 +254,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
+
+  // TODO(https://crbug.com/967598): Remove this. It's opened only for
+  // OAuth2TokenServiceTest.
+  OAuth2TokenService::TokenCache& token_cache();
 
  protected:
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
@@ -334,23 +354,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   friend class Fetcher;
   friend class OAuth2TokenServiceDelegate;
 
-  // The parameters used to fetch an OAuth2 access token.
-  struct RequestParameters {
-    RequestParameters(const std::string& client_id,
-                      const std::string& account_id,
-                      const ScopeSet& scopes);
-    RequestParameters(const RequestParameters& other);
-    ~RequestParameters();
-    bool operator<(const RequestParameters& params) const;
-
-    // OAuth2 client id.
-    std::string client_id;
-    // Account id for which the request is made.
-    std::string account_id;
-    // URL scopes for the requested access token.
-    ScopeSet scopes;
-  };
-
   // Provide a URLLoaderFactory used for fetching access tokens with the
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
@@ -390,11 +393,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Called when a number of fetchers need to be canceled.
   void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
-  // The cache of currently valid tokens.
-  typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
-      TokenCache;
-  TokenCache token_cache_;
-
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
 
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
@@ -410,6 +408,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // Whether all credentials have been loaded.
   bool all_credentials_loaded_;
+
+  std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;

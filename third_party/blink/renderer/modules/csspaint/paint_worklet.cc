@@ -29,7 +29,7 @@ int NextId() {
 }
 }  // namespace
 
-const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
+const wtf_size_t PaintWorklet::kNumGlobalScopesPerThread = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
 
 // static
@@ -93,7 +93,8 @@ int PaintWorklet::GetPaintsBeforeSwitching() {
 }
 
 wtf_size_t PaintWorklet::SelectNewGlobalScope() {
-  return static_cast<wtf_size_t>(base::RandGenerator(kNumGlobalScopes));
+  return static_cast<wtf_size_t>(
+      base::RandGenerator(kNumGlobalScopesPerThread));
 }
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
@@ -164,7 +165,7 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
     // second time with the same |name| (i.e. there is already a document
     // definition associated with |name|
     if (existing_document_definition->GetRegisteredDefinitionCount() ==
-        PaintWorklet::kNumGlobalScopes)
+        PaintWorklet::kNumGlobalScopesPerThread)
       pending_generator_registry_->NotifyGeneratorReady(name);
   } else {
     auto document_definition = std::make_unique<DocumentPaintDefinition>(
@@ -197,12 +198,19 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
 }
 
 bool PaintWorklet::NeedsToCreateGlobalScope() {
-  return GetNumberOfGlobalScopes() < kNumGlobalScopes;
+  wtf_size_t num_scopes_needed = kNumGlobalScopesPerThread;
+  // If we are running off main thread, we will need twice as many global scopes
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    num_scopes_needed *= 2;
+  return GetNumberOfGlobalScopes() < num_scopes_needed;
 }
 
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+  // It does not matter which thread creates its global scopes first, here we
+  // choose to have the worker thread global scopes created first.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled() ||
+      GetNumberOfGlobalScopes() >= kNumGlobalScopesPerThread) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
         GetNumberOfGlobalScopes() + 1);

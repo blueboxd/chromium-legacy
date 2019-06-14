@@ -151,7 +151,8 @@ class GaiaAuthFetcher {
                        const std::string& service);
 
   // Starts a request to get the cookie for list of accounts.
-  void StartOAuthMultilogin(const std::vector<MultiloginTokenIDPair>& accounts);
+  void StartOAuthMultilogin(const std::vector<MultiloginTokenIDPair>& accounts,
+                            const std::string& external_cc_result);
 
   // Starts a request to list the accounts in the GAIA cookie.
   void StartListAccounts();

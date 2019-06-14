@@ -245,6 +245,11 @@ void SetIndividualRuntimeFeatures(
           enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFeatureFromString(
+      "CSSBackdropFilter",
+      base::FeatureList::IsEnabled(blink::features::kCSSBackdropFilter) ||
+          enable_experimental_web_platform_features);
+
+  WebRuntimeFeatures::EnableFeatureFromString(
       "FastBorderRadius",
       base::FeatureList::IsEnabled(blink::features::kFastBorderRadius) ||
           enable_experimental_web_platform_features);
@@ -409,6 +414,11 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));
 
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::EnablePictureInPictureAPI(
+      base::FeatureList::IsEnabled(media::kPictureInPictureAPI));
+#endif
+
   WebRuntimeFeatures::EnableCacheInlineScriptCode(
       base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
 
@@ -528,6 +538,9 @@ void SetIndividualRuntimeFeatures(
           features::kPauseExecutionContextOnBackgroundFreeze)) {
     WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(false);
   }
+
+  WebRuntimeFeatures::EnableConsolidatedMovementXY(
+      base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
 }
 
 }  // namespace

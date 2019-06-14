@@ -37,7 +37,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/color_palette.h"
@@ -204,7 +204,7 @@ PaletteTray::~PaletteTray() {
   if (bubble_)
     bubble_->bubble_view()->ResetDelegate();
 
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -435,7 +435,7 @@ void PaletteTray::AnchorUpdated() {
 
 void PaletteTray::Initialize() {
   TrayBackgroundView::Initialize();
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

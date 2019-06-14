@@ -89,8 +89,8 @@ class PrimaryAccountManagerTest : public testing::Test {
   // Seed the account tracker with information from logged in user.  Normally
   // this is done by UI code before calling PrimaryAccountManager.
   // Returns the string to use as the account_id.
-  std::string AddToAccountTracker(const std::string& gaia_id,
-                                  const std::string& email) {
+  CoreAccountId AddToAccountTracker(const std::string& gaia_id,
+                                    const std::string& email) {
     account_tracker_.SeedAccountInfo(gaia_id, email);
     return account_tracker_.PickAccountIdForAccount(gaia_id, email);
   }
@@ -145,7 +145,7 @@ class PrimaryAccountManagerTest : public testing::Test {
 
 TEST_F(PrimaryAccountManagerTest, SignOut) {
   CreatePrimaryAccountManager();
-  std::string main_account_id =
+  CoreAccountId main_account_id =
       AddToAccountTracker("account_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
@@ -163,9 +163,9 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
 
 TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
   CreatePrimaryAccountManager();
-  std::string main_account_id =
+  CoreAccountId main_account_id =
       AddToAccountTracker("main_id", "user@gmail.com");
-  std::string other_account_id =
+  CoreAccountId other_account_id =
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
@@ -184,9 +184,9 @@ TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
 TEST_F(PrimaryAccountManagerTest, SignOutDiceNoRevoke) {
   account_consistency_ = signin::AccountConsistencyMethod::kDice;
   CreatePrimaryAccountManager();
-  std::string main_account_id =
+  CoreAccountId main_account_id =
       AddToAccountTracker("main_id", "user@gmail.com");
-  std::string other_account_id =
+  CoreAccountId other_account_id =
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
@@ -199,8 +199,8 @@ TEST_F(PrimaryAccountManagerTest, SignOutDiceNoRevoke) {
 
   // Tokens are not revoked.
   EXPECT_FALSE(manager_->IsAuthenticated());
-  std::vector<std::string> expected_tokens = {main_account_id,
-                                              other_account_id};
+  std::vector<CoreAccountId> expected_tokens = {main_account_id,
+                                                other_account_id};
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
 }
 
@@ -230,7 +230,7 @@ TEST_F(PrimaryAccountManagerTest, SignOutDiceWithError) {
 
   // Only main token is revoked.
   EXPECT_FALSE(manager_->IsAuthenticated());
-  std::vector<std::string> expected_tokens = {other_account_id};
+  std::vector<CoreAccountId> expected_tokens = {other_account_id};
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
 }
 

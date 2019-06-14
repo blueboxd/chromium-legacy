@@ -293,6 +293,19 @@ std::string SanitizeRemoteFrontendURL(const std::string& value) {
   return net::EscapeQueryParamValue(sanitized, false);
 }
 
+std::string SanitizeEnabledExperiments(const std::string& value) {
+  bool valid = std::find_if_not(value.begin(), value.end(), [](char ch) {
+                 if (base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch) ||
+                     ch == ';' || ch == '_')
+                   return true;
+                 return false;
+               }) == value.end();
+  if (!valid) {
+    return std::string();
+  }
+  return value;
+}
+
 std::string SanitizeFrontendQueryParam(
     const std::string& key,
     const std::string& value) {
@@ -322,6 +335,9 @@ std::string SanitizeFrontendQueryParam(
 
   if (key == "remoteVersion")
     return SanitizeRemoteVersion(value);
+
+  if (key == "enabledExperiments")
+    return SanitizeEnabledExperiments(value);
 
   return std::string();
 }

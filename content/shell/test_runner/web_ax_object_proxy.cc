@@ -696,7 +696,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("hasPopup", &WebAXObjectProxy::HasPopup)
       .SetProperty("isValid", &WebAXObjectProxy::IsValid)
       .SetProperty("isReadOnly", &WebAXObjectProxy::IsReadOnly)
-      .SetProperty("isIgnored", &WebAXObjectProxy::IsIgnored)
       .SetProperty("restriction", &WebAXObjectProxy::Restriction)
       .SetProperty("activeDescendant", &WebAXObjectProxy::ActiveDescendant)
       .SetProperty("backgroundColor", &WebAXObjectProxy::BackgroundColor)
@@ -1215,11 +1214,6 @@ bool WebAXObjectProxy::IsReadOnly() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.Restriction() ==
          blink::kWebAXRestrictionReadOnly;
-}
-
-bool WebAXObjectProxy::IsIgnored() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.AccessibilityIsIgnored();
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::ActiveDescendant() {

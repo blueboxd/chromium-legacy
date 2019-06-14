@@ -169,6 +169,11 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
     } else {
       EXPECT_NE(*nonce, (*it >> 5) & 0xFFFF);
     }
+#if defined(OS_WIN)
+    // On Windows ARM64 __builtin_unreachable() produces an extra 'brk #1'
+    // instruction with clang-cl. https://crbug.com/973794.
+    EXPECT_EQ(0XD4200020, *++it);
+#endif
   }
 
 #endif  // defined(ARCH_CPU_X86_FAMILY)

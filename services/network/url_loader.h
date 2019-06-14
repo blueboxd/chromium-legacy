@@ -232,6 +232,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   };
   BlockResponseForCorbResult BlockResponseForCorb();
 
+  void ReportFlaggedResponseCookies();
+
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
   DeleteCallback delete_callback_;

@@ -87,7 +87,7 @@ OneClickSigninDialogView::~OneClickSigninDialogView() {
 
 void OneClickSigninDialogView::Init() {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Column set for descriptive text and link.
   views::ColumnSet* cs = layout->AddColumnSet(0);

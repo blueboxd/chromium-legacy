@@ -139,6 +139,9 @@ class FakeDeviceActions : mojom::DeviceActions {
   void SetNightLightEnabled(bool enabled) override {}
   void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
                       OpenAndroidAppCallback callback) override {}
+  void VerifyAndroidApp(
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+      VerifyAndroidAppCallback callback) override {}
   void LaunchAndroidIntent(const std::string& intent) override {}
   void AddAppListEventSubscriber(
       chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
@@ -186,7 +189,8 @@ class AssistantServiceTest : public testing::Test {
     service_->SetAssistantManagerForTesting(std::move(fake_assistant_manager));
 
     GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
-                        fake_device_actions_.CreateInterfacePtrAndBind());
+                        fake_device_actions_.CreateInterfacePtrAndBind(),
+                        /*is_test=*/true);
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }

@@ -24,8 +24,8 @@ MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {
 MessageBoxExample::~MessageBoxExample() = default;
 
 void MessageBoxExample::CreateExampleView(View* container) {
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   auto message_box_view = std::make_unique<MessageBoxView>(
       MessageBoxView::InitParams(ASCIIToUTF16("Hello, world!")));

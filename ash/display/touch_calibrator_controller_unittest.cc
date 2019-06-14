@@ -177,7 +177,7 @@ class TouchCalibratorControllerTest : public AshTestBase {
     touch_device_transform.device_id = touchdevice.id;
     transforms.push_back(touch_device_transform);
 
-    // This makes touchscreen target displays valid for |ui::InputDeviceManager|
+    // This makes touchscreen target displays valid for ui::DeviceDataManager.
     test::TouchTransformControllerTestApi(
         Shell::Get()->touch_transformer_controller())
         .touch_transform_setter()

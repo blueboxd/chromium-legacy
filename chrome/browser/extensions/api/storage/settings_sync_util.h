@@ -55,12 +55,6 @@ syncer::SyncChange CreateDelete(
     const std::string& key,
     syncer::ModelType type);
 
-// Returns the sync service for settings. Must be called on the backend
-// sequence. |type| must be either APP_SETTINGS or EXTENSION_SETTINGS.
-// TODO(crbug.com/933874): Remove once the old sync controller is removed.
-syncer::SyncableService* GetSyncableService(content::BrowserContext* context,
-                                            syncer::ModelType type);
-
 // Returns a callback that provides a SyncableService. The function must be
 // called on the UI thread and |type| must be either APP_SETTINGS or
 // EXTENSION_SETTINGS. The returned callback must be called on the backend

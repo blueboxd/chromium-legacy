@@ -1364,6 +1364,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
   }
 
+  // List of enrollments currently on test key.
   cbor::Value::MapValue id0;
   id0.emplace(cbor::Value(static_cast<int>(
                   BioEnrollmentTemplateInfoParam::kTemplateId)),
@@ -1374,6 +1375,20 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
 
   cbor::Value::ArrayValue enumerated_ids;
   enumerated_ids.emplace_back(id0);
+
+  // Template id from subcommand parameters, if it exists.
+  base::Optional<std::vector<uint8_t>> template_id;
+
+  auto params_it = request_map.find(cbor::Value(
+      static_cast<int>(BioEnrollmentRequestKey::kSubCommandParams)));
+  if (params_it != request_map.end()) {
+    const auto& params = params_it->second.GetMap();
+    auto template_it = params.find(cbor::Value(
+        static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId)));
+    if (template_it != params.end() && template_it->second.is_bytestring()) {
+      template_id = template_it->second.GetBytestring();
+    }
+  }
 
   switch (it->second.GetUnsigned()) {
     case static_cast<int>(SubCmd::kGetFingerprintSensorInfo):
@@ -1405,13 +1420,18 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 0);
       break;
-    case static_cast<int>(SubCmd::kCancelCurrentEnrollment):
-      return CtapDeviceResponseCode::kSuccess;
     case static_cast<int>(SubCmd::kEnumerateEnrollments):
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos),
           enumerated_ids);
       break;
+    case static_cast<int>(SubCmd::kSetFriendlyName):
+      if (template_id && *template_id == std::vector<uint8_t>{0, 0, 0, 2}) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+      [[fallthrough]];
+    case static_cast<int>(SubCmd::kCancelCurrentEnrollment):
+      return CtapDeviceResponseCode::kSuccess;
     default:
       // Handle all other commands as if they were unsupported (will change
       // when support is added).

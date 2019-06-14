@@ -198,8 +198,7 @@ constexpr int kStackingNotificationCounterMax = 8;
 constexpr int kStackingNotificationCounterRadius = 2;
 constexpr int kStackingNotificationCounterStartX = 18;
 constexpr int kStackingNotificationCounterDistanceX = 10;
-constexpr int kStackingNotificationCounterHeight = 20;
-constexpr int kStackingNotificationCounterWithClearAllHeight = 32;
+constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 constexpr SkColor kStackingNotificationCounterColor =
     SkColorSetRGB(0x5f, 0x63, 0x68);

@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -50,9 +51,9 @@ import java.util.ArrayList;
 /**
  * A class that manages control and content views to create the fullscreen mode.
  */
-public class ChromeFullscreenManager
-        extends FullscreenManager implements ActivityStateListener, WindowFocusChangedListener {
-
+public class ChromeFullscreenManager extends FullscreenManager
+        implements ActivityStateListener, WindowFocusChangedListener,
+                   ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener {
     // The amount of time to delay the control show request after returning to a once visible
     // activity.  This delay is meant to allow Android to run its Activity focusing animation and
     // have the controls scroll back in smoothly once that has finished.
@@ -82,6 +83,10 @@ public class ChromeFullscreenManager
 
     private boolean mInGesture;
     private boolean mContentViewScrolling;
+
+    // Current ContentView. Updates when active tab is switched or WebContents is swapped
+    // in the current Tab.
+    private ContentView mContentView;
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<>();
 
@@ -235,6 +240,11 @@ public class ChromeFullscreenManager
             }
 
             @Override
+            public void onContentChanged(Tab tab) {
+                if (tab == getTab()) updateViewStateListener();
+            }
+
+            @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
                 if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
                     if (tab == getTab()) exitPersistentFullscreenMode();
@@ -269,16 +279,6 @@ public class ChromeFullscreenManager
             public void onExitFullscreenMode(Tab tab) {
                 setEnterFullscreenRunnable(tab, null);
                 if (tab == getTab()) exitPersistentFullscreenMode();
-            }
-
-            @Override
-            public void onContentViewChildrenStateUpdated(Tab tab) {
-                if (tab == getTab()) updateContentViewChildrenState();
-            }
-
-            @Override
-            public void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility) {
-                if (tab == getTab()) onContentViewSystemUiVisibilityChange(visibility);
             }
 
             private void setEnterFullscreenRunnable(Tab tab, Runnable runnable) {
@@ -337,8 +337,21 @@ public class ChromeFullscreenManager
         if (tab != null && previousTab != getTab()) {
             mBrowserVisibilityDelegate.showControlsTransient();
         }
+        if (previousTab != tab) updateViewStateListener();
         if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
             setPositionsForTabToNonFullscreen();
+        }
+    }
+
+    private void updateViewStateListener() {
+        if (mContentView != null) {
+            mContentView.removeOnHierarchyChangeListener(this);
+            mContentView.removeOnSystemUiVisibilityChangeListener(this);
+        }
+        mContentView = getContentView();
+        if (mContentView != null) {
+            mContentView.addOnHierarchyChangeListener(this);
+            mContentView.addOnSystemUiVisibilityChangeListener(this);
         }
     }
 
@@ -565,6 +578,18 @@ public class ChromeFullscreenManager
         for (FullscreenListener listener : mListeners) listener.onUpdateViewportSize();
     }
 
+    // View.OnHierarchyChangeListener implementation
+
+    @Override
+    public void onChildViewRemoved(View parent, View child) {
+        updateContentViewChildrenState();
+    }
+
+    @Override
+    public void onChildViewAdded(View parent, View child) {
+        updateContentViewChildrenState();
+    }
+
     @Override
     public void updateContentViewChildrenState() {
         ViewGroup view = getContentView();
@@ -575,6 +600,11 @@ public class ChromeFullscreenManager
         applyTranslationToTopChildViews(view, topViewsTranslation);
         applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
         updateViewportSize();
+    }
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        onContentViewSystemUiVisibilityChange(visibility);
     }
 
     /**
@@ -724,9 +754,9 @@ public class ChromeFullscreenManager
         }
     }
 
-    private ViewGroup getContentView() {
+    private ContentView getContentView() {
         Tab tab = getTab();
-        return tab != null ? tab.getContentView() : null;
+        return tab != null ? (ContentView) tab.getContentView() : null;
     }
 
     @Override
@@ -794,5 +824,9 @@ public class ChromeFullscreenManager
         super.destroy();
         mBrowserVisibilityDelegate.destroy();
         if (mTabFullscreenObserver != null) mTabFullscreenObserver.destroy();
+        if (mContentView != null) {
+            mContentView.removeOnHierarchyChangeListener(this);
+            mContentView.removeOnSystemUiVisibilityChangeListener(this);
+        }
     }
 }

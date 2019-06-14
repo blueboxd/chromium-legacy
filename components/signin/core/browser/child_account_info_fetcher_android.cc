@@ -18,7 +18,7 @@ using base::android::JavaParamRef;
 // static
 std::unique_ptr<ChildAccountInfoFetcherAndroid>
 ChildAccountInfoFetcherAndroid::Create(AccountFetcherService* service,
-                                       const std::string& account_id) {
+                                       const CoreAccountId& account_id) {
   std::string account_name =
       service->account_tracker_service()->GetAccountInfo(account_id).email;
   // The AccountTrackerService may not be populated correctly in tests.
@@ -38,12 +38,12 @@ void ChildAccountInfoFetcherAndroid::InitializeForTests() {
 
 ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
     AccountFetcherService* service,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& account_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
   j_child_account_info_fetcher_.Reset(Java_ChildAccountInfoFetcher_create(
       env, reinterpret_cast<jlong>(service),
-      base::android::ConvertUTF8ToJavaString(env, account_id),
+      base::android::ConvertUTF8ToJavaString(env, account_id.id),
       base::android::ConvertUTF8ToJavaString(env, account_name)));
 }
 
@@ -60,6 +60,6 @@ void JNI_ChildAccountInfoFetcher_SetIsChildAccount(
   AccountFetcherService* service =
       reinterpret_cast<AccountFetcherService*>(native_service);
   service->SetIsChildAccount(
-      base::android::ConvertJavaStringToUTF8(env, j_account_id),
+      CoreAccountId(base::android::ConvertJavaStringToUTF8(env, j_account_id)),
       is_child_account);
 }

@@ -78,7 +78,7 @@ bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
     return true;
   }
   if (definition && definition->GetRegisteredDefinitionCount() !=
-                        PaintWorklet::kNumGlobalScopes) {
+                        PaintWorklet::kNumGlobalScopesPerThread) {
     definition = nullptr;
     return false;
   }

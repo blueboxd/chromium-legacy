@@ -128,7 +128,6 @@ external/wpt/server-side.md [ Skip ]
 external/wpt/svg-aam [ Skip ]
 external/wpt/svg/import [ Skip ]
 external/wpt/wai-aria [ Skip ]
-external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
@@ -465,3 +464,13 @@ external/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html
 # Tests that fail in content_shell but pass when run manually.
 external/wpt/client-hints/accept_ch_lifetime.https.html [ Skip ]
 external/wpt/client-hints/accept_ch.https.html [ Skip ]
+
+# TODO(crbug.com/974254): Remove the following once we can handle spaces in test names.
+external/wpt/webdriver/tests/element_click/interactability.py [ Skip ]
+external/wpt/webdriver/tests/find_element/find.py [ Skip ]
+external/wpt/webdriver/tests/find_element_from_element/find.py [ Skip ]
+external/wpt/webdriver/tests/find_elements/find.py [ Skip ]
+external/wpt/webdriver/tests/find_elements_from_element/find.py [ Skip ]
+external/wpt/webdriver/tests/new_session/invalid_capabilities.py [ Skip ]
+external/wpt/webdriver/tests/new_session/response.py [ Skip ]
+external/wpt/webdriver/tests/send_alert_text/send.py [ Skip ]

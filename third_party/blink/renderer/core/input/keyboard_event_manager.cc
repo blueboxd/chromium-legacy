@@ -352,16 +352,19 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     frame_->GetEditor().HandleKeyboardEvent(event);
     if (event->DefaultHandled())
       return;
-    if (event->charCode() == ' ')
-      DefaultSpaceEventHandler(event, possible_focused_node);
-  } else if (event->type() == event_type_names::kKeyup) {
     if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
-      return;
+    } else if (event->charCode() == ' ') {
+      DefaultSpaceEventHandler(event, possible_focused_node);
     }
-
-    if (event->keyCode() == kVKeySpatNavBack)
+  } else if (event->type() == event_type_names::kKeyup) {
+    if (event->DefaultHandled())
+      return;
+    if (event->key() == "Enter") {
+      DefaultEnterEventHandler(event);
+    } else if (event->keyCode() == kVKeySpatNavBack) {
       DefaultSpatNavBackEventHandler(event);
+    }
   }
 }
 

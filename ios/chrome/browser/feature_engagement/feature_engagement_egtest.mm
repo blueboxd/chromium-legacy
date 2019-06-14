@@ -449,7 +449,8 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 }
 
 // Verifies that the New Tab Tip appears when all conditions are met.
-- (void)testNewTabTipPromoShouldShow {
+// Flaky. See crbug.com/974152
+- (void)DISABLED_testNewTabTipPromoShouldShow {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);

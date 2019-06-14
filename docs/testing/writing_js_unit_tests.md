@@ -28,23 +28,21 @@ GEN_INCLUDE([
   'awesome.js'  // Include the file under test.
 ]);
 
-function AwesomeUnitTest() {}
-
-AwesomeUnitTest.prototype = {
-  __proto__: testing.Test.prototype
-};
+AwesomeUnitTest = class extends testing.Test {}
 
 const EXPECTED_AWESOME_NUMBER = 1e6;
 
-TEST_F(AwesomeUnitTest, 'HowAwesomeExactly', function () {
+TEST_F('AwesomeUnitTest', 'HowAwesomeExactly', function () {
   // Some asserts to make sure the file under test is working as expected.
   assertEquals(EXPECTED_AWESOME_NUMBER, awesome.find_awesome_number(), 'If this fails, contact Larry');
 });
 ```
 
-Since ECMAScript 6, there is an alternative but equivalent syntax that uses the
-class keyword instead of prototype. Codesearch shows that existing unitjs tests
-use either syntax.
+Note: This example shows the shorter way of writing a test, using the class
+keyword (available since ECMAScript 6). There is an alternative but equivalent
+syntax that uses the prototype keyword instead, which has a bit more
+boilerplate. Codesearch shows that the prototype has been used more often in
+the past, but prefer to use the shorter class syntax going forward.
 
 ### Writing the BUILD rules
 
@@ -104,7 +102,7 @@ GEN_INCLUDE([
   'awesome.js',
 ]);
 
-function AwesomeUnitTest() {}
+AwesomeUnitTest = class extends testing.Test {}
 // ... etc ...
 ```
 
@@ -124,6 +122,12 @@ js2gtest("package_one_unitjs_tests") {
 # ... etc ...
 ```
 
+See
+[SamlTimestampsTest](https://cs.chromium.org/chromium/src/chrome/browser/resources/chromeos/login/saml_timestamps_test.unitjs?q=//ui/webui/resources/js/cr.js)
+and its
+[BUILD rule](https://cs.chromium.org/chromium/src/chrome/browser/resources/chromeos/login/BUILD.gn?q=//ui/webui/resources/js/cr.js)
+for an example of how it includes the `cr.js` library.
+
 ## Testing JS code which depends on the browser / the DOM {#browser-dep}
 
 The tests above are run using a V8 interpreter. However, they are not run from
@@ -136,10 +140,9 @@ trying to write and test a web-based UI, or perhaps your code just expects an
 XML parser to be available.
 
 If you are creating an web-based UI, what you are now writing is called a
-`webui` test. Ideally, you should read documentation specifically for writing
-and testing web UI components.
-
-FIXME: Is there any documentation for writing and testing web UI components?
+`webui` test. This document is about how to write JS unit tests generally -
+to test UI in particular, see
+[Testing WebUI with Mocha](https://www.chromium.org/developers/updating-webui-for-material-design/testing-webui-with-mocha).
 
 If on the other hand, you are writing some JS functionality that just happens to
 use a feature that is part of the browser, and not the language (such as the XML
@@ -147,20 +150,25 @@ parser), you should follow the instructions in this section. The current
 best-practice is to write your unit test as before, but to declare it as a
 `webui` test and add it to the `browser_tests` build rule. Ideally there would
 be a different category for unit tests that don't have any UI and so aren't
-webui, but simply need a particular browser feature, but using `webui` works for
+webui, but simply need a particular browser feature, but using webui works for
 now.
 
 ### Changes to your test to make it a webui test
 
-```js {highlight="lines:4,7"}
-AwesomeUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+```js
+AwesomeUnitTest = class extends testing.Test {
 
-  browsePreload: DUMMY_URL,
+  /** @override */
+  get browsePreload() {
+    return DUMMY_URL;
+  }
 
   // No need to run these checks unless you are testing an actual user interface.
-  runAccessibilityChecks: false,
-};
+  /** @override */
+  get runAccessibilityChecks() {
+    return false;
+  }
+}
 ```
 
 ### Changes to your build rule to make it a webui test

@@ -82,9 +82,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
                        StaleFrameContentOnEvictionNormal) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
-  // Wait for first frame activation when a surface is embedded.
-  while (!GetDelegatedFrameHost()->HasSavedFrame())
-    GiveItSomeTime();
+  // Make sure the renderer submits at least one frame before hiding it.
+  RenderFrameSubmissionObserver submission_observer(shell()->web_contents());
+  if (!submission_observer.render_frame_count())
+    submission_observer.WaitForAnyFrameSubmission();
 
   FakeWebContentsDelegate delegate;
   delegate.SetShowStaleContentOnEviction(true);

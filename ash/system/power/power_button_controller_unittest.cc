@@ -8,7 +8,11 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -24,11 +28,13 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
@@ -1401,5 +1407,73 @@ INSTANTIATE_TEST_SUITE_P(AshPowerButtonPosition,
                                          PowerButtonPosition::RIGHT,
                                          PowerButtonPosition::TOP,
                                          PowerButtonPosition::BOTTOM));
+
+class KioskNextPowerButtonTest : public PowerButtonControllerTest {
+ public:
+  KioskNextPowerButtonTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    PowerButtonControllerTest::SetUp();
+    client_ = std::make_unique<MockKioskNextShellClient>();
+  }
+
+  void TearDown() override {
+    client_.reset();
+    home_screen_window_.reset();
+    PowerButtonControllerTest::TearDown();
+  }
+
+  void SetUpHomeWindow() {
+    home_screen_window_ = CreateTestWindow();
+    home_screen_window_->set_owned_by_parent(false);
+    Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                        kShellWindowId_HomeScreenContainer)
+        ->AddChild(home_screen_window_.get());
+
+    wm::ActivateWindow(home_screen_window_.get());
+  }
+
+ protected:
+  std::unique_ptr<aura::Window> home_screen_window_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextPowerButtonTest);
+};
+
+TEST_F(KioskNextPowerButtonTest, FocusKioskNextHome) {
+  LogInKioskNextUser(GetSessionControllerClient());
+  SetUpHomeWindow();
+  EXPECT_TRUE(home_screen_window_->HasFocus());
+
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(home_screen_window_->HasFocus());
+
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_TRUE(home_screen_window_->HasFocus());
+}
+
+TEST_F(KioskNextPowerButtonTest, KioskNextHomeNotFocusedWhenPowerMenuShown) {
+  LogInKioskNextUser(GetSessionControllerClient());
+  SetUpHomeWindow();
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  wm::ActivateWindow(window.get());
+
+  EXPECT_TRUE(window->HasFocus());
+  EXPECT_FALSE(home_screen_window_->HasFocus());
+
+  OpenPowerButtonMenu();
+  EXPECT_FALSE(window->HasFocus());
+  EXPECT_FALSE(home_screen_window_->HasFocus());
+  TapToDismissPowerButtonMenu();
+
+  EXPECT_TRUE(window->HasFocus());
+  EXPECT_FALSE(home_screen_window_->HasFocus());
+}
 
 }  // namespace ash

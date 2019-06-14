@@ -23,8 +23,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -134,19 +132,14 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 return;
             }
 
-            final RevampedContextMenuController menuController =
-                    new RevampedContextMenuController(topContentOffsetPx);
-            menuController.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback,
+            final RevampedContextMenuCoordinator menuCoordinator =
+                    new RevampedContextMenuCoordinator(topContentOffsetPx);
+            menuCoordinator.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback,
                     mOnMenuShown, mOnMenuClosed);
-            // TODO(sinansahin): This could be pushed in to the menuController.
+            // TODO(sinansahin): This could be pushed in to the header mediator.
             if (mCurrentContextMenuParams.isImage()) {
-                getThumbnail(menuController, menuController::onImageThumbnailRetrieved);
-            } else {
-                LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
-                iconBridge.getLargeIconForUrl(mCurrentContextMenuParams.getUrl(),
-                        getActivity().getResources().getDimensionPixelSize(
-                                R.dimen.default_favicon_size),
-                        menuController::onFaviconAvailable);
+                getThumbnail(
+                        menuCoordinator, menuCoordinator.getOnImageThumbnailRetrievedReference());
             }
             return;
         }

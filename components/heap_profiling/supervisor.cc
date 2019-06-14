@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -58,13 +57,13 @@ void Supervisor::SetClientConnectionManagerConstructor(
   constructor_ = constructor;
 }
 
-void Supervisor::Start(content::ServiceManagerConnection* connection,
+void Supervisor::Start(service_manager::Connector* connector,
                        base::OnceClosure closure) {
-  Start(connection, GetModeForStartup(), GetStackModeForStartup(),
+  Start(connector, GetModeForStartup(), GetStackModeForStartup(),
         GetSamplingRateForStartup(), std::move(closure));
 }
 
-void Supervisor::Start(content::ServiceManagerConnection* connection,
+void Supervisor::Start(service_manager::Connector* connector,
                        Mode mode,
                        mojom::StackMode stack_mode,
                        uint32_t sampling_rate,
@@ -73,11 +72,10 @@ void Supervisor::Start(content::ServiceManagerConnection* connection,
   DCHECK(!started_);
 
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&Supervisor::StartServiceOnIOThread,
-                                base::Unretained(this),
-                                connection->GetConnector()->Clone(), mode,
-                                stack_mode, sampling_rate, std::move(closure)));
+      ->PostTask(FROM_HERE, base::BindOnce(&Supervisor::StartServiceOnIOThread,
+                                           base::Unretained(this),
+                                           connector->Clone(), mode, stack_mode,
+                                           sampling_rate, std::move(closure)));
 }
 
 Mode Supervisor::GetMode() {

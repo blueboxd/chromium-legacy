@@ -31,7 +31,8 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
 }
 
-views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
+std::unique_ptr<views::View>
+SaveCardManageCardsBubbleViews::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
@@ -55,13 +56,13 @@ views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   params.dice_signin_button_prominent = false;
   params.dice_text_style = ChromeTextStyle::STYLE_SECONDARY;
 
-  std::unique_ptr<views::View> promo_view = CreateBubbleSyncPromoView(
+  auto promo_view = CreateBubbleSyncPromoView(
       controller()->GetProfile(), sync_promo_delegate_.get(),
       signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, params);
 
   DCHECK(promo_view);
   InitFootnoteView(promo_view.get());
-  return promo_view.release();
+  return promo_view;
 #endif
 }
 

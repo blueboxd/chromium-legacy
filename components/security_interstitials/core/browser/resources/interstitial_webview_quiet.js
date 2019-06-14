@@ -20,7 +20,14 @@ function onResize() {
 
 function initPage() {
   var isGiantWebView = loadTimeData.getBoolean('is_giant');
+  var darkModeAvailable = loadTimeData.getBoolean('darkModeAvailable');
+
   document.body.className = isGiantWebView ? 'giant' : '';
+
+  if (darkModeAvailable) {
+    document.body.classList.add('dark-mode-available');
+  }
+
   preventDefaultOnPoundLinkClicks();
 
   $('details-link').addEventListener('click', function(event) {

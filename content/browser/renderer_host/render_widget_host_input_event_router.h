@@ -205,7 +205,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetTargetResult FindViewAtLocation(
       RenderWidgetHostViewBase* root_view,
       const gfx::PointF& point,
-      const gfx::PointF& point_in_screen,
       viz::EventSource source,
       gfx::PointF* transformed_point) const;
 

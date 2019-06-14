@@ -23,7 +23,7 @@ class NullExecutionContext
   USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 
  public:
-  NullExecutionContext();
+  NullExecutionContext(OriginTrialContext* origin_trial_context = nullptr);
   ~NullExecutionContext() override;
 
   void SetURL(const KURL& url) { url_ = url; }
@@ -67,6 +67,8 @@ class NullExecutionContext
 
   void CountUse(mojom::WebFeature) override {}
   void CountDeprecation(mojom::WebFeature) override {}
+
+  void SetSandboxFlags(WebSandboxFlags flags) { sandbox_flags_ = flags; }
 
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;

@@ -50,7 +50,7 @@ test(function(t) {
 <script>
  test(function(t) {
      var axHeading3 = accessibilityController.accessibleElementById("heading3");
-     assert_true(axHeading3.isIgnored);
+     assert_equals(axHeading3, undefined);
      var axButton3 = accessibilityController.accessibleElementById("button3");
      assert_equals(axButton3.name, "Text within hidden subtree");
  }, "Aria-labelledby can get accessible text from within aria-hidden subtree");

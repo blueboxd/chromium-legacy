@@ -12,12 +12,11 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.preference.CheckBoxPreference;
-import android.preference.PreferenceFragment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -39,7 +38,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ButtonPreferenceCompat;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
@@ -308,8 +306,8 @@ public class TracingPreferencesTest {
                     (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(
                             intent);
 
-            PreferenceFragment categoriesFragment =
-                    (PreferenceFragment) categoriesActivity.getMainFragment();
+            PreferenceFragmentCompat categoriesFragment =
+                    (PreferenceFragmentCompat) categoriesActivity.getMainFragmentCompat();
             Assert.assertEquals(TracingCategoriesPreferences.class, categoriesFragment.getClass());
 
             CheckBoxPreference sampleCategoryPref =
@@ -321,9 +319,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(originallyEnabled, sampleCategoryPref.isChecked());
 
             // Simulate selecting / deselecting the category.
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                PreferencesTest.clickPreference(categoriesFragment, sampleCategoryPref);
-            });
+            TestThreadUtils.runOnUiThreadBlocking(sampleCategoryPref::performClick);
             Assert.assertNotEquals(originallyEnabled, sampleCategoryPref.isChecked());
             boolean finallyEnabled =
                     TracingPreferences.getEnabledCategories().contains(sampleCategoryName);

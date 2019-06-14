@@ -26,6 +26,7 @@ class NSString;
 namespace ui {
 
 // Platform neutral holder for native data representation of a clipboard type.
+// Copyable and assignable, since this is an opaque value type.
 struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   ClipboardFormatType();
   ~ClipboardFormatType();
@@ -93,7 +94,7 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   friend struct ClipboardFormatType;
 
   // Platform-specific glue used internally by the ClipboardFormatType struct.
-  // Each platform should define,at least one of each of the following:
+  // Each platform should define at least one of each of the following:
   // 1. A constructor that wraps that native clipboard format descriptor.
   // 2. An accessor to retrieve the wrapped descriptor.
   // 3. A data member to hold the wrapped descriptor.
@@ -125,8 +126,6 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 #else
 #error No ClipboardFormatType definition.
 #endif
-
-  // Copyable and assignable, since this is essentially an opaque value type.
 };
 
 }  // namespace ui

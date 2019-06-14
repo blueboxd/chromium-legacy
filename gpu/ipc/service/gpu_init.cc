@@ -17,11 +17,13 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
@@ -200,8 +202,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    } else {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    }
+
 #if defined(OS_WIN)
     // This is a workaround for an occasional deadlock between watchdog and
     // current thread. Watchdog hangs at thread initialization in
@@ -387,8 +395,13 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;
   } else if (enable_watchdog && delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    } else {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    }
   }
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());

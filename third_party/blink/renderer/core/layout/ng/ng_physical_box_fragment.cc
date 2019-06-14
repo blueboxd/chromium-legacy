@@ -210,17 +210,26 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   if (!layout_object->IsAnonymous()) {
     outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
   }
-
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip(*this)) {
-    AddOutlineRectsForNormalChildren(outline_rects, additional_offset,
+    // Tricky code ahead: we pass a 0,0 additional_offset to
+    // AddOutlineRectsForNormalChildren, and add it in after the call.
+    // This is necessary because AddOutlineRectsForNormalChildren expects
+    // additional_offset to be an offset from containing_block.
+    // Since containing_block is our layout object, offset must be 0,0.
+    // https://crbug.com/968019
+    Vector<PhysicalRect> children_rects;
+    AddOutlineRectsForNormalChildren(&children_rects, PhysicalOffset(),
                                      outline_type,
                                      ToLayoutBoxModelObject(GetLayoutObject()));
-
-    // TODO(kojii): LayoutBlock::AddOutlineRects handles positioned objects
-    // here. Do we need it?
+    if (!additional_offset.IsZero()) {
+      for (auto& rect : children_rects)
+        rect.offset += additional_offset;
+    }
+    outline_rects->AppendVector(children_rects);
+    // LayoutBlock::AddOutlineRects also adds out of flow objects here.
+    // In LayoutNG out of flow objects are not part of the outline.
   }
-
   // TODO(kojii): Needs inline_element_continuation logic from
   // LayoutBlockFlow::AddOutlineRects?
 }

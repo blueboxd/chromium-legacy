@@ -18,8 +18,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -31,8 +33,10 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -96,7 +100,7 @@ public class SiteSettingsPreferencesTest {
                     @Override
                     public InfoBarTestAnimationListener call() throws Exception {
                         InfoBarContainer container = mActivityTestRule.getInfoBarContainer();
-                        InfoBarTestAnimationListener listener =  new InfoBarTestAnimationListener();
+                        InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
                         container.addAnimationListener(listener);
                         return listener;
                     }
@@ -110,6 +114,7 @@ public class SiteSettingsPreferencesTest {
      */
     @Test
     @SmallTest
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Preferences"})
     public void testSetAllowLocationEnabled() throws Exception {
@@ -131,6 +136,7 @@ public class SiteSettingsPreferencesTest {
      */
     @Test
     @SmallTest
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Preferences"})
     public void testSetAllowLocationNotEnabled() throws Exception {
@@ -157,9 +163,11 @@ public class SiteSettingsPreferencesTest {
                         (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
-                Assert.assertEquals("Third-party cookie toggle should be "
-                                + (doesAcceptCookies() ? "enabled" : " disabled"),
-                        doesAcceptCookies(), thirdPartyCookies.isEnabled());
+                if (thirdPartyCookies != null) {
+                    Assert.assertEquals("Third-party cookie toggle should be "
+                                    + (doesAcceptCookies() ? "enabled" : " disabled"),
+                            doesAcceptCookies(), thirdPartyCookies.isEnabled());
+                }
                 websitePreferences.onPreferenceChange(cookies, enabled);
                 Assert.assertEquals("Cookies should be " + (enabled ? "allowed" : "blocked"),
                         doesAcceptCookies(), enabled);
@@ -266,6 +274,7 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
@@ -395,12 +404,18 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testPopupsBlocked() throws Exception {
         setEnablePopups(false);
+        int activitiesCount = ApplicationStatus.getRunningActivities().size();
 
         // Test that the popup doesn't open.
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
-
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertEquals(1, getTabCount());
+
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            // Popups open in a new activity in touchless mode.
+            Assert.assertEquals(ApplicationStatus.getRunningActivities().size(), activitiesCount);
+        } else {
+            Assert.assertEquals(1, getTabCount());
+        }
     }
 
     /**
@@ -412,12 +427,19 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testPopupsNotBlocked() throws Exception {
         setEnablePopups(true);
+        int activitiesCount = ApplicationStatus.getRunningActivities().size();
 
         // Test that a popup opens.
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        Assert.assertEquals(2, getTabCount());
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            // Popups open in a new activity in touchless mode.
+            Assert.assertEquals(
+                    1, ApplicationStatus.getRunningActivities().size() - activitiesCount);
+        } else {
+            Assert.assertEquals(2, getTabCount());
+        }
     }
 
     /**
@@ -610,6 +632,7 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM,
             "disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS})
     public void testCameraNotBlocked() throws Exception {
@@ -636,6 +659,7 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM,
             "disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS})
     public void testMicNotBlocked() throws Exception {

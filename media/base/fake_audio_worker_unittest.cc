@@ -145,7 +145,8 @@ TEST_F(FakeAudioWorkerTest, DISABLED_TimeBetweenCallbacks) {
 
 // Ensure Start()/Stop() on the worker doesn't generate too many callbacks. See
 // http://crbug.com/159049.
-TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
+// Flaky test; see crbug.com/974078
+TEST_F(FakeAudioWorkerTest, DISABLED_StartStopClearsCallbacks) {
   scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,

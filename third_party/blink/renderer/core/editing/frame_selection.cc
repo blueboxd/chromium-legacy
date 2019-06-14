@@ -918,22 +918,31 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
   }
 }
 
+static EphemeralRangeInFlatTree ComputeRangeForSerialization(
+    const SelectionInDOMTree& selection) {
+  const EphemeralRangeInFlatTree& range =
+      ConvertToSelectionInFlatTree(selection).ComputeRange();
+  const PositionInFlatTree& start =
+      CreateVisiblePosition(range.StartPosition()).DeepEquivalent();
+  const PositionInFlatTree& end =
+      CreateVisiblePosition(range.EndPosition()).DeepEquivalent();
+  if (start.IsNull() || end.IsNull() || start >= end)
+    return EphemeralRangeInFlatTree();
+  return NormalizeRange(EphemeralRangeInFlatTree(start, end));
+}
+
 static String ExtractSelectedText(const FrameSelection& selection,
                                   TextIteratorBehavior behavior) {
-  const VisibleSelectionInFlatTree& visible_selection =
-      selection.ComputeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
-      visible_selection.ToNormalizedEphemeralRange();
+      ComputeRangeForSerialization(selection.GetSelectionInDOMTree());
   // We remove '\0' characters because they are not visibly rendered to the
   // user.
   return PlainText(range, behavior).Replace(0, "");
 }
 
 String FrameSelection::SelectedHTMLForClipboard() const {
-  const VisibleSelectionInFlatTree& visible_selection =
-      ComputeVisibleSelectionInFlatTree();
   const EphemeralRangeInFlatTree& range =
-      visible_selection.ToNormalizedEphemeralRange();
+      ComputeRangeForSerialization(GetSelectionInDOMTree());
   return CreateMarkup(
       range.StartPosition(), range.EndPosition(), kAnnotateForInterchange,
       ConvertBlocksToInlines::kNotConvert, kResolveNonLocalURLs);

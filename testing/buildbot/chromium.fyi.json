@@ -5622,6 +5622,9 @@
     ],
     "junit_tests": [
       {
+        "test": "android_webview_junit_tests"
+      },
+      {
         "test": "base_junit_tests"
       },
       {
@@ -11013,6 +11016,25 @@
   "linux-blink-rel-dummy": {
     "isolated_scripts": [
       {
+        "isolate_name": "webdriver_wpt_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webdriver_tests_suite",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 4
+        }
+      },
+      {
         "args": [
           "--num-retries=3"
         ],
@@ -11032,7 +11054,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 20
+          "shards": 12
         }
       }
     ]

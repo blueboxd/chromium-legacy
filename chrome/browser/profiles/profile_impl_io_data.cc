@@ -30,7 +30,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -226,8 +225,8 @@ void ProfileImplIOData::InitializeExtensionsCookieStore(
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ = content::CreateCookieStore(
-      cookie_config, profile_params->io_thread->net_log());
+  extensions_cookie_store_ =
+      content::CreateCookieStore(cookie_config, g_browser_process->net_log());
 }
 
 net::CookieStore* ProfileImplIOData::GetExtensionsCookieStore() const {

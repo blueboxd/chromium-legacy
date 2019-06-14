@@ -27,18 +27,11 @@ import java.util.List;
  * TODO(yuezhanggg): Get rid of using notifyDataSetChanged in adapter.
  */
 public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
-    /**
-     * An interface to update information in {@link TabListModel}.
-     */
-    public interface UpdateTabInfoHandler {
-        void updateTabInfo(int index, Tab tab, boolean isSelected);
-    }
 
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final TabListMediator.TabActionListener mTabClosedListener;
     private final String mComponentName;
-    private final UpdateTabInfoHandler mUpdateTabHandler;
     private float mSwipeToDismissThreshold;
     private float mMergeThreshold;
     private boolean mActionsOnAllRelatedTabs;
@@ -49,13 +42,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     public TabGridItemTouchHelperCallback(TabListModel tabListModel,
             TabModelSelector tabModelSelector, TabListMediator.TabActionListener tabClosedListener,
-            UpdateTabInfoHandler updateTabHandler, String componentName,
-            boolean actionsOnAllRelatedTabs) {
+            String componentName, boolean actionsOnAllRelatedTabs) {
         super(0, 0);
         mModel = tabListModel;
         mTabModelSelector = tabModelSelector;
         mTabClosedListener = tabClosedListener;
-        mUpdateTabHandler = updateTabHandler;
         mComponentName = componentName;
         mActionsOnAllRelatedTabs = actionsOnAllRelatedTabs;
     }
@@ -195,11 +186,6 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                         .getCurrentTabModelFilter();
         filter.mergeTabsToGroup(filter.getTabAt(selectedCardIndex).getId(),
                 filter.getTabAt(hoveredCardIndex).getId());
-        int destinationIndex =
-                selectedCardIndex > hoveredCardIndex ? hoveredCardIndex : hoveredCardIndex - 1;
-        Tab newSelectedTab = filter.getTabAt(destinationIndex);
-        boolean isSelected = newSelectedTab.getId() == mTabModelSelector.getCurrentTabId();
-        mUpdateTabHandler.updateTabInfo(destinationIndex, newSelectedTab, isSelected);
     }
 
     @VisibleForTesting

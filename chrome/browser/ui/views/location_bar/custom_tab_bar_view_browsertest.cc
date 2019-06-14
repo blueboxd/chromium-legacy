@@ -322,8 +322,10 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, TitleAndLocationUpdate) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
-  const GURL& navigate_to =
-      https_server()->GetURL("app.com", "/ssl/blank_page.html");
+
+  // This url is out of scope, because the CustomTabBar is not updated when it
+  // is not shown.
+  const GURL& navigate_to = https_server()->GetURL("app.com", "/simple.html");
 
   InstallPWA(app_url);
 

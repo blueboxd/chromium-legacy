@@ -222,7 +222,8 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
   }
 
 #if DCHECK_IS_ON()
-  if (layer->DrawsContent() && (flags & kLayerTreeIncludesPaintRecords))
+  if (layer->HasLayerState() && layer->DrawsContent() &&
+      (flags & kLayerTreeIncludesPaintRecords))
     json->SetValue("paintRecord", RecordAsJSON(*layer->CapturePaintRecord()));
 #endif
 

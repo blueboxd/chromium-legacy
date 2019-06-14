@@ -171,4 +171,23 @@ TEST_P(CSSPaintValueTest, DoNotPaintWhenAncestorHasLink) {
                                      FloatSize(100, 100)));
 }
 
+TEST_P(CSSPaintValueTest, BuildInputArgumentValuesNotCrash) {
+  // The BuildInputArgumentValues is called when the flag is enabled only.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="target"></div>
+  )HTML");
+
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+  EXPECT_NE(paint_value, nullptr);
+
+  EXPECT_EQ(paint_value->GetParsedInputArgumentsForTesting(), nullptr);
+  Vector<std::unique_ptr<CrossThreadStyleValue>> cross_thread_input_arguments;
+  paint_value->BuildInputArgumentValuesForTesting(cross_thread_input_arguments);
+  EXPECT_EQ(cross_thread_input_arguments.size(), 0u);
+}
+
 }  // namespace blink

@@ -658,6 +658,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"bluetoothConnected", IDS_SETTINGS_BLUETOOTH_CONNECTED},
+      {"bluetoothConnectedWithBattery",
+       IDS_SETTINGS_BLUETOOTH_CONNECTED_WITH_BATTERY},
       {"bluetoothConnecting", IDS_SETTINGS_BLUETOOTH_CONNECTING},
       {"bluetoothDeviceListPaired", IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED},
       {"bluetoothDeviceListUnpaired",

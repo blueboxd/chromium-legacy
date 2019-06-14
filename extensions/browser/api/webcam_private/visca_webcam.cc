@@ -290,7 +290,7 @@ void ViscaWebcam::OnReceiveEvent(const CommandCompleteCallback& callback,
     response.swap(data_buffer_);
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(callback, false, response));
-    serial_connection_->set_paused(true);
+    serial_connection_->SetPaused(true);
     return;
   }
 
@@ -308,13 +308,13 @@ void ViscaWebcam::OnReceiveEvent(const CommandCompleteCallback& callback,
       (static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(callback, false, response));
-    serial_connection_->set_paused(true);
+    serial_connection_->SetPaused(true);
   } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
              (static_cast<int>(response[1]) & 0xFF) !=
                  kViscaResponseNetworkChange) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(callback, true, response));
-    serial_connection_->set_paused(true);
+    serial_connection_->SetPaused(true);
   }
 }
 

@@ -512,6 +512,12 @@ void ProxyImpl::NotifyAnimationWorkletStateChange(
                                                 tree_type);
 }
 
+void ProxyImpl::NotifyPaintWorkletStateChange(
+    Scheduler::PaintWorkletState state) {
+  DCHECK(IsImplThread());
+  scheduler_->NotifyPaintWorkletStateChange(state);
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);

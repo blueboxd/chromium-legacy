@@ -240,10 +240,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
 
-#ifdef OS_CHROMEOS
-  bool seen_first_activation_ = false;
-#endif
-
   enum class FrameEvictionState {
     kNotStarted = 0,          // Frame eviction is ready.
     kPendingEvictionRequests  // Frame eviction is paused with pending requests.

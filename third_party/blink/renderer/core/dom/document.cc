@@ -610,7 +610,9 @@ Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), nullptr),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
+                       nullptr,
+                       MakeGarbageCollected<OriginTrialContext>()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       frame_(initializer.GetFrame()),
@@ -8105,7 +8107,7 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
   // TODO(yoichio): We should remove these counters when v0 APIs are removed.
   // crbug.com/946875.
   if (const OriginTrialContext* origin_trial_context =
-          OriginTrialContext::FromOrCreate(this)) {
+          GetOriginTrialContext()) {
     if (feature == WebFeature::kHTMLImports &&
         origin_trial_context->IsFeatureEnabled(
             OriginTrialFeature::kHTMLImports) &&

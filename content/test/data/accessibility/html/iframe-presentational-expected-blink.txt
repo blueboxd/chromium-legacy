@@ -2,4 +2,3 @@ rootWebArea
 ++genericContainer
 ++++iframePresentational
 ++++++rootWebArea
-++++++++genericContainer ignored

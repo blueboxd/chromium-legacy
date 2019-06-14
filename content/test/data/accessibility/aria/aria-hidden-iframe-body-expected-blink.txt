@@ -5,4 +5,3 @@ rootWebArea focusable
 ++++++++genericContainer editable focusable invisible multiline richlyEditable value='1'
 ++++iframe focusable
 ++++++rootWebArea focusable
-++++++++genericContainer ignored invisible

@@ -91,7 +91,7 @@ cast_source_set("renderer") {
   if (enable_chromecast_extensions) {
     sources += [
       "cast_extensions_dispatcher_delegate.cc",
-      "cast_extensions_dispatcher_delegate.g",
+      "cast_extensions_dispatcher_delegate.h",
       "cast_extensions_renderer_client.cc",
       "cast_extensions_renderer_client.h",
       "extensions/extension_hooks_delegate.cc",

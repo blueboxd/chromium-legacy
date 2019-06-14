@@ -31,6 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -103,6 +104,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,7 +119,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1090,15 +1091,29 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
+void TestingProfile::SetNetworkContext(
+    std::unique_ptr<network::mojom::NetworkContext> network_context) {
+  DCHECK(!network_context_);
+  network_context_ = std::move(network_context);
+}
+
 network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::NetworkContextPtr network_context;
-    network_context_request_ = mojo::MakeRequest(&network_context);
-    return network_context;
+  if (network_context_) {
+    network::mojom::NetworkContextPtr network_context_ptr;
+    network_context_bindings_.AddBinding(
+        network_context_.get(), mojo::MakeRequest(&network_context_ptr));
+    return network_context_ptr;
   }
-  return nullptr;
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = "en-us,en";
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context), std::move(context_params));
+  return network_context;
 }
 
 TestingProfile::Builder::Builder()

@@ -43,10 +43,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/app/service_manager_environment.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
@@ -881,7 +883,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     return -1;
 
   bool should_start_service_manager_only = start_service_manager_only;
-  if (!service_manager_context_) {
+  if (!service_manager_environment_) {
     if (delegate_->ShouldCreateFeatureList()) {
       DCHECK(!field_trial_list_);
       field_trial_list_ = SetUpFieldTrialsAndFeatureList();
@@ -960,12 +962,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     power_monitor_ = std::make_unique<base::PowerMonitor>(
         std::make_unique<base::PowerMonitorDeviceSource>());
 
-    // The thread used to start the ServiceManager is handed-off to
-    // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-    service_manager_thread_ = BrowserTaskExecutor::CreateIOThread();
-    service_manager_context_.reset(
-        new ServiceManagerContext(service_manager_thread_->task_runner()));
-    download::SetIOTaskRunner(service_manager_thread_->task_runner());
+    service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
+        BrowserTaskExecutor::CreateIOThread());
+    download::SetIOTaskRunner(
+        service_manager_environment_->ipc_thread()->task_runner());
 #if defined(OS_ANDROID)
     if (start_service_manager_only) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -981,9 +981,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
   DVLOG(0) << "Chrome is running in full browser mode.";
   is_browser_main_loop_started_ = true;
-  startup_data_ = std::make_unique<StartupDataImpl>();
-  startup_data_->thread = std::move(service_manager_thread_);
-  startup_data_->service_manager_context = service_manager_context_.get();
+  startup_data_ = service_manager_environment_->CreateBrowserStartupData();
   startup_data_->power_monitor = std::move(power_monitor_);
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
@@ -993,6 +991,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);
   DCHECK(!is_shutdown_);
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  service_manager_environment_.reset();
+#endif
 
   if (completed_basic_startup_) {
     const base::CommandLine& command_line =
@@ -1004,6 +1006,7 @@ void ContentMainRunnerImpl::Shutdown() {
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  service_manager_environment_.reset();
   // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
   BrowserTaskExecutor::Shutdown();
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)

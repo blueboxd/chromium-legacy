@@ -256,7 +256,6 @@ void PrimaryAccountManager::ClearObserver() {
   observer_ = nullptr;
 }
 
-#if !defined(OS_CHROMEOS)
 void PrimaryAccountManager::SignIn(const std::string& username) {
   AccountInfo info = account_tracker_service_->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
@@ -277,6 +276,7 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
                                    client_->GetInstallDate());
 }
 
+#if !defined(OS_CHROMEOS)
 void PrimaryAccountManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {

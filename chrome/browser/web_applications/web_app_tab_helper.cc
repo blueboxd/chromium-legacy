@@ -29,11 +29,6 @@ WebAppTabHelperBase* WebAppTabHelper::CloneForWebContents(
   return new_tab_helper;
 }
 
-AppId WebAppTabHelper::FindAppIdInScopeOfUrl(const GURL& url) {
-  // TODO(loyso): Implement it.
-  return AppId();
-}
-
 bool WebAppTabHelper::IsInAppWindow() const {
   // TODO(beccahughes): Implement.
   return false;

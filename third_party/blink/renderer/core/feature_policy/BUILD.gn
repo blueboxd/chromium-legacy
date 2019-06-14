@@ -12,6 +12,7 @@ blink_core_sources("feature_policy") {
     "feature_policy_helper.h",
     "feature_policy_parser.cc",
     "feature_policy_parser.h",
+    "feature_policy_parser_delegate.h",
     "iframe_policy.h",
     "layout_animations_policy.cc",
     "layout_animations_policy.h",

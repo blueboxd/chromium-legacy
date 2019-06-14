@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/fuchsia/input_event_dispatcher.h"
 #include "ui/events/fuchsia/input_event_dispatcher_delegate.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
@@ -27,8 +27,9 @@ namespace ui {
 class ScenicWindowManager;
 class PlatformWindowDelegate;
 
-class OZONE_EXPORT ScenicWindow : public PlatformWindow,
-                                  public InputEventDispatcherDelegate {
+class COMPONENT_EXPORT(OZONE) ScenicWindow
+    : public PlatformWindow,
+      public InputEventDispatcherDelegate {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
   // |view_token| is passed to Scenic to attach the view to the view tree.

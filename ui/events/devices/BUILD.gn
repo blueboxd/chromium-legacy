@@ -22,8 +22,6 @@ jumbo_component("devices") {
     "input_device.cc",
     "input_device.h",
     "input_device_event_observer.h",
-    "input_device_manager.cc",
-    "input_device_manager.h",
     "input_device_observer_android.cc",
     "input_device_observer_android.h",
     "input_device_observer_win.cc",

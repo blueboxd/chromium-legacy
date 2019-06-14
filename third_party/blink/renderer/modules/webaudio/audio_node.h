@@ -171,6 +171,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   AudioNodeInput& Input(unsigned);
   // The argument must be less than numberOfOutputs().
   AudioNodeOutput& Output(unsigned);
+  const AudioNodeOutput& Output(unsigned) const;
 
   // processIfNecessary() is called by our output(s) when the rendering graph
   // needs this AudioNode to process.  This method ensures that the AudioNode

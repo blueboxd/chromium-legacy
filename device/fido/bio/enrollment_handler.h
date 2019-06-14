@@ -29,6 +29,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   using ResponseCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<BioEnrollmentResponse>)>;
+  using StatusCallback = base::OnceCallback<void(CtapDeviceResponseCode)>;
 
   BioEnrollmentHandler(
       service_manager::Connector* connector,
@@ -43,8 +44,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void GetModality(ResponseCallback);
   void GetSensorInfo(ResponseCallback);
   void EnrollTemplate(ResponseCallback);
-  void Cancel(base::OnceClosure);
+  void Cancel(StatusCallback);
   void EnumerateTemplates(ResponseCallback);
+  void RenameTemplate(std::vector<uint8_t> id,
+                      std::string name,
+                      StatusCallback);
 
  private:
   // FidoRequestHandlerBase:
@@ -65,6 +69,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void OnCancel(CtapDeviceResponseCode, base::Optional<BioEnrollmentResponse>);
   void OnEnumerateTemplates(CtapDeviceResponseCode,
                             base::Optional<BioEnrollmentResponse>);
+  void OnRenameTemplate(CtapDeviceResponseCode,
+                        base::Optional<BioEnrollmentResponse>);
 
   SEQUENCE_CHECKER(sequence_checker);
 
@@ -73,7 +79,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   ErrorCallback error_callback_;
   GetPINCallback get_pin_callback_;
   ResponseCallback response_callback_;
-  base::OnceClosure status_callback_;
+  StatusCallback status_callback_;
   base::Optional<pin::TokenResponse> pin_token_response_;
   base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_;
 

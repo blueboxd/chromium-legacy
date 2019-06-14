@@ -155,7 +155,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
 }
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \
-  EXPECT_EQ(text, WebString(Selection().SelectedText()).Utf8())
+  EXPECT_EQ(text, Selection().SelectedText().Utf8())
 
 TEST_F(FrameSelectionTest, SelectWordAroundCaret) {
   // "Foo Bar  Baz,"

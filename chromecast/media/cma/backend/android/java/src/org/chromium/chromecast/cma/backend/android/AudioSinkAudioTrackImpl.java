@@ -364,8 +364,8 @@ class AudioSinkAudioTrackImpl {
                         AudioTrack.MODE_STREAM);
             } else {
                 mAudioTrack = new AudioTrack(CAST_TYPE_TO_ANDROID_STREAM_TYPE.get(castContentType),
-                        mSampleRateInHz, CHANNEL_CONFIG, AudioFormat.AUDIO_FORMAT,
-                        bufferSizeInBytes, AudioTrack.MODE_STREAM, sessionId);
+                        mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSizeInBytes,
+                        AudioTrack.MODE_STREAM, sessionId);
             }
         }
 

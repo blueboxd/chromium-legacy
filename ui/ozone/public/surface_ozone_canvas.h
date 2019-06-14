@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/ozone/ozone_base_export.h"
 
 class SkSurface;
 
@@ -24,7 +24,7 @@ namespace ui {
 // for use when no EGL/GLES2 acceleration is possible.
 // This class owns any bits that the ozone implementation needs freed when
 // the software output is destroyed.
-class OZONE_BASE_EXPORT SurfaceOzoneCanvas {
+class COMPONENT_EXPORT(OZONE_BASE) SurfaceOzoneCanvas {
  public:
   virtual ~SurfaceOzoneCanvas() {}
 

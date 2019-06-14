@@ -105,6 +105,7 @@ js2gtest("browser_tests_js_webui") {
       "settings/a11y/crostini_settings_shared_paths_a11y_test.js",
       "settings/a11y/crostini_settings_shared_usb_devices_a11y_test.js",
       "settings/a11y/crostini_settings_subpage_a11y_test.js",
+      "settings/a11y/google_assistant_a11y_test.js",
       "settings/a11y/manage_accessibility_a11y_test.js",
       "settings/a11y/multidevice_a11y_test.js",
       "settings/a11y/multidevice_features_a11y_test.js",

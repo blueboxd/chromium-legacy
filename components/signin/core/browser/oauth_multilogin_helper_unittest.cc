@@ -26,6 +26,8 @@ const CoreAccountId kAccountId2("account_id_2");
 const char kAccessToken[] = "access_token_1";
 const char kAccessToken2[] = "access_token_2";
 
+const char kExternalCcResult[] = "youtube:OK";
+
 constexpr int kMaxFetcherRetries = 3;
 
 const char kMultiloginSuccessResponse[] =
@@ -56,6 +58,35 @@ const char kMultiloginSuccessResponseTwoCookies[] =
              "name":"SID",
              "value":"SID_value",
              "domain":".google.fr",
+             "path":"/",
+             "isSecure":true,
+             "isHttpOnly":false,
+             "priority":"HIGH",
+             "maxAge":63070000
+           },
+           {
+             "name":"FOO",
+             "value":"FOO_value",
+             "domain":".google.com",
+             "path":"/",
+             "isSecure":true,
+             "isHttpOnly":false,
+             "priority":"HIGH",
+             "maxAge":63070000
+           }
+         ]
+       }
+      )";
+
+const char kMultiloginSuccessResponseWithSecondaryDomain[] =
+    R"()]}'
+       {
+         "status": "OK",
+         "cookies":[
+           {
+             "name":"SID",
+             "value":"SID_value",
+             "domain":".youtube.com",
              "path":"/",
              "isSecure":true,
              "isHttpOnly":false,
@@ -140,7 +171,15 @@ class OAuthMultiloginHelperTest : public testing::Test {
   std::unique_ptr<OAuthMultiloginHelper> CreateHelper(
       const std::vector<std::string> account_ids) {
     return std::make_unique<OAuthMultiloginHelper>(
-        &test_signin_client_, token_service(), account_ids,
+        &test_signin_client_, token_service(), account_ids, std::string(),
+        base::BindOnce(&OAuthMultiloginHelperTest::OnOAuthMultiloginFinished,
+                       base::Unretained(this)));
+  }
+
+  std::unique_ptr<OAuthMultiloginHelper> CreateHelperWithExternalCcResult(
+      const std::vector<std::string> account_ids) {
+    return std::make_unique<OAuthMultiloginHelper>(
+        &test_signin_client_, token_service(), account_ids, kExternalCcResult,
         base::BindOnce(&OAuthMultiloginHelperTest::OnOAuthMultiloginFinished,
                        base::Unretained(this)));
   }
@@ -152,6 +191,11 @@ class OAuthMultiloginHelperTest : public testing::Test {
   std::string multilogin_url() const {
     return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
            "?source=ChromiumBrowser";
+  }
+
+  std::string multilogin_url_with_external_cc_result() const {
+    return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
+           "?source=ChromiumBrowser&externalCcResult=" + kExternalCcResult;
   }
 
   MockCookieManager* cookie_manager() { return mock_cookie_manager_; }
@@ -232,6 +276,43 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
   url_loader()->AddResponse(multilogin_url(),
                             kMultiloginSuccessResponseTwoCookies);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+}
+
+// Multiple cookies in the multilogin response.
+TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
+  token_service()->AddAccount(kAccountId);
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelperWithExternalCcResult({kAccountId});
+
+  // Configure mock cookie manager:
+  // - check that the cookie is the expected one
+  // - immediately invoke the callback
+  EXPECT_CALL(
+      *cookie_manager(),
+      SetCanonicalCookie(CookieMatcher("SID", "SID_value", ".youtube.com"),
+                         "https", testing::_, testing::_))
+      .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
+  EXPECT_CALL(
+      *cookie_manager(),
+      SetCanonicalCookie(CookieMatcher("FOO", "FOO_value", ".google.com"),
+                         "https", testing::_, testing::_))
+      .WillOnce(::testing::Invoke(RunSetCookieCallbackWithSuccess));
+
+  // Issue access token.
+  OAuth2AccessTokenConsumer::TokenResponse success_response;
+  success_response.access_token = kAccessToken;
+  token_service()->IssueAllTokensForAccount(kAccountId, success_response);
+
+  // Multilogin call.
+  EXPECT_FALSE(callback_called_);
+  EXPECT_TRUE(
+      url_loader()->IsPending(multilogin_url_with_external_cc_result()));
+  url_loader()->AddResponse(multilogin_url_with_external_cc_result(),
+                            kMultiloginSuccessResponseWithSecondaryDomain);
+  EXPECT_FALSE(
+      url_loader()->IsPending(multilogin_url_with_external_cc_result()));
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
 }

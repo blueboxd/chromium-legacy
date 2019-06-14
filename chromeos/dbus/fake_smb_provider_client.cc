@@ -48,11 +48,8 @@ void FakeSmbProviderClient::AddNetBiosPacketParsingForTesting(
 void FakeSmbProviderClient::Init(dbus::Bus* bus) {}
 
 void FakeSmbProviderClient::Mount(const base::FilePath& share_path,
-                                  bool ntlm_enabled,
-                                  const std::string& workgroup,
-                                  const std::string& username,
+                                  const MountOptions& options,
                                   base::ScopedFD password_fd,
-                                  bool skip_connect,
                                   MountCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK, 1));

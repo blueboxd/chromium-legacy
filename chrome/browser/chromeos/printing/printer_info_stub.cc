@@ -17,9 +17,11 @@ void QueryIppPrinter(const std::string& host,
                      const PrinterInfoCallback& callback) {
   DCHECK(!host.empty());
 
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(callback, false, "Foo", "Bar", "Foo Bar",
-                                std::vector<std::string>{}, false));
+  base::PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, printing::PrinterQueryResult::UNKNOWN_FAILURE,
+                     "Foo", "Bar", "Foo Bar", std::vector<std::string>{},
+                     false));
 }
 
 }  // namespace chromeos

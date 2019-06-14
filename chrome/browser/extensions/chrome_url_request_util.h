@@ -17,12 +17,6 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class NetworkDelegate;
-class URLRequest;
-class URLRequestJob;
-}
-
 namespace extensions {
 class Extension;
 class ExtensionSet;
@@ -44,16 +38,6 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
                                     const ExtensionSet& extensions,
                                     const ProcessMap& process_map,
                                     bool* allowed);
-
-// Creates a URLRequestJob for loading component extension resources out of
-// a Chrome resource bundle. Returns NULL if the requested resource is not a
-// component extension resource.
-net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const base::FilePath& directory_path,
-    const std::string& content_security_policy,
-    bool send_cors_header);
 
 // Return the |request|'s resource path relative to the Chromium resources path
 // (chrome::DIR_RESOURCES) *if* the request refers to a resource within the

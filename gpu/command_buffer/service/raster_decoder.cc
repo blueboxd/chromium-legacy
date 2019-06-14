@@ -391,6 +391,9 @@ class RasterDecoderImpl final : public RasterDecoder,
       if (gr_context())
         gr_context()->flush();
       api()->glFlushFn();
+
+      // Flushes can be expensive, yield to allow interruption after each flush.
+      ExitCommandProcessingEarly();
     }
 #endif
   }

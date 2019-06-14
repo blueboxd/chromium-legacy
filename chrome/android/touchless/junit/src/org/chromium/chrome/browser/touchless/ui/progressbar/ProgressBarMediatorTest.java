@@ -21,9 +21,9 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.ui.modelutil.PropertyModel;
 

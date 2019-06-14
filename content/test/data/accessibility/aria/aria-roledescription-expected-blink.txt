@@ -1,5 +1,4 @@
 rootWebArea
-++genericContainer ignored
-++++button name='Native button'
-++++button name='ARIA button'
-++++button name='Clicky button' roleDescription='Clicky'
+++button name='Native button'
+++button name='ARIA button'
+++button name='Clicky button' roleDescription='Clicky'

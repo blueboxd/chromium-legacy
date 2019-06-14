@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_language_info.h"
@@ -108,7 +109,7 @@ struct AXTreeUpdateState {
   }
 
   // Returns whether this update removes |node|.
-  bool IsRemovedNode(const AXNode* node) {
+  bool IsRemovedNode(const AXNode* node) const {
     return removed_node_ids.find(node->id()) != removed_node_ids.end();
   }
 
@@ -117,9 +118,14 @@ struct AXTreeUpdateState {
     return new_nodes.find(node) != new_nodes.end();
   }
 
+  // If this node is removed, it should be considered reparented.
+  bool IsPotentiallyReparentedNode(const AXNode* node) const {
+    return base::Contains(potentially_reparented_ids, node->id());
+  }
+
   // Returns whether this update reparents |node|.
-  bool IsReparentedNode(const AXNode* node) {
-    return IsNewNode(node) && IsRemovedNode(node);
+  bool IsReparentedNode(const AXNode* node) const {
+    return IsPotentiallyReparentedNode(node) && IsRemovedNode(node);
   }
 
   // During an update, this keeps track of all nodes that have been
@@ -137,6 +143,11 @@ struct AXTreeUpdateState {
   // keeps track of parents whose unignored children have changed. Used for
   // caching unignored relationships.
   std::unordered_set<int> changed_unignored_parent_ids;
+
+  // Potentially reparented node ids include any child node ids touched by the
+  // update, as well as any new root node id. Nodes are considered
+  // reparented if they are in this list and removed from somewhere else.
+  std::set<int> potentially_reparented_ids;
 
   // Keeps track of new nodes created during this update.
   std::set<const AXNode*> new_nodes;
@@ -396,6 +407,15 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   if (update.has_tree_data)
     UpdateData(update.tree_data);
 
+  // Get all of the node ids that are certain to exist after the update.
+  // These are the nodes that are considered reparented if they are removed from
+  // somewhere else.
+  update_state.potentially_reparented_ids.emplace(update.root_id);
+  for (const AXNodeData& update_node_data : update.nodes) {
+    update_state.potentially_reparented_ids.insert(
+        update_node_data.child_ids.begin(), update_node_data.child_ids.end());
+  }
+
   // We distinguish between updating the root, e.g. changing its children or
   // some of its attributes, or replacing the root completely.
   bool root_updated = false;
@@ -576,11 +596,10 @@ AXNode* AXTree::CreateNode(AXNode* parent,
   AXNode* new_node = new AXNode(this, parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsChangedNode(new_node) &&
-        !update_state->IsRemovedNode(new_node))
-      observer.OnNodeCreated(this, new_node);
-    else
+    if (update_state->IsReparentedNode(new_node))
       observer.OnNodeReparented(this, new_node);
+    else
+      observer.OnNodeCreated(this, new_node);
   }
   AXNode* unignored_parent = new_node->GetUnignoredParent();
   if (unignored_parent) {
@@ -847,10 +866,10 @@ void AXTree::DestroySubtree(AXNode* node,
                             AXTreeUpdateState* update_state) {
   DCHECK(update_state);
   for (AXTreeObserver& observer : observers_) {
-    if (!update_state->IsChangedNode(node))
-      observer.OnSubtreeWillBeDeleted(this, node);
-    else
+    if (update_state->IsPotentiallyReparentedNode(node))
       observer.OnSubtreeWillBeReparented(this, node);
+    else
+      observer.OnSubtreeWillBeDeleted(this, node);
   }
   DestroyNodeAndSubtree(node, update_state);
 }
@@ -870,10 +889,10 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   }
 
   for (AXTreeObserver& observer : observers_) {
-    if (!update_state || !update_state->IsChangedNode(node))
-      observer.OnNodeWillBeDeleted(this, node);
-    else
+    if (update_state && update_state->IsPotentiallyReparentedNode(node))
       observer.OnNodeWillBeReparented(this, node);
+    else
+      observer.OnNodeWillBeDeleted(this, node);
   }
   id_map_.erase(node->id());
   for (auto* child : node->children())
@@ -887,7 +906,7 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
     update_state->removed_node_ids.insert(node->id());
   }
 
-  if (update_state && update_state->IsChangedNode(node)) {
+  if (update_state && update_state->IsReparentedNode(node)) {
     update_state->reparented_node_id_to_data.insert(
         std::make_pair(node->id(), node->TakeData()));
   }
@@ -974,10 +993,6 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
-  // ignored nodes are not a part of ordered sets.
-  if (original_node.data().HasState(ax::mojom::State::kIgnored))
-    return;
-
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {

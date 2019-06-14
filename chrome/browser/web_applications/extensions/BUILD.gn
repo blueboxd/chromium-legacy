@@ -77,6 +77,7 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "install_manager_bookmark_app_browsertest.cc",
     "pending_bookmark_app_manager_browsertest.cc",
     "web_app_audio_focus_browsertest.cc",
   ]

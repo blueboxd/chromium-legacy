@@ -82,8 +82,11 @@ void DoSplitView(
 class ScopedObserveWindowAnimation {
  public:
   ScopedObserveWindowAnimation(aura::Window* window,
-                               TabletModeWindowManager* manager)
-      : window_(window), manager_(manager) {
+                               TabletModeWindowManager* manager,
+                               bool exiting_tablet_mode)
+      : window_(window),
+        manager_(manager),
+        exiting_tablet_mode_(exiting_tablet_mode) {
     if (Shell::Get()->tablet_mode_controller() && window_) {
       Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
           window_);
@@ -98,12 +101,12 @@ class ScopedObserveWindowAnimation {
       return;
 
     // Stops observing if |window_| is not animating, or if it is not tracked by
-    // TabletModeWindowManager.
-    if (window_->layer()->GetAnimator()->is_animating())
+    // TabletModeWindowManager. When this object is destroyed while exiting
+    // tablet mode, |window_| is no longer tracked, so skip that check.
+    if (window_->layer()->GetAnimator()->is_animating() &&
+        (exiting_tablet_mode_ || manager_->IsTrackingWindow(window_))) {
       return;
-
-    if (manager_->IsTrackingWindow(window_))
-      return;
+    }
 
     Shell::Get()->tablet_mode_controller()->StopObservingAnimation(
         /*record_stats=*/false, /*delete_screenshot=*/true);
@@ -112,6 +115,7 @@ class ScopedObserveWindowAnimation {
  private:
   aura::Window* window_;
   TabletModeWindowManager* manager_;
+  bool exiting_tablet_mode_;
   DISALLOW_COPY_AND_ASSIGN(ScopedObserveWindowAnimation);
 };
 
@@ -133,7 +137,8 @@ void TabletModeWindowManager::Init() {
   CancelOverview();
 
   {
-    ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this);
+    ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
+                                                /*exiting_tablet_mode=*/false);
     ArrangeWindowsForTabletMode();
   }
   AddWindowCreationObservers();
@@ -162,7 +167,8 @@ void TabletModeWindowManager::Shutdown() {
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
 
-  ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this);
+  ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
+                                              /*exiting_tablet_mode=*/true);
   ArrangeWindowsForDesktopMode(was_in_overview);
 }
 

@@ -1226,6 +1226,6 @@ inline bool AtlLoadString(UINT uID, BSTR& bstrText)
 	return (bstrText != NULL) ? true : false;
 }
 
-}  // namespace WTL
+} // namespace WTL
 
 #endif // __ATLUSER_H__

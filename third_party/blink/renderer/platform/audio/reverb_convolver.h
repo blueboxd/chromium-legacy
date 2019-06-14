@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/platform/audio/reverb_convolver_stage.h"
 #include "third_party/blink/renderer/platform/audio/reverb_input_buffer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

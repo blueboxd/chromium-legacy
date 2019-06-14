@@ -49,7 +49,7 @@ class CONTENT_EXPORT FrameNavigationEntry
 
   // Creates a copy of this FrameNavigationEntry that can be modified
   // independently from the original.
-  FrameNavigationEntry* Clone() const;
+  scoped_refptr<FrameNavigationEntry> Clone() const;
 
   // Updates all the members of this entry.
   void UpdateEntry(

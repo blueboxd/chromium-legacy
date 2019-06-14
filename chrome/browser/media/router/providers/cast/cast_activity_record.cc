@@ -217,6 +217,9 @@ void CastActivityRecord::OnAppMessage(
   }
 }
 
+void CastActivityRecord::OnInternalMessage(
+    const cast_channel::InternalMessage& message) {}
+
 int CastActivityRecord::GetCastChannelId() {
   const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route_);
   if (!sink) {

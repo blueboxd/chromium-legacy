@@ -79,10 +79,9 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
                       public ExtensionRegistryObserver {
  public:
   // A callback used to asynchronously respond to an intercepted authentication
-  // request when the Network Service is enabled. If |should_cancel| is true
-  // the request will be cancelled. Otherwise any supplied |credentials| will be
-  // used. If no credentials are supplied, default browser behavior will follow
-  // (e.g. UI prompt for login).
+  // request. If |should_cancel| is true the request will be cancelled.
+  // Otherwise any supplied |credentials| will be used. If no credentials are
+  // supplied, default browser behavior will follow (e.g. UI prompt for login).
   using AuthRequestCallback = base::OnceCallback<void(
       const base::Optional<net::AuthCredentials>& credentials,
       bool should_cancel)>;
@@ -193,7 +192,6 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // factories proxied for service worker.
   //
   // Returns |true| if the URLLoaderFactory will be proxied; |false| otherwise.
-  // Only used when the Network Service is enabled.
   bool MaybeProxyURLLoaderFactory(
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
@@ -204,7 +202,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
 
   // Any request which requires authentication to complete will be bounced
-  // through this method iff Network Service is enabled.
+  // through this method.
   //
   // If this returns |true|, |callback| will eventually be invoked on the UI
   // thread.
@@ -220,8 +218,6 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // BrowserContext, |*request| is swapped out for a new request which proxies
   // through an internal WebSocket implementation. This supports lifetime
   // observation and control on behalf of the WebRequest API.
-  //
-  // Only used when the Network Service is enabled.
   void MaybeProxyWebSocket(
       content::RenderFrameHost* frame,
       network::mojom::WebSocketRequest* request,
@@ -239,7 +235,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   // Indicates whether or not the WebRequestAPI may have one or more proxies
-  // installed to support the API with Network Service enabled.
+  // installed to support the API.
   bool MayHaveProxies() const;
 
   // Checks if |MayHaveProxies()| has changed from false to true, and resets

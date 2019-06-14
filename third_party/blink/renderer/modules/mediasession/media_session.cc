@@ -37,6 +37,7 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
   DEFINE_STATIC_LOCAL(const AtomicString, seek_forward_action_name,
                       ("seekforward"));
   DEFINE_STATIC_LOCAL(const AtomicString, skip_ad_action_name, ("skipad"));
+  DEFINE_STATIC_LOCAL(const AtomicString, stop_action_name, ("stop"));
 
   switch (action) {
     case MediaSessionAction::kPlay:
@@ -53,6 +54,8 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
       return seek_forward_action_name;
     case MediaSessionAction::kSkipAd:
       return skip_ad_action_name;
+    case MediaSessionAction::kStop:
+      return stop_action_name;
     default:
       NOTREACHED();
   }
@@ -75,6 +78,8 @@ base::Optional<MediaSessionAction> ActionNameToMojomAction(
     return MediaSessionAction::kSeekForward;
   if ("skipad" == action_name)
     return MediaSessionAction::kSkipAd;
+  if ("stop" == action_name)
+    return MediaSessionAction::kStop;
 
   NOTREACHED();
   return base::nullopt;

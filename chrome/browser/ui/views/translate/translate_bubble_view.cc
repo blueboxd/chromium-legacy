@@ -757,7 +757,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 
   views::View* view = new views::View();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -842,7 +842,7 @@ views::View* TranslateBubbleView::CreateViewTab() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   views::View* view = new views::View();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Language icon
   const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
@@ -937,7 +937,7 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
 
   views::View* view = new views::View();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -973,7 +973,7 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
 views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   views::View* view = new views::View();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -1015,7 +1015,7 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
 views::View* TranslateBubbleView::CreateViewError() {
   views::View* view = new views::View();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -1090,7 +1090,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
 
   views::View* view = new AdvancedViewContainer();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   enum {
     COLUMN_SET_ID_LANGUAGES,
@@ -1255,7 +1255,7 @@ views::View* TranslateBubbleView::CreateViewAdvancedTabUi(
 
   views::View* view = new AdvancedViewContainer();
   views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   enum {
     COLUMN_SET_ID_TITLE,

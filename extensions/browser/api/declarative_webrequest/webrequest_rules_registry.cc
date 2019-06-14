@@ -21,7 +21,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "net/url_request/url_request.h"
 
 using url_matcher::URLMatcherConditionSet;
 

@@ -24,7 +24,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.force_antialiasing = true;
   input.force_blending_with_shaders = true;
   input.partial_swap_enabled = true;
-  input.finish_rendering_on_resize = true;
   input.should_clear_root_render_pass = false;
   input.release_overlay_resources_after_gpu_query = true;
   input.show_overdraw_feedback = true;
@@ -40,8 +39,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.force_blending_with_shaders,
             output.force_blending_with_shaders);
   EXPECT_EQ(input.partial_swap_enabled, output.partial_swap_enabled);
-  EXPECT_EQ(input.finish_rendering_on_resize,
-            output.finish_rendering_on_resize);
   EXPECT_EQ(input.should_clear_root_render_pass,
             output.should_clear_root_render_pass);
   EXPECT_EQ(input.release_overlay_resources_after_gpu_query,

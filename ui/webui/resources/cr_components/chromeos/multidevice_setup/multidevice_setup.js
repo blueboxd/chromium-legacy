@@ -207,6 +207,7 @@ cr.define('multidevice_setup', function() {
         case PageName.START:
           if (this.delegate.isPasswordRequiredToSetHost()) {
             this.visiblePageName = PageName.PASSWORD;
+            this.$$('password-page').focusPasswordTextInput();
           } else {
             this.setHostDevice_();
           }

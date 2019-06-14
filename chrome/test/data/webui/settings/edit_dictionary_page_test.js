@@ -91,6 +91,22 @@ suite('settings-edit-dictionary-page', function() {
         'none');  // Make sure add-word button actually clickable.
   });
 
+  test('add duplicate word', function() {
+    const WORD = 'unique';
+    languageSettingsPrivate.onCustomDictionaryChanged.callListeners([WORD], []);
+    editDictPage.$.newWord.value = `${WORD} ${WORD}`;
+    Polymer.dom.flush();
+    assertFalse(editDictPage.$.addWord.disabled);
+
+    editDictPage.$.newWord.value = WORD;
+    Polymer.dom.flush();
+    assertTrue(editDictPage.$.addWord.disabled);
+
+    languageSettingsPrivate.onCustomDictionaryChanged.callListeners([], [WORD]);
+    Polymer.dom.flush();
+    assertFalse(editDictPage.$.addWord.disabled);
+  });
+
   test('spellcheck edit dictionary page message when empty', function() {
     assertTrue(!!editDictPage);
     return languageSettingsPrivate.whenCalled('getSpellcheckWords')

@@ -83,7 +83,7 @@ base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
                                         : controller()->GetDeclineButtonText();
 }
 
-views::View* SaveCardBubbleViews::CreateFootnoteView() {
+std::unique_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
   return nullptr;
 }
 

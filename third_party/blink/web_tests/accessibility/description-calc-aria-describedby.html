@@ -117,7 +117,7 @@ test(function(t){
 
 <script>
 test(function(t){
-    assert_true(accessibilityController.accessibleElementById("description6").isIgnored);
+    assert_equals(accessibilityController.accessibleElementById("description6"), undefined);
     var axDescribedby6 = accessibilityController.accessibleElementById("describedby6");
     assert_equals(axDescribedby6.name, "Contents");
     assert_equals(axDescribedby6.nameFrom, "contents");

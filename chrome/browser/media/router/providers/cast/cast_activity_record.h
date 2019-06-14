@@ -80,6 +80,7 @@ class CastActivityRecord : public ActivityRecord {
       blink::mojom::PresentationConnectionCloseReason close_reason) override;
   void TerminatePresentationConnections() override;
   void OnAppMessage(const cast_channel::CastMessage& message) override;
+  void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
   static void SetClientFactoryForTest(
       CastSessionClientFactoryForTest* factory) {

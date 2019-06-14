@@ -381,8 +381,8 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   AddChildView(std::move(container));
 
   auto container2 = std::make_unique<View>();
-  GridLayout* layout = container2->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container2.get()));
+  GridLayout* layout =
+      container2->SetLayoutManager(std::make_unique<views::GridLayout>());
   ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(
       GridLayout::LEADING, GridLayout::FILL, 0, GridLayout::USE_PREF, 0, 0);

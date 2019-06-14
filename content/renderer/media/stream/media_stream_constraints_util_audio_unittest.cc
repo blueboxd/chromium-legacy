@@ -15,7 +15,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
-#include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_parameters.h"
@@ -26,6 +25,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 
 namespace content {
 
@@ -39,14 +39,15 @@ using BoolSetFunction = void (blink::BooleanConstraint::*)(bool);
 using StringSetFunction =
     void (blink::StringConstraint::*)(const blink::WebString&);
 using MockFactoryAccessor =
-    blink::WebMediaTrackConstraintSet& (MockConstraintFactory::*)();
+    blink::WebMediaTrackConstraintSet& (blink::MockConstraintFactory::*)();
 
 const BoolSetFunction kBoolSetFunctions[] = {
     &blink::BooleanConstraint::SetExact, &blink::BooleanConstraint::SetIdeal,
 };
 
 const MockFactoryAccessor kFactoryAccessors[] = {
-    &MockConstraintFactory::basic, &MockConstraintFactory::AddAdvanced};
+    &blink::MockConstraintFactory::basic,
+    &blink::MockConstraintFactory::AddAdvanced};
 
 const bool kBoolValues[] = {true, false};
 
@@ -401,7 +402,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
               expected_buffer_size);
   }
 
-  MockConstraintFactory constraint_factory_;
+  blink::MockConstraintFactory constraint_factory_;
   AudioDeviceCaptureCapabilities capabilities_;
   const AudioDeviceCaptureCapability* default_device_ = nullptr;
   const AudioDeviceCaptureCapability* system_echo_canceller_device_ = nullptr;

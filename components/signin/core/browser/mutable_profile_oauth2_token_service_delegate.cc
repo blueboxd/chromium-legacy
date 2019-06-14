@@ -469,9 +469,9 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshTokenForTest(
   return GetRefreshToken(account_id);
 }
 
-std::vector<std::string>
-MutableProfileOAuth2TokenServiceDelegate::GetAccounts() {
-  std::vector<std::string> account_ids;
+std::vector<CoreAccountId>
+MutableProfileOAuth2TokenServiceDelegate::GetAccounts() const {
+  std::vector<CoreAccountId> account_ids;
   for (auto& token : refresh_tokens_) {
     account_ids.push_back(token.first);
   }

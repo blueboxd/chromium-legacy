@@ -9,6 +9,9 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/display/window_tree_host_manager.h"
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -82,6 +85,15 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
   menu_widget->GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(
       true);
   return menu_widget;
+}
+
+bool ShouldGoHomeOnScreenOn() {
+  return Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
+}
+
+void GoHome() {
+  int64_t primary_display_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  Shell::Get()->home_screen_controller()->GoHome(primary_display_id);
 }
 
 }  // namespace
@@ -259,6 +271,10 @@ void PowerButtonController::OnPowerButtonEvent(
         (menu_shown_when_power_button_down_ &&
          pre_shutdown_timer_was_running)) {
       display_controller_->SetBacklightsForcedOff(true);
+
+      if (ShouldGoHomeOnScreenOn())
+        GoHome();
+
       LockScreenIfRequired();
     }
   }

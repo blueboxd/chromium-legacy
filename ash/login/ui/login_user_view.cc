@@ -651,7 +651,7 @@ void LoginUserView::SetLargeLayout() {
   // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
   // lays out children according to the view->children order.
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   constexpr int kImageColumnId = 0;
   constexpr int kLabelDropdownColumnId = 1;

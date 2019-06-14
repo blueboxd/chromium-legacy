@@ -382,4 +382,10 @@ const char kDeviceDockMacAddressSource[] =
 // respected when the device is shutdown.
 const char kDeviceScheduledUpdateCheck[] =
     "cros.device.device_scheduled_update_check";
+
+// An enum pref that configures the operation mode of the built-in 2nd factor
+// authenticator.
+const char kDeviceSecondFactorAuthenticationMode[] =
+    "cros.device.device_second_factor_authentication_mode";
+
 }  // namespace chromeos

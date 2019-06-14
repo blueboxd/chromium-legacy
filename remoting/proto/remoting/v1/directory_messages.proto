@@ -45,22 +45,27 @@ message GetHostListResponse {
 
 // Sent from a Me2Me host to update it's info and online presence.
 message HeartbeatRequest {
-  // An encypted token used to validate the request's origin.
-  optional string signature = 1;
+  // Obsolete fields reserved to prevent reuse.
+  reserved 1, 5;
+
   // Host identity. Normally a UUID.
   optional string host_id = 2;
+
   // Current ID for the GoogleTalk service, if applicable.
   optional string jabber_id = 3;
+
   // Current ID for the Tachyon service, if applicable.
   optional string tachyon_id = 4;
-  // Monotonically increasing value which is used to prevent replay attacks.
-  optional int32 sequence_id = 5;
+
   // Version of the Me2Me host software installed.
   optional string host_version = 6;
+
   // A reason for the host reporting itself as offline.
   optional string host_offline_reason = 7;
+
   // Operating system type the host is running on.
   optional string host_os_name = 8;
+
   // Operating system version the host is running on.
   optional string host_os_version = 9;
 }

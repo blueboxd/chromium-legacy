@@ -32,7 +32,7 @@ class IPEndPoint;
 namespace extensions {
 
 // A WebRequestProxyingWebSocket proxies a WebSocket connection and dispatches
-// WebRequest API events. This is used only when the network service is enabled.
+// WebRequest API events.
 class WebRequestProxyingWebSocket
     : public WebRequestAPI::Proxy,
       public network::mojom::WebSocket,

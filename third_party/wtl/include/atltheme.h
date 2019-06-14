@@ -1185,6 +1185,6 @@ public:
 
 #endif // (_WIN32_WINNT >= 0x0600)
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLTHEME_H__

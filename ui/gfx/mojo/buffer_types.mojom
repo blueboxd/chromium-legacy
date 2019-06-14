@@ -52,7 +52,7 @@ struct GpuMemoryBufferId {
 [EnableIf=supports_native_pixmap]
 struct NativePixmapPlane {
   uint32 stride;
-  int32 offset;
+  uint64 offset;
   uint64 size;
 
   // A platform-specific handle the underlying memory object.

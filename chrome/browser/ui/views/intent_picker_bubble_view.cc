@@ -329,7 +329,7 @@ void IntentPickerBubbleView::OnKeyEvent(ui::KeyEvent* event) {
 
 void IntentPickerBubbleView::Initialize(bool show_remember_selection) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Creates a view to hold the views for each app.
   auto scrollable_view = std::make_unique<views::View>();

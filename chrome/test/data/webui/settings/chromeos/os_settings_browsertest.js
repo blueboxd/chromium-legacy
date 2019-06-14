@@ -108,3 +108,22 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
 TEST_F('OSSettingsMenuTest', 'MAYBE_All', function() {
   mocha.run();
 });
+
+// Tests for the People section.
+// eslint-disable-next-line no-var
+var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'sync_test_util.js',
+      BROWSER_SETTINGS_PATH + 'test_profile_info_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_sync_browser_proxy.js',
+      'os_people_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPeoplePageTest', 'MAYBE_All', function() {
+  mocha.run();
+});

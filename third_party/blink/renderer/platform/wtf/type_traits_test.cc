@@ -24,7 +24,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 // No gtest tests; only static_assert checks.
 

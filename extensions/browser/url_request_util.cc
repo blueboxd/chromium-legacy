@@ -16,7 +16,6 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
-#include "net/url_request/url_request.h"
 
 namespace extensions {
 namespace url_request_util {

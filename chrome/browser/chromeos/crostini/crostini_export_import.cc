@@ -24,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace crostini {
 
@@ -324,6 +325,9 @@ void CrostiniExportImport::OnImportComplete(
           CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE:
         enum_hist_result = ImportContainerResult::kFailedArchitecture;
         break;
+      case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_SPACE:
+        enum_hist_result = ImportContainerResult::kFailedSpace;
+        break;
       default:
         enum_hist_result = ImportContainerResult::kFailed;
     }
@@ -345,7 +349,9 @@ void CrostiniExportImport::OnImportContainerProgress(
     int progress_percent,
     uint64_t progress_speed,
     const std::string& architecture_device,
-    const std::string& architecture_container) {
+    const std::string& architecture_container,
+    uint64_t available_space,
+    uint64_t minimum_required_space) {
   ContainerId container_id(vm_name, container_name);
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
@@ -370,6 +376,12 @@ void CrostiniExportImport::OnImportContainerProgress(
           IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_ARCHITECTURE,
           base::ASCIIToUTF16(architecture_container),
           base::ASCIIToUTF16(architecture_device)));
+      break;
+    case ImportContainerProgressStatus::FAILURE_SPACE:
+      DCHECK_GE(minimum_required_space, available_space);
+      it->second->set_message_failed(l10n_util::GetStringFUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_SPACE,
+          ui::FormatBytes(minimum_required_space - available_space)));
       break;
     default:
       LOG(WARNING) << "Unknown Export progress status " << int(status);

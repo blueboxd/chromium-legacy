@@ -97,7 +97,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // either by the Sync confirmation dialog or by the settings page if going
   // through the advanced settings flow.
   EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
-  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
+  // TODO(crbug.com/906034,crbug.com/973770): Sort out the proper default value
+  // for IsSyncRequested().
+  // EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());

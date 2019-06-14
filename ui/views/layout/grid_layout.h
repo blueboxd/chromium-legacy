@@ -111,7 +111,7 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
     USE_PREF
   };
 
-  explicit GridLayout(View* host);
+  GridLayout();
   ~GridLayout() override;
 
   // See class description for what this does.
@@ -259,8 +259,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // Returns the column set of the last non-padding row.
   ColumnSet* GetLastValidColumnSet();
 
-  // The view we were created with. We don't own this.
-  View* const host_;
+  // The View this is installed on.
+  View* host_ = nullptr;
 
   // Whether or not we've calculated the master/linked columns.
   mutable bool calculated_master_columns_ = false;

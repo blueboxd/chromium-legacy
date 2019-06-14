@@ -37,6 +37,7 @@ const char kPerfettoProducerName[] = "org.chromium.perfetto_producer.123";
 class PerfettoIntegrationTest : public testing::Test {
  public:
   void SetUp() override {
+    PerfettoTracedProcess::Get()->ResetTaskRunnerForTesting();
     PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     data_source_ =
         std::make_unique<TestDataSource>(kPerfettoTestDataSourceName, 0);

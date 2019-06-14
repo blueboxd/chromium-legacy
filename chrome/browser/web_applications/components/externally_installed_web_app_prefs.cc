@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -94,7 +93,6 @@ bool ExternallyInstalledWebAppPrefs::HasAppId(const PrefService* pref_service,
 }
 
 // static
-
 bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
     const PrefService* pref_service,
     const AppId& app_id,
@@ -108,16 +106,16 @@ bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
 }
 
 // static
-std::vector<GURL> ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
-    Profile* profile,
+std::map<AppId, GURL> ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
+    const PrefService* pref_service,
     InstallSource install_source) {
   const base::DictionaryValue* urls_to_dicts =
-      profile->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs);
+      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
 
-  std::vector<GURL> installed_app_urls;
+  std::map<AppId, GURL> ids_to_urls;
 
   if (!urls_to_dicts) {
-    return installed_app_urls;
+    return ids_to_urls;
   }
 
   for (const auto& it : urls_to_dicts->DictItems()) {
@@ -138,16 +136,12 @@ std::vector<GURL> ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
       continue;
     }
 
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
-    DCHECK(provider);
-    if (!provider->registrar().IsInstalled(v->GetString())) {
-      continue;
-    }
-
-    installed_app_urls.emplace_back(it.first);
+    GURL url(it.first);
+    DCHECK(url.is_valid() && !url.is_empty());
+    ids_to_urls[v->GetString()] = url;
   }
 
-  return installed_app_urls;
+  return ids_to_urls;
 }
 
 ExternallyInstalledWebAppPrefs::ExternallyInstalledWebAppPrefs(

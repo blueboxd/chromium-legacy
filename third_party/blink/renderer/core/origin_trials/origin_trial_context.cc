@@ -94,34 +94,17 @@ bool IsCrossNavigationFeature(OriginTrialFeature feature) {
 
 }  // namespace
 
+OriginTrialContext::OriginTrialContext()
+    : OriginTrialContext(TrialTokenValidator::Policy()
+                             ? std::make_unique<TrialTokenValidator>()
+                             : nullptr) {}
+
 OriginTrialContext::OriginTrialContext(
-    ExecutionContext& context,
     std::unique_ptr<TrialTokenValidator> validator)
-    : Supplement<ExecutionContext>(context),
-      trial_token_validator_(std::move(validator)) {}
+    : trial_token_validator_(std::move(validator)) {}
 
-// static
-const char OriginTrialContext::kSupplementName[] = "OriginTrialContext";
-
-// static
-const OriginTrialContext* OriginTrialContext::From(
-    const ExecutionContext* context) {
-  return Supplement<ExecutionContext>::From<OriginTrialContext>(context);
-}
-
-// static
-OriginTrialContext* OriginTrialContext::FromOrCreate(
-    ExecutionContext* context) {
-  OriginTrialContext* origin_trials =
-      Supplement<ExecutionContext>::From<OriginTrialContext>(context);
-  if (!origin_trials) {
-    origin_trials = MakeGarbageCollected<OriginTrialContext>(
-        *context, TrialTokenValidator::Policy()
-                      ? std::make_unique<TrialTokenValidator>()
-                      : nullptr);
-    Supplement<ExecutionContext>::ProvideTo(*context, origin_trials);
-  }
-  return origin_trials;
+void OriginTrialContext::BindExecutionContext(ExecutionContext* context) {
+  context_ = context;
 }
 
 // static
@@ -157,7 +140,8 @@ void OriginTrialContext::AddTokens(ExecutionContext* context,
                                    const Vector<String>* tokens) {
   if (!tokens || tokens->IsEmpty())
     return;
-  FromOrCreate(context)->AddTokens(*tokens);
+  DCHECK(context && context->GetOriginTrialContext());
+  context->GetOriginTrialContext()->AddTokens(*tokens);
 }
 
 // static
@@ -166,13 +150,17 @@ void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
     const Vector<OriginTrialFeature>* features) {
   if (!features || features->IsEmpty())
     return;
-  FromOrCreate(context)->ActivateNavigationFeaturesFromInitiator(*features);
+  DCHECK(context && context->GetOriginTrialContext());
+  context->GetOriginTrialContext()->ActivateNavigationFeaturesFromInitiator(
+      *features);
 }
 
 // static
 std::unique_ptr<Vector<String>> OriginTrialContext::GetTokens(
     ExecutionContext* execution_context) {
-  const OriginTrialContext* context = From(execution_context);
+  DCHECK(execution_context);
+  const OriginTrialContext* context =
+      execution_context->GetOriginTrialContext();
   if (!context || context->tokens_.IsEmpty())
     return nullptr;
   return std::make_unique<Vector<String>>(context->tokens_);
@@ -182,7 +170,9 @@ std::unique_ptr<Vector<String>> OriginTrialContext::GetTokens(
 std::unique_ptr<Vector<OriginTrialFeature>>
 OriginTrialContext::GetEnabledNavigationFeatures(
     ExecutionContext* execution_context) {
-  const OriginTrialContext* context = From(execution_context);
+  DCHECK(execution_context);
+  const OriginTrialContext* context =
+      execution_context->GetOriginTrialContext();
   return context ? context->GetEnabledNavigationFeatures() : nullptr;
 }
 
@@ -204,7 +194,7 @@ void OriginTrialContext::AddToken(const String& token) {
   if (token.IsEmpty())
     return;
   tokens_.push_back(token);
-  if (EnableTrialFromToken(token)) {
+  if (EnableTrialFromToken(GetSecurityOrigin(), IsSecureContext(), token)) {
     // Only install pending features if the provided token is valid. Otherwise,
     // there was no change to the list of enabled features.
     InitializePendingFeatures();
@@ -212,13 +202,19 @@ void OriginTrialContext::AddToken(const String& token) {
 }
 
 void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
+  AddTokens(GetSecurityOrigin(), IsSecureContext(), tokens);
+}
+
+void OriginTrialContext::AddTokens(const SecurityOrigin* origin,
+                                   bool is_secure,
+                                   const Vector<String>& tokens) {
   if (tokens.IsEmpty())
     return;
   bool found_valid = false;
   for (const String& token : tokens) {
     if (!token.IsEmpty()) {
       tokens_.push_back(token);
-      if (EnableTrialFromToken(token))
+      if (EnableTrialFromToken(origin, is_secure, token))
         found_valid = true;
     }
   }
@@ -242,7 +238,7 @@ void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
 void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_features_.size() && !navigation_activated_features_.size())
     return;
-  auto* document = DynamicTo<Document>(GetSupplementable());
+  auto* document = DynamicTo<Document>(context_.Get());
   if (!document)
     return;
   LocalFrame* frame = document->GetFrame();
@@ -290,12 +286,12 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   // For the purposes of origin trials, we consider imported documents to be
   // part of the master document. Thus, check if the trial is enabled in the
   // master document and use that result.
-  auto* document = DynamicTo<Document>(GetSupplementable());
+  auto* document = DynamicTo<Document>(context_.Get());
   if (!document || !document->IsHTMLImport())
     return false;
 
   const OriginTrialContext* context =
-      OriginTrialContext::From(&document->MasterDocument());
+      document->MasterDocument().GetOriginTrialContext();
   if (!context)
     return false;
   return context->IsFeatureEnabled(feature);
@@ -309,7 +305,9 @@ bool OriginTrialContext::IsNavigationFeatureActivated(
   return navigation_activated_features_.Contains(feature);
 }
 
-bool OriginTrialContext::EnableTrialFromToken(const String& token) {
+bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
+                                              bool is_secure,
+                                              const String& token) {
   DCHECK(!token.IsEmpty());
 
   // Origin trials are only enabled for secure origins
@@ -319,13 +317,6 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
   //  - For the purpose of origin trials, we consider worklets as running in the
   //    same context as the originating document. Thus, the special logic here
   //    to validate the token against the document context.
-  bool is_secure = false;
-  ExecutionContext* context = GetSupplementable();
-  if (auto* scope = DynamicTo<WorkletGlobalScope>(context)) {
-    is_secure = scope->DocumentSecureContext();
-  } else {
-    is_secure = context->IsSecureContext();
-  }
   if (!is_secure) {
     TokenValidationResultHistogram().Count(
         static_cast<int>(OriginTrialTokenStatus::kInsecure));
@@ -337,12 +328,6 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
         static_cast<int>(OriginTrialTokenStatus::kNotSupported));
     return false;
   }
-
-  const SecurityOrigin* origin;
-  if (auto* scope = DynamicTo<WorkletGlobalScope>(context))
-    origin = scope->DocumentSecurityOrigin();
-  else
-    origin = context->GetSecurityOrigin();
 
   bool valid = false;
   StringUTF8Adaptor token_string(token);
@@ -374,7 +359,28 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
 }
 
 void OriginTrialContext::Trace(blink::Visitor* visitor) {
-  Supplement<ExecutionContext>::Trace(visitor);
+  visitor->Trace(context_);
+}
+
+const SecurityOrigin* OriginTrialContext::GetSecurityOrigin() {
+  const SecurityOrigin* origin;
+  CHECK(context_);
+  if (auto* scope = DynamicTo<WorkletGlobalScope>(context_.Get()))
+    origin = scope->DocumentSecurityOrigin();
+  else
+    origin = context_->GetSecurityOrigin();
+  return origin;
+}
+
+bool OriginTrialContext::IsSecureContext() {
+  bool is_secure = false;
+  CHECK(context_);
+  if (auto* scope = DynamicTo<WorkletGlobalScope>(context_.Get())) {
+    is_secure = scope->DocumentSecureContext();
+  } else {
+    is_secure = context_->IsSecureContext();
+  }
+  return is_secure;
 }
 
 }  // namespace blink

@@ -738,18 +738,6 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, QuadVertexRect()));
 
-  if (ShouldApplyBackdropFilters(backdrop_filters)) {
-    SkMatrix matrix;
-    // |filters_scale| is the ratio of render pass physical pixels to root layer
-    // layer space, including content-to-target-space scale and device pixel
-    // ratio.
-    matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-    // |backdrop_rect| is now expanded for pixel moving backdrop_filters, offset
-    // by any backdrop-filter drop-shadow offset. Note that scale is not applied
-    // to the backdrop_rect itself, only the sigma or x/y offset of filters.
-    backdrop_rect = backdrop_filters->MapRectReverse(backdrop_rect, matrix);
-  }
-
   if (regular_filters) {
     DCHECK(!regular_filters->IsEmpty());
     // If we have regular filters, grab an extra one-pixel border around the
@@ -815,14 +803,12 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
-  if (regular_filters) {
-    for (const auto& filter_op : regular_filters->operations())
-      backdrop_filters_plus_effects.Append(filter_op);
-  }
+  // Update the backdrop filter to include opacity.
+  cc::FilterOperations backdrop_filters_plus_opacity = *backdrop_filters;
+  DCHECK(!regular_filters)
+      << "Filters should always be in a separate Effect node";
   if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_effects.Append(
+    backdrop_filters_plus_opacity.Append(
         cc::FilterOperation::CreateOpacityFilter(
             quad->shared_quad_state->opacity));
   }
@@ -831,7 +817,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       gfx::Rect(0, 0, backdrop_bitmap.width(), backdrop_bitmap.height());
   sk_sp<SkImageFilter> filter =
       cc::RenderSurfaceFilters::BuildImageFilter(
-          backdrop_filters_plus_effects,
+          backdrop_filters_plus_opacity,
           gfx::SizeF(bitmap_rect.width(), bitmap_rect.height()),
           clipping_offset)
           ->cached_sk_filter_;

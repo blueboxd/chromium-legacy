@@ -286,6 +286,7 @@ class TracingConsumerTest : public testing::Test,
  public:
   void SetUp() override {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();
 
     matching_packet_count_ = 0;

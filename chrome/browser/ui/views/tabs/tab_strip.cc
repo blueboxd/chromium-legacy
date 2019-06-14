@@ -2237,8 +2237,8 @@ void TabStrip::LayoutToCurrentBounds() {
         &tabs_, animator_->GetCurrentTabStates(), available_width,
         controller_->GetActiveIndex());
 
-    new_tab_button_bounds_.set_origin(
-        gfx::Point(trailing_x + TabToNewTabButtonSpacing(), 0));
+    new_tab_button_bounds_.set_origin(gfx::Point(
+        std::min(available_width, trailing_x) + TabToNewTabButtonSpacing(), 0));
   }
   new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
 

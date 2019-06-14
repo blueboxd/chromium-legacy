@@ -66,6 +66,10 @@ const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
 const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable a new CSS property called backdrop-filter.
+const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

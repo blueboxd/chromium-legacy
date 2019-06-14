@@ -71,14 +71,17 @@ class FrameNodeImpl
 
   // resource_coordinator::mojom::DocumentCoordinationUnit implementation.
   void SetNetworkAlmostIdle() override;
-  void SetLifecycleState(
-      resource_coordinator::mojom::LifecycleState state) override;
+  void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
   void SetInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
+
+  // Partial FrameNode implementation:
+  bool IsMainFrame() const override;
+  bool AreAllInterventionPoliciesSet() const override;
 
   // Getters for const properties. These can be called from any thread.
   FrameNodeImpl* parent_frame_node() const;
@@ -91,7 +94,7 @@ class FrameNodeImpl
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
-  resource_coordinator::mojom::LifecycleState lifecycle_state() const;
+  LifecycleState lifecycle_state() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
   bool is_current() const;
@@ -101,15 +104,8 @@ class FrameNodeImpl
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
 
-  // A frame is a main frame if it has no |parent_frame_node|. This can be
-  // called from any thread.
-  bool IsMainFrame() const;
-
   // Invoked when a navigation is committed in the frame.
   void OnNavigationCommitted(const GURL& url, bool same_document);
-
-  // Returns true if all intervention policies have been set for this frame.
-  bool AreAllInterventionPoliciesSet() const;
 
   // Sets the same policy for all intervention types in this frame. Causes
   // Page::OnFrameInterventionPolicyChanged to be invoked.
@@ -119,6 +115,23 @@ class FrameNodeImpl
  private:
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
+
+  // Rest of FrameNode implementation. These are private so that users of the
+  // impl use the private getters rather than the public interface.
+  const FrameNode* GetParentFrameNode() const override;
+  const PageNode* GetPageNode() const override;
+  const ProcessNode* GetProcessNode() const override;
+  int GetFrameTreeNodeId() const override;
+  const base::UnguessableToken& GetDevToolsToken() const override;
+  int32_t GetBrowsingInstanceId() const override;
+  int32_t GetSiteInstanceId() const override;
+  const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
+  LifecycleState GetLifecycleState() const override;
+  bool HasNonemptyBeforeUnload() const override;
+  const GURL& GetURL() const override;
+  bool IsCurrent() const override;
+  bool GetNetworkAlmostIdle() const override;
+  bool IsAdFrame() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -180,10 +193,10 @@ class FrameNodeImpl
 
   // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<
-      resource_coordinator::mojom::LifecycleState,
+      LifecycleState,
       &GraphImplObserver::OnLifecycleStateChanged,
       &FrameNodeObserver::OnLifecycleStateChanged>
-      lifecycle_state_{resource_coordinator::mojom::LifecycleState::kRunning};
+      lifecycle_state_{LifecycleState::kRunning};
 
   // This is a one way switch. Once marked an ad-frame, always an ad-frame.
   bool is_ad_frame_ = false;

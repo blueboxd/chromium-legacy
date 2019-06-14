@@ -1,6 +1,5 @@
 rootWebArea
-++genericContainer ignored
-++++menu name='parent node' activedescendantId=menuItemCheckBox
-++++++menuItem name='Inactive descendant'
-++++++menuItemCheckBox name='Active descendant' checkedState=false
-++++++menuItemRadio name='Inactive descendant #2' checkedState=false
+++menu name='parent node' activedescendantId=menuItemCheckBox
+++++menuItem name='Inactive descendant'
+++++menuItemCheckBox name='Active descendant' checkedState=false
+++++menuItemRadio name='Inactive descendant #2' checkedState=false

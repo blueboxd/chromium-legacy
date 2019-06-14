@@ -19,7 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 

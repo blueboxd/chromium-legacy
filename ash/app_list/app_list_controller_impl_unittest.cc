@@ -12,6 +12,8 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/ime/ime_controller.h"
+#include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/shelf/shelf.h"
@@ -28,6 +30,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 
 namespace ash {
 
@@ -175,6 +178,45 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
 
   // Test that the rounded corners should show again.
   expected_transform = gfx::Transform();
+  EXPECT_EQ(
+      expected_transform,
+      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+}
+
+// Verify that when the emoji panel shows and AppListView is in Peeking state,
+// AppListView's rounded corners should be hidden (see https://crbug.com/950468)
+TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
+  // Set IME client. Otherwise the emoji panel is unable to show.
+  ImeController* ime_controller = Shell::Get()->ime_controller();
+  TestImeControllerClient client;
+  ime_controller->SetClient(client.CreateInterfacePtr());
+
+  // Show the app list view and right-click on the search box with mouse. So the
+  // text field's context menu shows.
+  ShowAppListNow();
+  app_list::SearchBoxView* search_box_view =
+      GetAppListView()->app_list_main_view()->search_box_view();
+  gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(center_point);
+  event_generator->ClickRightButton();
+
+  // Expect that the first item in the context menu should be "Emoji". Show the
+  // emoji panel.
+  auto text_field_api =
+      std::make_unique<views::TextfieldTestApi>(search_box_view->search_box());
+  ASSERT_EQ("Emoji",
+            base::UTF16ToUTF8(
+                text_field_api->context_menu_contents()->GetLabelAt(0)));
+  text_field_api->context_menu_contents()->ActivatedAt(0);
+
+  // Wait for enough time. Then expect that AppListView is pushed up.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(gfx::Point(0, 0), GetAppListView()->GetBoundsInScreen().origin());
+
+  // AppListBackgroundShield is translated to hide the rounded corners.
+  gfx::Transform expected_transform;
+  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());

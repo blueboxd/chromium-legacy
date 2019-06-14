@@ -7,12 +7,13 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
-#include "ui/ozone/ozone_export.h"
 
 namespace ui {
 
-OZONE_EXPORT std::unique_ptr<gfx::ClientNativePixmapFactory>
+COMPONENT_EXPORT(OZONE)
+std::unique_ptr<gfx::ClientNativePixmapFactory>
 CreateClientNativePixmapFactoryOzone();
 
 }  // namespace ui

@@ -306,7 +306,6 @@ class OnboardingControllerTest : public OnboardingControllerBaseTest {
 
     mojom::OnboardingLoadPageResult result;
     result.net_error = return_error ? net::Error::ERR_FAILED : net::Error::OK;
-    result.custom_header_value = kDeviceOnboardingExperimentName;
     SetUpPageLoad(result);
   }
 
@@ -323,7 +322,6 @@ class OnboardingControllerTest : public OnboardingControllerBaseTest {
     HandleAction(mojom::OnboardingAction::kShowNextPage);
     mojom::OnboardingLoadPageResult result;
     result.net_error = return_error ? net::Error::ERR_FAILED : net::Error::OK;
-    result.custom_header_value = kDeviceOnboardingExperimentName;
     SetUpPageLoad(result);
   }
 
@@ -389,19 +387,23 @@ TEST_F(OnboardingControllerTest, SetEligibleForKioskNextWhenLoadSucceeds) {
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
 }
 
-TEST_F(OnboardingControllerTest, ExitFlowOnAuthError) {
+TEST_F(OnboardingControllerTest, StayInFlowOnAuthError) {
   BindHostAndSetupFailedAuth();
 
   EXPECT_FALSE(webview_host()->page_loaded().has_value());
-  EXPECT_TRUE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
 }
 
-TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnAuthError) {
+TEST_F(OnboardingControllerTest, PresentRetryStateOnAuthError) {
   BindHostAndSetupFailedAuth();
 
   mojom::OnboardingPresentation loading;
   loading.state = mojom::OnboardingPresentationState::kLoading;
-  webview_host()->ExpectPresentations({loading});
+
+  mojom::OnboardingPresentation retry;
+  retry.state = mojom::OnboardingPresentationState::kPageLoadFailed;
+  retry.can_retry_page_load = true;
+  webview_host()->ExpectPresentations({loading, retry});
 }
 
 TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnAuthError) {
@@ -411,18 +413,58 @@ TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnAuthError) {
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
 }
 
-TEST_F(OnboardingControllerTest, ExitFlowOnLoadPageError) {
+TEST_F(OnboardingControllerTest, StayInFlowOnLoadPageError) {
   BindHostAndReturnLoadPageError();
 
-  EXPECT_TRUE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
-TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnLoadPageError) {
+TEST_F(OnboardingControllerTest, PresentRetryStateOnLoadPageError) {
   BindHostAndReturnLoadPageError();
 
   mojom::OnboardingPresentation loading;
   loading.state = mojom::OnboardingPresentationState::kLoading;
-  webview_host()->ExpectPresentations({loading});
+
+  mojom::OnboardingPresentation retry;
+  retry.state = mojom::OnboardingPresentationState::kPageLoadFailed;
+  retry.can_retry_page_load = true;
+  webview_host()->ExpectPresentations({loading, retry});
+}
+
+TEST_F(OnboardingControllerTest, PresentSkipButtonIfLoadFailsTooManyTimes) {
+  BindHostAndReturnLoadPageError();
+
+  mojom::OnboardingLoadPageResult result;
+  result.net_error = net::Error::ERR_FAILED;
+  HandleAction(mojom::OnboardingAction::kRetryPageLoad);
+  SetUpPageLoad(result);
+  HandleAction(mojom::OnboardingAction::kRetryPageLoad);
+  SetUpPageLoad(result);
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  mojom::OnboardingPresentation retry;
+  retry.state = mojom::OnboardingPresentationState::kPageLoadFailed;
+  retry.can_retry_page_load = true;
+
+  mojom::OnboardingPresentation retry_with_skip;
+  retry_with_skip.state = mojom::OnboardingPresentationState::kPageLoadFailed;
+  retry_with_skip.can_retry_page_load = true;
+  retry_with_skip.can_skip_flow = true;
+
+  webview_host()->ExpectPresentations({
+      // First try.
+      loading,
+      retry,
+      // Second try.
+      loading,
+      retry,
+      // On the third try we now show the skip button.
+      loading,
+      retry_with_skip,
+  });
 }
 
 TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnLoadPageError) {
@@ -480,6 +522,14 @@ TEST_F(OnboardingControllerTest,
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
 }
 
+TEST_F(OnboardingControllerTest, ExitFlowWhenHandlingSkipAction) {
+  BindHostAndReturnLoadPageSuccess();
+
+  HandleAction(mojom::OnboardingAction::kSkipFlow);
+
+  EXPECT_TRUE(delegate()->skipped_onboarding());
+}
+
 TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToDetailsPage) {
   NavigateToDetailsPage();
 
@@ -487,10 +537,11 @@ TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToDetailsPage) {
   EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
-TEST_F(OnboardingControllerTest, DetailsPageExitsFlowOnFailedPageLoad) {
+TEST_F(OnboardingControllerTest, DetailsPageStaysInFlowOnFailedPageLoad) {
   NavigateToDetailsPage(/*return_error=*/true);
 
-  EXPECT_TRUE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, DetailsPageIsPresentedCorrectly) {
@@ -526,10 +577,11 @@ TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToAllSetPage) {
   EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
-TEST_F(OnboardingControllerTest, AllSetPageExitsFlowOnFailedPageLoad) {
+TEST_F(OnboardingControllerTest, AllSetPageStaysInFlowOnFailedPageLoad) {
   NavigateToAllSetPage(/*return_error=*/true);
 
-  EXPECT_TRUE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->skipped_onboarding());
+  EXPECT_FALSE(delegate()->finished_onboarding());
 }
 
 TEST_F(OnboardingControllerTest, AllSetPageIsPresentedCorrectly) {

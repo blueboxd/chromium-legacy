@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 namespace trace_event {
@@ -44,7 +44,7 @@ class SingleThreadIdleTaskRunner
   using IdleTask = base::OnceCallback<void(base::TimeTicks)>;
 
   // Used to request idle task deadlines and signal posting of idle tasks.
-  class BLINK_PLATFORM_EXPORT Delegate {
+  class PLATFORM_EXPORT Delegate {
    public:
     Delegate();
     virtual ~Delegate();

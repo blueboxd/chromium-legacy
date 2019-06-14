@@ -56,7 +56,7 @@ bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
   return data_.cfFormat == other.data_.cfFormat;
 }
 
-// Various predefined ClipboardFormatTypes.
+// Predefined ClipboardFormatTypes.
 
 // static
 ClipboardFormatType ClipboardFormatType::GetType(

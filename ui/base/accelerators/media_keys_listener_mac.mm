@@ -46,6 +46,7 @@ class MediaKeysListenerImpl : public MediaKeysListener {
   // MediaKeysListener:
   bool StartWatchingMediaKey(KeyboardCode key_code) override;
   void StopWatchingMediaKey(KeyboardCode key_code) override;
+  void SetIsMediaPlaying(bool is_playing) override {}
 
  private:
   // Callback on media key event.

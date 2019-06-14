@@ -319,12 +319,6 @@ as required builders.
 
   * Experimental percentage: 10
 
-* [linux-goma-rbe-staging-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-goma-rbe-staging-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-goma-rbe-staging-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-goma-rbe-staging-rel))
-
-  https://crbug.com/855319
-
-  * Experimental percentage: 40
-
 * [win7_chromium_rel_loc_exp](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_loc_exp) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win7_chromium_rel_loc_exp)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_loc_exp))
 
   * Experimental percentage: 20

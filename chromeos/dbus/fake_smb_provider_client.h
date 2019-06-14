@@ -31,11 +31,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
 
   // SmbProviderClient override.
   void Mount(const base::FilePath& share_path,
-             bool ntlm_enabled,
-             const std::string& workgroup,
-             const std::string& username,
+             const MountOptions& options,
              base::ScopedFD password_fd,
-             bool skip_connect,
              MountCallback callback) override;
 
   void Unmount(int32_t mount_id, StatusCallback callback) override;

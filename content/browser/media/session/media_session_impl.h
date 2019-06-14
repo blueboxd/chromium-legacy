@@ -135,6 +135,7 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsFocused(RenderWidgetHost*) override;
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
+  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override;
 
   // MediaSessionService-related methods
 

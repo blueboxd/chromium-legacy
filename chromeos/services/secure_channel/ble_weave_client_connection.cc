@@ -579,22 +579,11 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFound(
   StartNotifySession();
 }
 
-void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError(
-    const RemoteAttribute& tx_characteristic,
-    const RemoteAttribute& rx_characteristic) {
+void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError() {
   DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
 
-  std::stringstream ss;
-  ss << "Could not find GATT characteristics for " << GetDeviceInfoLogString()
-     << ": ";
-  if (tx_characteristic.id.empty()) {
-    ss << "[TX: " << tx_characteristic.uuid.canonical_value() << "]";
-    if (rx_characteristic.id.empty())
-      ss << ", ";
-  }
-  if (rx_characteristic.id.empty())
-    ss << "[RX: " << rx_characteristic.uuid.canonical_value() << "]";
-  PA_LOG(ERROR) << ss.str();
+  PA_LOG(ERROR) << "Could not find GATT characteristics for "
+                << GetDeviceInfoLogString();
 
   characteristic_finder_.reset();
 

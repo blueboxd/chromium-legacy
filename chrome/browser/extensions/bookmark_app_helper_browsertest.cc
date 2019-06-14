@@ -157,12 +157,18 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
 };
 
 // Launches an installation confirmation dialog for a PWA.
+// Deprecated in favour of
+// InstallManagerBookmarkAppDialogTest.CreateWindowedPWA_FromNonInstallableSite.
+// TODO(crbug.com/915043): Erase it.
 IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWA) {
   ShowAndVerifyUi();
 }
 
 // Runs through a complete installation of a PWA and ensures the tab is
 // reparented into an app window.
+// Deprecated in favour of
+// InstallManagerBookmarkAppDialogTest.CreateWindowedPWA_FromInstallableSite.
+// TODO(crbug.com/915043): Erase it.
 IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
   // The PWA dialog will be launched because manifest_test_page.html passes
   // the PWA check.

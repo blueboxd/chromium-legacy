@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
 
@@ -83,8 +82,6 @@ class FaviconHelper {
       const std::vector<gfx::Size>& original_sizes);
 
   static size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes);
-
-  favicon::FaviconRequestHandler favicon_request_handler_;
 
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 

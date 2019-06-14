@@ -3198,8 +3198,7 @@ void AppsGridView::StartFolderDroppingAnimation(
 
   // Start animation.
   TopIconAnimationView* animation_view = new TopIconAnimationView(
-      drag_item->icon(), base::UTF8ToUTF16(drag_item->GetDisplayName()),
-      target_bounds, false, true);
+      drag_item->icon(), base::string16(), target_bounds, false, true);
   AddChildView(animation_view);
   animation_view->SetBoundsRect(source_bounds);
   animation_view->AddObserver(

@@ -9859,20 +9859,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                             ->root();
   std::string script =
       "var messageUnloadEventSent = false;"
-      "window.addEventListener(\"beforeunload\", function "
+      "window.addEventListener('beforeunload', function "
       "onBeforeUnload(event) {"
       "if(messageUnloadEventSent) {"
       "return;"
       "}"
       "messageUnloadEventSent = true;"
-      "var iframe = document.getElementById(\"child-0\");"
-      "iframe.contentWindow.postMessage(\"\", \"*\");"
+      "var iframe = document.getElementById('child-0');"
+      "iframe.contentWindow.postMessage('', '*');"
       "});";
   EXPECT_TRUE(ExecJs(root, script));
 
   script =
-      "window.addEventListener(\"message\", function (event) {"
-      "parent.location.href = \"chrome-guest://1234\";"
+      "window.addEventListener('message', function (event) {"
+      "parent.location.href = 'chrome-guest://1234';"
       "});";
   EXPECT_TRUE(ExecJs(root->child_at(0), script));
 
@@ -9885,7 +9885,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // navigation is automatic and it should not be the case. This causes no spoof
   // however, as verified below.
   GURL check_url;
-  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+  if (!AreAllSitesIsolatedForTesting()) {
     EXPECT_FALSE(NavigateToURL(shell(), main_frame_url_2));
     check_url = main_frame_url;
   } else {

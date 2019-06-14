@@ -31,6 +31,7 @@ class X11WindowOzone : public X11WindowBase,
   void PrepareForShutdown() override;
   void SetCapture() override;
   void ReleaseCapture() override;
+  bool HasCapture() const override;
   void SetCursor(PlatformCursor cursor) override;
 
   // XEventDispatcher:

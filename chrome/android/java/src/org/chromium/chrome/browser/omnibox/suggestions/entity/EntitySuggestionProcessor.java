@@ -77,6 +77,17 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
         if (mImageFetcher != null && !hasFocus) mImageFetcher.clear();
     }
 
+    @Override
+    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
+        // Not used.
+    }
+
+    @Override
+    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {
+        // Bookkeeping handled in C++:
+        // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
+    }
+
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
         ThreadUtils.assertOnUiThread();
         final String url = suggestion.getImageUrl();

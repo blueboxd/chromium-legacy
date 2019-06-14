@@ -81,6 +81,9 @@ extern const char kUseMessagesStagingUrlDescription[];
 extern const char kEnableMessagesWebPushName[];
 extern const char kEnableMessagesWebPushDescription[];
 
+extern const char kAndroidPictureInPictureAPIName[];
+extern const char kAndroidPictureInPictureAPIDescription[];
+
 extern const char kAndroidSiteSettingsUIRefreshName[];
 extern const char kAndroidSiteSettingsUIRefreshDescription[];
 
@@ -395,6 +398,9 @@ extern const char kBuiltInModuleKvStorageDescription[];
 
 extern const char kEnableBlinkGenPropertyTreesName[];
 extern const char kEnableBlinkGenPropertyTreesDescription[];
+
+extern const char kEnableCSSBackdropFilterName[];
+extern const char kEnableCSSBackdropFilterDescription[];
 
 extern const char kEnableDisplayLockingName[];
 extern const char kEnableDisplayLockingDescription[];
@@ -942,6 +948,9 @@ extern const char kSaveasMenuLabelExperimentDescription[];
 
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
+
+extern const char kSecurityInterstitialsDarkModeName[];
+extern const char kSecurityInterstitialsDarkModeDescription[];
 
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
@@ -1626,12 +1635,6 @@ extern const char kUseWinrtMidiApiDescription[];
 extern const char kImmersiveFullscreenName[];
 extern const char kImmersiveFullscreenDescription[];
 
-extern const char kHostedAppsInWindowsName[];
-extern const char kHostedAppsInWindowsDescription[];
-
-extern const char kCreateAppWindowsInAppShimProcessName[];
-extern const char kCreateAppWindowsInAppShimProcessDescription[];
-
 extern const char kEnableCustomMacPaperSizesName[];
 extern const char kEnableCustomMacPaperSizesDescription[];
 
@@ -1640,9 +1643,6 @@ extern const char kMacTouchBarDescription[];
 
 extern const char kMacV2GPUSandboxName[];
 extern const char kMacV2GPUSandboxDescription[];
-
-extern const char kMacViewsNativeAppWindowsName[];
-extern const char kMacViewsNativeAppWindowsDescription[];
 
 extern const char kMacViewsTaskManagerName[];
 extern const char kMacViewsTaskManagerDescription[];
@@ -1906,6 +1906,9 @@ extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
+
+extern const char kShowBluetoothDeviceBatteryName[];
+extern const char kShowBluetoothDeviceBatteryDescription[];
 
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];

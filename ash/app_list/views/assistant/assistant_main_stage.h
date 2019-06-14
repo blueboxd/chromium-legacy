@@ -54,7 +54,7 @@ class APP_LIST_EXPORT AssistantMainStage
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const ash::AssistantQuery& query) override;
   void OnPendingQueryChanged(const ash::AssistantQuery& query) override;
-  void OnPendingQueryCleared() override;
+  void OnPendingQueryCleared(bool due_to_commit) override;
   void OnResponseChanged(
       const std::shared_ptr<ash::AssistantResponse>& response) override;
 
@@ -75,7 +75,8 @@ class APP_LIST_EXPORT AssistantMainStage
 
   void MaybeHideGreetingLabel();
 
-  void UpdateFooter();
+  // Update footer to |visible| with animations.
+  void UpdateFooter(bool visible);
 
   void OnFooterAnimationStarted(
       const ui::CallbackLayerAnimationObserver& observer);

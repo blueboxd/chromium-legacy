@@ -8,6 +8,7 @@
 
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -83,6 +84,15 @@ GURL BookmarkAppRegistrar::GetScopeUrlForApp(
   GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
   CHECK(scope_url.is_valid());
   return scope_url;
+}
+
+web_app::AppId BookmarkAppRegistrar::FindAppIdForUrl(const GURL& url) const {
+  const Extension* extension = util::GetInstalledPwaForUrl(profile(), url);
+
+  if (!extension)
+    extension = GetInstalledShortcutForUrl(profile(), url);
+
+  return extension ? extension->id() : web_app::AppId();
 }
 
 void BookmarkAppRegistrar::OnExtensionInstalled(

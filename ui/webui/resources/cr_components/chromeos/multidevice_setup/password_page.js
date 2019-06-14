@@ -96,6 +96,10 @@ Polymer({
     this.$.passwordInput.value = '';
   },
 
+  focusPasswordTextInput: function() {
+    this.$.passwordInput.focus();
+  },
+
   /** @override */
   created: function() {
     this.browserProxy_ = multidevice_setup.BrowserProxyImpl.getInstance();

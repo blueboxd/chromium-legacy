@@ -185,6 +185,7 @@ void AutoclickController::SetAutoclickEventType(
     InitializeScrollLocation();
     UpdateScrollPosition(scroll_location_);
   } else {
+    over_scroll_button_ = false;
     HideScrollPosition();
   }
 
@@ -252,6 +253,19 @@ void AutoclickController::DoScrollAction(ScrollPadAction action) {
   ignore_result(host->event_sink()->OnEventFromSource(&wheel));
 }
 
+void AutoclickController::OnEnteredScrollButton() {
+  if (start_gesture_timer_)
+    start_gesture_timer_->Stop();
+  if (autoclick_timer_)
+    autoclick_timer_->Stop();
+  autoclick_ring_handler_->StopGesture();
+  over_scroll_button_ = true;
+}
+
+void AutoclickController::OnExitedScrollButton() {
+  over_scroll_button_ = false;
+}
+
 void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetPosition(menu_position_);
@@ -314,11 +328,16 @@ void AutoclickController::DoAutoclickAction() {
 
   if (in_progress_event_type == mojom::AutoclickEventType::kScroll) {
     // A dwell during a scroll.
-    // TODO(katie): Check if the event is over the scroll bubble controller,
-    // and if it is, click on the scroll bubble.
-    // TODO(katie): Move the scroll bubble closer to the new scroll location.
-    scroll_location_ = gesture_anchor_location_;
-    UpdateScrollPosition(scroll_location_);
+    // Check if the event is over the scroll bubble controller, and if it is,
+    // click on the scroll bubble.
+    if (AutoclickScrollContainsPoint(gesture_anchor_location_)) {
+      menu_bubble_controller_->ClickOnScrollBubble(gesture_anchor_location_,
+                                                   mouse_event_flags_);
+    } else {
+      // TODO(katie): Move the scroll bubble closer to the new scroll location.
+      scroll_location_ = gesture_anchor_location_;
+      UpdateScrollPosition(scroll_location_);
+    }
     return;
   }
 
@@ -514,6 +533,12 @@ bool AutoclickController::AutoclickMenuContainsPoint(
          menu_bubble_controller_->ContainsPointInScreen(point);
 }
 
+bool AutoclickController::AutoclickScrollContainsPoint(
+    const gfx::Point& point) const {
+  return menu_bubble_controller_ &&
+         menu_bubble_controller_->ScrollBubbleContainsPointInScreen(point);
+}
+
 void AutoclickController::RecordUserAction(
     mojom::AutoclickEventType event_type) const {
   switch (event_type) {
@@ -551,6 +576,8 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return;
   last_mouse_location_ = event->target()->GetScreenLocation(*event);
+  if (over_scroll_button_)
+    return;
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||
        (event->type() == ui::ET_MOUSE_DRAGGED &&

@@ -25,8 +25,8 @@ bool IsSendingEnabled();
 // Returns true if the SendTabToSelf sync datatype is active.
 bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state);
 
-// Returns true if the user syncing on two or more devices.
-bool IsSyncingOnMultipleDevices(ios::ChromeBrowserState* browser_state);
+// Returns true if there is valid device.
+bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state);
 
 // Returns true if the tab and web content requirements are met:
 //  User is viewing an HTTP or HTTPS page.

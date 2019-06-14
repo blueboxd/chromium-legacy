@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
+#include "content/public/common/content_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -66,8 +67,10 @@ void AssistantClient::MaybeInit(Profile* profile) {
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
 
+  bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kBrowserTest);
   assistant_connection_->Init(std::move(client_ptr),
-                              device_actions_.AddBinding());
+                              device_actions_.AddBinding(), is_test);
 
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(connector);

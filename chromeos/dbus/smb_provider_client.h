@@ -54,6 +54,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
       int32_t read_dir_token,
       const smbprovider::DirectoryEntryListProto& entries)>;
 
+  // Optional arguments to pass to Mount().
+  struct MountOptions {
+    std::string username;
+    std::string workgroup;
+
+    // Enable NTLM Authentication.
+    bool ntlm_enabled = false;
+
+    // Do no attempt to connect to and authenticate the mounted share.
+    bool skip_connect = false;
+  };
+
   ~SmbProviderClient() override;
 
   // Factory function, creates a new instance and returns ownership.
@@ -61,15 +73,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
   static std::unique_ptr<SmbProviderClient> Create();
 
   // Calls Mount. It runs OpenDirectory() on |share_path| to check that it is a
-  // valid share. |workgroup|, |username|, and |password_fd| will be used as
-  // credentials to access the mount. |callback| is called after getting (or
-  // failing to get) D-BUS response.
+  // valid share. |options.workgroup|, |options.username|, and |password_fd|
+  // will be used as credentials to access the mount. |callback| is called after
+  // getting (or failing to get) D-BUS response.
   virtual void Mount(const base::FilePath& share_path,
-                     bool ntlm_enabled,
-                     const std::string& workgroup,
-                     const std::string& username,
+                     const MountOptions& options,
                      base::ScopedFD password_fd,
-                     bool skip_connect,
                      MountCallback callback) = 0;
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from

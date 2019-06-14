@@ -80,10 +80,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   ~V4L2SliceVideoDecoder() override;
   void Destroy() override;
 
-  // Record for the V4L2 input buffer.
-  struct InputRecord;
-  // Record for the V4L2 output buffer.
-  struct OutputRecord;
   // Request for decoding buffer. Every Decode() call generates 1 DecodeRequest.
   struct DecodeRequest {
     // The decode buffer passed from Decode().
@@ -215,10 +211,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
-  // Mapping from input_record() of surface to its InputRecord.
-  std::map<size_t, std::unique_ptr<InputRecord>> input_record_map_;
-  // Mapping from output_record() of surface to its OutputRecord.
-  std::map<size_t, std::unique_ptr<OutputRecord>> output_record_map_;
 
   // Queue of pending decode request.
   base::queue<DecodeRequest> decode_request_queue_;

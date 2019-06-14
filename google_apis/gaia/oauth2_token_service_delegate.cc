@@ -110,8 +110,8 @@ GoogleServiceAuthError OAuth2TokenServiceDelegate::GetAuthError(
   return GoogleServiceAuthError::AuthErrorNone();
 }
 
-std::vector<std::string> OAuth2TokenServiceDelegate::GetAccounts() {
-  return std::vector<std::string>();
+std::vector<CoreAccountId> OAuth2TokenServiceDelegate::GetAccounts() const {
+  return std::vector<CoreAccountId>();
 }
 
 const net::BackoffEntry* OAuth2TokenServiceDelegate::BackoffEntry() const {

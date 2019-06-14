@@ -1550,7 +1550,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ]
         },
@@ -1570,7 +1570,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ]
         },
@@ -1589,7 +1589,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ]
         },
@@ -1618,7 +1618,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1645,7 +1645,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1672,7 +1672,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1699,7 +1699,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1730,7 +1730,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1764,7 +1764,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1806,7 +1806,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1834,7 +1834,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1861,7 +1861,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false
@@ -1888,7 +1888,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.6"
             }
           ],
           "idempotent": false,

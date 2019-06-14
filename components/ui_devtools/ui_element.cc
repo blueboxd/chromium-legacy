@@ -16,6 +16,11 @@ static int node_ids = 0;
 
 }  // namespace
 
+// static
+void UIElement::ResetNodeId() {
+  node_ids = 0;
+}
+
 UIElement::~UIElement() {
   if (owns_children_) {
     for (auto* child : children_)

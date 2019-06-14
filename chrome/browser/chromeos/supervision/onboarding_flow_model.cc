@@ -72,7 +72,10 @@ void OnboardingFlowModel::HandleAction(mojom::OnboardingAction action) {
       ShowPreviousPage();
       return;
     case mojom::OnboardingAction::kSkipFlow:
-      SkipFlow();
+      ExitFlow(ExitReason::kFlowSkipped);
+      return;
+    case mojom::OnboardingAction::kRetryPageLoad:
+      LoadStep(current_step_);
       return;
   }
 }
@@ -154,18 +157,6 @@ void OnboardingFlowModel::ShowPreviousPage() {
   }
 }
 
-void OnboardingFlowModel::SkipFlow() {
-  switch (current_step_) {
-    case Step::kStart:
-      ExitFlow(ExitReason::kFlowSkipped);
-      return;
-    case Step::kDetails:
-    case Step::kAllSet:
-      NOTREACHED();
-      return;
-  }
-}
-
 void OnboardingFlowModel::LoadStep(Step step) {
   current_step_ = step;
 
@@ -191,7 +182,9 @@ void OnboardingFlowModel::AccessTokenCallback(
     identity::AccessTokenInfo access_token_info) {
   DCHECK(webview_host_);
   if (error.state() != GoogleServiceAuthError::NONE) {
-    ExitFlow(ExitReason::kAuthError);
+    for (auto& observer : observer_list_) {
+      observer.StepFailedToLoadDueToAuthError(current_step_, error);
+    }
     return;
   }
 
@@ -205,9 +198,10 @@ void OnboardingFlowModel::LoadPageCallback(
   DCHECK(webview_host_);
 
   if (result->net_error != net::Error::OK) {
-    // TODO(crbug.com/958995): Fail here more gracefully. We should provide a
-    // way to retry the fetch if the error is recoverable.
-    ExitFlow(ExitReason::kWebviewNetworkError);
+    for (auto& observer : observer_list_) {
+      observer.StepFailedToLoadDueToNetworkError(
+          current_step_, static_cast<net::Error>(result->net_error));
+    }
     return;
   }
 

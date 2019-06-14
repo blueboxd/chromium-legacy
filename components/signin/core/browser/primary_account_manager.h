@@ -124,14 +124,9 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   void SetObserver(Observer* observer);
   void ClearObserver();
 
-  // Signin API surfaces. Not used on ChromeOS.
-  // TODO(https://crbug.com/814787): Go through this API to set the primary
-  // account on ChromeOS.
-#if !defined(OS_CHROMEOS)
-  // Signs a user in. PrimaryAccountPolicyManager assumes that |username| can be
-  // used to look up the corresponding account_id and gaia_id for this email.
+  // Signs a user in. PrimaryAccountManager assumes that |username| can be used
+  // to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
-#endif
 
   // Signout API surfaces (not supported on ChromeOS, where signout is not
   // permitted).

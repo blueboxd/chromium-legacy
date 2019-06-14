@@ -7,7 +7,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
-#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 namespace {
@@ -21,7 +20,7 @@ class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
   void Read(mojo::ScopedDataPipeProducerHandle handle,
             ReadCallback callback) override {
     std::move(callback).Run(0 /* OK */, str_.length());
-    bool result = mojo::BlockingCopyFromString(WebString(str_).Utf8(), handle);
+    bool result = mojo::BlockingCopyFromString(str_.Utf8(), handle);
     DCHECK(result);
   }
 
@@ -67,7 +66,7 @@ void FakeBlob::ReadAll(mojo::ScopedDataPipeProducerHandle handle,
     state_->did_initiate_read_operation = true;
   if (client)
     client->OnCalculatedSize(body_.length(), body_.length());
-  bool result = mojo::BlockingCopyFromString(WebString(body_).Utf8(), handle);
+  bool result = mojo::BlockingCopyFromString(body_.Utf8(), handle);
   DCHECK(result);
   if (client)
     client->OnComplete(0 /* OK */, body_.length());

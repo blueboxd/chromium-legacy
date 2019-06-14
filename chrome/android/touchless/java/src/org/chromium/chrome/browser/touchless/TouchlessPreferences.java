@@ -29,7 +29,9 @@ public class TouchlessPreferences extends Preferences {
         mTouchlessModelCoordinator = AppHooks.get().createTouchlessModelCoordinator(this);
         mDialogModel =
                 new PropertyModel.Builder(TouchlessDialogProperties.MINIMAL_DIALOG_KEYS).build();
-        mTouchlessModelCoordinator.addModelToQueue(mDialogModel);
+        if (mTouchlessModelCoordinator != null) {
+            mTouchlessModelCoordinator.addModelToQueue(mDialogModel);
+        }
     }
 
     @Override

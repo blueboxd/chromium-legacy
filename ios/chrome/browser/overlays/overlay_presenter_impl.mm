@@ -63,6 +63,10 @@ OverlayPresenterImpl::~OverlayPresenterImpl() {
   // destruction.
   DCHECK(!ui_delegate_);
   DCHECK(!web_state_list_);
+
+  for (auto& observer : observers_) {
+    observer.OverlayPresenterDestroyed(this);
+  }
 }
 
 #pragma mark - Public
@@ -182,6 +186,12 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
 
   presenting_ = true;
 
+  // Notify the observers that the overlay UI is about to be shown.
+  for (auto& observer : observers_) {
+    observer.WillShowOverlay(this, request);
+  }
+
+  // Present the overlay UI via the UI delegate.
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
       &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
       ui_delegate_, request, GetActiveQueue()->GetWeakPtr());
@@ -210,6 +220,11 @@ void OverlayPresenterImpl::OverlayWasDismissed(
   }
 
   presenting_ = false;
+
+  // Notify the observers that the overlay UI was hidden.
+  for (auto& observer : observers_) {
+    observer.DidHideOverlay(this);
+  }
 
   // Only show the next overlay if the active request has changed, either
   // because the frontmost request was popped or because the active WebState has

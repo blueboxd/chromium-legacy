@@ -149,6 +149,9 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
     chromeos::CrosUsbDetector::Get()->SetDeviceManagerForTesting(
         std::move(device_manager_ptr));
+    // Create a default VM instance which is running.
+    crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+        crostini::kCrostiniDefaultVmName);
   }
 
   void TearDown() override {
@@ -210,6 +213,30 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceAddedAndRemoved) {
   device_manager_.RemoveDevice(device);
   base::RunLoop().RunUntilIdle();
   // Device is removed, so notification should be removed too.
+  EXPECT_FALSE(display_service_->GetNotification(notification_id));
+}
+
+TEST_F(CrosUsbDetectorTest, UsbNotificationClicked) {
+  ConnectToDeviceManager();
+  base::RunLoop().RunUntilIdle();
+
+  auto device = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, kManufacturerName, kProductName_1, "002");
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+
+  std::string notification_id =
+      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+
+  base::Optional<message_center::Notification> notification =
+      display_service_->GetNotification(notification_id);
+  ASSERT_TRUE(notification);
+
+  notification->delegate()->Click(0, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(fake_concierge_client_->attach_usb_device_called());
+  // Notification should close.
   EXPECT_FALSE(display_service_->GetNotification(notification_id));
 }
 

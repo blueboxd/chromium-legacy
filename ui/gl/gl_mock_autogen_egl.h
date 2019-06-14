@@ -127,10 +127,10 @@ MOCK_METHOD3(GetNextFrameIdANDROID,
              EGLBoolean(EGLDisplay dpy,
                         EGLSurface surface,
                         EGLuint64KHR* frameId));
-MOCK_METHOD3(GetPlatformDisplayEXT,
+MOCK_METHOD3(GetPlatformDisplay,
              EGLDisplay(EGLenum platform,
                         void* native_display,
-                        const EGLint* attrib_list));
+                        const EGLAttrib* attrib_list));
 MOCK_METHOD1(GetProcAddress,
              __eglMustCastToProperFunctionPointerType(const char* procname));
 MOCK_METHOD4(GetSyncAttribKHR,

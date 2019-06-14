@@ -29,10 +29,10 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
       OAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccountFetcherService* service,
-      const std::string& account_id);
+      const CoreAccountId& account_id);
   ~AccountInfoFetcher() override;
 
-  const std::string& account_id() { return account_id_; }
+  const CoreAccountId& account_id() { return account_id_; }
 
   // Start fetching the account information.
   void Start();
@@ -54,7 +54,7 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   OAuth2TokenService* token_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountFetcherService* service_;
-  const std::string account_id_;
+  const CoreAccountId account_id_;
 
   std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;

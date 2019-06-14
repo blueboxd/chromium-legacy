@@ -291,10 +291,13 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                               : share_finder_->GetResolvedUrl(parsed_url);
   const base::FilePath mount_path(url);
 
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.username = username;
+  smb_mount_options.workgroup = workgroup;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
   GetSmbProviderClient()->Mount(
-      mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,
+      mount_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile(password),
-      false /* skip_connect */,
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
                      use_chromad_kerberos,
@@ -452,10 +455,14 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   // An empty password is passed to Mount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
   // descriptor.
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.username = username;
+  smb_mount_options.workgroup = workgroup;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+  smb_mount_options.skip_connect = true;
   GetSmbProviderClient()->Mount(
-      mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,
+      mount_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile("" /* password */),
-      true /* skip_connect */,
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
 }
@@ -482,10 +489,12 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 void SmbService::Premount(const base::FilePath& share_path) {
   // Premounting is equivalent to remounting, but with an empty username and
   // password.
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+  smb_mount_options.skip_connect = true;
   GetSmbProviderClient()->Mount(
-      share_path, IsNTLMAuthenticationEnabled(), "", "",
+      share_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile("" /* password */),
-      true /* skip_connect */,
       base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
 }
 
@@ -583,6 +592,19 @@ void SmbService::CompleteSetup(
                           base::Unretained(this))));
   RestoreMounts();
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  if (setup_complete_callback_) {
+    std::move(setup_complete_callback_).Run();
+  }
+}
+
+void SmbService::OnSetupCompleteForTesting(base::OnceClosure callback) {
+  DCHECK(!setup_complete_callback_);
+  if (temp_file_manager_) {
+    std::move(callback).Run();
+    return;
+  }
+  setup_complete_callback_ = std::move(callback);
 }
 
 void SmbService::FireMountCallback(MountResponse callback,

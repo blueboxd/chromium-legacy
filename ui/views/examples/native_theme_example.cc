@@ -64,8 +64,7 @@ void InsertColorRow(GridLayout* layout,
 // of ui::NativeTheme::ColorId and the second contains the color.
 std::unique_ptr<View> CreateAllColorsView() {
   auto container = std::make_unique<View>();
-  auto* layout = container->SetLayoutManager(
-      std::make_unique<GridLayout>(container.get()));
+  auto* layout = container->SetLayoutManager(std::make_unique<GridLayout>());
   auto* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                         GridLayout::USE_PREF, 0, 0);

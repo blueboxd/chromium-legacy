@@ -563,6 +563,22 @@
         },
         {
             "platforms": [
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioServiceStreams",
+                    "enable_features": [
+                        "AudioServiceAudioStreams"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AudioServiceSandboxApmLinux": [
+        {
+            "platforms": [
                 "linux"
             ],
             "experiments": [
@@ -578,17 +594,21 @@
                     ]
                 }
             ]
-        },
+        }
+    ],
+    "AutofillDoNotMigrateUnsupportedLocalCards": [
         {
             "platforms": [
-                "android",
-                "chromeos"
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
-                    "name": "AudioServiceStreams",
+                    "name": "Enabled",
                     "enable_features": [
-                        "AudioServiceAudioStreams"
+                        "AutofillDoNotMigrateUnsupportedLocalCards"
                     ]
                 }
             ]
@@ -1827,6 +1847,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DirectCompositionUseNV12DecodeSwapChain"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DisableInitialMostVisitedFadeIn": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DisableInitialMostVisitedFadeIn"
                     ]
                 }
             ]

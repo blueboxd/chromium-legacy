@@ -192,9 +192,6 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
           (Href().Protocol() == "chrome" ||
            Href().Protocol() == "chrome-extension");
       if (!imports_enabled) {
-        // Ensure the origin trial context is created, as the enabled check will
-        // return false if the context doesn't exist yet.
-        OriginTrialContext::FromOrCreate(&GetDocument());
         imports_enabled =
             RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument());
       }

@@ -70,7 +70,6 @@ constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 
 jumbo_component("ozone_base") {
   sources = [
-    "ozone_base_export.h",
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
     "public/gl_ozone.h",
@@ -98,7 +97,7 @@ jumbo_component("ozone_base") {
     "public/swap_completion_callback.h",
   ]
 
-  defines = [ "OZONE_BASE_IMPLEMENTATION" ]
+  defines = [ "IS_OZONE_BASE_IMPL" ]
 
   public_deps = [
     "//base",
@@ -142,7 +141,6 @@ source_set("platform") {
   sources = [
     "common/stub_client_native_pixmap_factory.cc",
     "common/stub_client_native_pixmap_factory.h",
-    "ozone_export.h",
     "platform_constructor_list.h",
     "platform_object.h",
     "platform_object_internal.h",
@@ -162,7 +160,7 @@ source_set("platform") {
     "public/ozone_platform.h",
   ]
 
-  defines = [ "OZONE_IMPLEMENTATION" ]
+  defines = [ "IS_OZONE_IMPL" ]
 
   public_deps = [
     ":ozone_base",

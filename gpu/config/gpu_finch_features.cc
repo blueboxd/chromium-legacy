@@ -55,8 +55,13 @@ const base::Feature kDefaultEnableGpuRasterization{
 
 // Enable out of process rasterization by default.  This can still be overridden
 // by --enable-oop-rasterization or --disable-oop-rasterization.
+#if defined(OS_ANDROID)
+const base::Feature kDefaultEnableOopRasterization{
+    "DefaultEnableOopRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Use the passthrough command decoder by default.  This can be overridden with
 // the --use-cmd-decoder=passthrough or --use-cmd-decoder=validating flags.
@@ -69,11 +74,24 @@ const base::Feature kDefaultPassthroughCommandDecoder{
 const base::Feature kDirectCompositionUnderlays{
     "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+const base::Feature kGpuUseDisplayThreadPriority{
+    "GpuUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+const base::Feature kGpuUseDisplayThreadPriority{
+    "GpuUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Allow GPU watchdog to keep waiting for ackowledgement if one is already
 // issued from the monitored thread.
 const base::Feature kGpuWatchdogNoTerminationAwaitingAcknowledge{
     "GpuWatchdogNoTerminationAwaitingAcknowledge",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Gpu watchdog V2 to simplify the logic and reduce GPU hangs
+const base::Feature kGpuWatchdogV2{"GpuWatchdogV2",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
 // Enable use of Metal for OOP rasterization.

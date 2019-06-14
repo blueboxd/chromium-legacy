@@ -63,7 +63,9 @@ namespace {
 
 volatile sig_atomic_t in_signal_handler = 0;
 
-bool (*try_handle_signal)(int, void*, void*) = nullptr;
+#if !defined(OS_NACL)
+bool (*try_handle_signal)(int, siginfo_t*, void*) = nullptr;
+#endif
 
 #if !defined(USE_SYMBOLIZE)
 // The prefix used for mangled symbols, per the Itanium C++ ABI:
@@ -228,6 +230,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   // NOTE: This code MUST be async-signal safe.
   // NO malloc or stdio is allowed here.
 
+#if !defined(OS_NACL)
   // Give a registered callback a chance to recover from this signal
   //
   // V8 uses guard regions to guarantee memory safety in WebAssembly. This means
@@ -248,6 +251,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
     sigaction(signal, &action, nullptr);
     return;
   }
+#endif
 
 // Do not take the "in signal handler" code path on Mac in a DCHECK-enabled
 // build, as this prevents seeing a useful (symbolized) stack trace on a crash
@@ -803,7 +807,8 @@ bool EnableInProcessStackDumping() {
   return success;
 }
 
-bool SetStackDumpFirstChanceCallback(bool (*handler)(int, void*, void*)) {
+#if !defined(OS_NACL)
+bool SetStackDumpFirstChanceCallback(bool (*handler)(int, siginfo_t*, void*)) {
   DCHECK(try_handle_signal == nullptr || handler == nullptr);
   try_handle_signal = handler;
 
@@ -823,6 +828,7 @@ bool SetStackDumpFirstChanceCallback(bool (*handler)(int, void*, void*)) {
 #endif
   return true;
 }
+#endif
 
 size_t CollectStackTrace(void** trace, size_t count) {
   // NOTE: This code MUST be async-signal safe (it's used by in-process

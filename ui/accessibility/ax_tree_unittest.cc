@@ -79,15 +79,21 @@ class TestAXTreeObserver : public AXTreeObserver {
     subtree_deleted_ids_.push_back(node->id());
   }
 
-  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {}
+  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {
+    node_will_be_reparented_ids_.push_back(node->id());
+  }
 
-  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {}
+  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {
+    subtree_will_be_reparented_ids_.push_back(node->id());
+  }
 
   void OnNodeCreated(AXTree* tree, AXNode* node) override {
     created_ids_.push_back(node->id());
   }
 
-  void OnNodeReparented(AXTree* tree, AXNode* node) override {}
+  void OnNodeReparented(AXTree* tree, AXNode* node) override {
+    node_reparented_ids_.push_back(node->id());
+  }
 
   void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
@@ -204,6 +210,15 @@ class TestAXTreeObserver : public AXTreeObserver {
   const std::vector<int32_t>& node_reparented_finished_ids() {
     return node_reparented_finished_ids_;
   }
+  const std::vector<int32_t>& subtree_will_be_reparented_ids() {
+    return subtree_will_be_reparented_ids_;
+  }
+  const std::vector<int32_t>& node_will_be_reparented_ids() {
+    return node_will_be_reparented_ids_;
+  }
+  const std::vector<int32_t>& node_reparented_ids() {
+    return node_reparented_ids_;
+  }
   const std::vector<int32_t>& subtree_reparented_finished_ids() {
     return subtree_reparented_finished_ids_;
   }
@@ -228,8 +243,11 @@ class TestAXTreeObserver : public AXTreeObserver {
   std::vector<int32_t> subtree_deleted_ids_;
   std::vector<int32_t> created_ids_;
   std::vector<int32_t> changed_ids_;
+  std::vector<int32_t> subtree_will_be_reparented_ids_;
+  std::vector<int32_t> node_will_be_reparented_ids_;
   std::vector<int32_t> node_creation_finished_ids_;
   std::vector<int32_t> subtree_creation_finished_ids_;
+  std::vector<int32_t> node_reparented_ids_;
   std::vector<int32_t> node_reparented_finished_ids_;
   std::vector<int32_t> subtree_reparented_finished_ids_;
   std::vector<int32_t> change_finished_ids_;
@@ -468,6 +486,50 @@ TEST(AXTreeTest, NoReparentingOfRootIfNoNewRoot) {
 
   ASSERT_EQ(1U, test_observer.change_finished_ids().size());
   EXPECT_EQ(root.id, test_observer.change_finished_ids()[0]);
+
+  EXPECT_FALSE(test_observer.root_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
+}
+
+TEST(AXTreeTest, NoReparentingIfOnlyRemovedAndChangedNotReAdded) {
+  AXNodeData root;
+  root.id = 1;
+  AXNodeData child1;
+  child1.id = 2;
+  AXNodeData child2;
+  child2.id = 3;
+
+  root.child_ids = {child1.id};
+  child1.child_ids = {child2.id};
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = root.id;
+  initial_state.nodes = {root, child1, child2};
+
+  AXTree tree(initial_state);
+
+  // Change existing attributes.
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0].id = 2;
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                  3);
+  update.nodes[1].id = 1;
+
+  TestAXTreeObserver test_observer(&tree);
+  EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
+
+  EXPECT_EQ(2U, test_observer.deleted_ids().size());
+  EXPECT_EQ(2U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(0U, test_observer.created_ids().size());
+
+  EXPECT_EQ(0U, test_observer.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_will_be_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_will_be_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_finished_ids().size());
+  ASSERT_EQ(0U, test_observer.subtree_reparented_finished_ids().size());
 
   EXPECT_FALSE(test_observer.root_changed());
   EXPECT_FALSE(test_observer.tree_data_changed());

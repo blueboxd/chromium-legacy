@@ -37,15 +37,6 @@ inline double CurrentTimeMS() {
 
 using TimeFunction = double (*)();
 
-// Make all the time functions (currentTime(), monotonicallyIncreasingTime(),
-// systemTraceTime()) return the result of the supplied function. Returns the
-// pointer to the old time function. For both setting and getting, nullptr
-// means using the default timing function returning the actual time.
-WTF_EXPORT TimeFunction SetTimeFunctionsForTesting(TimeFunction);
-
-// Allows wtf/Time.h to use the same mock time function
-WTF_EXPORT TimeFunction GetTimeFunctionForTesting();
-
 // Monotonically increasing clock time since an arbitrary and unspecified origin
 // time. Mockable using SetTimeFunctionsForTesting().
 WTF_EXPORT TimeTicks CurrentTimeTicks();
@@ -62,10 +53,8 @@ using WTF::CurrentTimeMS;
 using WTF::CurrentTimeTicks;
 using WTF::CurrentTimeTicksInMilliseconds;
 using WTF::CurrentTimeTicksInSeconds;
-using WTF::SetTimeFunctionsForTesting;
 using WTF::Time;
 using WTF::TimeDelta;
-using WTF::TimeFunction;
 using WTF::TimeTicks;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_

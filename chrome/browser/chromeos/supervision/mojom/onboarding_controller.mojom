@@ -16,6 +16,9 @@ enum OnboardingAction {
   // The user wants to go back/forward in the flow.
   kShowNextPage,
   kShowPreviousPage,
+
+  // Tries to execute the page load again.
+  kRetryPageLoad,
 };
 
 struct OnboardingPage {
@@ -45,9 +48,9 @@ enum OnboardingPresentationState {
   // The flow is ready, the webview can be shown.
   kReady,
 
-  // TODO(crbug.com/958995): Add an error state, where we can show retry
-  // actions and stop showing the webview. At the moment we simply end the flow
-  // when we find errors.
+  // The page load failed, so we present a screen that tells that something
+  // went wrong and display a retry button.
+  kPageLoadFailed,
 };
 
 // Describes how the flow should be presented at a given point.
@@ -58,6 +61,7 @@ struct OnboardingPresentation {
   bool can_show_next_page;
   bool can_show_previous_page;
   bool can_skip_flow;
+  bool can_retry_page_load;
 };
 
 // Represents a webview host, responsible for displaying supervision

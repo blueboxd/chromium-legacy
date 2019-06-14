@@ -8,7 +8,10 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
+#include "ui/accessibility/accessibility_switches.h"
 
 namespace ash {
 
@@ -34,6 +37,8 @@ class AutoclickMenuBubbleControllerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalAccessibilityAutoclick);
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   }
@@ -58,6 +63,27 @@ class AutoclickMenuBubbleControllerTest : public AshTestBase {
   gfx::Rect GetMenuViewBounds() {
     return GetBubbleController()
                ? GetBubbleController()->menu_view_->GetBoundsInScreen()
+               : gfx::Rect(-kMenuViewBoundsBuffer, -kMenuViewBoundsBuffer);
+  }
+
+  AutoclickScrollView* GetScrollView() {
+    return GetBubbleController()->scroll_bubble_controller_
+               ? GetBubbleController()->scroll_bubble_controller_->scroll_view_
+               : nullptr;
+  }
+
+  views::View* GetScrollButton(AutoclickScrollView::ButtonId view_id) {
+    AutoclickScrollView* scroll_view = GetScrollView();
+    if (!scroll_view)
+      return nullptr;
+    return scroll_view->GetViewByID(static_cast<int>(view_id));
+  }
+
+  gfx::Rect GetScrollViewBounds() {
+    return GetBubbleController()->scroll_bubble_controller_
+               ? GetBubbleController()
+                     ->scroll_bubble_controller_->scroll_view_
+                     ->GetBoundsInScreen()
                : gfx::Rect(-kMenuViewBoundsBuffer, -kMenuViewBoundsBuffer);
   }
 
@@ -96,6 +122,8 @@ TEST_F(AutoclickMenuBubbleControllerTest, CanSelectAutoclickTypeFromBubble) {
        mojom::AutoclickEventType::kDoubleClick},
       {AutoclickMenuView::ButtonId::kDragAndDrop,
        mojom::AutoclickEventType::kDragAndDrop},
+      {AutoclickMenuView::ButtonId::kScroll,
+       mojom::AutoclickEventType::kScroll},
       {AutoclickMenuView::ButtonId::kPause,
        mojom::AutoclickEventType::kNoAction},
   };
@@ -128,12 +156,13 @@ TEST_F(AutoclickMenuBubbleControllerTest, UnpausesWhenPauseAlreadySelected) {
       {mojom::AutoclickEventType::kLeftClick},
       {mojom::AutoclickEventType::kDoubleClick},
       {mojom::AutoclickEventType::kDragAndDrop},
+      {mojom::AutoclickEventType::kScroll},
   };
 
   for (const auto& test : kTestCases) {
     controller->SetAutoclickEventType(test.event_type);
 
-    // First tap pauses
+    // First tap pauses.
     pause_button->OnGestureEvent(&event);
     EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
               controller->GetAutoclickEventType());
@@ -210,6 +239,76 @@ TEST_F(AutoclickMenuBubbleControllerTest, DefaultChangesWithTextDirection) {
   EXPECT_LT(GetMenuViewBounds().ManhattanDistanceToPoint(
                 window_bounds.bottom_right()),
             kMenuViewBoundsBuffer);
+}
+
+TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleShowsAndCloses) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetAutoclickEventType(mojom::AutoclickEventType::kLeftClick);
+  // No scroll view yet.
+  EXPECT_FALSE(GetScrollView());
+
+  // Scroll type should cause the scroll view to be shown.
+  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+  EXPECT_TRUE(GetScrollView());
+
+  // Clicking the scroll close button resets to left click.
+  views::View* close_button =
+      GetScrollButton(AutoclickScrollView::ButtonId::kCloseScroll);
+  ui::GestureEvent event = CreateTapEvent();
+  close_button->OnGestureEvent(&event);
+  EXPECT_FALSE(GetScrollView());
+  EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+            controller->GetAutoclickEventType());
+}
+
+TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubblePositioning) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+
+  const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
+  for (auto& test : kTestCases) {
+    // These positions should be relative to the corners of the screen
+    // whether we are in RTL or LTR.
+    base::i18n::SetRTLForTesting(test.is_RTL);
+
+    // When the menu is in the top right, the scroll view should be directly
+    // under it and along the right side of the screen.
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kTopRight);
+    EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
+                  GetMenuViewBounds().bottom_center()),
+              kMenuViewBoundsBuffer);
+    EXPECT_EQ(GetScrollViewBounds().right(), GetMenuViewBounds().right());
+
+    // When the menu is in the bottom right, the scroll view is directly above
+    // it and along the right side of the screen.
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kBottomRight);
+    EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
+                  GetMenuViewBounds().top_center()),
+              kMenuViewBoundsBuffer);
+    EXPECT_EQ(GetScrollViewBounds().right(), GetMenuViewBounds().right());
+
+    // When the menu is on the bottom left, the scroll view is directly above it
+    // and along the left side of the screen.
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kBottomLeft);
+    EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
+                  GetMenuViewBounds().top_center()),
+              kMenuViewBoundsBuffer);
+    EXPECT_EQ(GetScrollViewBounds().x(), GetMenuViewBounds().x());
+
+    // When the menu is on the top left, the scroll view is directly below it
+    // and along the left side of the screen.
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kTopLeft);
+    EXPECT_LT(GetScrollViewBounds().ManhattanDistanceToPoint(
+                  GetMenuViewBounds().bottom_center()),
+              kMenuViewBoundsBuffer);
+    EXPECT_EQ(GetScrollViewBounds().x(), GetMenuViewBounds().x());
+  }
 }
 
 }  // namespace ash

@@ -1,3 +1,2 @@
 rootWebArea
-++genericContainer ignored
-++++radioButton name='Radio1' checkedState=false
+++radioButton name='Radio1' checkedState=false

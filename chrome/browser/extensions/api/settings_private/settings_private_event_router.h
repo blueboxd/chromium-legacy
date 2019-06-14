@@ -41,6 +41,8 @@ class SettingsPrivateEventRouter
   // settings_private::GeneratedPref::Observer implementation.
   void OnGeneratedPrefChanged(const std::string& pref_name) override;
 
+  content::BrowserContext* context_for_test() { return context_; }
+
  protected:
   explicit SettingsPrivateEventRouter(content::BrowserContext* context);
 
@@ -78,12 +80,12 @@ class SettingsPrivateEventRouter
   SubscriptionMap cros_settings_subscription_map_;
 #endif
 
-  content::BrowserContext* context_;
-  bool listening_;
+  content::BrowserContext* const context_;
+  bool listening_ = false;
 
   std::unique_ptr<PrefsUtil> prefs_util_;
 
-  base::WeakPtrFactory<SettingsPrivateEventRouter> weak_ptr_factory_;
+  base::WeakPtrFactory<SettingsPrivateEventRouter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateEventRouter);
 };

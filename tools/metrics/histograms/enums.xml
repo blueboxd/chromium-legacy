@@ -6135,6 +6135,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Opted-in"/>
 </enum>
 
+<enum name="BooleanOptedOut">
+  <int value="0" label="Not opted-out"/>
+  <int value="1" label="Opted-out"/>
+</enum>
+
 <enum name="BooleanOptionConditionsChanged">
   <int value="0" label="Conditions unchanged"/>
   <int value="1" label="Conditions changed"/>
@@ -11690,6 +11695,12 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Safe Browsing is not available"/>
   <int value="1" label="Safe Browsing returns UNKOWN"/>
   <int value="2" label="Safe Browsing returns SAFE"/>
+</enum>
+
+<enum name="DarkModeStatus">
+  <int value="0" label="Unavailable"/>
+  <int value="1" label="Light"/>
+  <int value="2" label="Dark"/>
 </enum>
 
 <enum name="DarkResumeScanRetryResult">
@@ -33416,6 +33427,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
+  <int value="-1932609987" label="CSSBackdropFilter:disabled"/>
   <int value="-1932379839"
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
@@ -33793,6 +33805,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
+  <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
@@ -33891,6 +33904,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1281465357" label="MacV2GPUSandbox:disabled"/>
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
+  <int value="-1276579737" label="PictureInPictureAPI:disabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
@@ -34379,6 +34393,7 @@ from previous Chrome versions.
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
+  <int value="-544629557" label="CSSBackdropFilter:enabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
   <int value="-539105193" label="SendTabToSelfBroadcast:disabled"/>
@@ -34916,6 +34931,7 @@ from previous Chrome versions.
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
+  <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="287932297" label="AutofillSettingsCardTypeSplit:enabled"/>
   <int value="288012253" label="CrostiniFiles:enabled"/>
@@ -35654,6 +35670,7 @@ from previous Chrome versions.
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
   <int value="1369449914" label="SysInternals:disabled"/>
+  <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
@@ -36088,6 +36105,7 @@ from previous Chrome versions.
   <int value="2004604350" label="AutofillGetPaymentsIdentityFromSync:enabled"/>
   <int value="2004651603" label="NativeFileSystemAPI:disabled"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
+  <int value="2005245012" label="SecurityInterstitialsDarkMode:disabled"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2006413281"
       label="ContextualSuggestionsAlternateCardLayout:enabled"/>
@@ -36110,6 +36128,7 @@ from previous Chrome versions.
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>
+  <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058148069" label="UseMessagesStagingUrl:enabled"/>
   <int value="2058283872" label="CCTModuleCache:disabled"/>
@@ -38194,6 +38213,7 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Seek backward"/>
   <int value="8" label="Seek forward"/>
   <int value="9" label="Skip ad"/>
+  <int value="10" label="Stop"/>
 </enum>
 
 <enum name="MediaSinkType">
@@ -49282,6 +49302,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Not shown due to background mode with no windows"/>
 </enum>
 
+<enum name="RemoteBookmarkUpdateError">
+  <int value="0"
+      label="Remote and local bookmarks types don't match (URL vs. Folder)"/>
+  <int value="1" label="Invalid specifics"/>
+  <int value="2" label="Invalid unique position"/>
+  <int value="3" label="Permanent node creation in an incremental update"/>
+  <int value="4" label="Parent entity not found in server"/>
+  <int value="5" label="Parent node not found locally"/>
+  <int value="6"
+      label="Parent entity not found in server when processing a conflict"/>
+  <int value="7"
+      label="Parent node not found locally when processing a conflict"/>
+  <int value="8" label="Failed to create a bookmark"/>
+</enum>
+
 <enum name="RemoteHungProcessTerminateReason">
   <int value="1" label="Terminate accepted by user"/>
   <int value="2" label="No visible windows found"/>
@@ -54873,6 +54908,18 @@ would be helpful to identify which type is being sent.
   <int value="10" label="Currency"/>
   <int value="11" label="Local time"/>
   <int value="12" label="Play install"/>
+</enum>
+
+<enum name="SuggestionIconOrFaviconType">
+  <summary>Type of icon shown beside omnibox suggestion.</summary>
+  <int value="0" label="Invalid (unknown type)"/>
+  <int value="1" label="Bookmark"/>
+  <int value="2" label="History"/>
+  <int value="3" label="Globe"/>
+  <int value="4" label="Magnifying Glass"/>
+  <int value="5" label="Voice"/>
+  <int value="6" label="Calculator"/>
+  <int value="7" label="Favicon"/>
 </enum>
 
 <enum name="SuggestionsResponseState">

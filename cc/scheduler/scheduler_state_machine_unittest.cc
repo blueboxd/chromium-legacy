@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/test/gtest_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/scheduler/scheduler.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -2812,6 +2813,59 @@ TEST(SchedulerStateMachineTest, BlockActivationIfAnimationWorkletsPending) {
   state.NotifyAnimationWorkletStateChange(
       SchedulerStateMachine::AnimationWorkletState::IDLE,
       SchedulerStateMachine::TreeType::PENDING);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+}
+
+TEST(SchedulerStateMachineTest, BlockActivationIfPaintWorkletsPending) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  // Post-commit, we start working on PaintWorklets. It is not valid to activate
+  // until they are done.
+  state.NotifyPaintWorkletStateChange(
+      SchedulerStateMachine::PaintWorkletState::PROCESSING);
+  EXPECT_DCHECK_DEATH(state.NotifyReadyToActivate());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.NotifyPaintWorkletStateChange(
+      SchedulerStateMachine::PaintWorkletState::IDLE);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+}
+
+TEST(SchedulerStateMachineTest,
+     BlockActivationIfPaintWorkletsPendingEvenWhenAbortingFrame) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  // Even if we are aborting the frame, we must paint the pending tree before we
+  // activate it (because we cannot have an unpainted active tree).
+  state.NotifyPaintWorkletStateChange(
+      SchedulerStateMachine::PaintWorkletState::PROCESSING);
+  state.SetVisible(false);
+  ASSERT_TRUE(state.ShouldAbortCurrentFrame());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.NotifyPaintWorkletStateChange(
+      SchedulerStateMachine::PaintWorkletState::IDLE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
 }
 

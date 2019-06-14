@@ -1414,9 +1414,6 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kGrabbed:
         result += " grabbed=" + value;
         break;
-      case ax::mojom::BoolAttribute::kIsLineBreakingObject:
-        result += " is_line_breaking_object=" + value;
-        break;
       case ax::mojom::BoolAttribute::kNone:
         break;
     }

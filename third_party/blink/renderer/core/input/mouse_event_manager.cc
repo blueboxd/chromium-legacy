@@ -64,7 +64,7 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
 void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                            const FloatPoint* last_position,
                            MouseEventInit* initializer) {
-  if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
+  if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
     if (RuntimeEnabledFeatures::FractionalMouseEventEnabled()) {
       initializer->setMovementX(mouse_event.PositionInScreen().x -

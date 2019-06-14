@@ -29,7 +29,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_numeric_field_element.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_symbolic_field_element.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 

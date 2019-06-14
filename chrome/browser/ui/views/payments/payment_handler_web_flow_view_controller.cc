@@ -63,7 +63,7 @@ class ReadOnlyOriginView : public views::View {
     SkColor foreground = color_utils::GetColorWithMaxContrast(background_color);
     views::GridLayout* title_origin_layout =
         title_origin_container->SetLayoutManager(
-            std::make_unique<views::GridLayout>(title_origin_container.get()));
+            std::make_unique<views::GridLayout>());
 
     views::ColumnSet* columns = title_origin_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
@@ -107,7 +107,7 @@ class ReadOnlyOriginView : public views::View {
     title_origin_layout->AddView(origin_label);
 
     views::GridLayout* top_level_layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,

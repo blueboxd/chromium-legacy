@@ -1683,10 +1683,6 @@ enum class EnterTabSwitcherSnapshotResult {
     baseViewController = self.currentBVC;
   }
   DCHECK(![baseViewController presentedViewController]);
-  if ([self currentBrowserState]->IsOffTheRecord()) {
-    NOTREACHED();
-    return;
-  }
   if (_settingsNavigationController) {
     // Navigate to the Google services settings if the settings dialog is
     // already opened.
@@ -1695,8 +1691,10 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
+  ios::ChromeBrowserState* originalBrowserState =
+      self.currentBrowserState->GetOriginalChromeBrowserState();
   _settingsNavigationController = [SettingsNavigationController
-      newGoogleServicesController:self.currentBrowserState
+      newGoogleServicesController:originalBrowserState
                          delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES

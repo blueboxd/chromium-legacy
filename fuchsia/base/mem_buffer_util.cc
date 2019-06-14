@@ -29,8 +29,7 @@ bool ReadUTF8FromVMOAsUTF16(const fuchsia::mem::Buffer& buffer,
 fuchsia::mem::Buffer MemBufferFromString(const base::StringPiece& data) {
   fuchsia::mem::Buffer buffer;
 
-  zx_status_t status =
-      zx::vmo::create(data.size(), ZX_VMO_NON_RESIZABLE, &buffer.vmo);
+  zx_status_t status = zx::vmo::create(data.size(), 0, &buffer.vmo);
   ZX_CHECK(status == ZX_OK, status) << "zx_vmo_create";
 
   status = buffer.vmo.write(data.data(), 0, data.size());
@@ -78,10 +77,9 @@ fuchsia::mem::Buffer MemBufferFromFile(base::File file) {
 fuchsia::mem::Buffer CloneBuffer(const fuchsia::mem::Buffer& buffer) {
   fuchsia::mem::Buffer output;
   output.size = buffer.size;
-  zx_status_t status =
-      buffer.vmo.clone(ZX_VMO_CLONE_COPY_ON_WRITE | ZX_VMO_CLONE_NON_RESIZEABLE,
-                       0, buffer.size, &output.vmo);
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_clone";
+  zx_status_t status = buffer.vmo.create_child(ZX_VMO_CHILD_COPY_ON_WRITE, 0,
+                                               buffer.size, &output.vmo);
+  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_create_child";
   return output;
 }
 

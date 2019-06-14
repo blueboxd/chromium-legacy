@@ -2122,6 +2122,6 @@ public:
 	DECLARE_WND_CLASS_EX(_T("WTL_ScrollContainer"), 0, -1)
 };
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLSCRL_H__

@@ -47,7 +47,7 @@ AuthenticatorClientPinEntryView::AuthenticatorClientPinEntryView(
     : delegate_(delegate),
       show_confirmation_text_field_(show_confirmation_text_field) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,

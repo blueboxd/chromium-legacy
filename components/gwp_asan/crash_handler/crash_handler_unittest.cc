@@ -365,12 +365,7 @@ TEST_P(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
   EXPECT_TRUE(proto_.has_region_size());
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_UnrelatedException DISABLED_UnrelatedException
-#else
-#define MAYBE_UnrelatedException UnrelatedException
-#endif
-TEST_P(CrashHandlerTest, MAYBE_DISABLED(MAYBE_UnrelatedException)) {
+TEST_P(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {
   ASSERT_FALSE(gwp_asan_found_);
 }
 

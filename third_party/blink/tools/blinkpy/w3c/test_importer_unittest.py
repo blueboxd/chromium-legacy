@@ -605,10 +605,6 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(dest_path + '/foo-test-expected.txt', '')
         host.filesystem.write_text_file(dest_path + '/OWNERS', '')
         host.filesystem.write_text_file(dest_path + '/bar/baz/OWNERS', '')
-        # TODO(crbug.com/927187): Delete it once webdrive/tests manual import is done.
-        host.filesystem.write_text_file(dest_path + '/webdriver/tests/A.txt', '')
-        host.filesystem.write_text_file(dest_path + '/webdriver/tests/test/assert.py', '')
-        host.filesystem.write_text_file(dest_path + '/webdriver/META.yml', '')
         # When the destination path is cleared, OWNERS files and baselines
         # are kept.
         importer._clear_out_dest_path()
@@ -616,7 +612,3 @@ class TestImporterTest(LoggingTestCase):
         self.assertTrue(host.filesystem.exists(dest_path + '/foo-test-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/OWNERS'))
         self.assertTrue(host.filesystem.exists(dest_path + '/bar/baz/OWNERS'))
-
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/A.txt'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/test/assert.py'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/META.yml'))

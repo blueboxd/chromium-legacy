@@ -61,13 +61,13 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     // create multiple WorkerThread for this. Note that the underlying thread
     // may be shared even though they are unique WorkerThread instances!
     Vector<std::unique_ptr<WorkerThread>> worklet_threads;
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       worklet_threads.push_back(CreateThreadAndProvidePaintWorkletProxyClient(
           &GetDocument(), reporting_proxy_.get(), proxy_client_));
     }
 
     // Add the global scopes. This must happen on the worklet thread.
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       base::WaitableEvent waitable_event;
       PostCrossThreadTask(
           *worklet_threads[i]->GetTaskRunner(TaskType::kInternalTest),
@@ -93,7 +93,7 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     waitable_event.Wait();
 
     // And finally clean up.
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       worklet_threads[i]->Terminate();
       worklet_threads[i]->WaitForShutdownForTesting();
     }
@@ -130,18 +130,18 @@ void RunAddGlobalScopesTestOnWorklet(
 
   // First, add all but one of the global scopes. The proxy client should not
   // yet register itself.
-  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes - 1; i++) {
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread - 1; i++) {
     proxy_client->AddGlobalScope(To<WorkletGlobalScope>(thread->GlobalScope()));
   }
 
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes - 1);
+            PaintWorklet::kNumGlobalScopesPerThread - 1);
   EXPECT_EQ(dispatcher->PainterMapForTesting().size(), 0u);
 
   // Now add the final global scope. This should trigger the registration.
   proxy_client->AddGlobalScope(To<WorkletGlobalScope>(thread->GlobalScope()));
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
   EXPECT_EQ(dispatcher->PainterMapForTesting().size(), 1u);
 
   waitable_event->Signal();
@@ -177,7 +177,7 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // Register the painter on all global scopes.
   for (const auto& global_scope : proxy_client->GetGlobalScopesForTesting()) {
@@ -211,10 +211,10 @@ void RunDefinitionsMustBeCompatibleTestOnWorklet(
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // This test doesn't make sense if there's only one global scope!
-  EXPECT_GT(PaintWorklet::kNumGlobalScopes, 1u);
+  EXPECT_GT(PaintWorklet::kNumGlobalScopesPerThread, 1u);
 
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>& global_scopes =
       proxy_client->GetGlobalScopesForTesting();
@@ -347,7 +347,7 @@ void RunAllDefinitionsMustBeRegisteredBeforePostingTestOnWorklet(
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // Register a new paint function on all but one global scope. They should not
   // end up posting a task to the PaintWorklet.
@@ -374,6 +374,52 @@ TEST_F(PaintWorkletProxyClientTest,
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   RunMultipleGlobalScopeTestsOnWorklet(
       &RunAllDefinitionsMustBeRegisteredBeforePostingTestOnWorklet);
+}
+
+void RunAllGlobalScopesMustBeCreatedTestOnWorklet(
+    WorkerThread* thread,
+    PaintWorkletProxyClient* proxy_client,
+    scoped_refptr<PaintWorkletPaintDispatcher> dispatcher,
+    base::WaitableEvent* waitable_event) {
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
+    proxy_client->AddGlobalScope(To<WorkletGlobalScope>(thread->GlobalScope()));
+  }
+
+  EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
+            PaintWorklet::kNumGlobalScopesPerThread);
+
+  waitable_event->Signal();
+}
+
+TEST_F(PaintWorkletProxyClientTest, AllGlobalScopesMustBeCreated) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  std::unique_ptr<WorkerThread> worklet_thread =
+      CreateThreadAndProvidePaintWorkletProxyClient(
+          &GetDocument(), reporting_proxy_.get(), proxy_client_);
+
+  EXPECT_TRUE(proxy_client_->GetGlobalScopesForTesting().IsEmpty());
+
+  base::WaitableEvent waitable_event;
+  PostCrossThreadTask(
+      *worklet_thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(
+          &RunAllGlobalScopesMustBeCreatedTestOnWorklet,
+          CrossThreadUnretained(worklet_thread.get()),
+          CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
+          dispatcher_, CrossThreadUnretained(&waitable_event)));
+  waitable_event.Wait();
+
+  paint_worklet_->SetProxyClientForTesting(proxy_client_);
+  while (paint_worklet_->NeedsToCreateGlobalScopeForTesting()) {
+    paint_worklet_->AddGlobalScopeForTesting();
+  }
+
+  EXPECT_EQ(paint_worklet_->GetGlobalScopesForTesting().size(),
+            2 * PaintWorklet::kNumGlobalScopesPerThread);
+
+  worklet_thread->Terminate();
+  worklet_thread->WaitForShutdownForTesting();
 }
 
 }  // namespace blink

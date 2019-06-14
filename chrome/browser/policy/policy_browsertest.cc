@@ -70,7 +70,6 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
@@ -770,10 +769,6 @@ class MockPasswordProtectionService
   }
 };
 
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-}
-
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -799,6 +794,12 @@ class PolicyTest : public InProcessBrowserTest {
       extension_service()->updater()->SetExtensionCacheForTesting(
           test_extension_cache_.get());
     }
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, command_line);
   }
 
   void SetScreenshotPolicy(bool enabled) {
@@ -1102,61 +1103,20 @@ class PolicyTest : public InProcessBrowserTest {
     return xhr_result && execute_result;
   }
 
-  MockConfigurationPolicyProvider provider_;
-  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
-  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
-  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
-      skip_scheduled_extension_checks_;
-};
-
-// A subclass of PolicyTest that runs each test with the old interstitial code
-// path and the new one, called committed interstitials.
-// TODO(https://crbug.com/448486): This can be removed after committed
-// interstitials are launched.
-class SSLPolicyTestCommittedInterstitials
-    : public PolicyTest,
-      public testing::WithParamInterface<bool> {
- public:
-  SSLPolicyTestCommittedInterstitials() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
-    }
-    // Ensure SSL interstitials are capable of sending reports.
-    variations::testing::VariationParamsManager::AppendVariationParams(
-        "ReportCertificateErrors", "ShowAndPossiblySend",
-        {{"sendingThreshold", "1.0"}}, command_line);
-  }
-
- protected:
   bool IsShowingInterstitial(content::WebContents* tab) {
-    if (AreCommittedInterstitialsEnabled()) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(tab);
-      if (!helper) {
-        return false;
-      }
-      return helper
-                 ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
-             nullptr;
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    if (!helper) {
+      return false;
     }
-    return tab->GetInterstitialPage() != nullptr;
+    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
+           nullptr;
   }
 
   void WaitForInterstitial(content::WebContents* tab) {
-    if (!AreCommittedInterstitialsEnabled()) {
-      content::WaitForInterstitialAttach(tab);
-      ASSERT_TRUE(IsShowingInterstitial(tab));
-      ASSERT_TRUE(
-          WaitForRenderFrameReady(tab->GetInterstitialPage()->GetMainFrame()));
-    } else {
-      ASSERT_TRUE(IsShowingInterstitial(tab));
-      ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
-    }
+    ASSERT_TRUE(IsShowingInterstitial(tab));
+    ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
   }
 
   int IsExtendedReportingCheckboxVisibleOnInterstitial() {
@@ -1178,37 +1138,28 @@ class SSLPolicyTestCommittedInterstitials
         browser()->tab_strip_model()->GetActiveWebContents();
     WaitForInterstitial(tab);
     int result = 0;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        AreCommittedInterstitialsEnabled()
-            ? tab->GetMainFrame()
-            : tab->GetInterstitialPage()->GetMainFrame(),
-        command, &result));
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(tab->GetMainFrame(),
+                                                    command, &result));
     return result;
   }
 
   void SendInterstitialCommand(
       content::WebContents* tab,
       security_interstitials::SecurityInterstitialCommand command) {
-    if (AreCommittedInterstitialsEnabled()) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(tab);
-      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-          ->CommandReceived(base::NumberToString(command));
-      return;
-    }
-    tab->GetInterstitialPage()->GetDelegateForTesting()->CommandReceived(
-        base::NumberToString(command));
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
+        ->CommandReceived(base::NumberToString(command));
+    return;
   }
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(SSLPolicyTestCommittedInterstitials);
+  MockConfigurationPolicyProvider provider_;
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
+  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
+  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
+      skip_scheduled_extension_checks_;
 };
-
-INSTANTIATE_TEST_SUITE_P(,
-                         SSLPolicyTestCommittedInterstitials,
-                         ::testing::Values(false, true));
 
 #if defined(OS_WIN)
 // This policy only exists on Windows.
@@ -4774,7 +4725,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
   EXPECT_THAT(rejection, testing::MatchesRegex("NotFoundError: .*policy.*"));
 }
 
-IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
+IN_PROC_BROWSER_TEST_F(PolicyTest,
                        CertificateTransparencyEnforcementDisabledForUrls) {
   net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -4793,10 +4744,7 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
   WaitForInterstitial(tab);
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      AreCommittedInterstitialsEnabled()
-          ? tab->GetMainFrame()
-          : tab->GetInterstitialPage()->GetMainFrame(),
-      "proceed-link"));
+      tab->GetMainFrame(), "proceed-link"));
   EXPECT_NE(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -4857,20 +4805,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 
   // The page should initially be blocked.
   content::RenderFrameHost* main_frame;
-  if (AreCommittedInterstitialsEnabled()) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            web_contents);
-    ASSERT_TRUE(helper);
-    ASSERT_TRUE(
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-    main_frame = web_contents->GetMainFrame();
-  } else {
-    content::InterstitialPage* interstitial =
-        content::InterstitialPage::GetInterstitialPage(web_contents);
-    ASSERT_TRUE(interstitial);
-    main_frame = interstitial->GetMainFrame();
-  }
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          web_contents);
+  ASSERT_TRUE(helper);
+  ASSERT_TRUE(
+      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
+  main_frame = web_contents->GetMainFrame();
   ASSERT_TRUE(content::WaitForRenderFrameReady(main_frame));
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       main_frame, "proceed-link"));
@@ -4896,17 +4837,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));
 
-  // There should be no interstitial after the page loads.
-  // With committed interstitials enabled, we don't have an interstitial page to
-  // check against, so we only check that the title is the correct one after
-  // navigating away.
-  if (!AreCommittedInterstitialsEnabled()) {
-    const content::InterstitialPage* interstitial =
-        content::InterstitialPage::GetInterstitialPage(
-            browser()->tab_strip_model()->GetActiveWebContents());
-    ASSERT_FALSE(interstitial);
-  }
-
+  // Check we are no longer in the interstitial.
   EXPECT_EQ(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
@@ -4914,8 +4845,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 // Test that when extended reporting opt-in is disabled by policy, the
 // opt-in checkbox does not appear on SSL blocking pages.
 // Note: SafeBrowsingExtendedReportingOptInAllowed policy is being deprecated.
-IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
-                       SafeBrowsingExtendedReportingOptInAllowed) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
   net::EmbeddedTestServer https_server_expired(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -4948,8 +4878,7 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
 
 // Test that when extended reporting is managed by policy, the opt-in checkbox
 // does not appear on SSL blocking pages.
-IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
-                       SafeBrowsingExtendedReportingPolicyManaged) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
   net::EmbeddedTestServer https_server_expired(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -4997,8 +4926,7 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
 
 // Test that when SSL error overriding is allowed by policy (default), the
 // proceed link appears on SSL blocking pages.
-IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
-                       SSLErrorOverridingAllowed) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
   net::EmbeddedTestServer https_server_expired(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -5019,17 +4947,13 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
 
   // The interstitial should display the proceed link.
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      AreCommittedInterstitialsEnabled()
-          ? tab->GetMainFrame()
-          : tab->GetInterstitialPage()->GetMainFrame(),
-      "proceed-link"));
+      tab->GetMainFrame(), "proceed-link"));
 }
 
 // Test that when SSL error overriding is disallowed by policy, the
 // proceed link does not appear on SSL blocking pages and users should not
 // be able to proceed.
-IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
-                       SSLErrorOverridingDisallowed) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
   net::EmbeddedTestServer https_server_expired(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -5058,10 +4982,7 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
 
   // The interstitial should not display the proceed link.
   EXPECT_FALSE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      AreCommittedInterstitialsEnabled()
-          ? tab->GetMainFrame()
-          : tab->GetInterstitialPage()->GetMainFrame(),
-      "proceed-link"));
+      tab->GetMainFrame(), "proceed-link"));
 
   // The interstitial should not proceed, even if the command is sent in
   // some other way (e.g., via the keyboard shortcut).
@@ -6119,7 +6040,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcGoogleLocationServicesEnabled) {
 
 #endif  // defined(OS_CHROMEOS)
 
-class NetworkTimePolicyTest : public SSLPolicyTestCommittedInterstitials {
+class NetworkTimePolicyTest : public PolicyTest {
  public:
   NetworkTimePolicyTest() {}
   ~NetworkTimePolicyTest() override {}
@@ -6157,7 +6078,7 @@ class NetworkTimePolicyTest : public SSLPolicyTestCommittedInterstitials {
   DISALLOW_COPY_AND_ASSIGN(NetworkTimePolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_P(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
+IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   // Set a policy to disable network time queries.
   PolicyMap policies;
   policies.Set(key::kBrowserNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
@@ -6193,10 +6114,6 @@ IN_PROC_BROWSER_TEST_P(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   EXPECT_TRUE(IsShowingInterstitial(tab));
   EXPECT_EQ(1u, num_requests());
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         NetworkTimePolicyTest,
-                         ::testing::Values(false, true));
 
 #if defined(OS_CHROMEOS)
 

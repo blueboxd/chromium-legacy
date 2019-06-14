@@ -982,6 +982,6 @@ inline bool AtlCompactPath(LPTSTR lpstrOut, LPCTSTR lpstrIn, int cchLen)
 	return bRet;
 }
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLMISC_H__

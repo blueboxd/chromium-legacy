@@ -30,11 +30,6 @@ class AssistantContainerViewTest : public AshTestBase {
   ~AssistantContainerViewTest() override = default;
 
   void SetUp() override {
-    // Enable Assistant feature.
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAssistantFeature);
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
-
     AshTestBase::SetUp();
 
     // Enable Assistant in settings.
@@ -48,8 +43,6 @@ class AssistantContainerViewTest : public AshTestBase {
     ui_controller_ = controller_->ui_controller();
     DCHECK(ui_controller_);
 
-    SetUpMocks();
-
     // After mocks are set up our Assistant service is ready for use. Indicate
     // this by changing status from NOT_READY to STOPPED.
     VoiceInteractionController::Get()->NotifyStatusChanged(
@@ -59,29 +52,6 @@ class AssistantContainerViewTest : public AshTestBase {
   AssistantUiController* ui_controller() { return ui_controller_; }
 
  private:
-  void SetUpMocks() {
-    // Mock the Assistant service.
-    assistant_ = std::make_unique<chromeos::assistant::MockAssistant>();
-    assistant_binding_ =
-        std::make_unique<mojo::Binding<chromeos::assistant::mojom::Assistant>>(
-            assistant_.get());
-    chromeos::assistant::mojom::AssistantPtr assistant;
-    assistant_binding_->Bind(mojo::MakeRequest(&assistant));
-    controller_->SetAssistant(std::move(assistant));
-
-    // Mock any screen context cache requests by immediately invoking callback.
-    ON_CALL(*assistant_, DoCacheScreenContext(testing::_))
-        .WillByDefault(testing::Invoke(
-            [](base::OnceClosure* callback) { std::move(*callback).Run(); }));
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  std::unique_ptr<chromeos::assistant::MockAssistant> assistant_;
-
-  std::unique_ptr<mojo::Binding<chromeos::assistant::mojom::Assistant>>
-      assistant_binding_;
-
   AssistantController* controller_ = nullptr;
   AssistantUiController* ui_controller_ = nullptr;
 

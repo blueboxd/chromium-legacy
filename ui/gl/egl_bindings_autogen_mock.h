@@ -138,9 +138,9 @@ Mock_eglGetNextFrameIdANDROID(EGLDisplay dpy,
                               EGLSurface surface,
                               EGLuint64KHR* frameId);
 static EGLDisplay GL_BINDING_CALL
-Mock_eglGetPlatformDisplayEXT(EGLenum platform,
-                              void* native_display,
-                              const EGLint* attrib_list);
+Mock_eglGetPlatformDisplay(EGLenum platform,
+                           void* native_display,
+                           const EGLAttrib* attrib_list);
 static __eglMustCastToProperFunctionPointerType GL_BINDING_CALL
 Mock_eglGetProcAddress(const char* procname);
 static EGLBoolean GL_BINDING_CALL Mock_eglGetSyncAttribKHR(EGLDisplay dpy,

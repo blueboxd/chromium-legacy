@@ -53,8 +53,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   requested_size_ = options.size;
   mapped_size_ = bits::Align(requested_size_, GetPageSize());
   zx::vmo vmo;
-  zx_status_t status =
-      zx::vmo::create(mapped_size_, ZX_VMO_NON_RESIZABLE, &vmo);
+  zx_status_t status = zx::vmo::create(mapped_size_, 0, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return false;

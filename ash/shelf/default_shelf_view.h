@@ -30,6 +30,8 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   DefaultShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
   ~DefaultShelfView() override;
 
+  void CalculateBackAndHomeButtonsIdealBounds();
+
   // All ShelfView overrides are public to keep them together.
   // ShelfView:
   void Init() override;

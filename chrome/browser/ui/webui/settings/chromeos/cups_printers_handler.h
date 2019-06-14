@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "printing/backend/cups_jobs.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
@@ -79,7 +80,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // Everywhere driver should be attempted. If |success| is false, the values of
   // |make|, |model|, |make_and_model|, and |ipp_everywhere| are not specified.
   void OnAutoconfQueried(const std::string& callback_id,
-                         bool success,
+                         printing::PrinterQueryResult result,
                          const std::string& make,
                          const std::string& model,
                          const std::string& make_and_model,
@@ -89,7 +90,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // Handles the callback for HandleGetPrinterInfo for a discovered printer.
   void OnAutoconfQueriedDiscovered(
       Printer printer,
-      bool success,
+      printing::PrinterQueryResult result,
       const std::string& make,
       const std::string& model,
       const std::string& make_and_model,

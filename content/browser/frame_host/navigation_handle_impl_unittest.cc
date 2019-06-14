@@ -222,7 +222,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   // TODO(zetamoo): Use NavigationSimulator instead of creating
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
-    scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry());
+    auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>();
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), CommonNavigationParams(),
         CommitNavigationParams(), false /* browser-initiated */, std::string(),

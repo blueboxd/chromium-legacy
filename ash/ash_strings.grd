@@ -341,6 +341,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL" desc="The sub-header label to notify that one bluetooth device is connected.">
         Connected
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_LABEL" desc="The label used when a bluetooth device is connected and the battery percentage is available.">
+        Connected, <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_LABEL" desc="The label used to show the battery percentage when a bluetooth device is connected.">
+        <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL" desc="The header label to notify that multiple bluetooth devices are connected.">
         Devices
       </message>
@@ -493,6 +499,21 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION" desc="The tooltip text for a menu option for automatic clicks menu that results in the menu changing position on the screen. The menu will toggle through several pre-set positions.">
         Toggle menu position
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_UP" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled up.">
+        Scroll up
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_DOWN" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled down.">
+        Scroll down
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_LEFT" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled left.">
+        Scroll left
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_RIGHT" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled right.">
+        Scroll right
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_CLOSE" desc="The tooltip text for the automatic clicks menu option that results in the scrolling menu being closed.">
+        Close
       </message>
       <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE" desc="The title for the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature.">
         Turn off automatic clicks
@@ -663,6 +684,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_PUBLIC_SESSION_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a public session, which does not support voice interaction.">
         The Google Assistant is not available in a public session.
+      </message>
+      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed while the feature is disabled.">
+        The Google Assistant is disabled on this device.
+      </message>
+      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a guest session, which does not support voice interaction.">
+        The Google Assistant is not available in a guest session.
+      </message>
+      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but current logged in user account does not support voice interaction.">
+        The Google Assistant is not available for current user account.
       </message>
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">

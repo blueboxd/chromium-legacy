@@ -1896,15 +1896,6 @@ void SplitViewController::EndWindowDragImpl(
     // |desired_snap_position| in overview.
     SnapWindow(window, desired_snap_position,
                /*use_divider_spawn_animation=*/!initiator_window);
-    // Reapply the bounds update because the bounds might have been
-    // modified by dragging operation.
-    // TODO(oshima): WindowState already gets notified when drag ends. Refactor
-    // WindowState so that each state implementation can take action when
-    // drag ends.
-    const wm::WMEvent event(desired_snap_position == SplitViewController::LEFT
-                                ? wm::WM_EVENT_SNAP_LEFT
-                                : wm::WM_EVENT_SNAP_RIGHT);
-    wm::GetWindowState(window)->OnWMEvent(&event);
 
     if (!was_splitview_active) {
       // If splitview mode was not active before snapping the dragged

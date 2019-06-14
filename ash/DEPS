@@ -83,10 +83,6 @@ include_rules = [
 
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"
-
-  # SessionManager/UserManager is not part of ash. Use SessionController.
-  "-components/session_manager/core",
-  "-components/user_manager/user_manager.h",
 ]
 
 specific_include_rules = {

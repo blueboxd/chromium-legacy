@@ -137,7 +137,7 @@ void SerialPortManager::DispatchReceiveEvent(const ReceiveParams& params,
       SerialConnection* connection =
           params.connections->Get(params.extension_id, params.connection_id);
       if (connection)
-        connection->set_paused(true);
+        connection->SetPaused(true);
     }
   }
 }

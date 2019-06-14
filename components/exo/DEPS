@@ -3,6 +3,7 @@ include_rules = [
   "+cc",
   "+chromeos/audio/chromeos_sounds.h",
   "+components/viz/common",
+  "+components/viz/host",
   "+components/viz/service",
   "+device/gamepad",
   "+gpu",

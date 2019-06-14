@@ -173,9 +173,10 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 
       if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
-        // TODO(kylechar): Chrome OS can't disable GPU compositing. This needs
-        // to be handled similar to Android.
-        CHECK(false);
+        // GL compositing is expected to always work on Chrome OS so we should
+        // never encounter fatal context error. This could be an unrecoverable
+        // hardware error or a bug.
+        LOG(FATAL) << "Unexpected fatal context error";
 #elif !defined(OS_ANDROID)
         gpu_service_impl_->DisableGpuCompositing();
 #endif

@@ -143,6 +143,10 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
           {features::kSupervisionOnboardingEligibility,
            features::kSupervisionOnboardingScreens},
           {});
+    } else {
+      feature_list_.InitWithFeatures(
+          {}, {features::kSupervisionOnboardingEligibility,
+               features::kSupervisionOnboardingScreens});
     }
 
     MixinBasedInProcessBrowserTest::SetUp();
@@ -150,10 +154,6 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     if (IsFeatureOn()) {
-      command_line->AppendSwitchASCII(
-          switches::kSupervisionOnboardingUrlPrefix,
-          embedded_test_server()->base_url().spec());
-
       // To turn on the feature properly we also ask the server to return the
       // expected custom http header value. Tests that want to simulate other
       // server responses can call these methods again to override this
@@ -161,6 +161,12 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
       supervision_server()->set_custom_http_header_value(
           supervision::kDeviceOnboardingExperimentName);
     }
+
+    // Even with the feature turned off we need to override the server url.
+    // Otherwise tests that end up pinging the server (but shouldn't) will
+    // only timeout instead of failing for the correct reason.
+    command_line->AppendSwitchASCII(switches::kSupervisionOnboardingUrlPrefix,
+                                    embedded_test_server()->base_url().spec());
 
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
   }

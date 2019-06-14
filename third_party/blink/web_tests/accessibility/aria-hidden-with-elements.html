@@ -42,24 +42,18 @@
     description("This tests that aria-hidden works as expected on elements that are subclasses of AccessibilityRenderObject");
 
    if (window.accessibilityController) {
-      var container = accessibilityController.accessibleElementById("container");
 
-      // first child is an AXGroup that has 0 unignored children
-      var child = container.childAtIndex(0);
-      shouldBe("child.childrenCount", "6")
-      for(let i = 0; i < child.childrenCount; ++i) {
-        shouldBeTrue("child.childAtIndex(" + i +").isIgnored");
-      }
 
-      let i = 1;
-      for(; i < container.childrenCount; ++i) {
-        child = container.childAtIndex(i);
-       if (!child.isIgnored)
-       break;
-      }
-      shouldBe("child.role", "'AXRole: AXGenericContainer'");
-      child = container.childAtIndex(++i);
-      shouldBe("child.role", "'AXRole: AXHeading'");
+
+       var container = accessibilityController.accessibleElementById("container");
+
+       // first child is an AXGroup that has no children
+       var child = container.childAtIndex(0);
+       shouldBe("child.childrenCount", "0");
+
+       // The second child we ask for from the web area should be the heading, and we should have skipped over everything else.
+       child = container.childAtIndex(1);
+       shouldBe("child.role", "'AXRole: AXHeading'");
     }
 
 </script>

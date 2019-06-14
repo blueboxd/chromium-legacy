@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file implements the ScopedClipboardWriter class. Documentation on its
-// purpose can be found in our header. Documentation on the format of the
-// parameters for each clipboard target can be found in clipboard.h.
-
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #include "base/pickle.h"
@@ -14,6 +10,8 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/gfx/geometry/size.h"
 
+// Documentation on the format of the parameters for each clipboard target can
+// be found in clipboard.h.
 namespace ui {
 
 ScopedClipboardWriter::ScopedClipboardWriter(ClipboardType type) : type_(type) {

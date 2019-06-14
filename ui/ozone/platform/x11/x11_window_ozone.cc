@@ -44,6 +44,10 @@ void X11WindowOzone::ReleaseCapture() {
   window_manager_->UngrabEvents(this);
 }
 
+bool X11WindowOzone::HasCapture() const {
+  return window_manager_->event_grabber() == this;
+}
+
 void X11WindowOzone::SetCursor(PlatformCursor cursor) {
   X11CursorOzone* cursor_ozone = static_cast<X11CursorOzone*>(cursor);
   XDefineCursor(xdisplay(), xwindow(), cursor_ozone->xcursor());

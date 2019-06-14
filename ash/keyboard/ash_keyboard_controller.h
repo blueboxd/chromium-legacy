@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_layout_delegate.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
@@ -36,9 +37,11 @@ class VirtualKeyboardController;
 // class. TODO(shend): Consider re-factoring keyboard::KeyboardController so
 // that this can inherit from that class instead. Rename this to
 // KeyboardControllerImpl.
-class ASH_EXPORT AshKeyboardController : public KeyboardController,
-                                         public KeyboardControllerObserver,
-                                         public SessionObserver {
+class ASH_EXPORT AshKeyboardController
+    : public KeyboardController,
+      public keyboard::KeyboardLayoutDelegate,
+      public KeyboardControllerObserver,
+      public SessionObserver {
  public:
   // |session_controller| is expected to outlive AshKeyboardController.
   explicit AshKeyboardController(SessionControllerImpl* session_controller);
@@ -78,6 +81,11 @@ class ASH_EXPORT AshKeyboardController : public KeyboardController,
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
   void SetDraggableArea(const gfx::Rect& bounds) override;
   void AddObserver(KeyboardControllerObserver* observer) override;
+
+  // keyboard::KeyboardLayoutDelegate:
+  aura::Window* GetContainerForDefaultDisplay() override;
+  aura::Window* GetContainerForDisplay(
+      const display::Display& display) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

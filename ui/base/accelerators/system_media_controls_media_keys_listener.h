@@ -35,6 +35,7 @@ class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
   // MediaKeysListener implementation.
   bool StartWatchingMediaKey(KeyboardCode key_code) override;
   void StopWatchingMediaKey(KeyboardCode key_code) override;
+  void SetIsMediaPlaying(bool is_playing) override;
 
   // system_media_controls::SystemMediaControlsServiceObserver implementation.
   void OnNext() override;
@@ -60,6 +61,8 @@ class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
   base::flat_set<KeyboardCode> key_codes_;
 
   system_media_controls::SystemMediaControlsService* service_ = nullptr;
+
+  bool is_media_playing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsMediaKeysListener);
 };

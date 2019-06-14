@@ -53,7 +53,7 @@ void AddAccessibilityModeFlags(ui::AXMode mode_flags) {
 //
 
 BrowserAccessibilityComWin::WinAttributes::WinAttributes()
-    : ignored(false), ia_role(0), ia_state(0), ia2_role(0), ia2_state(0) {}
+    : ia_role(0), ia_state(0), ia2_role(0), ia2_state(0) {}
 
 BrowserAccessibilityComWin::WinAttributes::~WinAttributes() {}
 
@@ -1720,8 +1720,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
       owner()->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
 
   win_attributes_->value = GetValue();
-
-  win_attributes_->ignored = owner()->HasState(ax::mojom::State::kIgnored);
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -1731,18 +1729,21 @@ void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
 void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     bool is_subtree_creation) {
   int32_t state = MSAAState();
-  const bool ignored = owner()->HasState(ax::mojom::State::kIgnored);
-
-  // Suppress all of these events when the node is ignored, or when the ignored
-  // state has changed.
-  if (ignored || (old_win_attributes_->ignored != ignored))
-    return;
 
   // The rest of the events only fire on changes, not on new objects.
 
+  bool did_fire_namechange = false;
+
   if (old_win_attributes_->ia_role != 0 ||
       !old_win_attributes_->role_name.empty()) {
-    // Fire an event if the description, help, or value changes.
+    // Fire an event if the name, description, help, or value changes.
+    if (name() != old_win_attributes_->name &&
+        GetData().GetNameFrom() != ax::mojom::NameFrom::kContents) {
+      // Only fire name changes when the name comes from an attribute, otherwise
+      // name changes are redundant with text removed/inserted events.
+      FireNativeEvent(EVENT_OBJECT_NAMECHANGE);
+      did_fire_namechange = true;
+    }
     if (description() != old_win_attributes_->description)
       FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);
 
@@ -1766,11 +1767,10 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     }
 
     // Fire hypertext-related events.
-    // Do not fire removed/inserted when a name change event will be fired by
-    // AXEventGenerator, as they are providing redundant information and will
-    // lead to duplicate announcements.
-    if (name() == old_win_attributes_->name ||
-        GetData().GetNameFrom() == ax::mojom::NameFrom::kContents) {
+    // Do not fire removed/inserted when a name change event was also fired, as
+    // they are providing redundant information and will lead to duplicate
+    // announcements.
+    if (!did_fire_namechange) {
       size_t start, old_len, new_len;
       ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
       if (old_len > 0) {

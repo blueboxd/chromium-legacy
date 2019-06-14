@@ -17,7 +17,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
-#include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/audio/audio_device_description.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -52,7 +52,7 @@ using EchoCancellationType =
 namespace {
 
 blink::WebMediaConstraints CreateDefaultConstraints() {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.AddAdvanced();
   return factory.CreateWebMediaConstraints();
 }
@@ -61,7 +61,7 @@ blink::WebMediaConstraints CreateDeviceConstraints(
     const char* basic_exact_value,
     const char* basic_ideal_value = nullptr,
     const char* advanced_exact_value = nullptr) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   if (basic_exact_value) {
     factory.basic().device_id.SetExact(
         blink::WebString::FromUTF8(basic_exact_value));
@@ -85,7 +85,7 @@ blink::WebMediaConstraints CreateFacingModeConstraints(
     const char* basic_exact_value,
     const char* basic_ideal_value = nullptr,
     const char* advanced_exact_value = nullptr) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   if (basic_exact_value) {
     factory.basic().facing_mode.SetExact(
         blink::WebString::FromUTF8(basic_exact_value));
@@ -548,7 +548,7 @@ class UserMediaClientImplTest : public ::testing::Test {
 
   blink::WebMediaStreamTrack RequestLocalAudioTrackWithAssociatedSink(
       bool render_to_associated_sink) {
-    MockConstraintFactory constraint_factory;
+    blink::MockConstraintFactory constraint_factory;
     constraint_factory.basic().render_to_associated_sink.SetExact(
         render_to_associated_sink);
     blink::WebUserMediaRequest user_media_request =
@@ -615,7 +615,7 @@ class UserMediaClientImplTest : public ::testing::Test {
       int width,
       int height,
       const base::Optional<double>& frame_rate = base::Optional<double>()) {
-    MockConstraintFactory factory;
+    blink::MockConstraintFactory factory;
     factory.basic().width.SetExact(width);
     factory.basic().height.SetExact(height);
     if (frame_rate)
@@ -951,7 +951,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
 }
 
 TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
       blink::WebString::FromASCII(blink::kMediaStreamSourceTab));
   blink::WebMediaConstraints audio_constraints =
@@ -1009,7 +1009,7 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
 }
 
 TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
       blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =
@@ -1070,7 +1070,7 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
 TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   mock_dispatcher_host_.DoNotRunCallback();
 
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.basic().device_id.SetExact(
       blink::WebString::FromASCII(kFakeAudioInputDeviceId1));
   factory.basic().disable_local_echo.SetExact(true);
@@ -1397,7 +1397,7 @@ TEST_F(UserMediaClientImplTest, IsCapturing) {
 }
 
 TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
       blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =
@@ -1435,7 +1435,7 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
 }
 
 TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSourceWithoutAudio) {
-  MockConstraintFactory factory;
+  blink::MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
       blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =

@@ -12,6 +12,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
@@ -193,7 +194,6 @@ Time X11EventSource::GetTimestamp() {
   return GetCurrentServerTime();
 }
 
-#if !defined(USE_OZONE)
 base::Optional<gfx::Point>
 X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   if (!dispatching_event_)
@@ -226,10 +226,9 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   }
 
   if (is_valid_event)
-    return ui::EventSystemLocationFromNative(event);
+    return ui::EventSystemLocationFromXEvent(*event);
   return base::nullopt;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected

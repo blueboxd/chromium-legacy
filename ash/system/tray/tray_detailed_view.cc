@@ -16,6 +16,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -346,10 +347,23 @@ HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
 }
 
 void TrayDetailedView::SetupConnectedScrollListItem(HoverHighlightView* view) {
+  SetupConnectedScrollListItem(view, base::nullopt /* battery_percentage */);
+}
+
+void TrayDetailedView::SetupConnectedScrollListItem(
+    HoverHighlightView* view,
+    base::Optional<uint8_t> battery_percentage) {
   DCHECK(view->is_populated());
 
-  view->SetSubText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  if (battery_percentage) {
+    view->SetSubText(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_LABEL,
+        base::NumberToString16(battery_percentage.value())));
+  } else {
+    view->SetSubText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  }
+
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
   style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
   style.SetupLabel(view->sub_text_label());

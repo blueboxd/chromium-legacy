@@ -54,13 +54,13 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
 }
 
 bool DisabledByOriginTrial(const String& feature_name,
-                           ExecutionContext* execution_context) {
+                           FeatureContext* feature_context) {
   {% for feature_name, dependencies in origin_trial_dependency_map.items() %}
   if (feature_name == k{{feature_name}}PolicyName) {
     return
     {%- for dependency in dependencies %}
     {%- if not loop.first %} &&{% endif %}
- !RuntimeEnabledFeatures::{{dependency.name}}Enabled(execution_context)
+ !RuntimeEnabledFeatures::{{dependency.name}}Enabled(feature_context)
     {%- endfor %};
   }
   {% endfor %}

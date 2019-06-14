@@ -1998,6 +1998,22 @@ public:
 		return TRUE;
 	}
 
+#ifdef __ATLSTR_H__
+	BOOL GetPaneText(int nPaneID, ATL::CString& strText, int* pcchLength = NULL, int* pnType = NULL) const
+	{
+		ATLASSERT(::IsWindow(this->m_hWnd));
+		int nIndex  = GetPaneIndexFromID(nPaneID);
+		if(nIndex == -1)
+			return FALSE;
+
+		int nLength = this->GetText(nIndex, strText, pnType);
+		if(pcchLength != NULL)
+			*pcchLength = nLength;
+
+		return TRUE;
+	}
+#endif // __ATLSTR_H__
+
 	BOOL SetPaneText(int nPaneID, LPCTSTR lpstrText, int nType = 0)
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
@@ -2187,8 +2203,6 @@ public:
 #define PANECNT_DIVIDER         0x00000010
 #define PANECNT_GRADIENT        0x00000020
 
-// Note: PANECNT_GRADIENT doesn't work with _ATL_NO_MSIMG
-
 template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlWinTraits>
 class ATL_NO_VTABLE CPaneContainerImpl : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CCustomDraw< T >
 {
@@ -2275,12 +2289,11 @@ public:
 				bUpdate = true;
 			}
 
-#ifndef _ATL_NO_MSIMG
 			if((dwPrevStyle & PANECNT_GRADIENT) != (m_dwExtendedStyle & PANECNT_GRADIENT))   // change background
 			{
 				bUpdate = true;
 			}
-#endif
+
 			if(bUpdate)
 				pT->UpdateLayout();
 		}
@@ -2758,11 +2771,9 @@ public:
 		else
 			rect.bottom = m_cxyHeader;
 
-#ifndef _ATL_NO_MSIMG
 		if((m_dwExtendedStyle & PANECNT_GRADIENT) != 0)
 			dc.GradientFillRect(rect, ::GetSysColor(COLOR_WINDOW), ::GetSysColor(COLOR_3DFACE), IsVertical());
 		else
-#endif
 			dc.FillRect(&rect, COLOR_3DFACE);
 	}
 
@@ -4878,6 +4889,6 @@ public:
 	DECLARE_WND_CLASS_EX(_T("WTL_TabView"), 0, COLOR_APPWORKSPACE)
 };
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLCTRLX_H__

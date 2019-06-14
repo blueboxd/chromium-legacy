@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_CDM_FILE_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
@@ -28,6 +29,10 @@ namespace content {
 // mojo pipe as CdmStorageImpl, to enforce message dispatch order.
 class CdmFileImpl final : public media::mojom::CdmFile {
  public:
+  // Check whether |name| is valid as a usable file name. Returns true if it is,
+  // false otherwise.
+  static bool IsValidName(const std::string& name);
+
   CdmFileImpl(const std::string& file_name,
               const url::Origin& origin,
               const std::string& file_system_id,
@@ -35,35 +40,17 @@ class CdmFileImpl final : public media::mojom::CdmFile {
               scoped_refptr<storage::FileSystemContext> file_system_context);
   ~CdmFileImpl() final;
 
-  // Called to open the file for read initially. Will create a file with
-  // |file_name_| if it does not exist. |file_opened_callback| will be called
-  // with the opened file descriptor on success. |file|.error_details()
-  // = base::File::FILE_ERROR_IN_USE if the file is in use by other CDMs
-  // or by the system. Note that |file_opened_callback| may destroy |this|
-  // (especially if the file can not be opened).
-  // Note that |this| should not be used anymore if Initialize() fails.
-  using OpenFileCallback = base::OnceCallback<void(base::File file)>;
-  void Initialize(OpenFileCallback file_opened_callback);
+  // Called to grab a lock on the file. Returns false if the file is in use by
+  // other CDMs or by the system, true otherwise. Note that |this| should not
+  // be used anymore if Initialize() fails.
+  bool Initialize();
 
-  // media::mojom::CdmFile implementation. |callback| will be called with the
-  // file descriptor on success. Otherwise the file descriptor will not be
-  // valid, and error_details() provides the reason.
-  void OpenFileForWriting(OpenFileForWritingCallback callback) final;
-  void CommitWrite(CommitWriteCallback callback) final;
+  // media::mojom::CdmFile implementation.
+  void Read(ReadCallback callback) final;
+  void Write(const std::vector<uint8_t>& data, WriteCallback callback) final;
 
  private:
   using CreateOrOpenCallback = storage::AsyncFileUtil::CreateOrOpenCallback;
-
-  // Keep track of which files are locked.
-  //   kFileLocked: Only the original file |file_name_| is locked.
-  //   kFileAndTempFileLocked: Both |file_name_| and |temp_file_name_| are
-  //                           locked.
-  // Initialize() can only be called if kNone, results in kFileLocked (on
-  // success). OpenFileForWriting() can only be called if kFileLocked, results
-  // in kFileAndTempFileLocked. CommitWrite() can only be called if
-  // kFileAndTempFileLocked, results in kFileLocked (temp file closed and then
-  // renamed to replace the original).
-  enum class LockState { kNone, kFileLocked, kFileAndTempFileLocked };
 
   // Open the file |file_name| using the flags provided in |file_flags|.
   // |callback| is called with the result.
@@ -71,18 +58,33 @@ class CdmFileImpl final : public media::mojom::CdmFile {
                 uint32_t file_flags,
                 CreateOrOpenCallback callback);
 
-  void OnFileOpenedForReading(base::File file,
+  // Called when the file has been opened for reading, so it reads the contents
+  // of |file| and passes them to |callback|. |file| is closed after reading.
+  void OnFileOpenedForReading(ReadCallback callback,
+                              base::File file,
                               base::OnceClosure on_close_callback);
-  void OnTempFileOpenedForWriting(base::File file,
+  void OnFileRead(ReadCallback callback, Status status);
+
+  // Called when |temp_file_name_| has been opened for writing. Writes
+  // |data| to |file|, closes |file|, and then kicks off a rename of
+  // |temp_file_name_| to |file_name_|, effectively replacing the contents of
+  // the old file.
+  void OnTempFileOpenedForWriting(std::vector<uint8_t> data,
+                                  WriteCallback callback,
+                                  base::File file,
                                   base::OnceClosure on_close_callback);
-  void OnFileRenamed(base::File::Error move_result);
+  void OnFileWritten(WriteCallback callback, Status status);
+  void OnFileRenamed(WriteCallback callback, base::File::Error move_result);
+
+  // Deletes |file_name_| asynchronously.
+  void DeleteFile(WriteCallback callback);
+  void OnFileDeleted(WriteCallback callback, base::File::Error result);
 
   // Returns the FileSystemURL for the specified |file_name|.
   storage::FileSystemURL CreateFileSystemURL(const std::string& file_name);
 
   // Helper methods to lock and unlock a file.
   bool AcquireFileLock(const std::string& file_name);
-  bool IsFileLockHeld(const std::string& file_name);
   void ReleaseFileLock(const std::string& file_name);
 
   // Names of the files this class represents.
@@ -96,21 +98,16 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   const std::string file_system_root_uri_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
-  // Keep track of which files are opened.
-  LockState lock_state_ = LockState::kNone;
+  // Keep track of when the original file |file_name_| is locked.
+  // Initialize() can only be called if false and takes the lock (on success).
+  // Read() and Write() can only be called if true.
+  // Note that having a lock on |file_name| implies that |temp_file_name| is
+  // reserved for use by this object only, and an explicit lock on
+  // |temp_file_name| is not required.
+  bool file_locked_ = false;
 
-  // As only one open operation is allowed at a time, |pending_open_callback_|
-  // keeps track of the callback to be called when the file is opened. This
-  // ensures the callback is always called if we are destroyed while the open
-  // operation is running.
-  OpenFileCallback pending_open_callback_;
-
-  // Callbacks required to close the file when it's no longer needed.
-  // storage::AsyncFileUtil::CreateOrOpen() returns this callback on a
-  // successful open along with the base::File object, which should be
-  // called when the file is closed.
-  base::OnceClosure on_close_callback_;
-  base::OnceClosure temporary_file_on_close_callback_;
+  // Buffer used when reading the file.
+  std::vector<uint8_t> data_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<CdmFileImpl> weak_factory_;

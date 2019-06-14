@@ -156,13 +156,21 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   }
   activatable_ = options && options->activatable();
 
+  // If we're acquiring something that isn't currently locked, we need to recalc
+  // the layout size. Otherwise if we're re-acquiring, we only need to recalc if
+  // the locked size has changed.
+  bool should_recalc_layout_size = !IsLocked();
   if (options && options->hasSize()) {
     auto parsed_size = ParseAndVerifySize(options->size());
-    if (!parsed_size) {
+    if (!parsed_size)
       return GetRejectedPromise(script_state, rejection_names::kInvalidOptions);
-    }
+    if (locked_content_logical_size_ != *parsed_size)
+      should_recalc_layout_size = true;
     locked_content_logical_size_ = *parsed_size;
+
   } else {
+    if (locked_content_logical_size_ != LayoutSize())
+      should_recalc_layout_size = true;
     locked_content_logical_size_ = LayoutSize();
   }
 
@@ -170,6 +178,14 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   // acquire. The reason for this is that the last acquire dictates the timeout
   // interval. Note that the following call cancels any existing timeout tasks.
   RescheduleTimeoutTask(timeout_ms);
+
+  if (should_recalc_layout_size && ConnectedToView()) {
+    if (auto* layout_object = element_->GetLayoutObject()) {
+      layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
+          layout_invalidation_reason::kDisplayLock);
+    }
+    ScheduleAnimation();
+  }
 
   if (acquire_resolver_)
     return acquire_resolver_->Promise();
@@ -187,6 +203,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   FinishCommitResolver(kResolve);
 
   update_budget_.reset();
+  state_ = kLocked;
 
   // If we're already connected then we need to ensure that we update our layout
   // size based on the options and we have cleared the painted output.
@@ -205,12 +222,16 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     MakeResolver(script_state, &acquire_resolver_);
     is_horizontal_writing_mode_ = true;
     if (auto* layout_object = element_->GetLayoutObject()) {
-      layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
-          layout_invalidation_reason::kDisplayLock);
       is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
+      // GraphicsLayer collection would normally skip layers if paint is blocked
+      // by display-locking (see: CollectDrawableLayersForLayerListRecursively
+      // in LocalFrameView). However, if we don't trigger this collection, then
+      // we might use the cached result instead. In order to ensure we skip the
+      // newly locked layers, we need to set |need_graphics_layer_collection_|
+      // before marking the layer for repaint.
+      needs_graphics_layer_collection_ = true;
+      MarkPaintLayerNeedsRepaint();
     }
-    MarkPaintLayerNeedsRepaint();
-    ScheduleAnimation();
     // TODO(vmpstr): This needs to be set after invalidation above, since we
     // want the object to layout once. After the changes to separate self and
     // child layout, this would no longer be required and we can set the
@@ -219,7 +240,6 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     return acquire_resolver_->Promise();
   }
 
-  state_ = kLocked;
   // Otherwise (if we're not connected), resolve immediately.
   return GetResolvedPromise(script_state);
 }
@@ -728,7 +748,6 @@ void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
     FinishAcquireResolver(kResolve);
     // TODO(vmpstr): When size: auto is supported, we need to get the size from
     // the layout object here.
-    DCHECK(locked_content_logical_size_);
     // Fallthrough here in case we're already updating.
   }
 

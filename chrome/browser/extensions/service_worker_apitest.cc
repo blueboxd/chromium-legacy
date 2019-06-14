@@ -1702,7 +1702,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UninstallSelf) {
   test_dir.WriteManifest(kManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
 
-  // Consruct this before loading the extension, since the extension will
+  // Construct this before loading the extension, since the extension will
   // immediately uninstall itself when it loads.
   extensions::TestExtensionRegistryObserver observer(
       extensions::ExtensionRegistry::Get(browser()->profile()));

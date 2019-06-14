@@ -74,6 +74,8 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglGetDisplayProc>(GetGLProcAddress("eglGetDisplay"));
   fn.eglGetErrorFn =
       reinterpret_cast<eglGetErrorProc>(GetGLProcAddress("eglGetError"));
+  fn.eglGetPlatformDisplayFn = reinterpret_cast<eglGetPlatformDisplayProc>(
+      GetGLProcAddress("eglGetPlatformDisplay"));
   fn.eglGetProcAddressFn = reinterpret_cast<eglGetProcAddressProc>(
       GetGLProcAddress("eglGetProcAddress"));
   fn.eglGetSyncAttribKHRFn = reinterpret_cast<eglGetSyncAttribKHRProc>(
@@ -117,20 +119,12 @@ void DriverEGL::InitializeClientExtensionBindings() {
 
   ext.b_EGL_ANGLE_feature_control =
       gfx::HasExtension(extensions, "EGL_ANGLE_feature_control");
-  ext.b_EGL_EXT_platform_base =
-      gfx::HasExtension(extensions, "EGL_EXT_platform_base");
   ext.b_EGL_KHR_debug = gfx::HasExtension(extensions, "EGL_KHR_debug");
 
   if (ext.b_EGL_KHR_debug) {
     fn.eglDebugMessageControlKHRFn =
         reinterpret_cast<eglDebugMessageControlKHRProc>(
             GetGLProcAddress("eglDebugMessageControlKHR"));
-  }
-
-  if (ext.b_EGL_EXT_platform_base) {
-    fn.eglGetPlatformDisplayEXTFn =
-        reinterpret_cast<eglGetPlatformDisplayEXTProc>(
-            GetGLProcAddress("eglGetPlatformDisplayEXT"));
   }
 
   if (ext.b_EGL_KHR_debug) {
@@ -597,11 +591,11 @@ EGLBoolean EGLApiBase::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
   return driver_->fn.eglGetNextFrameIdANDROIDFn(dpy, surface, frameId);
 }
 
-EGLDisplay EGLApiBase::eglGetPlatformDisplayEXTFn(EGLenum platform,
-                                                  void* native_display,
-                                                  const EGLint* attrib_list) {
-  return driver_->fn.eglGetPlatformDisplayEXTFn(platform, native_display,
-                                                attrib_list);
+EGLDisplay EGLApiBase::eglGetPlatformDisplayFn(EGLenum platform,
+                                               void* native_display,
+                                               const EGLAttrib* attrib_list) {
+  return driver_->fn.eglGetPlatformDisplayFn(platform, native_display,
+                                             attrib_list);
 }
 
 __eglMustCastToProperFunctionPointerType EGLApiBase::eglGetProcAddressFn(
@@ -1095,12 +1089,12 @@ EGLBoolean TraceEGLApi::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
   return egl_api_->eglGetNextFrameIdANDROIDFn(dpy, surface, frameId);
 }
 
-EGLDisplay TraceEGLApi::eglGetPlatformDisplayEXTFn(EGLenum platform,
-                                                   void* native_display,
-                                                   const EGLint* attrib_list) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglGetPlatformDisplayEXT")
-  return egl_api_->eglGetPlatformDisplayEXTFn(platform, native_display,
-                                              attrib_list);
+EGLDisplay TraceEGLApi::eglGetPlatformDisplayFn(EGLenum platform,
+                                                void* native_display,
+                                                const EGLAttrib* attrib_list) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglGetPlatformDisplay")
+  return egl_api_->eglGetPlatformDisplayFn(platform, native_display,
+                                           attrib_list);
 }
 
 __eglMustCastToProperFunctionPointerType TraceEGLApi::eglGetProcAddressFn(
@@ -1780,15 +1774,15 @@ EGLBoolean DebugEGLApi::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
   return result;
 }
 
-EGLDisplay DebugEGLApi::eglGetPlatformDisplayEXTFn(EGLenum platform,
-                                                   void* native_display,
-                                                   const EGLint* attrib_list) {
-  GL_SERVICE_LOG("eglGetPlatformDisplayEXT"
+EGLDisplay DebugEGLApi::eglGetPlatformDisplayFn(EGLenum platform,
+                                                void* native_display,
+                                                const EGLAttrib* attrib_list) {
+  GL_SERVICE_LOG("eglGetPlatformDisplay"
                  << "(" << platform << ", "
                  << static_cast<const void*>(native_display) << ", "
                  << static_cast<const void*>(attrib_list) << ")");
-  EGLDisplay result = egl_api_->eglGetPlatformDisplayEXTFn(
-      platform, native_display, attrib_list);
+  EGLDisplay result =
+      egl_api_->eglGetPlatformDisplayFn(platform, native_display, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

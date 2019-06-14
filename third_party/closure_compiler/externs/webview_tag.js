@@ -198,6 +198,12 @@ WebRequestEventInterface.prototype.onBeforeRequest;
 /** @type {!WebRequestOptionallySynchronousEvent} */
 WebRequestEventInterface.prototype.onBeforeSendHeaders;
 
+/** @type {!WebRequestEvent} */
+WebRequestEventInterface.prototype.onCompleted;
+
+/** @type {!WebRequestOnErrorOccurredEvent} */
+WebRequestEventInterface.prototype.onErrorOccurred;
+
 /** @type {!WebRequestOptionallySynchronousEvent} */
 WebRequestEventInterface.prototype.onHeadersReceived;
 

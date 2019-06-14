@@ -50,6 +50,12 @@ js_type_check("closure_compile_module") {
     ":providers_menu",
     ":search_box",
     ":suggest_apps_dialog",
+    "table:table",
+    "table:table_column",
+    "table:table_column_model",
+    "table:table_header",
+    "table:table_list",
+    "table:table_splitter",
   ]
 }
 
@@ -279,8 +285,8 @@ js_library("file_table") {
     ":file_table_list",
     "..:file_list_model",
     "..:list_thumbnail_loader",
+    "table:table",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr/ui:table",
   ]
   externs_list = [ "../../../../externs/background/import_history.js" ]
 }
@@ -298,9 +304,9 @@ js_library("file_table_list") {
     ":file_tap_handler",
     "../../../common/js:file_type",
     "../metadata:metadata_model",
+    "table:table_list",
     "//ui/webui/resources/js/cr:ui",
     "//ui/webui/resources/js/cr/ui:list_selection_controller",
-    "//ui/webui/resources/js/cr/ui/table:table_list",
   ]
 }
 

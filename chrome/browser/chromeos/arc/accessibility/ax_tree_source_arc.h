@@ -97,7 +97,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   void GetChildren(
       ArcAccessibilityInfoData* info_data,
       std::vector<ArcAccessibilityInfoData*>* out_children) const override;
-  bool IsIgnored(ArcAccessibilityInfoData* info_data) const override;
   bool IsValid(ArcAccessibilityInfoData* info_data) const override;
   bool IsEqual(ArcAccessibilityInfoData* info_data1,
                ArcAccessibilityInfoData* info_data2) const override;

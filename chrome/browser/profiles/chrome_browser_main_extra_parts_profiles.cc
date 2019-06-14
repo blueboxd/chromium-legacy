@@ -29,6 +29,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/favicon/favicon_request_handler_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
@@ -273,6 +274,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
+  FaviconRequestHandlerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::BookmarkTrackerFactory::GetInstance();
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance();

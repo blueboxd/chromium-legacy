@@ -21,6 +21,8 @@
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_decode_surface.h"
+
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif

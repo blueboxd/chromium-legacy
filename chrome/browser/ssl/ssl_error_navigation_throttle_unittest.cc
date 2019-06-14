@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -87,9 +85,6 @@ class SSLErrorNavigationThrottleTest
   SSLErrorNavigationThrottleTest() {}
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSSLCommittedInterstitials);
-
     handle_ = std::make_unique<content::MockNavigationHandle>(web_contents());
     handle_->set_has_committed(true);
     async_ = GetParam();
@@ -117,7 +112,6 @@ class SSLErrorNavigationThrottleTest
       content::NavigationThrottle::DEFER;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SSLErrorNavigationThrottleTest);
 };
 

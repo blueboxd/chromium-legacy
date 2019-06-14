@@ -40,6 +40,18 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   protocol::Response pushNodesByBackendIdsToFrontend(
       std::unique_ptr<protocol::Array<int>> backend_node_ids,
       std::unique_ptr<protocol::Array<int>>* result) override;
+  protocol::Response performSearch(
+      const protocol::String& query,
+      protocol::Maybe<bool> include_user_agent_shadow_dom,
+      protocol::String* search_id,
+      int* result_count) override;
+  protocol::Response getSearchResults(
+      const protocol::String& search_id,
+      int from_index,
+      int to_index,
+      std::unique_ptr<protocol::Array<int>>* node_ids) override;
+  protocol::Response discardSearchResults(
+      const protocol::String& search_id) override;
 
   // UIElementDelegate:
   void OnUIElementAdded(UIElement* parent, UIElement* child) override;
@@ -82,6 +94,12 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
 
   base::ObserverList<DOMAgentObserver>::Unchecked observers_;
+
+  using SearchResults = std::unordered_map<std::string, std::vector<int>>;
+
+  SearchResults search_results_;
+
+  bool is_document_created_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgent);
 };

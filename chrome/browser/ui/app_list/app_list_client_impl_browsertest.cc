@@ -302,6 +302,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
   // Uninstall the extension.
   UninstallExtension(extension->id());
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   // We cannot find the extension any more.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
 

@@ -49,7 +49,7 @@ BulletedLabelListView::BulletedLabelListView()
 BulletedLabelListView::BulletedLabelListView(
     const std::vector<base::string16>& texts) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(kColumnSetId);
 
   int width = ChromeLayoutProvider::Get()->GetDistanceMetric(

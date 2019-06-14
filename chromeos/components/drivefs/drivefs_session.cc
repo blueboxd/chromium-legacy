@@ -15,6 +15,7 @@ namespace {
 
 using MountFailure = DriveFsSession::MountObserver::MountFailure;
 constexpr char kDataDirOption[] = "datadir=";
+constexpr char kMyFilesOption[] = "myfiles=";
 constexpr char kMountScheme[] = "drivefs://";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 
@@ -45,10 +46,11 @@ class DiskMounterImpl : public DiskMounter,
     source_path_ = base::StrCat({kMountScheme, token.ToString()});
     std::string datadir_option =
         base::StrCat({kDataDirOption, data_path.value()});
-    disk_mount_manager_->MountPath(source_path_, "", desired_mount_dir_name,
-                                   {datadir_option},
-                                   chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                                   chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+    disk_mount_manager_->MountPath(
+        source_path_, "", desired_mount_dir_name,
+        {datadir_option, base::StrCat({kMyFilesOption, my_files_path.value()})},
+        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+        chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
   }
 
  private:

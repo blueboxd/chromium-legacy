@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Some helper functions for working with the clipboard and IDataObjects.
 
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
@@ -22,6 +20,7 @@ class GURL;
 
 namespace ui {
 
+// Contains helper functions for working with the clipboard and IDataObjects.
 class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////

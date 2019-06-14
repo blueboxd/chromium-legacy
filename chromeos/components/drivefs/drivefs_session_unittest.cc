@@ -42,13 +42,12 @@ class DriveFsDiskMounterTest : public testing::Test {
     std::string source;
     EXPECT_CALL(
         disk_manager_,
-        MountPath(
-            testing::StartsWith("drivefs://"), "", kExpectedMountDir,
-            testing::AllOf(testing::Contains(
-                               "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
-                           testing::Not(testing::Contains(
-                               "myfiles=/path/to/profile/MyFiles"))),
-            _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+        MountPath(testing::StartsWith("drivefs://"), "", kExpectedMountDir,
+                  testing::AllOf(
+                      testing::Contains(
+                          "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+                      testing::Contains("myfiles=/path/to/profile/MyFiles")),
+                  _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
     mounter->Mount(token, base::FilePath(kExpectedDataDir),

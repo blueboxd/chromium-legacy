@@ -31,8 +31,7 @@ test(function(t) {
     assert_equals(axFutureParent.childrenCount, 1, "after setting aria-oens");
 
     child.style.visibility = 'hidden';
-    assert_equals(axFutureParent.childrenCount, 1, "after setting hidden");
-    assert_true(axFutureParent.childAtIndex(0).isIgnored);
+    assert_equals(axFutureParent.childrenCount, 0, "after setting hidden");
 
     child.style.visibility = 'visible';
     assert_equals(axFutureParent.childrenCount, 1, "after setting visible");

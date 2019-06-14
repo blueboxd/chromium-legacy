@@ -596,6 +596,9 @@
     ],
     "junit_tests": [
       {
+        "test": "android_webview_junit_tests"
+      },
+      {
         "test": "base_junit_tests"
       },
       {
@@ -22809,6 +22812,9 @@
       }
     ],
     "junit_tests": [
+      {
+        "test": "android_webview_junit_tests"
+      },
       {
         "test": "base_junit_tests"
       },

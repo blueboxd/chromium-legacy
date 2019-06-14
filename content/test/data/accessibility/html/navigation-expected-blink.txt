@@ -1,6 +1,5 @@
 rootWebArea
-++genericContainer ignored
-++++navigation
-++++++link name='Don't click on me'
-++++++++staticText name='Don't click on me'
-++++++++++inlineTextBox name='Don't click on me'
+++navigation
+++++link name='Don't click on me'
+++++++staticText name='Don't click on me'
+++++++++inlineTextBox name='Don't click on me'

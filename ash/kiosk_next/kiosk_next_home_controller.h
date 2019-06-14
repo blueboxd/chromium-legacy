@@ -55,6 +55,7 @@ class ASH_EXPORT KioskNextHomeController : public HomeScreenDelegate,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
+  bool started_handling_events_ = false;
   aura::Window* home_screen_container_ = nullptr;
   aura::Window* home_screen_window_ = nullptr;
 

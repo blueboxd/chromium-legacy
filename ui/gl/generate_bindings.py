@@ -2370,11 +2370,9 @@ EGL_FUNCTIONS = [
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLuint64KHR* frameId', },
 { 'return_type': 'EGLDisplay',
-  'known_as': 'eglGetPlatformDisplayEXT',
-  'versions': [{ 'name': 'eglGetPlatformDisplayEXT',
-                 'client_extensions': ['EGL_EXT_platform_base'], }],
+  'names': ['eglGetPlatformDisplay'],
   'arguments': 'EGLenum platform, void* native_display, '
-               'const EGLint* attrib_list', },
+               'const EGLAttrib* attrib_list', },
 { 'return_type': '__eglMustCastToProperFunctionPointerType',
   'names': ['eglGetProcAddress'],
   'arguments': 'const char* procname',

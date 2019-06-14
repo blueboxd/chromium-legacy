@@ -1388,13 +1388,9 @@ class AppListPresenterDelegateHomeLauncherTest
   }
 
   void PressAppListButton() {
-    std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
-        ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks(),
-        ui::EF_NONE, 0);
-    ShelfModel::Get()
-        ->GetShelfItemDelegate(ShelfID(kAppListId))
-        ->ItemSelected(std::move(event), GetPrimaryDisplayId(),
-                       LAUNCH_FROM_UNKNOWN, base::DoNothing());
+    Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+        GetPrimaryDisplayId(), app_list::AppListShowSource::kShelfButton,
+        base::TimeTicks());
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
@@ -1674,6 +1670,31 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Test that the AppListView opacity is reset after it is hidden during the
+// overview mode animation.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       LauncherShowsAfterOverviewMode) {
+  // Show the AppList in clamshell mode.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Enable overview mode.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+
+  // Test that the AppListView is transparent.
+  DCHECK_EQ(0.0f, GetAppListView()->GetWidget()->GetLayer()->opacity());
+
+  // Disable overview mode.
+  overview_controller->ToggleOverview();
+
+  // Show the launcher, test that the opacity is restored.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  DCHECK_EQ(1.0f, GetAppListView()->GetWidget()->GetLayer()->opacity());
 }
 
 // Tests the app list opacity in overview mode.

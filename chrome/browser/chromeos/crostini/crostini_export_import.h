@@ -45,7 +45,8 @@ enum class ImportContainerResult {
   kFailedVmStopped = 2,
   kFailedVmStarted = 3,
   kFailedArchitecture = 4,
-  kMaxValue = kFailedArchitecture,
+  kFailedSpace = 5,
+  kMaxValue = kFailedSpace,
 };
 
 // CrostiniExportImport is a keyed profile service to manage exporting and
@@ -94,6 +95,7 @@ class CrostiniExportImport : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
                            TestImportFailArchitecture);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFailSpace);
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
@@ -113,14 +115,15 @@ class CrostiniExportImport : public KeyedService,
                                  uint64_t progress_speed) override;
 
   // crostini::ImportContainerProgressObserver implementation.
-  void OnImportContainerProgress(
-      const std::string& vm_name,
-      const std::string& container_name,
-      crostini::ImportContainerProgressStatus status,
-      int progress_percent,
-      uint64_t progress_speed,
-      const std::string& architecture_device,
-      const std::string& architecture_container) override;
+  void OnImportContainerProgress(const std::string& vm_name,
+                                 const std::string& container_name,
+                                 crostini::ImportContainerProgressStatus status,
+                                 int progress_percent,
+                                 uint64_t progress_speed,
+                                 const std::string& architecture_device,
+                                 const std::string& architecture_container,
+                                 uint64_t available_space,
+                                 uint64_t minimum_required_space) override;
 
   void ExportAfterSharing(const ContainerId& container_id,
                           const base::FilePath& filename,

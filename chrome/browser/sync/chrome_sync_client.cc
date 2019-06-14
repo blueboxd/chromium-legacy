@@ -437,12 +437,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::APPS:
     case syncer::EXTENSIONS:
       return GetWeakPtrOrNull(ExtensionSyncService::Get(profile_));
-    // TODO(crbug.com/933874): Remove these two from here once the old
-    // controllers are deleted.
-    case syncer::APP_SETTINGS:
-    case syncer::EXTENSION_SETTINGS:
-      return extensions::settings_sync_util::GetSyncableService(profile_, type)
-          ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_APP_LIST)
     case syncer::APP_LIST:

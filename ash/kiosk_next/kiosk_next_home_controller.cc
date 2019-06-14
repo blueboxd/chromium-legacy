@@ -131,9 +131,6 @@ void KioskNextHomeController::OnWindowDestroying(aura::Window* window) {
 }
 
 void KioskNextHomeController::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::EventType::ET_GESTURE_SCROLL_BEGIN)
-    return;
-
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int component = wm::GetNonClientComponent(target, event->location());
 
@@ -143,16 +140,23 @@ void KioskNextHomeController::OnGestureEvent(ui::GestureEvent* event) {
   if (new_target)
     target = new_target;
 
-  if (target != home_screen_container_ && target != home_screen_window_)
+  if (!(target == home_screen_window_ || started_handling_events_))
     return;
 
-  if (component == HTCLIENT) {
-    event->SetHandled();
-    event->StopPropagation();
-
+  if (component == HTCLIENT && event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     auto* overview_controller = Shell::Get()->overview_controller();
     if (!overview_controller->InOverviewSession())
       overview_controller->ToggleOverview();
+    started_handling_events_ = true;
+  }
+
+  if (started_handling_events_) {
+    event->SetHandled();
+    event->StopPropagation();
+
+    if (event->type() == ui::EventType::ET_GESTURE_SCROLL_END ||
+        event->type() == ui::EventType::ET_GESTURE_END)
+      started_handling_events_ = false;
   }
 }
 

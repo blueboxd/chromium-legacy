@@ -32,7 +32,7 @@
 
 #include "base/macros.h"
 #include "base/sys_byteorder.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 #include <stdlib.h>
 #include <string.h>

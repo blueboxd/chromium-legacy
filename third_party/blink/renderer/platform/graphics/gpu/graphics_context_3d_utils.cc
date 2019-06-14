@@ -86,6 +86,12 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
   gr_texture->textureParamsModified();
 }
 
+void GraphicsContext3DUtils::RegisterMailbox(GrTexture* gr_texture,
+                                             const gpu::Mailbox& mailbox) {
+  DCHECK(cached_mailboxes_.find(gr_texture) == cached_mailboxes_.end());
+  cached_mailboxes_.insert(gr_texture, mailbox);
+}
+
 void GraphicsContext3DUtils::RemoveCachedMailbox(GrTexture* gr_texture) {
   cached_mailboxes_.erase(gr_texture);
 }

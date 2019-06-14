@@ -162,30 +162,7 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
   EXPECT_EQ(ShelfConstants::button_spacing(), app_list_button()->bounds().x());
 }
 
-class VoiceInteractionAppListButtonTest : public AppListButtonTest {
- public:
-  VoiceInteractionAppListButtonTest() {
-    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
-  }
-
-  // AppListButtonTest:
-  void SetUp() override {
-    AppListButtonTest::SetUp();
-
-    Shell::Get()->assistant_controller()->SetAssistant(
-        assistant_.CreateInterfacePtrAndBind());
-  }
-
- private:
-  std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  base::test::ScopedFeatureList feature_list_;
-  TestAssistantService assistant_;
-
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionAppListButtonTest);
-};
-
-TEST_F(VoiceInteractionAppListButtonTest,
-       LongPressGestureWithVoiceInteractionFlag) {
+TEST_F(AppListButtonTest, LongPressGesture) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   // Simulate two user with primary user as active.
@@ -220,7 +197,7 @@ TEST_F(VoiceInteractionAppListButtonTest,
                                                ->visibility());
 }
 
-TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
+TEST_F(AppListButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
   VoiceInteractionController::Get()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
@@ -247,8 +224,7 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
                                                ->visibility());
 }
 
-TEST_F(VoiceInteractionAppListButtonTest,
-       LongPressGestureWithSettingsDisabled) {
+TEST_F(AppListButtonTest, LongPressGestureWithSettingsDisabled) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 

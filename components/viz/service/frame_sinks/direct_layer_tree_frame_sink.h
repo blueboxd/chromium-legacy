@@ -19,6 +19,10 @@
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
+namespace base {
+class HistogramBase;
+}  // namespace base
+
 namespace viz {
 class CompositorFrameSinkSupportManager;
 class Display;
@@ -36,7 +40,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // reporting.
   class PipelineReporting {
    public:
-    PipelineReporting(BeginFrameArgs args, base::TimeTicks now);
+    PipelineReporting(BeginFrameArgs args,
+                      base::TimeTicks now,
+                      base::HistogramBase* submit_begin_frame_histogram);
     ~PipelineReporting();
 
     void Report();
@@ -50,6 +56,10 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
     // The time stamp for the begin frame to arrive on client side.
     base::TimeTicks frame_time_;
+
+    // Histogram metrics used to record
+    // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
+    base::HistogramBase* submit_begin_frame_histogram_;
   };
 
   // The underlying Display, FrameSinkManagerImpl, and LocalSurfaceIdAllocator
@@ -132,6 +142,15 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   // Use this map to record the time when client received the BeginFrameArgs.
   base::flat_map<int64_t, PipelineReporting> pipeline_reporting_frame_times_;
+
+  // Histogram metrics used to record
+  // GraphicsPipeline.ClientName.ReceivedBeginFrame
+  base::HistogramBase* const receive_begin_frame_histogram_;
+
+  // Histogram metrics used to record
+  // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
+  base::HistogramBase* const submit_begin_frame_histogram_;
+
   base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);

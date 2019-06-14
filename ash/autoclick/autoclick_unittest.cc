@@ -9,6 +9,8 @@
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
+#include "ash/system/accessibility/autoclick_scroll_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -173,6 +175,14 @@ class AutoclickTest : public AshTestBase {
         ->menu_view_;
   }
 
+  AutoclickScrollView* GetAutoclickScrollView() {
+    AutoclickScrollBubbleController* controller =
+        GetAutoclickController()
+            ->GetMenuBubbleControllerForTesting()
+            ->scroll_bubble_controller_.get();
+    return controller ? controller->scroll_view_ : nullptr;
+  }
+
   views::Widget* GetAutoclickBubbleWidget() {
     return GetAutoclickController()
         ->GetMenuBubbleControllerForTesting()
@@ -184,6 +194,13 @@ class AutoclickTest : public AshTestBase {
     if (!menu_view)
       return nullptr;
     return menu_view->GetViewByID(static_cast<int>(view_id));
+  }
+
+  views::View* GetScrollButton(AutoclickScrollView::ButtonId view_id) {
+    AutoclickScrollView* scroll_view = GetAutoclickScrollView();
+    if (!scroll_view)
+      return nullptr;
+    return scroll_view->GetViewByID(static_cast<int>(view_id));
   }
 
   void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
@@ -1197,6 +1214,102 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
   EXPECT_FALSE(widget->IsActive());
   EXPECT_TRUE(popup_widget->IsActive());
   EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+}
+
+TEST_F(AutoclickTest, ScrollClosesWhenHoveredOverScrollButton) {
+  EnableExperimentalAutoclickFlag(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kLeftClick);
+  EXPECT_FALSE(GetAutoclickScrollView());
+
+  // Enable scroll.
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kScroll);
+  ASSERT_TRUE(GetAutoclickScrollView());
+  views::View* close_button =
+      GetScrollButton(AutoclickScrollView::ButtonId::kCloseScroll);
+  ASSERT_TRUE(close_button);
+
+  gfx::Point button_location = close_button->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->MoveMouseTo(button_location);
+  // No mouse event.
+  std::vector<ui::MouseEvent> events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
+  // Reset to left click and scroll view is gone.
+  EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+            Shell::Get()->accessibility_controller()->GetAutoclickEventType());
+  EXPECT_FALSE(GetAutoclickScrollView());
+
+  EnableExperimentalAutoclickFlag(false);
+}
+
+TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
+  UpdateDisplay("800x600");
+  EnableExperimentalAutoclickFlag(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+
+  // Enable scroll.
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kScroll);
+  ASSERT_TRUE(GetAutoclickScrollView());
+
+  // TODO: Do for all four buttons, wait a few scrolls each.
+  const struct {
+    AutoclickScrollView::ButtonId button_id;
+    int scroll_x;
+    int scroll_y;
+  } kTestCases[] = {
+      {AutoclickScrollView::ButtonId::kScrollUp, 0,
+       ui::MouseWheelEvent::kWheelDelta},
+      {AutoclickScrollView::ButtonId::kScrollDown, 0,
+       -ui::MouseWheelEvent::kWheelDelta},
+      {AutoclickScrollView::ButtonId::kScrollLeft,
+       ui::MouseWheelEvent::kWheelDelta, 0},
+      {AutoclickScrollView::ButtonId::kScrollRight,
+       -ui::MouseWheelEvent::kWheelDelta, 0},
+  };
+  for (auto& test : kTestCases) {
+    views::View* button = GetScrollButton(test.button_id);
+    ASSERT_TRUE(button);
+
+    gfx::Point button_location = button->GetBoundsInScreen().CenterPoint();
+    GetEventGenerator()->MoveMouseTo(button_location);
+    // No mouse event during hover, no wheel events yet.
+    FastForwardBy(AutoclickScrollView::kAutoclickScrollDelayMs - 1);
+    std::vector<ui::MouseEvent> events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    std::vector<ui::MouseWheelEvent> wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(0u, wheel_events.size());
+
+    // But we should get a scroll event after kAutoclickScrollDelayMs.
+    FastForwardBy(2);
+    wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(1u, wheel_events.size());
+    EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+    EXPECT_EQ(test.scroll_x, wheel_events[0].x_offset());
+    EXPECT_EQ(test.scroll_y, wheel_events[0].y_offset());
+    // No other events expected.
+    events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    ClearMouseEvents();
+
+    // Wait until another kAutoclickScrollDelayMs has elapsed and expect another
+    // scroll to have occurred.
+    FastForwardBy(AutoclickScrollView::kAutoclickScrollDelayMs);
+    wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(1u, wheel_events.size());
+    EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+    EXPECT_EQ(test.scroll_x, wheel_events[0].x_offset());
+    EXPECT_EQ(test.scroll_y, wheel_events[0].y_offset());
+    // No other events expected.
+    events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    ClearMouseEvents();
+  }
+
+  EnableExperimentalAutoclickFlag(false);
 }
 
 }  // namespace ash

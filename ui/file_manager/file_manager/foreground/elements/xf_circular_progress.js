@@ -60,6 +60,7 @@ class CircularProgress extends HTMLElement {
                     }
                     .top {
                         stroke: rgb(26, 115, 232);
+                        stroke-linecap: round;
                         fill: none;
                     }
                     circle {
@@ -87,19 +88,22 @@ class CircularProgress extends HTMLElement {
    * @private
    */
   static get observedAttributes() {
-    return ['radius', 'progress'];
+    return [
+      'label',
+      'progress',
+      'radius',
+    ];
   }
 
   /**
-   * Utility function to set the indicators progress position.
+   * Sets the indicators progress position.
    * @param {number} progress A value between 0 and maxProgress_ to indicate.
    * @return {number}
    * @public
    */
   setProgress(progress) {
-    // Limit the range between 0 and maxProgress_.
-    progress = Math.max(progress, 0);
-    progress = Math.min(progress, this.maxProgress_);
+    // Clamp progress to 0 .. maxProgress_.
+    progress = Math.min(Math.max(progress, 0), this.maxProgress_);
     const value = (progress / this.maxProgress_) * this.fullCircle_;
     this.indicator_.setAttribute(
         'stroke-dasharray', value + ' ' + this.fullCircle_);
@@ -108,15 +112,25 @@ class CircularProgress extends HTMLElement {
 
   /**
    * Callback triggered by the browser when our attribute values change.
+   * TODO(crbug.com/947388) Add unit tests to exercise attribute edge cases.
    * @param {string} name Attribute that's changed.
-   * @param {string} oldValue Old value of the attribute.
-   * @param {string} newValue New value of the attribute.
+   * @param {?string} oldValue Old value of the attribute.
+   * @param {?string} newValue New value of the attribute.
    * @private
    */
   attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
     switch (name) {
+      case 'label':
+        this.label_.textContent = newValue;
+        break;
       case 'radius':
-        const radius = Math.floor(newValue);
+        if (!newValue) {
+          break;
+        }
+        const radius = Number(newValue);
         // Restrict the allowed size to what fits in our area.
         if (radius < 0 || radius > 16.5) {
           return;
@@ -124,8 +138,8 @@ class CircularProgress extends HTMLElement {
         // Calculate the circumference for the progress dash length.
         this.fullCircle_ = Math.PI * 2 * radius;
         const bottom = this.shadowRoot.querySelector('.bottom');
-        bottom.setAttribute('r', newValue);
-        this.indicator_.setAttribute('r', newValue);
+        bottom.setAttribute('r', radius.toString());
+        this.indicator_.setAttribute('r', radius.toString());
         this.setProgress(this.progress_);
         break;
       case 'progress':
@@ -138,14 +152,14 @@ class CircularProgress extends HTMLElement {
   /**
    * Getter for the current state of the progress indication.
    * @public
-   * @return {number}
+   * @return {string}
    */
   get progress() {
-    return this.progress_;
+    return this.progress_.toString();
   }
 
   /**
-   * Setter to set the progress position between 0 and 100.0.
+   * Sets the progress position between 0 and 100.0.
    * @param {string} progress Progress value being set.
    * @public
    */
@@ -161,7 +175,7 @@ class CircularProgress extends HTMLElement {
    * @public
    */
   set label(label) {
-    this.label_.textContent = label;
+    this.setAttribute('label', label);
   }
 }
 

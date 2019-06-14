@@ -553,7 +553,7 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
   pending_query_view_->SetQuery(query);
 }
 
-void AssistantMainStage::OnPendingQueryCleared() {
+void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
   if (pending_query_view_) {
     delete pending_query_view_;
     pending_query_view_ = nullptr;

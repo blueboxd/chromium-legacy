@@ -26,7 +26,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -265,7 +265,7 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
 // Returns true if |mouse_event| was generated from a touchpad device.
 bool IsFromTouchpadDevice(const ui::MouseEvent& mouse_event) {
   for (const ui::InputDevice& touchpad :
-       ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchpadDevices()) {
     if (touchpad.id == mouse_event.source_device_id())
       return true;
   }
@@ -1605,10 +1605,10 @@ bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys() const {
 
 EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
     int device_id) {
-  if (!ui::InputDeviceManager::HasInstance())
+  if (!ui::DeviceDataManager::HasInstance())
     return kDeviceUnknown;
   const std::vector<ui::InputDevice>& keyboard_devices =
-      ui::InputDeviceManager::GetInstance()->GetKeyboardDevices();
+      ui::DeviceDataManager::GetInstance()->GetKeyboardDevices();
   for (const auto& keyboard : keyboard_devices) {
     if (keyboard.id == device_id) {
       const DeviceType type = GetDeviceType(keyboard);

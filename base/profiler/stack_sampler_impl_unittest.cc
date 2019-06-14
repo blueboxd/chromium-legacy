@@ -596,7 +596,7 @@ TEST(StackSamplerImplTest, WalkStack_AuxThenNative) {
   module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
 
   FakeTestUnwinder aux_unwinder(
-      {{{UnwindResult::UNRECOGNIZED_FRAME, {1u}}, {false}}});
+      {{UnwindResult::UNRECOGNIZED_FRAME, {1u}}, false});
   FakeTestUnwinder native_unwinder({{UnwindResult::COMPLETED, {2u}}});
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(

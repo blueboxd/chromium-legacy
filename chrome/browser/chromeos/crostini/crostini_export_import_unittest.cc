@@ -21,6 +21,12 @@
 
 namespace crostini {
 
+struct ImportProgressOptionalArguments {
+  int progress_percent{};
+  uint64_t available_space{};
+  uint64_t min_required_space{};
+};
+
 class CrostiniExportImportTest : public testing::Test {
  public:
   void SendExportProgress(
@@ -37,16 +43,17 @@ class CrostiniExportImportTest : public testing::Test {
 
   void SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status status,
-      int progress_percent) {
+      const ImportProgressOptionalArguments& arguments = {}) {
     vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
     signal.set_owner_id(CryptohomeIdForProfile(profile()));
     signal.set_vm_name(kCrostiniDefaultVmName);
     signal.set_container_name(kCrostiniDefaultContainerName);
     signal.set_status(status);
-    signal.set_progress_percent(progress_percent);
-    signal.set_progress_percent(progress_percent);
+    signal.set_progress_percent(arguments.progress_percent);
     signal.set_architecture_device("arch_dev");
     signal.set_architecture_container("arch_con");
+    signal.set_available_space(arguments.available_space);
+    signal.set_min_required_space(arguments.min_required_space);
     fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
   }
 
@@ -184,7 +191,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
-      20);
+      {.progress_percent = 20});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 10);
@@ -193,7 +200,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
-      20);
+      {.progress_percent = 20});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
@@ -203,14 +210,14 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
-      40);
+      {.progress_percent = 40});
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
 
   // Done.
   SendImportProgress(
-      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE, 0);
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::DONE);
 }
@@ -224,7 +231,7 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
 
   // Failed.
   SendImportProgress(
-      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED, 0);
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::FAILED);
   std::string msg("Restoring couldn't be completed due to an error");
@@ -242,8 +249,7 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
   // Failed Architecture.
   SendImportProgress(
       vm_tools::cicerone::
-          ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE,
-      0);
+          ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
   EXPECT_EQ(notification->get_status(),
             CrostiniExportImportNotification::Status::FAILED);
   std::string msg(
@@ -254,4 +260,28 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
   EXPECT_EQ(notification->get_notification()->message(),
             base::UTF8ToUTF16(msg));
 }
+
+TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
+  crostini_export_import()->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+  run_loop_->RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import()->GetNotificationForTesting(container_id_);
+
+  // Failed Space.
+  SendImportProgress(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED_SPACE,
+      {
+          .available_space = 20ul * 1'024 * 1'024 * 1'024,    // 20Gb
+          .min_required_space = 35ul * 1'024 * 1'024 * 1'024  // 35Gb
+      });
+  EXPECT_EQ(notification->get_status(),
+            CrostiniExportImportNotification::Status::FAILED);
+  std::string msg =
+      "Cannot restore due to lack of storage space. Free up 15.0 GB from the "
+      "device and try again.";
+  EXPECT_EQ(notification->get_notification()->message(),
+            base::UTF8ToUTF16(msg));
+}
+
 }  // namespace crostini

@@ -153,6 +153,9 @@ Display::~Display() {
   }
 #endif
 
+  if (no_pending_swaps_callback_)
+    std::move(no_pending_swaps_callback_).Run();
+
   for (auto& observer : observers_)
     observer.OnDisplayDestroyed();
   observers_.Clear();
@@ -250,19 +253,39 @@ void Display::Resize(const gfx::Size& size) {
 
   TRACE_EVENT0("viz", "Display::Resize");
 
-  // Need to ensure all pending swaps have executed before the window is
-  // resized, or D3D11 will scale the swap output.
-  if (settings_.finish_rendering_on_resize) {
-    if (!swapped_since_resize_ && scheduler_)
-      scheduler_->ForceImmediateSwapIfPossible();
-    if (swapped_since_resize_ && output_surface_ &&
-        output_surface_->context_provider())
-      output_surface_->context_provider()->ContextGL()->ShallowFinishCHROMIUM();
-  }
+  // Resize() shouldn't be called while waiting for pending swaps to ack unless
+  // it's being called with size (0, 0) to disable DrawAndSwap().
+  DCHECK(no_pending_swaps_callback_.is_null() || size.IsEmpty());
+
   swapped_since_resize_ = false;
   current_surface_size_ = size;
   if (scheduler_)
     scheduler_->DisplayResized();
+}
+
+void Display::DisableSwapUntilResize(
+    base::OnceClosure no_pending_swaps_callback) {
+  TRACE_EVENT0("viz", "Display::DisableSwapUntilResize");
+  DCHECK(no_pending_swaps_callback_.is_null());
+
+  if (!current_surface_size_.IsEmpty()) {
+    DCHECK(scheduler_);
+
+    if (!swapped_since_resize_)
+      scheduler_->ForceImmediateSwapIfPossible();
+
+    if (no_pending_swaps_callback && scheduler_->pending_swaps() > 0 &&
+        (output_surface_->context_provider() ||
+         output_surface_->AsSkiaOutputSurface())) {
+      no_pending_swaps_callback_ = std::move(no_pending_swaps_callback);
+    }
+
+    Resize(gfx::Size());
+  }
+
+  // There are no pending swaps for current size so immediately run callback.
+  if (no_pending_swaps_callback)
+    std::move(no_pending_swaps_callback).Run();
 }
 
 void Display::SetColorMatrix(const SkMatrix44& matrix) {
@@ -577,8 +600,12 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck() {
-  if (scheduler_)
+  if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
+    if (no_pending_swaps_callback_ && scheduler_->pending_swaps() == 0)
+      std::move(no_pending_swaps_callback_).Run();
+  }
+
   if (renderer_)
     renderer_->SwapBuffersComplete();
 }

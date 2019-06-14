@@ -546,11 +546,13 @@ jumbo_source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//content/public/browser",
+    "//content/test:test_support",
     "//extensions/browser",
     "//extensions/common",
     "//extensions/common:test_support",
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

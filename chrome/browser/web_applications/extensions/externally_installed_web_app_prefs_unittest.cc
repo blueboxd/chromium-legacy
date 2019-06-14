@@ -56,11 +56,15 @@ class ExternallyInstalledWebAppPrefsTest
     extensions::ExtensionRegistry::Get(profile())->RemoveEnabled(id);
   }
 
-  std::vector<GURL> GetInstalledAppUrls(InstallSource install_source) {
-    std::vector<GURL> vec = ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
-        profile(), install_source);
-    std::sort(vec.begin(), vec.end());
-    return vec;
+  std::vector<GURL> GetAppUrls(InstallSource install_source) {
+    std::vector<GURL> urls;
+    for (const auto& id_and_url :
+         ExternallyInstalledWebAppPrefs::BuildAppIdsMap(profile()->GetPrefs(),
+                                                        install_source)) {
+      urls.push_back(id_and_url.second);
+    }
+    std::sort(urls.begin(), urls.end());
+    return urls;
   }
 
  private:
@@ -93,12 +97,9 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kInternal));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kInternal));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kExternalDefault));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kExternalPolicy));
 
   // Add some entries.
 
@@ -116,12 +117,10 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
-  EXPECT_EQ(std::vector<GURL>({url_b}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+  EXPECT_EQ(std::vector<GURL>({url_b}), GetAppUrls(InstallSource::kInternal));
   EXPECT_EQ(std::vector<GURL>({url_a, url_c}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(InstallSource::kExternalDefault));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kExternalPolicy));
 
   // Overwrite an entry.
 
@@ -138,15 +137,13 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_b, url_c}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+            GetAppUrls(InstallSource::kInternal));
   EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(InstallSource::kExternalDefault));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kExternalPolicy));
 
   // Uninstall an underlying extension. The ExternallyInstalledWebAppPrefs will
-  // still return positive for LookupAppId and HasAppId (as they ignore
-  // installed-ness), but GetInstalledAppUrls will skip over it.
+  // still return positive.
 
   SimulateUninstallApp(url_b);
 
@@ -160,12 +157,11 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
-  EXPECT_EQ(std::vector<GURL>({url_c}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+  EXPECT_EQ(std::vector<GURL>({url_b, url_c}),
+            GetAppUrls(InstallSource::kInternal));
   EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(InstallSource::kExternalDefault));
+  EXPECT_EQ(std::vector<GURL>({}), GetAppUrls(InstallSource::kExternalPolicy));
 }
 
 }  // namespace web_app

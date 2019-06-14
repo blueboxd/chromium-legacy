@@ -72,6 +72,9 @@ class SendTabToSelfModel {
   void AddObserver(SendTabToSelfModelObserver* observer);
   void RemoveObserver(SendTabToSelfModelObserver* observer);
 
+  // Returns true if the user has valid target device.
+  virtual bool HasValidTargetDevice() = 0;
+
   // Returns a map of the name of possible target devices for the send tab to
   // self feature to their cache guid. This is a thin layer on top of
   // DeviceInfoTracker.

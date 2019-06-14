@@ -35,7 +35,7 @@
 #include "base/time/time.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 

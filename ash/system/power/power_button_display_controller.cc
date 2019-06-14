@@ -11,7 +11,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 
@@ -37,7 +37,7 @@ PowerButtonDisplayController::PowerButtonDisplayController(
       tick_clock_(tick_clock),
       weak_ptr_factory_(this) {
   chromeos::PowerManagerClient::Get()->AddObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
   Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 
   backlights_forced_off_observer_.Add(backlights_forced_off_setter_);
@@ -45,7 +45,7 @@ PowerButtonDisplayController::PowerButtonDisplayController(
 
 PowerButtonDisplayController::~PowerButtonDisplayController() {
   Shell::Get()->RemovePreTargetHandler(this);
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 

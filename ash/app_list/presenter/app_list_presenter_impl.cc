@@ -228,12 +228,19 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   if (!GetTargetVisibility())
     return;
 
+  // Manipulate the layer which contains the expand arrow, suggestion chips and
+  // apps grid in app_list_main_view, and the search box.
+  ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
+  if (!delegate_->IsTabletMode()) {
+    // In clamshell mode, set the opacity of the AppList immediately to
+    // instantly hide it. Opacity of the AppList is reset when it is shown
+    // again.
+    layer->SetOpacity(opacity);
+    return;
+  }
+
   const gfx::Transform translation(1.f, 0.f, 0.f, 1.f, 0.f,
                                    static_cast<float>(y_position_in_screen));
-  // We want to animate the expand arrow, suggestion chips and apps grid in
-  // app_list_main_view, and the search box.
-  ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
-
   if (layer->GetAnimator()->is_animating()) {
     layer->GetAnimator()->StopAnimating();
 

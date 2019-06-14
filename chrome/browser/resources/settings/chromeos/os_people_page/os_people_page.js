@@ -74,6 +74,9 @@ Polymer({
     profileName_: String,
 
     /** @private */
+    profileLabel_: String,
+
+    /** @private */
     showSignoutDialog_: Boolean,
 
     /**
@@ -125,9 +128,7 @@ Polymer({
                   '#sync-status .subpage-arrow');
         }
         if (settings.routes.CHANGE_PICTURE) {
-          map.set(
-              settings.routes.CHANGE_PICTURE.path,
-              '#picture-subpage-trigger .subpage-arrow');
+          map.set(settings.routes.CHANGE_PICTURE.path, '#profile-icon');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
@@ -156,6 +157,9 @@ Polymer({
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
+  /** @private {?settings.AccountManagerBrowserProxy} */
+  accountManagerBrowserProxy_: null,
+
   /** @override */
   attached: function() {
     const profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
@@ -168,6 +172,12 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+
+    this.accountManagerBrowserProxy_ =
+        settings.AccountManagerBrowserProxyImpl.getInstance();
+    this.addWebUIListener(
+        'accounts-changed', this.updateProfileLabel_.bind(this));
+    this.updateProfileLabel_();
   },
 
   /** @protected */
@@ -216,6 +226,30 @@ Polymer({
   },
 
   /**
+   * Updates the label underneath the primary profile name.
+   * @private
+   */
+  updateProfileLabel_: async function() {
+    const includeImages = false;
+    const /** @type {!Array<settings.Account>} */ accounts =
+        await this.accountManagerBrowserProxy_.getAccounts(includeImages);
+    // The user might not have any GAIA accounts.
+    if (accounts.length == 0) {
+      this.profileLabel_ = '';
+      return;
+    }
+    const moreAccounts = accounts.length - 1;
+    // Template: "$1, +$2 more accounts" with correct plural of "account".
+    // Localization handles the case of 0 more accounts.
+    const labelTemplate = await cr.sendWithPromise(
+        'getPluralString', 'profileLabel', moreAccounts);
+
+    // Final output: "alice@gmail.com, +2 more accounts"
+    this.profileLabel_ = loadTimeData.substituteString(
+        labelTemplate, accounts[0].email, moreAccounts);
+  },
+
+  /**
    * Handler for when the sync state is pushed from the browser.
    * @param {?settings.SyncStatus} syncStatus
    * @private
@@ -225,7 +259,7 @@ Polymer({
   },
 
   /** @private */
-  onProfileTap_: function() {
+  onProfileIconTap_: function() {
     settings.navigateTo(settings.routes.CHANGE_PICTURE);
   },
 

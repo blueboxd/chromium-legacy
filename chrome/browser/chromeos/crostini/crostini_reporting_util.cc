@@ -23,7 +23,7 @@ void WriteMetricsForReportingToPrefs(
     const component_updater::ComponentUpdateService* update_service,
     const base::Clock* clock) {
   const base::Time last_launch_time_window_start =
-      GetThreeDayWindowStart(clock);
+      GetThreeDayWindowStart(clock->Now());
   const std::string crostini_version = GetTerminaVersion(update_service);
   if (crostini_version.empty()) {
     LOG(ERROR) << "Could not determine Termina version for usage reporting";
@@ -45,11 +45,11 @@ void WriteMetricsForReportingToPrefsIfEnabled(
   }
 }
 
-base::Time GetThreeDayWindowStart(const base::Clock* clock) {
-  const base::Time now_normalized = clock->Now().UTCMidnight();
+base::Time GetThreeDayWindowStart(const base::Time& actual_time) {
+  const base::Time actual_time_midnight = actual_time.UTCMidnight();
   const base::TimeDelta delta = base::TimeDelta::FromDays(
-      (now_normalized - base::Time::UnixEpoch()).InDays() % 3);
-  return now_normalized - delta;
+      (actual_time_midnight - base::Time::UnixEpoch()).InDays() % 3);
+  return actual_time_midnight - delta;
 }
 
 std::string GetTerminaVersion(

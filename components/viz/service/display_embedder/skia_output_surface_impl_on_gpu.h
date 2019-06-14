@@ -136,7 +136,7 @@ class SkiaOutputSurfaceImplOnGpu {
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
 
-  void ReleaseSkImages(
+  void ReleaseImageContexts(
       std::vector<std::unique_ptr<ImageContext>> image_contexts);
 
   bool was_context_lost() { return context_state_->context_lost(); }

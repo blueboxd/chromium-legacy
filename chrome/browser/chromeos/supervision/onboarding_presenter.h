@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/chromeos/supervision/onboarding_flow_model.h"
+#include "net/base/net_errors.h"
+
+class GoogleServiceAuthError;
 
 namespace chromeos {
 namespace supervision {
@@ -22,8 +25,15 @@ class OnboardingPresenter : public OnboardingFlowModel::Observer {
   // OnboardingFlowModel::Observer:
   void StepStartedLoading(OnboardingFlowModel::Step step) override;
   void StepFinishedLoading(OnboardingFlowModel::Step step) override;
+  void StepFailedToLoadDueToAuthError(OnboardingFlowModel::Step step,
+                                      GoogleServiceAuthError error) override;
+  void StepFailedToLoadDueToNetworkError(OnboardingFlowModel::Step step,
+                                         net::Error error) override;
+
+  void PresentErrorState();
 
   OnboardingFlowModel* flow_model_;
+  int failed_loads_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(OnboardingPresenter);
 };

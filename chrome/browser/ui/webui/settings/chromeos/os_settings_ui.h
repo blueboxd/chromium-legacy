@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
 class WebUIMessageHandler;
@@ -18,7 +20,7 @@ namespace chromeos {
 namespace settings {
 
 // The WebUI handler for chrome://settings.
-class OSSettingsUI : public content::WebUIController {
+class OSSettingsUI : public ui::MojoWebUIController {
  public:
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
@@ -26,6 +28,8 @@ class OSSettingsUI : public content::WebUIController {
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
+  void BindCrosNetworkConfig(
+      network_config::mojom::CrosNetworkConfigRequest request);
 
   // TODO(crbug/950007): Create load histograms and embed WebuiLoadTimer.
 

@@ -5,12 +5,22 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_FRAME_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_FRAME_NODE_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
+
+class GURL;
+
+namespace base {
+class UnguessableToken;
+}  // namespace base
 
 namespace performance_manager {
 
 class FrameNodeObserver;
+class PageNode;
+class ProcessNode;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -34,13 +44,85 @@ class FrameNodeObserver;
 // origin meaning the frame has to be destroyed and another one created in
 // another process!) and commits, the frame will be swapped with the previously
 // active frame.
+//
+// It is only valid to access this object on the sequence of the graph that owns
+// it.
 class FrameNode : public Node {
  public:
+  using LifecycleState = resource_coordinator::mojom::LifecycleState;
   using Observer = FrameNodeObserver;
   class ObserverDefaultImpl;
 
   FrameNode();
   ~FrameNode() override;
+
+  // Returns the parent of this frame node. This may be null if this frame node
+  // is the main (root) node of a frame tree. This is a constant over the
+  // lifetime of the frame.
+  virtual const FrameNode* GetParentFrameNode() const = 0;
+
+  // Returns the page node to which this frame belongs. This is a constant over
+  // the lifetime of the frame.
+  virtual const PageNode* GetPageNode() const = 0;
+
+  // Returns the process node with which this frame belongs. This is a constant
+  // over the lifetime of the frame.
+  virtual const ProcessNode* GetProcessNode() const = 0;
+
+  // Gets the FrameTree node ID associated with this node. There may be multiple
+  // sibling nodes with the same frame tree node ID, but at most 1 of them may
+  // be current at a time. This is a constant over the lifetime of the frame.
+  virtual int GetFrameTreeNodeId() const = 0;
+
+  // Gets the devtools token associated with this frame. This is a constant over
+  // the lifetime of the frame.
+  virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
+
+  // Gets the ID of the browsing instance to which this frame belongs. This is a
+  // constant over the lifetime of the frame.
+  virtual int32_t GetBrowsingInstanceId() const = 0;
+
+  // Gets the ID of the site instance to which this frame belongs. This is a
+  // constant over the lifetime of the frame.
+  virtual int32_t GetSiteInstanceId() const = 0;
+
+  // A frame is a main frame if it has no parent FrameNode. This can be
+  // called from any thread.
+  virtual bool IsMainFrame() const = 0;
+
+  // Returns the set of child frame associated with this frame. Note that this
+  // incurs a full container copy of all child nodes. Please use ForEach when
+  // that makes sense.
+  virtual const base::flat_set<const FrameNode*> GetChildFrameNodes() const = 0;
+
+  // Returns the current lifecycle state of this frame.
+  virtual LifecycleState GetLifecycleState() const = 0;
+
+  // Returns true if this frame had a non-empty before-unload handler at the
+  // time of its last transition to the frozen lifecycle state. This is only
+  // meaningful while the object is frozen.
+  virtual bool HasNonemptyBeforeUnload() const = 0;
+
+  // Returns the URL associated with this frame.
+  // See FrameNodeObserver::OnURLChanged.
+  virtual const GURL& GetURL() const = 0;
+
+  // Returns true if this frame is current (is part of a content::FrameTree).
+  // See FrameNodeObserver::OnIsCurrentChanged.
+  virtual bool IsCurrent() const = 0;
+
+  // Returns true if this frames use of the network is "almost idle", indicating
+  // that it is not doing any heavy loading work.
+  virtual bool GetNetworkAlmostIdle() const = 0;
+
+  // Returns true if this frame is ad frame. This can change from false to true
+  // over the lifetime of the frame, but once it is true it will always remain
+  // true.
+  // TODO(chrisha): Add a corresponding observer event for this.
+  virtual bool IsAdFrame() const = 0;
+
+  // Returns true if all intervention policies have been set for this frame.
+  virtual bool AreAllInterventionPoliciesSet() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);

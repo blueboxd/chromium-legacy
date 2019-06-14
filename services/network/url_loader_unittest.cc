@@ -2367,6 +2367,7 @@ class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
 // A mock NetworkServiceClient that does the following:
 // 1. Responds auth challenges with previously set credentials.
 // 2. Responds certificate request with previously set responses.
+// 3. Record any reported flagged cookies.
 class MockNetworkServiceClient : public TestNetworkServiceClient {
  public:
   MockNetworkServiceClient() = default;
@@ -2454,6 +2455,54 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     ++on_certificate_requested_counter_;
   }
 
+  void OnFlaggedRequestCookies(
+      int32_t process_id,
+      int32_t routing_id,
+      const net::CookieStatusList& excluded_cookies) override {
+    flagged_request_cookies_.insert(flagged_request_cookies_.end(),
+                                    excluded_cookies.begin(),
+                                    excluded_cookies.end());
+    if (wait_for_flagged_request_cookies_ &&
+        flagged_request_cookies_.size() >=
+            wait_for_flagged_request_cookies_goal_) {
+      std::move(wait_for_flagged_request_cookies_).Run();
+    }
+  }
+
+  void OnFlaggedResponseCookies(
+      int32_t process_id,
+      int32_t routing_id,
+      const net::CookieAndLineStatusList& excluded_cookies) override {
+    flagged_response_cookies_.insert(flagged_response_cookies_.end(),
+                                     excluded_cookies.begin(),
+                                     excluded_cookies.end());
+    if (wait_for_flagged_response_cookies_ &&
+        flagged_response_cookies_.size() >=
+            wait_for_flagged_response_cookies_goal_) {
+      std::move(wait_for_flagged_response_cookies_).Run();
+    }
+  }
+
+  void WaitUntilFlaggedRequestCookies(size_t goal) {
+    if (flagged_request_cookies_.size() < goal) {
+      wait_for_flagged_request_cookies_goal_ = goal;
+      base::RunLoop run_loop;
+      wait_for_flagged_request_cookies_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    EXPECT_EQ(goal, flagged_request_cookies_.size());
+  }
+
+  void WaitUntilFlaggedResponseCookies(size_t goal) {
+    if (flagged_response_cookies_.size() < goal) {
+      wait_for_flagged_response_cookies_goal_ = goal;
+      base::RunLoop run_loop;
+      wait_for_flagged_response_cookies_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    EXPECT_EQ(goal, flagged_response_cookies_.size());
+  }
+
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }
@@ -2490,8 +2539,17 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     return on_certificate_requested_counter_;
   }
 
+  const net::CookieStatusList& flagged_request_cookies() const {
+    return flagged_request_cookies_;
+  }
+
+  const net::CookieAndLineStatusList& flagged_response_cookies() const {
+    return flagged_response_cookies_;
+  }
+
  private:
-  CredentialsResponse credentials_response_;
+  CredentialsResponse credentials_response_ =
+      CredentialsResponse::NO_CREDENTIALS;
   base::Optional<net::AuthCredentials> auth_credentials_;
   int on_auth_required_call_counter_ = 0;
   scoped_refptr<net::HttpResponseHeaders> last_seen_response_headers_;
@@ -2503,6 +2561,12 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
   std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
   int on_certificate_requested_counter_ = 0;
+  net::CookieStatusList flagged_request_cookies_;
+  net::CookieAndLineStatusList flagged_response_cookies_;
+  base::OnceClosure wait_for_flagged_request_cookies_;
+  size_t wait_for_flagged_request_cookies_goal_ = 0u;
+  base::OnceClosure wait_for_flagged_response_cookies_;
+  size_t wait_for_flagged_response_cookies_goal_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(MockNetworkServiceClient);
 };
@@ -3340,5 +3404,172 @@ TEST_F(URLLoaderTest, AllowAllCookies) {
   EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
 }
 #endif  // !defined(OS_IOS)
+
+TEST_F(URLLoaderTest, FlaggedCookieReporting) {
+  MockNetworkServiceClient network_service_client;
+
+  {
+    TestURLLoaderClient loader_client;
+    ResourceRequest request =
+        CreateResourceRequest("GET", test_server()->GetURL("/set-cookie?a=b"));
+    // Make this a third-party request.
+    request.site_for_cookies = GURL("http://www.example.com");
+
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    mojom::URLLoaderFactoryParams params;
+    params.process_id = kProcessId;
+    params.is_corb_enabled = false;
+    std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+        context(), &network_service_client,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader_client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+    delete_run_loop.Run();
+    loader_client.RunUntilComplete();
+    EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
+
+    network_service_client.WaitUntilFlaggedResponseCookies(1u);
+    EXPECT_EQ(
+        "a",
+        network_service_client.flagged_response_cookies()[0].cookie->Name());
+    EXPECT_EQ(
+        "b",
+        network_service_client.flagged_response_cookies()[0].cookie->Value());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+              network_service_client.flagged_response_cookies()[0].status);
+  }
+
+  // Test the warning on sending a cookie.
+  // Since kSameSiteByDefaultCookies hasn't launched yet, the above test
+  // actually sets a cookie suitable for the task.
+
+  {
+    TestURLLoaderClient loader_client;
+    ResourceRequest request =
+        CreateResourceRequest("GET", test_server()->GetURL("/nocontent"));
+    // Make this a third-party request.
+    request.site_for_cookies = GURL("http://www.example.com");
+
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    mojom::URLLoaderFactoryParams params;
+    params.process_id = kProcessId;
+    params.is_corb_enabled = false;
+    std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+        context(), &network_service_client,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader_client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+    delete_run_loop.Run();
+    loader_client.RunUntilComplete();
+    EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
+
+    network_service_client.WaitUntilFlaggedRequestCookies(1u);
+    EXPECT_EQ(
+        "a", network_service_client.flagged_request_cookies()[0].cookie.Name());
+    EXPECT_EQ(
+        "b",
+        network_service_client.flagged_request_cookies()[0].cookie.Value());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+              network_service_client.flagged_request_cookies()[0].status);
+  }
+}
+
+TEST_F(URLLoaderTest, FlaggedCookieRedirect) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL dest_url = test_server()->GetURL("/nocontent");
+  GURL redirecting_url =
+      test_server()->GetURL("/server-redirect-with-cookie?" + dest_url.spec());
+
+  TestURLLoaderClient loader_client;
+  ResourceRequest request = CreateResourceRequest("GET", redirecting_url);
+  // Make this a third-party request.
+  request.site_for_cookies = GURL("http://www.example.com");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader_client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  loader_client.RunUntilRedirectReceived();
+  loader->FollowRedirect({}, {}, base::nullopt);
+  loader_client.RunUntilComplete();
+  delete_run_loop.Run();
+  EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
+
+  ASSERT_EQ(1u, network_service_client.flagged_response_cookies().size());
+  EXPECT_EQ(
+      "server-redirect",
+      network_service_client.flagged_response_cookies()[0].cookie->Name());
+  EXPECT_EQ(
+      "true",
+      network_service_client.flagged_response_cookies()[0].cookie->Value());
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+            network_service_client.flagged_response_cookies()[0].status);
+}
+
+TEST_F(URLLoaderTest, FlaggedCookieAuth) {
+  for (auto mode :
+       {MockNetworkServiceClient::CredentialsResponse::NO_CREDENTIALS,
+        MockNetworkServiceClient::CredentialsResponse::CORRECT_CREDENTIALS}) {
+    MockNetworkServiceClient network_service_client;
+    network_service_client.set_credentials_response(mode);
+
+    GURL url = test_server()->GetURL(
+        "/auth-basic?set-cookie-if-challenged&password=PASS");
+
+    TestURLLoaderClient loader_client;
+    ResourceRequest request = CreateResourceRequest("GET", url);
+    // Make this a third-party request.
+    request.site_for_cookies = GURL("http://www.example.com");
+
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    mojom::URLLoaderFactoryParams params;
+    params.process_id = kProcessId;
+    params.is_corb_enabled = false;
+    std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+        context(), &network_service_client,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader_client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+    loader_client.RunUntilComplete();
+    delete_run_loop.Run();
+    EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
+
+    ASSERT_EQ(1u, network_service_client.flagged_response_cookies().size());
+    EXPECT_EQ(
+        "got_challenged",
+        network_service_client.flagged_response_cookies()[0].cookie->Name());
+    EXPECT_EQ(
+        "true",
+        network_service_client.flagged_response_cookies()[0].cookie->Value());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+              network_service_client.flagged_response_cookies()[0].status);
+  }
+}
 
 }  // namespace network

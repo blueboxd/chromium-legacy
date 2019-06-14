@@ -208,11 +208,9 @@ class QuickViewController {
     if (this.quickView_ && this.quickView_.isOpened()) {
       assert(this.entries_.length > 0);
       const entry = this.entries_[0];
-      if (util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
-        return;
+      if (!util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
+        this.updateQuickView_();
       }
-      this.quickViewModel_.setSelectedEntry(entry);
-      this.display_();
     }
   }
 
@@ -240,14 +238,15 @@ class QuickViewController {
           .then(this.updateQuickView_.bind(this))
           .catch(console.error);
     }
-    assert(this.entries_.length > 0);
-    // TODO(oka): Support multi-selection.
-    this.quickViewModel_.setSelectedEntry(this.entries_[0]);
 
-    const entry =
-        (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
-    assert(entry);
+    // TODO(oka): Support multi-selection.
+    assert(this.entries_.length > 0);
+    const entry = this.entries_[0];
+    this.quickViewModel_.setSelectedEntry(entry);
+
+    // TODO(noel): Record UMA _after_ the rendering work below is done?
     this.quickViewUma_.onEntryChanged(entry);
+
     return Promise
         .all([
           this.metadataModel_.get([entry], ['thumbnailUrl']),

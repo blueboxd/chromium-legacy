@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "net/base/request_priority.h"
+#include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -386,6 +387,7 @@ class QuicTestPacketMaker {
   std::string host_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
+  quic::HttpEncoder encoder_;
   quic::test::MockRandom random_generator_;
   std::map<quic::QuicStreamId, quic::QuicStreamOffset> stream_offsets_;
   quic::QuicPacketHeader header_;

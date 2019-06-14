@@ -45,4 +45,13 @@ bool operator!=(const CoreAccountId& lhs, const CoreAccountId& rhs);
 
 std::ostream& operator<<(std::ostream& out, const CoreAccountId& a);
 
+namespace std {
+template <>
+struct hash<CoreAccountId> {
+  size_t operator()(const CoreAccountId& account_id) const {
+    return std::hash<std::string>()(account_id.id);
+  }
+};
+}  // namespace std
+
 #endif  // GOOGLE_APIS_GAIA_CORE_ACCOUNT_ID_H_

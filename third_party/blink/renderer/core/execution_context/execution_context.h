@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -81,6 +82,7 @@ class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
 class KURL;
 class LocalDOMWindow;
+class OriginTrialContext;
 class PublicURLManager;
 class ResourceFetcher;
 class SecurityContext;
@@ -123,7 +125,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext>,
                                      public ConsoleLogger,
                                      public UseCounter,
-                                     public FeatureContext {
+                                     public FeaturePolicyParserDelegate {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
@@ -213,9 +215,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void SetLifecycleState(mojom::FrameLifecycleState);
   void NotifyContextDestroyed() override;
 
-  // FeatureContext override
-  bool FeatureEnabled(OriginTrialFeature) const override;
-
   // ConsoleLogger implementation.
   void AddConsoleMessage(mojom::ConsoleMessageSource,
                          mojom::ConsoleMessageLevel,
@@ -300,10 +299,22 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   v8::MicrotaskQueue* GetMicrotaskQueue() const;
 
+  OriginTrialContext* GetOriginTrialContext() const {
+    return origin_trial_context_;
+  }
+
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
 
+  // FeaturePolicyParserDelegate override
+  bool FeatureEnabled(OriginTrialFeature) const override;
+  void CountFeaturePolicyUsage(mojom::WebFeature feature) override;
+  bool FeaturePolicyFeatureObserved(
+      mojom::FeaturePolicyFeature feature) override;
+
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate, Agent* agent);
+  explicit ExecutionContext(v8::Isolate* isolate,
+                            Agent* agent,
+                            OriginTrialContext* origin_trial_context);
   ~ExecutionContext() override;
 
   void SetAgent(Agent* agent) {
@@ -331,6 +342,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   Member<Agent> agent_;
 
+  Member<OriginTrialContext> origin_trial_context_;
+
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call
   // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
@@ -340,6 +353,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   network::mojom::ReferrerPolicy referrer_policy_;
 
   std::unique_ptr<InterfaceInvalidator> invalidator_;
+
+  // Tracks which feature policies have already been parsed, so as not to count
+  // them multiple times.
+  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
+      parsed_feature_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };

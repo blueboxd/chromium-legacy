@@ -95,6 +95,12 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "devtools://devtools/?remoteFrontendUrl="
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
        "%2F%4012345%2Finspector.html"},
+      {"devtools://devtools/"
+       "?enabledExperiments=explosionsWhileTyping;newA11yTool",
+       "devtools://devtools/"
+       "?enabledExperiments=explosionsWhileTyping;newA11yTool"},
+      {"devtools://devtools/?enabledExperiments=invalidExperiment$",
+       "devtools://devtools/"},
   };
 
   for (const auto& pair : tests) {

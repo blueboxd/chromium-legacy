@@ -118,4 +118,32 @@ TEST_F(MprisMediaKeysListenerTest, ListenForMultipleKeys) {
   listener()->OnPrevious();
 }
 
+TEST_F(MprisMediaKeysListenerTest, DoesNotFirePlayPauseOnPauseEventWhenPaused) {
+  // Should be set to true when we start listening for the key.
+  EXPECT_CALL(mock_mpris_service(), SetCanPlay(true));
+  EXPECT_CALL(mock_mpris_service(), SetCanPause(true));
+  EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
+
+  listener()->Initialize();
+  listener()->StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+  listener()->SetIsMediaPlaying(false);
+
+  // Simulate media key press.
+  listener()->OnPause();
+}
+
+TEST_F(MprisMediaKeysListenerTest, DoesNotFirePlayPauseOnPlayEventWhenPlaying) {
+  // Should be set to true when we start listening for the key.
+  EXPECT_CALL(mock_mpris_service(), SetCanPlay(true));
+  EXPECT_CALL(mock_mpris_service(), SetCanPause(true));
+  EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
+
+  listener()->Initialize();
+  listener()->StartWatchingMediaKey(ui::VKEY_MEDIA_PLAY_PAUSE);
+  listener()->SetIsMediaPlaying(true);
+
+  // Simulate media key press.
+  listener()->OnPlay();
+}
+
 }  // namespace ui

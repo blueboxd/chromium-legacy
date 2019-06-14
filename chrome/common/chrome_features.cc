@@ -596,11 +596,6 @@ const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
 const base::Feature kSiteSettings{"SiteSettings",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables committed error pages instead of transient navigation entries for
-// SSL interstitial error pages (i.e. certificate errors).
-const base::Feature kSSLCommittedInterstitials{
-    "SSLCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables automatic setup of USB printers.
 const base::Feature kStreamlinedUsbPrinterSetup{
@@ -623,7 +618,7 @@ const base::Feature kSysInternals{"SysInternals",
 
 // Enables or disables the System Web App manager.
 const base::Feature kSystemWebApps{"SystemWebApps",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",

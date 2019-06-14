@@ -8,7 +8,13 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "ui/webui/mojo_web_ui_controller.h"
+#else
 #include "content/public/browser/web_ui_controller.h"
+#endif
 
 class Profile;
 
@@ -24,7 +30,13 @@ class PrefRegistrySyncable;
 namespace settings {
 
 // The WebUI handler for chrome://settings.
-class SettingsUI : public content::WebUIController {
+class SettingsUI
+#if defined(OS_CHROMEOS)
+    : public ui::MojoWebUIController
+#else
+    : public content::WebUIController
+#endif
+{
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -36,13 +48,15 @@ class SettingsUI : public content::WebUIController {
   static void InitOSWebUIHandlers(Profile* profile,
                                   content::WebUI* web_ui,
                                   content::WebUIDataSource* html_source);
-
-  static bool ShouldShowParentalControls(Profile* profile);
 #endif  // defined(OS_CHROMEOS)
 
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
+#if defined(OS_CHROMEOS)
+  void BindCrosNetworkConfig(
+      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
+#endif
 
   WebuiLoadTimer webui_load_timer_;
 

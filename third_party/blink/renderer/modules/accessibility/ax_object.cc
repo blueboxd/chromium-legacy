@@ -489,7 +489,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       parent_(nullptr),
       last_modification_count_(-1),
       cached_is_ignored_(false),
-      cached_is_ignored_pass_through_(false),
       cached_is_inert_or_aria_hidden_(false),
       cached_is_descendant_of_leaf_node_(false),
       cached_is_descendant_of_disabled_node_(false),
@@ -863,21 +862,35 @@ bool AXObject::IsClickable() const {
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
-  UpdateDistributionForFlatTreeTraversal();
+  Node* node = GetNode();
+  if (!node) {
+    AXObject* parent = this->ParentObject();
+    while (!node && parent) {
+      node = parent->GetNode();
+      parent = parent->ParentObject();
+    }
+  }
+
+  if (node)
+    node->UpdateDistributionForFlatTreeTraversal();
+
+  // TODO(aboxhall): Instead of this, propagate inert down through frames
+  Document* document = GetDocument();
+  while (document && document->LocalOwner()) {
+    document->LocalOwner()->UpdateDistributionForFlatTreeTraversal();
+    document = document->LocalOwner()->ownerDocument();
+  }
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_;
 }
 
-bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
-  UpdateDistributionForFlatTreeTraversal();
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_ignored_pass_through_;
-}
-
-// AccessibilityIsIncludedInTree should be true for all nodes that should be
-// included in the tree, even if they are ignored
+// TODO(janewman) AccessibilityIsIncludedInTree should be true for all nodes
+// that should be included in the tree, even if they are ignored
 bool AXObject::AccessibilityIsIncludedInTree() const {
-  return !AccessibilityIsIgnored() || AccessibilityIsIgnoredButIncludedInTree();
+  // TODO(janewman) add DCHECK to ensure we do not disallow unignored nodes from
+  // being in the tree.
+  return !AccessibilityIsIgnored();
 }
 
 void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
@@ -910,24 +923,12 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
                                     : nullptr);
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
-
-  bool ignored_states_changed = false;
   if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
     last_known_is_ignored_value_ =
         cached_is_ignored_ ? kIgnoreObject : kIncludeObject;
-    ignored_states_changed = true;
-  }
 
-  const bool new_is_ignored_pass_through =
-      cached_is_ignored_ &&
-      ComputeAccessibilityIsIgnoredPassThrough(ignored_reasons);
-  if (cached_is_ignored_pass_through_ != new_is_ignored_pass_through) {
-    cached_is_ignored_pass_through_ = new_is_ignored_pass_through;
-    ignored_states_changed = true;
-  }
-
-  if (ignored_states_changed) {
-    if (AXObject* parent = ParentObjectIfExists())
+    AXObject* parent = ParentObjectIfExists();
+    if (parent)
       parent->ChildrenChanged();
   }
 
@@ -1172,21 +1173,6 @@ const AXObject* AXObject::DisabledAncestor() const {
   return nullptr;
 }
 
-bool AXObject::ComputeAccessibilityIsIgnoredPassThrough(
-    const IgnoredReasons& ignored_reasons) const {
-  if (!GetNode())
-    return false;
-
-  // Always pass through Line Breaking objects, this is necessary to
-  // detect paragraph edges, which are defined as hard-line breaks.
-  //
-  // Though if the node is part of the shadow dom, or has the explicit
-  // internal Role::kIgnored, they aren't interesting for paragraph
-  // navigation so exclude those cases.
-  return RoleValue() != ax::mojom::Role::kIgnored &&
-         !GetNode()->IsInShadowTree() && IsLineBreakingObject();
-}
-
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
   switch (RoleValue()) {
     case ax::mojom::Role::kDateTime:
@@ -1303,27 +1289,6 @@ bool AXObject::CanSetFocusAttribute() const {
 bool AXObject::CanBeActiveDescendant() const {
   return IsARIAControlledByTextboxWithActiveDescendant() ||
          AncestorExposesActiveDescendant();
-}
-
-void AXObject::UpdateDistributionForFlatTreeTraversal() const {
-  Node* node = GetNode();
-  if (!node) {
-    AXObject* parent = this->ParentObject();
-    while (!node && parent) {
-      node = parent->GetNode();
-      parent = parent->ParentObject();
-    }
-  }
-
-  if (node)
-    node->UpdateDistributionForFlatTreeTraversal();
-
-  // TODO(aboxhall): Instead of this, propagate inert down through frames
-  Document* document = GetDocument();
-  while (document && document->LocalOwner()) {
-    document->LocalOwner()->UpdateDistributionForFlatTreeTraversal();
-    document = document->LocalOwner()->ownerDocument();
-  }
 }
 
 bool AXObject::IsARIAControlledByTextboxWithActiveDescendant() const {
@@ -1923,14 +1888,11 @@ bool AXObject::SupportsRangeValue() const {
 }
 
 int AXObject::IndexInParent() const {
-  DCHECK(AccessibilityIsIncludedInTree())
-      << "IndexInParent is only valid when a node is included in the tree";
-  if (!ParentObjectIncludedInTree())
+  if (!ParentObjectUnignored())
     return 0;
 
-  const AXObjectVector& siblings = ParentObjectIncludedInTree()->Children();
+  const AXObjectVector& siblings = ParentObjectUnignored()->Children();
   wtf_size_t index = siblings.Find(this);
-  DCHECK(index != kNotFound);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
@@ -2188,59 +2150,29 @@ bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
 }
 
 AXObject* AXObject::NextSibling() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent)
+    return nullptr;
+
   if (AccessibilityIsIgnored())
     NOTREACHED() << "We don't support finding siblings for ignored objects.";
 
-  // Find the ancestor which is a direct descendant of the unignored object,
-  // and use its IndexInParent, which is invalid for out-of-tree nodes.
-  const AXObject* parent_unignored = nullptr;
-  const AXObject* child_of_unignored = this;
-  while (child_of_unignored) {
-    const AXObject* parent = child_of_unignored->ParentObjectIncludedInTree();
-    if (parent && !parent->AccessibilityIsIgnored()) {
-      parent_unignored = parent;
-      break;
-    }
-
-    child_of_unignored = parent;
-  }
-
-  if (parent_unignored && child_of_unignored) {
-    const int index_in_parent_unignored = child_of_unignored->IndexInParent();
-    if (index_in_parent_unignored < parent_unignored->ChildCount() - 1) {
-      return *(parent_unignored->Children().begin() +
-               index_in_parent_unignored + 1);
-    }
-  }
+  if (IndexInParent() < parent->ChildCount() - 1)
+    return *(parent->Children().begin() + IndexInParent() + 1);
 
   return nullptr;
 }
 
 AXObject* AXObject::PreviousSibling() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent)
+    return nullptr;
+
   if (AccessibilityIsIgnored())
     NOTREACHED() << "We don't support finding siblings for ignored objects.";
 
-  // Find the ancestor which is a direct descendant of the unignored object,
-  // and use its IndexInParent, which is invalid for out-of-tree nodes.
-  const AXObject* parent_unignored = nullptr;
-  const AXObject* child_of_unignored = this;
-  while (child_of_unignored) {
-    const AXObject* parent = child_of_unignored->ParentObjectIncludedInTree();
-    if (parent && !parent->AccessibilityIsIgnored()) {
-      parent_unignored = parent;
-      break;
-    }
-
-    child_of_unignored = parent;
-  }
-
-  if (parent_unignored && child_of_unignored) {
-    const int index_in_parent_unignored = child_of_unignored->IndexInParent();
-    if (index_in_parent_unignored > 0) {
-      return *(parent_unignored->Children().begin() +
-               index_in_parent_unignored - 1);
-    }
-  }
+  if (IndexInParent() > 0)
+    return *(parent->Children().begin() + IndexInParent() - 1);
 
   return nullptr;
 }
@@ -2311,16 +2243,6 @@ AXObject* AXObject::ParentObjectIfExists() const {
 AXObject* AXObject::ParentObjectUnignored() const {
   AXObject* parent;
   for (parent = ParentObject(); parent && parent->AccessibilityIsIgnored();
-       parent = parent->ParentObject()) {
-  }
-
-  return parent;
-}
-
-AXObject* AXObject::ParentObjectIncludedInTree() const {
-  AXObject* parent;
-  for (parent = ParentObject();
-       parent && !parent->AccessibilityIsIncludedInTree();
        parent = parent->ParentObject()) {
   }
 
@@ -3430,12 +3352,12 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   HeapVector<Member<const AXObject>> ancestors1;
   ancestors1.push_back(&first);
   while (ancestors1.back())
-    ancestors1.push_back(ancestors1.back()->ParentObjectIncludedInTree());
+    ancestors1.push_back(ancestors1.back()->ParentObjectUnignored());
 
   HeapVector<Member<const AXObject>> ancestors2;
   ancestors2.push_back(&second);
   while (ancestors2.back())
-    ancestors2.push_back(ancestors2.back()->ParentObjectIncludedInTree());
+    ancestors2.push_back(ancestors2.back()->ParentObjectUnignored());
 
   const AXObject* common_ancestor = nullptr;
   while (!ancestors1.IsEmpty() && !ancestors2.IsEmpty() &&

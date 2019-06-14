@@ -30,6 +30,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -3518,13 +3519,18 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
 }
 
 bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
-  return GetLayoutObject().PaintBlockedByDisplayLock();
+  auto* node = GetLayoutObject().GetNode();
+  return node && DisplayLockUtilities::NearestLockedInclusiveAncestor(*node);
 }
 
 void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {
-  auto* context = GetLayoutObject().GetDisplayLockContext();
-  DCHECK(context);
-  context->NotifyNeedsGraphicsLayerCollection();
+  if (auto* node = GetLayoutObject().GetNode()) {
+    if (auto* locked_element =
+            DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
+      locked_element->GetDisplayLockContext()
+          ->NotifyNeedsGraphicsLayerCollection();
+    }
+  }
 }
 
 #if DCHECK_IS_ON()

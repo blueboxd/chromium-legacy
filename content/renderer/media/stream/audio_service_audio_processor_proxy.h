@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/aec_dump_agent_impl.h"
+#include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "media/base/audio_processing.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
@@ -31,7 +31,7 @@ namespace content {
 // calculation code should be encapsulated in a class.
 class CONTENT_EXPORT AudioServiceAudioProcessorProxy
     : public webrtc::AudioProcessorInterface,
-      public AecDumpAgentImpl::Delegate {
+      public AecDumpMessageFilter::AecDumpDelegate {
  public:
   // All methods (including constructor and destructor) must be called on the
   // main thread except for GetStats.
@@ -45,10 +45,11 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   // This method is called on the libjingle thread.
   AudioProcessorStatistics GetStats(bool has_remote_tracks) override;
 
-  // AecDumpAgentImpl::Delegate implementation.
+  // AecDumpMessageFilter::AecDumpDelegate implementation.
   // Called on the main render thread.
-  void OnStartDump(base::File file) override;
-  void OnStopDump() override;
+  void OnAecDumpFile(const IPC::PlatformFileForTransit& file_handle) override;
+  void OnDisableAecDump() override;
+  void OnIpcClosing() override;
 
   // Set the AudioProcessorControls which to proxy to. Must only be called once
   // and |controls| cannot be nullptr.
@@ -77,7 +78,7 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   AudioProcessorStatistics latest_stats_ = {};
 
   // Communication with browser for AEC dump.
-  std::unique_ptr<AecDumpAgentImpl> aec_dump_agent_impl_;
+  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 
   base::WeakPtrFactory<AudioServiceAudioProcessorProxy> weak_ptr_factory_;
 

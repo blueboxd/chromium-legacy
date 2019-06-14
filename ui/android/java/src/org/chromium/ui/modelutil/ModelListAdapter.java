@@ -4,20 +4,18 @@
 
 package org.chromium.ui.modelutil;
 
-import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.R;
-import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,14 +33,9 @@ public class ModelListAdapter extends BaseAdapter {
         T buildView();
     }
 
-    private final Context mContext;
     private final List<Pair<Integer, PropertyModel>> mModelList = new ArrayList<>();
     private final SparseArray<Pair<ViewBuilder, PropertyModelChangeProcessor.ViewBinder>>
             mViewBuilderMap = new SparseArray<>();
-
-    public ModelListAdapter(Context context) {
-        mContext = context;
-    }
 
     /**
      * Update the visible models (list items).
@@ -94,6 +87,15 @@ public class ModelListAdapter extends BaseAdapter {
     @SuppressWarnings("unchecked")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        //  1. Destroy the old PropertyModelChangeProcessor if it exists.
+        if (convertView != null && convertView.getTag(R.id.view_mcp) != null) {
+            PropertyModelChangeProcessor propertyModelChangeProcessor =
+                    (PropertyModelChangeProcessor) convertView.getTag(R.id.view_mcp);
+            propertyModelChangeProcessor.destroy();
+        }
+
+        // 2. Build a new view if needed. Otherwise, fetch the old model from the convertView.
+        PropertyModel oldModel = null;
         if (convertView == null || convertView.getTag(R.id.view_type) == null
                 || (int) convertView.getTag(R.id.view_type) != getItemViewType(position)) {
             int modelTypeId = mModelList.get(position).first;
@@ -104,45 +106,62 @@ public class ModelListAdapter extends BaseAdapter {
             // and identify what type the view is. This should allow lists that aren't necessarily
             // recycler views to work correctly with heterogeneous lists.
             convertView.setTag(R.id.view_type, modelTypeId);
+        } else {
+            oldModel = (PropertyModel) convertView.getTag(R.id.view_model);
         }
 
         PropertyModel model = mModelList.get(position).second;
-        PropertyModel viewModel =
-                getOrCreateModelFromExisting(convertView, mModelList.get(position));
-        for (PropertyKey key : model.getAllSetProperties()) {
-            if (key instanceof WritableIntPropertyKey) {
-                WritableIntPropertyKey intKey = (WritableIntPropertyKey) key;
-                viewModel.set(intKey, model.get(intKey));
-            } else if (key instanceof WritableBooleanPropertyKey) {
-                WritableBooleanPropertyKey booleanKey = (WritableBooleanPropertyKey) key;
-                viewModel.set(booleanKey, model.get(booleanKey));
-            } else if (key instanceof WritableFloatPropertyKey) {
-                WritableFloatPropertyKey floatKey = (WritableFloatPropertyKey) key;
-                viewModel.set(floatKey, model.get(floatKey));
-            } else if (key instanceof WritableObjectPropertyKey<?>) {
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                WritableObjectPropertyKey objectKey = (WritableObjectPropertyKey) key;
-                viewModel.set(objectKey, model.get(objectKey));
-            } else {
-                assert false : "Unexpected key received";
-            }
-        }
+        PropertyModelChangeProcessor.ViewBinder binder =
+                mViewBuilderMap.get(mModelList.get(position).first).second;
+
+        // 3. Attach a PropertyModelChangeProcessor and PropertyModel to the view (for #1/2 above
+        //    when re-using a view).
+        convertView.setTag(R.id.view_mcp,
+                PropertyModelChangeProcessor.create(
+                        model, convertView, binder, /* performInitialBind = */ false));
+        convertView.setTag(R.id.view_model, model);
+
+        // 4. Bind properties to the convertView.
+        bindNewModel(model, oldModel, convertView, binder);
+
         // TODO(tedchoc): Investigate whether this is still needed.
         convertView.jumpDrawablesToCurrentState();
 
         return convertView;
     }
 
-    @SuppressWarnings("unchecked")
-    private PropertyModel getOrCreateModelFromExisting(
-            View view, Pair<Integer, PropertyModel> item) {
-        PropertyModel model = (PropertyModel) view.getTag(R.id.view_model);
-        if (model == null) {
-            model = new PropertyModel(item.second.getAllProperties());
-            PropertyModelChangeProcessor.create(
-                    model, view, mViewBuilderMap.get(item.first).second);
-            view.setTag(R.id.view_model, model);
+    /**
+     * Binds all set properties to the view. If oldModel is not null, binds properties that were
+     * previously set in the oldModel but are not set in the new model.
+     *
+     * @param newModel The new model to bind to {@code view}.
+     * @param oldModel The old model previously bound to {@code view}. May be null.
+     * @param view The view to bind.
+     * @param binder The ViewBinder that will bind model properties to {@code view}.
+     */
+    @VisibleForTesting
+    static void bindNewModel(PropertyModel newModel, @Nullable PropertyModel oldModel, View view,
+            PropertyModelChangeProcessor.ViewBinder binder) {
+        Collection<PropertyKey> setProperties = newModel.getAllSetProperties();
+        for (PropertyKey key : newModel.getAllProperties()) {
+            if (oldModel != null) {
+                // Skip binding properties that haven't changed.
+                if (newModel.compareValue(oldModel, key)) {
+                    continue;
+                } else {
+                    // When rebinding a view, if the value has changed it should be writable as
+                    // views reasonably may not expect read-only keys not to change or be rebound.
+                    assert key instanceof PropertyModel.WritableObjectPropertyKey
+                            || key instanceof PropertyModel.WritableIntPropertyKey
+                            || key instanceof PropertyModel.WritableBooleanPropertyKey
+                            || key instanceof PropertyModel.WritableFloatPropertyKey;
+                }
+            } else if (!setProperties.contains(key)) {
+                // If there is no previous model, skip binding properties that haven't been set.
+                continue;
+            }
+
+            binder.bind(newModel, view, key);
         }
-        return model;
     }
 }

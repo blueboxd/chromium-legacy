@@ -70,8 +70,6 @@ class WebAppTabHelperBase
   virtual WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const = 0;
 
-  virtual AppId FindAppIdInScopeOfUrl(const GURL& url) = 0;
-
   // Returns whether the associated web contents belongs to an app window.
   virtual bool IsInAppWindow() const = 0;
 
@@ -96,6 +94,8 @@ class WebAppTabHelperBase
 
   // Triggers a reinstall of a placeholder app for |url|.
   void ReinstallPlaceholderAppIfNecessary(const GURL& url);
+
+  AppId FindAppIdInScopeOfUrl(const GURL& url) const;
 
   // WebApp associated with this tab. Empty string if no app associated.
   AppId app_id_;

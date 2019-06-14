@@ -134,6 +134,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType element_list_type) override;
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override;
 
   void RequestNewLayerTreeFrameSink();
 

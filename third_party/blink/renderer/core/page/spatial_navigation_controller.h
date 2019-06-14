@@ -32,6 +32,10 @@ class CORE_EXPORT SpatialNavigationController
   bool HandleEscapeKeyboardEvent(KeyboardEvent* event);
   bool HandleImeSubmitKeyboardEvent(KeyboardEvent* event);
 
+  // Called when the enter key is released to clear local state because we don't
+  // get a consistent event stream when the Enter key is partially handled.
+  void ResetEnterKeyState();
+
   // Returns the element that's currently interested. i.e. the Element that's
   // currently indicated to the user.
   Element* GetInterestedElement() const;
@@ -106,6 +110,11 @@ class CORE_EXPORT SpatialNavigationController
   // spatial navigation.
   WeakMember<Element> interest_element_;
   Member<Page> page_;
+
+  // We need to track whether the enter key has been handled in down or press to
+  // know whether to generate a click on the up.
+  bool enter_key_down_seen_ = false;
+  bool enter_key_press_seen_ = false;
 
   mojom::blink::SpatialNavigationStatePtr spatial_navigation_state_;
   mojom::blink::SpatialNavigationHostPtr spatial_navigation_host_;

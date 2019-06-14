@@ -112,6 +112,7 @@ _generated_api_version_java = "$_templates_dir/org/chromium/net/ApiVersion.java"
 _api_level = read_file("api_version.txt", "value")
 
 process_version("api_version") {
+  process_only = true
   template_file = "api/src/org/chromium/net/ApiVersion.template"
   sources = [
     "//chrome/VERSION",
@@ -128,6 +129,7 @@ _generated_impl_version_java =
     "$_templates_dir/org/chromium/net/impl/ImplVersion.java"
 
 process_version("impl_version") {
+  process_only = true
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
   sources = [
     "//chrome/VERSION",

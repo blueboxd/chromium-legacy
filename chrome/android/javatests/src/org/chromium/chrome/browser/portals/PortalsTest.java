@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.portals;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,14 +25,17 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests for the chrome/ layer support of the HTML portal element.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=Portals"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=Portals",
+        "enable-blink-features=OverscrollCustomization"})
 public class PortalsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -62,6 +66,35 @@ public class PortalsTest {
 
         @Override
         public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+            mCallbackHelper.notifyCalled();
+        }
+    }
+
+    /**
+     * Used to observe and wait for the first layout after the tab's WebContents is swapped.
+     */
+    private class LayoutAfterTabContentsSwappedObserver
+            extends EmptyTabObserver implements View.OnLayoutChangeListener {
+        private final CallbackHelper mCallbackHelper;
+
+        public LayoutAfterTabContentsSwappedObserver(Tab tab) {
+            tab.addObserver(this);
+            mCallbackHelper = new CallbackHelper();
+        }
+
+        @Override
+        public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+            tab.getContentView().addOnLayoutChangeListener(this);
+        }
+
+        public CallbackHelper getCallbackHelper() {
+            return mCallbackHelper;
+        }
+
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+                int oldTop, int oldRight, int oldBottom) {
+            v.removeOnLayoutChangeListener(this);
             mCallbackHelper.notifyCalled();
         }
     }
@@ -163,5 +196,47 @@ public class PortalsTest {
         executeScriptAndAwaitSwap(tab, "activatePortal();");
         executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "removePortal();");
+    }
+
+    /**
+     * Tests that a drag that started in the predecessor page causes a scroll in the activated page
+     * after a scroll triggered activation.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testTouchTransfer() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/touch-transfer.html"));
+
+        ChromeActivity activity = mActivityTestRule.getActivity();
+        Tab tab = activity.getActivityTab();
+        View contentView = tab.getContentView();
+        LayoutAfterTabContentsSwappedObserver layoutObserver =
+                new LayoutAfterTabContentsSwappedObserver(tab);
+        CallbackHelper layoutWaiter = layoutObserver.getCallbackHelper();
+        int currLayoutCount = layoutWaiter.getCallCount();
+
+        int dragStartX = 30;
+        int dragStartY = contentView.getHeight() / 2;
+        int dragPauseY = dragStartY - 30;
+        int dragEndX = dragStartX;
+        int dragEndY = 30;
+        long downTime = System.currentTimeMillis();
+
+        // Initial drag to trigger activation.
+        TouchCommon.dragStart(activity, dragStartX, dragStartY, downTime);
+        TouchCommon.dragTo(activity, dragStartX, dragEndX, dragStartY, dragPauseY, 100, downTime);
+
+        // Wait for the first layout after tab contents are swapped. This is needed as touch events
+        // sent before the first layout are dropped.
+        layoutWaiter.waitForCallback(currLayoutCount, 1);
+
+        // Continue and finish drag.
+        TouchCommon.dragTo(activity, dragStartX, dragEndX, dragPauseY, dragEndY, 100, downTime);
+        TouchCommon.dragEnd(activity, dragEndX, dragEndY, downTime);
+
+        WebContents contents = mActivityTestRule.getWebContents();
+        Assert.assertTrue(Coordinates.createFor(contents).getScrollYPixInt() > 0);
     }
 }

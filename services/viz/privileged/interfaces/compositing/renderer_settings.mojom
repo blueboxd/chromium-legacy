@@ -10,7 +10,6 @@ import "ui/gfx/mojo/color_space.mojom";
 
 struct RendererSettings {
   bool allow_antialiasing;
-  bool finish_rendering_on_resize;
   bool force_antialiasing;
   bool force_blending_with_shaders;
   bool tint_gl_composited_content;

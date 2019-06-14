@@ -77,7 +77,7 @@ source_set("win") {
   sources = [
     "audio_volume_filter_win.cc",
     "audio_volume_filter_win.h",
-    "com_imported_mstscax.tlh",
+    "com_imported_mstscax.h",
     "com_security.cc",
     "com_security.h",
     "default_audio_device_change_detector.cc",

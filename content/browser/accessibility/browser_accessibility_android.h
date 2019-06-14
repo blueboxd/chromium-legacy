@@ -27,7 +27,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   void OnLocationChanged() override;
   base::string16 GetValue() const override;
 
-  bool PlatformIsLeafIncludingIgnored() const override;
+  bool PlatformIsLeaf() const override;
   // Android needs events even on objects that are trimmed away.
   bool CanFireEvents() const override;
 

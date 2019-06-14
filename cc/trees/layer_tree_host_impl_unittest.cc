@@ -229,6 +229,8 @@ class LayerTreeHostImplTest : public testing::Test,
       const gfx::PresentationFeedback& feedback) override {}
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

@@ -44,8 +44,8 @@ class FakeGbmBuffer : public GbmBuffer {
   size_t GetNumPlanes() const override { return 0; }
   int GetPlaneFd(size_t plane) const override { return -1; }
   uint32_t GetPlaneHandle(size_t plane) const override { return 0; }
-  int GetPlaneStride(size_t plane) const override { return -1; }
-  int GetPlaneOffset(size_t plane) const override { return -1; }
+  uint32_t GetPlaneStride(size_t plane) const override { return 0u; }
+  size_t GetPlaneOffset(size_t plane) const override { return 0u; }
   size_t GetPlaneSize(size_t plane) const override { return 0; }
   uint32_t GetHandle() const override { return 0; }
   gfx::NativePixmapHandle ExportHandle() const override {

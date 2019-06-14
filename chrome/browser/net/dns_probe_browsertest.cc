@@ -12,7 +12,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service_factory.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "chrome/browser/net/net_error_tab_helper.h"

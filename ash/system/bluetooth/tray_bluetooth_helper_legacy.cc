@@ -25,9 +25,11 @@
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 
-using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceBatteryInfo;
+using device::mojom::BluetoothDeviceBatteryInfoPtr;
 using device::mojom::BluetoothDeviceInfo;
 using device::mojom::BluetoothDeviceInfoPtr;
+using device::mojom::BluetoothSystem;
 
 namespace ash {
 namespace {
@@ -96,6 +98,10 @@ BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
   info->address = AddressStrToBluetoothAddress(device->GetAddress());
   info->name = device->GetName();
   info->is_paired = device->IsPaired();
+  if (device->battery_percentage()) {
+    info->battery_info =
+        BluetoothDeviceBatteryInfo::New(device->battery_percentage().value());
+  }
 
   switch (device->GetDeviceType()) {
     case device::BluetoothDeviceType::UNKNOWN:

@@ -25,7 +25,6 @@ ExoTestBase::ExoTestBase()
 ExoTestBase::~ExoTestBase() {}
 
 void ExoTestBase::SetUp() {
-  ui::SetUpInputMethodFactoryForTesting();
   AshTestBase::SetUp();
   wm_helper_ = std::make_unique<WMHelperChromeOS>();
   WMHelper::SetInstance(wm_helper_.get());

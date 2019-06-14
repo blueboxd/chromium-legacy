@@ -383,10 +383,6 @@ jumbo_static_library("renderer") {
       "extensions/file_manager_private_custom_bindings.h",
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
-      "resources/extensions/certificate_provider_custom_bindings.js",
-      "resources/extensions/file_browser_handler_custom_bindings.js",
-      "resources/extensions/file_manager_private_custom_bindings.js",
-      "resources/extensions/file_system_provider_custom_bindings.js",
     ]
   }
 

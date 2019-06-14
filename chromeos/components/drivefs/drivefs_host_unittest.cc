@@ -318,7 +318,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
         *disk_manager_,
         MountPath(
             testing::StartsWith("drivefs://"), "", "drivefs-salt-g-ID",
-            testing::Contains("datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+            testing::AllOf(testing::Contains(
+                               "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+                           testing::Contains("myfiles=/MyFiles")),
             _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 

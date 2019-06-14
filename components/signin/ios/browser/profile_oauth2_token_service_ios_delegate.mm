@@ -224,15 +224,15 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
   }
 
   // Get the list of existing account ids.
-  std::vector<std::string> old_account_ids = GetAccounts();
+  std::vector<CoreAccountId> old_account_ids = GetAccounts();
   std::sort(old_account_ids.begin(), old_account_ids.end());
 
-  std::set<std::string> accounts_to_add =
-      base::STLSetDifference<std::set<std::string>>(new_account_ids,
-                                                    old_account_ids);
-  std::set<std::string> accounts_to_remove =
-      base::STLSetDifference<std::set<std::string>>(old_account_ids,
-                                                    new_account_ids);
+  std::set<CoreAccountId> accounts_to_add =
+      base::STLSetDifference<std::set<CoreAccountId>>(new_account_ids,
+                                                      old_account_ids);
+  std::set<CoreAccountId> accounts_to_remove =
+      base::STLSetDifference<std::set<CoreAccountId>>(old_account_ids,
+                                                      new_account_ids);
   if (accounts_to_add.empty() && accounts_to_remove.empty())
     return;
 
@@ -293,11 +293,12 @@ ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
   return new SSOAccessTokenFetcher(consumer, provider_.get(), account_info);
 }
 
-std::vector<std::string> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {
+std::vector<CoreAccountId> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts()
+    const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<std::string> account_ids;
-  for (auto i = accounts_.begin(); i != accounts_.end(); ++i)
-    account_ids.push_back(i->first);
+  std::vector<CoreAccountId> account_ids;
+  for (const auto& account : accounts_)
+    account_ids.push_back(account.first);
   return account_ids;
 }
 

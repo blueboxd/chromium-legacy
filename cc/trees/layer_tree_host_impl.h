@@ -31,6 +31,7 @@
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
@@ -159,6 +160,9 @@ class LayerTreeHostImplClient {
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
+
+  virtual void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}

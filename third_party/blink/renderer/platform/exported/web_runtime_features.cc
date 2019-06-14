@@ -695,4 +695,8 @@ void WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(
       enable);
 }
 
+void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
+  RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
+}
+
 }  // namespace blink

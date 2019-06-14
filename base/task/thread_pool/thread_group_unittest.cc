@@ -285,12 +285,12 @@ TEST_P(ThreadGroupTest, PostDelayedTask) {
   // Wait until the task runs.
   task_ran.Wait();
 
-  // Expect the task to run after its delay expires, but no more than 250
-  // ms after that.
+  // Expect the task to run after its delay expires, but no more than a
+  // reasonable amount of time after that (overloaded bots can be slow sometimes
+  // so give it 10X flexibility).
   const TimeDelta actual_delay = TimeTicks::Now() - start_time;
   EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
-  EXPECT_LT(actual_delay,
-            TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
+  EXPECT_LT(actual_delay, 10 * TestTimeouts::tiny_timeout());
 }
 
 // Verify that the RunsTasksInCurrentSequence() method of a SEQUENCED TaskRunner

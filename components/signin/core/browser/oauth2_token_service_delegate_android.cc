@@ -149,11 +149,11 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
 
   if (account_tracker_service_->GetMigrationState() ==
       AccountTrackerService::MIGRATION_IN_PROGRESS) {
-    std::vector<std::string> accounts = GetAccounts();
+    std::vector<CoreAccountId> accounts = GetAccounts();
     std::vector<CoreAccountId> accounts_id;
     for (auto account_name : accounts) {
       AccountInfo account_info =
-          account_tracker_service_->FindAccountInfoByEmail(account_name);
+          account_tracker_service_->FindAccountInfoByEmail(account_name.id);
       DCHECK(!account_info.gaia.empty());
       accounts_id.push_back(account_info.gaia);
     }
@@ -220,7 +220,8 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
   FireAuthErrorChanged(account_id, error);
 }
 
-std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {
+std::vector<CoreAccountId> OAuth2TokenServiceDelegateAndroid::GetAccounts()
+    const {
   std::vector<std::string> accounts;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
@@ -228,7 +229,7 @@ std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {
   // TODO(fgorski): We may decide to filter out some of the accounts.
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &accounts);
-  return accounts;
+  return std::vector<CoreAccountId>(accounts.begin(), accounts.end());
 }
 
 std::vector<std::string>
@@ -256,7 +257,7 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccounts() {
 std::vector<CoreAccountId>
 OAuth2TokenServiceDelegateAndroid::GetValidAccounts() {
   std::vector<CoreAccountId> ids;
-  for (const std::string& id : GetAccounts()) {
+  for (const CoreAccountId& id : GetAccounts()) {
     if (ValidateAccountId(id))
       ids.emplace_back(id);
   }
@@ -431,13 +432,13 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
 void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials";
   ScopedBatchChange batch(this);
-  std::vector<std::string> accounts_to_revoke = GetAccounts();
+  std::vector<CoreAccountId> accounts_to_revoke = GetAccounts();
 
   // Clear accounts in the token service before calling
   // |FireRefreshTokenRevoked|.
   SetAccounts(std::vector<CoreAccountId>());
 
-  for (const std::string& account : accounts_to_revoke)
+  for (const CoreAccountId& account : accounts_to_revoke)
     FireRefreshTokenRevoked(account);
 }
 

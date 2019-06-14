@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
-#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -34,22 +33,12 @@ class ExecutionContext;
 //
 // For more information, see https://github.com/jpchase/OriginTrials.
 class CORE_EXPORT OriginTrialContext final
-    : public GarbageCollectedFinalized<OriginTrialContext>,
-      public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext);
-
+    : public GarbageCollectedFinalized<OriginTrialContext> {
  public:
-  static const char kSupplementName[];
+  OriginTrialContext();
+  explicit OriginTrialContext(std::unique_ptr<TrialTokenValidator> validator);
 
-  OriginTrialContext(ExecutionContext&, std::unique_ptr<TrialTokenValidator>);
-
-  // Returns the OriginTrialContext for a specific ExecutionContext, if one
-  // exists.
-  static const OriginTrialContext* From(const ExecutionContext*);
-
-  // Returns the OriginTrialContext for a specific ExecutionContext, creating
-  // one if one does not already exist.
-  static OriginTrialContext* FromOrCreate(ExecutionContext*);
+  void BindExecutionContext(ExecutionContext*);
 
   // Parses an Origin-Trial header as specified in
   // https://jpchase.github.io/OriginTrials/#header into individual tokens.
@@ -84,6 +73,9 @@ class CORE_EXPORT OriginTrialContext final
 
   void AddToken(const String& token);
   void AddTokens(const Vector<String>& tokens);
+  void AddTokens(const SecurityOrigin* origin,
+                 bool is_secure,
+                 const Vector<String>& tokens);
 
   void ActivateNavigationFeaturesFromInitiator(
       const Vector<OriginTrialFeature>& features);
@@ -117,23 +109,29 @@ class CORE_EXPORT OriginTrialContext final
   // enabled.
   void InitializePendingFeatures();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor*);
 
  private:
   // Validate the trial token. If valid, the trial named in the token is
   // added to the list of enabled trials. Returns true or false to indicate if
   // the token is valid.
-  bool EnableTrialFromToken(const String& token);
+  bool EnableTrialFromToken(const SecurityOrigin* origin,
+                            bool is_secure,
+                            const String& token);
 
   // Installs JavaScript bindings on the relevant objects for the specified
   // OriginTrialFeature.
   void InstallFeature(OriginTrialFeature, ScriptState*);
+
+  const SecurityOrigin* GetSecurityOrigin();
+  bool IsSecureContext();
 
   Vector<String> tokens_;
   HashSet<OriginTrialFeature> enabled_features_;
   HashSet<OriginTrialFeature> installed_features_;
   HashSet<OriginTrialFeature> navigation_activated_features_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
+  Member<ExecutionContext> context_;
 };
 
 }  // namespace blink

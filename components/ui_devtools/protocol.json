@@ -55,7 +55,42 @@
                         }
                     ],
                     "experimental": true
+                },
+                {
+                    "name": "performSearch",
+                    "parameters": [
+                        { "name": "query", "type": "string", "description": "Plain text or query selector or XPath search query." },
+                        { "name": "includeUserAgentShadowDOM", "type": "boolean", "optional": true, "description": "True to search in user agent shadow DOM." }
+                    ],
+                    "returns": [
+                        { "name": "searchId", "type": "string", "description": "Unique search session identifier." },
+                        { "name": "resultCount", "type": "integer", "description": "Number of search results." }
+                    ],
+                    "description": "Searches for a given string in the DOM tree. Use <code>getSearchResults</code> to access search results or <code>cancelSearch</code> to end this search session.",
+                    "experimental": true
+                },
+                {
+                    "name": "getSearchResults",
+                    "parameters": [
+                        { "name": "searchId", "type": "string", "description": "Unique search session identifier." },
+                        { "name": "fromIndex", "type": "integer", "description": "Start index of the search result to be returned." },
+                        { "name": "toIndex", "type": "integer", "description": "End index of the search result to be returned." }
+                    ],
+                    "returns": [
+                        { "name": "nodeIds", "type": "array", "items": { "$ref": "NodeId" }, "description": "Ids of the search result nodes." }
+                    ],
+                    "description": "Returns search results from given <code>fromIndex</code> to given <code>toIndex</code> from the search with the given identifier.",
+                    "experimental": true
+                },
+                {
+                    "name": "discardSearchResults",
+                    "parameters": [
+                        { "name": "searchId", "type": "string", "description": "Unique search session identifier." }
+                    ],
+                    "description": "Discards search results from the session with the given id. <code>getSearchResults</code> should no longer be called for that search.",
+                    "experimental": true
                 }
+
             ],
             "description": "This domain exposes DOM read/write operations. Each DOM Node is represented with its mirror object\nthat has an `id`. This `id` can be used to get additional information on the Node, resolve it into\nthe JavaScript object wrapper, etc. It is important that client receives DOM events only for the\nnodes that are known to the client. Backend keeps track of the nodes that were sent to the client\nand never sends the same node twice. It is client's responsibility to collect information about\nthe nodes that were sent to the client.<p>Note that `iframe` owner elements will return\ncorresponding document elements as their child nodes.</p>",
             "domain": "DOM",

@@ -305,6 +305,7 @@ jumbo_source_set("browser_sources") {
     "stored_payment_app.cc",
     "stored_payment_app.h",
     "swap_metrics_driver.h",
+    "system_connector.h",
     "touch_selection_controller_client_manager.h",
     "trace_uploader.h",
     "tracing_controller.h",

@@ -11,9 +11,11 @@
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,6 +25,18 @@ using keyboard::KeyboardConfig;
 using keyboard::KeyboardEnableFlag;
 
 namespace ash {
+
+namespace {
+
+base::Optional<display::Display> GetFirstTouchDisplay() {
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    if (display.touch_support() == display::Display::TouchSupport::AVAILABLE)
+      return display;
+  }
+  return base::nullopt;
+}
+
+}  // namespace
 
 AshKeyboardController::AshKeyboardController(
     SessionControllerImpl* session_controller)
@@ -43,8 +57,7 @@ void AshKeyboardController::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
   DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
-  keyboard_controller_->Initialize(std::move(keyboard_ui_factory),
-                                   virtual_keyboard_controller_.get());
+  keyboard_controller_->Initialize(std::move(keyboard_ui_factory), this);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableVirtualKeyboard)) {
@@ -195,15 +208,48 @@ void AshKeyboardController::OnSessionStateChanged(
   }
 }
 
-// private methods
-
 void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
   if (keyboard_controller_->GetRootWindow() == root_window) {
-    aura::Window* new_parent =
-        virtual_keyboard_controller_->GetContainerForDefaultDisplay();
+    aura::Window* new_parent = GetContainerForDefaultDisplay();
     DCHECK_NE(root_window, new_parent);
     keyboard_controller_->MoveToParentContainer(new_parent);
   }
+}
+
+aura::Window* AshKeyboardController::GetContainerForDisplay(
+    const display::Display& display) {
+  DCHECK(display.is_valid());
+
+  RootWindowController* controller =
+      Shell::Get()->GetRootWindowControllerWithDisplayId(display.id());
+  aura::Window* container =
+      controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
+  DCHECK(container);
+  return container;
+}
+
+aura::Window* AshKeyboardController::GetContainerForDefaultDisplay() {
+  const display::Screen* screen = display::Screen::GetScreen();
+  const base::Optional<display::Display> first_touch_display =
+      GetFirstTouchDisplay();
+  const bool has_touch_display = first_touch_display.has_value();
+
+  if (wm::GetFocusedWindow()) {
+    // Return the focused display if that display has touch capability or no
+    // other display has touch capability.
+    const display::Display focused_display =
+        screen->GetDisplayNearestWindow(wm::GetFocusedWindow());
+    if (focused_display.is_valid() &&
+        (focused_display.touch_support() ==
+             display::Display::TouchSupport::AVAILABLE ||
+         !has_touch_display)) {
+      return GetContainerForDisplay(focused_display);
+    }
+  }
+
+  // Return the first touch display, or the primary display if there are none.
+  return GetContainerForDisplay(
+      has_touch_display ? *first_touch_display : screen->GetPrimaryDisplay());
 }
 
 void AshKeyboardController::OnKeyboardConfigChanged(

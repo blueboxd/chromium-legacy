@@ -71,17 +71,21 @@ class TwoPhaseUploaderTest : public testing::Test {
  public:
   TwoPhaseUploaderTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    // Make sure the Network Service is started before making a NetworkContext.
+    content::GetNetworkService();
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+
     // A NetworkServiceClient is needed for uploads to work.
     network::mojom::NetworkServiceClientPtr network_service_client_ptr;
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
-    network::NetworkService* network_service = content::GetNetworkServiceImpl();
-    network_service->SetClient(std::move(network_service_client_ptr),
-                               network::mojom::NetworkServiceParams::New());
+    network::NetworkService::GetNetworkServiceForTesting()->SetClient(
+        std::move(network_service_client_ptr),
+        network::mojom::NetworkServiceParams::New());
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
-            network_service);
+            network::NetworkService::GetNetworkServiceForTesting());
   }
 
  protected:

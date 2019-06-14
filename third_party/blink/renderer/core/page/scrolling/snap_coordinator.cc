@@ -88,12 +88,6 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
 
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
                                         cc::ScrollSnapAlign scroll_snap_align) {
-  // The viewport defining element cannot be a snap area.
-  if (snap_area.GetNode() ==
-          snap_area.GetDocument().ViewportDefiningElement() ||
-      snap_area.IsLayoutView())
-    return;
-
   LayoutBox* old_container = snap_area.SnapContainer();
   if (scroll_snap_align.alignment_inline == cc::SnapAlignment::kNone &&
       scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {

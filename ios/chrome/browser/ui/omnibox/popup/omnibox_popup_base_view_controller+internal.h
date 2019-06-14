@@ -11,7 +11,7 @@
 //
 // TODO (crbug.com/943521): This is only for subclassing during migration of
 // OmniboxPopupViewController and should be removed when that is done.
-@interface OmniboxPopupBaseViewController (Internal)
+@interface OmniboxPopupBaseViewController (Internal) <UITableViewDelegate>
 
 // Alignment of omnibox text. Popup text should match this alignment.
 @property(nonatomic, assign) NSTextAlignment alignment;

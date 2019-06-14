@@ -9,15 +9,6 @@
 namespace network {
 namespace features {
 
-const char kNetworkServiceFeatureName[] =
-#if defined(OS_ANDROID)
-    "NetworkService";
-#else
-    // Rename the flag so that shortcuts with the old name don't work.
-    // This codepath doesn't work anymore on desktop.
-    "NetworkServiceNotSupported";
-#endif
-
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",
@@ -26,8 +17,14 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the network service.
-const base::Feature kNetworkService{kNetworkServiceFeatureName,
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kNetworkService {
+#if defined(OS_ANDROID)
+  "NetworkService",
+#else
+  "NetworkServiceNotSupported",
+#endif
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",

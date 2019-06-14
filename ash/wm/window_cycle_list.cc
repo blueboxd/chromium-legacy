@@ -15,6 +15,7 @@
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/numerics/ranges.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -58,6 +59,14 @@ constexpr gfx::Size kIconSize{24, 24};
 
 // The font delta of the window title.
 constexpr int kLabelFontDelta = 2;
+
+// All previews are the same height (this is achieved via a combination of
+// scaling and padding).
+constexpr int kFixedPreviewHeightDp = 256;
+
+// The min and max width size are in relation to the fixed height.
+constexpr int kMinPreviewWidthDp = kFixedPreviewHeightDp / 2;
+constexpr int kMaxPreviewWidthDp = kFixedPreviewHeightDp * 2;
 
 // This background paints a |Painter| but fills the view's layer's size rather
 // than the view's size.
@@ -183,22 +192,18 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   }
 
  private:
-  // The maximum width of a window preview.
-  static const int kMaxPreviewWidth = 512;
-  // All previews are the same height (this is achieved via a combination of
-  // scaling and padding).
-  static const int kFixedPreviewHeight = 256;
 
   // Returns the size for the mirror view, scaled to fit within the max bounds.
   // Scaling is always 1:1 and we only scale down, never up.
   gfx::Size GetMirrorViewScaledSize() const {
     gfx::Size mirror_pref_size = preview_view_->GetPreferredSize();
 
-    if (mirror_pref_size.width() > kMaxPreviewWidth ||
-        mirror_pref_size.height() > kFixedPreviewHeight) {
-      float scale = std::min(
-          kMaxPreviewWidth / static_cast<float>(mirror_pref_size.width()),
-          kFixedPreviewHeight / static_cast<float>(mirror_pref_size.height()));
+    if (mirror_pref_size.width() > kMaxPreviewWidthDp ||
+        mirror_pref_size.height() > kFixedPreviewHeightDp) {
+      const float scale = std::min(
+          kMaxPreviewWidthDp / static_cast<float>(mirror_pref_size.width()),
+          kFixedPreviewHeightDp /
+              static_cast<float>(mirror_pref_size.height()));
       mirror_pref_size =
           gfx::ScaleToFlooredSize(mirror_pref_size, scale, scale);
     }
@@ -209,23 +214,19 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   // Returns the size for the entire preview area (mirror view and additional
   // padding). All previews will be the same height, so if the mirror view isn't
   // tall enough we will add top and bottom padding. Previews can range in width
-  // from kMaxPreviewWidth down to half that value. Again, padding will be added
+  // from half to double of kFixedPreviewHeightDp. Again, padding will be added
   // to the sides to achieve this if the preview is too narrow.
   gfx::Size GetSizeForPreviewArea() const {
-    gfx::Size mirror_size = GetMirrorViewScaledSize();
-    float aspect_ratio =
-        static_cast<float>(mirror_size.width()) / mirror_size.height();
-    gfx::Size preview_size = mirror_size;
-    // Very narrow windows get vertical bars of padding on the sides.
-    if (aspect_ratio < 0.5f)
-      preview_size.set_width(mirror_size.height() / 2);
+    gfx::Size preview_size = GetMirrorViewScaledSize();
 
     // All previews are the same height (this may add padding on top and
     // bottom).
-    preview_size.set_height(kFixedPreviewHeight);
-    // Previews should never be narrower than half their max width (128dip).
-    preview_size.set_width(
-        std::max(preview_size.width(), kMaxPreviewWidth / 2));
+    preview_size.set_height(kFixedPreviewHeightDp);
+
+    // Previews should never be narrower than half or wider than double their
+    // fixed height.
+    preview_size.set_width(base::ClampToRange(
+        preview_size.width(), kMinPreviewWidthDp, kMaxPreviewWidthDp));
 
     return preview_size;
   }

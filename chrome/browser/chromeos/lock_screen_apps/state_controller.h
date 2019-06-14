@@ -54,7 +54,7 @@ class SessionManager;
 }
 
 namespace ui {
-class InputDeviceManager;
+class DeviceDataManager;
 }
 
 namespace lock_screen_apps {
@@ -258,7 +258,7 @@ class StateController : public ash::mojom::TrayActionClient,
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
       session_observer_;
-  ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>
+  ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
       input_devices_observer_;
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

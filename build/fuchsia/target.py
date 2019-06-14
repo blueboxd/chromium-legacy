@@ -11,6 +11,7 @@ import remote_cmd
 import shutil
 import subprocess
 import sys
+import urllib2
 import tempfile
 import time
 
@@ -25,6 +26,9 @@ _REPO_NAME = 'chrome_runner'
 # Amount of time to wait for Amber to complete package installation, as a
 # mitigation against hangs due to amber/network-related failures.
 _INSTALL_TIMEOUT_SECS = 5 * 60
+
+# Maximum amount of time to block while waitin for "pm serve" to come up.
+_PM_SERVE_LIVENESS_TIMEOUT_SECS = 10
 
 
 def _GetPackageInfo(package_path):
@@ -56,6 +60,22 @@ class _MapRemoteDataPathForPackage:
     if path[:5] == '/data':
       return self.data_path + path[5:]
     return path
+
+def _WaitForPmServeToBeReady(port):
+  """Blocks until "pm serve" starts serving HTTP traffic at |port|."""
+
+  timeout = time.time() + _PM_SERVE_LIVENESS_TIMEOUT_SECS
+  while True:
+    try:
+      urllib2.urlopen('http://localhost:%d' % port, timeout=1).read()
+      break
+    except urllib2.URLError:
+      logging.info('Waiting until \'pm serve\' is up...')
+
+    if time.time() >= timeout:
+      raise Exception('Timed out while waiting for \'pm serve\'.')
+
+    time.sleep(1)
 
 
 class FuchsiaTargetException(Exception):
@@ -240,7 +260,6 @@ class Target(object):
       return 'x86_64'
     raise Exception('Unknown target_cpu %s:' % self._target_cpu)
 
-
   def InstallPackage(self, package_path, package_name, package_deps):
     """Installs a package and it's dependencies on the device. If the package is
     already installed then it will be updated to the new version.
@@ -254,11 +273,7 @@ class Target(object):
       tuf_root = tempfile.mkdtemp()
       pm_serve_task = None
 
-      # Publish all packages to the serving TUF repository under |tuf_root|.
       subprocess.check_call([_PM, 'newrepo', '-repo', tuf_root])
-      all_packages = [package_path] + package_deps
-      for next_package_path in all_packages:
-        _PublishPackage(tuf_root, next_package_path)
 
       # Serve the |tuf_root| using 'pm serve' and configure the target to pull
       # from it.
@@ -266,6 +281,14 @@ class Target(object):
       pm_serve_task = subprocess.Popen(
           [_PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
            ':%d' % serve_port, '-q'])
+
+      # Publish all packages to the serving TUF repository under |tuf_root|.
+      all_packages = [package_path] + package_deps
+      for next_package_path in all_packages:
+        _PublishPackage(tuf_root, next_package_path)
+
+      _WaitForPmServeToBeReady(serve_port)
+
       remote_port = common.ConnectPortForwardingTask(self, serve_port, 0)
       self._RegisterAmberRepository(tuf_root, remote_port)
 

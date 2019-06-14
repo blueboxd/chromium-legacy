@@ -460,7 +460,7 @@ void HungRendererDialogView::Init() {
   hung_pages_table_ = hung_pages_table.get();
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   constexpr int kColumnSetId = 0;

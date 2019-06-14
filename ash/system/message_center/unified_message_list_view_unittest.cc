@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -94,8 +93,6 @@ class UnifiedMessageListViewTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     model_ = std::make_unique<UnifiedSystemTrayModel>();
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kNotificationStackingBarRedesign);
   }
 
   void TearDown() override {
@@ -176,7 +173,6 @@ class UnifiedMessageListViewTest : public AshTestBase,
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   int id_ = 0;
   int size_changed_count_ = 0;
 
@@ -204,7 +200,7 @@ TEST_F(UnifiedMessageListViewTest, Open) {
   EXPECT_EQ(GetMessageViewBounds(0).bottom(), GetMessageViewBounds(1).y());
   EXPECT_EQ(GetMessageViewBounds(1).bottom(), GetMessageViewBounds(2).y());
 
-  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(2)->top_radius());
 
@@ -243,7 +239,8 @@ TEST_F(UnifiedMessageListViewTest, AddNotifications) {
   EXPECT_EQ(previous_bounds, GetMessageViewBounds(0));
   EXPECT_EQ(GetMessageViewBounds(0).bottom(), GetMessageViewBounds(1).y());
 
-  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  // The top radius is zero because the stacking bar is shown.
+  EXPECT_EQ(0, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
 
   EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
@@ -258,7 +255,7 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   int previous_height = message_list_view()->GetPreferredSize().height();
 
   EXPECT_EQ(2u, message_list_view()->children().size());
-  EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
+  EXPECT_EQ(0, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
 
   gfx::Rect previous_bounds = GetMessageViewBounds(0);

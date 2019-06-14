@@ -94,11 +94,11 @@ int GbmPixmapWayland::GetDmaBufFd(size_t plane) const {
   return gbm_bo_->GetPlaneFd(plane);
 }
 
-int GbmPixmapWayland::GetDmaBufPitch(size_t plane) const {
+uint32_t GbmPixmapWayland::GetDmaBufPitch(size_t plane) const {
   return gbm_bo_->GetPlaneStride(plane);
 }
 
-int GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
+size_t GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
   return gbm_bo_->GetPlaneOffset(plane);
 }
 

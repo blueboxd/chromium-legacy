@@ -51,7 +51,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   // views::DialogDelegateView
   View* GetContentsView() override;
-  View* CreateFootnoteView() override;
+  std::unique_ptr<View> CreateFootnoteView() override;
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;

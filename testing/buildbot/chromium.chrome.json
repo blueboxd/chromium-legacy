@@ -2175,7 +2175,25 @@
         },
         "name": "chrome_sizes",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Mac-10.14.4",
+              "pool": "chrome.tests"
+            }
+          ],
+          "optional_dimensions": {
+            "300": [
+              {
+                "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
+              }
+            ]
+          }
         }
       }
     ]

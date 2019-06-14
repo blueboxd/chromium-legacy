@@ -114,10 +114,22 @@ void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
   UpdateAllLifecyclePhasesForTest();
 }
 
-void PageTestBase::NavigateTo(const KURL& url) {
-  GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
-      nullptr /* extra_data */);
+void PageTestBase::NavigateTo(const KURL& url,
+                              const String& feature_policy_header,
+                              const String& csp_header) {
+  auto params =
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url);
+  if (!feature_policy_header.IsEmpty()) {
+    params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
+                                        feature_policy_header);
+  }
+  if (!csp_header.IsEmpty()) {
+    params->response.SetHttpHeaderField(http_names::kContentSecurityPolicy,
+                                        csp_header);
+  }
+  GetFrame().Loader().CommitNavigation(std::move(params),
+                                       nullptr /* extra_data */);
+
   blink::test::RunPendingTasks();
   ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
 }

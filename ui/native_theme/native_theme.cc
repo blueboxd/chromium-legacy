@@ -48,6 +48,10 @@ bool NativeTheme::SystemDarkModeEnabled() const {
   return is_dark_mode_;
 }
 
+bool NativeTheme::SystemDarkModeSupported() const {
+  return false;
+}
+
 bool NativeTheme::UsesHighContrastColors() const {
   return is_high_contrast_;
 }

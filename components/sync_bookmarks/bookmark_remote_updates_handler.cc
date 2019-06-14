@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -23,6 +24,36 @@
 namespace sync_bookmarks {
 
 namespace {
+
+// Used in metrics: "Sync.ProblematicServerSideBookmarks". These values are
+// persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class RemoteBookmarkUpdateError {
+  // Remote and local bookmarks types don't match (URL vs. Folder).
+  kConflictingTypes = 0,
+  // Invalid specifics.
+  kInvalidSpecifics = 1,
+  // Invalid unique position.
+  kInvalidUniquePosition = 2,
+  // Permanent node creation in an incremental update.
+  kPermanentNodeCreationAfterMerge = 3,
+  // Parent entity not found in server.
+  kMissingParentEntity = 4,
+  // Parent node not found locally.
+  kMissingParentNode = 5,
+  // Parent entity not found in server when processing a conflict.
+  kMissingParentEntityInConflict = 6,
+  // Parent Parent node not found locally when processing a conflict.
+  kMissingParentNodeInConflict = 7,
+  // Failed to create a bookmark.
+  kCreationFailure = 8,
+
+  kMaxValue = kCreationFailure,
+};
+
+void LogProblematicBookmark(RemoteBookmarkUpdateError problem) {
+  base::UmaHistogramEnumeration("Sync.ProblematicServerSideBookmarks", problem);
+}
 
 // Recursive method to traverse a forest created by ReorderUpdates() to to
 // emit updates in top-down order. |ordered_updates| must not be null because
@@ -93,6 +124,7 @@ void ApplyRemoteUpdate(
                 << (update_entity.is_folder ? "folder" : "bookmark")
                 << " while local node is a "
                 << (node->is_folder() ? "folder" : "bookmark");
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kConflictingTypes);
     return;
   }
   UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
@@ -150,6 +182,7 @@ void BookmarkRemoteUpdatesHandler::Process(
         // Ignore updates with invalid specifics.
         DLOG(ERROR)
             << "Couldn't process an update bookmark with an invalid specifics.";
+        LogProblematicBookmark(RemoteBookmarkUpdateError::kInvalidSpecifics);
         continue;
       }
       if (!syncer::UniquePosition::FromProto(update_entity.unique_position)
@@ -157,6 +190,8 @@ void BookmarkRemoteUpdatesHandler::Process(
         // Ignore updates with invalid unique position.
         DLOG(ERROR) << "Couldn't process an update bookmark with an invalid "
                        "unique position.";
+        LogProblematicBookmark(
+            RemoteBookmarkUpdateError::kInvalidUniquePosition);
         continue;
       }
     }
@@ -357,6 +392,8 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
   if (!update_entity.server_defined_unique_tag.empty()) {
     DLOG(ERROR)
         << "Permanent nodes should have been merged during intial sync.";
+    LogProblematicBookmark(
+        RemoteBookmarkUpdateError::kPermanentNodeCreationAfterMerge);
     return false;
   }
 
@@ -369,6 +406,7 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Could not find parent of node being added."
                 << " Node title: " << update_entity.specifics.bookmark().title()
                 << ", parent id = " << update_entity.parent_id;
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentNode);
     return false;
   }
   const bookmarks::BookmarkNode* bookmark_node =
@@ -382,6 +420,7 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Failed to create bookmark node with title "
                 << update_entity.specifics.bookmark().title() << " and url "
                 << update_entity.specifics.bookmark().url();
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kCreationFailure);
     return false;
   }
   bookmark_tracker_->Add(update_entity.id, bookmark_node,
@@ -414,6 +453,7 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
   if (!new_parent_entity) {
     DLOG(ERROR) << "Could not update node. Parent node doesn't exist: "
                 << update_entity.parent_id;
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentEntity);
     return;
   }
   const bookmarks::BookmarkNode* new_parent =
@@ -421,6 +461,7 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
   if (!new_parent) {
     DLOG(ERROR)
         << "Could not update node. Parent node has been deleted already.";
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentNode);
     return;
   }
   // Node update could be either in the node data (e.g. title or
@@ -528,6 +569,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
   if (!new_parent_entity) {
     DLOG(ERROR) << "Could not update node. Parent node doesn't exist: "
                 << update_entity.parent_id;
+    LogProblematicBookmark(
+        RemoteBookmarkUpdateError::kMissingParentEntityInConflict);
     return;
   }
   const bookmarks::BookmarkNode* new_parent =
@@ -539,6 +582,8 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
   if (!new_parent) {
     DLOG(ERROR)
         << "Could not update node. Parent node has been deleted already.";
+    LogProblematicBookmark(
+        RemoteBookmarkUpdateError::kMissingParentNodeInConflict);
     return;
   }
   // Either local and remote data match or server wins, and in both cases we

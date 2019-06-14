@@ -66,6 +66,12 @@ const char kEnableGPUServiceTracing[]       = "enable-gpu-service-tracing";
 //  gles: GLES renderer, ES2 and ES3.
 const char kUseANGLE[]                      = "use-angle";
 
+// ANGLE features are defined per-backend in third_party/angle/include/platform
+// Enables specified comma separated ANGLE features if found.
+const char kEnableANGLEFeatures[] = "enable-angle-features";
+// Disables specified comma separated ANGLE features if found.
+const char kDisableANGLEFeatures[] = "disable-angle-features";
+
 // Select which implementation of GL the GPU process should use. Options are:
 //  desktop: whatever desktop OpenGL the user has installed (Linux and Mac
 //           default).

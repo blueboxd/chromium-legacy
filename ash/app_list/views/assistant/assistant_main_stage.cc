@@ -214,8 +214,7 @@ class HorizontalSeparator : public views::View {
 
 bool IsLayerVisible(views::View* view) {
   DCHECK(view->layer());
-  return view->IsDrawn() &&
-         !cc::MathUtil::IsWithinEpsilon(view->layer()->GetTargetOpacity(), 0.f);
+  return !cc::MathUtil::IsWithinEpsilon(view->layer()->GetTargetOpacity(), 0.f);
 }
 
 }  // namespace
@@ -438,6 +437,7 @@ void AssistantMainStage::OnPendingQueryChanged(
     const ash::AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
+  UpdateFooter(/*visible=*/false);
 
   if (!IsLayerVisible(greeting_label_))
     return;
@@ -461,12 +461,18 @@ void AssistantMainStage::OnPendingQueryChanged(
     MaybeHideGreetingLabel();
 }
 
-void AssistantMainStage::OnPendingQueryCleared() {
+void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
   // When a pending query is cleared, it may be because the interaction was
   // cancelled, or because the query was committed. If the query was committed,
   // reseting the query here will have no visible effect. If the interaction was
   // cancelled, we set the query here to restore the previously committed query.
   query_view_->SetQuery(delegate_->GetInteractionModel()->committed_query());
+
+  // If the query was committed, we wait for |OnResponseChanged()| to update the
+  // footer. If the interaction was cancelled, we restore the previous
+  // suggestion chips.
+  if (!due_to_commit)
+    UpdateFooter(/*visible=*/true);
 }
 
 void AssistantMainStage::OnResponseChanged(
@@ -492,7 +498,7 @@ void AssistantMainStage::OnResponseChanged(
       CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
           0.f, kDividerAnimationFadeOutDuration)));
 
-  UpdateFooter();
+  UpdateFooter(/*visible=*/true);
 }
 
 void AssistantMainStage::OnUiVisibilityChanged(
@@ -560,7 +566,9 @@ void AssistantMainStage::OnUiVisibilityChanged(
 
   query_view_->SetQuery(ash::AssistantNullQuery());
 
-  UpdateFooter();
+  footer_->SetVisible(true);
+  footer_->layer()->SetOpacity(1.f);
+  footer_->set_can_process_events_within_subtree(true);
 }
 
 void AssistantMainStage::MaybeHideGreetingLabel() {
@@ -575,16 +583,15 @@ void AssistantMainStage::MaybeHideGreetingLabel() {
           CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
 }
 
-void AssistantMainStage::UpdateFooter() {
+void AssistantMainStage::UpdateFooter(bool visible) {
   using ash::assistant::util::CreateLayerAnimationSequence;
   using ash::assistant::util::CreateOpacityElement;
   using ash::assistant::util::CreateTransformElement;
   using ash::assistant::util::StartLayerAnimationSequence;
   using ash::assistant::util::StartLayerAnimationSequencesTogether;
 
-  // The footer is only visible when the progress indicator is not.
-  // When it is not visible, it should not process events.
-  bool visible = !IsLayerVisible(progress_indicator_);
+  if (visible == IsLayerVisible(footer_))
+    return;
 
   // Reset visibility to enable animation.
   footer_->SetVisible(true);
@@ -638,9 +645,8 @@ void AssistantMainStage::OnFooterAnimationStarted(
 
 bool AssistantMainStage::OnFooterAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  // The footer should only process events when visible. It is only visible when
-  // the progress indicator is not visible.
-  bool visible = !IsLayerVisible(progress_indicator_);
+  // The footer should only process events when visible.
+  const bool visible = IsLayerVisible(footer_);
   footer_->set_can_process_events_within_subtree(visible);
   footer_->SetVisible(visible);
 

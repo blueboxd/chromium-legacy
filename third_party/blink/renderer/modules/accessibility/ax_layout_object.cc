@@ -420,21 +420,6 @@ bool AXLayoutObject::IsRichlyEditable() const {
   return AXNodeObject::IsRichlyEditable();
 }
 
-bool AXLayoutObject::IsLineBreakingObject() const {
-  if (IsDetached())
-    return AXNodeObject::IsLineBreakingObject();
-
-  const LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object->IsBR() || layout_object->IsLayoutBlock() ||
-      layout_object->IsAnonymousBlock() ||
-      (layout_object->IsLayoutBlockFlow() &&
-       layout_object->StyleRef().IsDisplayBlockContainer())) {
-    return true;
-  }
-
-  return AXNodeObject::IsLineBreakingObject();
-}
-
 bool AXLayoutObject::IsLinked() const {
   if (!IsLinkable(*this))
     return false;
@@ -693,7 +678,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (alt_text)
     return alt_text->IsEmpty();
 
-  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGInside())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingNG())
     return false;
 
   // Positioned elements and scrollable containers are important for
@@ -2097,8 +2082,6 @@ bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
   if (GetCSSAltText(GetNode()))
-    return false;
-  if (layout_object_->IsListMarkerIncludingNGInside())
     return false;
   return AXNodeObject::CanHaveChildren();
 }

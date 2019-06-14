@@ -2026,7 +2026,6 @@
     'blink_devtools': ['apavlov+blink@chromium.org',
                        'caseq+blink@chromium.org',
                        'devtools-reviews@chromium.org',
-                       'kozyatinskiy+blink@chromium.org',
                        'lushnikov+blink@chromium.org',
                        'pfeldman+blink@chromium.org'],
     'blink_dom': ['blink-reviews-dom@chromium.org',

@@ -15,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace send_tab_to_self {
 
@@ -30,7 +31,7 @@ enum class DeviceIconType {
   TOTAL_COUNT = 2  // Add new types above this line.
 };
 
-gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type, bool enabled = true) {
+gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
     case DeviceIconType::DESKTOP:
@@ -42,7 +43,7 @@ gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type, bool enabled = true) {
     default:
       vector_icon = &kSendTabToSelfIcon;
   }
-  SkColor icon_color = enabled ? gfx::kChromeIconGrey : gfx::kGoogleGrey500;
+  SkColor icon_color = ui::NativeTheme::kColorId_DefaultIconColor;
   return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize, icon_color);
 }
 

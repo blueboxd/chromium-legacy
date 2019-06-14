@@ -182,14 +182,51 @@ static WTL::CFrameWndClassInfo& GetWndClassInfo() \
 	return wc; \
 }
 
+// These are for templated classes
+#define DECLARE_FRAME_WND_CLASS2(WndClassName, EnclosingClass, uCommonResourceID) \
+static WTL::CFrameWndClassInfo& GetWndClassInfo() \
+{ \
+	static WTL::CFrameWndClassInfo wc = \
+	{ \
+		{ sizeof(WNDCLASSEX), 0, EnclosingClass::StartWindowProc, \
+		  0, 0, NULL, NULL, NULL, (HBRUSH)(COLOR_WINDOW + 1), NULL, WndClassName, NULL }, \
+		NULL, NULL, IDC_ARROW, TRUE, 0, _T(""), uCommonResourceID \
+	}; \
+	return wc; \
+}
+
+#define DECLARE_FRAME_WND_CLASS_EX2(WndClassName, EnclosingClass, uCommonResourceID, style, bkgnd) \
+static WTL::CFrameWndClassInfo& GetWndClassInfo() \
+{ \
+	static WTL::CFrameWndClassInfo wc = \
+	{ \
+		{ sizeof(WNDCLASSEX), style, EnclosingClass::StartWindowProc, \
+		  0, 0, NULL, NULL, NULL, (HBRUSH)(bkgnd + 1), NULL, WndClassName, NULL }, \
+		NULL, NULL, IDC_ARROW, TRUE, 0, _T(""), uCommonResourceID \
+	}; \
+	return wc; \
+}
+
+#define DECLARE_FRAME_WND_SUPERCLASS2(WndClassName, EnclosingClass, OrigWndClassName, uCommonResourceID) \
+static WTL::CFrameWndClassInfo& GetWndClassInfo() \
+{ \
+	static WTL::CFrameWndClassInfo wc = \
+	{ \
+		{ sizeof(WNDCLASSEX), 0, EnclosingClass::StartWindowProc, \
+		  0, 0, NULL, NULL, NULL, NULL, NULL, WndClassName, NULL }, \
+		OrigWndClassName, NULL, NULL, TRUE, 0, _T(""), uCommonResourceID \
+	}; \
+	return wc; \
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CFrameWindowImpl
 
 // Client window command chaining macro (only for frame windows)
 #define CHAIN_CLIENT_COMMANDS() \
-	if((uMsg == WM_COMMAND) && (m_hWndClient != NULL)) \
-		::SendMessage(m_hWndClient, uMsg, wParam, lParam);
+	if((uMsg == WM_COMMAND) && (this->m_hWndClient != NULL)) \
+		::SendMessage(this->m_hWndClient, uMsg, wParam, lParam);
 
 // standard toolbar styles
 #define ATL_SIMPLE_TOOLBAR_STYLE \
@@ -230,17 +267,8 @@ template <class TBase = ATL::CWindow, class TWinTraits = ATL::CFrameWinTraits>
 class ATL_NO_VTABLE CFrameWindowImplBase : public ATL::CWindowImplBaseT< TBase, TWinTraits >
 {
 public:
-	// This is instead of DECLARE_FRAME_WND_CLASS(NULL, 0)
-	static CFrameWndClassInfo& GetWndClassInfo()
-	{
-		static CFrameWndClassInfo wc =
-		{
-			{ sizeof(WNDCLASSEX), 0, ATL::CWindowImplBaseT<TBase, TWinTraits >::StartWindowProc,
-			  0, 0, NULL, NULL, NULL, (HBRUSH)(COLOR_WINDOW + 1), NULL, NULL, NULL },
-			NULL, NULL, IDC_ARROW, TRUE, 0, _T(""), 0
-		};
-		return wc;
-	}
+	typedef CFrameWindowImplBase<TBase, TWinTraits >	_thisClass;
+	DECLARE_FRAME_WND_CLASS2(NULL, _thisClass, 0)
 
 	struct _ChevronMenuInfo
 	{
@@ -1131,7 +1159,7 @@ public:
 #define CHAIN_MDI_CHILD_COMMANDS() \
 	if(uMsg == WM_COMMAND) \
 	{ \
-		HWND hWndChild = MDIGetActive(); \
+		HWND hWndChild = this->MDIGetActive(); \
 		if(hWndChild != NULL) \
 			::SendMessage(hWndChild, uMsg, wParam, lParam); \
 	}
@@ -3544,6 +3572,6 @@ public:
   #undef CBRPOPUPMENU
 #endif // !defined(__ATLCTRLW_H__)
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLFRAME_H__

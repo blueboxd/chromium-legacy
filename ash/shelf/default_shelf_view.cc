@@ -84,6 +84,30 @@ DefaultShelfView::DefaultShelfView(ShelfModel* model,
 
 DefaultShelfView::~DefaultShelfView() = default;
 
+void DefaultShelfView::CalculateBackAndHomeButtonsIdealBounds() {
+  if (is_overflow_mode())
+    return;
+
+  const int button_spacing = ShelfConstants::button_spacing();
+  int x = shelf()->PrimaryAxisValue(button_spacing, 0);
+  int y = shelf()->PrimaryAxisValue(0, button_spacing);
+
+  GetBackButton()->set_ideal_bounds(gfx::Rect(
+      x, y, shelf()->PrimaryAxisValue(kShelfControlSize, kShelfButtonSize),
+      shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfControlSize)));
+
+  // If we are not in tablet mode, the home button will get placed on top of
+  // the (invisible) back button.
+  if (IsTabletModeEnabled()) {
+    x = shelf()->PrimaryAxisValue(x + kShelfControlSize + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + kShelfControlSize + button_spacing);
+  }
+
+  GetAppListButton()->set_ideal_bounds(gfx::Rect(
+      x, y, shelf()->PrimaryAxisValue(kShelfControlSize, kShelfButtonSize),
+      shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfControlSize)));
+}
+
 void DefaultShelfView::Init() {
   // Add the background view behind the app list and back buttons first, so
   // that other views will appear above it.
@@ -126,79 +150,72 @@ void DefaultShelfView::CalculateIdealBounds() {
   separator_->SetVisible(separator_index != -1 &&
                          separator_index < last_visible_index() &&
                          !virtual_keyboard_visible);
-  int app_list_button_position;
 
-  int x = shelf()->PrimaryAxisValue(button_spacing, 0);
-  int y = shelf()->PrimaryAxisValue(0, button_spacing);
+  int x = 0;
+  int y = 0;
+  if (!is_overflow_mode()) {
+    // Calculate the bounds for the back and home buttons separately.
+    CalculateBackAndHomeButtonsIdealBounds();
 
-  for (int i = 0; i < view_model()->view_size(); ++i) {
-    // "Primary" as in "same direction as the shelf's direction". The
-    // "secondary" (orthogonal) size is always the full shelf to maximize click
-    // targets even for control buttons.
-    const int size_primary =
-        (i <= kAppListButtonIndex) ? kShelfControlSize : kShelfButtonSize;
-    const int size_secondary = kShelfButtonSize;
+    int app_list_button_position =
+        shelf()->PrimaryAxisValue(GetAppListButton()->ideal_bounds().right(),
+                                  GetAppListButton()->ideal_bounds().bottom());
 
+    x = shelf()->PrimaryAxisValue(app_list_button_position, 0);
+    y = shelf()->PrimaryAxisValue(0, app_list_button_position);
+
+    // A larger minimum padding after the app list button is required:
+    // increment with the necessary extra amount.
+    x += shelf()->PrimaryAxisValue(kAppIconGroupMargin - button_spacing, 0);
+    y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin - button_spacing);
+
+    // Now add the necessary padding to center app icons.
+    StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
+    const int status_widget_size =
+        status_widget ? shelf()->PrimaryAxisValue(
+                            status_widget->GetWindowBoundsInScreen().width(),
+                            status_widget->GetWindowBoundsInScreen().height())
+                      : 0;
+    const int screen_size = available_size + status_widget_size;
+
+    const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
+    const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
+                                             app_centering_strategy.overflow);
+    int padding_for_centering = 0;
+
+    if (app_centering_strategy.center_on_screen) {
+      padding_for_centering = (screen_size - icons_size) / 2;
+    } else {
+      padding_for_centering =
+          kShelfButtonSpacing +
+          (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize +
+          kAppIconGroupMargin + (available_size_for_app_icons - icons_size) / 2;
+    }
+
+    if (padding_for_centering >
+        app_list_button_position + kAppIconGroupMargin) {
+      // Only shift buttons to the right, never let them interfere with the
+      // left-aligned system buttons.
+      x = shelf()->PrimaryAxisValue(padding_for_centering, 0);
+      y = shelf()->PrimaryAxisValue(0, padding_for_centering);
+    }
+  }
+
+  // We've already processed the back and home buttons.
+  for (int i = kAppListButtonIndex + 1; i < view_model()->view_size(); ++i) {
     if (is_overflow_mode() && i < first_visible_index()) {
       view_model()->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
-    if (i == kAppListButtonIndex + 1) {
-      // Start centering after we've laid out the app list button.
-
-      StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
-      const int status_widget_size =
-          status_widget ? shelf()->PrimaryAxisValue(
-                              status_widget->GetWindowBoundsInScreen().width(),
-                              status_widget->GetWindowBoundsInScreen().height())
-                        : 0;
-      const int screen_size = available_size + status_widget_size;
-
-      const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
-      const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
-                                               app_centering_strategy.overflow);
-      int padding_for_centering = 0;
-
-      if (app_centering_strategy.center_on_screen) {
-        padding_for_centering = (screen_size - icons_size) / 2;
-      } else {
-        padding_for_centering =
-            kShelfButtonSpacing +
-            (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize +
-            kAppIconGroupMargin +
-            (available_size_for_app_icons - icons_size) / 2;
-      }
-
-      if (padding_for_centering >
-          app_list_button_position + kAppIconGroupMargin) {
-        // Only shift buttons to the right, never let them interfere with the
-        // left-aligned system buttons.
-        x = shelf()->PrimaryAxisValue(padding_for_centering, 0);
-        y = shelf()->PrimaryAxisValue(0, padding_for_centering);
-      }
-    }
 
     view_model()->set_ideal_bounds(
         i,
-        gfx::Rect(x, y, shelf()->PrimaryAxisValue(size_primary, size_secondary),
-                  shelf()->PrimaryAxisValue(size_secondary, size_primary)));
+        gfx::Rect(
+            x, y, shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfButtonSize),
+            shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfButtonSize)));
 
-    // If not in tablet mode do not increase |x| or |y|. Instead just let the
-    // next item (app list button) cover the back button, which will have
-    // opacity 0 anyways.
-    if (i == kBackButtonIndex && !IsTabletModeEnabled())
-      continue;
-
-    x = shelf()->PrimaryAxisValue(x + size_primary + button_spacing, x);
-    y = shelf()->PrimaryAxisValue(y, y + size_primary + button_spacing);
-
-    if (i == kAppListButtonIndex) {
-      app_list_button_position = shelf()->PrimaryAxisValue(x, y);
-      // A larger minimum padding after the app list button is required:
-      // increment with the necessary extra amount.
-      x += shelf()->PrimaryAxisValue(kAppIconGroupMargin - button_spacing, 0);
-      y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin - button_spacing);
-    }
+    x = shelf()->PrimaryAxisValue(x + kShelfButtonSize + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + kShelfButtonSize + button_spacing);
 
     if (i == separator_index) {
       // Place the separator halfway between the two icons it separates,

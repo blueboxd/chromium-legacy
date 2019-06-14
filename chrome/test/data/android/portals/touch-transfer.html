@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div>This is the embedder</div>
+  <portal src="touch-transfer-portal.html"></portal>
+  <script>
+    document.addEventListener("overscroll", e => {
+      var portal = document.querySelector("portal");
+      portal.activate();
+    });
+  </script>
+</body>
+</html>

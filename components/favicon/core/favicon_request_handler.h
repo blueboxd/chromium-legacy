@@ -6,12 +6,14 @@
 #define COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
 namespace favicon {
@@ -50,24 +52,21 @@ enum class FaviconRequestPlatform {
   kDesktop,
 };
 
-// Class for handling favicon requests by page url, forwarding them to local
-// storage, sync or Google server accordingly.
-// TODO(victorvianna): Refactor LargeIconService to avoid having to pass both
-// it and FaviconService to the API.
+// Keyed service for handling favicon requests by page url, forwarding them to
+// local storage, sync or Google server accordingly.
 // TODO(victorvianna): Use a more natural order for the parameters in the API.
 // TODO(victorvianna): Remove |icon_url_for_uma| when we have access to the
 // FaviconUrlMapper.
-class FaviconRequestHandler {
+class FaviconRequestHandler : public KeyedService {
  public:
-  // Callback that requests the synced bitmap for the page url given in the
-  // the first argument, storing the result in the second argument. Returns
-  // whether the request succeeded.
+  // Callback that requests the synced bitmap for a page url.
   using SyncedFaviconGetter =
       base::OnceCallback<scoped_refptr<base::RefCountedMemory>(const GURL&)>;
 
-  FaviconRequestHandler();
+  FaviconRequestHandler(FaviconService* favicon_service,
+                        LargeIconService* large_icon_service);
 
-  ~FaviconRequestHandler();
+  ~FaviconRequestHandler() override;
 
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
@@ -83,8 +82,6 @@ class FaviconRequestHandler {
                                favicon_base::FaviconRawBitmapCallback callback,
                                FaviconRequestOrigin request_origin,
                                FaviconRequestPlatform request_platform,
-                               FaviconService* favicon_service,
-                               LargeIconService* large_icon_service,
                                const GURL& icon_url_for_uma,
                                SyncedFaviconGetter synced_favicon_getter,
                                bool can_send_history_data,
@@ -102,8 +99,6 @@ class FaviconRequestHandler {
   void GetFaviconImageForPageURL(const GURL& page_url,
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
-                                 FaviconService* favicon_service,
-                                 LargeIconService* large_icon_service,
                                  const GURL& icon_url_for_uma,
                                  SyncedFaviconGetter synced_favicon_getter,
                                  bool can_send_history_data,
@@ -120,8 +115,6 @@ class FaviconRequestHandler {
       favicon_base::FaviconRawBitmapCallback response_callback,
       FaviconRequestOrigin origin,
       FaviconRequestPlatform platform,
-      FaviconService* favicon_service,
-      LargeIconService* large_icon_service,
       const GURL& icon_url_for_uma,
       SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
@@ -136,8 +129,6 @@ class FaviconRequestHandler {
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
       FaviconRequestOrigin origin,
-      FaviconService* favicon_service,
-      LargeIconService* large_icon_service,
       const GURL& icon_url_for_uma,
       SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
@@ -152,7 +143,6 @@ class FaviconRequestHandler {
       std::unique_ptr<FaviconServerFetcherParams> server_parameters,
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
-      LargeIconService* large_icon_service,
       const GURL& icon_url_for_uma,
       FaviconRequestOrigin origin);
 
@@ -167,6 +157,10 @@ class FaviconRequestHandler {
       FaviconRequestOrigin origin,
       const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
+
+  FaviconService* const favicon_service_;
+
+  LargeIconService* const large_icon_service_;
 
   // Map from a group identifier to the number of callbacks in that group which
   // would be waiting for execution. Used for recording metrics for the possible

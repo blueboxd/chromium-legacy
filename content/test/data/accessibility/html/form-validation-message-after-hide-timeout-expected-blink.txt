@@ -1,12 +1,11 @@
 rootWebArea
-++genericContainer ignored
-++++form
-++++++labelText
-++++++++staticText name='Pet name:'
-++++++++++inlineTextBox name='Pet name:'
-++++++textField required name='Pet name:' errormessageId=alert invalidState=true
-++++++++genericContainer
+++form
+++++labelText
+++++++staticText name='Pet name:'
+++++++++inlineTextBox name='Pet name:'
+++++textField required name='Pet name:' errormessageId=alert invalidState=true
 ++++++genericContainer
-++++++++staticText name='ready'
-++++++++++inlineTextBox name='ready'
+++++genericContainer
+++++++staticText name='ready'
+++++++++inlineTextBox name='ready'
 ++alert invisible containerLiveRelevant='additions' containerLiveStatus='assertive' liveRelevant='additions' liveStatus='assertive' containerLiveAtomic=true containerLiveBusy=false liveAtomic=true

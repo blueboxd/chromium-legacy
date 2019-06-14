@@ -54,11 +54,11 @@ bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state) {
          service->GetSendTabToSelfModel()->IsReady();
 }
 
-bool IsSyncingOnMultipleDevices(ios::ChromeBrowserState* browser_state) {
-  syncer::DeviceInfoSyncService* device_sync_service =
-      DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state);
-  return device_sync_service && device_sync_service->GetDeviceInfoTracker() &&
-         device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
+bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state) {
+  SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state);
+  return service && service->GetSendTabToSelfModel() &&
+         service->GetSendTabToSelfModel()->HasValidTargetDevice();
 }
 
 bool IsContentRequirementsMet(const GURL& url,
@@ -73,7 +73,7 @@ bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
                         const GURL& url) {
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(browser_state) &&
-         IsSyncingOnMultipleDevices(browser_state) &&
+         HasValidTargetDevice(browser_state) &&
          IsContentRequirementsMet(url, browser_state);
 }
 

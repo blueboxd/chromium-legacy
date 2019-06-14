@@ -15,7 +15,7 @@ class ListValue;
 }
 
 namespace ui {
-class InputDeviceManager;
+class DeviceDataManager;
 }
 
 namespace chromeos {
@@ -71,7 +71,7 @@ class KeyboardHandler
   // Sends the UI a message about whether hardware keyboard are attached.
   void UpdateKeyboards();
 
-  ScopedObserver<ui::InputDeviceManager, KeyboardHandler> observer_;
+  ScopedObserver<ui::DeviceDataManager, KeyboardHandler> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);
 };

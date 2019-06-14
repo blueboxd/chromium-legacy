@@ -601,6 +601,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
+          'mac_10.14',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_sizes',
@@ -1758,7 +1759,7 @@
       },
       'linux-blink-rel-dummy': {
         'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1766,7 +1767,6 @@
               'os': 'Ubuntu-14.04',
             },
           ],
-          'shards': 20,
         },
       },
       'linux-chromeos-code-coverage': {
@@ -2162,7 +2162,7 @@
         'browser_config': 'debug',
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
@@ -2261,7 +2261,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
@@ -2555,7 +2555,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
@@ -2795,7 +2795,7 @@
         'os_type': 'mac',
         'browser_config': 'debug',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
@@ -2847,7 +2847,7 @@
             # TODO(kbr): figure out how to use mixins for these.
             {
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13.6',
             },
             {
               'gpu': '1002:6821',
@@ -2866,7 +2866,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2931,7 +2931,7 @@
       'Mac FYI dEQP Release Intel': {
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_mac_gtests',
@@ -2992,7 +2992,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
@@ -3070,12 +3070,9 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          # TODO(crbug.com/952071): once the perftests are green,
-          # re-enable the rest of these tests for a couple of builds
-          # to ensure they're green.
-          # 'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
-          # 'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_gold_telemetry_tests',
         },
       },
       'Win10 FYI Exp Release (Intel HD 630)': {
@@ -3451,11 +3448,6 @@
           'empty_main',
         ],
       },
-      'linux-goma-rbe-staging-rel': {
-        'additional_compile_targets': [
-          'all'
-        ]
-      },
       'linux-jumbo-rel': {
         'additional_compile_targets': [
           'all'
@@ -3470,6 +3462,16 @@
         ],
         'test_suites': {
           'gtest_tests': 'ozone_linux_gtests',
+        },
+      },
+      'linux-trusty-rel': {
+        'mixins': [
+          'linux-trusty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
         },
       },
     },
@@ -4257,7 +4259,7 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',

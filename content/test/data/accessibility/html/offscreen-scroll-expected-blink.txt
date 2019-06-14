@@ -1,6 +1,4 @@
 rootWebArea scrollY=640
-++genericContainer ignored
-++++button offscreen name='Onscreen before scroll'
-++++genericContainer ignored
-++++button name='Scrolled Button'
-++++genericContainer ignored
+++button offscreen name='Onscreen before scroll'
+++button name='Scrolled Button'
+<-- End-of-file -->

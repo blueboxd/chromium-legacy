@@ -1497,14 +1497,6 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string) const override;
 
-  bool IsParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) const {
-    return parsed_feature_policies_[static_cast<size_t>(feature)];
-  }
-
-  void SetParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) {
-    parsed_feature_policies_.set(static_cast<size_t>(feature));
-  }
-
   void IncrementNumberOfCanvases();
 
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
@@ -2029,10 +2021,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   const base::UnguessableToken agent_cluster_id_;
 
-  // Tracks which feature policies have already been parsed, so as not to count
-  // them multiple times.
-  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
-      parsed_feature_policies_;
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
   mutable std::bitset<

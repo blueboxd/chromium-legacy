@@ -64,6 +64,7 @@
 - (void)tableView:(UITableView*)tableView
       willDisplayCell:(UITableViewCell*)cell
     forRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView willDisplayCell:cell forRowAtIndexPath:indexPath];
   if ([cell isKindOfClass:[OmniboxPopupRowCell class]]) {
     OmniboxPopupRowCell* rowCell =
         base::mac::ObjCCastStrict<OmniboxPopupRowCell>(cell);

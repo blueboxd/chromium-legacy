@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -35,6 +36,7 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -43,6 +45,30 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
+
+namespace {
+
+class PrimaryProfileServicesShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static PrimaryProfileServicesShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<
+        PrimaryProfileServicesShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      PrimaryProfileServicesShutdownNotifierFactory>;
+
+  PrimaryProfileServicesShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "PrimaryProfileServices") {}
+  ~PrimaryProfileServicesShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(PrimaryProfileServicesShutdownNotifierFactory);
+};
+
+}  // namespace
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
@@ -124,7 +150,7 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
 }
 
 void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
-    const Profile* primary_profile) {
+    Profile* primary_profile) {
   DCHECK(primary_profile);
   const user_manager::User* primary_user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
@@ -134,11 +160,15 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
   kerberos_credentials_manager_ =
       std::make_unique<chromeos::KerberosCredentialsManager>(
           g_browser_process->local_state(), primary_user);
+  primary_profile_shutdown_subscription_ =
+      PrimaryProfileServicesShutdownNotifierFactory::GetInstance()
+          ->Get(primary_profile)
+          ->Subscribe(base::Bind(
+              &BrowserProcessPlatformPart::ShutdownPrimaryProfileServices,
+              base::Unretained(this)));
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
-  // Note: This might be called even if InitializePrimaryProfileServices()
-  // wasn't called, e.g. if something during initialization went wrong.
   kerberos_credentials_manager_.reset();
 }
 

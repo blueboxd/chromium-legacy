@@ -53,7 +53,10 @@ void NetworkChangeManager::OnNetworkChanged(
     mojom::ConnectionType new_connection_type,
     bool connection_subtype_changed,
     mojom::ConnectionSubtype new_connection_subtype) {
-  DCHECK(network_change_notifier_);
+  // network_change_notifier_ can be null in unit tests.
+  if (!network_change_notifier_)
+    return;
+
   net::NetworkChangeNotifierPosix* notifier =
       static_cast<net::NetworkChangeNotifierPosix*>(
           network_change_notifier_.get());

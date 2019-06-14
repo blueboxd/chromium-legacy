@@ -488,10 +488,6 @@ WebAXObject BlinkAXTreeSource::GetParent(WebAXObject node) const {
   return node;
 }
 
-bool BlinkAXTreeSource::IsIgnored(WebAXObject node) const {
-  return node.AccessibilityIsIgnored();
-}
-
 bool BlinkAXTreeSource::IsValid(WebAXObject node) const {
   return !node.IsDetached();  // This also checks if it's null.
 }
@@ -544,11 +540,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     dst->relative_bounds.offset_container_id = offset_container.AxID();
   if (clips_children)
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
-
-  if (src.IsLineBreakingObject()) {
-    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
-                          true);
-  }
 
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);

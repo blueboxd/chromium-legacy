@@ -239,12 +239,14 @@ TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
-  EXPECT_FALSE(execution_context->GetSecurityOrigin()->IsOpaque());
+  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
+  execution_context->SetSandboxFlags(WebSandboxFlags::kAll);
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  EXPECT_TRUE(execution_context->GetSecurityOrigin()->IsOpaque());
+  EXPECT_EQ(WebSandboxFlags::kAll, csp->GetSandboxMask());
 }
 
 // Tests that report-uri directives are discarded from policies

@@ -92,9 +92,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 // improves memory performance by avoiding render surfaces where ever possible.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
 
-// Enables the notification stacking bar redesigned UI.
-ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
-
 // Enables pagination for feature pod buttons in the system tray
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 
@@ -131,8 +128,6 @@ ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
-
-ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 

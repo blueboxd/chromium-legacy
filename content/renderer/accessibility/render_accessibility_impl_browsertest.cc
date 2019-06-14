@@ -225,7 +225,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
       )HTML";
   LoadHTMLAndRefreshAccessibilityTree(html);
 
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
   // If we post another event but the tree doesn't change,
   // we should only send 1 node to the browser.
@@ -243,7 +243,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   }
 
   // If we reload the page and send a event, we should send
-  // all 5 nodes to the browser. Also double-check that we didn't
+  // all 4 nodes to the browser. Also double-check that we didn't
   // leak any of the old BrowserTreeNodes.
   LoadHTML(html);
   document = GetMainFrame()->GetDocument();
@@ -252,7 +252,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   render_accessibility().HandleAXEvent(root_obj,
                                        ax::mojom::Event::kLayoutComplete);
   render_accessibility().SendPendingAccessibilityEvents();
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
   // Even if the first event is sent on an element other than
   // the root, the whole tree should be updated because we know
@@ -265,7 +265,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   render_accessibility().HandleAXEvent(first_child,
                                        ax::mojom::Event::kLiveRegionChanged);
   render_accessibility().SendPendingAccessibilityEvents();
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
 TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
@@ -283,12 +283,11 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
       </body>
       )HTML");
 
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  WebAXObject body = root_obj.ChildAt(0);
-  WebAXObject node_a = body.ChildAt(0);
+  WebAXObject node_a = root_obj.ChildAt(0);
   WebAXObject node_b = node_a.ChildAt(0);
   WebAXObject node_c = node_b.ChildAt(0);
 
@@ -306,13 +305,11 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   AXContentTreeUpdate update = GetLastAccUpdate();
   ASSERT_EQ(2U, update.nodes.size());
 
-  // Since ignored nodes are included in the ax tree with State::kIgnored set,
-  // "C" is NOT reparented, only the changed nodes are re-serialized.
-  // "A" updates because it handled Event::kChildrenChanged
-  // "B" updates because its State::kIgnored has changed
-  EXPECT_EQ(0, update.node_id_to_clear);
+  // RenderAccessibilityImpl notices that "C" is being reparented,
+  // so it clears the subtree rooted at "A", then updates "A" and then "C".
+  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
   EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
-  EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
+  EXPECT_EQ(node_c.AxID(), update.nodes[1].id);
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
@@ -332,14 +329,12 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
       </body>
       )HTML");
 
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  WebAXObject body = root_obj.ChildAt(0);
-  WebAXObject node_a = body.ChildAt(0);
-  WebAXObject node_b = node_a.ChildAt(0);
-  WebAXObject node_c = node_b.ChildAt(0);
+  WebAXObject node_a = root_obj.ChildAt(0);
+  WebAXObject node_c = node_a.ChildAt(0);
 
   // Show node "B", then send a childrenChanged on "A".
   ExecuteJavaScriptForTests(
@@ -348,20 +343,19 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   root_obj.UpdateLayoutAndCheckValidity();
   sink_->ClearMessages();
 
+  WebAXObject node_b = node_a.ChildAt(0);
+
   render_accessibility().HandleAXEvent(node_a,
                                        ax::mojom::Event::kChildrenChanged);
   render_accessibility().SendPendingAccessibilityEvents();
   AXContentTreeUpdate update = GetLastAccUpdate();
 
-  // Since ignored nodes are included in the ax tree with State::kIgnored set,
-  // "C" is NOT reparented, only the changed nodes are re-serialized.
-  // "A" updates because it handled Event::kChildrenChanged
-  // "B" updates because its State::kIgnored has changed
-  ASSERT_EQ(2U, update.nodes.size());
-  EXPECT_EQ(0, update.node_id_to_clear);
+  ASSERT_EQ(3U, update.nodes.size());
+  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
   EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
   EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
-  EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(node_c.AxID(), update.nodes[2].id);
+  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 
 //

@@ -3532,11 +3532,26 @@ bool Element::SupportsSpatialNavigationFocus() const {
   // events).
   if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()))
     return false;
+
+  if (!GetLayoutObject())
+    return false;
+
   if (HasEventListeners(event_type_names::kClick) ||
       HasEventListeners(event_type_names::kKeydown) ||
       HasEventListeners(event_type_names::kKeypress) ||
       HasEventListeners(event_type_names::kKeyup))
     return true;
+
+  // Some web apps use click-handlers to react on clicks within rects that are
+  // styled with {cursor: pointer}. Such rects *look* clickable so they probably
+  // are. Here we make Hand-trees' tip, the first (biggest) node with {cursor:
+  // pointer}, navigable because users shouldn't need to navigate through every
+  // sub element that inherit this CSS.
+  if (GetComputedStyle()->Cursor() == ECursor::kPointer &&
+      ParentComputedStyle()->Cursor() != ECursor::kPointer) {
+    return true;
+  }
+
   if (!IsSVGElement())
     return false;
   return (HasEventListeners(event_type_names::kFocus) ||
@@ -3861,7 +3876,7 @@ Node* Element::InsertAdjacent(const String& where,
                               ExceptionState& exception_state) {
   if (DeprecatedEqualIgnoringCase(where, "beforeBegin")) {
     if (ContainerNode* parent = parentNode()) {
-      parent->InsertBefore(new_child, this, exception_state);
+      parent->insertBefore(new_child, this, exception_state);
       if (!exception_state.HadException())
         return new_child;
     }
@@ -3869,18 +3884,18 @@ Node* Element::InsertAdjacent(const String& where,
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterBegin")) {
-    InsertBefore(new_child, firstChild(), exception_state);
+    insertBefore(new_child, firstChild(), exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
   if (DeprecatedEqualIgnoringCase(where, "beforeEnd")) {
-    AppendChild(new_child, exception_state);
+    appendChild(new_child, exception_state);
     return exception_state.HadException() ? nullptr : new_child;
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterEnd")) {
     if (ContainerNode* parent = parentNode()) {
-      parent->InsertBefore(new_child, nextSibling(), exception_state);
+      parent->insertBefore(new_child, nextSibling(), exception_state);
       if (!exception_state.HadException())
         return new_child;
     }

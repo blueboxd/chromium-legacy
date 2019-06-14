@@ -15,14 +15,14 @@ AccountInfoFetcher::AccountInfoFetcher(
     OAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountFetcherService* service,
-    const std::string& account_id)
+    const CoreAccountId& account_id)
     : OAuth2TokenService::Consumer("gaia_account_tracker"),
       token_service_(token_service),
       url_loader_factory_(std::move(url_loader_factory)),
       service_(service),
       account_id_(account_id) {
   TRACE_EVENT_ASYNC_BEGIN1("AccountFetcherService", "AccountIdFetcher", this,
-                           "account_id", account_id);
+                           "account_id", account_id.id);
 }
 
 AccountInfoFetcher::~AccountInfoFetcher() {
@@ -65,7 +65,7 @@ void AccountInfoFetcher::OnGetUserInfoResponse(
     std::unique_ptr<base::DictionaryValue> user_info) {
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetUserInfoResponse", "account_id",
-                               account_id_);
+                               account_id_.id);
   service_->OnUserInfoFetchSuccess(account_id_, std::move(user_info));
 }
 

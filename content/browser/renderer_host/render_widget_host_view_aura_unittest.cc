@@ -3515,13 +3515,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
         views[i]->GetNativeView(),
         parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
     views[i]->SetSize(view_rect.size());
-#ifdef OS_CHROMEOS
-    viz::SurfaceId surface_id(
-        views[i]->GetFrameSinkId(),
-        views[i]->GetLocalSurfaceIdAllocation().local_surface_id());
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, view_rect.size()));
-#endif
     EXPECT_HAS_FRAME(views[i]);
   }
 
@@ -3634,13 +3627,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
         gfx::Rect());
     views[i]->SetSize(view_rect.size());
     views[i]->Show();
-#ifdef OS_CHROMEOS
-    viz::SurfaceId surface_id(
-        views[i]->GetFrameSinkId(),
-        views[i]->GetLocalSurfaceIdAllocation().local_surface_id());
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, view_rect.size()));
-#endif
     EXPECT_HAS_FRAME(views[i]);
   }
 
@@ -5749,13 +5735,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   viz::LocalSurfaceId id1 =
       view_->GetLocalSurfaceIdAllocation().local_surface_id();
   view_->Hide();
-#ifdef OS_CHROMEOS
-  viz::SurfaceId surface_id(
-      view_->GetFrameSinkId(),
-      view_->GetLocalSurfaceIdAllocation().local_surface_id());
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id, 1.f, gfx::Size(10, 10)));
-#endif
   static_cast<viz::FrameEvictorClient*>(view_->delegated_frame_host_.get())
       ->EvictDelegatedFrame();
   view_->Show();

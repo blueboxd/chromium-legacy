@@ -21,7 +21,6 @@
 class AccountTrackerService;
 
 namespace signin {
-
 class ProfileOAuth2TokenServiceDelegateChromeOS
     : public OAuth2TokenServiceDelegate,
       public chromeos::AccountManager::Observer,
@@ -47,7 +46,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
                        const GoogleServiceAuthError& error) override;
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
-  std::vector<std::string> GetAccounts() override;
+  std::vector<CoreAccountId> GetAccounts() const override;
   void LoadCredentials(const CoreAccountId& primary_account_id) override;
   void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;

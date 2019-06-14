@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "media/gpu/v4l2/v4l2_device.h"
 #include "ui/gfx/geometry/rect.h"
 
 struct v4l2_ext_controls;
@@ -31,8 +32,14 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // that corresponds to this instance.
   // |release_cb| is the callback function that will be called when the instance
   // is destroyed.
+  // DEPRECATED: use the other constructor for new code.
   V4L2DecodeSurface(int input_record,
                     int output_record,
+                    base::OnceClosure release_cb);
+
+  V4L2DecodeSurface(V4L2WritableBufferRef input_buffer,
+                    V4L2WritableBufferRef output_buffer,
+                    scoped_refptr<VideoFrame> frame,
                     base::OnceClosure release_cb);
 
   // Mark the surface as decoded. This will also release all surfaces used for
@@ -64,7 +71,16 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
 
   bool decoded() const { return decoded_; }
   int input_record() const { return input_record_; }
+  V4L2WritableBufferRef& input_buffer() {
+    DCHECK(input_buffer_.IsValid());
+    return input_buffer_;
+  }
   int output_record() const { return output_record_; }
+  V4L2WritableBufferRef& output_buffer() {
+    DCHECK(output_buffer_.IsValid());
+    return output_buffer_;
+  }
+  scoped_refptr<VideoFrame> video_frame() const { return video_frame_; }
   gfx::Rect visible_rect() const { return visible_rect_; }
 
   std::string ToString() const;
@@ -78,8 +94,11 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  private:
   // The index of the corresponding input record.
   const int input_record_;
+  V4L2WritableBufferRef input_buffer_;
   // The index of the corresponding output record.
   const int output_record_;
+  V4L2WritableBufferRef output_buffer_;
+  scoped_refptr<VideoFrame> video_frame_;
   // The visible size of the buffer.
   gfx::Rect visible_rect_;
 
@@ -106,6 +125,17 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
                                base::OnceClosure release_cb)
       : V4L2DecodeSurface(input_record, output_record, std::move(release_cb)),
         config_store_(input_record + 1) {}
+
+  V4L2ConfigStoreDecodeSurface(V4L2WritableBufferRef input_buffer,
+                               V4L2WritableBufferRef output_buffer,
+                               scoped_refptr<VideoFrame> frame,
+                               base::OnceClosure release_cb)
+      : V4L2DecodeSurface(std::move(input_buffer),
+                          std::move(output_buffer),
+                          std::move(frame),
+                          std::move(release_cb)),
+        // config store IDs are arbitrarily defined to be buffer ID + 1
+        config_store_(this->input_buffer().BufferId() + 1) {}
 
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
   void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;

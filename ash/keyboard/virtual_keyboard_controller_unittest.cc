@@ -21,7 +21,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
-#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -49,21 +48,6 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 
   display::Display GetSecondaryDisplay() {
     return Shell::Get()->display_manager()->GetSecondaryDisplay();
-  }
-
-  aura::Window* GetPrimaryRootWindow() { return Shell::GetPrimaryRootWindow(); }
-
-  aura::Window* GetSecondaryRootWindow() {
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-    return root_windows[0] == GetPrimaryRootWindow() ? root_windows[1]
-                                                     : root_windows[0];
-  }
-
-  void CreateFocusedTestWindowInRootWindow(aura::Window* root_window) {
-    // Owned by |root_window|.
-    aura::Window* focusable_window =
-        CreateTestWindowInShellWithBounds(root_window->GetBoundsInScreen());
-    focusable_window->Focus();
   }
 
   keyboard::KeyboardController* keyboard_controller() {
@@ -432,159 +416,6 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
       ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard"));
   ui::DeviceDataManagerTestApi().SetKeyboardDevices(keyboard_devices);
   EXPECT_TRUE(keyboard_controller()->IsEnabled());
-}
-
-// Test for http://crbug.com/297858. |GetContainerForDefaultDisplay| should
-// return the primary display if no display has touch capability and
-// no window is focused.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
-       DefaultContainerInPrimaryDisplayWhenNoDisplayHasTouch) {
-  UpdateDisplay("500x500,500x500");
-
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  EXPECT_EQ(GetPrimaryRootWindow(), GetVirtualKeyboardController()
-                                        ->GetContainerForDefaultDisplay()
-                                        ->GetRootWindow());
-}
-
-// Test for http://crbug.com/297858. |GetContainerForDefaultDisplay| should
-// move keyboard to focused display if no display has touch capability.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
-       DefaultContainerIsInFocusedDisplayWhenNoDisplayHasTouch) {
-  UpdateDisplay("500x500,500x500");
-
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
-  EXPECT_EQ(GetSecondaryRootWindow(), GetVirtualKeyboardController()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
-}
-
-// Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
-// move keyboard to first touchable display when there is one.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
-       DefaultContainerIsInFirstTouchableDisplay) {
-  UpdateDisplay("500x500,500x500");
-
-  // Make secondary display touchable.
-  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-      .SetTouchSupport(GetSecondaryDisplay().id(),
-                       display::Display::TouchSupport::AVAILABLE);
-
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  EXPECT_EQ(GetSecondaryRootWindow(), GetVirtualKeyboardController()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
-}
-
-// Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
-// move keyboard to first touchable display when the focused display is not
-// touchable.
-TEST_F(
-    VirtualKeyboardControllerAlwaysEnabledTest,
-    DefaultContainerIsInFirstTouchableDisplayIfFocusedDisplayIsNotTouchable) {
-  UpdateDisplay("500x500,500x500");
-
-  // Make secondary display touchable.
-  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-      .SetTouchSupport(GetSecondaryDisplay().id(),
-                       display::Display::TouchSupport::AVAILABLE);
-
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  // Focus on primary display.
-  CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
-
-  EXPECT_EQ(GetSecondaryRootWindow(), GetVirtualKeyboardController()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
-}
-
-// Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
-// move keyborad to first touchable display when there is one.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
-       DefaultContainerIsInFocusedDisplayIfTouchable) {
-  UpdateDisplay("500x500,500x500");
-
-  // Make both displays touchable.
-  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-      .SetTouchSupport(GetPrimaryDisplay().id(),
-                       display::Display::TouchSupport::AVAILABLE);
-  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-      .SetTouchSupport(GetSecondaryDisplay().id(),
-                       display::Display::TouchSupport::AVAILABLE);
-
-  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  // Focus on secondary display.
-  CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
-  EXPECT_EQ(GetSecondaryRootWindow(), GetVirtualKeyboardController()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
-
-  // Focus on primary display.
-  CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
-  EXPECT_EQ(GetPrimaryRootWindow(), GetVirtualKeyboardController()
-                                        ->GetContainerForDefaultDisplay()
-                                        ->GetRootWindow());
-}
-
-// Test for http://crbug.com/303429. |GetContainerForDisplay| should move
-// keyboard to specified display even when it's not touchable.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, GetContainerForDisplay) {
-  UpdateDisplay("500x500,500x500");
-
-  // Make primary display touchable.
-  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
-      .SetTouchSupport(GetPrimaryDisplay().id(),
-                       display::Display::TouchSupport::AVAILABLE);
-
-  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
-            GetPrimaryDisplay().touch_support());
-  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
-            GetSecondaryDisplay().touch_support());
-
-  // Move to primary display.
-  EXPECT_EQ(GetPrimaryRootWindow(),
-            GetVirtualKeyboardController()
-                ->GetContainerForDisplay(GetPrimaryDisplay())
-                ->GetRootWindow());
-
-  // Move to secondary display.
-  EXPECT_EQ(GetSecondaryRootWindow(),
-            GetVirtualKeyboardController()
-                ->GetContainerForDisplay(GetSecondaryDisplay())
-                ->GetRootWindow());
-}
-
-// Test for https://crbug.com/897007.
-TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
-       ShowKeyboardInSecondaryDisplay) {
-  UpdateDisplay("500x500,500x500");
-
-  // Show in secondary display.
-  keyboard_controller()->ShowKeyboardInDisplay(GetSecondaryDisplay());
-  EXPECT_EQ(GetSecondaryRootWindow(), keyboard_controller()->GetRootWindow());
-  ASSERT_TRUE(keyboard::WaitUntilShown());
-  EXPECT_TRUE(!keyboard_controller()->GetKeyboardWindow()->bounds().IsEmpty());
 }
 
 }  // namespace ash

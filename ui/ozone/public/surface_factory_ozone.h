@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/gl_ozone.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -65,7 +65,7 @@ class PlatformWindowSurface;
 //
 // The remaining functions are not covered since they are needed in both drawing
 // modes (See comments below for descriptions).
-class OZONE_BASE_EXPORT SurfaceFactoryOzone {
+class COMPONENT_EXPORT(OZONE_BASE) SurfaceFactoryOzone {
  public:
   // Returns a list of allowed GL implementations. The default implementation
   // will be the first item.

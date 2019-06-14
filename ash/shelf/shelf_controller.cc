@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
@@ -116,9 +115,7 @@ ShelfController::ShelfController()
   back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
   model_.Set(0, back_item);
 
-  // Set the delegate and title string for the home button.
-  model_.SetShelfItemDelegate(ShelfID(kAppListId),
-                              std::make_unique<HomeButtonDelegate>());
+  // Set the title string for the home button.
   DCHECK_EQ(1, model_.ItemIndexByID(ShelfID(kAppListId)));
   ShelfItem launcher_item = model_.items()[1];
   launcher_item.title =

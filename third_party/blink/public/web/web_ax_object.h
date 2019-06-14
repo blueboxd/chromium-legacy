@@ -133,7 +133,6 @@ class WebAXObject {
   BLINK_EXPORT bool IsFocused() const;
   BLINK_EXPORT WebAXGrabbedState IsGrabbed() const;
   BLINK_EXPORT bool IsHovered() const;
-  BLINK_EXPORT bool IsLineBreakingObject() const;
   BLINK_EXPORT bool IsLinked() const;
   BLINK_EXPORT bool IsLoaded() const;
   BLINK_EXPORT bool IsModal() const;

@@ -59,6 +59,8 @@ namespace settings {
 
 namespace {
 
+using printing::PrinterQueryResult;
+
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
 enum PpdSourceForHistogram { kUser = 0, kScs = 1, kPpdSourceMax };
@@ -106,7 +108,7 @@ void QueryAutoconf(const std::string& printer_uri,
   // Behavior for querying a non-IPP uri is undefined and disallowed.
   if (!IsIppUri(printer_uri) || !optional.has_value()) {
     PRINTER_LOG(ERROR) << "Printer uri is invalid: " << printer_uri;
-    callback.Run(false, "", "", "", {}, false);
+    callback.Run(PrinterQueryResult::UNKNOWN_FAILURE, "", "", "", {}, false);
     return;
   }
 
@@ -459,7 +461,8 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   if (printer_address.empty()) {
     // Run the failure callback.
-    OnAutoconfQueried(callback_id, false, "", "", "", {}, false);
+    OnAutoconfQueried(callback_id, PrinterQueryResult::UNKNOWN_FAILURE, "", "",
+                      "", {}, false);
     return;
   }
 
@@ -484,12 +487,13 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
 void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     Printer printer,
-    bool success,
+    PrinterQueryResult result,
     const std::string& make,
     const std::string& model,
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
+  const bool success = result == PrinterQueryResult::SUCCESS;
   RecordIppQuerySuccess(success);
 
   if (success) {
@@ -528,13 +532,22 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
 
 void CupsPrintersHandler::OnAutoconfQueried(
     const std::string& callback_id,
-    bool success,
+    PrinterQueryResult result,
     const std::string& make,
     const std::string& model,
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
+  const bool success = result == PrinterQueryResult::SUCCESS;
   RecordIppQuerySuccess(success);
+
+  if (result == PrinterQueryResult::UNREACHABLE) {
+    PRINTER_LOG(DEBUG) << "Could not reach printer";
+    base::DictionaryValue reject;
+    reject.SetString("message", "Unable to reach printer");
+    RejectJavascriptCallback(base::Value(callback_id), reject);
+    return;
+  }
 
   if (!success) {
     PRINTER_LOG(DEBUG) << "Could not query printer";

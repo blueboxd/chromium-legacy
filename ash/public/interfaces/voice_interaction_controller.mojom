@@ -25,12 +25,8 @@ enum VoiceInteractionState {
 enum AssistantAllowedState {
   // Assistant feature is allowed.
   ALLOWED = 0,
-  // Disallowed because ARC++ is disallowed. There could be many specific
-  // reasones why ARC++ is disallowed. This enum is a catch all. Some enums
-  // below will show specific reasons.
-  DISALLOWED_BY_ARC_DISALLOWED,
-  // Disallowed because ARC++ is disabled by policy.
-  DISALLOWED_BY_ARC_POLICY,
+  // Disallowed because search and assistant is disabled by policy.
+  DISALLOWED_BY_POLICY,
   // Disallowed because user's locale is not compatible.
   DISALLOWED_BY_LOCALE,
   // Disallowed because the feature flag is off.

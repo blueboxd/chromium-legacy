@@ -6,9 +6,14 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/async/default.h>
+#include <lib/fdio/directory.h>
+#include <lib/fdio/fd.h>
 #include <lib/fdio/io.h>
 #include <lib/zx/job.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <zircon/processargs.h>
 
 #include <utility>
@@ -17,6 +22,7 @@
 #include "base/base_paths_fuchsia.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
@@ -47,6 +53,31 @@ zx::channel ValidateDirectoryAndTakeChannel(
   return zx::channel();
 }
 
+// Verifies that Vulkan loader service is provided by the specified service
+// directory.
+bool CheckVulkanSupport(
+    const fidl::InterfaceHandle<::fuchsia::io::Directory>& directory_handle,
+    bool* enable_vulkan) {
+  zx::channel dir_channel(fdio_service_clone(directory_handle.channel().get()));
+  if (!dir_channel)
+    return false;
+
+  base::ScopedFD dir_fd;
+  zx_status_t status = fdio_fd_create(dir_channel.release(),
+                                      base::ScopedFD::Receiver(dir_fd).get());
+  if (status != ZX_OK) {
+    ZX_DLOG(ERROR, status) << "fdio_fd_create()";
+    return false;
+  }
+
+  struct stat statbuf;
+  int result =
+      fstatat(dir_fd.get(), "fuchsia.vulkan.loader.Loader", &statbuf, 0);
+  *enable_vulkan = result == 0;
+
+  return true;
+}
+
 }  // namespace
 
 ContextProviderImpl::ContextProviderImpl() = default;
@@ -67,11 +98,22 @@ void ContextProviderImpl::Create(
     return;
   }
 
+  fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory =
+      std::move(*params.mutable_service_directory());
+
+  // Enable Vulkan if the Vulkan loader service is present in the service
+  // directory.
+  bool enable_vulkan = false;
+  if (!CheckVulkanSupport(service_directory, &enable_vulkan)) {
+    // TODO(crbug.com/934539): Add type epitaph.
+    DLOG(WARNING) << "Invalid |service_directory| in CreateContextParams.";
+    return;
+  }
+
   base::LaunchOptions launch_options;
   service_manager::SandboxPolicyFuchsia sandbox_policy;
   sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
-  sandbox_policy.SetServiceDirectory(
-      std::move(*params.mutable_service_directory()));
+  sandbox_policy.SetServiceDirectory(std::move(service_directory));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
   // Transfer the ContextRequest handle to a well-known location in the child
@@ -109,8 +151,9 @@ void ContextProviderImpl::Create(
   }
   launch_options.job_handle = job.get();
 
+  base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
+
   // Connect DevTools listeners to the new Context process.
-  base::CommandLine launch_command(*base::CommandLine::ForCurrentProcess());
   std::vector<zx::channel> devtools_listener_channels;
   if (devtools_listeners_.size() != 0) {
     std::vector<std::string> handles_ids;
@@ -127,6 +170,17 @@ void ContextProviderImpl::Create(
     }
     launch_command.AppendSwitchNative(kRemoteDebuggerHandles,
                                       base::JoinString(handles_ids, ","));
+  }
+
+  // Enable Vulkan when the Vulkan loader service is included in the service
+  // directory.
+  // TODO(https://crbug.com/962617): Enable Vulkan by default and remove this
+  // hack.
+  if (enable_vulkan) {
+    launch_command.AppendSwitchASCII(
+        "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
+    launch_command.AppendSwitch("--use-vulkan");
+    launch_command.AppendSwitchASCII("--use-gl", "stub");
   }
 
   if (launch_for_test_)

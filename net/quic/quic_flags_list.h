@@ -358,3 +358,20 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_use_allocated_connection_ids,
           false)
+
+// If enabled, do not call OnStreamFrame() with empty frame after receiving
+// empty or too large headers with FIN.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_avoid_empty_frame_after_empty_headers,
+          false)
+
+// If true, disable QUIC version 44.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, false)
+
+// If true, ignore TLPR if there is no pending stream data.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
+          true)
+// If true, when detecting losses, use packets_acked of corresponding packet
+// number space.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, false)

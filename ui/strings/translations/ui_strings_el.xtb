@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1409544243779336081">Πρόταση εφαρμογής</translation>
+<translation id="1498028757988366001">Αναζητήσατε αυτόν τον όρο στο παρελθόν. Η διαγραφή του όρου "<ph name="QUERY" />" από το ιστορικό σας θα τον καταργήσει οριστικά από τον λογαριασμό σας σε όλες τις συσκευές σας.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
+<translation id="7430878839542012341">Να διαγραφεί αυτή η αναζήτηση από το ιστορικό σας;</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>

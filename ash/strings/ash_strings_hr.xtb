@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Načine unosa konfigurira administrator.</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1761222317188459878">Prebacivanje mrežne veze. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Pomicanje udesno</translation>
 <translation id="1812997170047690955">Što je na mojem zaslonu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (učitavanje...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Baterija je na <ph name="PERCENTAGE" />% i puni se.</translation>
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4017989525502048489">Laserski pokazivač</translation>
+<translation id="4021716437419160885">Pomakni prema dolje</translation>
 <translation id="4042660782729322247">Dijelite zaslon</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za jednu aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Jak</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="4924411785043111640">Ponovo pokreni i vrati na prethodno</translation>
+<translation id="495046168593986294">Pomakni prema gore</translation>
 <translation id="4961318399572185831">Emitiranje zaslona</translation>
 <translation id="5030687792513154421">Vrijeme je isteklo</translation>
 <translation id="5035236842988137213">Uređaj <ph name="DEVICE_NAME" /> povezan je s novim telefonom</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Da biste preuzeli ažuriranje, ponovo pokrenite Chromebook dok je tipkovnica priključena.</translation>
 <translation id="5992218262414051481">Način visokog kontrasta omogućen je. Ponovo pritisnite Ctrl + Search + H da biste ga isključili.</translation>
 <translation id="6018164090099858612">Izlaz iz zrcalnog načina</translation>
+<translation id="602001110135236999">Pomicanje ulijevo</translation>
+<translation id="6040143037577758943">Zatvori</translation>
 <translation id="6043212731627905357">Ovaj se monitor ne podudara s vašim uređajem <ph name="DEVICE_TYPE" /> (monitor nije podržan).</translation>
 <translation id="6043994281159824495">Odjavi se odmah</translation>
 <translation id="6047696787498798094">Dijeljenje zaslona prekinut će se kad se prebacite na drugog korisnika. Želite li nastaviti?</translation>

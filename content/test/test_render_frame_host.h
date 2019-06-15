@@ -62,6 +62,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderWidgetHost* GetRenderWidgetHost() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
+  void AddUniqueMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+                                 const std::string& message) override;
   bool IsTestRenderFrameHost() const override;
 
   // Public overrides to expose RenderFrameHostImpl's mojo methods to tests.

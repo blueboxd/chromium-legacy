@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
 <translation id="3658159451045945436">Penyetalan ulang akan menghapus histori penyimpanan data, termasuk daftar situs yang dibuka.</translation>
 <translation id="3662546969139119822">Tidak ada histori di sini</translation>
+<translation id="3663367437272849150">Mengelompokkan <ph name="NUM_SELECTED" /> tab.</translation>
 <translation id="3672452749423051839">Saran untuk kesalahan navigasi</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
@@ -466,6 +467,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memerinc
 <translation id="447252321002412580">Bantu sempurnakan fitur dan performa Chrome</translation>
 <translation id="4479647676395637221">Minta izin terlebih dahulu sebelum memungkinkan situs menggunakan kamera Anda (disarankan)</translation>
 <translation id="4479972344484327217">Menginstal <ph name="MODULE" /> untuk Chrome…</translation>
+<translation id="4482194545587547824">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran dan layanan Google lainnya</translation>
 <translation id="4487967297491345095">Semua data aplikasi Chrome akan dihapus secara permanen. Hal ini meliputi semua file, setelan, akun, database, dll.</translation>
 <translation id="4493497663118223949">Mode Ringan aktif</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# hari yang lalu}other{# hari yang lalu}}</translation>
@@ -476,6 +478,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4532845899244822526">Pilih folder</translation>
 <translation id="4538018662093857852">Aktifkan Mode Ringan</translation>
 <translation id="4550003330909367850">Untuk melihat atau menyalin sandi di sini, setel kunci layar di perangkat ini.</translation>
+<translation id="4556110439722119938">Bookmark, histori, sandi, dan setelan lainnya akan disinkronkan ke Akun Google agar Anda dapat menggunakannya di semua perangkat</translation>
 <translation id="4558311620361989323">Pintasan halaman web</translation>
 <translation id="4561979708150884304">Tidak ada koneksi</translation>
 <translation id="4565377596337484307">Sembunyikan sandi</translation>
@@ -630,6 +633,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="557283862590186398">Chrome memerlukan izin akses ke mikrofon untuk situs ini.</translation>
 <translation id="55737423895878184">Lokasi dan notifikasi diizinkan</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tab dikelompokkan</translation>
 <translation id="5581519193887989363">Anda dapat memilih konten apa yang akan disinkronkan di <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> kapan saja.</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
@@ -708,6 +712,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6193448654517602979">Pilih tab</translation>
 <translation id="6194112207524046168">Untuk mengizinkan Chrome mengakses kamera Anda, aktifkan juga kamera di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
@@ -742,7 +747,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="641643625718530986">Cetak...</translation>
 <translation id="6416782512398055893">Terdownload <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Pemilih perangkat yang diajak berbagi ditutup.</translation>
+<translation id="6418750371676080905">Pemilih perangkat yang diajak berbagi tab ditutup.</translation>
 <translation id="6427112570124116297">Terjemahkan Web</translation>
 <translation id="6433501201775827830">Pilih mesin telusur Anda</translation>
 <translation id="6437478888915024427">Info halaman</translation>
@@ -824,6 +829,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
 <translation id="6979737339423435258">Semua</translation>
+<translation id="6980462514016882061">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6985347914332179298">Tidak ada download di sini</translation>
 <translation id="6989267951144302301">Tidak dapat mendownload</translation>
@@ -850,11 +856,13 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7141896414559753902">Blokir situs agar tidak menampilkan pop-up dan pengalihan (disarankan)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Muat halaman asli<ph name="END_LINK" /> dari <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 jam terakhir</translation>
+<translation id="7161892015146974550">Pilih <ph name="TAB_TITLE" /> tab.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Anda dapat mengubah ini nanti di Setelan</translation>
 <translation id="7180611975245234373">Perbarui</translation>
 <translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
+<translation id="722055596168483966">Personalisasi layanan Google</translation>
 <translation id="723171743924126238">Pilih gambar</translation>
 <translation id="7233236755231902816">Untuk melihat web dalam bahasa Anda, dapatkan versi terbaru Chrome</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
@@ -881,6 +889,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7403691278183511381">Pengalaman Penggunaan Pertama Chrome</translation>
 <translation id="741204030948306876">Ya, saya ikut</translation>
 <translation id="7413229368719586778">Tanggal mulai <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Tab grup...</translation>
 <translation id="7423098979219808738">Tanyakan dulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
 <translation id="7431991332293347422">Kontrol cara histori browsing digunakan untuk mempersonalisasi Penelusuran dan lainnya</translation>
@@ -1017,6 +1026,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8339163506404995330">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="8364299278605033898">Lihat situs yang populer</translation>
+<translation id="8364603787714420828">Membatalkan pilihan tab <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8378714024927312812">Dikelola oleh organisasi</translation>
@@ -1082,6 +1092,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Penyimpanan</translation>
 <translation id="8901170036886848654">Tidak ditemukan bookmark</translation>
+<translation id="8904976895050290827">Sinkronisasi Chrome</translation>
 <translation id="8909135823018751308">Bagikan...</translation>
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>

@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">روش‌های ورودی توسط سرپرستتان پیکربندی می‌شوند.</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1761222317188459878">تغییر وضعیت اتصال شبکه. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">پیمایش به راست</translation>
 <translation id="1812997170047690955">چه چیزی در صفحه‌نمایش من نشان داده می‌شود؟</translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">شارژ باتری <ph name="PERCENTAGE" />٪ است و باتری درحال شارژ است.</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
+<translation id="4021716437419160885">پیمایش به پایین</translation>
 <translation id="4042660782729322247">درحال اشتراک‌گذاری صفحه‌تان هستید</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{خاموش برای یک برنامه}one{خاموش برای # برنامه}other{خاموش برای # برنامه}}</translation>
 <translation id="4072264167173457037">سیگنال متوسط</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
+<translation id="495046168593986294">پیمایش به بالا</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5030687792513154421">وقت تمام شد</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> به تلفن جدیدی متصل است</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">‏برای دریافت به‌روزرسانی، Chromebook را با صفحه‌کلید متصل بازراه‌اندازی کنید.</translation>
 <translation id="5992218262414051481">‏«حالت تضاد بالا» فعال شد. برای خاموش کردن آن، Ctrl+Search+H را دوباره فشار دهید.</translation>
 <translation id="6018164090099858612">خروج از حالت آینه</translation>
+<translation id="602001110135236999">پیمایش به چپ</translation>
+<translation id="6040143037577758943">بستن</translation>
 <translation id="6043212731627905357">این نمایشگر با <ph name="DEVICE_TYPE" /> سازگار نیست (نمایشگر پشتیبانی نمی‌شود).</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
 <translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>

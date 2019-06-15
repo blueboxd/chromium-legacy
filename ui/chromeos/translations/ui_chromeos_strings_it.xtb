@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbo</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3855472144336161447">Tastiera Neo 2 tedesca</translation>
+<translation id="3856075812838139784">Sola lettura</translation>
 <translation id="3858678421048828670">Tastiera italiana</translation>
 <translation id="386548886866354912">Comprimi tramite l'estensione <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descrizione</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Data/ora modifica</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Altro...</translation>
+<translation id="4579744207439506346">Elemento <ph name="ENTRY_NAME" /> aggiunto alla selezione,</translation>
 <translation id="4582497162516204941">Installa con Linux (beta)</translation>
 <translation id="4594543368593301662">Risultati visualizzati per <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
@@ -417,6 +419,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5833610766403489739">Il file deve essere altrove. Controlla l'impostazione del percorso di download e riprova.</translation>
 <translation id="5838051104334203064">Le applicazioni del Play Store non possono accedere a questo dispositivo</translation>
+<translation id="5838451609423551646">Tutti gli elementi sono stati rimossi dalla selezione.</translation>
 <translation id="5838825566232597749">Internazionale Workman USA</translation>
 <translation id="5850516540536751549">Questo tipo di file non è supportato. Visita il <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> per trovare un'app in grado di aprire questo tipo di file.
     <ph name="BEGIN_LINK_HELP" />Ulteriori informazioni<ph name="END_LINK_HELP" /></translation>
@@ -490,6 +493,7 @@
 <translation id="6820687829547641339">Archivio tar compresso con gzip</translation>
 <translation id="6825883775269213504">Russo</translation>
 <translation id="6827236167376090743">La riproduzione di questo video continuerà indefinitamente.</translation>
+<translation id="6847101934483209767">L'elemento <ph name="ENTRY_NAME" /> è stato rimosso dalla selezione.</translation>
 <translation id="6862635236584086457">Per tutti i file salvati in questa cartella viene effettuato automaticamente il backup online</translation>
 <translation id="6870130893560916279">Tastiera ucraina</translation>
 <translation id="6876155724392614295">Bicicletta</translation>
@@ -617,6 +621,7 @@
 <translation id="8148264977957212129">Metodo di immissione Pinyin</translation>
 <translation id="8151638057146502721">Configura</translation>
 <translation id="8153607920959057464">Impossibile visualizzare il file.</translation>
+<translation id="8154842056504218462">Sono stati selezionati tutti gli elementi.</translation>
 <translation id="8157684860301034423">Impossibile recuperare le informazioni sull'app.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Tastiera spagnola</translation>
@@ -659,6 +664,7 @@
 <translation id="8686213429977032554">Questo file di Drive non è stato ancora condiviso</translation>
 <translation id="8698464937041809063">Disegno Google</translation>
 <translation id="8714406895390098252">Bicicletta</translation>
+<translation id="8719721339511222681">È stato selezionato l'elemento <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Tastiera internazionale americana</translation>
 <translation id="872537912056138402">Croato</translation>
 <translation id="874420130893181774">Metodo di immissione Pinyin tradizionale</translation>
@@ -699,6 +705,7 @@
 <translation id="942954117721265519">Non ci sono immagini in questa directory.</translation>
 <translation id="943972244133411984">Modificato da</translation>
 <translation id="945522503751344254">Invia feedback</translation>
+<translation id="947144732524271678">È stato selezionato un intervallo di <ph name="ENTRY_COUNT" /> elementi da<ph name="FROM_ENTRY_NAME" /> a <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Esiste già un file chiamato "<ph name="FILE_NAME" />". Vuoi sostituirlo?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

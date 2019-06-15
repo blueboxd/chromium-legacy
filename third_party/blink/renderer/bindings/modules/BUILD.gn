@@ -36,6 +36,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/mediarecorder/blob_event.idl",
     "//third_party/blink/renderer/modules/mediastream/media_stream_event.idl",
     "//third_party/blink/renderer/modules/mediastream/media_stream_track_event.idl",
+    "//third_party/blink/renderer/modules/nfc/nfc_error_event.idl",
     "//third_party/blink/renderer/modules/notifications/notification_event.idl",
     "//third_party/blink/renderer/modules/payments/abort_payment_event.idl",
     "//third_party/blink/renderer/modules/payments/can_make_payment_event.idl",

@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbisch</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3855472144336161447">Deutsch – Neo 2</translation>
+<translation id="3856075812838139784">Schreibgeschützt</translation>
 <translation id="3858678421048828670">Italienische Tastatur</translation>
 <translation id="386548886866354912">Mit <ph name="EXTENSION_NAME" /> packen</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Änderungszeitpunkt</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> wurde zur Auswahl hinzugefügt.</translation>
 <translation id="4582497162516204941">Installation mit Linux (Beta)</translation>
 <translation id="4594543368593301662">Ergebnisse für <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Musiker</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5833610766403489739">Diese Datei kann nicht gefunden werden. Bitte überprüfen Sie Ihre Einstellung für den Downloadspeicherort und versuchen Sie es erneut.</translation>
 <translation id="5838051104334203064">Play Store-Apps können nicht auf dieses Gerät zugreifen</translation>
+<translation id="5838451609423551646">Auswahl aller Einträge wurde aufgehoben.</translation>
 <translation id="5838825566232597749">Internationale US-amerikanische Workman-Tastatur</translation>
 <translation id="5850516540536751549">Dieser Dateityp wird nicht unterstützt. Im <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> können Sie nach einer App suchen, mit der sich dieser Dateityp öffnen lässt.
    <ph name="BEGIN_LINK_HELP" />Weitere Informationen<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip-komprimiertes Tar-Archiv</translation>
 <translation id="6825883775269213504">Russisch</translation>
 <translation id="6827236167376090743">Dieses Video läuft immer weiter und weiter...</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> wurde aus der Auswahl entfernt.</translation>
 <translation id="6862635236584086457">Alle in diesem Ordner gespeicherten Dateien werden automatisch online gesichert.</translation>
 <translation id="6870130893560916279">Ukrainische Tastatur</translation>
 <translation id="6876155724392614295">Fahrrad</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin-Eingabemethode</translation>
 <translation id="8151638057146502721">Konfigurieren</translation>
 <translation id="8153607920959057464">Diese Datei kann nicht angezeigt werden.</translation>
+<translation id="8154842056504218462">Alle Einträge wurden ausgewählt.</translation>
 <translation id="8157684860301034423">Fehler beim Abrufen der App-Informationen.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Spanische Tastatur</translation>
@@ -654,12 +659,13 @@
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> Elemente werden synchronisiert...</translation>
-<translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturbildansicht angezeigt.</translation>
+<translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturansicht angezeigt.</translation>
 <translation id="8669949407341943408">Verschieben...</translation>
 <translation id="8671210955687109937">Darf kommentieren</translation>
 <translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> wurde ausgewählt.</translation>
 <translation id="8722421161699219904">Internationale US-amerikanische Tastatur</translation>
 <translation id="872537912056138402">Kroatisch</translation>
 <translation id="874420130893181774">Traditionelle Pinyin-Eingabemethode</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Dieses Verzeichnis enthält keine Bilder.</translation>
 <translation id="943972244133411984">Geändert von</translation>
 <translation id="945522503751344254">Feedback geben</translation>
+<translation id="947144732524271678">Sie haben <ph name="ENTRY_COUNT" /> Einträge von <ph name="FROM_ENTRY_NAME" /> bis <ph name="TO_ENTRY_NAME" /> ausgewählt.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Eine Datei mit dem Namen "<ph name="FILE_NAME" />" existiert bereits. Möchten Sie sie ersetzen?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

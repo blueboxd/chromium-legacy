@@ -356,18 +356,13 @@ Polymer({
   },
 
   /** @private */
-  onConnectDisconnectTap_: function() {
+  onConnectDisconnectClick_: function() {
     assert(this.networkProperties);
-    if (this.showConnect_(this.networkProperties)) {
-      this.onConnectTap_();
+    if (!this.showConnect_(this.networkProperties)) {
+      this.networkingPrivate.startDisconnect(this.guid);
       return;
     }
 
-    this.onDisconnectTap_();
-  },
-
-  /** @private */
-  onConnectTap_: function() {
     var properties = this.networkProperties;
     this.networkingPrivate.startConnect(properties.GUID, function() {
       if (chrome.runtime.lastError) {
@@ -381,11 +376,6 @@ Polymer({
             ' For: ' + properties.GUID);
       }
     });
-  },
-
-  /** @private */
-  onDisconnectTap_: function() {
-    this.networkingPrivate.startDisconnect(this.guid);
   },
 
   /**

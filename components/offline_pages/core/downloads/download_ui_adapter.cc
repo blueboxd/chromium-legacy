@@ -141,7 +141,7 @@ void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
   // used.
   for (auto& observer : observers_) {
     if (!is_suggested)
-      observer.OnItemUpdated(offline_item);
+      observer.OnItemUpdated(offline_item, base::nullopt);
     else
       observer.OnItemsAdded({offline_item});
   }
@@ -206,7 +206,7 @@ void DownloadUIAdapter::OnCompleted(
     // a fail_state.
     item.fail_state = offline_items_collection::FailState::SERVER_FAILED;
     for (auto& observer : observers_)
-      observer.OnItemUpdated(item);
+      observer.OnItemUpdated(item, base::nullopt);
   }
 }
 
@@ -217,7 +217,7 @@ void DownloadUIAdapter::OnChanged(const SavePageRequest& request) {
 
   OfflineItem offline_item(OfflineItemConversions::CreateOfflineItem(request));
   for (OfflineContentProvider::Observer& observer : observers_)
-    observer.OnItemUpdated(offline_item);
+    observer.OnItemUpdated(offline_item, base::nullopt);
 }
 
 // RequestCoordinator::Observer
@@ -229,7 +229,7 @@ void DownloadUIAdapter::OnNetworkProgress(const SavePageRequest& request,
   OfflineItem offline_item(OfflineItemConversions::CreateOfflineItem(request));
   offline_item.received_bytes = received_bytes;
   for (auto& observer : observers_)
-    observer.OnItemUpdated(offline_item);
+    observer.OnItemUpdated(offline_item, base::nullopt);
 }
 
 void DownloadUIAdapter::GetAllItems(
@@ -360,9 +360,13 @@ void DownloadUIAdapter::OnPageGetForThumbnailAdded(
 
   bool is_suggested =
       model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
+  auto offline_item =
+      OfflineItemConversions::CreateOfflineItem(*page, is_suggested);
+
+  offline_items_collection::UpdateDelta update_delta;
+  update_delta.visuals_changed = true;
   for (auto& observer : observers_)
-    observer.OnItemUpdated(
-        OfflineItemConversions::CreateOfflineItem(*page, is_suggested));
+    observer.OnItemUpdated(offline_item, update_delta);
 }
 
 // TODO(dimich): Remove this method since it is not used currently. If needed,

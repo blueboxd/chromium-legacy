@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="1409544243779336081">Препоръка за приложение</translation>
+<translation id="1498028757988366001">Тази заявка е сред предишните ви търсения. Изтриването на „<ph name="QUERY" />“ от историята ви ще я премахне за постоянно от профила ви на всичките ви устройства.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
 <translation id="1643823602425662293">Известие</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Преди 1 мин}other{Преди # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Остава 1 минута}other{Остават # минути}}</translation>
+<translation id="7430878839542012341">Да се изтрие ли това търсене от историята ви?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Емоджи</translation>
 <translation id="7658239707568436148">Отказ</translation>

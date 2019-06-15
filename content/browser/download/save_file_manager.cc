@@ -241,6 +241,13 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
     request->priority = net::DEFAULT_PRIORITY;
     request->load_flags = net::LOAD_SKIP_CACHE_VALIDATION;
 
+    // To avoid https://crbug.com/974312, downloads initiated by Save-Page-As
+    // should be treated as navigations. This definitely makes sense for the
+    // top-level page (e.g. in SAVE_PAGE_TYPE_AS_ONLY_HTML mode). This is
+    // probably also okay for subresources downloaded in
+    // SAVE_PAGE_TYPE_AS_COMPLETE_HTML mode.
+    request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+
     network::mojom::URLLoaderFactory* factory = nullptr;
     std::unique_ptr<DataURLLoaderFactory> data_url_loader_factory;
 

@@ -209,7 +209,6 @@ class FrameSchedulerImplTest : public testing::Test {
 
   base::test::ScopedFeatureList& scoped_feature_list() { return feature_list_; }
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
@@ -1539,7 +1538,6 @@ class ResourceFetchPriorityExperimentTest : public FrameSchedulerImplTest {
     const char kStudyName[] = "ResourceFetchPriorityExperiment";
     const char kGroupName[] = "GroupName1";
 
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
     base::AssociateFieldTrialParams(kStudyName, kGroupName, params);
     base::FieldTrialList::CreateFieldTrial(kStudyName, kGroupName);
   }
@@ -1574,7 +1572,6 @@ class ResourceFetchPriorityExperimentOnlyWhenLoadingTest
     const char kStudyName[] = "ResourceFetchPriorityExperiment";
     const char kGroupName[] = "GroupName2";
 
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
     base::AssociateFieldTrialParams(kStudyName, kGroupName, params);
     base::FieldTrialList::CreateFieldTrial(kStudyName, kGroupName);
   }
@@ -1748,21 +1745,8 @@ class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {
  public:
   ThrottleAndFreezeTaskTypesExperimentTest(const base::FieldTrialParams& params,
                                            const char* group_name) {
-    const char kStudyName[] = "ThrottleAndFreezeTaskTypes";
-
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kStudyName, group_name);
-
-    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-        kStudyName, group_name, params);
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        kThrottleAndFreezeTaskTypes.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list().InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list().InitAndEnableFeatureWithParameters(
+        kThrottleAndFreezeTaskTypes, params);
   }
 };
 

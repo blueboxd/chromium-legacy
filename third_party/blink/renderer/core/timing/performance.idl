@@ -85,8 +85,7 @@ interface Performance : EventTarget {
     // We use the returned value for feature detection:
     // * L2 API returns null but this is a bug: crbug.com/914441.
     // * L3 API returns the created entry.
-    // Custom User Timing (or User Timing L3) explainer:
-    // https://docs.google.com/document/d/1hltt8z9C4PaI5Qu1YMIp1wOGdbJPJPoJwBarEeCY6xQ/edit#heading=h.ejti6qhmjv0b
+    // https://w3c.github.io/user-timing/#extensions-performance-interface
     [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] PerformanceMeasure? measure(DOMString measureName, optional (DOMString or PerformanceMeasureOptions)? startOrOptions, optional DOMString end);
     [MeasureAs=UserTiming] void clearMeasures(optional DOMString measureName = null);
 

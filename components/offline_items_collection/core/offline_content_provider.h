@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "components/offline_items_collection/core/launch_location.h"
 #include "components/offline_items_collection/core/rename_result.h"
+#include "components/offline_items_collection/core/update_delta.h"
 #include "url/gurl.h"
 
 namespace offline_items_collection {
@@ -88,8 +89,11 @@ class OfflineContentProvider {
     // TODO(dtrainor): Make this take a list of OfflineItems.
     // If Observer maintains a cache of items, the changes may already be
     // applied to the items in the cache, so there is no difference between
-    // items. In this case, this call should be ignored.
-    virtual void OnItemUpdated(const OfflineItem& item) = 0;
+    // items. This can be used in conjunction with the |update_delta| to
+    // determine whether this call should be ignored.
+    virtual void OnItemUpdated(
+        const OfflineItem& item,
+        const base::Optional<UpdateDelta>& update_delta) = 0;
 
    protected:
     virtual ~Observer() = default;

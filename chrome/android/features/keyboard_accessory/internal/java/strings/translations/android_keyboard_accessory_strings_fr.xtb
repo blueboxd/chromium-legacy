@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1492646418094134664">Appuyez ici pour que Chrome remplisse la carte de crédit</translation>
+<translation id="1566281227936819866">Affichage des modes de paiement enregistrés en cours</translation>
 <translation id="2610239185026711824">Suggérer un mot de passe</translation>
 <translation id="2803478378562657435">Affichage des mots de passe enregistrés et des options de mot de passe</translation>
 <translation id="2903493209154104877">Adresses</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Appuyez ici pour que Chrome remplisse le mot de passe</translation>
 <translation id="7299100402441711551">Afficher les adresses</translation>
 <translation id="7494879913343971937">Afficher les mots de passe</translation>
+<translation id="8037472847879765671">Afficher les modes de paiement</translation>
 <translation id="8507520749471379845">Mots de passe disponibles</translation>
 </translationbundle>

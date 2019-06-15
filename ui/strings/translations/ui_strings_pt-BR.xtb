@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1409544243779336081">Recomendação de apps</translation>
+<translation id="1498028757988366001">Você já pesquisou isso. Se você excluir "<ph name="QUERY" />" do seu histórico, essa consulta será permanentemente removida da sua conta em todos os seus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
 <translation id="1643823602425662293">Notificação</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Um minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
+<translation id="7430878839542012341">Excluir essa pesquisa do seu histórico?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
 <translation id="7658239707568436148">Cancelar</translation>

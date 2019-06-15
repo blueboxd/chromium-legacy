@@ -46,10 +46,12 @@ constexpr char const* kTestParams[] = {
     "good_generalizedtime.pem",
     "good_no_version.pem",
     "good_no_crldp.pem",
+    "good_key_rollover.pem",
     "revoked.pem",
     "revoked_no_nextupdate.pem",
     "revoked_fake_crlentryextension.pem",
     "revoked_generalized_revocationdate.pem",
+    "revoked_key_rollover.pem",
     "bad_crldp_has_crlissuer.pem",
     "bad_fake_critical_extension.pem",
     "bad_fake_critical_crlentryextension.pem",
@@ -58,6 +60,7 @@ constexpr char const* kTestParams[] = {
     "bad_thisupdate_too_old.pem",
     "bad_nextupdate_too_old.pem",
     "bad_wrong_issuer.pem",
+    "bad_key_rollover_signature.pem",
     "invalid_mismatched_signature_algorithm.pem",
     "invalid_revoked_empty_sequence.pem",
     "invalid_v1_with_extension.pem",
@@ -65,6 +68,7 @@ constexpr char const* kTestParams[] = {
     "invalid_v1_explicit.pem",
     "invalid_v3.pem",
     "invalid_issuer_keyusage_no_crlsign.pem",
+    "invalid_key_rollover_issuer_keyusage_no_crlsign.pem",
     "invalid_garbage_version.pem",
     "invalid_garbage_tbs_signature_algorithm.pem",
     "invalid_garbage_issuer_name.pem",
@@ -103,10 +107,12 @@ TEST_P(CheckCRLTest, FromFile) {
   base::StringPiece file_name(GetParam());
 
   std::string crl_data;
+  std::string ca_data_2;
   std::string ca_data;
   std::string cert_data;
   const PemBlockMapping mappings[] = {
       {"CRL", &crl_data},
+      {"CA CERTIFICATE 2", &ca_data_2, /*optional=*/true},
       {"CA CERTIFICATE", &ca_data},
       {"CERTIFICATE", &cert_data},
   };
@@ -117,6 +123,13 @@ TEST_P(CheckCRLTest, FromFile) {
   ASSERT_TRUE(cert);
   scoped_refptr<ParsedCertificate> issuer_cert = ParseCertificate(ca_data);
   ASSERT_TRUE(issuer_cert);
+  ParsedCertificateList certs = {cert, issuer_cert};
+  if (!ca_data_2.empty()) {
+    scoped_refptr<ParsedCertificate> issuer_cert_2 =
+        ParseCertificate(ca_data_2);
+    ASSERT_TRUE(issuer_cert_2);
+    certs.push_back(issuer_cert_2);
+  }
 
   // Assumes that all the test data certs have at most 1 CRL distributionPoint.
   // If the cert has a CRL distributionPoint, it is used for verifying the CRL,
@@ -138,15 +151,27 @@ TEST_P(CheckCRLTest, FromFile) {
   base::Time kVerifyTime =
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1489017600);
 
-  CRLRevocationStatus revocation_status =
-      CheckCRL(crl_data, cert.get(), cert_dp, issuer_cert.get(), kVerifyTime,
-               kAgeOneWeek);
-
   CRLRevocationStatus expected_revocation_status = CRLRevocationStatus::UNKNOWN;
   if (file_name.starts_with("good"))
     expected_revocation_status = CRLRevocationStatus::GOOD;
   else if (file_name.starts_with("revoked"))
     expected_revocation_status = CRLRevocationStatus::REVOKED;
+
+  CRLRevocationStatus revocation_status =
+      CheckCRL(crl_data, certs, /*target_cert_index=*/0, cert_dp, kVerifyTime,
+               kAgeOneWeek);
+  EXPECT_EQ(expected_revocation_status, revocation_status);
+
+  // Test with a random cert added to the front of the chain and
+  // |target_cert_index=1|. This is a hacky way to verify that
+  // target_cert_index is actually being honored.
+  ParsedCertificateList other_certs;
+  ASSERT_TRUE(ReadCertChainFromFile("net/data/ssl/certificates/ok_cert.pem",
+                                    &other_certs));
+  ASSERT_FALSE(other_certs.empty());
+  certs.insert(certs.begin(), other_certs[0]);
+  revocation_status = CheckCRL(crl_data, certs, /*target_cert_index=*/1,
+                               cert_dp, kVerifyTime, kAgeOneWeek);
   EXPECT_EQ(expected_revocation_status, revocation_status);
 }
 

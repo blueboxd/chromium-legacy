@@ -26,7 +26,6 @@ struct CompositorFrameMetadata {
   array<SurfaceRange> referenced_surfaces;
   FrameDeadline deadline;
   array<SurfaceId> activation_dependencies;
-  uint32 content_source_id;
   BeginFrameAck begin_frame_ack;
   uint32 frame_token;
   bool send_frame_token_to_embedder;

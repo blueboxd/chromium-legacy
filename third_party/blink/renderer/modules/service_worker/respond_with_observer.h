@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_RESPOND_WITH_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_RESPOND_WITH_OBSERVER_H_
 
-#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

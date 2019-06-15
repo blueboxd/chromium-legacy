@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Способы ввода настраиваются администратором</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1761222317188459878">Изменить настройки сетевого подключения. <ph name="STATE_TEXT" />.</translation>
+<translation id="1771761307086386028">Вправо</translation>
 <translation id="1812997170047690955">Объекты на экране</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Ассистент (загрузка…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Батарея заряжена на <ph name="PERCENTAGE" /> % и подключена к источнику питания.</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
+<translation id="4021716437419160885">Прокрутить вниз</translation>
 <translation id="4042660782729322247">Вы открыли доступ к своему экрану</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Отключить уведомления для 1 приложения}one{Отключить уведомления для # приложения}few{Отключить уведомления для # приложений}many{Отключить уведомления для # приложений}other{Отключить уведомления для # приложения}}</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918086044614829423">Принять</translation>
 <translation id="4924411785043111640">Перезапустить и сбросить настройки</translation>
+<translation id="495046168593986294">Прокрутить вверх</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="5030687792513154421">Время вышло</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Чтобы выполнить обновление, перезагрузите устройство Chromebook, не отключая от него клавиатуру.</translation>
 <translation id="5992218262414051481">Режим высокой контрастности включен. Чтобы отключить его, нажмите CTRL + ПОИСК + H.</translation>
 <translation id="6018164090099858612">Выход из режима трансляции…</translation>
+<translation id="602001110135236999">Влево</translation>
+<translation id="6040143037577758943">Закрыть</translation>
 <translation id="6043212731627905357">Монитор не совместим с устройством <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Выйти</translation>
 <translation id="6047696787498798094">Если перейти к другому пользователю, доступ к экрану будет закрыт. Продолжить?</translation>

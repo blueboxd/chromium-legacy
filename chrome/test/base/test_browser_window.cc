@@ -152,6 +152,10 @@ ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }
 
+ExtensionsContainer* TestBrowserWindow::GetExtensionsContainer() {
+  return nullptr;
+}
+
 content::KeyboardEventProcessingResult
 TestBrowserWindow::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {

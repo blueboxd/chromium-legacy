@@ -112,7 +112,7 @@ crbug.com/840394 [ linux ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailur
 crbug.com/840394 [ mac ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
 
 # TODO(kbr): temporary suppression for new test.
-crbug.com/575305 [ linux ] Pixel_WebGLSadCanvas [ RetryOnFailure ]
+crbug.com/575305 [ linux ] Pixel_WebGLSadCanvas [ Failure ]
 crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ RetryOnFailure ]
 crbug.com/872423 [ mac ] Pixel_WebGLSadCanvas [ Failure ]
 crbug.com/575305 [ android ] Pixel_WebGLSadCanvas [ Skip ]
@@ -174,6 +174,11 @@ crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * 
 
 # Failing on Nexus 5
 crbug.com/957714 [ android qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
+crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [ Failure ]
 
 # Failing on Pixel 2 FYI.
 crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]
+
+# Failing on Linux, both Intel HD 630 and NVIDIA Quadro P400
+crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
+crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]

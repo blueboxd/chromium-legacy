@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbian</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3855472144336161447">German Neo 2</translation>
+<translation id="3856075812838139784">Read only</translation>
 <translation id="3858678421048828670">Italian keyboard</translation>
 <translation id="386548886866354912">Pack with <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Description</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Modified time</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> file</translation>
 <translation id="457386861538956877">More...</translation>
+<translation id="4579744207439506346">Added <ph name="ENTRY_NAME" /> to selection.</translation>
 <translation id="4582497162516204941">Install with Linux (Beta)</translation>
 <translation id="4594543368593301662">Showing results for <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artist</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5833610766403489739">This file has wandered off somewhere. Please check your download location setting and try again.</translation>
 <translation id="5838051104334203064">Play Store applications can't access this device</translation>
+<translation id="5838451609423551646">Removed all entries from selection.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5850516540536751549">This file type is not supported. Please visit the <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> to find an app that can open this type of file.
     <ph name="BEGIN_LINK_HELP" />Learn More<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip compressed tar archive</translation>
 <translation id="6825883775269213504">Russian</translation>
 <translation id="6827236167376090743">This video will keep playing until the cows come home.</translation>
+<translation id="6847101934483209767">Removed <ph name="ENTRY_NAME" /> from selection.</translation>
 <translation id="6862635236584086457">All files saved in this folder are backed up online automatically</translation>
 <translation id="6870130893560916279">Ukrainian keyboard</translation>
 <translation id="6876155724392614295">Cycle</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin input method</translation>
 <translation id="8151638057146502721">Configure</translation>
 <translation id="8153607920959057464">This file could not be displayed.</translation>
+<translation id="8154842056504218462">Selected all entries.</translation>
 <translation id="8157684860301034423">Failed to retrieve app info.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Spanish keyboard</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">This Drive file isn't shared yet</translation>
 <translation id="8698464937041809063">Google drawing</translation>
 <translation id="8714406895390098252">Bicycle</translation>
+<translation id="8719721339511222681">Selected <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">US International keyboard</translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="874420130893181774">Traditional Pinyin input method</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">No images in this directory.</translation>
 <translation id="943972244133411984">Modified by</translation>
 <translation id="945522503751344254">Send feedback</translation>
+<translation id="947144732524271678">Selected a range of <ph name="ENTRY_COUNT" /> entries from <ph name="FROM_ENTRY_NAME" /> to <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">A file named '<ph name="FILE_NAME" />' already exists. Do you want to replace it?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
@@ -58,6 +59,11 @@
 #include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#include "url/url_constants.h"
+#endif
 
 namespace content {
 
@@ -616,7 +622,7 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
   EXPECT_EQ(base::ASCIIToUTF16(ExpectedColorScheme()), tab_title);
 }
 
-IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, WebUIFeatureOverrides) {
+IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
   test_theme_.SetDarkMode(true);
 
   base::test::ScopedFeatureList features;
@@ -624,14 +630,39 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, WebUIFeatureOverrides) {
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
 
-  bool in_dark_mode;  // A default shouldn't matter because of the ASSERT().
+  bool matches;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-      "    window.matchMedia('(prefers-color-scheme: dark)').matches)",
-      &in_dark_mode));
-  EXPECT_EQ(in_dark_mode, GetParam());
+      base::StringPrintf("window.domAutomationController.send(window."
+                         "matchMedia('(prefers-color-scheme: %s)').matches)",
+                         ExpectedColorScheme()),
+      &matches));
+  EXPECT_TRUE(matches);
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
+  test_theme_.SetDarkMode(true);
+
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatureState(features::kWebUIDarkMode, GetParam());
+
+  std::string pdf_extension_url(extensions::kExtensionScheme);
+  pdf_extension_url.append(url::kStandardSchemeSeparator);
+  pdf_extension_url.append(extension_misc::kPdfExtensionId);
+  GURL pdf_index = GURL(pdf_extension_url).Resolve("/index.html");
+  ui_test_utils::NavigateToURL(browser(), pdf_index);
+
+  bool matches;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::StringPrintf("window.domAutomationController.send(window."
+                         "matchMedia('(prefers-color-scheme: %s)').matches)",
+                         ExpectedColorScheme()),
+      &matches));
+  EXPECT_TRUE(matches);
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
 

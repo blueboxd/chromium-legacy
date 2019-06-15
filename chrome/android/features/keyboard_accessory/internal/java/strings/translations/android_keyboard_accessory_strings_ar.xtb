@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1492646418094134664">‏انقر لإدخال بطاقة الائتمان باستخدام Chrome</translation>
+<translation id="1566281227936819866">عرض طرق الدفع المحفوظة</translation>
 <translation id="2610239185026711824">اقتراح كلمة مرور</translation>
 <translation id="2803478378562657435">عرض كلمات المرور المحفوظة وخيارات كلمة المرور</translation>
 <translation id="2903493209154104877">العناوين</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">‏انقر لإدخال كلمة المرور باستخدام Chrome</translation>
 <translation id="7299100402441711551">عرض العناوين</translation>
 <translation id="7494879913343971937">عرض كلمات المرور</translation>
+<translation id="8037472847879765671">يمكنك عرض طرق الدفع.</translation>
 <translation id="8507520749471379845">كلمات المرور متاحة</translation>
 </translationbundle>

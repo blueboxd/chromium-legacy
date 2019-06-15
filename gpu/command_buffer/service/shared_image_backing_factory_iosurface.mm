@@ -550,7 +550,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                           gl_info.type, cleared_rect);
     texture->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get(),
                            gles2::Texture::BOUND);
-    texture->SetImmutable(true);
+    texture->SetImmutable(true, false);
 
     DCHECK_EQ(image->GetInternalFormat(), gl_info.format);
 

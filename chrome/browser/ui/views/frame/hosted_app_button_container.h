@@ -91,6 +91,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // BrowserActionsContainer::Delegate:
   views::LabelButton* GetOverflowReferenceView() override;
   base::Optional<int> GetMaxBrowserActionsWidth() const override;
+  bool CanShowIconInToolbar() const override;
   std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
       ToolbarActionsBarDelegate* delegate,
       Browser* browser,

@@ -265,13 +265,16 @@ void OfflineContentAggregatorBridge::OnItemRemoved(const ContentId& id) {
       ConvertUTF8ToJavaString(env, id.id));
 }
 
-void OfflineContentAggregatorBridge::OnItemUpdated(const OfflineItem& item) {
+void OfflineContentAggregatorBridge::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   if (java_ref_.is_null())
     return;
 
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onItemUpdated(
-      env, java_ref_, OfflineItemBridge::CreateOfflineItem(env, item));
+      env, java_ref_, OfflineItemBridge::CreateOfflineItem(env, item),
+      OfflineItemBridge::CreateUpdateDelta(env, update_delta));
 }
 
 }  // namespace android

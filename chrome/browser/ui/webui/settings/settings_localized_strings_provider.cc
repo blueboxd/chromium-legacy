@@ -2167,6 +2167,9 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"currentPpdMessage",
      IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
     {"printerEulaNotice", IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE},
+    {"ippPrinterUnreachable", IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE},
+    {"generalPrinterDialogError",
+     IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR},
 #else
     {"localPrintersTitle", IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE},
 #endif

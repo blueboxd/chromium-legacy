@@ -59,6 +59,7 @@ namespace http://www.w3.org/1999/xhtml
     property dir
     property dispatchEvent
     property draggable
+    property enterKeyHint
     property firstChild
     property firstElementChild
     property focus

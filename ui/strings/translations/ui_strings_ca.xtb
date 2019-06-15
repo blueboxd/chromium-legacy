@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1409544243779336081">Recomanació d'aplicació</translation>
+<translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
 <translation id="169515659049020177">Maj</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>
+<translation id="7430878839542012341">Vols suprimir aquesta cerca de l'historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

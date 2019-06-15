@@ -13,25 +13,26 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace base {
 namespace test {
 
 // ScopedFeatureList resets the global FeatureList instance to a new empty
-// instance and restores the original instance upon destruction.
+// instance and restores the original instance upon destruction. When using the
+// non-deprecated APIs, a corresponding FieldTrialList is also created.
+//
 // Note: Re-using the same object is not allowed. To reset the feature
 // list and initialize it anew, destroy an existing scoped list and init
 // a new one.
 //
-// ScopedFeatureList needs to be initialized (via one of Init... methods)
-// before running code that inspects the state of features.  In practice this
-// means:
-// - In browser tests, one of Init... methods should be called from the
-//   overriden ::testing::Test::SetUp method. For example:
-//     void SetUp() override {
-//       scoped_feature_list_.InitAndEnableFeature(features::kMyFeatureHere);
-//       InProcessBrowserTest::SetUp();
-//     }
+// ScopedFeatureList needs to be initialized (via one of Init*() methods)
+// before running code that inspects the state of features, such as in the
+// constructor of the test harness.
+//
+// If multiple instances of this class are used in a nested fashion, they
+// should be destroyed in the opposite order of their Init*() methods being
+// called.
 class ScopedFeatureList final {
  public:
   ScopedFeatureList();
@@ -39,8 +40,11 @@ class ScopedFeatureList final {
 
   struct FeatureAndParams {
     const Feature& feature;
-    const std::map<std::string, std::string>& params;
+    const FieldTrialParams& params;
   };
+
+  // Resets the instance to a non-initialized state.
+  void Reset();
 
   // WARNING: This method will reset any globally configured features to their
   // default values, which can hide feature interaction bugs. Please use
@@ -82,7 +86,7 @@ class ScopedFeatureList final {
   // currently one.
   void InitAndEnableFeatureWithParameters(
       const Feature& feature,
-      const std::map<std::string, std::string>& feature_parameters);
+      const FieldTrialParams& feature_parameters);
 
   // Initializes and registers a FeatureList instance based on present
   // FeatureList and overridden with the given enabled features and the
@@ -108,13 +112,12 @@ class ScopedFeatureList final {
   // Any feature overrides already present in the global FeatureList will
   // continue to apply, unless they conflict with the overrides passed into this
   // method.
-  // Field trials will apply to the enabled features, in the same order. The
-  // number of trials must be less (or equal) than the number of enabled
-  // features.
-  // Trials are expected to outlive the ScopedFeatureList.
-  void InitWithFeaturesAndFieldTrials(
+  // Features to enable may be specified through either |enabled_features| or
+  // |enabled_feature_and_params|, but not both (i.e. one of these must be
+  // empty).
+  void InitWithFeaturesImpl(
       const std::vector<Feature>& enabled_features,
-      const std::vector<FieldTrial*>& trials_for_enabled_features,
+      const std::vector<FeatureAndParams>& enabled_features_and_params,
       const std::vector<Feature>& disabled_features);
 
   // Initializes and registers a FeatureList instance based on present
@@ -126,7 +129,8 @@ class ScopedFeatureList final {
 
   bool init_called_ = false;
   std::unique_ptr<FeatureList> original_feature_list_;
-  std::vector<scoped_refptr<FieldTrial>> field_trial_overrides_;
+  base::FieldTrialList* original_field_trial_list_;
+  std::string original_params_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFeatureList);

@@ -25,6 +25,7 @@
 
 // https://svgwg.org/svg2-draft/painting.html#InterfaceSVGMarkerElement
 
+[Exposed=Window]
 interface SVGMarkerElement : SVGElement {
 
     // Marker Unit Types

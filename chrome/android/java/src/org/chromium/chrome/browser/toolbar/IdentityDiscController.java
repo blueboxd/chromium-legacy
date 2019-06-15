@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -123,6 +124,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private void showIdentityDisc(String accountName) {
         Drawable profileImage = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
         mToolbarManager.enableExperimentalButton(view -> {
+            RecordUserAction.record("MobileToolbarIdentityDiscTap");
             PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
         }, profileImage, R.string.accessibility_toolbar_btn_identity_disc);
     }

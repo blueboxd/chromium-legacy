@@ -99,7 +99,7 @@ public class GridTabSwitcherCoordinator
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
-                compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
+                null, compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
                 org.chromium.chrome.tab_ui.R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
 
         HistoryNavigationLayout navigation = compositorViewHolder.findViewById(

@@ -55,68 +55,49 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // waits for the loading to complete within a timeout.
 // Returns nil on success, or else an NSError indicating why the operation
 // failed.
-- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait;
+- (void)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait;
 
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
 // timeout.
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
-// TODO(crbug.com/963613): Change return type to avoid when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)loadURL:(const GURL&)URL;
+- (void)loadURL:(const GURL&)URL;
 
 // Returns YES if the current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
 
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)reload;
+- (void)reload;
 
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goBack;
+- (void)goBack;
 
 // Navigates forward to the next page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goForward;
+- (void)goForward;
 
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForPageToFinishLoading;
+- (void)waitForPageToFinishLoading;
 
 // Waits for the matcher to return an element that is sufficiently visible.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
-    (id<GREYMatcher>)matcher;
+- (void)waitForSufficientlyVisibleElementWithMatcher:(id<GREYMatcher>)matcher;
 
 // Waits for there to be |count| number of non-incognito tabs within a timeout,
 // or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForMainTabCount:(NSUInteger)count;
+- (void)waitForMainTabCount:(NSUInteger)count;
 
 // Waits for there to be |count| number of incognito tabs within a timeout, or a
 // GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForIncognitoTabCount:(NSUInteger)count;
+- (void)waitForIncognitoTabCount:(NSUInteger)count;
 
 #pragma mark - Settings Utilities
 
 // Sets value for content setting.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)setContentSettings:(ContentSetting)setting;
+- (void)setContentSettings:(ContentSetting)setting;
 
 #pragma mark - Sync Utilities
 
@@ -178,43 +159,33 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the collection of URLs that are to be expected for a single window. A
 // GREYAssert is induced on failure. See the SessionsHierarchy class for
 // documentation regarding the verification.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)verifySyncServerURLs:(NSArray<NSString*>*)URLs;
+- (void)verifySyncServerURLs:(NSArray<NSString*>*)URLs;
 
 // Waits until sync server contains |count| entities of the given |type| and
 // |name|. Folders are not included in this count.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
-                                         name:(const std::string&)UTF8Name
-                                        count:(size_t)count
-                                      timeout:(NSTimeInterval)timeout;
+- (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                     name:(const std::string&)UTF8Name
+                                    count:(size_t)count
+                                  timeout:(NSTimeInterval)timeout;
 
 // Induces a GREYAssert if |expected_present| is YES and the provided |url| is
 // not present, or vice versa.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForTypedURL:(const GURL&)URL
-              expectPresent:(BOOL)expectPresent
-                    timeout:(NSTimeInterval)timeout;
+- (void)waitForTypedURL:(const GURL&)URL
+          expectPresent:(BOOL)expectPresent
+                timeout:(NSTimeInterval)timeout;
 
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
 // timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)openNewTab;
+- (void)openNewTab;
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
 // Opens a new incognito tab and waits for the new tab animation to complete.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)openNewIncognitoTab;
+- (void)openNewIncognitoTab;
 
 // Closes all tabs in the current mode (incognito or normal), and waits for the
 // UI to complete. If current mode is Incognito, mode will be switched to
@@ -223,9 +194,7 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Closes all incognito tabs and waits for the UI to complete within a
 // timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)closeAllIncognitoTabs;
+- (void)closeAllIncognitoTabs;
 
 // Closes all tabs in the all modes (incognito and main (non-incognito)), and
 // does not wait for the UI to complete. If current mode is Incognito, mode will
@@ -272,18 +241,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Signs the user out, clears the known accounts entirely and checks whether the
 // accounts were correctly removed from the keychain. Induces a GREYAssert if
 // the operation fails.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)signOutAndClearAccounts;
+- (void)signOutAndClearAccounts;
 
 #pragma mark - Sync Utilities (EG2)
 
 // Waits for sync to be initialized or not. If not succeeded a GREYAssert is
 // induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout;
+- (void)waitForSyncInitialized:(BOOL)isInitialized
+                   syncTimeout:(NSTimeInterval)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -293,67 +258,51 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Taps html element with |elementID| in the current web state.
 // A GREYAssert is induced on failure.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)tapWebStateElementWithID:(NSString*)elementID;
+- (void)tapWebStateElementWithID:(NSString*)elementID;
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the
 // current WebState using a JavaScript click() event. This only works on
 // same-origin iframes.
 // A GREYAssert is induced on failure.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID;
+- (void)tapWebStateElementInIFrameWithID:(const std::string&)elementID;
 
 // Waits for the current web state to contain an element matching |selector|.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+- (void)waitForWebStateContainingElement:(ElementSelector*)selector;
 
 // Attempts to submit form with |formID| in the current WebState.
 // Induces a GREYAssert if the operation fails.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)submitWebStateFormWithID:(const std::string&)formID;
+- (void)submitWebStateFormWithID:(const std::string&)formID;
 
 // Waits for the current web state to contain |UTF8Text|. If the condition is
 // not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateContainingText:(const std::string&)UTF8Text;
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text;
 
 // Waits for there to be no web state containing |UTF8Text|.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
+- (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
 
 // Waits for there to be a web state containing a blocked |imageID|.  When
 // blocked, the image element will be smaller than the actual image size.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
+- (void)waitForWebStateContainingBlockedImageElementWithID:
     (const std::string&)UTF8ImageID;
 
 // Waits for there to be a web state containing loaded image with |imageID|.
 // When loaded, the image element will have the same size as actual image.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
+- (void)waitForWebStateContainingLoadedImageElementWithID:
     (const std::string&)UTF8ImageID;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
 // If the condition is not met within a timeout a GREYAssert is induced.
-- (NSError*)waitForBookmarksToFinishLoading;
+- (void)waitForBookmarksToFinishLoading;
 
 // Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
 // bookmarks can not be cleared.
-- (NSError*)clearBookmarks;
+- (void)clearBookmarks;
 
 #pragma mark - JavaScript Utilities (EG2)
 

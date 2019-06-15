@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1492646418094134664">Täytä credit-kortti Chromesta napauttamalla</translation>
+<translation id="1566281227936819866">Näytetään tallennetut maksutavat</translation>
 <translation id="2610239185026711824">Ehdota salasanaa</translation>
 <translation id="2803478378562657435">Näytetään tallennetut salasanat ja salasana-asetukset</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Täytä salasana Chromesta napauttamalla</translation>
 <translation id="7299100402441711551">Näytä osoitteet</translation>
 <translation id="7494879913343971937">Näytä salasanat</translation>
+<translation id="8037472847879765671">Näytä maksutavat</translation>
 <translation id="8507520749471379845">Käytettävissä ovat salasanat</translation>
 </translationbundle>

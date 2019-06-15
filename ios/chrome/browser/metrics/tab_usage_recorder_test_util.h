@@ -12,11 +12,13 @@
 namespace tab_usage_recorder_test_util {
 
 // Opens a new incognito tab using the UI and evicts any main tab model tabs.
-NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() WARN_UNUSED_RESULT;
+// Returns false on failure.
+bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() WARN_UNUSED_RESULT;
 
 // Switches to normal mode using the tab switcher and selects the
 // previously-selected normal tab. Assumes current mode is Incognito.
-NSError* SwitchToNormalMode() WARN_UNUSED_RESULT;
+// Induces EG assert on failure.
+void SwitchToNormalMode();
 
 }  // namespace tab_usage_recorder_test_util
 

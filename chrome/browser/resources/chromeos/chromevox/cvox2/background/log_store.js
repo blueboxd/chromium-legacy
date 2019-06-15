@@ -217,7 +217,7 @@ LogStore.prototype.clearLog = function() {
 /** @private @return {boolean} */
 LogStore.prototype.shouldSkipOutput_ = function() {
   var ChromeVoxState = chrome.extension.getBackgroundPage()['ChromeVoxState'];
-  if (ChromeVoxState.instance.currentRange &&
+  if (ChromeVoxState.instance && ChromeVoxState.instance.currentRange &&
       ChromeVoxState.instance.currentRange.start &&
       ChromeVoxState.instance.currentRange.start.node &&
       ChromeVoxState.instance.currentRange.start.node.root) {

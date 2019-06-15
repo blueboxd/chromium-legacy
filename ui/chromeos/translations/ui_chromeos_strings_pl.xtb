@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbski</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3855472144336161447">niemiecka klawiatura Neo 2</translation>
+<translation id="3856075812838139784">Tylko do odczytu</translation>
 <translation id="3858678421048828670">Klawiatura włoska</translation>
 <translation id="386548886866354912">Spakuj, używając rozszerzenia <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Opis</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Czas modyfikacji</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
+<translation id="4579744207439506346">Do zaznaczenia dodano element <ph name="ENTRY_NAME" />.</translation>
 <translation id="4582497162516204941">Zainstaluj za pomocą Linuksa (Beta)</translation>
 <translation id="4594543368593301662">Wyświetlam wyniki dla: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Wykonawca</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Zestaw Hangul 3 (ostateczny)</translation>
 <translation id="5833610766403489739">Plik gdzieś się zawieruszył. Sprawdź ustawienie lokalizacji pobierania i spróbuj ponownie.</translation>
 <translation id="5838051104334203064">Aplikacje ze Sklepu Play nie mają dostępu do tego urządzenia</translation>
+<translation id="5838451609423551646">Usunięto wszystkie elementy z zaznaczenia.</translation>
 <translation id="5838825566232597749">Amerykańska klawiatura międzynarodowa Workman</translation>
 <translation id="5850516540536751549">Ten typ plików nie jest obsługiwany. W <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> znajdziesz aplikację umożliwiającą otwieranie plików tego typu.
     <ph name="BEGIN_LINK_HELP" />Więcej informacji<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Archiwum Tar po kompresji Gzip</translation>
 <translation id="6825883775269213504">Rosyjski</translation>
 <translation id="6827236167376090743">Ten film będzie odtwarzany bez końca.</translation>
+<translation id="6847101934483209767">Usunięto z zaznaczenia element <ph name="ENTRY_NAME" />.</translation>
 <translation id="6862635236584086457">Wszystkie pliki przechowywane w tym folderze są automatycznie zapisywane online</translation>
 <translation id="6870130893560916279">Klawiatura ukraińska</translation>
 <translation id="6876155724392614295">Rower</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">pinyin</translation>
 <translation id="8151638057146502721">Konfiguruj</translation>
 <translation id="8153607920959057464">Nie można wyświetlić tego pliku.</translation>
+<translation id="8154842056504218462">Zaznaczono wszystkie elementy.</translation>
 <translation id="8157684860301034423">Nie udało się pobrać informacji o aplikacji.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Klawiatura hiszpańska</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Ten plik na Dysku nie jest jeszcze udostępniany</translation>
 <translation id="8698464937041809063">Rysunek Google</translation>
 <translation id="8714406895390098252">Rower</translation>
+<translation id="8719721339511222681">Zaznaczono element <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Amerykańska klawiatura międzynarodowa</translation>
 <translation id="872537912056138402">Chorwacki</translation>
 <translation id="874420130893181774">Tradycyjna metoda wprowadzania Pinyin</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Brak zdjęć w tym katalogu.</translation>
 <translation id="943972244133411984">Zmodyfikowany przez:</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>
+<translation id="947144732524271678">Zaznaczono zakres <ph name="ENTRY_COUNT" /> elementów. Pierwszy z nich to <ph name="FROM_ENTRY_NAME" />, a ostatni – <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Istnieje już plik „<ph name="FILE_NAME" />”. Czy chcesz go zastąpić?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

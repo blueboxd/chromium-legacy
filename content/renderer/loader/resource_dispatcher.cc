@@ -495,7 +495,6 @@ int ResourceDispatcher::StartAsync(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
-    bool pass_response_pipe_to_peer,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -549,9 +548,6 @@ int ResourceDispatcher::StartAsync(
   std::unique_ptr<URLLoaderClientImpl> client(new URLLoaderClientImpl(
       request_id, this, loading_task_runner,
       url_loader_factory->BypassRedirectChecks(), request->url));
-
-  if (pass_response_pipe_to_peer)
-    client->SetPassResponsePipeToDispatcher(true);
 
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once

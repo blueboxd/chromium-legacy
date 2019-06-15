@@ -1849,7 +1849,6 @@ test("content_unittests") {
     "../renderer/media/stream/media_stream_audio_processor_unittest.cc",
     "../renderer/media/stream/media_stream_audio_unittest.cc",
     "../renderer/media/stream/media_stream_constraints_util_audio_unittest.cc",
-    "../renderer/media/stream/media_stream_constraints_util_video_content_unittest.cc",
     "../renderer/media/stream/media_stream_device_observer_unittest.cc",
     "../renderer/media/stream/media_stream_video_source_unittest.cc",
     "../renderer/media/stream/media_stream_video_track_unittest.cc",

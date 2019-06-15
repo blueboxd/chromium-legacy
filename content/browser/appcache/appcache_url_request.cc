@@ -7,14 +7,6 @@
 
 namespace content {
 
-// static
-std::unique_ptr<AppCacheURLRequest> AppCacheURLRequest::Create(
-    net::URLRequest* url_request) {
-  std::unique_ptr<AppCacheURLRequest> request(
-      new AppCacheURLRequest(url_request));
-  return request;
-}
-
 const GURL& AppCacheURLRequest::GetURL() const {
   return url_request_->url();
 }
@@ -65,6 +57,6 @@ AppCacheURLRequest* AppCacheURLRequest::AsURLRequest() {
 AppCacheURLRequest::AppCacheURLRequest(net::URLRequest* url_request)
     : url_request_(url_request) {}
 
-AppCacheURLRequest::~AppCacheURLRequest() {}
+AppCacheURLRequest::~AppCacheURLRequest() = default;
 
 }  // namespace content

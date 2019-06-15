@@ -449,6 +449,12 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
       Jeśli zasada jest wyłączona lub nieskonfigurowana, użytkownik może zmieniać to ustawienie (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).
       </translation>
 <translation id="1767673020408652620">Włącz rekomendacje aplikacji przy pustym polu wyszukiwania</translation>
+<translation id="17719159826324007">
+      Gdy ta zasada jest ustawiona na ArcSession i uruchomiono Androida, po wylogowaniu użytkownika wymuszane jest ponowne uruchomienie urządzenia.
+      Gdy jest ustawiona na opcję Zawsze, ponowne uruchomienie urządzenia jest wymuszane po każdym wylogowaniu użytkownika.
+      Jeśli zasada jest nieskonfigurowana, nie ma żadnego efektu i po wylogowaniu użytkownika nie jest wymuszane ponowne uruchomienie urządzenia. Tak samo jest, gdy zasada jest ustawiona na opcję Nigdy.
+      Ta zasada działa tylko w przypadku użytkowników z innych domen.
+      </translation>
 <translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji dewelopera Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji dewelopera. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji dewelopera, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="1793346220873697538">Wyłącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
@@ -927,6 +933,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
 <translation id="2693108589792503178">Skonfiguruj adres URL do zmiany hasła.</translation>
+<translation id="2694143893026486692">Lupa zadokowana włączona</translation>
 <translation id="2706708761587205154">Zezwól tylko na drukowanie z kodem PIN</translation>
 <translation id="2710534340210290498">Jeśli ta zasada ma wartość Fałsz, użytkownicy nie mogą blokować ekranu (mogą się tylko wylogować z sesji użytkownika). Jeśli ma wartość Prawda lub nie jest skonfigurowana, użytkownicy, którzy przeprowadzili uwierzytelnianie przy użyciu hasła, mogą zablokować ekran.</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
@@ -1161,6 +1168,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, nie zachodzi zamiana wyszukiwanego hasła.
 
           Ta zasada jest uwzględniania tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Ta zasada pozwala użytkownikom funkcji WebDriver na zastępowanie zasad, które mogą zakłócać działanie tej funkcji.
 
       Obecnie ta zasada wyłącza zasady SitePerProcess i IsolateOrigins.
@@ -1660,12 +1668,6 @@ Uwaga: ta zasada nie ma zastosowania do trybu incognito.</translation>
       Jeśli to ustawienie jest nieskonfigurowane lub wyłączone, urządzenia, na których zainstalowano system <ph name="PRODUCT_OS_NAME" />, automatycznie sprawdzają dostępność aktualizacji.
 
       Ostrzeżenie: zalecanym ustawieniem jest włączenie automatycznych aktualizacji, by użytkownicy otrzymywali aktualizacje oprogramowania i bardzo ważne poprawki zabezpieczeń. Wyłączenie automatycznych aktualizacji może narazić użytkowników na niebezpieczeństwo.</translation>
-<translation id="4018000735882846261">Ta zasada daje Asystentowi Google uprawnienie do nasłuchiwania wyrażenia aktywującego obsługę komend głosowych.
-
-      Gdy ta zasada jest włączona, Asystent Google będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
-      Gdy ta zasada jest wyłączona, Asystent Google nie będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
-      Gdy ta zasada jest nieskonfigurowana, Asystent Google nie będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
-      </translation>
 <translation id="4020682745012723568">Pliki cookie przeniesione do profilu użytkownika nie są dostępne dla aplikacji na Androida.</translation>
 <translation id="402759845255257575">Nie zezwalaj na wykonywanie kodu JavaScript w żadnej witrynie</translation>
 <translation id="4027608872760987929">Włącz usługi domyślnego dostawcy wyszukiwania</translation>

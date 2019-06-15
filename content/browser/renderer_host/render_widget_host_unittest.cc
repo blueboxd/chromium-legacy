@@ -274,6 +274,9 @@ class FakeRenderFrameMetadataObserver
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
   ~FakeRenderFrameMetadataObserver() override {}
 
+#if defined(OS_ANDROID)
+  void ReportAllRootScrollsForAccessibility(bool enabled) override {}
+#endif
   void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
 
  private:
@@ -1362,7 +1365,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
 
-  host_->DidNavigate(100);
+  host_->DidNavigate();
   host_->set_new_content_rendering_delay_for_testing(
       base::TimeDelta::FromMicroseconds(9999));
 
@@ -1371,7 +1374,6 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     auto frame = viz::CompositorFrameBuilder()
                      .AddDefaultRenderPass()
                      .SetBeginFrameAck(viz::BeginFrameAck(0, 1, true))
-                     .SetContentSourceId(99)
                      .Build();
 
     // Mocking |renderer_compositor_frame_sink_| to prevent crashes in
@@ -1396,7 +1398,6 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // Test with a valid content ID as a control.
     auto frame = viz::CompositorFrameBuilder()
                      .AddDefaultRenderPass()
-                     .SetContentSourceId(100)
                      .Build();
     host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                  base::nullopt, 0);
@@ -1411,7 +1412,6 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // the corresponding DidCommitProvisionalLoad (it's a race).
     auto frame = viz::CompositorFrameBuilder()
                      .AddDefaultRenderPass()
-                     .SetContentSourceId(101)
                      .Build();
     host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                  base::nullopt, 0);
@@ -2039,7 +2039,7 @@ TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
   // When visible, navigation does not immediately call into
   // ClearDisplayedGraphics.
   host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
-  host_->DidNavigate(5);
+  host_->DidNavigate();
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
   // Hide then show. ClearDisplayedGraphics must be called.
@@ -2050,7 +2050,7 @@ TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
 
   // Hide, navigate, then show. ClearDisplayedGraphics must be called.
   host_->WasHidden();
-  host_->DidNavigate(6);
+  host_->DidNavigate();
   host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
 }

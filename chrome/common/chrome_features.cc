@@ -134,6 +134,10 @@ const base::Feature kBrowserHangFixesExperiment{
 const base::Feature kBundledConnectionHelpFeature{
     "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the UI to configure caption settings.
+const base::Feature kCaptionSettings{"CaptionSettings",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",
@@ -759,6 +763,17 @@ const base::Feature kWebRtcRemoteEventLog{"WebRtcRemoteEventLog",
 const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
+// UIs implemented with web technologies.
+const base::Feature kWebUIDarkMode {
+  "WebUIDarkMode",
+#if defined(OS_MACOSX) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+};
 
 #if defined(OS_WIN)
 // Enables the accelerated default browser flow for Windows 10.

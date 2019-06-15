@@ -69,6 +69,15 @@ namespace blink {
 
 static constexpr float kStartOpacity = 1;
 
+namespace {
+
+float HighlightTargetOpacity() {
+  // For web tests we don't fade out.
+  return WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0;
+}
+
+}  // namespace
+
 static CompositorElementId NewElementId() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
@@ -103,7 +112,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
   geometry_needs_update_ = true;
 
   EffectPaintPropertyNode::State state;
-  state.opacity = kStartOpacity;
+  state.opacity = HighlightTargetOpacity();
   state.local_transform_space = &TransformPaintPropertyNode::Root();
   state.compositor_element_id = element_id_;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
@@ -355,10 +364,9 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
     curve->AddKeyframe(CompositorFloatKeyframe(
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));
   }
-  // For web tests we don't fade out.
   curve->AddKeyframe(CompositorFloatKeyframe(
       (kFadeDuration + extra_duration_required).InSecondsF(),
-      WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0, timing_function));
+      HighlightTargetOpacity(), timing_function));
 
   auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
       *curve, compositor_target_property::OPACITY, 0, 0);

@@ -424,10 +424,6 @@ void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
 }
 
-void LayerTreeView::SetContentSourceId(uint32_t id) {
-  layer_tree_host_->SetContentSourceId(id);
-}
-
 void LayerTreeView::RequestBeginMainFrameNotExpected(bool new_state) {
   layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
 }

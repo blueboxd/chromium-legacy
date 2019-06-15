@@ -111,12 +111,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // default synchronization deadline specified by the system.
   FrameDeadline deadline;
 
-  // This is a value that allows the browser to associate compositor frames
-  // with the content that they represent -- typically top-level page loads.
-  // TODO(kenrb, fsamuel): This should eventually by SurfaceID, when they
-  // become available in all renderer processes. See https://crbug.com/695579.
-  uint32_t content_source_id = 0;
-
   // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
   BeginFrameAck begin_frame_ack;
 

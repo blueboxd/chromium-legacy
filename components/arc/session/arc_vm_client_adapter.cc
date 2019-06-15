@@ -66,6 +66,8 @@ class ArcVmClientAdapter : public ArcClientAdapter {
                        weak_factory_.GetWeakPtr()));
   }
 
+  void SetUserIdHashForProfile(const std::string& hash) override {}
+
  private:
   void OnArcInstanceStopped(bool result) {
     VLOG(1) << "OnArcInstanceStopped result=" << result;

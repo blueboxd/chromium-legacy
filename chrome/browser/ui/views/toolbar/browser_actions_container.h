@@ -124,6 +124,9 @@ class BrowserActionsContainer : public views::View,
     // empty value means there is no maximum.
     virtual base::Optional<int> GetMaxBrowserActionsWidth() const = 0;
 
+    // Whether the container supports showing extensions outside of the menu.
+    virtual bool CanShowIconInToolbar() const;
+
     // Creates a ToolbarActionsBar for the BrowserActionsContainer to use.
     virtual std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
         ToolbarActionsBarDelegate* delegate,
@@ -225,6 +228,7 @@ class BrowserActionsContainer : public views::View,
   // Overridden from ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
   bool ShownInsideMenu() const override;
+  bool CanShowIconInToolbar() const override;
   void OnToolbarActionViewDragDone() override;
   views::LabelButton* GetOverflowReferenceView() override;
   gfx::Size GetToolbarActionSize() override;

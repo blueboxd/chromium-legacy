@@ -543,9 +543,9 @@ void CupsPrintersHandler::OnAutoconfQueried(
 
   if (result == PrinterQueryResult::UNREACHABLE) {
     PRINTER_LOG(DEBUG) << "Could not reach printer";
-    base::DictionaryValue reject;
-    reject.SetString("message", "Unable to reach printer");
-    RejectJavascriptCallback(base::Value(callback_id), reject);
+    RejectJavascriptCallback(
+        base::Value(callback_id),
+        base::Value(PrinterSetupResult::kPrinterUnreachable));
     return;
   }
 
@@ -553,7 +553,8 @@ void CupsPrintersHandler::OnAutoconfQueried(
     PRINTER_LOG(DEBUG) << "Could not query printer";
     base::DictionaryValue reject;
     reject.SetString("message", "Querying printer failed");
-    RejectJavascriptCallback(base::Value(callback_id), reject);
+    RejectJavascriptCallback(base::Value(callback_id),
+                             base::Value(PrinterSetupResult::kFatalError));
     return;
   }
 

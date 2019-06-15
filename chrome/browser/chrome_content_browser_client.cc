@@ -435,7 +435,6 @@
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/download/available_offline_content_provider.h"
-#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/intercept_oma_download_navigation_throttle.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
@@ -560,6 +559,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -955,9 +955,6 @@ float GetDeviceScaleAdjustment() {
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
 
-void StartDownloadManager(service_manager::mojom::ServiceRequest request) {
-  DownloadManagerService::GetInstance()->BindServiceRequest(std::move(request));
-}
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -3438,13 +3435,21 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
 
-  // Force a light preferred color scheme on chrome:// pages if kWebUIDarkMode
-  // is disabled until all UI is correctly themed and OSes support dark mode.
-  // Note: the WebUI CSS explicitly uses light (instead of not dark), which is
-  // why we don't reset back to no-preference. https://crbug.com/965811
-  if (contents && contents->GetURL().SchemeIs(content::kChromeUIScheme) &&
-      !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
+  // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
+  // explicitly uses light (instead of not dark), which is why we don't reset
+  // back to no-preference. https://crbug.com/965811
+  if (contents && !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    bool force_light = contents->GetURL().SchemeIs(content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (!force_light) {
+      force_light =
+          contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
+          contents->GetURL().host_piece() == extension_misc::kPdfExtensionId;
+    }
+#endif
+    if (force_light)
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
 
   // Apply native CaptionStyle parameters.
@@ -4029,11 +4034,6 @@ void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
             std::move(*receiver)));
     return;
   }
-
-  if (identity.name() == "download_manager") {
-    StartDownloadManager(std::move(*receiver));
-    return;
-  }
 #endif
 
   if (identity.name() == heap_profiling::mojom::kServiceName) {
@@ -4069,14 +4069,6 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
 #endif  // BUILDFLAG(ENABLE_NACL)
 
   return manifests;
-}
-
-std::vector<std::string> ChromeContentBrowserClient::GetStartupServices() {
-#if defined(OS_ANDROID)
-  return {"download_manager"};
-#else
-  return {};
-#endif
 }
 
 void ChromeContentBrowserClient::OpenURL(

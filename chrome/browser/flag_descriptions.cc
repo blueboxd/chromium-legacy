@@ -263,6 +263,10 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
+const char kCaptionSettingsName[] = "Caption Settings";
+const char kCaptionSettingsDescription[] =
+    "Enable the ability to customize captions.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "

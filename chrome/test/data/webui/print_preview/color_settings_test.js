@@ -40,11 +40,13 @@ cr.define('color_settings_test', function() {
       const select = colorSection.$$('select');
       assertEquals('color', select.value);
       assertTrue(colorSection.getSettingValue('color'));
+      assertFalse(colorSection.getSetting('color').setFromUi);
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
       await print_preview_test_utils.selectOption(colorSection, 'bw');
       assertFalse(colorSection.getSettingValue('color'));
+      assertTrue(colorSection.getSetting('color').setFromUi);
     });
 
     if (cr.isChromeOS) {

@@ -52,19 +52,21 @@ void FeedLoggingBridge::OnContentViewed(
     const jint j_position,
     const jlong j_publishedTimeMs,
     const jlong j_timeContentBecameAvailableMs,
-    const jfloat j_score) {
+    const jfloat j_score,
+    const jboolean j_is_available_offline) {
   feed_logging_metrics_->OnSuggestionShown(
       j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score,
-      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs),
+      j_is_available_offline);
 }
 
 void FeedLoggingBridge::OnContentDismissed(JNIEnv* j_env,
                                            const JavaRef<jobject>& j_this,
                                            const jint j_position,
                                            const JavaRef<jstring>& j_url,
-                                           const jboolean was_committed) {
+                                           const jboolean j_was_committed) {
   feed_logging_metrics_->OnSuggestionDismissed(
-      j_position, GURL(ConvertJavaStringToUTF8(j_env, j_url)), was_committed);
+      j_position, GURL(ConvertJavaStringToUTF8(j_env, j_url)), j_was_committed);
 }
 
 void FeedLoggingBridge::OnContentSwiped(JNIEnv* j_env,
@@ -77,9 +79,11 @@ void FeedLoggingBridge::OnClientAction(JNIEnv* j_env,
                                        const jint j_window_open_disposition,
                                        const jint j_position,
                                        const jlong j_publishedTimeMs,
-                                       const jfloat j_score) {
+                                       const jfloat j_score,
+                                       const jboolean j_is_available_offline) {
   feed_logging_metrics_->OnSuggestionOpened(
-      j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score);
+      j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score,
+      j_is_available_offline);
   feed_logging_metrics_->OnSuggestionWindowOpened(
       static_cast<WindowOpenDisposition>(j_window_open_disposition));
 }
@@ -106,18 +110,19 @@ void FeedLoggingBridge::OnMoreButtonClicked(JNIEnv* j_env,
   feed_logging_metrics_->OnMoreButtonClicked(j_position);
 }
 
-void FeedLoggingBridge::OnNotInterestedInSource(JNIEnv* j_env,
-                                                const JavaRef<jobject>& j_this,
-                                                const jint j_position,
-                                                const jboolean was_committed) {
-  feed_logging_metrics_->OnNotInterestedInSource(j_position, was_committed);
+void FeedLoggingBridge::OnNotInterestedInSource(
+    JNIEnv* j_env,
+    const JavaRef<jobject>& j_this,
+    const jint j_position,
+    const jboolean j_was_committed) {
+  feed_logging_metrics_->OnNotInterestedInSource(j_position, j_was_committed);
 }
 
 void FeedLoggingBridge::OnNotInterestedInTopic(JNIEnv* j_env,
                                                const JavaRef<jobject>& j_this,
                                                const jint j_position,
-                                               const jboolean was_committed) {
-  feed_logging_metrics_->OnNotInterestedInTopic(j_position, was_committed);
+                                               const jboolean j_was_committed) {
+  feed_logging_metrics_->OnNotInterestedInTopic(j_position, j_was_committed);
 }
 
 void FeedLoggingBridge::OnOpenedWithContent(JNIEnv* j_env,
@@ -254,14 +259,14 @@ void FeedLoggingBridge::OnTaskFinished(
 void FeedLoggingBridge::OnContentTargetVisited(JNIEnv* j_env,
                                                const JavaRef<jobject>& j_this,
                                                const jlong visit_time_ms,
-                                               const jboolean is_offline,
-                                               const jboolean return_to_ntp) {
-  if (is_offline) {
+                                               const jboolean j_is_offline,
+                                               const jboolean j_return_to_ntp) {
+  if (j_is_offline) {
     feed_logging_metrics_->OnSuggestionOfflinePageVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
+        base::TimeDelta::FromMilliseconds(visit_time_ms), j_return_to_ntp);
   } else {
     feed_logging_metrics_->OnSuggestionArticleVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
+        base::TimeDelta::FromMilliseconds(visit_time_ms), j_return_to_ntp);
   }
 }
 

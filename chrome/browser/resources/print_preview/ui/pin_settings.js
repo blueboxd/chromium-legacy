@@ -145,7 +145,8 @@ Polymer({
 
     // We allow to save the empty string as sticky setting value to give users
     // the opportunity to unset their PIN in sticky settings.
-    if (this.inputValid_ || this.inputString_ == '') {
+    if ((this.inputValid_ || this.inputString_ == '') &&
+        this.inputString_ !== this.getSettingValue('pinValue')) {
       this.setSetting('pinValue', this.inputString_);
     }
   },

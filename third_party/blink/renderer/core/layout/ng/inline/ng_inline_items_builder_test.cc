@@ -31,6 +31,12 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     style_->GetFont().Update(nullptr);
   }
 
+  void TearDown() override {
+    for (LayoutObject* anonymous_object : anonymous_objects_)
+      anonymous_object->Destroy();
+    NGLayoutTest::TearDown();
+  }
+
   void SetWhiteSpace(EWhiteSpace whitespace) {
     style_->SetWhiteSpace(whitespace);
   }

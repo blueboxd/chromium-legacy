@@ -240,6 +240,7 @@
 <translation id="383652340667548381">serbia keel</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3855472144336161447">Saksa Neo 2</translation>
+<translation id="3856075812838139784">Kirjutuskaitstud</translation>
 <translation id="3858678421048828670">Itaalia klaviatuur</translation>
 <translation id="386548886866354912">Paki laiendusega <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Kirjeldus</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Muutmisaeg</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> lisati valikusse.</translation>
 <translation id="4582497162516204941">Installimine Linuxiga (beetaversioon)</translation>
 <translation id="4594543368593301662">Kuvatakse otsingu <ph name="SEARCH_TERM" /> tulemusi.</translation>
 <translation id="4631887759990505102">Esitaja</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hanguli 3. seade (lõplik)</translation>
 <translation id="5833610766403489739">See fail on kuhugi kadunud. Kontrollige allalaadimise asukoha seadet ja proovige uuesti.</translation>
 <translation id="5838051104334203064">Play poe rakendused ei pääse sellele seadmele juurde</translation>
+<translation id="5838451609423551646">Valikust eemaldati kõik kirjed.</translation>
 <translation id="5838825566232597749">USA Workmani rahvusvaheline klaviatuur</translation>
 <translation id="5850516540536751549">Seda failitüüpi ei toetata. Külastage <ph name="BEGIN_LINK" />Chrome'i veebipoodi<ph name="END_LINK" />, et leida rakendus, mis avab seda tüüpi faili.
     <ph name="BEGIN_LINK_HELP" />Lisateave<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzipi tihendatud TAR-arhiiv</translation>
 <translation id="6825883775269213504">vene keel</translation>
 <translation id="6827236167376090743">Seda videot esitatakse seni, kuni lehmad koju jõuavad.</translation>
+<translation id="6847101934483209767">Kirje <ph name="ENTRY_NAME" /> eemaldati valikust.</translation>
 <translation id="6862635236584086457">Kõik sellesse kausta salvestatud failid varundatakse võrgus automaatselt</translation>
 <translation id="6870130893560916279">Ukraina klaviatuur</translation>
 <translation id="6876155724392614295">Jalgratas</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyini sisestusmeetod</translation>
 <translation id="8151638057146502721">Seadista</translation>
 <translation id="8153607920959057464">Faili ei saanud kuvada.</translation>
+<translation id="8154842056504218462">Valiti kõik kirjed.</translation>
 <translation id="8157684860301034423">Rakenduse teabe toomine nurjus.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Hispaania klaviatuur</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Seda Drive'i faili pole veel jagatud</translation>
 <translation id="8698464937041809063">Google joonistus</translation>
 <translation id="8714406895390098252">Jalgratas</translation>
+<translation id="8719721339511222681">Valiti <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">USA rahvusvaheline klaviatuur</translation>
 <translation id="872537912056138402">horvaatia keel</translation>
 <translation id="874420130893181774">Traditsiooniline pinyini sisestusmeetod</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Selles kataloogis pilte pole.</translation>
 <translation id="943972244133411984">Muutja:</translation>
 <translation id="945522503751344254">Saada tagasisidet</translation>
+<translation id="947144732524271678">Valiti <ph name="ENTRY_COUNT" /> kirjet vahemikus <ph name="FROM_ENTRY_NAME" /> kuni <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Võrguühenduseta</translation>
 <translation id="988685240266037636">Fail nimega „<ph name="FILE_NAME" />” on juba olemas. Kas soovite selle asendada?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

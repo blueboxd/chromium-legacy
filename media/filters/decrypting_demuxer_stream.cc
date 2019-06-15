@@ -258,7 +258,6 @@ void DecryptingDemuxerStream::DeliverBuffer(
   DVLOG(3) << __func__ << " - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
-  DCHECK_NE(status, Decryptor::kNeedMoreData);
   DCHECK(read_cb_);
   DCHECK(pending_buffer_to_decrypt_);
   CompletePendingDecrypt(status);
@@ -275,9 +274,10 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
   DCHECK_EQ(status == Decryptor::kSuccess, decrypted_buffer.get() != NULL);
 
-  if (status == Decryptor::kError) {
-    DVLOG(2) << "DoDeliverBuffer() - kError";
-    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decrypt error";
+  if (status == Decryptor::kError || status == Decryptor::kNeedMoreData) {
+    DVLOG(2) << __func__ << ": Error with status " << status;
+    MEDIA_LOG(ERROR, media_log_)
+        << GetDisplayName() << ": decrypt error " << status;
     pending_buffer_to_decrypt_ = NULL;
     state_ = kIdle;
     std::move(read_cb_).Run(kError, nullptr);

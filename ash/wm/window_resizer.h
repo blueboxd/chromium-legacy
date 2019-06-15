@@ -12,6 +12,7 @@
 #include "ash/wm/drag_details.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/wm/public/window_move_client.h"
 
 namespace aura {
@@ -112,6 +113,8 @@ class ASH_EXPORT WindowResizer {
                                       gfx::Rect* new_bounds);
 
   std::unique_ptr<PresentationTimeRecorder> recorder_;
+
+  base::WeakPtrFactory<WindowResizer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowResizer);
 };

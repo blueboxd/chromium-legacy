@@ -1103,6 +1103,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
     Tab* next_active_tab = tab_at(next_active_index);
     Tab* tab_being_removed = tab_at(model_index);
 
+    UpdateIdealBounds();
     int size_delta = tab_being_removed->width();
     if (!tab_being_removed->data().pinned && was_active &&
         GetActiveTabWidth() > GetInactiveTabWidth()) {

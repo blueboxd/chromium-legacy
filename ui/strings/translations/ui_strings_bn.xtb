@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1409544243779336081">অ্যাপের সাজেশন</translation>
+<translation id="1498028757988366001">আপনি এটি আগেও সার্চ করেছেন। ইতিহাস থেকে "<ph name="QUERY" />" সরিয়ে দিলে, আপনার সব ডিভাইসের অ্যাকাউন্ট থেকে সেটি স্থায়ীভাবে মুছে যাবে।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
 <translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{১ মিনিট পূর্বে}one{# মিনিট পূর্বে}other{# মিনিট পূর্বে}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{১ মিনিট বাকি}one{# মিনিট বাকি}other{# মিনিট বাকি}}</translation>
+<translation id="7430878839542012341">এই সার্চ কি ইতিহাস থেকে মুছে দিতে চান?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ইমোজি</translation>
 <translation id="7658239707568436148">বাতিল</translation>

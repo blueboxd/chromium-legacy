@@ -155,6 +155,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    scoped_feature_list_.Reset();
     crostini_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
   }

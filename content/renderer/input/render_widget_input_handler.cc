@@ -159,9 +159,9 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
-    std::vector<const WebInputEvent*> coalesced_events,
-    std::vector<const WebInputEvent*> predicted_events) {
-  std::vector<WebPointerEvent> related_pointer_events;
+    blink::WebVector<const WebInputEvent*> coalesced_events,
+    blink::WebVector<const WebInputEvent*> predicted_events) {
+  blink::WebVector<WebPointerEvent> related_pointer_events;
   for (const WebInputEvent* event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
@@ -169,12 +169,12 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        related_pointer_events.push_back(
+        related_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
     }
   }
-  std::vector<WebPointerEvent> predicted_pointer_events;
+  blink::WebVector<WebPointerEvent> predicted_pointer_events;
   for (const WebInputEvent* event : predicted_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
@@ -182,7 +182,7 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        predicted_pointer_events.push_back(
+        predicted_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
     }

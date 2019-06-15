@@ -45,19 +45,20 @@ namespace blink {
 
 FrameConsole::FrameConsole(LocalFrame& frame) : frame_(&frame) {}
 
-void FrameConsole::AddMessage(ConsoleMessage* console_message) {
-  if (AddMessageToStorage(console_message))
+void FrameConsole::AddMessage(ConsoleMessage* console_message,
+                              bool discard_duplicates) {
+  if (AddMessageToStorage(console_message, discard_duplicates))
     ReportMessageToClient(console_message->Source(), console_message->Level(),
                           console_message->Message(),
                           console_message->Location());
 }
 
-bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message) {
+bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message,
+                                       bool discard_duplicates) {
   if (!frame_->GetDocument() || !frame_->GetPage())
     return false;
-  frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
-      frame_->GetDocument(), console_message);
-  return true;
+  return frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
+      frame_->GetDocument(), console_message, discard_duplicates);
 }
 
 void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,

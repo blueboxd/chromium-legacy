@@ -37,6 +37,7 @@ jumbo_source_set("browser_sources") {
     "android/synchronous_compositor.cc",
     "android/synchronous_compositor.h",
     "android/synchronous_compositor_client.h",
+    "appcache_service.cc",
     "appcache_service.h",
     "audio_loopback_stream_creator.cc",
     "audio_loopback_stream_creator.h",

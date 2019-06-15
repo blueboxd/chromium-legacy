@@ -25,7 +25,7 @@ public interface OfflineContentProvider {
         void onItemRemoved(ContentId id);
 
         /** See OfflineContentProvider::Observer::OnItemUpdated(...). */
-        void onItemUpdated(OfflineItem item);
+        void onItemUpdated(OfflineItem item, UpdateDelta updateDelta);
     }
 
     /** See OfflineContentProvider::OpenItem(...). */

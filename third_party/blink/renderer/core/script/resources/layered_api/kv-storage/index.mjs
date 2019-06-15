@@ -145,7 +145,9 @@ async function performDatabaseOperation(
   const transaction = database.transaction(DEFAULT_IDB_STORE_NAME, mode);
   const store = transaction.objectStore(DEFAULT_IDB_STORE_NAME);
 
-  return steps(transaction, store);
+  const result = steps(transaction, store);
+  transaction.commit();
+  return result;
 }
 
 function initializeDatabasePromise(setPromise, databaseName) {

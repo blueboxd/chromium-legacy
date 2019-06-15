@@ -40,14 +40,14 @@ public class TabGridDialogCoordinator {
 
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
 
-        mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, compositorViewHolder, null, false, R.layout.tab_list_recycler_view_layout,
-                COMPONENT_NAME);
-
         mMediator =
                 new TabGridDialogMediator(context, this::resetWithListOfTabs, mToolbarPropertyModel,
                         tabModelSelector, tabCreatorManager, resetHandler, animationOriginProvider);
+
+        mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
+                tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
+                null, mMediator.getTabGridDialogHandler(), compositorViewHolder, null, false,
+                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
         mParentLayout = new TabGridDialogParent(context, compositorViewHolder);
     }

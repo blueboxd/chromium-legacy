@@ -29,6 +29,7 @@ class VRDisplayImpl;
 
 namespace vr {
 
+class XRRuntimeManager;
 class BrowserXRRuntime;
 
 // The browser-side host for a device::VRDisplayImpl. Controls access to VR
@@ -38,7 +39,8 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   static bool IsXrDeviceConsentPromptDisabledForTesting();
 
   XRDeviceImpl(content::RenderFrameHost* render_frame_host,
-               device::mojom::XRDeviceRequest device_request);
+               device::mojom::XRDeviceRequest device_request,
+               scoped_refptr<XRRuntimeManager> runtime_manager);
   ~XRDeviceImpl() override;
 
   // device::mojom::XRDevice
@@ -110,6 +112,8 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   bool IsSecureContextRequirementSatisfied();
 
   bool in_focused_frame_ = false;
+
+  scoped_refptr<XRRuntimeManager> runtime_manager_;
 
   content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::XRDevice> binding_;

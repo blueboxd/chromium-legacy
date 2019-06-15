@@ -161,8 +161,6 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   void OverrideFieldTrial(int min_visits,
                           double lower_threshold,
                           double upper_threshold) {
-    field_trial_list_.reset();
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 
     std::map<std::string, std::string> params;
@@ -187,7 +185,6 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
 
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Test Mojo serialization.

@@ -453,6 +453,12 @@
       Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).
       </translation>
 <translation id="1767673020408652620">Alkalmazásjavaslatok engedélyezése a keresőmező alapállapotában</translation>
+<translation id="17719159826324007">
+      Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
+      Ha a beállítás értéke Mindig, akkor az eszköz minden felhasználói kijelentkezéskor újraindul.
+      Ha nincs beállítva a házirend, akkor nincs hatása, és nem kényszeríti újraindulásra az eszközt a felhasználói kijelentkezések esetén. Ugyanez érvényes a Soha beállítás esetén is.
+      Ez a házirend csak a nem társult felhasználókat érinti.
+      </translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1793346220873697538">PIN-kóddal való nyomtatás alapértelmezett letiltása</translation>
 <translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
@@ -933,6 +939,7 @@
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
 <translation id="2693108589792503178">A jelszómódosítási URL beállítása.</translation>
+<translation id="2694143893026486692">Dokkolt nagyító engedélyezve</translation>
 <translation id="2706708761587205154">Nyomtatás kizárólag PIN-kód használatával</translation>
 <translation id="2710534340210290498">Ha a házirend beállítása hamis, a felhasználók nem tudják lezárni a képernyőt (csak kijelentkezni tudnak a felhasználói munkamenetből). Ha a beállítás értéke igaz, vagy ha nincs konfigurálva, a jelszóval hitelesített felhasználók zárolhatják a képernyőt.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
@@ -1167,6 +1174,7 @@
           Ez a házirend opcionális. Ha nincs beállítva, a keresési kifejezéseket a rendszer nem cseréli le.
 
           Ezt a házirendet csak akkor veszi figyelembe a rendszer, ha a „DefaultSearchProviderEnabled” házirend engedélyezett.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Ez a házirend lehetővé teszi a WebDriver funkció felhasználóinak, hogy felülbírálják
       azokat a házirendeket, amelyek zavarhatják a működését.
 
@@ -1676,12 +1684,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A <ph name="PRODUCT_OS_NAME" />-eszközök automatikusan ellenőrzik a frissítéseket, ha ez a beállítás nincs konfigurálva, vagy ha hamis értékre van állítva.
 
       Figyelem: Ajánlott bekapcsolva tartani az automatikus frissítéseket, hogy a felhasználók megkapják a szoftverfrissítéseket és a kritikus biztonsági javításokat. Az automatikus frissítés kikapcsolása kockázatot jelenthet a felhasználók számára.</translation>
-<translation id="4018000735882846261">Ez a házirend engedélyezi a Google Segéd számára, hogy figyelje a hangalapú aktiválásra szolgáló kifejezést.
-
-      Ha a házirend engedélyezve van, a Google Segéd figyeli a hangalapú aktiválásra szolgáló kifejezést.
-      Ha a házirend le van tiltva, a Google Segéd nem figyeli a hangalapú aktiválásra szolgáló kifejezést.
-      Ha a házirend nincs beállítva, a Google Segéd nem figyeli a hangalapú aktiválásra szolgáló kifejezést.
-      </translation>
 <translation id="4020682745012723568">A felhasználó profiljába áthelyezett cookie-khoz az Android-alkalmazások nem tudnak hozzáférni.</translation>
 <translation id="402759845255257575">JavaScript futtatásának tiltása minden webhely számára</translation>
 <translation id="4027608872760987929">Alapértelmezett keresési szolgáltató engedélyezése</translation>

@@ -286,15 +286,16 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   HostedAppTest()
       : app_browser_(nullptr),
         app_(nullptr),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {predictors::kSpeculativePreconnectFeature});
+  }
   ~HostedAppTest() override {}
 
   void SetUp() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     app_type_ = GetParam();
-    scoped_feature_list_.InitWithFeatures(
-        {}, {predictors::kSpeculativePreconnectFeature});
 
     extensions::ExtensionBrowserTest::SetUp();
   }

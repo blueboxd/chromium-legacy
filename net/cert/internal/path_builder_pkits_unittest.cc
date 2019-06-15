@@ -48,9 +48,6 @@ class CrlCheckingPathBuilderDelegate : public SimplePathBuilderDelegate {
     const ParsedCertificateList& certs = path->certs;
     for (size_t reverse_i = 0; reverse_i < certs.size(); ++reverse_i) {
       size_t i = certs.size() - reverse_i - 1;
-      const ParsedCertificate* cert = certs[i].get();
-      const ParsedCertificate* issuer_cert =
-          i + 1 < certs.size() ? certs[i + 1].get() : nullptr;
 
       // Trust anchors bypass OCSP/CRL revocation checks. (The only way to
       // revoke trust anchors is via CRLSet or the built-in SPKI blacklist).
@@ -59,12 +56,9 @@ class CrlCheckingPathBuilderDelegate : public SimplePathBuilderDelegate {
 
       bool cert_good = false;
 
-      CHECK(issuer_cert);
-      CHECK(cert->normalized_issuer() == issuer_cert->normalized_subject());
       for (const auto& der_crl : der_crls_) {
-        CRLRevocationStatus crl_status =
-            CheckCRL(der_crl, cert, /*cert_dp=*/nullptr, issuer_cert,
-                     verify_time_, max_age_);
+        CRLRevocationStatus crl_status = CheckCRL(
+            der_crl, certs, i, /*cert_dp=*/nullptr, verify_time_, max_age_);
         if (crl_status == CRLRevocationStatus::REVOKED) {
           path->errors.GetErrorsForCert(i)->AddError(
               cert_errors::kCertificateRevoked);
@@ -124,13 +118,13 @@ class PathBuilderPkitsTestDelegate {
 
     base::StringPiece test_number = info.test_number;
     std::unique_ptr<CertPathBuilderDelegate> path_builder_delegate;
-    if (test_number == "4.4.19" || test_number == "4.6.15" ||
-        test_number == "4.6.17" || test_number == "4.9.6" ||
-        test_number == "4.11.7" || test_number == "4.12.7" ||
-        test_number == "4.12.9" || test_number == "4.13.19") {
-      // TODO(https://crbug.com/749276): extend CRL support: These tests all
-      // require better CRL issuer cert selection / discovery. Disable CRL
-      // checking for them for now.
+    if (test_number == "4.4.19" || test_number == "4.5.3" ||
+        test_number == "4.5.4" || test_number == "4.5.6") {
+      // TODO(https://crbug.com/749276): extend CRL support: These tests
+      // require better CRL issuer cert discovery & path building and/or
+      // issuingDistributionPoint extension handling. Disable CRL checking for
+      // them for now. Maybe should just run these with CRL checking enabled
+      // and expect them to fail?
       path_builder_delegate = std::make_unique<SimplePathBuilderDelegate>(
           1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
     } else {
@@ -183,6 +177,10 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
 INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
                                PkitsTest04BasicCertificateRevocationTests,
                                PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    PathBuilder,
+    PkitsTest05VerifyingPathswithSelfIssuedCertificates,
+    PathBuilderPkitsTestDelegate);
 INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
                                PkitsTest06VerifyingBasicConstraints,
                                PathBuilderPkitsTestDelegate);
@@ -212,9 +210,6 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
                                PathBuilderPkitsTestDelegate);
 
 // TODO(https://crbug.com/749276): extend CRL support?:
-// PkitsTest05VerifyingPathswithSelfIssuedCertificates: requires
-// issuingDistributionPoint CRL extension handling and better CRL issuer cert
-// selection.
 // PkitsTest14DistributionPoints: indirect CRLs and reason codes are not
 // supported.
 // PkitsTest15DeltaCRLs: Delta CRLs are not supported.

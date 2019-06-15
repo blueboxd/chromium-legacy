@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1409544243779336081">Recommandation d'application</translation>
+<translation id="1498028757988366001">Vous avez effectué cette recherche précédemment. Si vous supprimez "<ph name="QUERY" />" de votre historique, cette entrée n'apparaîtra plus dans votre compte sur aucun de vos appareils.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et  }one{# minute et  }other{# minutes et  }}</translation>
 <translation id="1643823602425662293">Notification</translation>
 <translation id="169515659049020177">Maj</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Il y a 1 min}one{Il y a # min}other{Il y a # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute restante}one{# minute restante}other{# minutes restantes}}</translation>
+<translation id="7430878839542012341">Supprimer cette recherche de votre historique ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> To</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Annuler</translation>

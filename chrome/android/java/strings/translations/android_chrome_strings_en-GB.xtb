@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3658159451045945436">Resetting wipes your history of data savings, including the list of visited sites.</translation>
 <translation id="3662546969139119822">No history here</translation>
+<translation id="3663367437272849150">Group <ph name="NUM_SELECTED" /> tabs.</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
@@ -466,6 +467,7 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4479647676395637221">Ask first before allowing sites to use your camera (recommended)</translation>
 <translation id="4479972344484327217">Installing <ph name="MODULE" /> for Chrome…</translation>
+<translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4487967297491345095">All Chrome’s app data will be deleted permanently. This includes all files, settings, accounts, databases, etc.</translation>
 <translation id="4493497663118223949">Lite mode is on</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# day ago}other{# days ago}}</translation>
@@ -476,6 +478,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4538018662093857852">Turn on Lite mode</translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
+<translation id="4556110439722119938">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
 <translation id="4561979708150884304">No connection</translation>
 <translation id="4565377596337484307">Hide password</translation>
@@ -630,6 +633,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
 <translation id="55737423895878184">Location and notifications are allowed</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabs grouped</translation>
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
@@ -708,6 +712,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6193448654517602979">Select tabs</translation>
 <translation id="6194112207524046168">To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
@@ -824,6 +829,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
 <translation id="6979737339423435258">All time</translation>
+<translation id="6980462514016882061">Google may use your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6985347914332179298">No downloads here</translation>
 <translation id="6989267951144302301">Couldn’t download</translation>
@@ -850,11 +856,13 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7141896414559753902">Block sites from showing pop-ups and redirects (recommended)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Load original page<ph name="END_LINK" /> from <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
+<translation id="7161892015146974550">Select <ph name="TAB_TITLE" /> tab.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
+<translation id="722055596168483966">Personalise Google services</translation>
 <translation id="723171743924126238">Select images</translation>
 <translation id="7233236755231902816">To see the web in your language, get the latest version of Chrome</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
@@ -881,6 +889,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7413229368719586778">Start date <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Group tabs...</translation>
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7431991332293347422">Control how your browsing history is used to personalise Search and more</translation>
@@ -1017,6 +1026,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8364299278605033898">See popular websites</translation>
+<translation id="8364603787714420828">Un-select <ph name="TAB_TITLE" /> tab.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>
@@ -1082,6 +1092,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
+<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>

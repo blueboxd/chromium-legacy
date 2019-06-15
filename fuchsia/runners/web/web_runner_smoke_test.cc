@@ -42,6 +42,14 @@ class WebRunnerSmokeTest : public testing::Test {
       http_response->set_content("<!doctype html><img src=\"/img.png\">");
       http_response->set_content_type("text/html");
       return http_response;
+    } else if (absolute_url.path() == "/window_close.html") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+      http_response->set_content(
+          "<!doctype html><script>window.close();</script>");
+      http_response->set_content_type("text/html");
+      return http_response;
     } else if (absolute_url.path() == "/img.png") {
       EXPECT_FALSE(test_image_requested_);
       test_image_requested_ = true;
@@ -66,6 +74,7 @@ class WebRunnerSmokeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebRunnerSmokeTest);
 };
 
+// Verify that the Component loads and fetches the desired page.
 TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
   fuchsia::sys::LaunchInfo launch_info;
   launch_info.url = test_server_.GetURL("/test.html").spec();
@@ -82,6 +91,7 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
   EXPECT_TRUE(test_image_requested_);
 }
 
+// Verify that the Component can be terminated via the Lifecycle API.
 TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
   fidl::InterfaceHandle<fuchsia::io::Directory> directory;
 
@@ -109,6 +119,33 @@ TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
         quit_loop.Run();
       });
   lifecycle->Terminate();
+  loop.Run();
+
+  EXPECT_FALSE(controller);
+}
+
+// Verify that if the Frame disconnects, the Component tears down.
+TEST_F(WebRunnerSmokeTest, ComponentExitOnFrameClose) {
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+
+  fuchsia::sys::LaunchInfo launch_info;
+  launch_info.url = test_server_.GetURL("/window_close.html").spec();
+  launch_info.directory_request = directory.NewRequest().TakeChannel();
+
+  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+                      ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+
+  fuchsia::sys::ComponentControllerPtr controller;
+  launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
+
+  // Script in the page will execute window.close(), which should teardown the
+  // Component, causing |controller| to be disconnected.
+  base::RunLoop loop;
+  controller.set_error_handler(
+      [quit_loop = loop.QuitClosure()](zx_status_t status) {
+        EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+        quit_loop.Run();
+      });
   loop.Run();
 
   EXPECT_FALSE(controller);

@@ -219,12 +219,14 @@ void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
       continue;
     }
 
-    if (DCHECK_IS_ON()) {
+#if DCHECK_IS_ON()
+    {
       ArTrackableType type;
       ArTrackable_getType(arcore_session_.get(), trackable.get(), &type);
       DCHECK(type == ArTrackableType::AR_TRACKABLE_PLANE)
           << "arcore_planes_ contains a trackable that is not an ArPlane!";
     }
+#endif
 
     ArPlane* ar_plane =
         ArAsPlane(trackable.get());  // Naked pointer is fine here, ArAsPlane

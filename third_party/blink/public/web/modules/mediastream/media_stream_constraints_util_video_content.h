@@ -15,17 +15,17 @@ class WebMediaConstraints;
 
 // TODO(crbug.com/704136): Move these helpers out of the Blink exposed API
 // when all users of it have been Onion souped.
-BLINK_EXPORT extern const int kMinScreenCastDimension;
-BLINK_EXPORT extern const int kMaxScreenCastDimension;
-BLINK_EXPORT extern const int kDefaultScreenCastWidth;
-BLINK_EXPORT extern const int kDefaultScreenCastHeight;
+BLINK_MODULES_EXPORT extern const int kMinScreenCastDimension;
+BLINK_MODULES_EXPORT extern const int kMaxScreenCastDimension;
+BLINK_MODULES_EXPORT extern const int kDefaultScreenCastWidth;
+BLINK_MODULES_EXPORT extern const int kDefaultScreenCastHeight;
 
-BLINK_EXPORT extern const double kMaxScreenCastFrameRate;
-BLINK_EXPORT extern const double kDefaultScreenCastFrameRate;
+BLINK_MODULES_EXPORT extern const double kMaxScreenCastFrameRate;
+BLINK_MODULES_EXPORT extern const double kDefaultScreenCastFrameRate;
 
 // This function performs source, source-settings and track-settings selection
 // for content video capture based on the given |constraints|.
-VideoCaptureSettings BLINK_EXPORT
+VideoCaptureSettings BLINK_MODULES_EXPORT
 SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
                                   blink::mojom::MediaStreamType stream_type,
                                   int screen_width,

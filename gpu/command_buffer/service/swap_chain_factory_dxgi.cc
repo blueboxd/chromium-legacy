@@ -349,7 +349,7 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
                           size.height(), 1, 0, gl_format, gl_type,
                           gfx::Rect(size));
     texture->SetLevelImage(target, 0, image.get(), gles2::Texture::BOUND);
-    texture->SetImmutable(true);
+    texture->SetImmutable(true, false);
   }
 
   return std::make_unique<SharedImageBackingDXGISwapChain>(

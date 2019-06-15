@@ -297,7 +297,17 @@ bool SetGaiaCookieForProfile(Profile* profile) {
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
-  BrowsingDataRemoverBrowserTest() {}
+  BrowsingDataRemoverBrowserTest() {
+    std::vector<base::Feature> enabled_features = {
+        leveldb::kLevelDBRewriteFeature,
+        // Ensure that kOnionSoupDOMStorage is enabled because the old
+        // SessionStorage implementation causes flaky tests.
+        blink::features::kOnionSoupDOMStorage};
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+    enabled_features.push_back(media::kExternalClearKeyForTesting);
+#endif
+    feature_list_.InitWithFeatures(enabled_features, {});
+  }
 
   // Call to use an Incognito browser rather than the default.
   void UseIncognitoBrowser() {
@@ -561,21 +571,11 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-
-    std::vector<base::Feature> enabled_features = {
-        leveldb::kLevelDBRewriteFeature,
-        // Ensure that kOnionSoupDOMStorage is enabled because the old
-        // SessionStorage implementation causes flaky tests.
-        blink::features::kOnionSoupDOMStorage};
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     // Testing MediaLicenses requires additional command line parameters as
     // it uses the External Clear Key CDM.
     RegisterClearKeyCdm(command_line);
-    enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif
-
-    feature_list_.InitWithFeatures(enabled_features, {});
   }
 
   base::test::ScopedFeatureList feature_list_;

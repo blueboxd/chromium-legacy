@@ -839,7 +839,7 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
                         size().width(), size().height(), 1, 0, gl_format,
                         gl_type, cleared_rect);
   texture->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
-  texture->SetImmutable(true);
+  texture->SetImmutable(true, false);
   api->glBindTextureFn(target, old_texture_binding);
   DCHECK_EQ(egl_image->GetInternalFormat(), gl_format);
   return texture;

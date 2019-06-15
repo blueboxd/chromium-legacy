@@ -240,6 +240,7 @@
 <translation id="383652340667548381">セルビア語</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3855472144336161447">ドイツ語（Neo 2）</translation>
+<translation id="3856075812838139784">読み取り専用</translation>
 <translation id="3858678421048828670">イタリア語のキーボード</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> を同梱</translation>
 <translation id="3866249974567520381">説明</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">更新日時</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ファイル</translation>
 <translation id="457386861538956877">その他...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> を選択範囲に追加しました。</translation>
 <translation id="4582497162516204941">Linux（ベータ版）でのインストール</translation>
 <translation id="4594543368593301662">「<ph name="SEARCH_TERM" />」の検索結果を表示しています。</translation>
 <translation id="4631887759990505102">アーティスト</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">ハングル（3 ボル式、最終版）</translation>
 <translation id="5833610766403489739">このファイルは移動されています。ダウンロード保存先の設定を確認し、もう一度お試しください。</translation>
 <translation id="5838051104334203064">Play ストアのアプリからこのデバイスにアクセスできません</translation>
+<translation id="5838451609423551646">すべての項目を選択範囲から削除しました。</translation>
 <translation id="5838825566232597749">US Workman インターナショナル</translation>
 <translation id="5850516540536751549">このファイル形式はサポートされていません。<ph name="BEGIN_LINK" />Chrome ウェブストア<ph name="END_LINK" />にアクセスして、この形式のファイルを開くことができるアプリをお探しください。
     <ph name="BEGIN_LINK_HELP" />詳細<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">gzip で圧縮された tar アーカイブ</translation>
 <translation id="6825883775269213504">ロシア語</translation>
 <translation id="6827236167376090743">この動画は繰り返し再生されます。</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> を選択範囲から削除しました。</translation>
 <translation id="6862635236584086457">このフォルダに保存されているすべてのファイルが自動的にオンラインにバックアップされます。</translation>
 <translation id="6870130893560916279">ウクライナ語のキーボード</translation>
 <translation id="6876155724392614295">自転車</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin 入力方法</translation>
 <translation id="8151638057146502721">設定</translation>
 <translation id="8153607920959057464">このファイルは表示できませんでした。</translation>
+<translation id="8154842056504218462">すべての項目を選択しました。</translation>
 <translation id="8157684860301034423">アプリ情報を取得できませんでした。</translation>
 <translation id="8157939133946352716">7×5</translation>
 <translation id="8160015581537295331">スペイン語のキーボード</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">未共有のドライブ ファイル</translation>
 <translation id="8698464937041809063">Google 図形描画</translation>
 <translation id="8714406895390098252">自転車</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> を選択しました。</translation>
 <translation id="8722421161699219904">US（インターナショナル）キーボード</translation>
 <translation id="872537912056138402">クロアチア語</translation>
 <translation id="874420130893181774">繁体字ピンイン入力方法</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">このディレクトリには画像がありません。</translation>
 <translation id="943972244133411984">更新者</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
+<translation id="947144732524271678"><ph name="ENTRY_COUNT" /> 項目を選択しました。範囲の先頭は <ph name="FROM_ENTRY_NAME" />、末尾は <ph name="TO_ENTRY_NAME" /> です。</translation>
 <translation id="981121421437150478">オフライン</translation>
 <translation id="988685240266037636">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。置き換えますか？</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

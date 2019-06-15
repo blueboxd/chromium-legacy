@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 
 class ToolbarActionViewController;
+class ToolbarActionsBarBubbleDelegate;
 
 // An interface for containers in the toolbar that host extensions.
 class ExtensionsContainer {
@@ -48,6 +49,14 @@ class ExtensionsContainer {
   virtual void PopOutAction(ToolbarActionViewController* action,
                             bool is_sticky,
                             const base::Closure& closure) = 0;
+
+  // Displays the given |bubble| once the toolbar is no longer animating.
+  virtual void ShowToolbarActionBubble(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
+
+  // Same as above, but uses PostTask() in all cases.
+  virtual void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_EXTENSIONS_CONTAINER_H_

@@ -9,14 +9,11 @@
 
 namespace content {
 
-// static
-std::unique_ptr<AppCacheURLLoaderRequest> AppCacheURLLoaderRequest::Create(
-    const network::ResourceRequest& request) {
-  return std::unique_ptr<AppCacheURLLoaderRequest>(
-      new AppCacheURLLoaderRequest(request));
-}
+AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
+    const network::ResourceRequest& request)
+    : request_(request), weak_factory_(this) {}
 
-AppCacheURLLoaderRequest::~AppCacheURLLoaderRequest() {}
+AppCacheURLLoaderRequest::~AppCacheURLLoaderRequest() = default;
 
 const GURL& AppCacheURLLoaderRequest::GetURL() const {
   return request_.url;
@@ -88,9 +85,5 @@ void AppCacheURLLoaderRequest::UpdateWithRedirectInfo(
   request_.referrer_policy = redirect_info.new_referrer_policy;
   request_.site_for_cookies = redirect_info.new_site_for_cookies;
 }
-
-AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
-    const network::ResourceRequest& request)
-    : request_(request), weak_factory_(this) {}
 
 }  // namespace content

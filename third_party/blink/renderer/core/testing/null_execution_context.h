@@ -52,7 +52,8 @@ class NullExecutionContext
     return base::UnguessableToken::Null();
   }
 
-  void AddConsoleMessage(ConsoleMessage*) override {}
+  void AddConsoleMessageImpl(ConsoleMessage*,
+                             bool discard_duplicates) override {}
   void ExceptionThrown(ErrorEvent*) override {}
 
   void SetIsSecureContext(bool);

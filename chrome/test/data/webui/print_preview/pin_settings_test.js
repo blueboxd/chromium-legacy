@@ -37,22 +37,26 @@ cr.define('pin_settings_test', function() {
       assertFalse(checkbox.checked);
       assertFalse(collapse.opened);
       assertFalse(pinSection.getSettingValue('pin'));
+      assertFalse(pinSection.getSetting('pin').setFromUi);
       assertEquals('', pinSection.getSettingValue('pinValue'));
 
       checkbox.checked = true;
       checkbox.dispatchEvent(new CustomEvent('change'));
       assertTrue(collapse.opened);
       assertTrue(pinSection.getSettingValue('pin'));
+      assertTrue(pinSection.getSetting('pin').setFromUi);
       assertEquals('', pinSection.getSettingValue('pinValue'));
 
       const input = pinSection.$$('cr-input');
       assertEquals('', input.value);
+      assertFalse(pinSection.getSetting('pinValue').setFromUi);
 
       // Verify that entering the pin value in the input sets the setting.
       await print_preview_test_utils.triggerInputEvent(
           input, '0000', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('0000', pinSection.getSettingValue('pinValue'));
+      assertTrue(pinSection.getSetting('pinValue').setFromUi);
       assertEquals(true, pinSection.getSetting('pinValue').valid);
     });
 

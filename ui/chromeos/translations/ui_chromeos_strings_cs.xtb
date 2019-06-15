@@ -240,6 +240,7 @@
 <translation id="383652340667548381">srbština</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3855472144336161447">Německá klávesnice Neo 2</translation>
+<translation id="3856075812838139784">Pouze ke čtení</translation>
 <translation id="3858678421048828670">Italská klávesnice</translation>
 <translation id="386548886866354912">Zabalit pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Popis</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Čas změny</translation>
 <translation id="4572815280350369984">Soubor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Další...</translation>
+<translation id="4579744207439506346">Do výběru byla přidána položka <ph name="ENTRY_NAME" />.</translation>
 <translation id="4582497162516204941">Instalovat pomocí Linuxu (beta)</translation>
 <translation id="4594543368593301662">Zobrazují se výsledky pro dotaz <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Interpret</translation>
@@ -417,6 +419,7 @@
 <translation id="5819442873484330149">Hangul – 3 sady (finální)</translation>
 <translation id="5833610766403489739">Soubor ve spravovaných umístěních nebyl nalezen. Zkontrolujte prosím nastavení umístění stažených souborů a zkuste to znovu.</translation>
 <translation id="5838051104334203064">Aplikace z Obchodu Play k tomuto zařízení nemají přístup</translation>
+<translation id="5838451609423551646">Z výběru byly odstraněny všechny položky.</translation>
 <translation id="5838825566232597749">Americká mezinárodní klávesnice s rozložením Workman</translation>
 <translation id="5850516540536751549">Tento typ souboru není podporován. Aplikaci, pomocí které lze tento typ souboru otevřít, naleznete v <ph name="BEGIN_LINK" />Internetovém obchodu Chrome<ph name="END_LINK" />.
     <ph name="BEGIN_LINK_HELP" />Další informace<ph name="END_LINK_HELP" /></translation>
@@ -490,6 +493,7 @@
 <translation id="6820687829547641339">Archiv ve formátu Tar komprimovaný metodou Gzip</translation>
 <translation id="6825883775269213504">ruština</translation>
 <translation id="6827236167376090743">Toto video se bude přehrávat až do skonání času.</translation>
+<translation id="6847101934483209767">Položka <ph name="ENTRY_NAME" /> byla odebrána z výběru.</translation>
 <translation id="6862635236584086457">Všechny soubory uložené v této složce se automaticky zálohují online</translation>
 <translation id="6870130893560916279">Ukrajinská klávesnice</translation>
 <translation id="6876155724392614295">Kolo</translation>
@@ -617,6 +621,7 @@
 <translation id="8148264977957212129">Metoda zadávání textu Pinyin</translation>
 <translation id="8151638057146502721">Konfigurovat</translation>
 <translation id="8153607920959057464">Soubor nelze zobrazit.</translation>
+<translation id="8154842056504218462">Vybrali jste všechny položky.</translation>
 <translation id="8157684860301034423">Informace o aplikaci se nepodařilo načíst.</translation>
 <translation id="8157939133946352716">7:5</translation>
 <translation id="8160015581537295331">Španělská klávesnice</translation>
@@ -659,6 +664,7 @@
 <translation id="8686213429977032554">Tento soubor na Disku dosud není sdílen</translation>
 <translation id="8698464937041809063">Nákres Google</translation>
 <translation id="8714406895390098252">Kolo</translation>
+<translation id="8719721339511222681">Vybrali jste položku <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Mezinárodní americká klávesnice</translation>
 <translation id="872537912056138402">chorvatština</translation>
 <translation id="874420130893181774">Metoda zadávání textu tradiční Pchin-jin</translation>
@@ -699,6 +705,7 @@
 <translation id="942954117721265519">Adresář neobsahuje žádné obrázky.</translation>
 <translation id="943972244133411984">Upravil(a)</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
+<translation id="947144732524271678">Vybrali jste položky <ph name="FROM_ENTRY_NAME" /> až <ph name="TO_ENTRY_NAME" /> (celkem <ph name="ENTRY_COUNT" />).</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Soubor s názvem „<ph name="FILE_NAME" />“ již existuje. Chcete jej nahradit?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

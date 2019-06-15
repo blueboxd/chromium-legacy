@@ -44,7 +44,7 @@ void ContentCaptureTask::Shutdown() {
   local_frame_root_ = nullptr;
 }
 
-bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
+bool ContentCaptureTask::CaptureContent(Vector<cc::NodeHolder>& data) {
   if (captured_content_for_testing_) {
     data = captured_content_for_testing_.value();
     return true;
@@ -53,8 +53,15 @@ bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
   // lifecycle step so we need to early-out in many cases.
   if (const auto* root_frame_view = local_frame_root_->View()) {
     if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
-      if (auto* layer_tree_host = cc_layer->layer_tree_host())
-        return layer_tree_host->CaptureContent(&data);
+      if (auto* layer_tree_host = cc_layer->layer_tree_host()) {
+        std::vector<cc::NodeHolder> content;
+        if (layer_tree_host->CaptureContent(&content)) {
+          for (auto c : content)
+            data.push_back(std::move(c));
+          return true;
+        }
+        return false;
+      }
     }
   }
   return false;
@@ -62,13 +69,13 @@ bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
 
 bool ContentCaptureTask::CaptureContent() {
   DCHECK(task_session_);
-  std::vector<cc::NodeHolder> buffer;
+  Vector<cc::NodeHolder> buffer;
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentEnded(buffer.size());
-  if (!buffer.empty())
+  if (!buffer.IsEmpty())
     task_session_->SetCapturedContent(buffer);
   return result;
 }
@@ -82,7 +89,7 @@ void ContentCaptureTask::SendContent(
 
   if (histogram_reporter_)
     histogram_reporter_->OnSendContentStarted();
-  std::vector<scoped_refptr<WebContentHolder>> content_batch;
+  WebVector<scoped_refptr<WebContentHolder>> content_batch;
   content_batch.reserve(kBatchSize);
   // Only send changed content after the new content was sent.
   bool sending_changed_content = !doc_session.HasUnsentCapturedContent();
@@ -94,7 +101,7 @@ void ContentCaptureTask::SendContent(
       content_holder = doc_session.GetNextUnsentContentHolder();
     if (!content_holder)
       break;
-    content_batch.push_back(
+    content_batch.emplace_back(
         base::MakeRefCounted<WebContentHolder>(content_holder));
   }
   if (!content_batch.empty()) {

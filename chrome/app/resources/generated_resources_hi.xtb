@@ -228,7 +228,6 @@
 <translation id="1330145147221172764">ऑन-स्क्रीन कीबोर्ड चालू करें</translation>
 <translation id="1331977651797684645">यह मैं ही था/थी.</translation>
 <translation id="133535873114485416">पसंदीदा इनपुट</translation>
-<translation id="1337692097987160377">इस टैब को शेयर करें</translation>
 <translation id="1338950911836659113">हटाए जा रहे हैं...</translation>
 <translation id="1340527397989195812">फ़ाइल ऐप्लिकेशन का उपयोग करके डिवाइस से मीडिया का बैक अप लें.</translation>
 <translation id="1341988552785875222">वर्तमान वॉलपेपर '<ph name="APP_NAME" />' द्वारा सेट किया गया है. भिन्न वॉलपेपर चुनने से पहले आपको '<ph name="APP_NAME" />' को अनइंस्टॉल करने की आवश्यकता हो सकती है.</translation>
@@ -528,6 +527,7 @@
 <translation id="1781502536226964113">'नया टैब' पेज खोलें</translation>
 <translation id="1781771911845953849">खाते और सिंक</translation>
 <translation id="1782196717298160133">आपका फ़ोन ढूंढा जा रहा है</translation>
+<translation id="1784707308176068866">सहयोगी स्थानीय ऐप्लिकेशन की ओर से अनुरोध किए जाने पर बैकग्राउंड में चलाएं</translation>
 <translation id="1784849162047402014">डिवाइस पर डिस्क स्पेस कम है</translation>
 <translation id="1790194216133135334">यह लिंक <ph name="DEVICE_NAME" /> पर भेजें</translation>
 <translation id="1792619191750875668">बढ़ाया हुआ डिसप्ले</translation>
@@ -536,6 +536,7 @@
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" एक्सटेंशन अपने आप अक्षम हो गया था.</translation>
 <translation id="1802687198411089702">पेज काम नहीं कर रहा है. आप इंतज़ार कर सकते हैं या बाहर निकल सकते हैं.</translation>
 <translation id="1802931390041703523">इस पेज पर फ़्लैश ब्लॉक कर दिया गया था</translation>
+<translation id="1803531841600994172">वह भाषा जिसमें अनुवाद करना है</translation>
 <translation id="1803545009660609783">फिर से सिखाएं</translation>
 <translation id="1805472176602625930">'सुरक्षा कुंजी' पर बटन दबाएं</translation>
 <translation id="1805738995123446102">बैकग्राउंड टैब आपके माइक्रोफ़ोन का इस्तेमाल कर रहा है</translation>
@@ -731,13 +732,13 @@
 <translation id="2120297377148151361">गतिविधि और इंटरैक्शन</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{टैब अनम्‍यूट करें}one{टैब अनम्‍यूट करें}other{टैब अनम्‍यूट करें}}</translation>
 <translation id="2121825465123208577">आकार बदलें</translation>
-<translation id="2122305276694332719">दिखाई न देने वाले नेटवर्क से अपने आप जुड़ने से दूसरे लोग आपके डिवाइस और कुछ नेटवर्क सेटिंग को देख सकते हैं. ऐसा करने का सुझाव नहीं दिया जाता.</translation>
 <translation id="2124930039827422115">{1,plural, =1{एक उपयोगकर्ता ने <ph name="AVERAGE_RATING" /> रेटिंग दी है.}one{# उपयोगकर्ताओं ने <ph name="AVERAGE_RATING" /> रेटिंग दी है.}other{# उपयोगकर्ताओं ने <ph name="AVERAGE_RATING" /> रेटिंग दी है.}}</translation>
 <translation id="2126167708562367080">सिंक को आपके व्यवस्थापक ने अक्षम किया है.</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="212862741129535676">आवृत्ति स्थिति उपयोग प्रतिशत</translation>
 <translation id="2129825002735785149">प्‍लग इन अपडेट करें</translation>
 <translation id="2131077480075264">"<ph name="APP_NAME" />" इंस्‍टॉल करने में असमर्थ क्‍योंकि "<ph name="IMPORT_NAME" />" द्वारा इसकी अनुमति नहीं है</translation>
+<translation id="21354425047973905">पिन छिपाएं</translation>
 <translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
 <translation id="2135787500304447609">&amp;फिर से शुरू करें</translation>
 <translation id="2136372518715274136">नया पासवर्ड डालें</translation>
@@ -952,6 +953,7 @@
 <translation id="2436707352762155834">कम से कम</translation>
 <translation id="2439545803278355377">अपना नया पिन डालें. पिन में कम से कम चार वर्ण होने चाहिए और इसमें अक्षर, संख्याएं, और दूसरे वर्ण भी डाले जा सकते हैं.</translation>
 <translation id="2440604414813129000">स्रोत देखें</translation>
+<translation id="2444119669991608829">पेज <ph name="LANGUAGE" /> भाषा में नहीं है?</translation>
 <translation id="2445081178310039857">एक्‍सटेंशन मूल निर्देशिका आवश्यक है.</translation>
 <translation id="2445484935443597917">नई प्रोफ़ाइल बनाएं</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> आपकी पहचान की पुष्टि करना चाहता है</translation>
@@ -965,6 +967,7 @@
 <translation id="2454247629720664989">कीवर्ड</translation>
 <translation id="245661998428026871">वीडियो 'पिक्चर में पिक्चर' मोड में चलना बंद हो जाएगा.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> <ph name="VOLUME_NAME" /> से फ़ाइलों की कॉपी बनाना चाहता है.</translation>
+<translation id="2458379781610688953">खाता अपडेट करें, <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">डिवाइस प्रबंधन टोकन गलत है.</translation>
 <translation id="2462724976360937186">प्रमाणन प्राधिकरण कुंजी आईडी</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> जोड़ा गया</translation>
@@ -1124,18 +1127,19 @@
 <translation id="2683638487103917598">फ़ोल्डर क्रमबद्ध किया गया</translation>
 <translation id="2684004000387153598">जारी रखने के लिए, ठीक पर क्लिक करें, फिर व्‍यक्ति जोड़ें पर क्लिक करें, ताकि आप अपने ईमेल पते के लिए नई प्रोफ़ाइल बना सकें.</translation>
 <translation id="2688196195245426394">डिवाइस को सर्वर के साथ पंजीकृत करते समय गड़बड़ी: <ph name="CLIENT_ERROR" />.</translation>
+<translation id="2688477613306174402">कॉन्फ़िगरेशन</translation>
 <translation id="2690024944919328218">भाषा के विकल्प दिखाएं</translation>
 <translation id="2691385045260836588">मॉडल</translation>
 <translation id="2693176596243495071">ओह हो!  कोई अज्ञात गड़बड़ी हुई. कृपया बाद में फिर से कोशिश करें या अगर समस्या फिर भी बनी रहती है, तो अपने एडमिन से संपर्क करें.</translation>
 <translation id="2695749433451188613">इंटरनेट प्रिंटिंग प्रोटोकॉल (HTTPS)</translation>
 <translation id="2699911226086014512"><ph name="RETRIES" /> कोड के चलते पिन को सेट नहीं किया जा सका.</translation>
+<translation id="2701737434167469065">साइन इन करें, <ph name="EMAIL" /></translation>
 <translation id="270358213449696159">Google Chrome OS की शर्तों संबंधी सामग्री</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">टचपैड की गति</translation>
 <translation id="2705736684557713153">स्क्रीन के सबसे नीचे तक स्क्रोल करें और अगर 'झटपट टेदरिंग' की सुविधा दिखाई देती है, तो उसे चालू करें. अगर वह नहीं दिखाई देती, तो आप पूरी तरह तैयार हैं.</translation>
 <translation id="2707024448553392710">घटक डाउनलोड करना</translation>
 <translation id="270921614578699633">औसत से ज़्यादा</translation>
-<translation id="2709453993673701466">सिंक और मनमुताबिक बनाने की सुविधा के चालू होने से पहले उन्हें प्रबंधित करना चाहते हैं? <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> पर जाएं.</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="271033894570825754">नया</translation>
 <translation id="2714393097308983682">Google Play स्टोर</translation>
@@ -1374,7 +1378,6 @@
 <translation id="3067198179881736288">ऐप्लिकेशन इंस्टॉल करें?</translation>
 <translation id="3067198360141518313">यह प्लग इन चलाएं</translation>
 <translation id="3071624960923923138">नया टैब खोलने के लिए, आप यहां क्लिक कर सकते हैं</translation>
-<translation id="3074037959626057712">आपने प्रवेश किया है और सिंक को चालू कर दिया है</translation>
 <translation id="3075874217500066906">पावरवॉश प्रक्रिया शुरू करने के लिए फिर से प्रारंभ करने की आवश्‍यकता है. फिर से प्रारंभ करने के बाद आपसे इस बात की पुष्‍टि करने के लिए पूछा जाएगा कि क्या आप आगे बढ़ना चाहते हैं.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3081564097391116951">ऑटोमेटिक अपडेट केवल ईथरनेट या वाई-फ़ाई पर होते हैं.</translation>
@@ -1924,6 +1927,7 @@
 <translation id="3872220884670338524">ज़्यादा कार्रवाइयां, <ph name="DOMAIN" /> पर <ph name="USERNAME" /> के लिए सेव किया गया खाता</translation>
 <translation id="3872991219937722530">डिस्क में स्पेस खाली करें अन्यथा डिवाइस प्रतिक्रिया नहीं देगा.</translation>
 <translation id="3873315167136380065">इसे चालू करने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /> ताकि आपका सिंक करने का लंबा पासवर्ड हटाया जा सके</translation>
+<translation id="3873423927483480833">पिन दिखाएं</translation>
 <translation id="3873915545594852654">एआरसी++ के साथ कोई समस्या हुई.</translation>
 <translation id="3878840326289104869">'निगरानी में रखा गया उपयोगकर्ता' बनाना</translation>
 <translation id="3879748587602334249">डाउनलोड मैनेजर</translation>
@@ -2300,7 +2304,6 @@
 <translation id="4479877282574735775">वर्चुअल मशीन कॉन्फ़िगर हो रही है. इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="4480590691557335796">Chrome आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर ढूंढ सकता है और उसे हटा सकता है</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
-<translation id="4482194545587547824">खोज और अन्य Google सेवाओं को मनमुताबिक बनाने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कर सकता है</translation>
 <translation id="4495419450179050807">इस पेज पर न दिखाएं</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> बंद हो गया है</translation>
 <translation id="450099669180426158">'विस्मयादिबोधक चिह्न' आइकॉन</translation>
@@ -2341,7 +2344,6 @@
 <translation id="4552089082226364758">फ़्लैश</translation>
 <translation id="4554591392113183336">बाहरी एक्‍सटेंशन मौजूदा की तुलना में समान या निम्नतर संस्‍करण पर है.</translation>
 <translation id="4555769855065597957">परछाई</translation>
-<translation id="4556110439722119938">आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग को आपके Google खाते में समन्वयित किया जाएगा ताकि आप उनका उपयोग अपने सभी डिवाइस पर कर सकें</translation>
 <translation id="4558426062282641716">अपने-आपलॉन्च अनुमति का अनुरोध किया गया</translation>
 <translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> इस्तेमाल करने से जुड़ी सलाह और Google के उत्पादों से जुड़े अपडेट पाएं. साथ ही, अपने सुझाव शेयर करें. जब चाहें सूचनाएं पाना बंद करें.</translation>
 <translation id="4559617833001311418">यह साइट आपके डिवाइस के गति या रोशनी के सेंसर एक्सेस कर रही है.</translation>
@@ -2349,6 +2351,7 @@
 <translation id="4562155214028662640">फ़िंगरप्रिंट जोड़ें</translation>
 <translation id="4563880231729913339">उंगली तीन</translation>
 <translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
+<translation id="456717285308019641">उस पेज की भाषा जिसका अनुवाद करना है</translation>
 <translation id="4567772783389002344">शब्द जोड़ें</translation>
 <translation id="4568025708905928793">सुरक्षा कुंजी का अनुरोध किया गया है</translation>
 <translation id="4568213207643490790">क्षमा करें, इस डिवाइस पर Google खातों की अनुमति नहीं है.</translation>
@@ -2379,6 +2382,7 @@
 <translation id="4613144866899789710">Linux को इंस्टॉल करना रद्द किया जा रहा है...</translation>
 <translation id="4613271546271159013">  नया टैब खोले जाने पर, दिखाई देने वाले पेज का एक्सटेंशन बदल दिया गया है.</translation>
 <translation id="4615586811063744755">कोई कुकी नहीं चुनी गई है</translation>
+<translation id="4617001782309103936">बहुत छोटा है</translation>
 <translation id="4617270414136722281">एक्सटेंशन के विकल्प</translation>
 <translation id="4619615317237390068">अन्य डिवाइस के टैब</translation>
 <translation id="4620809267248568679">यह सेटिंग किसी एक्‍सटेंशन द्वारा लागू की गई है.</translation>
@@ -2391,6 +2395,7 @@
 <translation id="4633003931260532286">एक्‍सटेंशन के लिए "<ph name="IMPORT_NAME" />" को न्‍यूनतम "<ph name="IMPORT_VERSION" />" वर्शन का होना चाहिए, लेकिन केवल "<ph name="INSTALLED_VERSION" />" वर्शन ही इंस्‍टॉल किया गया है</translation>
 <translation id="4634771451598206121">फिर से साइन इन करें...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> मेहमान उपयोगकर्ताओं के लिए उपलब्ध नहीं है.</translation>
+<translation id="4637083375689622795">ज़्यादा कार्रवाइयां, <ph name="EMAIL" /></translation>
 <translation id="4641539339823703554">Chrome, सिस्टम का समय सेट नहीं कर सका. कृपया नीचे दिया गया समय देखें और ज़रुरत होने पर उसे सही करें.</translation>
 <translation id="4643612240819915418">वीडियो नए टैब में &amp;खोलें</translation>
 <translation id="4645676300727003670">&amp;रखें</translation>
@@ -2908,6 +2913,7 @@
 <translation id="5449716055534515760">विं&amp;डो बंद करें</translation>
 <translation id="5453630479789469584">प्लग इन वीएम सेट अप नहीं किया जा सका</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> के साथ</translation>
+<translation id="545426320101607695">वह भाषा जिसमें अनुवाद करना है</translation>
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5457459357461771897">अपने कंप्यूटर से फ़ोटो, संगीत और दूसरे मीडिया पढ़ें और मिटाएं</translation>
 <translation id="5457599981699367932">मेहमान के रूप में ब्राउज़ करें</translation>
@@ -3167,7 +3173,7 @@
 <translation id="5852112051279473187">ओह!  इस डिवाइस का नामांकन करते समय कोई बड़ी गड़बड़ी हुई है.  कृपया फिर से कोशिश करें या अपने सहायता प्रतिनिधि से संपर्क करें.</translation>
 <translation id="5852137567692933493">फिर से प्रारंभ करें और पावरवॉश करें</translation>
 <translation id="5854912040170951372">स्‍लाइस</translation>
-<translation id="5855643921295613558">0.6 सेकेंड</translation>
+<translation id="5855643921295613558">0.6 सेकंड</translation>
 <translation id="5855773610748894548">ओह, सुरक्षा मॉड्यूल में गड़बड़ी.</translation>
 <translation id="5856721540245522153">डीबग करने वाली सुविधाएं चालू करें</translation>
 <translation id="5857090052475505287">नया फ़ोल्डर</translation>
@@ -3818,7 +3824,7 @@
 <translation id="6851497530878285708">ऐप्लिकेशन चालू</translation>
 <translation id="6853388645642883916">अपडेटर निष्क्रिय</translation>
 <translation id="68541483639528434">अन्य टैब बंद करें</translation>
-<translation id="6856623341093082836">अपनी टचस्क्रीन की सटीकता सेट करें और एडजस्ट करें</translation>
+<translation id="6856623341093082836">अपनी टचस्क्रीन को सटीक सेट करें और एडजस्ट करें</translation>
 <translation id="6857699260879628349">कॉन्फ़िगरेशन की जानकारी पाएं</translation>
 <translation id="6860097299815761905">प्रॉक्‍सी सेटिंग...</translation>
 <translation id="6860427144121307915">टैब में खोलें</translation>
@@ -3829,6 +3835,7 @@
 <translation id="6871644448911473373">OCSP प्रतिसादी: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">आपने जो पासवर्ड डाला है उसे सर्वर ने अस्‍वीकार कर दिया है.</translation>
 <translation id="6876155724392614295">बाइक</translation>
+<translation id="6877460900831874810">लॉक स्क्रीन पर Chrome की मीडिया चलाने की सुविधा चालू करें</translation>
 <translation id="6878422606530379992">सेंसर को मंज़ूरी दी गई है</translation>
 <translation id="6880587130513028875">इस पेज पर चित्र अवरोधित कर दी गई थीं.</translation>
 <translation id="6883319974225028188">ओह!  यह सिस्टम, डिवाइस कॉन्फ़िगरेशन को सेव नहीं कर सका.</translation>
@@ -3894,7 +3901,6 @@
 <translation id="6978121630131642226">सर्च इंजन</translation>
 <translation id="6979440798594660689">म्यूट करें (डिफ़ॉल्ट)</translation>
 <translation id="6979737339423435258">हमेशा</translation>
-<translation id="6980462514016882061">खोज, विज्ञापन और अन्य Google सेवाओं को मनमुताबिक बनाने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कर सकता है</translation>
 <translation id="6981982820502123353">सुलभता</translation>
 <translation id="6983783921975806247">पंजीकृत OID</translation>
 <translation id="6984299437918708277">साइन इन स्‍क्रीन पर अपने खाते के लिए दिखाई जाने वाली तस्वीर चुनें</translation>
@@ -3930,6 +3936,7 @@
 <translation id="7019805045859631636">तेज़</translation>
 <translation id="7022562585984256452">आपका होम पेज सेट कर दिया गया है.</translation>
 <translation id="7025190659207909717">मोबाइल डेटा सेवा प्रबंधन</translation>
+<translation id="7027891519253193555">पेज <ph name="LANGUAGE" /> भाषा में नहीं है?</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - सीरियल पोर्ट कनेक्ट है</translation>
 <translation id="7031962166228839643">TPM तैयार हो रहा है, कृपया प्रतीक्षा करें (इसमें कुछ मिनट लग सकते हैं)...</translation>
@@ -4135,6 +4142,7 @@
 <translation id="7328699668338161242">आपकी Assistant पहले ही आपकी आवाज़ पहचान सकती है</translation>
 <translation id="7328867076235380839">गलत संयोजन</translation>
 <translation id="7329154610228416156">साइन इन नहीं हो पाया क्‍योंकि उसे गैर-सुरक्षित URL (<ph name="BLOCKED_URL" />) का इस्तेमाल करने के लिए कॉन्‍फ़िगर किया गया था. कृपया अपने एडमिन से संपर्क करें.</translation>
+<translation id="733006820760728943">चालू खाते के तौर पर सेट करें</translation>
 <translation id="7334190995941642545">Smart Lock वर्तमान में अनुपलब्‍ध है. कृपया बाद में फिर से प्रयास करें.</translation>
 <translation id="7334274148831027933">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू करें</translation>
 <translation id="7335974957018254119">इसके लिए वर्तनी जांचने वाली सुविधा का इस्तेमाल करें</translation>
@@ -4163,6 +4171,7 @@
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="7366415735885268578">साइट जोड़ें</translation>
 <translation id="7366909168761621528">ब्राउज़िंग डेटा</translation>
+<translation id="7367483872576694328">BLE स्कैन पार्सर सेवा</translation>
 <translation id="736877393389250337"><ph name="URL" /> <ph name="ALTERNATIVE_BROWSER_NAME" /> में नहीं खोला जा सकता है. कृपया अपने सिस्टम एडमिन से संपर्क करें.</translation>
 <translation id="7371006317849674875">शुरू करने का समय</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4210,6 +4219,7 @@
 <translation id="7442465037756169001">आपका Hangouts Meet hardware सेट अप किए जाने के लिए तैयार है.</translation>
 <translation id="744341768939279100">नई प्रोफ़ाइल बनाएं</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> बंद करें</translation>
+<translation id="7448430327655618736">ऐप्लिकेशन को अपने आप इंस्टॉल करें</translation>
 <translation id="7450761244949417357">अभी <ph name="ALTERNATIVE_BROWSER_NAME" /> में खुल रहा है</translation>
 <translation id="7453008956351770337">इस प्रिंटर को चुनकर, आप नीचे दिए गए एक्सटेंशन को अपने प्रिंटर के लिए एक्सेस करने की अनुमति दे रहे हैं:</translation>
 <translation id="7456142309650173560">डेव</translation>
@@ -4394,6 +4404,7 @@
 <translation id="7728570244950051353">नींद मोड में स्क्रीन लॉक करने की सुविधा</translation>
 <translation id="7728668285692163452">चैनल बदलाव बाद में लागू किया जाएगा</translation>
 <translation id="7730449930968088409">अपनी स्क्रीन की सामग्री कैप्चर करें</translation>
+<translation id="7731119595976065702">और भाषाएं...</translation>
 <translation id="7732111077498238432">नेटवर्क, नीति से नियंत्रित है</translation>
 <translation id="7737238973539693982">Linux (बीटा) मिटाएं</translation>
 <translation id="7740996059027112821">मानक</translation>
@@ -4743,6 +4754,7 @@
 <translation id="8214489666383623925">फ़ाइल खोलें...</translation>
 <translation id="8214962590150211830">इस व्यक्ति को निकालें</translation>
 <translation id="8217399928341212914">कई फ़ाइलों के अपने आप डाउनलोड होने को ब्लॉक करना जारी रखें</translation>
+<translation id="822519928942492333">उस पेज की भाषा जिसका अनुवाद करना है</translation>
 <translation id="8225265270453771718">ऐप्लिकेशन की विंडो शेयर करें</translation>
 <translation id="8225753906568652947">अपने ऑफ़र रिडीम करें</translation>
 <translation id="8226222018808695353">निषिद्ध</translation>
@@ -5188,7 +5200,6 @@
 <translation id="8899851313684471736">लिंक को नई &amp;विंडो में खोलें</translation>
 <translation id="8902667442496790482">चुनें और सुनें सेटिंग खोलें</translation>
 <translation id="8903263458134414071">साइन इन करने के लिए एक खाता चुनें</translation>
-<translation id="8904976895050290827">Chrome सिंक</translation>
 <translation id="890616557918890486">स्रोत बदलें</translation>
 <translation id="8909833622202089127">साइट आपकी जगह को ट्रैक कर रही है</translation>
 <translation id="8910146161325739742">अपनी स्क्रीन शेयर करें</translation>

@@ -1679,10 +1679,14 @@ bool Texture::ClearRenderableLevels(DecoderContext* decoder) {
   return true;
 }
 
-void Texture::SetImmutable(bool immutable) {
-  if (immutable_ == immutable)
+void Texture::SetImmutable(bool immutable, bool immutable_storage) {
+  DCHECK(!immutable_storage || immutable);
+
+  if (immutable_ == immutable && immutable_storage_ == immutable_storage)
     return;
+
   immutable_ = immutable;
+  immutable_storage_ = immutable_storage;
 
   UpdateNumMipLevels();
 }

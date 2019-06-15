@@ -85,6 +85,7 @@ cr.define('pages_settings_test', function() {
       const pagesCrInput = pagesSection.$.pageSettingsCustomInput;
       const pagesInput = pagesCrInput.inputElement;
 
+      assertFalse(pagesSection.getSetting('ranges').setFromUi);
       validateState([1, 2, 3], [], '', false);
       assertFalse(customInputCollapse.opened);
 
@@ -95,6 +96,7 @@ cr.define('pages_settings_test', function() {
 
       await setCustomInput('1-2');
       validateState([1, 2], [{from: 1, to: 2}], '', false);
+      assertTrue(pagesSection.getSetting('ranges').setFromUi);
 
       // Re-select "all".
       await print_preview_test_utils.selectOption(

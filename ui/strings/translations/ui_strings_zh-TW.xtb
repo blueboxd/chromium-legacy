@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1409544243779336081">推薦的應用程式</translation>
+<translation id="1498028757988366001">你過去曾搜尋這個項目。如果將「<ph name="QUERY" />」從搜尋記錄中刪除，該項目將從你所有裝置上的帳戶記錄中永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分鐘 }other{# 分鐘 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分鐘前}other{# 分鐘前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{還剩 1 分鐘}other{還剩 # 分鐘}}</translation>
+<translation id="7430878839542012341">要將這個搜尋從你的記錄中刪除嗎？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符號</translation>
 <translation id="7658239707568436148">取消</translation>

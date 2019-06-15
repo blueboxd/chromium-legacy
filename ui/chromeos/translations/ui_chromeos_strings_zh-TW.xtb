@@ -240,6 +240,7 @@
 <translation id="383652340667548381">塞爾維亞文</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3855472144336161447">德文 Neo 2</translation>
+<translation id="3856075812838139784">唯讀</translation>
 <translation id="3858678421048828670">義大利文鍵盤</translation>
 <translation id="386548886866354912">使用「<ph name="EXTENSION_NAME" />」封裝</translation>
 <translation id="3866249974567520381">說明</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">上次修改時間</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 檔案</translation>
 <translation id="457386861538956877">更多…</translation>
+<translation id="4579744207439506346">已將「<ph name="ENTRY_NAME" />」新增至選取範圍。</translation>
 <translation id="4582497162516204941">透過 Linux (測試版) 執行安裝程序</translation>
 <translation id="4594543368593301662">目前顯示的是「<ph name="SEARCH_TERM" />」的搜尋結果。</translation>
 <translation id="4631887759990505102">演出者</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">韓文 3 Set (Final)</translation>
 <translation id="5833610766403489739">這個檔案不見了！請檢查你的下載位置設定，然後再試一次。</translation>
 <translation id="5838051104334203064">Play 商店應用程式無法存取這個裝置</translation>
+<translation id="5838451609423551646">從所選範圍中移除所有項目。</translation>
 <translation id="5838825566232597749">美式 Workman 國際</translation>
 <translation id="5850516540536751549">系統不支援這個檔案類型。請造訪 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />，尋找是否有可開啟這類檔案的應用程式。
     <ph name="BEGIN_LINK_HELP" />瞭解詳情<ph name="END_LINK_HELP" /></translation>
@@ -438,7 +441,7 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6054173164583630569">法文鍵盤</translation>
 <translation id="6074825444536523002">Google 表單</translation>
-<translation id="6096979789310008754">已清除搜尋文字，正在顯示所有檔案和資料夾。</translation>
+<translation id="6096979789310008754">已清除搜尋文字，畫面顯示所有檔案和資料夾。</translation>
 <translation id="6111770213269631447">音譯 (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6133173853026656527">正在移動 <ph name="FILE_NAME" />...</translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip 壓縮 tar 封存</translation>
 <translation id="6825883775269213504">俄文</translation>
 <translation id="6827236167376090743">這部影片會持續播放到地老天荒。</translation>
+<translation id="6847101934483209767">已從所選範圍中移除「<ph name="ENTRY_NAME" />」。</translation>
 <translation id="6862635236584086457">所有儲存在這個資料夾的檔案都會自動在線上備份</translation>
 <translation id="6870130893560916279">烏克蘭文鍵盤</translation>
 <translation id="6876155724392614295">自行車</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">拼音輸入法</translation>
 <translation id="8151638057146502721">設定</translation>
 <translation id="8153607920959057464">無法顯示這個檔案。</translation>
+<translation id="8154842056504218462">已選取所有項目。</translation>
 <translation id="8157684860301034423">無法擷取應用程式資訊。</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">西班牙文鍵盤</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>
 <translation id="8698464937041809063">Google 繪圖</translation>
 <translation id="8714406895390098252">單車</translation>
+<translation id="8719721339511222681">已選取「<ph name="ENTRY_NAME" />」。</translation>
 <translation id="8722421161699219904">美式國際鍵盤</translation>
 <translation id="872537912056138402">克羅埃西亞文</translation>
 <translation id="874420130893181774">傳統拼音輸入法</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">這個目錄中沒有任何圖片。</translation>
 <translation id="943972244133411984">修改者</translation>
 <translation id="945522503751344254">提供意見</translation>
+<translation id="947144732524271678">已選取「<ph name="FROM_ENTRY_NAME" />」至「<ph name="TO_ENTRY_NAME" />」範圍內的 <ph name="ENTRY_COUNT" /> 個項目。</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="988685240266037636">名稱為「<ph name="FILE_NAME" />」的檔案已經存在，你要取代這個檔案嗎？</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

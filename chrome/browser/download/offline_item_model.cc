@@ -226,7 +226,9 @@ void OfflineItemModel::OnItemRemoved(const ContentId& id) {
   offline_item_.reset();
 }
 
-void OfflineItemModel::OnItemUpdated(const OfflineItem& item) {
+void OfflineItemModel::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   offline_item_ = std::make_unique<OfflineItem>(item);
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();

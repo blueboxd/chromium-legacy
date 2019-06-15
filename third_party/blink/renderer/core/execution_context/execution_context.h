@@ -215,12 +215,12 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void SetLifecycleState(mojom::FrameLifecycleState);
   void NotifyContextDestroyed() override;
 
-  // ConsoleLogger implementation.
-  void AddConsoleMessage(mojom::ConsoleMessageSource,
-                         mojom::ConsoleMessageLevel,
-                         const String& message) final;
+  using ConsoleLogger::AddConsoleMessage;
 
-  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  void AddConsoleMessage(ConsoleMessage* message,
+                         bool discard_duplicates = false) {
+    AddConsoleMessageImpl(message, discard_duplicates);
+  }
 
   // TODO(haraken): Remove these methods by making the customers inherit from
   // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to
@@ -323,6 +323,15 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
 
  private:
+  // ConsoleLogger implementation.
+  void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                             mojom::ConsoleMessageLevel,
+                             const String& message,
+                             bool discard_duplicates) final;
+
+  virtual void AddConsoleMessageImpl(ConsoleMessage*,
+                                     bool discard_duplicates) = 0;
+
   v8::Isolate* const isolate_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);

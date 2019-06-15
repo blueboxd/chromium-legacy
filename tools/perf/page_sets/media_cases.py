@@ -224,83 +224,70 @@ def _GetDesktopOnlyMediaPages(page_set):
 
 def _GetCrossPlatformMediaPages(page_set):
   return [
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=crowd.ogg&type=audio',
-          page_set=page_set,
-          tags=['vorbis', 'audio_only']),
+      # 1080p 50fps crowd test cases. High non-60fps frame rate is good for
+      # finding rendering and efficiency regressions.
       _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=crowd1080.webm',
           page_set=page_set,
           tags=['is_50fps', 'vp8', 'vorbis', 'audio_video']),
       _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
-          page_set=page_set,
-          tags=['vorbis', 'audio_only']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio',
-          page_set=page_set,
-          tags=['pcm', 'audio_only']),
-      _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=crowd1080.mp4',
           page_set=page_set,
           tags=['is_50fps', 'h264', 'aac', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
+          page_set=page_set,
+          tags=['is_50fps', 'vp9', 'video_only']),
+
+      # Audio only test cases. MP3 and OGG are important to test since they are
+      # unstructured containers and thus are prone to efficiency regressions.
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
+          page_set=page_set,
+          tags=['vorbis', 'audio_only']),
       _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
           page_set=page_set,
           tags=['mp3', 'audio_only']),
       _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
+          page_set=page_set,
+          tags=['aac', 'audio_only']),
+
+      # Baseline + busyjs test.
+      _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=tulip2.mp4',
           page_set=page_set,
           tags=['h264', 'aac', 'audio_video']),
       _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
+          url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
           page_set=page_set,
-          tags=['aac', 'audio_only']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=garden2_10s.webm',
-          page_set=page_set,
-          tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=garden2_10s.mp4',
-          page_set=page_set,
-          tags=['is_4k', 'h264', 'aac', 'audio_video']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
-          page_set=page_set,
-          tags=['vp9', 'opus', 'audio_video'],
-          traffic_setting=traffic_setting_module.WIFI),
+          tags=['h264', 'aac', 'audio_video', 'busyjs']),
+
+      # Baseline + WiFi test.
       _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
           page_set=page_set,
           tags=['vp9', 'opus', 'audio_video']),
       _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
+          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
           page_set=page_set,
-          tags=['vp9', 'video_only']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=crowd720_vp9.webm',
-          page_set=page_set,
-          tags=['vp9', 'video_only']),
-      _BeginningToEndPlayPage(
-          url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
-          page_set=page_set,
-          tags=['h264', 'aac', 'audio_video', 'busyjs']),
+          tags=['vp9', 'opus', 'audio_video'],
+          traffic_setting=traffic_setting_module.WIFI),
+
+      # Seek tests in MP3 and OGG are important since they don't have seek
+      # indices and thus show off efficiency regressions easily.
       _SeekPage(
           url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio&seek',
           page_set=page_set,
           tags=['vorbis', 'audio_only']),
       _SeekPage(
-          url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio&seek',
-          page_set=page_set,
-          tags=['pcm', 'audio_only']),
-      _SeekPage(
           url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio&seek',
           page_set=page_set,
           tags=['mp3', 'audio_only']),
-      _SeekPage(
-          url=_URL_BASE + 'video.html?src=tulip2.mp4&seek',
-          page_set=page_set,
-          tags=['h264', 'aac', 'audio_video']),
+
+      # High resolution seek test cases which will exaggerate any decoding
+      # efficiency or buffering regressions.
       _SeekPage(
           url=_URL_BASE + 'video.html?src=garden2_10s.webm&seek',
           page_set=page_set,
@@ -310,32 +297,27 @@ def _GetCrossPlatformMediaPages(page_set):
           page_set=page_set,
           tags=['is_4k', 'h264', 'aac', 'audio_video']),
       _SeekPage(
-          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&seek',
-          page_set=page_set,
-          tags=['vp9', 'opus', 'audio_video']),
-      _SeekPage(
-          url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm&seek',
-          page_set=page_set,
-          tags=['vp9', 'video_only', 'seek']),
-      _SeekPage(
           url=(_URL_BASE + 'video.html?src='
                'smpte_3840x2160_60fps_vp9.webm&seek'),
           page_set=page_set,
           tags=['is_4k', 'vp9', 'video_only'],
           action_timeout_in_seconds=120),
+
+      # Basic test that ensures background playback works properly.
       _BackgroundPlaybackPage(
           url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&background',
           page_set=page_set,
           tags=['vp9', 'opus', 'audio_video']),
+
+      # Basic MSE test pages for common configurations.
       _MSEPage(
           url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
           page_set=page_set,
           tags=['h264', 'aac', 'audio_video']),
       _MSEPage(
-          url=(_URL_BASE + 'mse.html?'
-               'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
+          url=_URL_BASE + 'mse.html?media=tulip2.vp9.webm',
           page_set=page_set,
-          tags=['h264', 'aac', 'audio_video']),
+          tags=['vp9', 'opus', 'audio_video']),
       _MSEPage(
           url=_URL_BASE + 'mse.html?media=aac_audio.mp4',
           page_set=page_set,

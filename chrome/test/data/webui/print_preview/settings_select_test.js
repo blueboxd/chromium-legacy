@@ -56,6 +56,7 @@ cr.define('settings_select_test', function() {
           valid: true,
           available: true,
           setByPolicy: false,
+          setFromUi: false,
           key: 'fruit',
         },
       });
@@ -73,12 +74,13 @@ cr.define('settings_select_test', function() {
 
       // Normally done for initialization by the model and parent section.
       settingsSelect.set(
-          'settings.fruit.value', settingsSelect.capability.option[0]);
+          'settings.fruit.value', settingsSelect.capability.option[1]);
       settingsSelect.selectValue(option1);
 
       // Verify that the selected option and names are as expected.
       assertEquals(2, select.options.length);
       assertEquals(1, select.selectedIndex);
+      assertFalse(settingsSelect.getSetting('fruit').setFromUi);
       assertEquals('lime', select.options[0].textContent.trim());
       assertEquals('orange', select.options[1].textContent.trim());
       assertEquals(option0, select.options[0].value);
@@ -88,6 +90,7 @@ cr.define('settings_select_test', function() {
       await print_preview_test_utils.selectOption(settingsSelect, option0);
       assertEquals(
           option0, JSON.stringify(settingsSelect.getSettingValue('fruit')));
+      assertTrue(settingsSelect.getSetting('fruit').setFromUi);
       assertEquals(0, select.selectedIndex);
 
       // Verify that selecting from outside works.

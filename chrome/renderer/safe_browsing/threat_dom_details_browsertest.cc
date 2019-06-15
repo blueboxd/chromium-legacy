@@ -25,21 +25,12 @@ std::unique_ptr<base::test::ScopedFeatureList> SetupTagAndAttributeFeature() {
   std::map<std::string, std::string> feature_params;
   feature_params[std::string(safe_browsing::kTagAndAttributeParamName)] =
       "div,foo,div,baz,div,attr2,div,attr3,div,longattr4,div,attr5,div,attr6";
-  variations::AssociateVariationParams(
-      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name, "Group",
-      feature_params);
-  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name, "Group");
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name,
-      std::string());
-  feature_list->AssociateReportingFieldTrial(
-      safe_browsing::kThreatDomDetailsTagAndAttributeFeature.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
   std::unique_ptr<base::test::ScopedFeatureList> scoped_list(
       new base::test::ScopedFeatureList);
-  scoped_list->InitWithFeatureList(std::move(feature_list));
+  scoped_list->InitWithFeaturesAndParameters(
+      {{safe_browsing::kThreatDomDetailsTagAndAttributeFeature,
+        feature_params}},
+      {});
   return scoped_list;
 }
 

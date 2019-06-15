@@ -193,13 +193,6 @@ class ToolbarActionsBar : public ExtensionsContainer,
   void AddObserver(ToolbarActionsBarObserver* observer);
   void RemoveObserver(ToolbarActionsBarObserver* observer);
 
-  // Displays the given |bubble| once the toolbar is no longer animating.
-  void ShowToolbarActionBubble(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble);
-  // Same as above, but uses PostTask() in all cases.
-  void ShowToolbarActionBubbleAsync(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble);
-
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
   const ToolbarActions& toolbar_actions_unordered() const {
@@ -248,6 +241,10 @@ class ToolbarActionsBar : public ExtensionsContainer,
   void PopOutAction(ToolbarActionViewController* action,
                     bool is_sticky,
                     const base::Closure& closure) override;
+  void ShowToolbarActionBubble(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
 
  private:
   // Returns the insets by which the icon area bounds (See GetIconAreaRect())

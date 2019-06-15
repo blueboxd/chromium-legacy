@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Input methods are configured by your administrator.</translation>
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="1761222317188459878">Toggle network connection. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Scroll right</translation>
 <translation id="1812997170047690955">What's on my screen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Battery at <ph name="PERCENTAGE" />% and charging.</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
+<translation id="4021716437419160885">Scroll down</translation>
 <translation id="4042660782729322247">You're sharing your screen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Off for an app}other{Off for # apps}}</translation>
 <translation id="4072264167173457037">Medium signal</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Restart and reset</translation>
+<translation id="495046168593986294">Scroll up</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="5030687792513154421">Time is up</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> connected to a new phone</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">To get the update, restart your Chromebook with the keyboard attached.</translation>
 <translation id="5992218262414051481">High contrast mode enabled. Press Ctrl+Search+H again to toggle it off.</translation>
 <translation id="6018164090099858612">Exiting mirror mode</translation>
+<translation id="602001110135236999">Scroll left</translation>
+<translation id="6040143037577758943">Close</translation>
 <translation id="6043212731627905357">This monitor isn't getting along with your <ph name="DEVICE_TYPE" /> (the monitor is not supported).</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="6047696787498798094">Screen sharing will stop when you switch to another user. Do you want to continue?</translation>

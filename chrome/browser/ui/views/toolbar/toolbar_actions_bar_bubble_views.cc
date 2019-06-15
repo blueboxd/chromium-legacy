@@ -54,6 +54,10 @@ void ToolbarActionsBarBubbleViews::Show() {
   GetWidget()->Show();
 }
 
+std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() {
+  return delegate_->GetAnchorActionId();
+}
+
 std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info = delegate_->GetExtraViewInfo();

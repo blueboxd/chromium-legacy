@@ -556,21 +556,26 @@ Polymer({
     }
 
     if (copies > 0 && this.getSetting('copies').available) {
-      this.setSetting('copies', copies);
+      this.setSetting('copies', copies, true);
     }
 
-    if (duplex !== print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE &&
-        this.getSetting('duplex').available) {
+    if (duplex === print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE) {
+      return;
+    }
+
+    if (this.getSetting('duplex').available) {
       this.setSetting(
           'duplex',
           duplex === print_preview.DuplexMode.LONG_EDGE ||
-              duplex === print_preview.DuplexMode.SHORT_EDGE);
+              duplex === print_preview.DuplexMode.SHORT_EDGE,
+          true);
     }
-    if (duplex !== print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE &&
-        duplex !== print_preview.DuplexMode.SIMPLEX &&
+
+    if (duplex !== print_preview.DuplexMode.SIMPLEX &&
         this.getSetting('duplexShortEdge').available) {
       this.setSetting(
-          'duplexShortEdge', duplex === print_preview.DuplexMode.SHORT_EDGE);
+          'duplexShortEdge', duplex === print_preview.DuplexMode.SHORT_EDGE,
+          true);
     }
   },
 

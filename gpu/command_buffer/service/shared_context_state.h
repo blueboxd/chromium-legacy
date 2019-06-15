@@ -72,7 +72,7 @@ class GPU_GLES2_EXPORT SharedContextState
                     scoped_refptr<gles2::FeatureInfo> feature_info);
   bool IsGLInitialized() const { return !!feature_info_; }
 
-  bool MakeCurrent(gl::GLSurface* surface);
+  bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
   void MarkContextLost();
   bool IsCurrent(gl::GLSurface* surface);
 
@@ -109,6 +109,9 @@ class GPU_GLES2_EXPORT SharedContextState
   }
   bool use_virtualized_gl_contexts() const {
     return use_virtualized_gl_contexts_;
+  }
+  bool support_vulkan_external_object() const {
+    return support_vulkan_external_object_;
   }
 
   // base::trace_event::MemoryDumpProvider implementation.
@@ -152,6 +155,7 @@ class GPU_GLES2_EXPORT SharedContextState
   QueryManager* GetQueryManager() override;
 
   bool use_virtualized_gl_contexts_ = false;
+  bool support_vulkan_external_object_ = false;
   base::OnceClosure context_lost_callback_;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;

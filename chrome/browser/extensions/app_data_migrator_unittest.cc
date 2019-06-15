@@ -145,8 +145,7 @@ void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
                        const Extension* ext,
                        storage::FileSystemContext* fs_context,
                        Profile* profile) {
-  profile->GetExtensionSpecialStoragePolicy()->GrantRightsForExtension(ext,
-                                                                       profile);
+  profile->GetExtensionSpecialStoragePolicy()->GrantRightsForExtension(ext);
 
   base::FilePath path(FILE_PATH_LITERAL("test.txt"));
   GURL extension_url =

@@ -335,7 +335,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[0];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[0]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
         static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
@@ -364,7 +364,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[2];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[1]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
         static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
@@ -460,7 +460,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   {
     EXPECT_EQ(2u, handled_tasks_[2]->taskAsEvent()->CoalescedEventSize());
     WebTouchEvent coalesced_event = kEvents[2];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[2]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebTouchEvent* coalesced_touch_event0 =
         static_cast<const WebTouchEvent*>(coalesced_events[0]);

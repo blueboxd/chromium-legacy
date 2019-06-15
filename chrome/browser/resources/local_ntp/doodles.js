@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 const doodles = {};
 
 doodles.numDdllogResponsesReceived = 0;
@@ -11,7 +10,6 @@ doodles.lastDdllogResponse = '';
 doodles.onDdllogResponse = null;
 
 doodles.ei = null;
-
 
 /**
  * Enum for classnames.
@@ -22,7 +20,6 @@ doodles.CLASSES = {
   FADE: 'fade',            // Enables opacity transition on logo and doodle.
   SHOW_LOGO: 'show-logo',  // Marks logo/doodle that should be shown.
 };
-
 
 /**
  * Enum for HTML element ids.
@@ -49,7 +46,6 @@ doodles.IDS = {
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
 };
 
-
 /**
  * Counterpart of search_provider_logos::LogoType.
  * @enum {string}
@@ -60,7 +56,6 @@ doodles.LOGO_TYPE = {
   ANIMATED: 'ANIMATED',
   INTERACTIVE: 'INTERACTIVE',
 };
-
 
 /**
  * Subset of gws.plugins.doodle.SharingLightbox.LogType in
@@ -75,13 +70,11 @@ doodles.SHARE_TYPE = {
   LINK_COPY: 6,
 };
 
-
 /**
  * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
  * @type {number}
  */
 doodles.FACEBOOK_APP_ID = 738026486351791;
-
 
 /**
  * The different types of events that are logged from the NTP. This enum is
@@ -109,7 +102,6 @@ doodles.LOG_TYPE = {
   NTP_ANIMATED_LOGO_CLICKED: 36,
 };
 
-
 /**
  * Handle the resizeDoodle command sent from the fpdoodle page
  * when an interactive doodle is clicked.
@@ -133,8 +125,7 @@ doodles.resizeDoodleHandler = function(args) {
   document.body.style.setProperty('--logo-iframe-width', width);
 };
 
-
-/*
+/**
  * Fetch doodle data and display it if one is present.
  */
 doodles.init = function() {
@@ -184,7 +175,6 @@ doodles.init = function() {
   });
 };
 
-
 /**
  * Loads the Doodle. On success, the loaded script declares a global variable
  * ddl, which onload() receives as its single argument. On failure, onload() is
@@ -208,7 +198,6 @@ doodles.loadDoodle = function(v, onload) {
   };
   document.body.appendChild(ddlScript);
 };
-
 
 /**
  * Handles the response of a doodle impression ping, i.e. stores the
@@ -247,7 +236,6 @@ doodles.handleDdllogResponse = function(ddllog, isAnimated) {
     console.log('Missing ddllog response.');
   }
 };
-
 
 /**
  * Logs a doodle impression at the given logUrl, and handles the response via
@@ -290,7 +278,6 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
       });
 };
 
-
 /**
  * Logs a doodle sharing event.
  * Uses the ct param provided in metadata.onClickUrl to track the doodle.
@@ -314,7 +301,6 @@ doodles.logDoodleShare = function(platform) {
     }
   }
 };
-
 
 /**
  * Returns true if the target doodle is currently visible. If |image| is null,
@@ -348,7 +334,6 @@ doodles.isDoodleCurrentlyVisible = function() {
   }
 };
 
-
 /**
  * The image and metadata that should be shown, according to the latest fetch.
  * After a logo fades out, doodles.onDoodleFadeOutComplete fades in a logo
@@ -364,7 +349,6 @@ doodles.targetDoodle = {
   onClickUrlExtraParams: null,
 };
 
-
 doodles.getDoodleTargetUrl = function() {
   const url = new URL(doodles.targetDoodle.metadata.onClickUrl);
   if (doodles.targetDoodle.onClickUrlExtraParams) {
@@ -374,7 +358,6 @@ doodles.getDoodleTargetUrl = function() {
   }
   return url;
 };
-
 
 doodles.showLogoOrDoodle = function(fromCache) {
   const cachedInteractiveOffline = fromCache &&
@@ -418,11 +401,9 @@ doodles.showLogoOrDoodle = function(fromCache) {
   }
 };
 
-
 /**
  * Starts fading out the given element, which should be either the default logo
  * or the doodle.
- *
  * @param {?Element} element
  */
 doodles.startFadeOut = function(element) {
@@ -439,7 +420,6 @@ doodles.startFadeOut = function(element) {
   element.classList.remove(doodles.CLASSES.SHOW_LOGO);
   element.addEventListener('transitionend', doodles.onDoodleFadeOutComplete);
 };
-
 
 /**
  * Integrates a fresh doodle into the page as appropriate. If the correct logo
@@ -469,7 +449,6 @@ doodles.fadeToLogoOrDoodle = function() {
   doodles.startFadeOut($(doodles.IDS.LOGO_DOODLE));
 };
 
-
 doodles.onDoodleFadeOutComplete = function(e) {
   // Fade-out finished. Start fading in the appropriate logo.
   $(doodles.IDS.LOGO_DOODLE).classList.add(doodles.CLASSES.FADE);
@@ -479,7 +458,6 @@ doodles.onDoodleFadeOutComplete = function(e) {
   e.target.removeEventListener(
       'transitionend', doodles.onDoodleFadeOutComplete);
 };
-
 
 doodles.applyDoodleMetadata = function() {
   const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);

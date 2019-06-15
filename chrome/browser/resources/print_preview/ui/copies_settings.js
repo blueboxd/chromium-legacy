@@ -42,7 +42,8 @@ Polymer({
    * @private
    */
   onInputChanged_: function() {
-    if (this.currentValue_ !== '') {
+    if (this.currentValue_ !== '' &&
+        this.currentValue_ !== this.getSettingValue('copies').toString()) {
       this.setSetting(
           'copies', this.inputValid_ ? parseInt(this.currentValue_, 10) : 1);
     }

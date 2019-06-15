@@ -214,8 +214,8 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
   base::Lock visited_urls_lock_;
   std::set<GURL> visited_urls_;
 
-  base::test::ScopedFeatureList disabled_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList disabled_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionBrowserTest);
 };

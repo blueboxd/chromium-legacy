@@ -32,7 +32,7 @@
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4329152592498422850">التبديل لالتقاط صورة مربّعة</translation>
 <translation id="4445542136948522167">إيقاف التقاط الصورة</translation>
-<translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> ميغابيكسل</translation>
+<translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> ميغابكسل</translation>
 <translation id="4570032796877367747">الكاميرا الأمامية</translation>
 <translation id="4628948037717959914">صورة</translation>
 <translation id="4649291346448517080">تعذّر حفظ الملف</translation>
@@ -48,7 +48,7 @@
 <translation id="6233780560267770709">3 × 3</translation>
 <translation id="6243827288366940320">النسبة الذهبية</translation>
 <translation id="6248749904681914629">الكاميرا الخارجية</translation>
-<translation id="6420689864531458495">‏(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ميغابيكسل</translation>
+<translation id="6420689864531458495">‏(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ميغابكسل</translation>
 <translation id="6681668084120808868">التقاط صورة</translation>
 <translation id="6778482348691154169">تعذّر التقاط الصورة</translation>
 <translation id="6965382102122355670">موافق</translation>

@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"

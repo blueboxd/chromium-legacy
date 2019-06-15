@@ -281,10 +281,10 @@ cr.define('cr.ui', function() {
           this.listBlurred && e.composedPath()[0] === this;
 
       if (this.lastFocused && !restoreFocusToFirst) {
-        this.row_.getEquivalentElement(this.lastFocused).focus();
+        cr.ui.focusWithoutInk(this.row_.getEquivalentElement(this.lastFocused));
       } else {
         const firstFocusable = assert(this.firstControl_);
-        firstFocusable.focus();
+        cr.ui.focusWithoutInk(firstFocusable);
       }
       this.listBlurred = false;
     },

@@ -350,6 +350,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void WasEvicted();
 
+  void SetWebContentsAccessibility(
+      WebContentsAccessibilityAndroid* web_contents_accessibility);
+
   ui::DelegatedFrameHostAndroid* delegated_frame_host_for_testing() {
     return delegated_frame_host_.get();
   }
@@ -547,6 +550,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // A cached copy of the most up to date DevToolsFrameMetadata, computed from
   // either RenderFrameMetadata or CompositorFrameMetadata.
   base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
+
+  WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

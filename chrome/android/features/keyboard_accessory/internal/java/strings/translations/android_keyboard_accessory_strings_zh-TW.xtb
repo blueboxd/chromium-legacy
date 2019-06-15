@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1492646418094134664">輕觸即可透過 Chrome 填入信用卡資訊</translation>
+<translation id="1566281227936819866">正在顯示已儲存的付款方式</translation>
 <translation id="2610239185026711824">建議密碼</translation>
 <translation id="2803478378562657435">正在顯示已儲存的密碼和密碼選項</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">輕觸即可透過 Chrome 填入密碼</translation>
 <translation id="7299100402441711551">顯示地址</translation>
 <translation id="7494879913343971937">顯示密碼</translation>
+<translation id="8037472847879765671">顯示付款方式</translation>
 <translation id="8507520749471379845">有可用的密碼</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -2382,6 +2384,44 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       WaitForRenderFrameReady(shell()->web_contents()->GetMainFrame()));
 
   EXPECT_TRUE(crash_observer.did_exit_normally());
+}
+
+// Test deduplication of SameSite cookie deprecation messages.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       SameSiteCookieDeprecationMessages) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kCookieDeprecationMessages);
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ConsoleObserverDelegate console_observer(web_contents, "*");
+  web_contents->SetDelegate(&console_observer);
+
+  // Test deprecation messages for SameSiteByDefault.
+  // Set a cookie without SameSite on b.com, then access it in a cross-site
+  // context.
+  GURL url =
+      embedded_test_server()->GetURL("b.com", "/set-cookie?nosamesite=1");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  ASSERT_EQ(0u, console_observer.messages().size());
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(),b())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // Only 1 message even though there are 2 cross-site iframes.
+  EXPECT_EQ(1u, console_observer.messages().size());
+
+  // Test deprecation messages for CookiesWithoutSameSiteMustBeSecure.
+  // Set a cookie with SameSite=None but without Secure.
+  url = embedded_test_server()->GetURL(
+      "c.com", "/set-cookie?samesitenoneinsecure=1;SameSite=None");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // The 1 message from before, plus the (different) message for setting the
+  // SameSite=None insecure cookie.
+  EXPECT_EQ(2u, console_observer.messages().size());
+  // Another copy of the message appears because we have navigated.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_EQ(3u, console_observer.messages().size());
+  EXPECT_EQ(console_observer.messages()[1], console_observer.messages()[2]);
 }
 
 }  // namespace content

@@ -440,6 +440,12 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren ændre denne indstilling (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).
       </translation>
 <translation id="1767673020408652620">Aktivér appanbefaling ved nultilstand i søgefeltet</translation>
+<translation id="17719159826324007">
+      Hvis politikken er angivet som ArcSession, tvinges enheden til at genstarte, når brugeren logger ud og Android er startet.
+      Hvis politikken er angivet som Altid, tvinges enheden til at genstarte, hver gang brugeren logger ud.
+      Hvis der ikke er angivet noget, har politikken ingen indvirkning, og enheden tvinges ikke til at genstarte, når brugeren logger ud. Det samme gælder, hvis politikken er angivet som Aldrig.
+      Denne politik har ingen indvirkning for brugere, der ikke er tilknyttet.
+      </translation>
 <translation id="1781356041596378058">Denne politik styrer også adgangen til Indstillinger for udviklere i Android. Hvis du angiver denne politik til Sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver denne politik til Falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i Android-appen Indstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver udskrivning med pinkode som standard</translation>
 <translation id="1797233582739332495">Vis brugeren en fast meddelelse, som indikerer, at en genstart er påkrævet</translation>
@@ -917,6 +923,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurer webadressen til ændring af adgangskoder.</translation>
+<translation id="2694143893026486692">Fastgjort lupvindue er aktiveret</translation>
 <translation id="2706708761587205154">Tillad kun udskrivning med pinkode</translation>
 <translation id="2710534340210290498">Hvis denne politik er angivet som falsk, kan brugerne ikke låse skærmen (de kan kun logge ud fra brugersessionen). Hvis indstillingen er angivet som sand eller ikke er konfigureret, kan brugere, der har godkendt med en adgangskode, låse skærmen.</translation>
 <translation id="2731627323327011390">Deaktiver brug af certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
@@ -1105,7 +1112,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis denne politik ikke angives, vises indstillingerne for hjælpefunktioner ikke i systembakkemenuen, men brugeren kan få vist indstillingerne for hjælpefunktioner via siden Indstillinger.
 
-          Når hjælpefunktioner aktiveres (på andre måder, f.eks. via tastekombinationer),vises indstillingerne for hjælpefunktioner altid i systembakkemenuen.</translation>
+          Når hjælpefunktioner aktiveres (på andre måder, f.eks. via tastekombinationer), vises indstillingerne for hjælpefunktioner altid i systembakkemenuen.</translation>
 <translation id="3011301228198307065">Konfigurerer webadressen for standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer den.
 
           Startsiden åbnes ved hjælp af knappen Startside. De sider, der åbnes ved opstart, styres af RestoreOnStartup-politikkerne.
@@ -1151,6 +1158,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' aktiveres.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Med denne politik kan brugere af funktionen WebDriver tilsidesætte
       politikker, der kan forstyrre processen.
 
@@ -1662,12 +1670,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       <ph name="PRODUCT_OS_NAME" />-enheder søger automatisk efter opdateringer, når denne indstilling ikke er konfigureret eller er angivet til falsk.
 
       Advarsel! Det anbefales at holde automatiske opdateringer aktiveret, så brugerne modtager softwareopdateringer og kritiske sikkerhedsrettelser. Deaktivering af automatiske opdateringer kan udgøre en risiko for brugerne.</translation>
-<translation id="4018000735882846261">Denne politik giver Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning.
-
-      Hvis politikken er aktiveret, lytter Google Assistent efter den stemmestyrede aktiveringssætning.
-      Hvis politikken er deaktiveret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
-      Hvis politikken ikke er konfigureret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
-      </translation>
 <translation id="4020682745012723568">Cookies, der overføres til brugerens profil, er ikke tilgængelige i Android-apps.</translation>
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standardsøgemaskine</translation>
@@ -2013,7 +2015,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Hvis denne indstilling er angivet som Falsk, hentes eller vises forslag ikke.</translation>
 <translation id="4759650396863318477">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne får besked om, at <ph name="PRODUCT_NAME" /> skal genstartes, eller at en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for anvende en afventende opdatering.
 
-      I dette tidsrum vil brugeren gentagne gange få besked om, at der skal opdateres. På <ph name="PRODUCT_OS_NAME" />-enheder vises der i systembakken en notifikation om, at der skal genstartes, i henhold politikken <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at indikere, at der skal foretages en opdatering, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
+      I dette tidsrum vil brugeren gentagne gange få besked om, at der skal opdateres. På <ph name="PRODUCT_OS_NAME" />-enheder vises der en notifikation om genstart i systembakken i henhold til politikken <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at indikere, at der skal foretages en opdatering, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
 
       Hvis den ikke er angivet, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (en uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med betalingskortoplysninger, der er gemt tidligere.
@@ -4259,7 +4261,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
 <translation id="9152473318295429890">Aktivér indholdsbestemte forslag for relaterede websider</translation>
-<translation id="9153446010242995516">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
+<translation id="9153446010242995516">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ændring, der ikke er bagudkompatibel).
           Understøttes i <ph name="PRODUCT_OS_NAME" /> version 75 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
 <translation id="9159126470527871268">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> skal genstartes for at anvende en afventende opdatering.

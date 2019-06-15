@@ -3325,6 +3325,16 @@
     ]
   },
 
+  "UserFeedbackAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "UserFeedbackAllowed": false },
+    "pref_mappings": [
+      { "pref": "feedback_allowed" }
+    ]
+  },
+
+
   "ArcEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,

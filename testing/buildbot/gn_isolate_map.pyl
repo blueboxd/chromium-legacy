@@ -1278,9 +1278,6 @@
     "type": "raw",
   },
   "ios_chrome_translate_egtests": {
-    "args": [
-      "--enable-features=CompactTranslateInfobarIOS",
-    ],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests",
     "type": "raw",
   },

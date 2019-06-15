@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">おすすめのアプリ</translation>
+<translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
+<translation id="7430878839542012341">この検索キーワードを履歴から削除しますか？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">絵文字</translation>
 <translation id="7658239707568436148">キャンセル</translation>

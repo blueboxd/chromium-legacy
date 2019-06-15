@@ -751,12 +751,6 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
       world_id, info.content_security_policy, security_origin);
 }
 
-void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
-  DCHECK(GetFrame());
-  GetFrame()->GetDocument()->AddConsoleMessage(
-      ConsoleMessage::CreateFromWebConsoleMessage(message, GetFrame()));
-}
-
 void WebLocalFrameImpl::Alert(const WebString& message) {
   DCHECK(GetFrame());
   ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
@@ -2586,6 +2580,15 @@ void WebLocalFrameImpl::ForwardMessageFromHost(
   PortalHost::From(*(GetFrame()->DomWindow()))
       .ReceiveMessage(ToBlinkTransferableMessage(std::move(message)),
                       source_origin, target);
+}
+
+void WebLocalFrameImpl::AddMessageToConsoleImpl(
+    const WebConsoleMessage& message,
+    bool discard_duplicates) {
+  DCHECK(GetFrame());
+  GetFrame()->GetDocument()->AddConsoleMessage(
+      ConsoleMessage::CreateFromWebConsoleMessage(message, GetFrame()),
+      discard_duplicates);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

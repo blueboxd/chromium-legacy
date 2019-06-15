@@ -94,10 +94,11 @@ class CONTENT_EXPORT AppCacheDiskCache {
 
   const char* uma_name() { return uma_name_; }
 
+  disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
+
  protected:
   // |uma_name| must remain valid for the life of the object.
   explicit AppCacheDiskCache(const char* uma_name, bool use_simple_cache);
-  disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
 
  private:
   class CreateBackendCallbackShim;
@@ -128,11 +129,6 @@ class CONTENT_EXPORT AppCacheDiskCache {
     AppCacheDiskCacheEntry** entry;
     net::CompletionOnceCallback callback;
   };
-  using PendingCalls = std::vector<PendingCall>;
-
-  class ActiveCall;
-  using ActiveCalls = std::set<ActiveCall*>;
-  using OpenEntries = std::set<AppCacheDiskCacheEntry*>;
 
   bool is_initializing_or_waiting_to_initialize() const {
     return create_backend_callback_.get() != NULL || is_waiting_to_initialize_;
@@ -160,8 +156,8 @@ class CONTENT_EXPORT AppCacheDiskCache {
   bool is_waiting_to_initialize_;
   net::CompletionOnceCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
-  PendingCalls pending_calls_;
-  OpenEntries open_entries_;
+  std::vector<PendingCall> pending_calls_;
+  std::set<AppCacheDiskCacheEntry*> open_entries_;
   std::unique_ptr<disk_cache::Backend> disk_cache_;
   const char* const uma_name_;
 

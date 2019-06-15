@@ -76,8 +76,12 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
     menu_model_->AddCheckItemWithStringId(
         IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
         IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
-    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
-                                     IDS_MEDIA_ROUTER_REPORT_ISSUE);
+
+    if (browser->profile()->GetPrefs()->GetBoolean(
+            prefs::kUserFeedbackAllowed)) {
+      menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
+                                       IDS_MEDIA_ROUTER_REPORT_ISSUE);
+    }
   }
 }
 

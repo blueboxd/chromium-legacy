@@ -44,7 +44,7 @@
 <translation id="1260236875608242557">Søg, og udforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1272444412400969138">Enhedsvælger, som der skal deles fane med.</translation>
+<translation id="1272444412400969138">Liste over enheder, der kan deles fane med.</translation>
 <translation id="1283039547216852943">Tryk for at udvide</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
 <translation id="3658159451045945436">En nulstilling sletter din historik for databesparelser, herunder listen over de websites, du har besøgt.</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
+<translation id="3663367437272849150">Gruppér <ph name="NUM_SELECTED" /> faner.</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> blev ikke downloadet, da lagerplaceringen ikke er tilgængelig.</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
@@ -402,7 +403,7 @@
 <translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
-<translation id="4044912625106523635">Den enhedsvælger, som der skal deles fane med, er åbnet i fuld højde.</translation>
+<translation id="4044912625106523635">Listen over enheder, der kan deles fane med, er åbnet i fuld højde.</translation>
 <translation id="4046123991198612571">Næste nummer</translation>
 <translation id="4048707525896921369">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
@@ -466,6 +467,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
 <translation id="4479647676395637221">Spørg, før websites bruger dit kamera (anbefales)</translation>
 <translation id="4479972344484327217">Installerer <ph name="MODULE" /> til Chrome…</translation>
+<translation id="4482194545587547824">Google bruger muligvis din browserhistorik til at tilpasse Søgning og andre Google-tjenester personligt til dig</translation>
 <translation id="4487967297491345095">Alle Chromes appdata slettes permanent. Dette omfatter alle filer, indstillinger, konti, databaser osv.</translation>
 <translation id="4493497663118223949">Lite-tilstand er aktiveret</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{For 1 dag siden}one{For # dag siden}other{For # dage siden}}</translation>
@@ -476,6 +478,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4538018662093857852">Aktivér Lite-tilstand</translation>
 <translation id="4550003330909367850">Indstil en skærmlås på denne enhed for at se eller kopiere din adgangkode her.</translation>
+<translation id="4556110439722119938">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres med din Google-konto, så du kan bruge dem på alle dine enheder</translation>
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4561979708150884304">Der er ingen forbindelse</translation>
 <translation id="4565377596337484307">Skjul adgangskode</translation>
@@ -630,6 +633,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="557283862590186398">Chrome skal have tilladelse til at bruge din mikrofon på dette website.</translation>
 <translation id="55737423895878184">Placering og notifikationer er tilladt</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner blev grupperet</translation>
 <translation id="5581519193887989363">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
@@ -708,6 +712,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6193448654517602979">Vælg faner</translation>
 <translation id="6194112207524046168">Aktivér også dit kamera i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til kameraet.</translation>
 <translation id="6196640612572343990">Bloker cookies fra tredjeparter</translation>
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
@@ -742,7 +747,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6416782512398055893">Der er downloadet <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Den enhedsvælger, som der skal deles fane med, er lukket.</translation>
+<translation id="6418750371676080905">Listen over enheder, der kan deles fane med, er lukket.</translation>
 <translation id="6427112570124116297">Oversæt på nettet</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
 <translation id="6437478888915024427">Sideoplysninger</translation>
@@ -782,7 +787,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="666268767214822976">Brug en forslagstjeneste til at få vist relaterede forespørgsler og populære websites, mens du skriver i adresselinjen</translation>
 <translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
-<translation id="6672986458216094438">Den enhedsvælger, der skal deles fane med, er åbnet i halv højde.</translation>
+<translation id="6672986458216094438">Listen over enheder, der kan deles fane med, er åbnet i halv højde.</translation>
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
@@ -824,6 +829,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Nulstil oversættelsesindstillingerne</translation>
 <translation id="6979737339423435258">Altid</translation>
+<translation id="6980462514016882061">Google kan bruge din browserhistorik til at tilpasse Søgning, annoncer og andre Google-tjenester personligt til dig.</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="6985347914332179298">Der er ingen downloads her</translation>
 <translation id="6989267951144302301">Der kan ikke downloades</translation>
@@ -850,11 +856,13 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7141896414559753902">Bloker visning af pop up-vinduer på websites og omdirigeringer (anbefales)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Indlæs den oprindelige side<ph name="END_LINK" /> fra <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">De seneste 24 timer</translation>
+<translation id="7161892015146974550">Vælg fanen <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7189372733857464326">Venter på, at Google Play-tjenester er opdateret</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
+<translation id="722055596168483966">Tilpas Google-tjenester</translation>
 <translation id="723171743924126238">Vælg billeder</translation>
 <translation id="7233236755231902816">Hent den nyeste version af Chrome for at bruge browseren på dit eget sprog</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
@@ -881,6 +889,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7403691278183511381">Førstegangsoplevelse af Chrome</translation>
 <translation id="741204030948306876">Ja tak</translation>
 <translation id="7413229368719586778">Startdato <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Gruppér faner...</translation>
 <translation id="7423098979219808738">Spørg først</translation>
 <translation id="7423538860840206698">Blokeret fra at læse udklipsholderen</translation>
 <translation id="7431991332293347422">Bestem selv, hvordan din browserhistorik skal bruges til at tilpasse søgeresultater m.m.</translation>
@@ -1017,6 +1026,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8349013245300336738">Sortér efter mængden af data, der er brugt</translation>
 <translation id="8364299278605033898">Se populære websites</translation>
+<translation id="8364603787714420828">Fravælg fanen <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>
@@ -1082,6 +1092,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
+<translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
@@ -1099,6 +1110,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8986494364107987395">Send automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="8993760627012879038">Åbn en ny fane i inkognitotilstand</translation>
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
+<translation id="9005637476204108703">Tryk her for at administrere dine konti</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
 <translation id="9040142327097499898">Notifikationer er tilladt. Placering er deaktiveret for denne enhed.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}one{# video}other{# videoer}}</translation>
@@ -1119,6 +1131,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="9155898266292537608">Du kan også søge med et hurtigt tryk på et ord</translation>
 <translation id="9169594135889675189">Føj en ny fane til gruppen</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
+<translation id="9190112541605496997">Tryk på knappen "Administrer konto" for at administrere dine konti</translation>
 <translation id="9204836675896933765">1 fil tilbage</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Billeder</translation>

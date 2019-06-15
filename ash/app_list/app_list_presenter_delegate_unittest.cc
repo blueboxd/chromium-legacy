@@ -153,19 +153,14 @@ class AppListPresenterDelegateZeroStateTest
 class AppListPresenterDelegateTest
     : public AppListPresenterDelegateZeroStateTest {
  public:
-  AppListPresenterDelegateTest() = default;
-  ~AppListPresenterDelegateTest() override = default;
-
-  // testing::Test:
-  void SetUp() override {
-    AppListPresenterDelegateZeroStateTest::SetUp();
-
+  AppListPresenterDelegateTest() {
     // Zeros state changes expected UI behavior. Most test cases in this suite
     // are the expected UI behavior with zero state being disabled.
     // TODO(jennyz): Add new test cases for zero state, crbug.com/925195.
     scoped_feature_list_.InitAndDisableFeature(
         app_list_features::kEnableZeroStateSuggestions);
   }
+  ~AppListPresenterDelegateTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -1376,13 +1371,14 @@ TEST_F(AppListPresenterDelegateTest, DragAppListViewFromPeeking) {
 class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {
  public:
-  AppListPresenterDelegateHomeLauncherTest() = default;
+  AppListPresenterDelegateHomeLauncherTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {app_list_features::kEnableBackgroundBlur}, {});
+  }
   ~AppListPresenterDelegateHomeLauncherTest() override = default;
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableBackgroundBlur}, {});
     AppListPresenterDelegateTest::SetUp();
     GetAppListTestHelper()->WaitUntilIdle();
   }

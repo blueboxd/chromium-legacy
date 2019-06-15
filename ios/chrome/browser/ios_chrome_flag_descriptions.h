@@ -97,10 +97,6 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kClosingLastIncognitoTabName[];
 extern const char kClosingLastIncognitoTabDescription[];
 
-// Title and description for the flag to enable the compact translate infobar.
-extern const char kCompactTranslateInfobarName[];
-extern const char kCompactTranslateInfobarDescription[];
-
 // Title and description for the flag to enable Contextual Search.
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];

@@ -2023,8 +2023,8 @@ class CoinFlipHoldbackExperimentBrowserTest
   ~CoinFlipHoldbackExperimentBrowserTest() override = default;
 
   void SetUp() override {
-    ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
     PreviewsLitePageAndPageHintsBrowserTest::SetUp();
+    ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {

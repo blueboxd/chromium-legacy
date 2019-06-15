@@ -9842,8 +9842,14 @@ IN_PROC_BROWSER_TEST_F(
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
+// Failing on Linux CFI. http://crbug.com/974319
+#if defined(OS_LINUX)
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#else
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+                       MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
   const GURL main_frame_url(embedded_test_server()->GetURL(
       "a.com",
       "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts,sandbox-allow-"

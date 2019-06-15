@@ -137,8 +137,14 @@ void ThrottledOfflineContentProvider::OnItemRemoved(const ContentId& id) {
     observer.OnItemRemoved(id);
 }
 
-void ThrottledOfflineContentProvider::OnItemUpdated(const OfflineItem& item) {
-  updates_[item.id] = item;
+void ThrottledOfflineContentProvider::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
+  base::Optional<UpdateDelta> merged = update_delta;
+  if (updates_.find(item.id) != updates_.end()) {
+    merged = UpdateDelta::MergeUpdates(updates_[item.id].second, update_delta);
+  }
+  updates_[item.id] = std::make_pair(item, merged);
 
   // If we already queued an update, we're throttling, just wait until the
   // update passes through.
@@ -166,7 +172,7 @@ void ThrottledOfflineContentProvider::UpdateItemIfPresent(
     const OfflineItem& item) {
   auto it = updates_.find(item.id);
   if (it != updates_.end())
-    it->second = item;
+    it->second.first = item;
 }
 
 void ThrottledOfflineContentProvider::FlushUpdates() {
@@ -175,8 +181,10 @@ void ThrottledOfflineContentProvider::FlushUpdates() {
 
   OfflineItemMap updates = std::move(updates_);
   for (auto item_pair : updates) {
+    auto& item = item_pair.second.first;
+    auto& update = item_pair.second.second;
     for (auto& observer : observers_)
-      observer.OnItemUpdated(item_pair.second);
+      observer.OnItemUpdated(item, update);
   }
 }
 

@@ -8,10 +8,12 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "device/base/features.h"
 
@@ -26,6 +28,9 @@ const char kHIDServiceUUID[] = "1812";
 const char kSecurityKeyServiceUUID[] = "FFFD";
 
 const size_t kLongTermKeyHexStringLength = 32;
+
+constexpr base::TimeDelta kMaxDeviceSelectionDuration =
+    base::TimeDelta::FromSeconds(30);
 
 // Get limited number of devices from |devices| and
 // prioritize paired/connecting devices over other devices.
@@ -97,6 +102,13 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
   return result;
 }
 
+void RecordDeviceSelectionDuration(const std::string& histogram_name,
+                                   base::TimeDelta duration) {
+  base::UmaHistogramCustomTimes(
+      histogram_name, duration, base::TimeDelta::FromMilliseconds(1) /* min */,
+      kMaxDeviceSelectionDuration /* max */, 50 /* buckets */);
+}
+
 }  // namespace
 
 device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
@@ -132,6 +144,53 @@ std::vector<std::vector<uint8_t>> GetBlockedLongTermKeys() {
   }
 
   return long_term_keys;
+}
+
+void RecordDeviceSelectionDuration(base::TimeDelta duration,
+                                   BluetoothUiSurface surface,
+                                   bool was_paired,
+                                   BluetoothTransport transport) {
+  // Throw out longtail results of the user taking longer than
+  // |kMaxDeviceSelectionDuration|. Assume that these thrown out results reflect
+  // the user not being actively engaged with device connection: leaving the
+  // page open for a long time, walking away from computer, etc.
+  if (duration > kMaxDeviceSelectionDuration)
+    return;
+
+  std::string base_histogram_name =
+      "Bluetooth.ChromeOS.DeviceSelectionDuration";
+  RecordDeviceSelectionDuration(base_histogram_name, duration);
+
+  std::string surface_name =
+      (surface == BluetoothUiSurface::kSettings ? "Settings" : "SystemTray");
+  std::string surface_histogram_name = base_histogram_name + "." + surface_name;
+  RecordDeviceSelectionDuration(surface_histogram_name, duration);
+
+  std::string paired_name = (was_paired ? "Paired" : "NotPaired");
+  std::string paired_histogram_name =
+      surface_histogram_name + "." + paired_name;
+  RecordDeviceSelectionDuration(paired_histogram_name, duration);
+
+  if (!was_paired) {
+    std::string transport_name;
+    switch (transport) {
+      case BLUETOOTH_TRANSPORT_CLASSIC:
+        transport_name = "Classic";
+        break;
+      case BLUETOOTH_TRANSPORT_LE:
+        transport_name = "BLE";
+        break;
+      case BLUETOOTH_TRANSPORT_DUAL:
+        transport_name = "Dual";
+        break;
+      default:
+        return;
+    }
+
+    std::string transport_histogram_name =
+        paired_histogram_name + "." + transport_name;
+    RecordDeviceSelectionDuration(transport_histogram_name, duration);
+  }
 }
 
 }  // namespace device

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1492646418094134664">Presiona para completar los datos de la tarjeta de crédito con Chrome</translation>
+<translation id="1566281227936819866">Mostrando las formas de pago guardadas</translation>
 <translation id="2610239185026711824">Sugerir contraseña</translation>
 <translation id="2803478378562657435">Se muestran las contraseñas guardadas y las opciones de contraseña</translation>
 <translation id="2903493209154104877">Direcciones</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Presiona para completar la contraseña con Chrome</translation>
 <translation id="7299100402441711551">Mostrar direcciones</translation>
 <translation id="7494879913343971937">Mostrar contraseñas</translation>
+<translation id="8037472847879765671">Muestra formas de pago</translation>
 <translation id="8507520749471379845">Contraseñas disponibles</translation>
 </translationbundle>

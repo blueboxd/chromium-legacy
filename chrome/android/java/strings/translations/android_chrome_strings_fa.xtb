@@ -358,6 +358,7 @@
 <translation id="363596933471559332">با استفاده از اعتبارنامه‌های ذخیره شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. وقتی این قابلیت خاموش است، هر بار قبل از وارد شدن به سیستم وب‌سایت از شما خواسته می‌شود اطلاعات را تأیید کنید.</translation>
 <translation id="3658159451045945436">بازنشانی باعث پاک شدن سابقه داده‌های ذخیره‌شده ازجمله فهرست سایت‌های بازدیدشده می‌شود.</translation>
 <translation id="3662546969139119822">سابقه‌ای اینجا نیست</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> برگه را گروه‌بندی کنید.</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
 <translation id="3692944402865947621">به‌دلیل دردسترس نبودن مکان فضای ذخیره‌سازی، <ph name="FILE_NAME" /> بارگیری نشد.</translation>
 <translation id="3714981814255182093">باز کردن «نوار پیدا کردن»</translation>
@@ -466,6 +467,7 @@
 <translation id="447252321002412580">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
 <translation id="4479647676395637221">قبل از اجازه به سایت‌ها برای استفاده از دوربین، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="4479972344484327217">‏درحال نصب <ph name="MODULE" /> برای Chrome…</translation>
+<translation id="4482194545587547824">‏Google ممکن است از سابقه مرورتان برای شخصی‌سازی جستجو و سایر سرویس‌های Google استفاده کند.</translation>
 <translation id="4487967297491345095">‏همه داده‌های برنامه Chrome به‌طور دائم حذف خواهند شد. این داده‌ها شامل همه فایل‌ها، تنظیمات، حساب‌ها، پایگاه‌های داده و غیره می‌شود.</translation>
 <translation id="4493497663118223949">«حالت ساده» روشن است</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{۱ روز قبل}one{#  روز قبل}other{#  روز قبل}}</translation>
@@ -476,6 +478,7 @@
 <translation id="4532845899244822526">انتخاب پوشه</translation>
 <translation id="4538018662093857852">روشن کردن حالت ساده</translation>
 <translation id="4550003330909367850">برای مشاهده یا کپی کردن گذرواژه‌تان در اینجا، قفل صفحه را در این دستگاه تنظیم کنید.</translation>
+<translation id="4556110439722119938">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات در حساب Google شما همگام‌سازی می‌شوند تا بتوانید از آن‌ها در همه دستگاه‌هایتان استفاده کنید.</translation>
 <translation id="4558311620361989323">میان‌برهای صفحه وب</translation>
 <translation id="4561979708150884304">اتصال برقرار نیست</translation>
 <translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
@@ -630,6 +633,7 @@
 <translation id="557283862590186398">‏Chrome برای این سایت به مجوز دسترسی به میکروفون نیاز دارد.</translation>
 <translation id="55737423895878184">مکان و اعلان‌ها مجاز هستند</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> برگه گروه‌بندی شد</translation>
 <translation id="5581519193887989363">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> انتخاب کنید.</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
@@ -708,6 +712,7 @@
 <translation id="6181444274883918285">افزودن سایتی به استثناها</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
+<translation id="6193448654517602979">انتخاب برگه‌ها</translation>
 <translation id="6194112207524046168">‏برای اینکه به Chrome امکان دهید به دوربین دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم دوربین را روشن کنید.</translation>
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
@@ -824,6 +829,7 @@
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6978479750597523876">بازنشانی تنظیمات ترجمه</translation>
 <translation id="6979737339423435258">همه زمان‌ها</translation>
+<translation id="6980462514016882061">‏Google ممکن است از سابقه مرور شما برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google استفاده کند</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="6985347914332179298">بارگیری‌هایی اینجا وجود ندارد</translation>
 <translation id="6989267951144302301">بارگیری نشد</translation>
@@ -850,11 +856,13 @@
 <translation id="7141896414559753902">مسدود کردن نمایش پنجره‌های بازشو و هدایت‌ها در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />بار کردن صفحه اصلی<ph name="END_LINK" /> از <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">۲۴ ساعت گذشته</translation>
+<translation id="7161892015146974550">برگه <ph name="TAB_TITLE" /> را انتخاب کنید.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
 <translation id="7177466738963138057">می‌توانید بعداً این مورد را در تنظیمات تغییر دهید</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
+<translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7233236755231902816">‏برای اینکه وب را به زبان خود ببینید، آخرین نسخه Chrome را دریافت کنید</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
@@ -881,6 +889,7 @@
 <translation id="7403691278183511381">‏اولین تجربه اجرا Chrome</translation>
 <translation id="741204030948306876">بله، موافقم</translation>
 <translation id="7413229368719586778">تاریخ شروع: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">گروه‌بندی برگه‌ها...</translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
 <translation id="7431991332293347422">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو» و موارد دیگر</translation>
@@ -1017,6 +1026,7 @@
 <translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
 <translation id="8349013245300336738">مرتب‌سازی براساس مقدار داده استفاده‌شده</translation>
 <translation id="8364299278605033898">مشاهده وب‌سایت‌های پرطرفدار</translation>
+<translation id="8364603787714420828">برگه <ph name="TAB_TITLE" /> را لغو انتخاب کنید.</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8378714024927312812">توسط سازمانتان مدیریت می‌شود</translation>
@@ -1082,6 +1092,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="885701979325669005">فضای ذخیره‌سازی</translation>
 <translation id="8901170036886848654">نشانکی پیدا نشد</translation>
+<translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
@@ -1099,6 +1110,7 @@
 <translation id="8986494364107987395">‏ارسال خودکار آمار کاربرد و گزارش‌های خرابی به Google</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
+<translation id="9005637476204108703">برای مدیریت حساب‌ها، روی اینجا ضربه بزنید</translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 <translation id="9040142327097499898">اعلان‌ها مجاز هستند. مکان برای این دستگاه خاموش است.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ویدیو}one{# ویدیو}other{# ویدیو}}</translation>
@@ -1119,6 +1131,7 @@
 <translation id="9155898266292537608">می‌توانید با ضربه‌ای سریع روی کلمه نیز جستجو کنید</translation>
 <translation id="9169594135889675189">افزودن برگه جدید به گروه</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
+<translation id="9190112541605496997">برای مدیریت حساب‌ها، روی دکمه «مدیریت حساب» ضربه بزنید</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">تصاویر</translation>

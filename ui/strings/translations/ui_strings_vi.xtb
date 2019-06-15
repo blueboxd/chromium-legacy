@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1409544243779336081">Ứng dụng đề xuất</translation>
+<translation id="1498028757988366001">Bạn đã tìm kiếm nội dung này trước đây. Việc xóa "<ph name="QUERY" />" khỏi lịch sử sẽ xóa vĩnh viễn cụm từ tìm kiếm này khỏi tài khoản của bạn trên tất cả các thiết bị.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
 <translation id="1643823602425662293">Thông báo</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 phút trước}other{# phút trước}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Còn 1 phút}other{Còn # phút}}</translation>
+<translation id="7430878839542012341">Xóa nội dung tìm kiếm này khỏi lịch sử của bạn?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Biểu tượng cảm xúc</translation>
 <translation id="7658239707568436148">Hủy</translation>

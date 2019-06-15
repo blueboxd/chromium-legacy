@@ -42,6 +42,7 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
+#include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
@@ -181,7 +182,7 @@ HRESULT WaitForLoginUIAndGetResult(
   const int kBufferSize = 4096;
   std::vector<char> output_buffer(kBufferSize, '\0');
   base::ScopedClosureRunner zero_buffer_on_exit(
-      base::BindOnce(base::IgnoreResult(&::RtlSecureZeroMemory),
+      base::BindOnce(base::IgnoreResult(&SecurelyClearBuffer),
                      &output_buffer[0], kBufferSize));
 
   HRESULT hr = WaitForProcess(uiprocinfo->procinfo.process_handle(),
@@ -267,12 +268,18 @@ HRESULT ValidateResult(const base::Value& result, BSTR* status_text) {
     has_error = true;
   }
 
+  std::string access_token = GetDictStringUTF8(result, kKeyAccessToken);
+  if (access_token.empty()) {
+    LOGFN(ERROR) << "access token is empty";
+    has_error = true;
+  }
+
   std::string password = GetDictStringUTF8(result, kKeyPassword);
   if (password.empty()) {
     LOGFN(ERROR) << "Password is empty";
     has_error = true;
   } else {
-    ::RtlSecureZeroMemory(const_cast<char*>(password.data()), password.size());
+    SecurelyClearString(password);
   }
 
   std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
@@ -625,8 +632,9 @@ void CGaiaCredentialBase::ResetInternalState() {
   LOGFN(INFO);
   username_.Empty();
   domain_.Empty();
+  wait_for_report_result_ = false;
 
-  ::RtlSecureZeroMemory((BSTR)password_, password_.ByteLength());
+  SecurelyClearBuffer((BSTR)password_, password_.ByteLength());
   password_.Empty();
 
   current_windows_password_.Empty();
@@ -761,6 +769,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   if (!CanAttemptWindowsLogon())
     return S_FALSE;
 
+  bool password_updated = false;
   // If a password update is needed, check if the user entered their old
   // Windows password and it is valid. If it is, try to change the password
   // using the old password. If it isn't, return S_FALSE to state that the
@@ -779,6 +788,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
         }
         return S_FALSE;
       }
+      password_updated = true;
     } else {
       HRESULT hr =
           IsWindowsPasswordValidForStoredUser(current_windows_password_);
@@ -792,6 +802,8 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
           }
           LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
           password_ = current_windows_password_;
+        } else {
+          password_updated = true;
         }
       } else {
         if (current_windows_password_.Length() && events_) {
@@ -801,15 +813,20 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
             LOGFN(ERROR) << "Account is locked.";
           }
 
-          events_->SetFieldString(
-              this, FID_DESCRIPTION,
-              GetStringResource(pasword_message_id).c_str());
-          events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
-                                            CPFIS_FOCUSED);
+          DisplayPasswordField(pasword_message_id);
         }
         return S_FALSE;
       }
     }
+  }
+
+  // Password was changed successfully, remove the old password information
+  // so that a new password can be saved.
+  if (password_updated) {
+    HRESULT hr = PasswordRecoveryManager::Get()->ClearUserRecoveryPassword(
+        OLE2CW(get_sid()));
+    if (FAILED(hr))
+      LOGFN(ERROR) << "ClearUserRecoveryPassword hr=" << putHR(hr);
   }
 
   // The OS user has already been created, so return all the information
@@ -924,14 +941,22 @@ HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
 HRESULT CGaiaCredentialBase::SetDeselected(void) {
   LOGFN(INFO);
 
-  // Cancel logon so that the next time this credential is clicked everything
-  // has to be re-entered by the user. This prevents a Windows password
-  // entered into the password field by the user from being persisted too
-  // long. The behaviour is similar to that of the normal windows password
-  // text box. Whenever a different user is selected and then the original
-  // credential is selected again, the password is cleared.
-  ResetInternalState();
-
+  // This check is trying to handle the scenario when GetSerialization finishes
+  // with cpgsr set as CPGSR_RETURN_CREDENTIAL_FINISHED which indicates that
+  // the windows autologon is ready to go. In this case ideally ReportResult
+  // should be invoked by the windows login UI process prior to SetDeselected.
+  // But for OtherUserCredential scenario, SetDeselected is being invoked
+  // prior to ReportResult which is leading to clearing of the internalstate
+  // prior to saving the account user info in ReportResult.
+  if (!wait_for_report_result_) {
+    // Cancel logon so that the next time this credential is clicked everything
+    // has to be re-entered by the user. This prevents a Windows password
+    // entered into the password field by the user from being persisted too
+    // long. The behaviour is similar to that of the normal windows password
+    // text box. Whenever a different user is selected and then the original
+    // credential is selected again, the password is cleared.
+    ResetInternalState();
+  }
   return S_OK;
 }
 
@@ -1158,6 +1183,13 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   // sign in of the account so we can re-enable token updates.
   if (submit_button_enabled)
     token_update_locker_.reset();
+
+  // If cpgsr is CPGSR_RETURN_CREDENTIAL_FINISHED and the status is S_OK, then
+  // report result would be invoked. So we shouldn't be resetting the internal
+  // state prior to report result getting triggered.
+  if (*cpgsr == CPGSR_RETURN_CREDENTIAL_FINISHED && hr == S_OK) {
+    wait_for_report_result_ = true;
+  }
 
   // Otherwise, keep the ui disabled forever now. ReportResult will eventually
   // be called on success or failure and the reset of the state of the
@@ -1413,8 +1445,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
       HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
       LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }
-
-    ::RtlSecureZeroMemory(const_cast<char*>(json.data()), json.size());
+    SecurelyClearString(json);
   } else {
     LOGFN(ERROR) << "base::JSONWriter::Write failed";
   }
@@ -1453,17 +1484,14 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
     // CGaiaCredentialBase::Unadvise().
     base::string16 json_result16 = base::UTF8ToUTF16(json_result);
     CComBSTR result_string(W2COLE(json_result16.c_str()));
-    ::RtlSecureZeroMemory(
-        const_cast<wchar_t*>(json_result16.data()),
-        json_result16.size() * sizeof(decltype(json_result16[0])));
+    SecurelyClearString(json_result16);
 
     hr = uiprocinfo->credential->OnUserAuthenticated(result_string,
                                                      &status_text);
-    ::RtlSecureZeroMemory((BSTR)result_string, result_string.ByteLength());
+    SecurelyClearBuffer((BSTR)result_string, result_string.ByteLength());
   }
 
-  ::RtlSecureZeroMemory(const_cast<char*>(json_result.data()),
-                        json_result.size());
+  SecurelyClearString(json_result);
 
   // If the process was killed by the credential in Terminate(), don't process
   // the error message since it is possible that the credential and/or the
@@ -1510,13 +1538,23 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
     return E_INVALIDARG;
   }
 
+  std::string access_token = GetDictStringUTF8(properties, kKeyPassword);
+  if (!access_token.empty()) {
+    // Update the password recovery information if possible.
+    HRESULT hr = PasswordRecoveryManager::Get()->StoreWindowsPasswordIfNeeded(
+        sid, access_token, password);
+    if (FAILED(hr) && hr != E_NOTIMPL)
+      LOGFN(ERROR) << "StoreWindowsPasswordIfNeeded hr=" << putHR(hr);
+  } else {
+    LOGFN(ERROR) << "Access token is empty. Cannot save Windows password.";
+  }
+
   base::string16 domain = GetDictString(properties, kKeyDomain);
 
   // Load the user's profile so that their registry hive is available.
   auto profile = ScopedUserProfile::Create(sid, domain, username, password);
 
-  ::RtlSecureZeroMemory(const_cast<wchar_t*>(password.data()),
-                        password.size() * sizeof(decltype(password[0])));
+  SecurelyClearString(password);
 
   if (!profile) {
     LOGFN(ERROR) << "Could not load user profile";
@@ -1680,9 +1718,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
       OSUserManager::Get(), found_username, local_password.c_str(),
       local_fullname.c_str(), comment.c_str(),
       /*add_to_users_group=*/true, kMaxUsernameAttempts, username, sid);
-  ::RtlSecureZeroMemory(
-      const_cast<wchar_t*>(local_password.data()),
-      local_password.size() * sizeof(decltype(local_password[0])));
+  SecurelyClearString(local_password);
 
   // May return user exists if this is the anonymous credential and the maximum
   // attempts to generate a new username has been reached.
@@ -1723,8 +1759,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   base::Optional<base::Value> properties =
       base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
 
-  ::RtlSecureZeroMemory(const_cast<char*>(json_string.data()),
-                        json_string.size());
+  SecurelyClearString(json_string);
   json_string.clear();
 
   if (!properties || !properties->is_dict()) {
@@ -1760,9 +1795,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   base::string16 local_password =
       GetDictString(*authentication_results_, kKeyPassword);
   password_ = ::SysAllocString(local_password.c_str());
-  ::RtlSecureZeroMemory(
-      const_cast<wchar_t*>(local_password.data()),
-      local_password.size() * sizeof(decltype(local_password[0])));
+  SecurelyClearString(local_password);
 
   // Disable the submit button. Either the signon will succeed with the given
   // credentials or a password update will be needed and that flow will handle
@@ -1773,8 +1806,22 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   // Check if the credentials are valid for the user. If they aren't show the
   // password update prompt and continue without authenticating on the provider.
   if (!AreCredentialsValid()) {
+    // Change UI into a mode where it expects to have the old password entered.
     DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
-    return S_FALSE;
+    base::string16 old_windows_password;
+
+    // Pre-fill the old password if possible so that the sign in will proceed to
+    // automatically update the password.
+    if (SUCCEEDED(RecoverWindowsPasswordIfPossible(&old_windows_password))) {
+      current_windows_password_ =
+          ::SysAllocString(old_windows_password.c_str());
+      SecurelyClearString(old_windows_password);
+
+      // Fall-through to continue with auto sign in and try the recovered
+      // password.
+    } else {
+      return S_FALSE;
+    }
   }
 
   result_status_ = STATUS_SUCCESS;
@@ -1868,6 +1915,26 @@ HRESULT CGaiaCredentialBase::ValidateExistingUser(
     const base::string16& sid,
     BSTR* error_text) {
   return S_OK;
+}
+
+HRESULT CGaiaCredentialBase::RecoverWindowsPasswordIfPossible(
+    base::string16* recovered_password) {
+  DCHECK(recovered_password);
+
+  if (!authentication_results_) {
+    LOGFN(ERROR) << "No authentication results found during sign in";
+    return E_FAIL;
+  }
+
+  const std::string* access_token =
+      authentication_results_->FindStringKey(kKeyAccessToken);
+  if (!access_token) {
+    LOGFN(ERROR) << "No access token found in authentication results";
+    return E_FAIL;
+  }
+
+  return PasswordRecoveryManager::Get()->RecoverWindowsPasswordIfPossible(
+      OLE2CW(get_sid()), *access_token, recovered_password);
 }
 
 }  // namespace credential_provider

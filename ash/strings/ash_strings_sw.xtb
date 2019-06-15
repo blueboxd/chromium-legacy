@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Mbinu za kuingiza data zimewekwa na msimamizi wako.</translation>
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1761222317188459878">Washa au uzime muunganisho wa mtandao. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Sogeza kulia</translation>
 <translation id="1812997170047690955">Kuna nini kwenye skrini yangu?</translation>
 <translation id="1823873187264960516">Ethaneti: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Mratibu (inapakia...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Chaji ya betri ni <ph name="PERCENTAGE" />% na inaendelea kuchaji.</translation>
 <translation id="3995138139523574647">Kifaa cha USB-C (mlango wa upande wa kulia nyuma)</translation>
 <translation id="4017989525502048489">Kielekezi cha leza</translation>
+<translation id="4021716437419160885">Sogeza chini</translation>
 <translation id="4042660782729322247">Unashiriki skrini yako</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Imezimwa katika programu moja}other{Imezimwa katika programu #}}</translation>
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Thabiti</translation>
 <translation id="4918086044614829423">Kubali</translation>
 <translation id="4924411785043111640">Zima kisha uwashe na uweke upya</translation>
+<translation id="495046168593986294">Sogeza juu</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="5030687792513154421">Muda wa kutumia kifaa umeisha</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> imeunganishwa kwenye simu mpya</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Ili upate sasisho, washa Chromebook yako upya huku kibodi ikiwa imeunganishwa.</translation>
 <translation id="5992218262414051481">Hali ya Utofautishaji wa Juu imewashwa. Bonyeza Ctrl+Search+H tena ili ugeuze na kuizima.</translation>
 <translation id="6018164090099858612">Inaondoka kwenye hali ya kuakisi</translation>
+<translation id="602001110135236999">Sogeza kushoto</translation>
+<translation id="6040143037577758943">Funga</translation>
 <translation id="6043212731627905357">Skrini hii haiingiliani na kifaa chako cha <ph name="DEVICE_TYPE" /> (Skrini haitumiki).</translation>
 <translation id="6043994281159824495">Ondoka kwenye akaunti sasa hivi</translation>
 <translation id="6047696787498798094">Itaacha kushiriki skrini unapobadilisha hadi kwa mtumiaji mwingine. Je, unataka kuendelea?</translation>

@@ -393,6 +393,12 @@
       Si la política no es configura o es desactiva, l'usuari podrà canviar aquesta configuració (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).
       </translation>
 <translation id="1767673020408652620">Activa les recomanacions d'aplicacions quan el quadre de cerca no mostri cap resultat.</translation>
+<translation id="17719159826324007">
+      Si aquesta política s'estableix en "ArcSession", obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
+      Quan s'estableix en "Sempre", obliga el dispositiu a reiniciar-se cada vegada que l'usuari tanqui la sessió.
+      Si es deixa sense establir, no té cap efecte i no obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió. Funciona de la mateixa manera si s'estableix en "Mai".
+      Aquesta política només té efecte per a usuaris no afiliats.
+      </translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
 <translation id="1793346220873697538">Desactiva el mode d'impressió amb PIN de manera predeterminada</translation>
 <translation id="1797233582739332495">Mostra una sol·licitud periòdica a l'usuari per indicar-li que cal reiniciar el navegador</translation>
@@ -831,6 +837,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
 <translation id="2693108589792503178">Configura l'URL per canviar la contrasenya.</translation>
+<translation id="2694143893026486692">Lupa acoblada activada</translation>
 <translation id="2706708761587205154">Permet imprimir només amb PIN</translation>
 <translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
@@ -1054,6 +1061,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Aquesta política permet que els usuaris de la funció WebDriver substitueixin
       polítiques que podrien interferir amb el seu funcionament.
 
@@ -1521,12 +1529,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Quan aquesta opció de configuració no es configura o s'estableix en "false", els dispositius <ph name="PRODUCT_OS_NAME" /> cerquen actualitzacions automàticament.
 
       Advertiment: et recomanem mantenir activades les actualitzacions automàtiques perquè els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es desactiven les actualitzacions automàtiques, es pot posar els usuaris en perill.</translation>
-<translation id="4018000735882846261">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
-
-      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
-      Si la política es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
-      Si la política no s'estableix, l'Assistent de Google no escoltarà la frase d'activació per veu.
-      </translation>
 <translation id="4020682745012723568">Les aplicacions per a Android no poden accedir a les galetes transferides al perfil de l'usuari.</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
@@ -2670,15 +2672,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un client i ha d'incloure <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client i ha d'incloure <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de contenir el nom de la impressora o bé <ph name="PRINTER_AUTOCONF" /> s'ha d'establir en "true". Les impressores que no tinguin cap d'aquestes propietats o que les tinguin totes dues s'ignoraran.
 
       La configuració d'una impressora es completa quan s'utilitza per primera vegada,  moment en què es baixen els fitxers PPD.  Després, es desen a la memòria cau els que s'utilitzen sovint.
 
-      Aquesta política no repercuteix en la possibilitat dels usuaris de configurar impressores en dispositius concrets,  sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
+      Aquesta política no repercuteix en la possibilitat dels usuaris de configurar impressores en dispositius concrets,  sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
 
-      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest directori. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />.sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris. Fixa't que la posició es basa en zero.
+      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest directori. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.
       </translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="6603004149426829878">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària</translation>

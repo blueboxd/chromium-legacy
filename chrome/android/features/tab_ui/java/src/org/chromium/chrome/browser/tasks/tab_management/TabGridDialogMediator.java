@@ -67,6 +67,7 @@ public class TabGridDialogMediator {
     private final TabGridDialogMediator.ResetHandler mDialogResetHandler;
     private final GridTabSwitcherMediator.ResetHandler mGridTabSwitcherResetHandler;
     private final AnimationOriginProvider mAnimationOriginProvider;
+    private final DialogHandler mTabGridDialogHandler;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, TabGridDialogMediator.ResetHandler dialogResetHandler,
@@ -81,6 +82,7 @@ public class TabGridDialogMediator {
         mDialogResetHandler = dialogResetHandler;
         mGridTabSwitcherResetHandler = gridTabSwitcherResetHandler;
         mAnimationOriginProvider = animationOriginProvider;
+        mTabGridDialogHandler = new DialogHandler();
 
         // Register for tab model.
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -222,5 +224,26 @@ public class TabGridDialogMediator {
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()
                 .getRelatedTabList(tabId);
+    }
+
+    TabListMediator.TabGridDialogHandler getTabGridDialogHandler() {
+        return mTabGridDialogHandler;
+    }
+
+    /**
+     * A handler that handles TabGridDialog related changes originated from {@link TabListMediator}
+     * and {@link TabGridItemTouchHelperCallback}.
+     */
+    class DialogHandler implements TabListMediator.TabGridDialogHandler {
+        @Override
+        public void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status) {
+            mModel.set(TabGridSheetProperties.UNGROUP_BAR_STATUS, status);
+        }
+
+        @Override
+        public void updateDialogContent(int tabId) {
+            mCurrentTabId = tabId;
+            updateDialog();
+        }
     }
 }

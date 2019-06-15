@@ -70,8 +70,9 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   static void SetUpTestCase() {
-    scoped_task_environment_.reset(new base::test::ScopedTaskEnvironment);
-    io_thread_.reset(new base::Thread("AppCacheResponseTest Thread"));
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>();
+    io_thread_ = std::make_unique<base::Thread>("AppCacheResponseTest Thread");
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
   }
@@ -85,9 +86,9 @@ class AppCacheResponseTest : public testing::Test {
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    test_finished_event_.reset(new base::WaitableEvent(
+    test_finished_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED));
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheResponseTest::MethodWrapper<Method>,
                                   base::Unretained(this), method));
@@ -97,8 +98,8 @@ class AppCacheResponseTest : public testing::Test {
   void SetUpTest() {
     DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     DCHECK(task_stack_.empty());
-    storage_delegate_.reset(new MockStorageDelegate(this));
-    service_.reset(new MockAppCacheService());
+    storage_delegate_ = std::make_unique<MockStorageDelegate>(this);
+    service_ = std::make_unique<MockAppCacheService>();
     expected_read_result_ = 0;
     expected_write_result_ = 0;
     written_response_id_ = 0;
@@ -340,7 +341,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void ReadNonExistentInfo() {
     EXPECT_FALSE(reader_->IsReadPending());
-    read_info_buffer_ = new HttpResponseInfoIOBuffer();
+    read_info_buffer_ = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
     reader_->ReadInfo(read_info_buffer_.get(),
                       base::BindOnce(&AppCacheResponseTest::OnReadInfoComplete,
                                      base::Unretained(this)));
@@ -465,7 +466,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void Metadata_LoadResponseInfo() {
     metadata_writer_.reset();
-    storage_delegate_.reset(new MockStorageDelegate(this));
+    storage_delegate_ = std::make_unique<MockStorageDelegate>(this);
     service_->storage()->LoadResponseInfo(GURL(), written_response_id_,
                                           storage_delegate_.get());
   }

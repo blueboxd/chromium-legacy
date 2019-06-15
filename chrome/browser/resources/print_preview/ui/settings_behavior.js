@@ -32,9 +32,11 @@ const SettingsBehavior = {
    * an update to sticky settings.
    * @param {string} settingName Name of the setting to set
    * @param {*} value The value to set the setting to.
+   * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
+   *     to false.
    */
-  setSetting: function(settingName, value) {
-    print_preview.Model.getInstance().setSetting(settingName, value);
+  setSetting: function(settingName, value, noSticky) {
+    print_preview.Model.getInstance().setSetting(settingName, value, noSticky);
   },
 
   /**
@@ -42,10 +44,12 @@ const SettingsBehavior = {
    * @param {number} start
    * @param {number} end
    * @param {*} newValue The value to add (if any).
+   * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
+   *     to false.
    */
-  setSettingSplice: function(settingName, start, end, newValue) {
+  setSettingSplice: function(settingName, start, end, newValue, noSticky) {
     print_preview.Model.getInstance().setSettingSplice(
-        settingName, start, end, newValue);
+        settingName, start, end, newValue, noSticky);
   },
 
   /**

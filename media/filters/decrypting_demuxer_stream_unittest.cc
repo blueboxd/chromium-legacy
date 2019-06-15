@@ -352,6 +352,19 @@ TEST_F(DecryptingDemuxerStreamTest, Read_DecryptError) {
   ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
 }
 
+// Test the case where the decryptor returns kNeedMoreData during read.
+TEST_F(DecryptingDemuxerStreamTest, Read_DecryptNeedMoreData) {
+  Initialize();
+
+  EXPECT_CALL(*input_audio_stream_, Read(_))
+      .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
+  EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
+      .WillRepeatedly(RunCallback<2>(Decryptor::kNeedMoreData,
+                                     scoped_refptr<DecoderBuffer>()));
+  EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
+  ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
+}
+
 // Test the case where the input is an end-of-stream buffer.
 TEST_F(DecryptingDemuxerStreamTest, Read_EndOfStream) {
   Initialize();

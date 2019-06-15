@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -308,10 +307,6 @@ void RenderViewTest::SetUp() {
 #endif
   command_line_ =
       std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
-  // We don't use the descriptor here anyways so it's ok to pass -1.
-  base::FieldTrialList::CreateTrialsFromCommandLine(
-      *command_line_, switches::kFieldTrialHandle, -1);
   params_ = std::make_unique<MainFunctionParams>(*command_line_);
   platform_ = std::make_unique<RendererMainPlatformDelegate>(*params_);
   platform_->PlatformInitialize();

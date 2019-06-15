@@ -15651,6 +15651,26 @@
       If this policy is set, the user cannot change or override it.''',
     },
     {
+      'name': 'UserFeedbackAllowed',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'supported_on': ['chrome.*:77-', 'chrome_os:77-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 570,
+      'caption': '''Allow user feedback''',
+      'tags': [],
+      'desc': '''Allow user feedback.
+        If the policy is set to false, users can not send feedback to Google.
+
+        If the policy is unset or set to true, users can send feedback to Google via Menu->Help->Report an Issue or key combination.'''
+    },
+    {
       'name': 'SamlPasswordExpirationAdvanceWarningDays',
       'type': 'int',
       'schema': {
@@ -16840,6 +16860,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 569,
+  'highest_id_currently_used': 570,
   'highest_atomic_group_id_currently_used': 37
 }

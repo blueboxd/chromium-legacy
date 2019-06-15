@@ -4878,6 +4878,10 @@ interface NFC
     method constructor
     method push
     method watch
+interface NFCErrorEvent : Event
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface NamedNodeMap
     attribute @@toStringTag
     getter length

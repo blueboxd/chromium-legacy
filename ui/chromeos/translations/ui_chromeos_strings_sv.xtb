@@ -240,6 +240,7 @@
 <translation id="383652340667548381">serbiska</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3855472144336161447">Tyska (neo 2)</translation>
+<translation id="3856075812838139784">Skrivskyddat</translation>
 <translation id="3858678421048828670">Italienskt tangentbord</translation>
 <translation id="386548886866354912">Packa med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Beskrivning</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Ändrades</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> har lagts till som markerad.</translation>
 <translation id="4582497162516204941">Installera med Linux (beta)</translation>
 <translation id="4594543368593301662">Visar resultat för <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artist</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (final)</translation>
 <translation id="5833610766403489739">Den här filen verkar ha gått sin väg. Kontrollera inställningen för nedladdade filer och försök igen.</translation>
 <translation id="5838051104334203064">Appar på Play Butik har inte tillgång till den här enheten</translation>
+<translation id="5838451609423551646">Alla poster har avmarkerats.</translation>
 <translation id="5838825566232597749">US Workman (internationellt)</translation>
 <translation id="5850516540536751549">Filtypen stöds inte. Besök <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> om du vill hitta en app som kan öppna den här filen.
     <ph name="BEGIN_LINK_HELP" />Läs mer<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip-komprimerat tar-arkiv</translation>
 <translation id="6825883775269213504">ryska</translation>
 <translation id="6827236167376090743">Denna video spelas upp för evigt.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> har avmarkerats.</translation>
 <translation id="6862635236584086457">Alla filer som sparas i den här mappen säkerhetskopieras online automatiskt</translation>
 <translation id="6870130893560916279">Ukrainskt tangentbord</translation>
 <translation id="6876155724392614295">Cykel</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Inmatningsmetoden Pinyin</translation>
 <translation id="8151638057146502721">Konfigurera</translation>
 <translation id="8153607920959057464">Det gick inte att visa filen.</translation>
+<translation id="8154842056504218462">Alla poster har markerats.</translation>
 <translation id="8157684860301034423">Det gick inte att hämta information om appen.</translation>
 <translation id="8157939133946352716">7:5</translation>
 <translation id="8160015581537295331">Spanskt tangentbord</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>
 <translation id="8698464937041809063">Google-teckning</translation>
 <translation id="8714406895390098252">Cykel</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> har markerats.</translation>
 <translation id="8722421161699219904">Internationellt tangentbord för USA</translation>
 <translation id="872537912056138402">kroatiska</translation>
 <translation id="874420130893181774">Inmatningsmetod för traditionell Pinyin</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Inga bilder i den här katalogen.</translation>
 <translation id="943972244133411984">Ändrades av</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>
+<translation id="947144732524271678"><ph name="ENTRY_COUNT" /> poster har markerats från och med <ph name="FROM_ENTRY_NAME" /> till och med <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Vill du ersätta den?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

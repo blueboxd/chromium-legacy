@@ -98,10 +98,12 @@ FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
       response = ErrorStatus(apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED);
   }
 
-  // Call |callback| via the |MessageLoop| because |AuthenticatorImpl| doesn't
-  // support callback hairpinning.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
+  if (response) {
+    // Call |callback| via the |MessageLoop| because |AuthenticatorImpl| doesn't
+    // support callback hairpinning.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
+  }
   return 0;
 }
 
@@ -119,7 +121,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   }
 
   if (mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+    if (!mutable_state()->simulate_press_callback.Run(this))
+      return base::nullopt;
   }
 
   auto challenge_param = data.first<32>();
@@ -199,7 +202,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   }
 
   if (mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+    if (!mutable_state()->simulate_press_callback.Run(this))
+      return base::nullopt;
   }
 
   if (data.size() < 32 + 32 + 1)

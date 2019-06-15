@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1409544243779336081">Lietotņu ieteikumi</translation>
+<translation id="1498028757988366001">Jūs jau iepriekš meklējāt šo vienumu. Dzēšot vienumu “<ph name="QUERY" />” no vēstures, tas tiks neatgriezeniski noņemts no jūsu konta visās ierīcēs.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
 <translation id="1643823602425662293">Paziņojums</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pirms 1 min}zero{Pirms # min}one{Pirms # min}other{Pirms # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Atlikusi 1 minūte}zero{Atlikušas # minūtes}one{Atlikusi # minūte}other{Atlikušas # minūtes}}</translation>
+<translation id="7430878839542012341">Vai dzēst šo meklēšanas vaicājumu no vēstures?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emocijzīmes</translation>
 <translation id="7658239707568436148">Atcelt</translation>

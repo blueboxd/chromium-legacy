@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1492646418094134664">탭하여 Chrome을 통해 신용카드 입력</translation>
+<translation id="1566281227936819866">저장된 결제 수단 표시 중</translation>
 <translation id="2610239185026711824">비밀번호 추천</translation>
 <translation id="2803478378562657435">저장된 비밀번호 및 비밀번호 옵션 표시 중</translation>
 <translation id="2903493209154104877">주소</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">탭하여 Chrome을 통해 비밀번호 입력</translation>
 <translation id="7299100402441711551">주소 표시</translation>
 <translation id="7494879913343971937">비밀번호 표시</translation>
+<translation id="8037472847879765671">결제 수단 표시</translation>
 <translation id="8507520749471379845">사용할 수 있는 비밀번호</translation>
 </translationbundle>

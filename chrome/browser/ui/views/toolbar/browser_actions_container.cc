@@ -49,6 +49,13 @@
 #include "ui/views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+// BrowserActionsContainer::Delegate
+
+bool BrowserActionsContainer::Delegate::CanShowIconInToolbar() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer::DropPosition
 
 struct BrowserActionsContainer::DropPosition {
@@ -147,6 +154,10 @@ size_t BrowserActionsContainer::VisibleBrowserActionsAfterAnimation() const {
 
 bool BrowserActionsContainer::ShownInsideMenu() const {
   return main_container_ != nullptr;
+}
+
+bool BrowserActionsContainer::CanShowIconInToolbar() const {
+  return delegate_->CanShowIconInToolbar();
 }
 
 void BrowserActionsContainer::OnToolbarActionViewDragDone() {

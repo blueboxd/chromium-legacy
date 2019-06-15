@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -724,7 +725,7 @@ TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
 TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
   struct ShadowCombinatorTest {
     const char* input;
-    std::vector<std::pair<AtomicString, CSSSelector::RelationType>> expectation;
+    Vector<std::pair<AtomicString, CSSSelector::RelationType>> expectation;
   };
 
   const ShadowCombinatorTest test_cases[] = {

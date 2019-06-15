@@ -17,6 +17,7 @@
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
+#include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
@@ -354,6 +355,23 @@ class FakeInternetAvailabilityChecker : public InternetAvailabilityChecker {
   // always set to HIC_CHECK_ALWAYS to perform a real check at runtime.
   HasInternetConnectionCheckType has_internet_connection_ = kHicForceYes;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakePasswordRecoveryManager : public PasswordRecoveryManager {
+ public:
+  FakePasswordRecoveryManager();
+  explicit FakePasswordRecoveryManager(base::TimeDelta request_timeout);
+  ~FakePasswordRecoveryManager() override;
+
+  using PasswordRecoveryManager::MakeGenerateKeyPairResponseForTesting;
+  using PasswordRecoveryManager::MakeGetPrivateKeyResponseForTesting;
+  using PasswordRecoveryManager::SetRequestTimeoutForTesting;
+
+ private:
+  PasswordRecoveryManager* original_validator_ = nullptr;
+};
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_

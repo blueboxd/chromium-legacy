@@ -1730,10 +1730,11 @@ NetworkStateHandler::MaybeCreateDefaultCellularNetwork() {
   if (!device || device->IsSimAbsent())
     return nullptr;
   // Create a default Cellular network. Properties from the associated Device
-  // will be provided to the UI.
+  // will be provided to the UI. Note that the network's name is left empty; UI
+  // surfaces which attempt to show the network name will fall back to showing
+  // the network type (i.e., "Cellular") instead.
   std::unique_ptr<NetworkState> network =
       NetworkState::CreateDefaultCellular(device->path());
-  network->set_name(device->GetName());
   UpdateGuid(network.get());
   return network;
 }

@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="1409544243779336081">ઍપ માટે સુઝાવ</translation>
+<translation id="1498028757988366001">તમે આ અગાઉ શોધ્યું હતું. "<ph name="QUERY" />"ને તમારા સ્થાન ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા એકાઉન્ટમાંથી કાઢી નાખવામાં આવશે.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
 <translation id="1643823602425662293">સૂચના</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 મિ પહેલાં}one{# મિ પહેલાં}other{# મિ પહેલાં}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 મિનિટ બાકી}one{# મિનિટ બાકી}other{# મિનિટ બાકી}}</translation>
+<translation id="7430878839542012341">તમારા ઇતિહાસમાંથી આ શોધ ડિલીટ કરીએ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ઇમોજી</translation>
 <translation id="7658239707568436148">રદ કરો</translation>

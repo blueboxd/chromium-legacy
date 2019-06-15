@@ -358,6 +358,7 @@
 <translation id="363596933471559332">સંગ્રહિત ઓળખપત્રોનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જ્યારે સુવિધા બંધ હોય છે, ત્યારે વેબસાઇટમાં સાઇન ઇન કરતાં પહેલાં દર વખતે તમને ચકાસણી માટે કહેવામાં આવશે.</translation>
 <translation id="3658159451045945436">રીસેટ કરવાથી મુલાકાત લીધેલી સાઇટની સૂચિ સહિત તમારા ડેટા બચતના ઇતિહાસને કાઢી નાખે છે.</translation>
 <translation id="3662546969139119822">અહીં કોઈ ઇતિહાસ નથી</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> ટૅબનું ગ્રૂપ બનાવો.</translation>
 <translation id="3672452749423051839">નેવિગેશન ભૂલ સૂચનો</translation>
 <translation id="3692944402865947621">સ્ટોરેજ સ્થાન સુધી પહોંચી ન શકવાને કારણે <ph name="FILE_NAME" />નું ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="3714981814255182093">શોધો બાર ખોલો</translation>
@@ -402,7 +403,7 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# કલાક}one{# કલાક}other{# કલાક}}</translation>
 <translation id="4042870126885713738">જ્યારે વેબ ઍડ્રેસ ન ઉકેલાય અથવા કનેક્શન કરી શકાતું ન હોય ત્યારે સૂચનો દર્શાવો</translation>
-<translation id="4044912625106523635">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર સંપૂર્ણ ઊંચાઈએ ખુલે છે.</translation>
+<translation id="4044912625106523635">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર સંપૂર્ણ ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4048707525896921369">પેજ છોડ્યાં વગર વેબસાઇટ પરના મુદ્દાઓ વિશે જાણો. શોધને ટૅપ કરવાથી એક શબ્દ અને તેની આસપાસનો સંદર્ભ Google શોધને મોકલે છે, જે વ્યાખ્યાઓ, ફોટોો, શોધ પરિણામો અને અન્ય વિગતો પરત કરે છે.
 
@@ -466,6 +467,7 @@
 <translation id="447252321002412580">Chromeની સુવિધાઓ અને પ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="4479647676395637221">સાઇટ્સને તમારા કૅમેરાના ઉપયોગની મંજૂરી આપતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="4479972344484327217">Chrome માટે <ph name="MODULE" /> ઇન્સ્ટૉલ કરી રહ્યાં છે…</translation>
+<translation id="4482194545587547824">Google, શોધ અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
 <translation id="4487967297491345095">Chrome નો તમામ ઍપ્લિકેશન ડેટા કાયમીરૂપે કાઢી નાખવામાં આવશે. આમાં તમામ ફાઇલો, સેટિંગ્સ, એકાઉન્ટ, ડેટાબેઝ, વગેરેનો સમાવેશ થાય છે.</translation>
 <translation id="4493497663118223949">લાઇટ મોડ ચાલુ છે</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# દિવસ પહેલાં}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}</translation>
@@ -476,6 +478,7 @@
 <translation id="4532845899244822526">ફોલ્ડર પસંદ કરો</translation>
 <translation id="4538018662093857852">લાઇટ મોડ ચાલુ કરો</translation>
 <translation id="4550003330909367850">અહીં તમારો પાસવર્ડ જોવા અથવા કૉપિ કરવા માટે, આ ડિવાઇસ પર સ્ક્રીન લૉક સેટ કરો.</translation>
+<translation id="4556110439722119938">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ સિંક કરવામાં આવશે, જેથી કરીને તમે તમારા બધા ડિવાઇસ પર એનો ઉપયોગ કરી શકો.</translation>
 <translation id="4558311620361989323">વેબ પેજના શૉર્ટકટ</translation>
 <translation id="4561979708150884304">કોઈ કનેક્શન નથી</translation>
 <translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
@@ -630,6 +633,7 @@
 <translation id="557283862590186398">Chromeને આ સાઇટ માટે તમારા માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="55737423895878184">સ્થાન અને નોટિફિકેશનોની મંજૂરી છે</translation>
 <translation id="5578795271662203820">આ છબી માટે <ph name="SEARCH_ENGINE" /> માં શોધો</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> ટૅબનું ગ્રૂપ બનાવ્યું</translation>
 <translation id="5581519193887989363">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" />માં પસંદ કરી શકો છો.</translation>
 <translation id="5595485650161345191">ઍડ્રેસમાં ફેરફાર કરો</translation>
 <translation id="5596627076506792578">વધુ વિકલ્પો</translation>
@@ -708,6 +712,7 @@
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
 <translation id="6192333916571137726">ફાઇલ ડાઉનલોડ કરો</translation>
 <translation id="6192792657125177640">અપવાદો</translation>
+<translation id="6193448654517602979">ટૅબ પસંદ કરો</translation>
 <translation id="6194112207524046168">Chrome તમારો કૅમેરા ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ કૅમેરા ચાલુ કરો.</translation>
 <translation id="6196640612572343990">તૃતીય પક્ષની કુકીઝ અવરોધિત કરો</translation>
 <translation id="6206551242102657620">કનેક્શન સુરક્ષિત છે. સાઇટની માહિતી</translation>
@@ -782,7 +787,7 @@
 <translation id="666268767214822976">સરનામાં બારમાં લખતાંની સાથે સંબંધિત ક્વેરીઝ અને લોકપ્રિય વેબસાઇટ્સ દર્શાવવા માટે પૂર્વાનુમાન સેવાનો ઉપયોગ કરો.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>
-<translation id="6672986458216094438">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર અડધી ઊંચાઈએ ખુલે છે.</translation>
+<translation id="6672986458216094438">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર અડધી ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="6697492270171225480">જ્યારે કોઈ પેજ ન મળે ત્યારે તેના જેવા પેજ માટે સૂચનો બતાવો</translation>
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>
@@ -824,6 +829,7 @@
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6978479750597523876">અનુવાદ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="6979737339423435258">હંમેશાં</translation>
+<translation id="6980462514016882061">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે Google, તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="6985347914332179298">અહીં કોઈ ડાઉનલોડ્સ નથી</translation>
 <translation id="6989267951144302301">ડાઉનલોડ ન કરી શક્યા</translation>
@@ -850,11 +856,13 @@
 <translation id="7141896414559753902">સાઇટને પૉપ-અપ અને રીડાયરેક્ટ બતાવવા દેવાથી બ્લૉક કરો (સુઝાવ આપેલ)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />માંથી <ph name="BEGIN_LINK" />ઑરિજિનલ પેજ લોડ કરો<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">છેલ્લા 24 કલાક</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> ટૅબ પસંદ કરો.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">તમે આને થોડા સમય પછી સેટિંગ્સમાં જઈને બદલી શકો છો</translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7189372733857464326">Google Play સેવાઓ દ્વારા અપડેટ થવાનું સમાપ્ત કરવાની રાહ જોવામાં આવી રહી છે</translation>
 <translation id="7191430249889272776">ટેબ પૃષ્ઠભૂમિમાં ખોલવામાં આવ્યું છે.</translation>
+<translation id="722055596168483966">Google સેવાઓને મનગમતી બનાવો</translation>
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
 <translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
 <translation id="7243308994586599757">સ્ક્રીનના તળિયા નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
@@ -881,6 +889,7 @@
 <translation id="7403691278183511381">Chrome પ્રથમ વાર ઉપયોગ કર્યાનો અનુભવ</translation>
 <translation id="741204030948306876">હા, હું સંમત છું</translation>
 <translation id="7413229368719586778">પ્રારંભ તારીખ <ph name="DATE" /></translation>
+<translation id="7418565925463285788">ટૅબનું ગ્રૂપ બનાવો...</translation>
 <translation id="7423098979219808738">પ્રથમ પૂછો</translation>
 <translation id="7423538860840206698">ક્લિપબોર્ડ વાંચવાનું બ્લૉક કરેલ છે</translation>
 <translation id="7431991332293347422">શોધ અને અન્ય બાબતોને તમને મનગમતી બનાવવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરવાની રીત નિયંત્રિત કરો</translation>
@@ -1017,6 +1026,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />માં છે તે પેજનો અનુવાદ થશે નહીં</translation>
 <translation id="8349013245300336738">વપરાયેલ ડેટાના પ્રમાણ અનુસાર સૉર્ટ કરો</translation>
 <translation id="8364299278605033898">લોકપ્રિય વેબસાઇટ જુઓ</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> ટૅબ નાપસંદ કરો.</translation>
 <translation id="8372893542064058268">ચોક્કસ સાઇટ માટે પૃષ્ઠભૂમિ સમન્વયનની મંજૂરી આપો.</translation>
 <translation id="8374821112118309944">તમારે TalkBack ને નવા વર્ઝન પર અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="8378714024927312812">તમારી સંસ્થા દ્વારા મેનેજ કરેલ</translation>
@@ -1082,6 +1092,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="8901170036886848654">કોઇ બુકમાર્ક્સ મળ્યાં નથી</translation>
+<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8920114477895755567">માતાપિતાની વિગતોની રાહ જોઈ રહ્યાં છે.</translation>

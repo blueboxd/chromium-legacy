@@ -63,6 +63,8 @@ Polymer({
       observer: 'onErrorChanged_',
     },
 
+    firstLoad: Boolean,
+
     /** @type {!print_preview.State} */
     state: Number,
 
@@ -464,7 +466,6 @@ Polymer({
       this.updateDropdownDestinations_();
     }
     this.updateDestinationSelect_();
-    this.$.destinationSelect.focus();
     this.isDialogOpen_ = false;
   },
 
@@ -482,8 +483,14 @@ Polymer({
       return;
     }
 
+    const shouldFocus =
+        this.destinationState !== print_preview.DestinationState.SET &&
+        !this.firstLoad;
     Polymer.RenderStatus.beforeNextRender(this.$.destinationSelect, () => {
       this.$.destinationSelect.updateDestination();
+      if (shouldFocus) {
+        this.$.destinationSelect.focus();
+      }
     });
   },
 });

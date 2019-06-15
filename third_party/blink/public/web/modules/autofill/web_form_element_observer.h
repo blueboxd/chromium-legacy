@@ -15,6 +15,10 @@ namespace blink {
 class WebFormControlElement;
 class WebFormElement;
 
+// TODO(tonikitoo): This uses BLINK_EXPORT instead of BLINK_MODULES_EXPORT
+// because it is implemented by renderer/core/autofill code, where
+// BLINK_MODULES_IMPLEMENTATION is not defined and compilation fails on win-dbg.
+//
 class BLINK_EXPORT WebFormElementObserver {
  public:
   // Creates a WebFormElementObserver. Delete this WebFormElementObsrver by

@@ -105,9 +105,8 @@ public class DownloadInfoBarControllerTest {
             return true;
         }
 
-        @Override
         public void onItemUpdated(OfflineItem item) {
-            super.onItemUpdated(item.clone());
+            super.onItemUpdated(item.clone(), null);
         }
 
         void verify(String message) {

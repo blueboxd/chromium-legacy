@@ -435,6 +435,12 @@ SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kusafisha Chrome kita
       Usipoweka mipangilio ya sera hii au ukiizima, mtumiaji ataweza kubadilisha mipangilio hii (kwa mfano kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).
       </translation>
 <translation id="1767673020408652620">Washa sera ya Mapendekezo ya Programu katika Hali Ombwe ya Kisanduku cha Kutafutia</translation>
+<translation id="17719159826324007">
+      Sera hii ikiwekwa kuwa ArcSession, hulazimisha kifaa kuwaka tena mtumiaji akiondoka kwenye akaunti ikiwa Android imefunguka.
+      Sera ikiwekwa kuwa 'Kila Wakati', hulazimisha kifaa kuwaka katika kila tukio la mtumiaji kuondoka kwenye akaunti.
+      Sera isipowekwa, haina athari na hakuna kulazimisha kifaa kuwaka tena mtumiaji akiondoka kwenye akaunti. Hali hii inatumika pia ikiwa sera imewekwa kuwa 'Isiwahi'.
+      Sera hii inaathari tu watumiaji wasio washirika.
+      </translation>
 <translation id="1781356041596378058">Sera hii pia inadhibiti idhini ya kufikia Chaguo za Wasanidi Programu wa Android. Ukiweka sera hii kuwa ndivyo, watumiaji hawataweza kufikia Chaguo za Wasanidi Programu. Ukiweka sera hii kuwa sivyo au uiache bila kuiweka, watumiaji wataweza kufikia Chaguo za Wasanidi Programu kwa kugonga mara saba kwenye nambari ya muundo katika programu ya mipangilio ya Android.</translation>
 <translation id="1793346220873697538">Zima uchapishaji kwa kutumia PIN kwa chaguomsingi</translation>
 <translation id="1797233582739332495">Mwonyeshe mtumiaji kidokezo kinachojirudia, kinachoashiria kwamba anatakiwa afungue kivinjari upya</translation>
@@ -930,6 +936,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Sera hii inaheshimiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
 <translation id="268577405881275241">Washa kipengee cha proksi cha upunguzaji wa data</translation>
 <translation id="2693108589792503178">Weka mipangilio ya URL ya kubadilisha nenosiri.</translation>
+<translation id="2694143893026486692">Umewasha kikuzaji kilichoambatishwa</translation>
 <translation id="2706708761587205154">Ruhusu uchapishajikwa kwa kutumia PIN pekee</translation>
 <translation id="2710534340210290498">Ikiwa sera hii imewekwa kuwa ndivyo, watumiaji hawataweza kufunga skrini (utaweza kuondoka katika kipindi cha mtumiaji pekee). Mipangilio hii ikiwekwa kuwa ndivyo au isipowekwa, watumiaji ambao walithibitisha kupitia nenosiri wanaweza kufunga skrini.</translation>
 <translation id="2731627323327011390">Zima kipengele cha utumiaji wa vyeti vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
@@ -1119,7 +1126,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 
           Sera hii isipowekwa, chaguo za Zana za walio na matatizo ya kuona na kusikia hazitaonekana katika menyu ya ubao wa aikoni, lakini mtumiaji anaweza kufanya chaguo za Zana za walio na matatizo ya kuona na kusikia zionekane kupitia ukurasa wa Mipangilio.
 
-          Wakati vipengele vya zana za walio na matatizo ya kuona au kusikia vimewashwa (kwa kutumia njia zingine k.m. kutumia mchanganyiko wa funguo), Chaguo za Zana za Walio na Matatizo ya Kuona au Kusikia zitaonekana kwenye menyu ya ubao wa aikoni kila wakati.</translation>
+          Wakati vipengele vya ufikivu vimewashwa (kwa kutumia njia zingine k.m. kutumia mchanganyiko wa funguo), Chaguo za Zana za Walio na Matatizo ya Kuona au Kusikia zitaonekana kwenye menyu ya ubao wa aikoni kila wakati.</translation>
 <translation id="3011301228198307065">Huweka URL chaguomsingi ya ukurasa wa mwanzo katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuibadilisha.
 
           Ukurasa wa mwanzo ni ukurasa unaofunguliwa na kitufe cha ukurasa wa Mwanzo. Kurasa zinazofunguka kifaa kinapowashwa zinadhibitiwa na sera za RestoreOnStartup.
@@ -1167,6 +1174,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Sera hii ni ya hiari. Isipowekwa, mabadiliko ya hoja ya utafutaji hayatatekelezwa.
 
           Sera hii inaheshimiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Sera hii inaruhusu watumiaji wa kipengele cha WebDriver kufuta sera ambazo zinaweza kuathiri utendaji wake. 
 
       Kwa sasa, sera hii inazuia sera za SitePerProcess na IsolateOrigins.
@@ -1688,12 +1696,6 @@ kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupan
       Vifaa vya <ph name="PRODUCT_OS_NAME" /> hutafuta masasisho kiotomatiki ikiwa mipangilio hii haijawekwa au kuwekwa kuwa Sivyo.
 
       Onyo: Unashauriwa kuwasha kipengele cha masasisho ya kiotomatiki ili watumiaji wapokee masasisho ya programu na marekebisho muhimu. Kuzima kipengele cha masasisho ya kiotomatiki kunaweza kuhatarisha hali ya watumiaji.</translation>
-<translation id="4018000735882846261">Sera hii inaipa programu ya Mratibu wa Google ruhusa ya kusikiliza kifungu cha kuwasha sauti.
-
-      Ikiwa sera hii imewashwa, programu ya Mratibu wa Google itasikiliza kifungu cha kuwasha sauti.
-      Ikiwa sera hii imezimwa, programu ya Mratibu wa Google haitasikiliza kifungu cha kuwasha sauti.
-      Ikiwa sera hii haijawekwa, Programu ya Mratibu wa Google haitasikiliza kifungu cha kuwasha kifaa.
-      </translation>
 <translation id="4020682745012723568">Vidakuzi vilivyohamishiwa kwenye wasifu wa mtumiaji haviwezi kufikiwa na programu za Android.</translation>
 <translation id="402759845255257575">Usiruhusu tovuti yoyote iendeshe JavaScript</translation>
 <translation id="4027608872760987929">Wezesha kitoaji chaguomsingi cha utafutaji</translation>
@@ -3003,7 +3005,7 @@ Kuacha sera hii bila kuiweka kutaruhusu mtumiaji kuchagua mwenyewe iwapo ukurasa
 
       Sera hii huruhusu wasimamizi kuweka mipangilio ya printa kwa ajili ya watumiaji wake.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ni mifuatano huru ambayo inaweza kuwekewa mapendeleo ili kurahisisha shughuli ya kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> hutumika kurahisisha shughuli ya kutambua printa kwa watumiaji wake wa mwisho. Huwakilisha mtengenezaji na muundo wa printa. <ph name="PRINTER_URI" /> inapaswa kuwa anwani ambayo inafikiwa na kompyuta teja, ikiwa ni pamoja na <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> na <ph name="URI_QUEUE" />. si lazima uweke <ph name="PRINTER_UUID" />. Ikiwekwa, itasaidia kuondoa nakala za printa za <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ni mifuatano huru ambayo inaweza kuwekewa mapendeleo ili kurahisisha shughuli ya kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> hutumika kurahisisha shughuli ya kutambua printa kwa watumiaji wake wa mwisho. Huwakilisha mtengenezaji na muundo wa printa. <ph name="PRINTER_URI" /> inapaswa kuwa anwani ambayo inafikiwa na kompyuta teja, ikiwa ni pamoja na <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> na <ph name="URI_QUEUE" />. Si lazima uweke <ph name="PRINTER_UUID" />. Ikiwekwa, itasaidia kuondoa nakala za printa za <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> inapaswa kuwa na jina la printa au <ph name="PRINTER_AUTOCONF" /> inapaswa kuwekwa kuwa ndivyo. Printa zenye sifa zote mbili au zisizo na sifa yoyote hazitatumika.
 

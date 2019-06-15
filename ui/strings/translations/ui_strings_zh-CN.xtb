@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">推荐的应用</translation>
+<translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
+<translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符号</translation>
 <translation id="7658239707568436148">取消</translation>

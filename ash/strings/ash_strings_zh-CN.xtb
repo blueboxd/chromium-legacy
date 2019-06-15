@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1761222317188459878">切换网络连接设置。<ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">向右滚动</translation>
 <translation id="1812997170047690955">我的屏幕上有什么内容？</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">当前的电池电量为 <ph name="PERCENTAGE" />%，正在充电。</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
 <translation id="4017989525502048489">激光笔</translation>
+<translation id="4021716437419160885">向下滚动</translation>
 <translation id="4042660782729322247">您正在共享屏幕</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{针对 1 个应用关闭}other{针对 # 个应用关闭}}</translation>
 <translation id="4072264167173457037">信号中等</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">强</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4924411785043111640">重启并重置</translation>
+<translation id="495046168593986294">向上滚动</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5030687792513154421">时间到</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />已连接到新手机</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">要想获取此项更新，请在已连接该键盘的情况下重新启动您的 Chromebook。</translation>
 <translation id="5992218262414051481">已启用高反差模式。再按一次 Ctrl+搜索键+H 组合键即可关闭此模式。</translation>
 <translation id="6018164090099858612">正在退出镜像模式</translation>
+<translation id="602001110135236999">向左滚动</translation>
+<translation id="6040143037577758943">关闭</translation>
 <translation id="6043212731627905357">该显示器与您的<ph name="DEVICE_TYPE" />不兼容（系统不支持该显示器）。</translation>
 <translation id="6043994281159824495">立即退出</translation>
 <translation id="6047696787498798094">切换到其他用户后将停止屏幕共享。要继续吗？</translation>

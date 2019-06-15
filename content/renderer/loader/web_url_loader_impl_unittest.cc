@@ -82,7 +82,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
-      bool pass_response_pipe_to_peer,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,

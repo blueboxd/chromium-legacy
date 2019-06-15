@@ -59,7 +59,8 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   }
 
   // Allways cache the full metadata, so that it can correctly be sent upon
-  // ReportAllFrameSubmissionsForTesting. This must only be done after we've
+  // ReportAllFrameSubmissionsForTesting or
+  // ReportAllRootScrollsForAccessibility. This must only be done after we've
   // compared the two for changes.
   last_render_frame_metadata_ = render_frame_metadata;
 
@@ -67,11 +68,11 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   // generated for first time and same as the default value, update the default
   // value to all the observers.
   if (send_metadata && render_frame_metadata_observer_client_) {
-    // Sending |root_scroll_offset| outside of tests would leave the browser
-    // process with out of date information. It is an optional parameter
-    // which we clear here.
     auto metadata_copy = render_frame_metadata;
 #if !defined(OS_ANDROID)
+    // On non-Android, sending |root_scroll_offset| outside of tests would
+    // leave the browser process with out of date information. It is an
+    // optional parameter which we clear here.
     if (!report_all_frame_submissions_for_testing_enabled_)
       metadata_copy.root_scroll_offset = base::nullopt;
 #endif
@@ -107,11 +108,26 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   }
 }
 
+#if defined(OS_ANDROID)
+void RenderFrameMetadataObserverImpl::ReportAllRootScrollsForAccessibility(
+    bool enabled) {
+  report_all_root_scrolls_for_accessibility_enabled_ = enabled;
+
+  if (enabled)
+    SendLastRenderFrameMetadata();
+}
+#endif
+
 void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
     bool enabled) {
   report_all_frame_submissions_for_testing_enabled_ = enabled;
 
-  if (!enabled || !last_frame_token_)
+  if (enabled)
+    SendLastRenderFrameMetadata();
+}
+
+void RenderFrameMetadataObserverImpl::SendLastRenderFrameMetadata() {
+  if (!last_frame_token_)
     return;
 
   // When enabled for testing send the cached metadata.
@@ -121,11 +137,10 @@ void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
       last_frame_token_, *last_render_frame_metadata_);
 }
 
-// static
 bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
     const cc::RenderFrameMetadata& rfm1,
     const cc::RenderFrameMetadata& rfm2,
-    bool* needs_activation_notification) {
+    bool* needs_activation_notification) const {
   if (rfm1.root_background_color != rfm2.root_background_color ||
       rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
       rfm1.selection != rfm2.selection ||
@@ -142,6 +157,9 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
   }
 
 #if defined(OS_ANDROID)
+  bool need_send_root_scroll =
+      report_all_root_scrolls_for_accessibility_enabled_ &&
+      rfm1.root_scroll_offset != rfm2.root_scroll_offset;
   if (rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
       rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
       rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
@@ -149,7 +167,8 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
       rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
       rfm1.root_layer_size != rfm2.root_layer_size ||
-      rfm1.has_transparent_background != rfm2.has_transparent_background) {
+      rfm1.has_transparent_background != rfm2.has_transparent_background ||
+      need_send_root_scroll) {
     *needs_activation_notification = true;
     return true;
   }

@@ -46,7 +46,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
                      base::trace_event::TraceEventHandle* handle) override;
   void UpdateDuration(base::trace_event::TraceEventHandle handle,
                       const base::TimeTicks& now,
-                      const base::ThreadTicks& thread_now) override;
+                      const base::ThreadTicks& thread_now,
+                      base::trace_event::ThreadInstructionCount
+                          thread_instruction_now) override;
   void Flush() override;
 
   // ThreadIdNameManager::Observer implementation:

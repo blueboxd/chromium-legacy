@@ -28,7 +28,7 @@ class VideoTrackAdapterSettings;
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
 // and can be retrieved from a blink object using
 // WebMediaStreamTrack::getExtraData() or MediaStreamVideoTrack::GetVideoTrack.
-class BLINK_EXPORT MediaStreamVideoTrack
+class BLINK_MODULES_EXPORT MediaStreamVideoTrack
     : public blink::WebPlatformMediaStreamTrack {
  public:
   // Help method to create a blink::WebMediaStreamTrack and a

@@ -246,7 +246,8 @@ class DownloadUIAdapterTest : public testing::Test,
 
   // DownloadUIAdapter::Observer
   void OnItemsAdded(const std::vector<OfflineItem>& items) override;
-  void OnItemUpdated(const OfflineItem& item) override;
+  void OnItemUpdated(const OfflineItem& item,
+                     const base::Optional<UpdateDelta>& update_delta) override;
   void OnItemRemoved(const ContentId& id) override;
 
   // Runs until all of the tasks that are not delayed are gone from the task
@@ -311,7 +312,9 @@ void DownloadUIAdapterTest::OnItemsAdded(
   }
 }
 
-void DownloadUIAdapterTest::OnItemUpdated(const OfflineItem& item) {
+void DownloadUIAdapterTest::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   updated_guids.push_back(item.id.id);
   download_progress_bytes += item.received_bytes;
 }

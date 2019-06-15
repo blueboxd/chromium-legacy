@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -48,7 +49,7 @@ void ContentCaptureSender::GetTaskTimingParameters(
 }
 
 void ContentCaptureSender::DidCaptureContent(
-    const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
+    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data,
     bool first_data) {
   ContentCaptureData frame_data;
   FillContentCaptureData(data, &frame_data, first_data /* set_url */);
@@ -56,14 +57,14 @@ void ContentCaptureSender::DidCaptureContent(
 }
 
 void ContentCaptureSender::DidUpdateContent(
-    const std::vector<scoped_refptr<blink::WebContentHolder>>& data) {
+    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data) {
   ContentCaptureData frame_data;
   FillContentCaptureData(data, &frame_data, false /* set_url */);
   GetContentCaptureReceiver()->DidUpdateContent(frame_data);
 }
 
-void ContentCaptureSender::DidRemoveContent(const std::vector<int64_t>& data) {
-  GetContentCaptureReceiver()->DidRemoveContent(data);
+void ContentCaptureSender::DidRemoveContent(blink::WebVector<int64_t> data) {
+  GetContentCaptureReceiver()->DidRemoveContent(data.ReleaseVector());
 }
 
 void ContentCaptureSender::StartCapture() {
@@ -79,7 +80,8 @@ void ContentCaptureSender::OnDestruct() {
 }
 
 void ContentCaptureSender::FillContentCaptureData(
-    const std::vector<scoped_refptr<blink::WebContentHolder>>& node_holders,
+    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>&
+        node_holders,
     ContentCaptureData* data,
     bool set_url) {
   data->bounds = render_frame()->GetWebFrame()->VisibleContentRect();

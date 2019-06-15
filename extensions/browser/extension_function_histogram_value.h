@@ -1405,6 +1405,7 @@ enum HistogramValue {
   LOGINSCREENUI_CLOSE = 1342,
   DECLARATIVENETREQUEST_GETMATCHEDRULES = 1343,
   DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT = 1344,
+  BLUETOOTHPRIVATE_RECORDDEVICESELECTION = 1345,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

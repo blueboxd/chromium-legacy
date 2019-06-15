@@ -9,12 +9,12 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cert/internal/parsed_certificate.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 
 namespace net {
 
-class ParsedCertificate;
 struct ParsedCrlTbsCertList;
 struct ParsedDistributionPoint;
 
@@ -158,23 +158,23 @@ GetCRLStatusForCert(const der::Input& cert_serial,
 // REVOKED if it indicates it is revoked, or UNKNOWN for all other cases.
 //
 //  * |raw_crl|: A DER encoded CRL CertificateList.
-//  * |cert|: The certificate being checked for revocation.
-//  * |cert_dp|: The distribution point from the certificate's CRL distribution
-//        points extension that |raw_crl| corresponds to. May be nullptr if
-//        |raw_crl| was not specified in a distribution point.
-//  * |issuer_cert|: The certificate that signed |cert|.
-//        The caller must have already performed path verification.
+//  * |valid_chain|: The validated certificate chain containing the target cert.
+//  * |target_cert_index|: The index into |valid_chain| of the certificate being
+//        checked for revocation.
+//  * |cert_dp|: The distribution point from the target certificate's CRL
+//        distribution points extension that |raw_crl| corresponds to. May be
+//        nullptr if |raw_crl| was not specified in a distribution point.
 //  * |verify_time|: The time to use when checking revocation status.
 //  * |max_age|: The maximum age for a CRL, implemented as time since
 //        the |thisUpdate| field in the CRL TBSCertList. Responses older than
 //        |max_age| will be considered invalid.
-NET_EXPORT CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
-                                        const ParsedCertificate* cert,
-                                        const ParsedDistributionPoint* cert_dp,
-                                        const ParsedCertificate* issuer_cert,
-                                        const base::Time& verify_time,
-                                        const base::TimeDelta& max_age)
-    WARN_UNUSED_RESULT;
+NET_EXPORT CRLRevocationStatus
+CheckCRL(base::StringPiece raw_crl,
+         const ParsedCertificateList& valid_chain,
+         size_t target_cert_index,
+         const ParsedDistributionPoint* cert_dp,
+         const base::Time& verify_time,
+         const base::TimeDelta& max_age) WARN_UNUSED_RESULT;
 
 }  // namespace net
 

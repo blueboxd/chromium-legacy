@@ -35,7 +35,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"

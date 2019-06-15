@@ -171,6 +171,9 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_view.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -866,13 +869,21 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
-        // Report PDF load metrics. Since the PDF plugin is comprised of an
-        // extension that loads a second plugin, avoid double counting by
-        // ignoring the creation of the second plugin.
-        if (info.name ==
-                ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName) &&
-            GURL(frame->GetDocument().Url()).host_piece() !=
-                extension_misc::kPdfExtensionId) {
+        if (GURL(frame->GetDocument().Url()).host_piece() ==
+            extension_misc::kPdfExtensionId) {
+          if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+            auto* render_view = render_frame->GetRenderView();
+            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
+            if (web_view) {
+              web_view->GetSettings()->SetPreferredColorScheme(
+                  blink::PreferredColorScheme::kLight);
+            }
+          }
+        } else if (info.name ==
+                   ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+          // Report PDF load metrics. Since the PDF plugin is comprised of an
+          // extension that loads a second plugin, avoid double counting by
+          // ignoring the creation of the second plugin.
           bool is_main_frame_plugin_document =
               render_frame->IsMainFrame() &&
               render_frame->GetWebFrame()->GetDocument().IsPluginDocument();

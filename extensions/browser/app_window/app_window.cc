@@ -470,34 +470,30 @@ void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {
   app_delegate_->RenderViewCreated(render_view_host);
 }
 
-void AppWindow::SetOnDidFinishFirstNavigationCallback(
+void AppWindow::AddOnDidFinishFirstNavigationCallback(
     DidFinishFirstNavigationCallback callback) {
-  DCHECK(on_did_finish_first_navigation_callback_.is_null());
-  on_did_finish_first_navigation_callback_ = std::move(callback);
+  on_did_finish_first_navigation_callbacks_.push_back(std::move(callback));
 }
 
 void AppWindow::OnDidFinishFirstNavigation() {
-  // We need to call it exactly once.
-  if (on_did_finish_first_navigation_callback_.is_null())
-    return;
-  std::move(on_did_finish_first_navigation_callback_)
-      .Run(true /* did_finish */);
+  did_finish_first_navigation_ = true;
+  std::vector<DidFinishFirstNavigationCallback> callbacks;
+  std::swap(callbacks, on_did_finish_first_navigation_callbacks_);
+  for (auto&& callback : callbacks)
+    std::move(callback).Run(true /* did_finish */);
 }
 
 void AppWindow::OnNativeClose() {
   AppWindowRegistry::Get(browser_context_)->RemoveAppWindow(this);
 
-  // Dispatch "OnClosed" event by default.
-  bool send_onclosed = true;
-
   // Run pending |on_did_finish_first_navigation_callback_| so that
   // AppWindowCreateFunction can respond with an error properly.
-  if (!on_did_finish_first_navigation_callback_.is_null()) {
-    std::move(on_did_finish_first_navigation_callback_)
-        .Run(false /* did_finish */);
-
-    send_onclosed = false;  // No "OnClosed" event on window creation error.
-  }
+  std::vector<DidFinishFirstNavigationCallback> callbacks;
+  std::swap(callbacks, on_did_finish_first_navigation_callbacks_);
+  // No "OnClosed" event on window creation error.
+  const bool send_onclosed = callbacks.empty();
+  for (auto&& callback : callbacks)
+    std::move(callback).Run(false /* did_finish */);
 
   if (app_window_contents_) {
     WebContentsModalDialogManager* modal_dialog_manager =

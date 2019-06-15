@@ -260,7 +260,7 @@ class AppWindow : public content::WebContentsDelegate,
   // true for the former case and false for the latter.
   using DidFinishFirstNavigationCallback =
       base::OnceCallback<void(bool did_finish)>;
-  void SetOnDidFinishFirstNavigationCallback(
+  void AddOnDidFinishFirstNavigationCallback(
       DidFinishFirstNavigationCallback callback);
 
   // Called when first navigation was completed.
@@ -381,6 +381,8 @@ class AppWindow : public content::WebContentsDelegate,
       std::unique_ptr<AppWindowContents> contents) {
     app_window_contents_ = std::move(contents);
   }
+
+  bool DidFinishFirstNavigation() { return did_finish_first_navigation_; }
 
  protected:
   ~AppWindow() override;
@@ -586,9 +588,13 @@ class AppWindow : public content::WebContentsDelegate,
   // race condition of loading custom app icon and app content simultaneously.
   bool window_ready_ = false;
 
-  // PlzNavigate: this is called when the navigation is finished on both browser
-  // and renderer sides.
-  DidFinishFirstNavigationCallback on_did_finish_first_navigation_callback_;
+  // PlzNavigate: these callbacks are called when the navigation is finished on
+  // both browser and renderer sides.
+  std::vector<DidFinishFirstNavigationCallback>
+      on_did_finish_first_navigation_callbacks_;
+  // Whether the first navigation was completed in both browser and renderer
+  // processes.
+  bool did_finish_first_navigation_ = false;
 
   base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
 

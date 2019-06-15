@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
+#include <sddl.h>  // For ConvertSidToStringSid()
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
@@ -88,6 +93,62 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
 
   // New user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+}
+
+// This test emulates the scenario where SetDeselected is triggered by the
+// Windows Login UI process after GetSerialization prior to invocation of
+// ReportResult. Note: This currently happens only for OtherUser credential
+// workflow.
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_SetDeselectedBeforeReportResult) {
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure a "foo" user was created.
+  PSID sid;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
+                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
+                      &sid));
+
+  // New user should be created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Finishing logon process should trigger credential changed and trigger
+  // GetSerialization.
+  ASSERT_EQ(S_OK, FinishLogonProcessWithCred(true, true, 0, cred));
+
+  // Trigger SetDeselected prior to ReportResult is invoked.
+  cred->SetDeselected();
+
+  // Verify that the authentication results dictionary is not empty.
+  ASSERT_FALSE(test->IsAuthenticationResultsEmpty());
+
+  // Trigger ReportResult and verify that the authentication results are saved
+  // into registry and ResetInternalState is triggered.
+  ReportLogonProcessResult(cred);
+
+  // Verify that the registry entry for the user was created.
+  wchar_t gaia_id[256];
+  ULONG length = base::size(gaia_id);
+  wchar_t* sidstr = nullptr;
+  ::ConvertSidToStringSid(sid, &sidstr);
+  ::LocalFree(sid);
+
+  HRESULT gaia_id_hr = GetUserProperty(sidstr, kUserId, gaia_id, &length);
+  ASSERT_EQ(S_OK, gaia_id_hr);
+  ASSERT_TRUE(gaia_id[0]);
+
+  // Verify that the authentication results dictionary is now empty.
+  ASSERT_TRUE(test->IsAuthenticationResultsEmpty());
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {
@@ -430,9 +491,6 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
   SetUsageScenario(CPUS_UNLOCK_WORKSTATION);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
-
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   // Sign in should fail with an error stating that no new users can be created.
@@ -467,9 +525,6 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
   CComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
-
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -865,5 +920,366 @@ INSTANTIATE_TEST_SUITE_P(,
                                             ::testing::Bool(),
                                             ::testing::Bool()));
 
+// Test password recovery system for various failure success cases.
+// Parameters are:
+// 1. int - The expected result of the initial public key retrieval for storing
+//          the password. Values are 0 - success, 1 - failure, 2 - timeout.
+// 2. int - The expected result of the initial public private retrieval for
+//          decrypting the password. Values are 0 - success, 1 - failure,
+//          2 - timeout.
+// 3. int - The expected result of the initial public private retrieval for
+//          decrypting the password. Values are 0 - success, 1 - failure,
+//          2 - timeout.
+class GcpGaiaCredentialBasePasswordRecoveryTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<int, int, int>> {};
+
+TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
+  // Enable standard escrow service features in non-Chrome builds so that
+  // the escrow service code can be tested by the build machines.
+#if !defined(GOOGLE_CHROME_BUILD)
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
+#endif
+  USES_CONVERSION;
+
+  int generate_public_key_result = std::get<0>(GetParam());
+  int get_private_key_result = std::get<1>(GetParam());
+  int generate_public_key_again_result = std::get<2>(GetParam());
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid;
+  constexpr wchar_t kOldPassword[] = L"password";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, kOldPassword, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Change token response to an invalid one.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+
+  // Make a dummy response for successful public key generation and private key
+  // retrieval.
+  std::string generate_success_response =
+      fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
+          "public_key", "resource_id");
+
+  std::string get_key_success_response =
+      fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
+          "private_key");
+
+  // Make timeout events for the various escrow service requests if needed.
+  std::unique_ptr<base::WaitableEvent> get_key_event;
+  std::unique_ptr<base::WaitableEvent> generate_key_event;
+
+  if (generate_public_key_result == 2)
+    get_key_event.reset(new base::WaitableEvent());
+
+  if (get_private_key_result == 2)
+    generate_key_event.reset(new base::WaitableEvent());
+
+  if (get_key_event || generate_key_event) {
+    fake_password_recovery_manager()->SetRequestTimeoutForTesting(
+        base::TimeDelta::FromMilliseconds(50));
+  }
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGenerateKeyPairUrl(),
+      FakeWinHttpUrlFetcher::Headers(),
+      generate_public_key_result != 1 ? generate_success_response : "{}",
+      generate_key_event ? generate_key_event->handle() : INVALID_HANDLE_VALUE);
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(),
+      FakeWinHttpUrlFetcher::Headers(),
+      get_private_key_result != 1 ? get_key_success_response : "{}",
+      get_key_event ? get_key_event->handle() : INVALID_HANDLE_VALUE);
+
+  bool should_store_succeed = generate_public_key_result == 0;
+  bool should_recover_succeed = get_private_key_result == 0;
+
+  // Sign on once to store the password in the LSA
+  {
+    // Create provider and start logon.
+    CComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    // Finish logon successfully to propagate password recovery information to
+    // LSA.
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+
+  // If there was a timeout for the generation of the public key, signal it now
+  // so that the request thread can complete. Also delete the event in case it
+  // needs to be used again on the sign in after the password was retrieved.
+  if (generate_key_event) {
+    generate_key_event->Signal();
+    generate_key_event.reset();
+  }
+
+  if (generate_public_key_again_result == 2)
+    generate_key_event.reset(new base::WaitableEvent());
+
+  if (generate_key_event) {
+    fake_password_recovery_manager()->SetRequestTimeoutForTesting(
+        base::TimeDelta::FromMilliseconds(50));
+  }
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGenerateKeyPairUrl(),
+      FakeWinHttpUrlFetcher::Headers(),
+      generate_public_key_again_result != 1 ? generate_success_response : "{}",
+      generate_key_event ? generate_key_event->handle() : INVALID_HANDLE_VALUE);
+
+  constexpr char kNewPassword[] = "password2";
+
+  // Sign in a second time with a different password and see if it is updated
+  // automatically.
+  {
+    // Create provider and start logon.
+    CComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    CComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+    // Send back a different gaia password to force a password update.
+    ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword));
+
+    // Don't send a forced e-mail. It will be sent from the user that was
+    // updated during the last sign in.
+    ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    CComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+
+    // If either password storage or recovery failed then the user will need to
+    // enter their old Windows password.
+    if (!should_store_succeed || !should_recover_succeed) {
+      // Logon should not complete but there is no error message.
+      EXPECT_EQ(test_provider->credentials_changed_fired(), false);
+
+      // Set the correct old password so that the user can sign in.
+      ASSERT_EQ(S_OK,
+                cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD, kOldPassword));
+
+      // Finish logon successfully now which should update the password.
+      ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
+    } else {
+      // Make sure the new password is sent to the provider.
+      EXPECT_STREQ(A2OLE(kNewPassword), OLE2CW(test_provider->password()));
+
+      // Finish logon successfully but with no credential changed event.
+      ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+    }
+
+    // Make sure the user has the new password internally.
+    EXPECT_EQ(S_OK, fake_os_user_manager()->IsWindowsPasswordValid(
+                        OSUserManager::GetLocalDomain().c_str(),
+                        kDefaultUsername, A2OLE(kNewPassword)));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+
+  // Complete the private key retrieval request if it was waiting.
+  if (get_key_event)
+    get_key_event->Signal();
+
+  // If generate of the second public key failed, the next sign in would
+  // need to re-enter their password
+  if (generate_public_key_again_result != 0) {
+    constexpr char kNewPassword2[] = "password3";
+    // Create provider and start logon.
+    CComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    CComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+    // Send back a different gaia password to force a password update.
+    ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword2));
+
+    // Don't send a forced e-mail. It will be sent from the user that was
+    // updated during the last sign in.
+    ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    CComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+
+    // Logon should not complete but there is no error message.
+    EXPECT_EQ(test_provider->credentials_changed_fired(), false);
+
+    // Set the correct old password so that the user can sign in.
+    ASSERT_EQ(S_OK,
+              cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD,
+                                   base::UTF8ToUTF16(kNewPassword).c_str()));
+
+    // Finish logon successfully now which should update the password.
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
+
+    // Make sure the user has the new password internally.
+    EXPECT_EQ(S_OK, fake_os_user_manager()->IsWindowsPasswordValid(
+                        OSUserManager::GetLocalDomain().c_str(),
+                        kDefaultUsername, A2OLE(kNewPassword2)));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpGaiaCredentialBasePasswordRecoveryTest,
+                         ::testing::Combine(::testing::Values(0, 1, 2),
+                                            ::testing::Values(0, 1, 2),
+                                            ::testing::Values(0, 1, 2)));
+
+// Test password recovery system being disabled by registry settings.
+// Parameter is a pointer to an escrow service url. Can be empty or nullptr.
+class GcpGaiaCredentialBasePasswordRecoveryDisablingTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<const wchar_t*> {};
+
+TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
+       PasswordRecovery_Disabled) {
+  // Enable standard escrow service features in non-Chrome builds so that
+  // the escrow service code can be tested by the build machines.
+#if !defined(GOOGLE_CHROME_BUILD)
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
+#endif
+  USES_CONVERSION;
+  const wchar_t* escrow_service_url = GetParam();
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  if (escrow_service_url) {
+    base::win::RegKey key;
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmEscrowServiceServerUrl,
+                                            escrow_service_url));
+  }
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid;
+  constexpr wchar_t kOldPassword[] = L"password";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, kOldPassword, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Change token response to an invalid one.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+
+  // Make a dummy response for successful public key generation and private key
+  // retrieval.
+  std::string generate_success_response =
+      fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
+          "public_key", "resource_id");
+
+  std::string get_key_success_response =
+      fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
+          "private_key");
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGenerateKeyPairUrl(),
+      FakeWinHttpUrlFetcher::Headers(), generate_success_response);
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(),
+      FakeWinHttpUrlFetcher::Headers(), get_key_success_response);
+
+  // Sign on once to store the password in the LSA
+  {
+    // Create provider and start logon.
+    CComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    // Finish logon successfully to propagate password recovery information to
+    // LSA.
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+
+  // Sign in a second time with a different password and see if it is updated
+  // automatically.
+  {
+    constexpr char kNewPassword[] = "password2";
+
+    // Create provider and start logon.
+    CComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    CComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+    // Send back a different gaia password to force a password update.
+    ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword));
+
+    // Don't send a forced e-mail. It will be sent from the user that was
+    // updated during the last sign in.
+    ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    CComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+
+    // Null or empty escrow service url will disable password
+    // recovery and force the user to enter their password.
+    if (!escrow_service_url || escrow_service_url[0] == '\0') {
+      // Logon should not complete but there is no error message.
+      EXPECT_EQ(test_provider->credentials_changed_fired(), false);
+
+      // Set the correct old password so that the user can sign in.
+      ASSERT_EQ(S_OK,
+                cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD, kOldPassword));
+
+      // Finish logon successfully now which should update the password.
+      ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
+    } else {
+      // Make sure the new password is sent to the provider.
+      EXPECT_STREQ(A2OLE(kNewPassword), OLE2CW(test_provider->password()));
+
+      // Finish logon successfully but with no credential changed event.
+      ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+    }
+
+    // Make sure the user has the new password internally.
+    EXPECT_EQ(S_OK, fake_os_user_manager()->IsWindowsPasswordValid(
+                        OSUserManager::GetLocalDomain().c_str(),
+                        kDefaultUsername, A2OLE(kNewPassword)));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
+                         ::testing::Values(nullptr,
+                                           L"",
+                                           L"https://escrowservice.com"));
 }  // namespace testing
 }  // namespace credential_provider

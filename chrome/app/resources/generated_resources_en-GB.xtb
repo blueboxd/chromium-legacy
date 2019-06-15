@@ -228,7 +228,6 @@
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="1331977651797684645">This was me.</translation>
 <translation id="133535873114485416">Preferred input</translation>
-<translation id="1337692097987160377">Share this tab</translation>
 <translation id="1338950911836659113">Deleting...</translation>
 <translation id="1340527397989195812">Back up media from the device using the Files app.</translation>
 <translation id="1341988552785875222">The current wallpaper is set by '<ph name="APP_NAME" />'. You may need to uninstall '<ph name="APP_NAME" />' before selecting a different wallpaper.</translation>
@@ -528,6 +527,7 @@
 <translation id="1781502536226964113">Open the New Tab page</translation>
 <translation id="1781771911845953849">Accounts and sync</translation>
 <translation id="1782196717298160133">Finding your phone</translation>
+<translation id="1784707308176068866">Run in the background when requested by a cooperating native application</translation>
 <translation id="1784849162047402014">Device is low on disk space</translation>
 <translation id="1790194216133135334">Send link to <ph name="DEVICE_NAME" /></translation>
 <translation id="1792619191750875668">Extended display</translation>
@@ -536,6 +536,7 @@
 <translation id="1799071797295057738">The extension "<ph name="EXTENSION_NAME" />" was automatically disabled.</translation>
 <translation id="1802687198411089702">The page isn't responding. You can wait for it or exit.</translation>
 <translation id="1802931390041703523">Flash was blocked on this page</translation>
+<translation id="1803531841600994172">Language to translate into</translation>
 <translation id="1803545009660609783">Retrain</translation>
 <translation id="1805472176602625930">Press the button on the security key</translation>
 <translation id="1805738995123446102">Background tab is using your microphone</translation>
@@ -731,13 +732,13 @@
 <translation id="2120297377148151361">Activity and interactions</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Unmute Tab}other{Unmute Tabs}}</translation>
 <translation id="2121825465123208577">Re-size</translation>
-<translation id="2122305276694332719">Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Rated <ph name="AVERAGE_RATING" /> by one user.}other{Rated <ph name="AVERAGE_RATING" /> by # users.}}</translation>
 <translation id="2126167708562367080">Sync is disabled by your administrator.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="212862741129535676">Frequency State Occupancy Percentage</translation>
 <translation id="2129825002735785149">Update plug-in</translation>
 <translation id="2131077480075264">Unable to install "<ph name="APP_NAME" />" because it is not allowed by "<ph name="IMPORT_NAME" />"</translation>
+<translation id="21354425047973905">Hide PINs</translation>
 <translation id="2135456203358955318">Docked magnifier</translation>
 <translation id="2135787500304447609">&amp;Resume</translation>
 <translation id="2136372518715274136">Enter new password</translation>
@@ -952,6 +953,7 @@
 <translation id="2436707352762155834">Minimum</translation>
 <translation id="2439545803278355377">Enter your new PIN. A PIN must be at least four characters long and can contain letters, numbers and other characters.</translation>
 <translation id="2440604414813129000">View s&amp;ource</translation>
+<translation id="2444119669991608829">Page is not in <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Extension root directory is required.</translation>
 <translation id="2445484935443597917">Create a New Profile</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> wants to verify your identity</translation>
@@ -965,6 +967,7 @@
 <translation id="2454247629720664989">Keyword</translation>
 <translation id="245661998428026871">The video in picture-in-picture mode will stop playing.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> wants to copy files from <ph name="VOLUME_NAME" />.</translation>
+<translation id="2458379781610688953">Update account, <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">Device management token is invalid.</translation>
 <translation id="2462724976360937186">Certification Authority Key ID</translation>
 <translation id="2462752602710430187">Added <ph name="PRINTER_NAME" /></translation>
@@ -1123,18 +1126,19 @@
 <translation id="2683638487103917598">Folder sorted</translation>
 <translation id="2684004000387153598">To continue, click OK, then click Add Person to create a new profile for your email address.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR" />.</translation>
+<translation id="2688477613306174402">Configuration</translation>
 <translation id="2690024944919328218">Show language options</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
 <translation id="2699911226086014512">PIN operation failed with code <ph name="RETRIES" />.</translation>
+<translation id="2701737434167469065">Sign in, <ph name="EMAIL" /></translation>
 <translation id="270358213449696159">Google Chrome OS Terms contents</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">Touchpad speed</translation>
 <translation id="2705736684557713153">Scroll to the bottom of the screen and if it appears, turn on Instant Tethering. If it doesn't, you're ready to go.</translation>
 <translation id="2707024448553392710">Component downloading</translation>
 <translation id="270921614578699633">Average Over</translation>
-<translation id="2709453993673701466">Want to manage sync and personalisation before they’re turned on? Visit <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="271033894570825754">New</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
@@ -1373,7 +1377,6 @@
 <translation id="3067198179881736288">Install app?</translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
 <translation id="3071624960923923138">You can click here to open a new tab</translation>
-<translation id="3074037959626057712">You've signed in and turned on Sync</translation>
 <translation id="3075874217500066906">A restart is required to begin the Powerwash process. After restart you will be asked to confirm that you want to proceed.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3081564097391116951">Automatic updates only happen over Ethernet or Wi-Fi.</translation>
@@ -1923,6 +1926,7 @@
 <translation id="3872220884670338524">More actions, saved account for <ph name="USERNAME" /> on <ph name="DOMAIN" /></translation>
 <translation id="3872991219937722530">Free up disk space or device will become unresponsive.</translation>
 <translation id="3873315167136380065">To turn this on, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /> to remove your sync passphrase</translation>
+<translation id="3873423927483480833">Show PINs</translation>
 <translation id="3873915545594852654">A problem with ARC++ occurred.</translation>
 <translation id="3878840326289104869">Creating supervised user</translation>
 <translation id="3879748587602334249">Download manager</translation>
@@ -2300,7 +2304,6 @@
 <translation id="4479877282574735775">Configuring the virtual machine. This may take a few minutes.</translation>
 <translation id="4480590691557335796">Chrome can find harmful software on your computer and remove it</translation>
 <translation id="4481530544597605423">Unpaired devices</translation>
-<translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> has crashed</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
@@ -2341,7 +2344,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">External extension is at the same or lower version compared to the existing one.</translation>
 <translation id="4555769855065597957">Shadow</translation>
-<translation id="4556110439722119938">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices</translation>
 <translation id="4558426062282641716">Auto-launch permission requested</translation>
 <translation id="4558491878126948419">Get <ph name="DEVICE_TYPE" /> tips and updates on Google products and share feedback. Unsubscribe at any time.</translation>
 <translation id="4559617833001311418">This site is accessing your motion or light sensors.</translation>
@@ -2349,6 +2351,7 @@
 <translation id="4562155214028662640">Add Fingerprint</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Hide password</translation>
+<translation id="456717285308019641">Page language to translate</translation>
 <translation id="4567772783389002344">Add word</translation>
 <translation id="4568025708905928793">A security key is being requested</translation>
 <translation id="4568213207643490790">Sorry, Google accounts are not allowed on this device.</translation>
@@ -2379,6 +2382,7 @@
 <translation id="4613144866899789710">Cancelling Linux installation...</translation>
 <translation id="4613271546271159013">An extension has changed what page is shown when you open a new tab.</translation>
 <translation id="4615586811063744755">no cookie selected</translation>
+<translation id="4617001782309103936">Too short</translation>
 <translation id="4617270414136722281">Extension options</translation>
 <translation id="4619615317237390068">Tabs from other devices</translation>
 <translation id="4620809267248568679">This setting is enforced by an extension.</translation>
@@ -2391,6 +2395,7 @@
 <translation id="4633003931260532286">Extension requires '<ph name="IMPORT_NAME" />' with a minimum version '<ph name="IMPORT_VERSION" />', but only version '<ph name="INSTALLED_VERSION" />' is installed</translation>
 <translation id="4634771451598206121">Sign in again...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> is not available to Guest users.</translation>
+<translation id="4637083375689622795">More actions, <ph name="EMAIL" /></translation>
 <translation id="4641539339823703554">Chrome was unable to set the system time. Please check the time below and correct it if needed.</translation>
 <translation id="4643612240819915418">&amp;Open Video in New Tab</translation>
 <translation id="4645676300727003670">&amp;Keep</translation>
@@ -2908,6 +2913,7 @@
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5453630479789469584">Could not set up Plugin VM</translation>
 <translation id="5454166040603940656">with <ph name="PROVIDER" /></translation>
+<translation id="545426320101607695">Language to translate into</translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5457459357461771897">Read and delete photos, music and other media from your computer</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
@@ -3829,6 +3835,7 @@
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">The password that you entered was rejected by the server.</translation>
 <translation id="6876155724392614295">Cycle</translation>
+<translation id="6877460900831874810">Enable Chrome media playback at lock screen</translation>
 <translation id="6878422606530379992">Sensors allowed</translation>
 <translation id="6880587130513028875">Images were blocked on this page.</translation>
 <translation id="6883319974225028188">Oops!  The system failed to save device configuration.</translation>
@@ -3894,7 +3901,6 @@
 <translation id="6978121630131642226">Search Engines</translation>
 <translation id="6979440798594660689">Mute (default)</translation>
 <translation id="6979737339423435258">All time</translation>
-<translation id="6980462514016882061">Google may use your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6983783921975806247">Registered OID</translation>
 <translation id="6984299437918708277">Choose a picture to display for your account on the sign-in screen</translation>
@@ -3930,6 +3936,7 @@
 <translation id="7019805045859631636">Fast</translation>
 <translation id="7022562585984256452">Your home page has been set.</translation>
 <translation id="7025190659207909717">Mobile data service management</translation>
+<translation id="7027891519253193555">Page is not in <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Serial port connected</translation>
 <translation id="7031962166228839643">TPM is being prepared, please wait (this may take a few minutes)...</translation>
@@ -4135,6 +4142,7 @@
 <translation id="7328699668338161242">Your Assistant can already recognise your voice</translation>
 <translation id="7328867076235380839">Invalid combination</translation>
 <translation id="7329154610228416156">Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL" />). Please contact your administrator.</translation>
+<translation id="733006820760728943">Set as active account</translation>
 <translation id="7334190995941642545">Smart Lock is currently unavailable. Please try again later.</translation>
 <translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7335974957018254119">Use spell check for</translation>
@@ -4163,6 +4171,7 @@
 <translation id="7364796246159120393">Choose file</translation>
 <translation id="7366415735885268578">Add a site</translation>
 <translation id="7366909168761621528">Browsing data</translation>
+<translation id="7367483872576694328">BLE Scan Parser Service</translation>
 <translation id="736877393389250337"><ph name="URL" /> could not be open in <ph name="ALTERNATIVE_BROWSER_NAME" />. Please contact your system administrator.</translation>
 <translation id="7371006317849674875">Start time</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4210,6 +4219,7 @@
 <translation id="7442465037756169001">Your Hangouts Meet hardware is ready to be set up.</translation>
 <translation id="744341768939279100">Create a new profile</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE" /></translation>
+<translation id="7448430327655618736">Automatically install apps</translation>
 <translation id="7450761244949417357">Opening in <ph name="ALTERNATIVE_BROWSER_NAME" /> now</translation>
 <translation id="7453008956351770337">By selecting this printer, you are giving the following extension the permission to access your printer:</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4394,6 +4404,7 @@
 <translation id="7728570244950051353">Lock screen from sleep mode</translation>
 <translation id="7728668285692163452">Channel change will be applied later</translation>
 <translation id="7730449930968088409">Capture content of your screen</translation>
+<translation id="7731119595976065702">More languages...</translation>
 <translation id="7732111077498238432">Network is policy controlled</translation>
 <translation id="7737238973539693982">Delete Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
@@ -4744,6 +4755,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8214489666383623925">Open File...</translation>
 <translation id="8214962590150211830">Remove This Person</translation>
 <translation id="8217399928341212914">Continue blocking automatic downloads of multiple files</translation>
+<translation id="822519928942492333">Page language to translate</translation>
 <translation id="8225265270453771718">Share an application window</translation>
 <translation id="8225753906568652947">Redeem your offers</translation>
 <translation id="8226222018808695353">Forbidden</translation>
@@ -5189,7 +5201,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8899851313684471736">Open link in new &amp;window</translation>
 <translation id="8902667442496790482">Open Select to Speak settings</translation>
 <translation id="8903263458134414071">Select an account to sign in</translation>
-<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="890616557918890486">Change source</translation>
 <translation id="8909833622202089127">Site is tracking your location</translation>
 <translation id="8910146161325739742">Share your screen</translation>

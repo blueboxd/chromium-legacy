@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.SCRIMVIEW_OBSERVER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.TINT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.UNGROUP_BAR_STATUS;
 
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -75,6 +76,8 @@ class TabGridSheetViewBinder {
             }
         } else if (ANIMATION_SOURCE_RECT == propertyKey) {
             viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_SOURCE_RECT));
+        } else if (UNGROUP_BAR_STATUS == propertyKey) {
+            viewHolder.dialogView.updateUngroupBar(model.get(UNGROUP_BAR_STATUS));
         }
     }
 }

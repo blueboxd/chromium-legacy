@@ -1095,8 +1095,6 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   ScopedExpensiveBackgroundTimerThrottlingForTest
       budget_background_throttling_enabler(true);
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list =
-      std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
   EXPECT_FALSE(page_scheduler_->IsThrottled());
@@ -1160,8 +1158,6 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   ScopedExpensiveBackgroundTimerThrottlingForTest
       budget_background_throttling_enabler(true);
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list =
-      std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   std::unique_ptr<PageSchedulerImpl> page_scheduler(
       new PageSchedulerImpl(nullptr, scheduler_.get()));

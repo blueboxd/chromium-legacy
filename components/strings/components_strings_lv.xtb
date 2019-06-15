@@ -1148,6 +1148,7 @@ Papildu informācija:
 <translation id="7334320624316649418">&amp;Atcelt pārkārtošanas atsaukšanu</translation>
 <translation id="733923710415886693">Servera sertifikāts netika atklāts, izmantojot Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
+<translation id="7346048084945669753">Ir saistīts:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandrinda</translation>
 <translation id="7372973238305370288">meklēšanas rezultāts</translation>
@@ -1180,6 +1181,7 @@ Papildu informācija:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /> par šo problēmu.</translation>
 <translation id="7455133967321480974">Izmantot globālo noklusējumu (Bloķēt)</translation>
 <translation id="7460618730930299168">Pārmeklēšana atšķiras no jūsu atlasītās. Vai vēlaties turpināt?</translation>
+<translation id="7465410862124366659">Tika konstatēts, ka šī lapa pieder organizācijai <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />].</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="7485870689360869515">Dati netika atrasti.</translation>

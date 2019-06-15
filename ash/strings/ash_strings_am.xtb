@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">የግቤት ስልቶች በእርስዎ አስተዳዳሪ ይዋቀራሉ።</translation>
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1761222317188459878">የአውታረ መረብ ግንኙነትን አብራ ወይም አጥፋ። <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">ወደ ቀኝ ይሸብልሉ</translation>
 <translation id="1812997170047690955">ማያ ገጼ ላይ ምን አለ?</translation>
 <translation id="1823873187264960516">ኤተርኔት፦ <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">ረዳት (በመጫን ላይ...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">በ <ph name="PERCENTAGE" />% ላይ ባትሪ እና ኃይል እየሞላ ነው።</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
+<translation id="4021716437419160885">ወደ ታች ይሸብልሉ</translation>
 <translation id="4042660782729322247">ማያ ገጽዎን እያጋሩ ነው</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">ጠንካራ</translation>
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="4924411785043111640">ዳግም ይጀምሩ እና ዳግም ያቀናብሩ</translation>
+<translation id="495046168593986294">ወደ ላይ ይሸብልሉ</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5030687792513154421">ሰዓት አልቋል</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ከአዲስ ስልክ ጋር ተገናኝቷል</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">ዝማኔውን ለማግኘት፣ ከተያያዘው የቁልፍ ሰሌዳ ጋር የእርስዎን Chromebook ዳግም ያስጀምሩ።</translation>
 <translation id="5992218262414051481">ባለከፍተኛ ንፅፅር ሁነታ ነቅቷል። እሱን ለማጥፋት እንደገና Ctrl+Search+H ይጫኑ።</translation>
 <translation id="6018164090099858612">ከመስታወት ሁነታ በመውጣት ላይ</translation>
+<translation id="602001110135236999">ወደ ግራ ይሸብልሉ</translation>
+<translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6043212731627905357">ይህ ማሳያ ከእርስዎ <ph name="DEVICE_TYPE" /> ጋር መስማማት አልቻለም (ማሳያው የሚደገፍ አይደለም)።</translation>
 <translation id="6043994281159824495">አሁን ዘግተህ ውጣ</translation>
 <translation id="6047696787498798094">ወደ ሌላ ተጠቃሚ ሲቀይሩ ማያ ገጽ ማጋራት ይቆማል። መቀጠል ይፈልጋሉ?</translation>

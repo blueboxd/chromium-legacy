@@ -82,10 +82,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       const AuthenticatorSupportedOptions& options);
 
  private:
-  CtapDeviceResponseCode OnMakeCredential(base::span<const uint8_t> request,
-                                          std::vector<uint8_t>* response);
-  CtapDeviceResponseCode OnGetAssertion(base::span<const uint8_t> request,
-                                        std::vector<uint8_t>* response);
+  base::Optional<CtapDeviceResponseCode> OnMakeCredential(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
+  base::Optional<CtapDeviceResponseCode> OnGetAssertion(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnGetNextAssertion(base::span<const uint8_t> request,
                                             std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,

@@ -60,19 +60,25 @@ class ExternalVkImageBacking : public SharedImageBacking {
         ->GetVulkanDevice();
   }
   bool need_sychronization() const {
+    if (use_separate_gl_texture())
+      return false;
     return usage() & SHARED_IMAGE_USAGE_GLES2;
+  }
+  bool use_separate_gl_texture() const {
+    return !context_state()->support_vulkan_external_object();
   }
 
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
   // and semaphore handles which will be waited on before accessing.
   bool BeginAccess(bool readonly,
-                   std::vector<SemaphoreHandle>* semaphore_handles);
+                   std::vector<SemaphoreHandle>* semaphore_handles,
+                   bool is_gl);
 
   // Notifies the backing that an access has ended. The representation must
   // provide a semaphore handle that has been signaled at the end of the write
   // access.
-  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle);
+  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle, bool is_gl);
 
   // SharedImageBacking implementation.
   bool IsCleared() const override;
@@ -82,6 +88,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 
  protected:
+  void UpdateContent(uint32_t content_flags);
   bool BeginAccessInternal(bool readonly,
                            std::vector<SemaphoreHandle>* semaphore_handles);
   void EndAccessInternal(bool readonly, SemaphoreHandle semaphore_handle);
@@ -117,7 +124,11 @@ class ExternalVkImageBacking : public SharedImageBacking {
       size_t stride,
       size_t memory_offset);
 
-  bool WritePixels(const base::span<const uint8_t>& pixel_data, size_t stride);
+  using FillBufferCallback = base::OnceCallback<void(void* buffer)>;
+  bool WritePixels(size_t data_size,
+                   size_t stride,
+                   FillBufferCallback callback);
+  void CopyPixelsFromGLTexture();
 
   SharedContextState* const context_state_;
   GrBackendTexture backend_texture_;
@@ -132,10 +143,16 @@ class ExternalVkImageBacking : public SharedImageBacking {
   gles2::Texture* texture_ = nullptr;
 
   // GMB related stuff.
-  bool shared_memory_is_updated_ = false;
   base::WritableSharedMemoryMapping shared_memory_mapping_;
   size_t stride_ = 0;
   size_t memory_offset_ = 0;
+
+  enum LatestContent {
+    kInVkImage = 1 << 0,
+    kInSharedMemory = 1 << 1,
+    kInGLTexture = 1 << 2,
+  };
+  uint32_t latest_content_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };

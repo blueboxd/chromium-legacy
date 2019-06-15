@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1409544243779336081">Apprekommendation</translation>
+<translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
 <translation id="169515659049020177">Skift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{för 1 min sedan}other{för # min sedan}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut kvar}other{# minuter kvar}}</translation>
+<translation id="7430878839542012341">Vill du radera den här sökningen från historiken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Avbryt</translation>

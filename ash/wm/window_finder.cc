@@ -51,8 +51,7 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
     const gfx::Point& screen_point,
     aura::Window* window,
     aura::WindowTargeter* targeter,
-    const std::set<aura::Window*> ignore,
-    aura::Window** real_topmost) {
+    const std::set<aura::Window*> ignore) {
   if (!window->IsVisible())
     return nullptr;
 
@@ -62,11 +61,8 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
     return nullptr;
 
   if (IsTopLevelWindow(window)) {
-    if (IsWindowTargeted(window, screen_point, targeter)) {
-      if (real_topmost && !(*real_topmost))
-        *real_topmost = window;
+    if (IsWindowTargeted(window, screen_point, targeter))
       return (ignore.find(window) == ignore.end()) ? window : nullptr;
-    }
     return nullptr;
   }
 
@@ -76,7 +72,7 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
     aura::WindowTargeter* child_targeter =
         (*i)->targeter() ? (*i)->targeter() : targeter;
     aura::Window* result = GetTopmostWindowAtPointWithinWindow(
-        screen_point, *i, child_targeter, ignore, real_topmost);
+        screen_point, *i, child_targeter, ignore);
     if (result)
       return result;
   }
@@ -115,18 +111,14 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
 namespace ash {
 
 aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
-                                      const std::set<aura::Window*>& ignore,
-                                      aura::Window** real_topmost) {
-  if (real_topmost)
-    *real_topmost = nullptr;
-  aura::Window* root = wm::GetRootWindowAt(screen_point);
-  // GetTopmostWindowAtPointWithinWindow() always needs to be called to update
-  // |real_topmost| correctly.
-  aura::Window* topmost_window = GetTopmostWindowAtPointWithinWindow(
-      screen_point, root, root->targeter(), ignore, real_topmost);
+                                      const std::set<aura::Window*>& ignore) {
   aura::Window* overview_window =
       GetToplevelWindowInOverviewAtPoint(screen_point, ignore);
-  return overview_window ? overview_window : topmost_window;
+  if (overview_window)
+    return overview_window;
+  aura::Window* root = wm::GetRootWindowAt(screen_point);
+  return GetTopmostWindowAtPointWithinWindow(screen_point, root,
+                                             root->targeter(), ignore);
 }
 
 }  // namespace ash

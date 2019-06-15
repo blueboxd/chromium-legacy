@@ -31,6 +31,13 @@ enum class DeviceIconType {
   TOTAL_COUNT = 2  // Add new types above this line.
 };
 
+SkColor GetColorfromTheme() {
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  return native_theme->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+}
+
 gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
@@ -43,8 +50,9 @@ gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
     default:
       vector_icon = &kSendTabToSelfIcon;
   }
-  SkColor icon_color = ui::NativeTheme::kColorId_DefaultIconColor;
-  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize, icon_color);
+
+  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize,
+                               GetColorfromTheme());
 }
 
 std::unique_ptr<views::ImageView> CreateIconView(

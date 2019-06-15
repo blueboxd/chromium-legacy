@@ -53,12 +53,12 @@ class AppCacheStorage;
 class CONTENT_EXPORT AppCacheStorageReference
     : public base::RefCounted<AppCacheStorageReference> {
  public:
+  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
+
   AppCacheStorage* storage() const { return storage_.get(); }
 
  private:
-  friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
-  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
   ~AppCacheStorageReference();
 
   std::unique_ptr<AppCacheStorage> storage_;
@@ -103,16 +103,19 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // without relaunching the browser.
   void ScheduleReinitialize();
 
-  // AppCacheService implementation:
+  // AppCacheService
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
                           OnceCompletionCallback callback) override;
-  void DeleteAppCacheGroup(const GURL& manifest_url,
-                           net::CompletionOnceCallback callback) override;
-
-  // Deletes all appcaches for the origin, 'callback' is invoked upon
-  // completion. This method always completes asynchronously.
   void DeleteAppCachesForOrigin(const url::Origin& origin,
                                 net::CompletionOnceCallback callback) override;
+
+  // Deletes the group identified by 'manifest_url', 'callback' is
+  // invoked upon completion. Upon completion, the cache group and
+  // any resources within the group are no longer loadable and all
+  // subresource loads for pages associated with a deleted group
+  // will fail. This method always completes asynchronously.
+  void DeleteAppCacheGroup(const GURL& manifest_url,
+                           net::CompletionOnceCallback callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.

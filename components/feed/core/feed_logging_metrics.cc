@@ -497,7 +497,8 @@ void FeedLoggingMetrics::OnPagePopulated(base::TimeDelta timeToPopulate) {
 void FeedLoggingMetrics::OnSuggestionShown(int position,
                                            base::Time publish_date,
                                            float score,
-                                           base::Time fetch_date) {
+                                           base::Time fetch_date,
+                                           bool is_available_offline) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Shown", position,
                              kMaxSuggestionsTotal);
 
@@ -519,11 +520,15 @@ void FeedLoggingMetrics::OnSuggestionShown(int position,
   if (position == 0) {
     RecordContentSuggestionsUsage(clock_->Now());
   }
+
+  UMA_HISTOGRAM_BOOLEAN("ContentSuggestions.Feed.AvailableOffline.Shown",
+                        is_available_offline);
 }
 
 void FeedLoggingMetrics::OnSuggestionOpened(int position,
                                             base::Time publish_date,
-                                            float score) {
+                                            float score,
+                                            bool is_available_offline) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Opened", position,
                              kMaxSuggestionsTotal);
 
@@ -538,6 +543,8 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
   RecordContentSuggestionsUsage(clock_->Now());
 
   base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
+  UMA_HISTOGRAM_BOOLEAN("ContentSuggestions.Feed.AvailableOffline.Opened",
+                        is_available_offline);
 }
 
 void FeedLoggingMetrics::OnSuggestionWindowOpened(

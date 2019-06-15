@@ -248,6 +248,7 @@
 </translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3855472144336161447">Γερμανικά Neo 2</translation>
+<translation id="3856075812838139784">Μόνο για ανάγνωση</translation>
 <translation id="3858678421048828670">Πληκτρολόγιο με ιταλικούς χαρακτήρες</translation>
 <translation id="386548886866354912">Συμπίεση με <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Περιγραφή</translation>
@@ -293,6 +294,7 @@
 <translation id="4568854179928172494">Ώρα τροποποίησης</translation>
 <translation id="4572815280350369984">Αρχείο <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Περισσότερα...</translation>
+<translation id="4579744207439506346">Το <ph name="ENTRY_NAME" /> προστέθηκε στην επιλογή.</translation>
 <translation id="4582497162516204941">Εγκατάσταση με Linux (beta)</translation>
 <translation id="4594543368593301662">Εμφάνιση αποτελεσμάτων για <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Καλλιτέχνης</translation>
@@ -431,6 +433,7 @@
 <translation id="5819442873484330149">Σύνολο Χανγκίλ 3 (Τελικό)</translation>
 <translation id="5833610766403489739">Αυτό το αρχείο χάθηκε κάπου. Ελέγξτε τη ρύθμιση της τοποθεσίας λήψης σας και δοκιμάστε ξανά.</translation>
 <translation id="5838051104334203064">Οι εφαρμογές Play Store δεν μπορούν να αποκτήσουν πρόσβαση σε αυτήν τη συσκευή</translation>
+<translation id="5838451609423551646">Καταργήθηκαν όλες οι καταχωρίσεις από την επιλογή.</translation>
 <translation id="5838825566232597749">Διεθνές ΗΠΑ Workman</translation>
 <translation id="5850516540536751549">Αυτός ο τύπος αρχείου δεν υποστηρίζεται. Επισκεφτείτε το <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> για να εντοπίσετε μια εφαρμογή που μπορεί να ανοίξει αυτόν τον τύπο αρχείου.
     <ph name="BEGIN_LINK_HELP" />Μάθετε περισσότερα<ph name="END_LINK_HELP" /></translation>
@@ -505,6 +508,7 @@
 <translation id="6825883775269213504">Ρωσικά
 </translation>
 <translation id="6827236167376090743">Αυτό το βίντεο θα συνεχίσει να παίζει για πάντα.</translation>
+<translation id="6847101934483209767">Το <ph name="ENTRY_NAME" /> καταργήθηκε από την επιλογή.</translation>
 <translation id="6862635236584086457">Για όλα τα αρχεία που αποθηκεύονται σε αυτόν το φάκελο δημιουργούνται αυτόματα αντίγραφα ασφαλείας στο διαδίκτυο</translation>
 <translation id="6870130893560916279">Πληκτρολόγιο με ουκρανικούς χαρακτήρες</translation>
 <translation id="6876155724392614295">Ποδήλατο</translation>
@@ -636,6 +640,7 @@
 <translation id="8148264977957212129">Μέθοδος εισαγωγής Pinyin</translation>
 <translation id="8151638057146502721">Διαμόρφωση</translation>
 <translation id="8153607920959057464">Δεν ήταν δυνατή η εμφάνιση αυτού του αρχείου.</translation>
+<translation id="8154842056504218462">Επιλέχθηκαν όλες οι καταχωρίσεις.</translation>
 <translation id="8157684860301034423">Αποτυχία ανάκτησης των πληροφοριών της εφαρμογής.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Πληκτρολόγιο με ισπανικούς χαρακτήρες</translation>
@@ -680,6 +685,7 @@
 <translation id="8686213429977032554">Δεν μοιράζεστε ακόμα αυτό το αρχείο του Drive</translation>
 <translation id="8698464937041809063">Σχέδιο Google</translation>
 <translation id="8714406895390098252">Ποδήλατο</translation>
+<translation id="8719721339511222681">Επιλογή <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Διεθνές πληκτρολόγιο ΗΠΑ</translation>
 <translation id="872537912056138402">Κροατικά
 </translation>
@@ -723,6 +729,7 @@
 <translation id="942954117721265519">Δεν υπάρχουν εικόνες σε αυτόν τον κατάλογο.</translation>
 <translation id="943972244133411984">Τροποποιήθηκε από</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
+<translation id="947144732524271678">Επιλέχθηκε ένα εύρος <ph name="ENTRY_COUNT" /> καταχωρίσεων από το <ph name="FROM_ENTRY_NAME" /> έως το <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Εκτός σύνδεσης</translation>
 <translation id="988685240266037636">Υπάρχει ήδη ένα αρχείο με την ονομασία "<ph name="FILE_NAME" />". Θέλετε να το αντικαταστήσετε;</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

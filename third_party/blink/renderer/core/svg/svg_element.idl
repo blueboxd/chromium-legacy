@@ -22,6 +22,7 @@
 
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGElement
 
+[Exposed=Window]
 interface SVGElement : Element {
     [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;

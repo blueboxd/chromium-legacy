@@ -40,7 +40,6 @@ public class ModuleInstaller {
 
     /** Needs to be called before trying to access a module. */
     public static void init() {
-        if (sSplitCompatted) return;
         // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
         try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
             SplitCompat.install(ContextUtils.getApplicationContext());

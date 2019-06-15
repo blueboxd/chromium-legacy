@@ -268,6 +268,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* sid,
                                BSTR* error_text);
 
+  HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
+
   CComPtr<ICredentialProviderCredentialEvents> events_;
   CComPtr<IGaiaCredentialProvider> provider_;
 
@@ -285,6 +287,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // handle the password change case.
   bool needs_windows_password_ = false;
   bool request_force_password_change_ = false;
+
+  // Boolean to indicate if we should wait for ReportResult() prior to clearing
+  // internal state.
+  bool wait_for_report_result_ = false;
 
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.

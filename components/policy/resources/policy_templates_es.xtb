@@ -449,6 +449,12 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si la política no se configura o se inhabilita, el usuario podrá cambiar esta configuración (por ejemplo, utilizando la entrada "Inhabilitar el aislamiento de sitio web" en chrome://flags).
       </translation>
 <translation id="1767673020408652620">Habilitar la opción Aplicaciones recomendadas en estado cero del cuadro de búsqueda.</translation>
+<translation id="17719159826324007">
+      Si se asigna el valor "ArcSession" a esta política, se forzará al dispositivo a reiniciarse cuando el usuario cierre sesión si Android se ha iniciado.
+      Si se le asigna el valor "Always", se forzará al dispositivo a reiniciarse cada vez que el usuario cierre sesión.
+      Si no se le asigna ningún valor, esta política no tendrá ningún efecto y no se forzará al dispositivo a reiniciarse cuando el usuario cierre sesión. Lo mismo sucede si se le asigna el valor "Never".
+      Esta política solo tendrá validez para los usuarios no afiliados.
+      </translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para Desarrolladores de Android. Si se asigna el valor true a esta política, los usuarios no podrán acceder a las Opciones para Desarrolladores. Si se le asigna el valor false o no se configura, los usuarios podrán tocar siete veces el número de compilación en la aplicación Ajustes de Android para acceder a esas opciones.</translation>
 <translation id="1793346220873697538">Inhabilitar la impresión con PIN de forma predeterminada</translation>
 <translation id="1797233582739332495">Mostrar un mensaje periódico al usuario indicando que es necesario reiniciar el navegador</translation>
@@ -952,6 +958,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseñas.</translation>
+<translation id="2694143893026486692">Se ha habilitado la lupa fijada</translation>
 <translation id="2706708761587205154">Permitir imprimir solo con PIN</translation>
 <translation id="2710534340210290498">Si se asigna el valor "False" a esta política, los usuarios no podrán bloquear la pantalla (solo podrán cerrar su sesión de usuario). Si se asigna el valor "True" a esta opción o no se le asigna ninguno, los usuarios que se autenticaron con una contraseña pueden bloquear la pantalla.</translation>
 <translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> a las aplicaciones ARC</translation>
@@ -1188,6 +1195,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política es opcional. Si no se establece, no se realizará ninguna sustitución de los términos de búsqueda.
 
           Solo se respetará esta política si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Esta política permite que los usuarios de la función WebDriver anulen las políticas que puedan interferir en su funcionamiento.
 
       Actualmente esta política inhabilita las políticas SitePerProcess y IsolateOrigins.
@@ -1706,12 +1714,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si se asigna el valor False a esta política o no se configura, los dispositivos con <ph name="PRODUCT_OS_NAME" /> comprobarán automáticamente si existe alguna actualización.
 
       Advertencia: Se recomienda mantener habilitadas las actualizaciones automáticas para que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. Desactivar las actualizaciones automáticas podría suponer un riesgo para los usuarios.</translation>
-<translation id="4018000735882846261">Esta política autoriza al Asistente de Google a escuchar la frase de activación.
-
-      Si se habilita esta política, el Asistente de Google escuchará la frase de activación.
-      De lo contrario, el Asistente de Google no escuchará la frase de activación.
-      Si no se configura esta política, el Asistente de Google no escuchará la frase de activación.
-      </translation>
 <translation id="4020682745012723568">Las aplicaciones para Android no pueden acceder a las cookies transferidas al perfil del usuario.</translation>
 <translation id="402759845255257575">No permitir que ningún sitio ejecute JavaScript</translation>
 <translation id="4027608872760987929">Habilitar proveedor de búsquedas predeterminadas</translation>

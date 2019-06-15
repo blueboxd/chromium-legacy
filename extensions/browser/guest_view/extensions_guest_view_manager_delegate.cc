@@ -77,7 +77,7 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
       owner->GetRenderViewHost(), guest->browser_context(), guest->owner_host(),
       histogram_value, event_name, content::ChildProcessHost::kInvalidUniqueID,
       extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
-      std::move(event_args), EventRouter::USER_GESTURE_UNKNOWN, info);
+      std::move(event_args), info);
 }
 
 bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(

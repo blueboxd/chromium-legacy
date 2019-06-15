@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_ITEMS_COLLETION_CORE_THROTTLED_OFFLINE_CONTENT_PROVIDER_H_
 
 #include <map>
+#include <utility>
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -63,7 +64,8 @@ class ThrottledOfflineContentProvider
   // OfflineContentProvider::Observer implementation.
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
-  void OnItemUpdated(const OfflineItem& item) override;
+  void OnItemUpdated(const OfflineItem& item,
+                     const base::Optional<UpdateDelta>& update_delta) override;
 
   void OnGetAllItemsDone(MultipleItemCallback callback,
                          const OfflineItemList& items);
@@ -86,7 +88,9 @@ class ThrottledOfflineContentProvider
   OfflineContentProvider* const wrapped_provider_;
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
-  typedef std::map<ContentId, OfflineItem> OfflineItemMap;
+  typedef std::map<ContentId,
+                   std::pair<OfflineItem, base::Optional<UpdateDelta>>>
+      OfflineItemMap;
   OfflineItemMap updates_;
 
   base::WeakPtrFactory<ThrottledOfflineContentProvider> weak_ptr_factory_;

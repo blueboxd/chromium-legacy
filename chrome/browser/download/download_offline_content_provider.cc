@@ -34,6 +34,7 @@ using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
 using offline_items_collection::OfflineItemShareInfo;
 using OfflineItemVisuals = offline_items_collection::OfflineItemVisuals;
+using UpdateDelta = offline_items_collection::UpdateDelta;
 
 namespace {
 
@@ -266,7 +267,11 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
   if (!ShouldShowDownloadItem(item))
     return;
 
+  UpdateDelta update_delta;
   if (item->GetState() == DownloadItem::COMPLETE) {
+    update_delta.state_changed = completed_downloads_.find(item->GetGuid()) ==
+                                 completed_downloads_.end();
+
     // TODO(crbug.com/938152): May be move this to DownloadItem.
     if (completed_downloads_.find(item->GetGuid()) !=
         completed_downloads_.end()) {
@@ -278,7 +283,10 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
     AddCompletedDownload(item);
   }
 
-  UpdateObservers(item);
+  for (auto& observer : observers_) {
+    observer.OnItemUpdated(
+        OfflineItemUtils::CreateOfflineItem(name_space_, item), update_delta);
+  }
 }
 
 void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
@@ -326,9 +334,3 @@ void DownloadOfflineContentProvider::GetAllDownloads(
     manager_->GetAllDownloads(all_items);
 }
 
-void DownloadOfflineContentProvider::UpdateObservers(DownloadItem* item) {
-  for (auto& observer : observers_) {
-    observer.OnItemUpdated(
-        OfflineItemUtils::CreateOfflineItem(name_space_, item));
-  }
-}

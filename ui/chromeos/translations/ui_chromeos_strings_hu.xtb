@@ -240,6 +240,7 @@
 <translation id="383652340667548381">szerb</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3855472144336161447">német Neo 2</translation>
+<translation id="3856075812838139784">Csak olvasható</translation>
 <translation id="3858678421048828670">Olasz billentyűzet</translation>
 <translation id="386548886866354912">Csomagolás a következővel: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Leírás</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Módosítás ideje</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fájl</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> hozzáadva a kijelöléshez.</translation>
 <translation id="4582497162516204941">Telepítés a Linux (béta) segítségével</translation>
 <translation id="4594543368593301662">Keresési eredmények megjelenítése a következőhöz: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Előadó</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 készlet (végleges)</translation>
 <translation id="5833610766403489739">Ez a fájl elkóborolt valahová. Kérjük, ellenőrizze a letöltés helyének beállítását, és próbálja újra.</translation>
 <translation id="5838051104334203064">A Play Áruház alkalmazásai nem férhetnek hozzá ehhez az eszközhöz</translation>
+<translation id="5838451609423551646">Összes bejegyzés eltávolítva a kijelöltek közül.</translation>
 <translation id="5838825566232597749">USA „Workman” nemzetközi</translation>
 <translation id="5850516540536751549">Ez a fájltípus nem támogatott. A fájltípus megnyitására képes alkalmazás megkereséséhez látogasson el a <ph name="BEGIN_LINK" />Chrome Internetes áruházba<ph name="END_LINK" />.
         <ph name="BEGIN_LINK_HELP" />További információ<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip tömörített tar-archívum</translation>
 <translation id="6825883775269213504">orosz</translation>
 <translation id="6827236167376090743">A videó lejátszása a végtelenségig folytatódik.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> eltávolítva a kijelöltek közül.</translation>
 <translation id="6862635236584086457">Az ebbe a mappába mentett minden fájlról online biztonsági másolat készül</translation>
 <translation id="6870130893560916279">Ukrán billentyűzet</translation>
 <translation id="6876155724392614295">Kerékpár</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin beviteli mód</translation>
 <translation id="8151638057146502721">Konfigurálás</translation>
 <translation id="8153607920959057464">Ezt a fájlt nem lehet megjeleníteni.</translation>
+<translation id="8154842056504218462">Összes bejegyzés kijelölve.</translation>
 <translation id="8157684860301034423">Nem sikerült lehívni az alkalmazásadatokat.</translation>
 <translation id="8157939133946352716">7×5</translation>
 <translation id="8160015581537295331">Spanyol billentyűzet</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Ez a Drive-fájl még nincs megosztva</translation>
 <translation id="8698464937041809063">Google-rajz</translation>
 <translation id="8714406895390098252">Kerékpár</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> kijelölve.</translation>
 <translation id="8722421161699219904">Amerikai nemzetközi billentyűzet</translation>
 <translation id="872537912056138402">horvát</translation>
 <translation id="874420130893181774">Hagyományos pinjin beviteli mód</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Nincs kép ebben a könyvtárban.</translation>
 <translation id="943972244133411984">Módosította</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
+<translation id="947144732524271678"><ph name="ENTRY_COUNT" /> bejegyzést tartalmazó tartomány kijelölve <ph name="FROM_ENTRY_NAME" />–<ph name="TO_ENTRY_NAME" /> között.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Már van „<ph name="FILE_NAME" />” nevű fájl. Lecseréli?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

@@ -38,6 +38,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.util.ArrayList;
@@ -883,7 +884,7 @@ public class DownloadHistoryAdapter
     }
 
     @Override
-    public void onItemUpdated(OfflineItem item) {
+    public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
         if (item.isTransient) return;
 
         DownloadHistoryItemWrapper newWrapper = createDownloadHistoryItemWrapper(item);

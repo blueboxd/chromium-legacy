@@ -171,13 +171,13 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     root_view_->AddChildView(contents_container_);
 
     // TODO(jamescook): Attach |layout_| to |root_view_|?
-    layout_.reset(new BrowserViewLayout);
     delegate_ = new MockBrowserViewLayoutDelegate(contents_web_view_);
-    layout_->Init(delegate_, browser(),
-                  nullptr,  // BrowserView.
-                  top_container_, tab_strip_region_view, tab_strip_, toolbar_,
-                  infobar_container_, contents_container_,
-                  immersive_mode_controller_.get());
+    layout_ = std::make_unique<BrowserViewLayout>(
+        std::unique_ptr<BrowserViewLayoutDelegate>(delegate_), browser(),
+        nullptr,  // BrowserView.
+        top_container_, tab_strip_region_view, tab_strip_, toolbar_,
+        infobar_container_, contents_container_,
+        immersive_mode_controller_.get());
   }
 
  private:

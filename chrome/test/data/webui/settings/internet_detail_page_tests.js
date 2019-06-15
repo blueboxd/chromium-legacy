@@ -45,6 +45,7 @@ suite('InternetDetailPage', function() {
     CrOncStrings = {
       OncTypeCellular: 'OncTypeCellular',
       OncTypeEthernet: 'OncTypeEthernet',
+      OncTypeMobile: 'OncTypeMobile',
       OncTypeTether: 'OncTypeTether',
       OncTypeVPN: 'OncTypeVPN',
       OncTypeWiFi: 'OncTypeWiFi',
@@ -103,7 +104,7 @@ suite('InternetDetailPage', function() {
 
   teardown(function() {
     internetDetailPage.remove();
-    delete internetDetailPage;
+    internetDetailPage = null;
     settings.resetRouteForTesting();
   });
 

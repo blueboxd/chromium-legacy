@@ -68,7 +68,11 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   void AddBinding(blink::mojom::CacheStorageRequest request,
                   const url::Origin& origin);
 
-  CacheStorageManager* cache_manager() const;
+  // Callable on any sequence.  If called on the cache_storage target sequence
+  // the real manager will be returned directly.  If called on any other
+  // sequence then a cross-sequence wrapper object will be created and returned
+  // instead.
+  scoped_refptr<CacheStorageManager> CacheManager();
 
   bool is_incognito() const { return is_incognito_; }
 

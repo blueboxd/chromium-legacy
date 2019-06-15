@@ -8247,33 +8247,6 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSubmitFrameResources);
 
-// Ensure that content_source_id is propagated to the frame's metadata.
-class LayerTreeHostTestContentSourceId : public LayerTreeHostTest {
- protected:
-  void BeginTest() override {
-    layer_tree_host()->SetContentSourceId(5);
-    PostSetNeedsCommitToMainThread();
-  }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame_data,
-                                   DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
-    EXPECT_EQ(5U, host_impl->active_tree()->content_source_id());
-    return draw_result;
-  }
-
-  void DisplayReceivedCompositorFrameOnThread(
-      const viz::CompositorFrame& frame) override {
-    EXPECT_EQ(5U, frame.metadata.content_source_id);
-    EndTest();
-  }
-
-  void AfterTest() override {}
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContentSourceId);
-
 class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

@@ -25,6 +25,7 @@
 
 // https://svgwg.org/svg2-draft/pservers.html#InterfaceSVGPatternElement
 
+[Exposed=Window]
 interface SVGPatternElement : SVGElement {
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternUnits;
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedEnumeration patternContentUnits;

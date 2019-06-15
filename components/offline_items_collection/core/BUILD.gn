@@ -25,6 +25,8 @@ static_library("core") {
     "rename_result.h",
     "throttled_offline_content_provider.cc",
     "throttled_offline_content_provider.h",
+    "update_delta.cc",
+    "update_delta.h",
   ]
 
   public_deps = [
@@ -86,6 +88,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItemShareInfo.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItemVisuals.java",
       "android/java/src/org/chromium/components/offline_items_collection/ShareCallback.java",
+      "android/java/src/org/chromium/components/offline_items_collection/UpdateDelta.java",
       "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
     ]
 

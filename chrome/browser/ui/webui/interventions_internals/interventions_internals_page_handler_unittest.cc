@@ -511,7 +511,6 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsForceEctValue) {
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsEctForceFieldtrialValue) {
-  base::FieldTrialList field_trial_list_(nullptr);
   const std::string trial_name = "NetworkQualityEstimator";
   const std::string group_name = "Enabled";
   const std::string expected_ect = "Slow-2G";

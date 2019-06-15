@@ -4,13 +4,16 @@
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
+#include <delayimp.h>
 #include <dwrite.h>
 
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
@@ -28,6 +31,31 @@
 #include "ui/gfx/win/direct_write.h"
 
 namespace content {
+
+namespace {
+
+// Delay load failure hook that generates a crash report. By default a failure
+// to delay load will trigger an exception handled by the delay load runtime and
+// this won't generate a crash report.
+extern "C" FARPROC WINAPI DelayLoadFailureHook(unsigned reason,
+                                               DelayLoadInfo* dll_info) {
+  char dll_name[256];
+  base::strlcpy(dll_name, dll_info->szDll, base::size(dll_name));
+  base::debug::Alias(&dll_name);
+
+  CHECK(false);
+  return 0;
+}
+
+// Set the delay load failure hook to the function above.
+//
+// The |__pfnDliFailureHook2| failure notification hook gets called
+// automatically by the delay load runtime in case of failure, see
+// https://docs.microsoft.com/en-us/cpp/build/reference/failure-hooks?view=vs-2019
+// for more information about this.
+extern "C" const PfnDliHook __pfnDliFailureHook2 = DelayLoadFailureHook;
+
+}  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)

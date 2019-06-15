@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">तुमच्या अॅडमिनिस्ट्रेटरद्वारे कॉन्फिगर केलेल्या इनपुट पद्धती.</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1761222317188459878">नेटवर्क कनेक्शन टॉगल करा. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">उजवीकडे स्क्रोल करा</translation>
 <translation id="1812997170047690955">माझ्या स्क्रीनवर काय आहे?</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">बॅटरी <ph name="PERCENTAGE" />% वर आहे आणि चार्ज होत आहे.</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
+<translation id="4021716437419160885">खाली स्क्रोल करा</translation>
 <translation id="4042660782729322247">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एका ॲपसाठी बंद}other{# ॲप्ससाठी बंद}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">मजबूत</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="4924411785043111640">रीस्टार्ट करा आणि रीसेट करा</translation>
+<translation id="495046168593986294">वर स्क्रोल करा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5030687792513154421">वेळ संपली</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> नवीन फोनशी कनेक्ट केले</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">अपडेट करण्यासाठी, संलग्न केलेल्या कीबोर्डसह तुमचे Chromebook रीस्टार्ट करा.</translation>
 <translation id="5992218262414051481">उच्च तीव्रता मोड चालू केला आहे. तो बंदवर टॉगल करण्यासाठी Ctrl+Search+H दाबा.</translation>
 <translation id="6018164090099858612">मिरर मोडमधून बाहेर पडत आहे</translation>
+<translation id="602001110135236999">डावीकडे स्‍क्रोल करा</translation>
+<translation id="6040143037577758943">बंद करा</translation>
 <translation id="6043212731627905357">हा मॉनिटर आपल्या <ph name="DEVICE_TYPE" /> सह प्राप्त होत नाही (मॉनिटर समर्थित नाही).</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
 <translation id="6047696787498798094">तुम्ही दुसर्‍या वापरकर्त्यावर स्‍विच करता तेव्‍हा स्क्रीन सामायिकरण थांबेल. तुम्ही सुरु ठेवू इच्छिता?</translation>

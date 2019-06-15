@@ -166,6 +166,7 @@ class JSONTraceExporter {
     void AddDuration(int64_t duration);
     void AddThreadDuration(int64_t thread_duration);
     void AddThreadTimestamp(int64_t thread_timestamp);
+    void AddThreadInstructionDelta(int64_t thread_instruction_delta);
     void AddBindId(uint64_t bind_id);
     // A set of bit flags for this trace event, along with a |scope|. |scope| is
     // ignored if empty.

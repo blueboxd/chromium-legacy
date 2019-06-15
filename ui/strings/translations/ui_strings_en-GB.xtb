@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1409544243779336081">App recommendation</translation>
+<translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
 <translation id="1643823602425662293">Notification</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min ago}other{# mins ago}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" />..</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute left}other{# minutes left}}</translation>
+<translation id="7430878839542012341">Delete this search from your history?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Cancel</translation>

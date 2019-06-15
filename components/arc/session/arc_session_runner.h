@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_SESSION_ARC_SESSION_RUNNER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -90,6 +91,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // only be called on the thread that this class was created on. We assume that
   // when this function is called, MessageLoop is no longer exists.
   void OnShutdown();
+
+  // Sets a hash string of the profile user ID.
+  void SetUserIdHashForProfile(const std::string& hash);
 
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }

@@ -112,6 +112,7 @@ cr.define('advanced_dialog_test', function() {
       setupDialog(3);
       setItemValues();
 
+      assertFalse(dialog.getSetting('vendorItems').setFromUi);
       const buttons = dialog.shadowRoot.querySelectorAll('cr-button');
       assertEquals(2, buttons.length);
       const whenDialogClose = test_util.eventToPromise('close', dialog);
@@ -124,6 +125,7 @@ cr.define('advanced_dialog_test', function() {
         assertEquals(6, setting.printArea);
         assertEquals(1, setting.paperType);
         assertEquals('XYZ', setting.watermark);
+        assertTrue(dialog.getSetting('vendorItems').setFromUi);
       });
     });
 

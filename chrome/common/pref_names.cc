@@ -126,6 +126,9 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 
+// Boolean that is true when user feedback to Google is allowed.
+const char kUserFeedbackAllowed[] = "feedback_allowed";
+
 // Stores the email address associated with the google account of the custodian
 // of the supervised user, set when the supervised user is created.
 const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";

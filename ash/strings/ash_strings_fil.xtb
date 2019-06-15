@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Isinasaayos ng iyong administrator ang mga pamamaraan sa pag-input.</translation>
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1761222317188459878">I-toggle ang koneksyon sa network. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Mag-scroll pakanan</translation>
 <translation id="1812997170047690955">Ano ang nasa screen ko?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (naglo-load...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Nasa <ph name="PERCENTAGE" />% ang baterya at nagcha-charge.</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
+<translation id="4021716437419160885">Mag-scroll pababa</translation>
 <translation id="4042660782729322247">Ibinabahagi mo ang iyong screen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Naka-off para sa isang app}one{Naka-off para sa # app}other{Naka-off para sa # na app}}</translation>
 <translation id="4072264167173457037">Katamtaman ang signal</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Malakas</translation>
 <translation id="4918086044614829423">Tanggapin</translation>
 <translation id="4924411785043111640">I-restart at i-reset</translation>
+<translation id="495046168593986294">Mag-scroll pataas</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5030687792513154421">Tapos na ang oras</translation>
 <translation id="5035236842988137213">Kumonekta ang <ph name="DEVICE_NAME" /> sa isang bagong telepono</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Para makuha ang update, i-restart ang iyong Chromebook nang nakakabit ang keyboard.</translation>
 <translation id="5992218262414051481">Na-enable ang High Contrast Mode. Pinduting muli ang Ctrl+Search+H upang i-off ito.</translation>
 <translation id="6018164090099858612">Lumalabas sa mirror mode</translation>
+<translation id="602001110135236999">Mag-scroll pakaliwa</translation>
+<translation id="6040143037577758943">Isara</translation>
 <translation id="6043212731627905357">Hindi gumagana ang monitor na ito sa iyong <ph name="DEVICE_TYPE" /> (hindi sinusuportahan ang monitor).</translation>
 <translation id="6043994281159824495">Mag-sign out ngayon</translation>
 <translation id="6047696787498798094">Matitigil ang screen sharing kapag nagpalit ka ng user. Gusto mo bang magpatuloy?</translation>

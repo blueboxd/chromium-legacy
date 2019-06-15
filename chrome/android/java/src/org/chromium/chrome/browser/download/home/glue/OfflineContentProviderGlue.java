@@ -14,6 +14,7 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.ShareCallback;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.util.ArrayList;
@@ -180,8 +181,10 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
     }
 
     @Override
-    public void onItemUpdated(OfflineItem item) {
-        for (OfflineContentProvider.Observer observer : mObservers) observer.onItemUpdated(item);
+    public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
+        for (OfflineContentProvider.Observer observer : mObservers) {
+            observer.onItemUpdated(item, updateDelta);
+        }
     }
 
     /**

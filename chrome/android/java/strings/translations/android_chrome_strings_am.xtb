@@ -466,6 +466,7 @@
 <translation id="447252321002412580">የChrome ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
 <translation id="4479647676395637221">ጣቢያዎች ካሜራዎን እንዲጠቀሙ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
 <translation id="4479972344484327217"><ph name="MODULE" /> ን ለChrome በመጫን ላይ…</translation>
+<translation id="4482194545587547824">Google ፍለጋን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ የአሰሳ ታሪክዎን ሊጠቀም ይችላል</translation>
 <translation id="4487967297491345095">ሁሉንም የChrome መተግበሪያ ውሂብ እስከመጨረሻው ይሰረዛል። ይሄ ሁሉንም ፋይሎች፣ ቅንብሮች፣ መለያዎች፣ የውሂብ ጎታዎች፣ ወዘተ. ያካትታል።</translation>
 <translation id="4493497663118223949">ቀላል ሁነታ በርቷል</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{ከ# ቀን በፊት}one{ከ# ቀኖች በፊት}other{ከ# ቀኖች በፊት}}</translation>
@@ -476,6 +477,7 @@
 <translation id="4532845899244822526">አቃፊ ይምረጡ</translation>
 <translation id="4538018662093857852">ቀላል ሁነታን አብራ</translation>
 <translation id="4550003330909367850">የይለፍ ቃልዎን ቅጂ እዚህ ለመመልከት በዚህ መሣሪያ ላይ የማያ ገጽ ቁልፍን ያቀናብሩ።</translation>
+<translation id="4556110439722119938">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ መጠቀም እንዲችሉ ከGoogle መለያዎ ጋር ይሰምራሉ</translation>
 <translation id="4558311620361989323">የድረ-ገጽ አቋራጮች</translation>
 <translation id="4561979708150884304">ግንኙነት የለም</translation>
 <translation id="4565377596337484307">የይለፍ ቃል ደብቅ</translation>
@@ -824,6 +826,7 @@
 <translation id="6965382102122355670">እሺ</translation>
 <translation id="6978479750597523876">የትርጉም ቅንብሮችን ዳግም ይጀመሩ</translation>
 <translation id="6979737339423435258">የምንጊዜም</translation>
+<translation id="6980462514016882061">Google ፍለጋን፣ ማስታወቂያዎችን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ ሲል የአሰሳ ታሪክዎን ሊጠቀም ይችላል።</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="6985347914332179298">እዚህ ምንም ውርዶች የሉም</translation>
 <translation id="6989267951144302301">ማውረድ አልተቻለም</translation>
@@ -855,6 +858,7 @@
 <translation id="7180611975245234373">አድስ</translation>
 <translation id="7189372733857464326">የGoogle Play አገልግሎቶች አዘምኖ እስኪጨርስ በመጠበቅ ላይ</translation>
 <translation id="7191430249889272776">ትር ጀርባ ላይ ተከፍቷል።</translation>
+<translation id="722055596168483966">የGoogle አገልግሎቶችን ግላዊነት አላብስ</translation>
 <translation id="723171743924126238">ምስሎችን ይምረጡ</translation>
 <translation id="7233236755231902816">ድሩን በቋንቋዎ ለማየት የቅርብ ጊዜውን የChrome ስሪት ያግኙ</translation>
 <translation id="7243308994586599757">አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ</translation>
@@ -1082,6 +1086,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />፣ ትር</translation>
 <translation id="885701979325669005">ማከማቻ</translation>
 <translation id="8901170036886848654">ምንም ዕልባቶች አልተገኙም</translation>
+<translation id="8904976895050290827">Chrome ሥምረት</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>
 <translation id="8920114477895755567">የወላጆች ዝርዝሮችን በመጠበቅ ላይ።</translation>

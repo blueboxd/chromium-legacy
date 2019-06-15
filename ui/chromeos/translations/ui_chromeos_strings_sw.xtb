@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Kiserbia</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3855472144336161447">Kijerumani Neo 2</translation>
+<translation id="3856075812838139784">Soma tu</translation>
 <translation id="3858678421048828670">Kibodi ya Kiitaliano</translation>
 <translation id="386548886866354912">Fungasha kwa <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Maelezo</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Wakati uliorekebishwa</translation>
 <translation id="4572815280350369984">Faili ya <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Zaidi...</translation>
+<translation id="4579744207439506346">Umeongeza <ph name="ENTRY_NAME" /> kwenye vipengee ulivyochagua.</translation>
 <translation id="4582497162516204941">Sakinisha ukitumia Linux (Beta)</translation>
 <translation id="4594543368593301662">Inaonyesha matokeo ya <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Msanii</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Seti ya Hangul 3 (Ya mwisho)</translation>
 <translation id="5833610766403489739">Faili hii imepotelea mahali fulani. Tafadhali angalia mipangilio yako ya mahali pa kupakulia na ujaribu tena.</translation>
 <translation id="5838051104334203064">Programu za Duka la Google Play haviwezi kufikia kifaa hiki</translation>
+<translation id="5838451609423551646">Umeondoa vipengee vyote kwenye sehemu ya vipengee ilivyochagua.</translation>
 <translation id="5838825566232597749">Kibodi ya US Workman ya kimataifa</translation>
 <translation id="5850516540536751549">Aina hii ya faili haitumiki. Tafadhali tembelea <ph name="BEGIN_LINK" />Duka la Wavuti la Chrome<ph name="END_LINK" /> ili upate programu ambayo inaweza kufungua aina hii ya faili.
 	      <ph name="BEGIN_LINK_HELP" />Pata Maelezo zaidi<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip imebana kumbukumbu ya tar</translation>
 <translation id="6825883775269213504">Kirusi</translation>
 <translation id="6827236167376090743">Video hii itaendelea kucheza bila kukoma.</translation>
+<translation id="6847101934483209767">Umeondoa <ph name="ENTRY_NAME" /> kwenye vipengee ulivyochagua.</translation>
 <translation id="6862635236584086457">Faili zote zilizohifadhiwa kwenye folda hii zinachelezwa kiotomatiki mtandaoni</translation>
 <translation id="6870130893560916279">Kibodi ya Kiukreni</translation>
 <translation id="6876155724392614295">Baiskeli</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Mbinu ingizo ya Pinyin</translation>
 <translation id="8151638057146502721">Sanidi</translation>
 <translation id="8153607920959057464">Faili hii haikuweza kuonyesha.</translation>
+<translation id="8154842056504218462">Umechagua vipengee vyote.</translation>
 <translation id="8157684860301034423">Imeshindwa kuleta maelezo ya programu.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Kibodi ya Kihispania</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Faili hii ya Hifadhi bado haijashirikiwa</translation>
 <translation id="8698464937041809063">Mchoro wa Google</translation>
 <translation id="8714406895390098252">Baiskeli</translation>
+<translation id="8719721339511222681">Umechagua <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Kibodi ya Marekani ya kimataifa</translation>
 <translation id="872537912056138402">Kikroeshia</translation>
 <translation id="874420130893181774">Mbinu ya kuingiza data ya Pinyin ya Jadi</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Hakuna picha katika saraka hii.</translation>
 <translation id="943972244133411984">Ilibadilishwa na</translation>
 <translation id="945522503751344254">Tuma maoni</translation>
+<translation id="947144732524271678">Umechagua fungu lenye vipengee <ph name="ENTRY_COUNT" /> kuanzia <ph name="FROM_ENTRY_NAME" /> hadi <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Nje ya mtandao</translation>
 <translation id="988685240266037636">Faili yenye jina "<ph name="FILE_NAME" />" tayari ipo. Ungependa kuibadilisha?</translation>
 <translation id="996903396648773764">MB <ph name="NUMBER_OF_MB" /></translation>

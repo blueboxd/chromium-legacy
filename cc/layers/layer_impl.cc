@@ -183,6 +183,16 @@ bool LayerImpl::WillDraw(DrawMode draw_mode,
     return false;
   }
 
+  // Resourceless mode does not support non-default blend mode. If we draw,
+  // the result will be just like kSrcOver which is not too bad for blend modes
+  // other than kDstIn. For kDstIn mode, we should ignore the source because
+  // otherwise we would draw a bad black mask over the destination.
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
+    const auto* effect_node = GetEffectTree().Node(effect_tree_index());
+    if (effect_node && effect_node->blend_mode == SkBlendMode::kDstIn)
+      return false;
+  }
+
   current_draw_mode_ = draw_mode;
   return true;
 }

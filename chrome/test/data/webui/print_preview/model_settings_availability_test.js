@@ -34,6 +34,7 @@ cr.define('model_settings_availability_test', function() {
           'destination.capabilities',
           print_preview_test_utils.getCddTemplate(model.destination.id)
               .capabilities);
+      model.applyStickySettings();
     });
 
     // These tests verify that the model correctly updates the settings
@@ -57,6 +58,7 @@ cr.define('model_settings_availability_test', function() {
               .capabilities;
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.copies.available);
+      assertFalse(model.settings.copies.setFromUi);
     });
 
     test('collate', function() {
@@ -78,6 +80,7 @@ cr.define('model_settings_availability_test', function() {
               .capabilities;
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.collate.available);
+      assertFalse(model.settings.collate.setFromUi);
     });
 
     test('layout', function() {
@@ -116,6 +119,7 @@ cr.define('model_settings_availability_test', function() {
       // Unavailable if document has CSS media styles.
       model.set('documentSettings.hasCssMediaStyles', true);
       assertFalse(model.settings.layout.available);
+      assertFalse(model.settings.layout.setFromUi);
     });
 
     test('color', function() {
@@ -173,11 +177,7 @@ cr.define('model_settings_availability_test', function() {
       });
 
       // Each of these settings should make the setting available, with the
-      // default value given by expectedValue. Note: Normally, changing the
-      // printer capabilities will keep the setting the same when possible
-      // (see ModelTest.ChangeDestination), but in this test, we never set
-      // model.initialized_ to true, to verify that setting the default value
-      // at startup works correctly for different possible printers.
+      // default value given by expectedValue.
       [{
         colorCap: {
           option: [
@@ -228,6 +228,7 @@ cr.define('model_settings_availability_test', function() {
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.color.available);
       assertTrue(model.settings.color.unavailableValue);
+      assertFalse(model.settings.color.setFromUi);
     });
 
     function setSaveAsPdfDestination() {
@@ -266,6 +267,7 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModfiable', true);
       model.set('documentSettings.hasCssMediaStyles', true);
       assertFalse(model.settings.mediaSize.available);
+      assertFalse(model.settings.color.setFromUi);
     });
 
     test('margins', function() {
@@ -277,6 +279,8 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.margins.available);
       assertFalse(model.settings.customMargins.available);
+      assertFalse(model.settings.margins.setFromUi);
+      assertFalse(model.settings.customMargins.setFromUi);
     });
 
     test('dpi', function() {
@@ -303,6 +307,7 @@ cr.define('model_settings_availability_test', function() {
       assertFalse(model.settings.dpi.available);
       assertEquals(200, model.settings.dpi.unavailableValue.horizontal_dpi);
       assertEquals(200, model.settings.dpi.unavailableValue.vertical_dpi);
+      assertFalse(model.settings.dpi.setFromUi);
     });
 
     test('scaling', function() {
@@ -321,6 +326,7 @@ cr.define('model_settings_availability_test', function() {
       // PDF -> printer
       model.set('destination', defaultDestination);
       assertTrue(model.settings.scaling.available);
+      assertFalse(model.settings.scaling.setFromUi);
     });
 
     test('fit to page', function() {
@@ -339,6 +345,7 @@ cr.define('model_settings_availability_test', function() {
       // PDF -> printer
       model.set('destination', defaultDestination);
       assertTrue(model.settings.fitToPage.available);
+      assertFalse(model.settings.fitToPage.setFromUi);
     });
 
     test('header footer', function() {
@@ -423,15 +430,17 @@ cr.define('model_settings_availability_test', function() {
       // Header/footer is never available for PDFs.
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.headerFooter.available);
+      assertFalse(model.settings.headerFooter.setFromUi);
     });
 
     test('css background', function() {
       // The setting is available since isModifiable is true.
       assertTrue(model.settings.cssBackground.available);
 
-      // No margins settings for PDFs.
+      // No CSS background setting for PDFs.
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.cssBackground.available);
+      assertFalse(model.settings.cssBackground.setFromUi);
     });
 
     test('duplex', function() {
@@ -473,6 +482,8 @@ cr.define('model_settings_availability_test', function() {
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.duplex.available);
       assertFalse(model.settings.duplexShortEdge.available);
+      assertFalse(model.settings.duplex.setFromUi);
+      assertFalse(model.settings.duplexShortEdge.setFromUi);
     });
 
     test('rasterize', function() {
@@ -482,6 +493,7 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModifiable', false);
       assertEquals(
           !cr.isWindows && !cr.isMac, model.settings.rasterize.available);
+      assertFalse(model.settings.rasterize.setFromUi);
     });
 
     test('selection only', function() {
@@ -494,6 +506,7 @@ cr.define('model_settings_availability_test', function() {
       // Not available for PDFs.
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.selectionOnly.available);
+      assertFalse(model.settings.selectionOnly.setFromUi);
     });
 
     if (cr.isChromeOS) {
@@ -527,6 +540,7 @@ cr.define('model_settings_availability_test', function() {
         capabilities.printer.pin.supported = false;
         model.set('destination.capabilities', capabilities);
         assertFalse(model.settings.pin.available);
+        assertFalse(model.settings.pin.setFromUi);
       });
 
       test('pinValue', function() {
@@ -547,6 +561,7 @@ cr.define('model_settings_availability_test', function() {
         capabilities.printer.pin.supported = false;
         model.set('destination.capabilities', capabilities);
         assertFalse(model.settings.pinValue.available);
+        assertFalse(model.settings.pinValue.setFromUi);
       });
     }
   });

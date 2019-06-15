@@ -1112,10 +1112,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
   bool prompt_callback_was_invoked = false;
   virtual_device_factory->mutable_state()->simulate_press_callback =
-      base::BindLambdaForTesting([&]() {
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
         prompt_callback_was_invoked = true;
         NavigateIframeToURL(shell()->web_contents(), "test_iframe",
                             GURL("/title2.html"));
+        return true;
       });
 
   NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/page_with_iframe.html"));

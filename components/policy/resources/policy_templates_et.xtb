@@ -461,6 +461,12 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reegel on seadistamata või keelatud, saab kasutaja seadet muuta (nt jaotise chrome://flags kirje „Keela saidi isoleerimine” abil).
       </translation>
 <translation id="1767673020408652620">Rakenduse soovituste lubamine nullolekuga otsingukastis</translation>
+<translation id="17719159826324007">
+      Kui selle reegli väärtuseks on määratud ArcSession, taaskäivitab reegel seadme pärast kasutaja väljalogimist, kui Android on käivitunud.
+      Kui reegli väärtuseks on määratud Alati, taaskäivitub seade iga kord, kui kasutaja välja logib.
+      Kui reegel on määramata, puudub sellel mõju ning seadet pärast kasutaja väljalogimist ei taaskäivitata. Sama kehtib ka siis, kui reegli väärtuseks on määratud Mitte kunagi.
+      See reegel mõjutab ainult seoseta kasutajaid.
+      </translation>
 <translation id="1781356041596378058">See reegel juhib ka juurdepääsu Androidi arendaja valikutele. Kui määrate reegli väärtuseks Tõene, ei pääse kasutajad arendaja valikutele juurde. Kui määrate reegli väärtuseks Väär või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades rakenduses Androidi seaded seitse korda järgunumbrit.</translation>
 <translation id="1793346220873697538">PIN-koodiga printimise vaikimisi keelamine</translation>
 <translation id="1797233582739332495">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on nõutav</translation>
@@ -962,6 +968,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
 <translation id="2693108589792503178">Parooli URL-i muutmise seadistamine.</translation>
+<translation id="2694143893026486692">Dokitud luup on lubatud</translation>
 <translation id="2706708761587205154">Printimise lubamine ainult PIN-koodiga</translation>
 <translation id="2710534340210290498">Kui selle reegli väärtuseks määratakse Väär, ei saa kasutajad ekraani lukustada (võimalik on ainult kasutajaseansist väljalogimine). Kui seade väärtuseks määratakse Tõene või väärtust ei määrata, saavad parooliga autentinud kasutajad ekraani lukustada.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
@@ -1198,6 +1205,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           See reegel on valikuline. Kui seda ei määrata, siis otsinguterminit ei asendata.
 
           See reegel kehtib vaid siis, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">See reegel võimaldab funktsiooni WebDriver kasutajatel alistada
       reeglid, mis võivad selle tööd häirida.
 
@@ -1712,12 +1720,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui seade pole seadistatud või see on määratud väärtusele Väär, siis otsivad teenuse <ph name="PRODUCT_OS_NAME" /> seadmed värskendusi automaatselt.
 
       Hoiatus. Soovitame automaatsed värskendused lubada, et kasutajad saaksid tarkvaravärskendusi ja kriitilisi turvapaikasid. Automaatsete värskenduste väljalülitamine võib kasutajad ohtu seada.</translation>
-<translation id="4018000735882846261">Reegel annab Google'i assistendile loa kuulata häälega aktiveerimise fraasi.
-
-      Kui reegel on lubatud, kuulab Google'i assistent häälega aktiveerimise fraasi.
-      Kui reegel on keelatud, ei kuula Google'i assistent häälega aktiveerimise fraasi.
-      Kui reegel on määramata, ei kuula Google'i assistent häälega aktiveerimise fraasi.
-      </translation>
 <translation id="4020682745012723568">Androidi rakendused ei pääse juurde kasutajaprofiilile ülekantud küpsisefailidele.</translation>
 <translation id="402759845255257575">Keela kõigil saitidel JavaScripti käitamine</translation>
 <translation id="4027608872760987929">Luba vaikeotsingupakkuja</translation>

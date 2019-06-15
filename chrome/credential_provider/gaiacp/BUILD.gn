@@ -85,6 +85,8 @@ source_set("gaiacp_lib") {
     "os_process_manager.h",
     "os_user_manager.cc",
     "os_user_manager.h",
+    "password_recovery_manager.cc",
+    "password_recovery_manager.h",
     "reauth_credential.cc",
     "reauth_credential.h",
     "scoped_handle.h",

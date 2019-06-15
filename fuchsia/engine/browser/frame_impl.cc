@@ -592,27 +592,9 @@ void FrameImpl::GetVisibleEntry(
   callback(std::move(state));
 }
 
-bool FrameImpl::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
-    content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
-    const GURL& opener_url,
-    const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK_EQ(web_contents, web_contents_.get());
-
-  // Prevent any child WebContents (popup windows, tabs, etc.) from spawning.
-  // TODO(crbug.com/888131): Implement support for popup windows.
-  NOTIMPLEMENTED() << "Ignored popup window request for URL: "
-                   << target_url.spec();
-
-  return false;
+void FrameImpl::CloseContents(content::WebContents* source) {
+  DCHECK_EQ(source, web_contents_.get());
+  context_->DestroyFrame(this);
 }
 
 bool FrameImpl::DidAddMessageToConsole(
@@ -652,6 +634,29 @@ bool FrameImpl::DidAddMessageToConsole(
     console_log_message_hook_.Run(formatted_message);
 
   return true;
+}
+
+bool FrameImpl::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
+    content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  DCHECK_EQ(web_contents, web_contents_.get());
+
+  // Prevent any child WebContents (popup windows, tabs, etc.) from spawning.
+  // TODO(crbug.com/888131): Implement support for popup windows.
+  NOTIMPLEMENTED() << "Ignored popup window request for URL: "
+                   << target_url.spec();
+
+  return false;
 }
 
 void FrameImpl::ReadyToCommitNavigation(

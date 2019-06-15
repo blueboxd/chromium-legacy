@@ -9,6 +9,8 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
+    firstLoad: Boolean,
+
     /** @type {!print_preview.State} */
     state: {
       type: Number,
@@ -71,10 +73,9 @@ Polymer({
         break;
       case (print_preview.State.READY):
         this.printButtonEnabled_ = true;
-        if (this.lastState_ != this.state &&
-            (document.activeElement == null ||
-             document.activeElement == document.body)) {
+        if (this.firstLoad) {
           this.$$('cr-button.action-button').focus();
+          this.fire('print-button-focused');
         }
         break;
       default:

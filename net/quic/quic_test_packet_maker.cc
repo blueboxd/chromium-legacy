@@ -1351,7 +1351,7 @@ quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
   if (version_.transport_version > quic::QUIC_VERSION_43 &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE &&
-      version_.transport_version != quic::QUIC_VERSION_99) {
+      !version_.SendsVariableLengthPacketNumberInLongHeader()) {
     return quic::PACKET_4BYTE_PACKET_NUMBER;
   }
   return quic::PACKET_1BYTE_PACKET_NUMBER;

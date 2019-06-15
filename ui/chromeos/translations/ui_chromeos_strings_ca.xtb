@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbi</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3855472144336161447">Neo 2 alemany</translation>
+<translation id="3856075812838139784">Només de lectura</translation>
 <translation id="3858678421048828670">Teclat italià</translation>
 <translation id="386548886866354912">Crea un paquet amb l'extensió <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descripció</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Hora de modificació</translation>
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
+<translation id="4579744207439506346">S'ha afegit <ph name="ENTRY_NAME" /> a la selecció.</translation>
 <translation id="4582497162516204941">Instal·la amb Linux (versió beta)</translation>
 <translation id="4594543368593301662">Es mostren els resultats per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
 <translation id="5838051104334203064">Les aplicacions de Play Store no poden accedir a aquest dispositiu</translation>
+<translation id="5838451609423551646">S'han suprimit totes les entrades de la selecció.</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5850516540536751549">Aquest tipus de fitxer no és compatible. Visiteu <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> per trobar una aplicació que pugui obrir aquest tipus de fitxer.
         <ph name="BEGIN_LINK_HELP" />Més informació<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Arxiu tar comprimit Gzip</translation>
 <translation id="6825883775269213504">Rus</translation>
 <translation id="6827236167376090743">La reproducció d'aquest vídeo continuarà indefinidament.</translation>
+<translation id="6847101934483209767">S'ha suprimit <ph name="ENTRY_NAME" /> de la selecció.</translation>
 <translation id="6862635236584086457">Es fa una còpia de seguretat en línia automàticament de tots els fitxers desats en aquesta carpeta</translation>
 <translation id="6870130893560916279">Teclat ucraïnès</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Mètode d'introducció de pinyin</translation>
 <translation id="8151638057146502721">Configura</translation>
 <translation id="8153607920959057464">No s'ha pogut mostrar aquest fitxer.</translation>
+<translation id="8154842056504218462">S'han seleccionat totes les entrades.</translation>
 <translation id="8157684860301034423">No s'ha pogut recuperar la informació de l'aplicació.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Teclat espanyol</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>
 <translation id="8698464937041809063">Dibuix de Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
+<translation id="8719721339511222681">S'ha seleccionat <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Teclat internacional nord-americà</translation>
 <translation id="872537912056138402">Croat</translation>
 <translation id="874420130893181774">Mètode d'introducció de pinyin tradicional</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">No hi ha cap imatge en aquest directori.</translation>
 <translation id="943972244133411984">Modificat per</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
+<translation id="947144732524271678">S'ha seleccionat un interval de <ph name="ENTRY_COUNT" /> entrades, de l'entrada <ph name="FROM_ENTRY_NAME" /> a <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Sense connexió</translation>
 <translation id="988685240266037636">El nom de fitxer "<ph name="FILE_NAME" />" ja existeix. El vols substituir?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

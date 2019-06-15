@@ -466,6 +466,7 @@ external/wpt/client-hints/accept_ch_lifetime.https.html [ Skip ]
 external/wpt/client-hints/accept_ch.https.html [ Skip ]
 
 # TODO(crbug.com/974254): Remove the following once we can handle spaces in test names.
+external/wpt/webdriver/tests/element_clear/clear.py [ Skip ]
 external/wpt/webdriver/tests/element_click/interactability.py [ Skip ]
 external/wpt/webdriver/tests/find_element/find.py [ Skip ]
 external/wpt/webdriver/tests/find_element_from_element/find.py [ Skip ]

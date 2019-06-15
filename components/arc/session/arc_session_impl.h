@@ -182,6 +182,7 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
+  void SetUserIdHashForProfile(const std::string& hash) override;
 
  private:
   // D-Bus callback for StartArcMiniContainer().

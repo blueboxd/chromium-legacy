@@ -51,9 +51,13 @@ class FeedLoggingMetrics {
   void OnSuggestionShown(int position,
                          base::Time publish_date,
                          float score,
-                         base::Time fetch_date);
+                         base::Time fetch_date,
+                         bool is_available_offline);
 
-  void OnSuggestionOpened(int position, base::Time publish_date, float score);
+  void OnSuggestionOpened(int position,
+                          base::Time publish_date,
+                          float score,
+                          bool is_available_offline);
 
   void OnSuggestionWindowOpened(WindowOpenDisposition disposition);
 

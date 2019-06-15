@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Utilities for rendering most visited thumbnails and titles.
  */
-
 
 /**
  * The origin of this request.
  * @const {string}
  */
 const MV_DOMAIN_ORIGIN = '{{ORIGIN}}';
-
 
 /**
  * Converts an RGB color number to a hex color string if valid.
@@ -32,7 +29,6 @@ function convertToHexColor(color) {
   return null;
 }
 
-
 /**
  * Validates a RGBA color component. It must be a number between 0 and 255.
  * @param {number} component An RGBA component.
@@ -41,7 +37,6 @@ function convertToHexColor(color) {
 function isValidRBGAComponent(component) {
   return isFinite(component) && component >= 0 && component <= 255;
 }
-
 
 /**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
@@ -60,7 +55,6 @@ function convertArrayToRGBAColor(rgbaColor) {
   }
   return null;
 }
-
 
 /**
  * Parses query parameters from Location.
@@ -85,7 +79,6 @@ function parseQueryParams(location) {
   }
   return params;
 }
-
 
 /**
  * Creates a new most visited link element.
@@ -156,7 +149,6 @@ function createMostVisitedLink(params, href, title, text, direction) {
   return link;
 }
 
-
 /**
  * Returns the color to display string with, depending on whether title is
  * displayed, the current theme, and URL parameters.
@@ -187,7 +179,6 @@ function getTextColor(params, isTitle) {
   }
   return c;
 }
-
 
 /**
  * Decodes most visited styles from URL parameters.
@@ -231,7 +222,6 @@ function getMostVisitedStyles(params, isTitle) {
   return styles;
 }
 
-
 /**
  * Returns whether the given URL has a known, safe scheme.
  * @param {string} url URL to check.
@@ -240,7 +230,6 @@ const isSchemeAllowed = function(url) {
   return url.startsWith('http://') || url.startsWith('https://') ||
       url.startsWith('ftp://') || url.startsWith('chrome-extension://');
 };
-
 
 /**
  * @param {!Location} location A location containing URL parameters.

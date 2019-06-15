@@ -110,7 +110,6 @@ class CONTENT_EXPORT LayerTreeView
   void SetExternalPageScaleFactor(float page_scale_factor,
                                   bool is_external_pinch_gesture_active);
   void ClearCachesOnNextCommit();
-  void SetContentSourceId(uint32_t source_id);
   void SetViewportSizeAndScale(
       const gfx::Size& device_viewport_size,
       float device_scale_factor,

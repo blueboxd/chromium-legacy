@@ -22,16 +22,16 @@ namespace blink {
 
 // Calculates and returns videoKind value for |format|.
 // See https://w3c.github.io/mediacapture-depth.
-BLINK_EXPORT WebString
+BLINK_MODULES_EXPORT WebString
 GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
-BLINK_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
+BLINK_MODULES_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing);
 
 // This is a temporary struct to bridge blink and content mojo types.
 // TODO(crbug.com/704136): Replace references to this type with the blink mojo
 // type once all dependent types are migrated to Blink.
-struct BLINK_EXPORT VideoInputDeviceCapabilities {
+struct BLINK_MODULES_EXPORT VideoInputDeviceCapabilities {
   VideoInputDeviceCapabilities(std::string device_id,
                                std::string group_id,
                                std::vector<media::VideoCaptureFormat> formats,
@@ -47,7 +47,7 @@ struct BLINK_EXPORT VideoInputDeviceCapabilities {
   media::VideoFacingMode facing_mode;
 };
 
-struct BLINK_EXPORT VideoDeviceCaptureCapabilities {
+struct BLINK_MODULES_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
   ~VideoDeviceCaptureCapabilities();
@@ -125,7 +125,7 @@ struct BLINK_EXPORT VideoDeviceCaptureCapabilities {
 // the track_adapter_settings() accessor. For more details about the algorithm
 // for track adapter settings, see the SelectVideoTrackAdapterSettings
 // documentation.
-VideoCaptureSettings BLINK_EXPORT SelectSettingsVideoDeviceCapture(
+VideoCaptureSettings BLINK_MODULES_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
     const WebMediaConstraints& constraints,
     int default_width,

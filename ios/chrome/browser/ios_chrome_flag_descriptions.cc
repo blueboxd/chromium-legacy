@@ -126,12 +126,6 @@ const char kClosingLastIncognitoTabDescription[] =
     "Automatically switches to the regular tabs panel in the tab grid after "
     "closing the last incognito tab";
 
-const char kCompactTranslateInfobarName[] =
-    "Enable the compact translate infobar";
-const char kCompactTranslateInfobarDescription[] =
-    "When enabled, replaces the exisitng translate infobars with a new compact "
-    "one.";
-
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";

@@ -122,16 +122,15 @@ bool WebInputMethodControllerImpl::CommitText(
                               relative_caret_position);
   }
 
-  // Select the range to be replaced with the composition later.
-  if (!replacement_range.IsNull()) {
-    web_frame_->SelectRange(replacement_range,
-                            WebLocalFrame::kHideSelectionHandle,
-                            blink::mojom::SelectionMenuBehavior::kHide);
-  }
-
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayout();
+
+  if (!replacement_range.IsNull()) {
+    return GetInputMethodController().ReplaceText(
+        text, PlainTextRange(replacement_range.StartOffset(),
+                             replacement_range.EndOffset()));
+  }
 
   return GetInputMethodController().CommitText(
       text, ImeTextSpanVectorBuilder::Build(ime_text_spans),

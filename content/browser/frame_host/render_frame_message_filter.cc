@@ -215,6 +215,12 @@ void SendDeprecationMessagesForSameSiteCookiesOnUI(
   // Return early if the frame has already been navigated away from.
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // |web_contents| will be null on interstitial pages, which means
+  // the frame has been navigated away from and it's safe to return early
+  if (!web_contents)
+    return;
+
   RenderFrameHostImpl* root_frame_host = render_frame_host;
   while (root_frame_host->GetParent() != nullptr)
     root_frame_host = root_frame_host->GetParent();
@@ -233,7 +239,7 @@ void SendDeprecationMessagesForSameSiteCookiesOnUI(
             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
       log_unspecified_treated_as_lax_metric = true;
       if (emit_messages) {
-        render_frame_host->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a cross-site resource at " +
                 url.possibly_invalid_spec() +
@@ -250,7 +256,7 @@ void SendDeprecationMessagesForSameSiteCookiesOnUI(
             EXCLUDE_SAMESITE_NONE_INSECURE) {
       log_none_insecure_metric = true;
       if (emit_messages) {
-        render_frame_host->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a resource at " +
                 url.possibly_invalid_spec() +

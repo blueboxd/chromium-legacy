@@ -51,11 +51,13 @@ cr.define('copies_settings_test', function() {
       const copiesInput =
           copiesSection.$$('print-preview-number-settings-section').getInput();
       assertEquals('1', copiesInput.value);
+      assertFalse(copiesSection.getSetting('copies').setFromUi);
 
       await print_preview_test_utils.triggerInputEvent(
           copiesInput, '2', copiesSection);
       assertEquals(2, copiesSection.getSettingValue('copies'));
       assertTrue(copiesSection.getSetting('copies').valid);
+      assertTrue(copiesSection.getSetting('copies').setFromUi);
 
       // Empty entry.
       await print_preview_test_utils.triggerInputEvent(
@@ -76,11 +78,13 @@ cr.define('copies_settings_test', function() {
       const collateCheckbox = copiesSection.$.collate;
       copiesSection.setSetting('copies', 2);
       assertTrue(collateCheckbox.checked);
+      assertFalse(copiesSection.getSetting('collate').setFromUi);
 
       MockInteractions.tap(collateCheckbox);
       assertFalse(collateCheckbox.checked);
       collateCheckbox.dispatchEvent(new CustomEvent('change'));
       assertFalse(copiesSection.getSettingValue('collate'));
+      assertTrue(copiesSection.getSetting('collate').setFromUi);
     });
 
     // Verifies that the inputs update when the value is updated.

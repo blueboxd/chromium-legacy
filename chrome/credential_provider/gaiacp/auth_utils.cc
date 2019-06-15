@@ -395,7 +395,7 @@ HRESULT BuildCredPackAuthenticationBuffer(
                                          &protected_password);
 
   // Zero out the unencrypted copy of the password.
-  ::RtlSecureZeroMemory(&copy_password[0], copy_password.size());
+  SecurelyClearBuffer(&copy_password[0], copy_password.size());
   if (FAILED(hr)) {
     LOGFN(ERROR) << "ProtectIfNecessaryAndCopyPassword hr=" << putHR(hr);
     return hr;
@@ -403,7 +403,7 @@ HRESULT BuildCredPackAuthenticationBuffer(
 
   // Protected password may still be insecure so make sure to zero it out.
   base::ScopedClosureRunner zero_buffer_on_exit(
-      base::BindOnce(base::IgnoreResult(&RtlSecureZeroMemory),
+      base::BindOnce(base::IgnoreResult(&SecurelyClearBuffer),
                      &protected_password[0], protected_password.size()));
 
   wchar_t* logon_domain = domain;

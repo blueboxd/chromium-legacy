@@ -697,16 +697,34 @@ base::string16 GetSelectedLanguage() {
 }
 
 void SecurelyClearDictionaryValue(base::Optional<base::Value>* value) {
+  SecurelyClearDictionaryValueWithKey(value, kKeyPassword);
+}
+
+void SecurelyClearDictionaryValueWithKey(base::Optional<base::Value>* value,
+                                         const std::string& password_key) {
   if (!value || !(*value) || !((*value)->is_dict()))
     return;
 
-  const std::string* password_value = (*value)->FindStringKey(kKeyPassword);
+  const std::string* password_value = (*value)->FindStringKey(password_key);
   if (password_value) {
-    ::RtlSecureZeroMemory(const_cast<char*>(password_value->data()),
-                          password_value->size());
+    SecurelyClearString(*const_cast<std::string*>(password_value));
   }
 
   (*value).reset();
+}
+
+void SecurelyClearString(base::string16& str) {
+  SecurelyClearBuffer(const_cast<wchar_t*>(str.data()),
+                      str.size() * sizeof(decltype(str[0])));
+}
+
+void SecurelyClearString(std::string& str) {
+  SecurelyClearBuffer(const_cast<char*>(str.data()), str.size());
+}
+
+void SecurelyClearBuffer(void* buffer, size_t length) {
+  if (buffer)
+    ::RtlSecureZeroMemory(buffer, length);
 }
 
 base::string16 GetDictString(const base::Value& dict, const char* name) {

@@ -4,6 +4,11 @@
 
 #include "content/browser/startup_helper.h"
 
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <string>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
@@ -16,7 +21,9 @@
 namespace content {
 
 std::unique_ptr<base::FieldTrialList> SetUpFieldTrialsAndFeatureList() {
-  auto field_trial_list = std::make_unique<base::FieldTrialList>(nullptr);
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+  if (!base::FieldTrialList::GetInstance())
+    field_trial_list = std::make_unique<base::FieldTrialList>(nullptr);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 

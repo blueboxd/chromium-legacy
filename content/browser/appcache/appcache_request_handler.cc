@@ -233,7 +233,7 @@ AppCacheRequestHandler::InitializeForMainResourceNetworkService(
     base::WeakPtr<AppCacheHost> appcache_host) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_host->CreateRequestHandler(
-          AppCacheURLLoaderRequest::Create(request),
+          std::make_unique<AppCacheURLLoaderRequest>(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
   handler->appcache_host_ = std::move(appcache_host);
@@ -326,14 +326,14 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
     net::NetworkDelegate* network_delegate) {
   std::unique_ptr<AppCacheJob> job;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    job.reset(new AppCacheURLLoaderJob(request_->AsURLLoaderRequest(),
-                                       storage(), std::move(loader_callback_)));
+    job = std::make_unique<AppCacheURLLoaderJob>(
+        request_->AsURLLoaderRequest(), storage(), std::move(loader_callback_));
   } else {
-    job.reset(new AppCacheURLRequestJob(
+    job = std::make_unique<AppCacheURLRequestJob>(
         request_->GetURLRequest(), network_delegate, storage(), host_,
         is_main_resource(),
         base::BindOnce(&AppCacheRequestHandler::OnPrepareToRestartURLRequest,
-                       base::Unretained(this))));
+                       base::Unretained(this)));
   }
   job_ = job->GetWeakPtr();
   return job;

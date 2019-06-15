@@ -5,10 +5,6 @@
 source_set("translate") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "language_selection_coordinator.h",
-    "language_selection_coordinator.mm",
-    "language_selection_mediator.h",
-    "language_selection_mediator.mm",
     "translate_infobar_coordinator.h",
     "translate_infobar_coordinator.mm",
     "translate_infobar_mediator.h",
@@ -37,10 +33,6 @@ source_set("translate") {
 source_set("translate_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "language_selection_consumer.h",
-    "language_selection_provider.h",
-    "language_selection_view_controller.h",
-    "language_selection_view_controller.mm",
     "translate_infobar_language_tab_strip_view.h",
     "translate_infobar_language_tab_strip_view.mm",
     "translate_infobar_language_tab_strip_view_delegate.h",

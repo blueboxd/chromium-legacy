@@ -11,7 +11,6 @@
 function MostVisited() {
 'use strict';
 
-
 /**
  * Enum for key codes.
  * @enum {number}
@@ -39,7 +38,6 @@ const IDS = {
   MOST_VISITED: 'most-visited',  // Container for all tilesets.
   MV_TILES: 'mv-tiles',          // Most Visited tiles container.
 };
-
 
 /**
  * Enum for classnames.
@@ -71,7 +69,6 @@ const CLASSES = {
   NO_INITIAL_FADE: 'no-initial-fade',
 };
 
-
 /**
  * The different types of events that are logged from the NTP.  This enum is
  * used to transfer information from the NTP JavaScript to the renderer and is
@@ -91,7 +88,6 @@ const LOG_TYPE = {
   NTP_CUSTOMIZE_EDIT_SHORTCUT_CLICKED: 45,
 };
 
-
 /**
  * The different (visual) types that an NTP tile can have.
  * Note: Keep in sync with components/ntp_tiles/tile_visual_type.h
@@ -107,7 +103,6 @@ const TileVisualType = {
   THUMBNAIL_FAILED: 8,
 };
 
-
 /**
  * Timeout delay for the window.onresize event throttle. Set to 15 frame per
  * second.
@@ -115,13 +110,11 @@ const TileVisualType = {
  */
 const RESIZE_TIMEOUT_DELAY = 66;
 
-
 /**
  * Timeout delay in ms before starting the reorder flow.
  * @const {number}
  */
 const REORDER_TIMEOUT_DELAY = 1000;
-
 
 /**
  * Maximum number of tiles if custom links is enabled.
@@ -129,13 +122,11 @@ const REORDER_TIMEOUT_DELAY = 1000;
  */
 const MD_MAX_NUM_CUSTOM_LINK_TILES = 10;
 
-
 /**
  * Maximum number of tiles per row for Material Design.
  * @const {number}
  */
 const MD_MAX_TILES_PER_ROW = 5;
-
 
 /**
  * Height of a tile for Material Design. Keep in sync with
@@ -144,14 +135,12 @@ const MD_MAX_TILES_PER_ROW = 5;
  */
 const MD_TILE_HEIGHT = 128;
 
-
 /**
  * Width of a tile for Material Design. Keep in sync with
  * most_visited_single.css.
  * @const {number}
  */
 const MD_TILE_WIDTH = 112;
-
 
 /**
  * Number of tiles that will always be visible for Material Design. Calculated
@@ -161,14 +150,12 @@ const MD_TILE_WIDTH = 112;
  */
 const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
 
-
 /**
  * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
  */
 const DOMAIN_ORIGIN = '{{ORIGIN}}';
-
 
 /**
  * Counter for DOM elements that we are waiting to finish loading. Starts out
@@ -177,14 +164,12 @@ const DOMAIN_ORIGIN = '{{ORIGIN}}';
  */
 let loadedCounter = 1;
 
-
 /**
  * DOM element containing the tiles we are going to present next.
  * Works as a double-buffer that is shown when we receive a "show" postMessage.
  * @type {Element}
  */
 let tiles = null;
-
 
 /**
  * Maximum number of MostVisited tiles to show at any time. If the host page
@@ -195,20 +180,17 @@ let tiles = null;
  */
 let maxNumTiles = 8;
 
-
 /**
  * List of parameters passed by query args.
  * @type {Object}
  */
 let queryArgs = {};
 
-
 /**
  * True if we are currently reordering the tiles.
  * @type {boolean}
  */
 let reordering = false;
-
 
 /**
  * The tile that is being moved during the reorder flow. Null if we are
@@ -217,7 +199,6 @@ let reordering = false;
  */
 let elementToReorder = null;
 
-
 /**
  * True if the custom links feature is enabled, i.e. when this is a Google NTP.
  * Set when the iframe is initialized.
@@ -225,20 +206,17 @@ let elementToReorder = null;
  */
 let customLinksFeatureEnabled = false;
 
-
 /**
  * True if the grid layout is enabled.
  * @type {boolean}
  */
 let isGridEnabled = false;
 
-
 /**
  * The current grid of tiles.
  * @type {?Grid}
  */
 let currGrid = null;
-
 
 /**
  * Called by tests to enable the grid layout.
@@ -248,7 +226,6 @@ function enableGridLayoutForTesting() {
   document.body.classList.add(CLASSES.GRID_LAYOUT);
 }
 
-
 /**
  * Additional API for Array. Moves the item at index |from| to index |to|.
  * @param {number} from Index of the item to move.
@@ -257,7 +234,6 @@ function enableGridLayoutForTesting() {
 Array.prototype.move = function(from, to) {
   this.splice(to, 0, this.splice(from, 1)[0]);
 };
-
 
 /**
  * Class that handles layouts and animations for the tile grid. This includes
@@ -314,7 +290,6 @@ class Grid {
     this.touchStarted_ = false;
   }
 
-
   /**
    * Sets up the grid for the new tileset in |container|. The old tileset is
    * discarded.
@@ -360,7 +335,6 @@ class Grid {
     this.updateLayout();
   }
 
-
   /**
    * Returns a grid tile wrapper that contains |tile|.
    * @param {!Element} tile The tile element.
@@ -379,7 +353,6 @@ class Grid {
     gridTileContainer.appendChild(gridTile);
     return gridTileContainer;
   }
-
 
   /**
    * Updates the layout of the tiles. This is called for new tilesets and when
@@ -419,7 +392,6 @@ class Grid {
     }
   }
 
-
   /**
    * Called when the window is resized/zoomed. Recalculates maximums for the new
    * window size and calls |updateLayout| if necessary.
@@ -433,7 +405,6 @@ class Grid {
       this.updateLayout();
     }
   }
-
 
   /**
    * Returns the number of tiles per row. This may be balanced in order to make
@@ -456,7 +427,6 @@ class Grid {
     }
   }
 
-
   /**
    * Returns the maximum number of tiles per row allowed by the window size.
    * @return {number} The maximum number of tiles per row.
@@ -465,7 +435,6 @@ class Grid {
   getMaxTilesPerRow_() {
     return Math.floor(window.innerWidth / this.tileWidth_);
   }
-
 
   /**
    * Returns row 2's x offset from row 1 in px. This will either be 0 or half a
@@ -483,7 +452,6 @@ class Grid {
     return 0;
   }
 
-
   /**
    * Returns true if the browser is in RTL.
    * @return {boolean}
@@ -492,7 +460,6 @@ class Grid {
   isRtl_() {
     return document.documentElement.dir === 'rtl';
   }
-
 
   /**
    * Translates the |element| by (x, y).
@@ -508,7 +475,6 @@ class Grid {
     const rtlX = x * (this.isRtl_() ? -1 : 1);
     element.style.transform = 'translate(' + rtlX + 'px, ' + y + 'px)';
   }
-
 
   /**
    * Sets up event listeners necessary for tile reordering.
@@ -579,7 +545,6 @@ class Grid {
     });
   }
 
-
   /**
    * Starts the reorder flow. Updates the visual style of the held tile to
    * indicate that it is being moved and sets up the relevant event listeners.
@@ -627,7 +592,6 @@ class Grid {
     }
   }
 
-
   /**
    * Stops the reorder flow. Resets the held tile's visual style and tells the
    * EmbeddedSearchAPI that a tile has been moved.
@@ -651,7 +615,6 @@ class Grid {
     this.itemToReorder_ = -1;
     this.newIndexOfItemToReorder_ = -1;
   }
-
 
   /**
    * Executed only when the reorder flow is ongoing. Inserts the currently held
@@ -680,7 +643,6 @@ class Grid {
     }
   }
 
-
   /**
    * Translates the |tile|'s |CLASSES.GRID_TILE| from |index| to |newIndex|.
    * This is done to prevent interference with event listeners on the |tile|'s
@@ -698,7 +660,6 @@ class Grid {
     const y = this.position_[newIndex].y - this.position_[index].y;
     this.translate_(tile.children[0], x, y);
   }
-
 
   /**
    * Moves |tile| so that it tracks the cursor's position. This is done by
@@ -740,7 +701,6 @@ class Grid {
   }
 }
 
-
 /**
  * Log an event on the NTP.
  * @param {number} eventType Event from LOG_TYPE.
@@ -753,12 +713,12 @@ function logEvent(eventType) {
  * Log impression of an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
  * @param {number} tileTitleSource The source of the tile's title as received
- *                 from getMostVisitedItemData.
+ *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
- *                 getMostVisitedItemData.
+ *     getMostVisitedItemData.
  * @param {number} tileType The tile's visual type from TileVisualType.
  * @param {Date} dataGenerationTime Timestamp representing when the tile was
- *               produced by a ranking algorithm.
+ *     produced by a ranking algorithm.
  */
 function logMostVisitedImpression(
     tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime) {
@@ -770,19 +730,18 @@ function logMostVisitedImpression(
  * Log click on an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
  * @param {number} tileTitleSource The source of the tile's title as received
- *                 from getMostVisitedItemData.
+ *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
- *                 getMostVisitedItemData.
+ *     getMostVisitedItemData.
  * @param {number} tileType The tile's visual type from TileVisualType.
  * @param {Date} dataGenerationTime Timestamp representing when the tile was
- *               produced by a ranking algorithm.
+ *     produced by a ranking algorithm.
  */
 function logMostVisitedNavigation(
     tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime) {
   chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(
       tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime);
 }
-
 
 /**
  * Returns true if custom links are enabled.
@@ -791,7 +750,6 @@ function isCustomLinksEnabled() {
   return customLinksFeatureEnabled &&
       !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
 }
-
 
 /**
  * Down counts the DOM elements that we are waiting for the page to load.
@@ -823,7 +781,6 @@ function countLoad() {
   }
 }
 
-
 /**
  * Handles postMessages coming from the host page to the iframe.
  * Mostly, it dispatches every command to handleCommand.
@@ -837,7 +794,6 @@ function handlePostMessage(event) {
     handleCommand(event.data);
   }
 }
-
 
 /**
  * Handles a single command coming from the host page to the iframe.
@@ -863,7 +819,6 @@ function handleCommand(data) {
   }
 }
 
-
 /**
  * Handler for the 'show' message from the host page.
  * @param {!Object} info Data received in the message.
@@ -875,7 +830,6 @@ function showTiles(info) {
   utils.setPlatformClass(document.body);
   countLoad();
 }
-
 
 /**
  * Handler for the 'updateTheme' message from the host page.
@@ -899,7 +853,6 @@ function updateTheme(info) {
            navigator.userAgent.indexOf('CrOS') > -1));
 }
 
-
 /**
  * Handler for 'focusMenu' message from the host page. Focuses the edited tile's
  * menu or the add shortcut tile after closing the custom link edit dialog
@@ -915,7 +868,6 @@ function focusTileMenu(info) {
   }
 }
 
-
 /**
  * Removes all old instances of |IDS.MV_TILES| that are pending for deletion.
  */
@@ -926,7 +878,6 @@ function removeAllOldTiles() {
     parent.removeChild(oldList[i]);
   }
 }
-
 
 /**
  * Called when all tiles have finished loading (successfully or not), including
@@ -1001,7 +952,6 @@ function swapInNewTiles() {
   tiles = document.createElement('div');
 }
 
-
 /**
  * Explicitly hide tiles that are not visible in order to prevent keyboard
  * navigation.
@@ -1020,7 +970,6 @@ function updateTileVisibility() {
     allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
   }
 }
-
 
 /**
  * Handler for the 'show' message from the host page, called when it wants to
@@ -1071,7 +1020,6 @@ function blacklistTile(tile) {
   }
 }
 
-
 /**
  * Starts edit custom link flow. Tells host page to show the edit custom link
  * dialog and pre-populate it with data obtained using the link's id.
@@ -1080,7 +1028,6 @@ function blacklistTile(tile) {
 function editCustomLink(rid) {
   window.parent.postMessage({cmd: 'startEditLink', rid: rid}, DOMAIN_ORIGIN);
 }
-
 
 /**
  * Starts the reorder flow. Updates the visual style of the held tile to
@@ -1099,7 +1046,6 @@ function startReorder(tile) {
     stopReorder(tile);
   }, {once: true});
 }
-
 
 /**
  * Stops the reorder flow. Resets the held tile's visual style and tells the
@@ -1123,7 +1069,6 @@ function stopReorder(tile) {
       Number(tile.getAttribute('data-rid')),
       Number(tile.getAttribute('data-pos')));
 }
-
 
 /**
  * Sets up event listeners necessary for tile reordering.
@@ -1188,7 +1133,6 @@ function setupReorder(tile) {
   });
 }
 
-
 /**
  * Renders a MostVisited tile to the DOM.
  * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
@@ -1200,7 +1144,6 @@ function setupReorder(tile) {
 function renderTile(data) {
   return renderMaterialDesignTile(data);
 }
-
 
 /**
  * Renders a MostVisited tile with Material Design styles.
@@ -1324,7 +1267,6 @@ function renderMaterialDesignTile(data) {
     mdTileInner.appendChild(mdIcon);
   }
 
-
   const mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
   mdTitle.style.direction = data.direction || 'ltr';
@@ -1381,7 +1323,6 @@ function renderMaterialDesignTile(data) {
     return mdTile;
   }
 }
-
 
 /**
  * Does some initialization and parses the query arguments passed to the iframe.
@@ -1448,14 +1389,12 @@ function init() {
   window.addEventListener('message', handlePostMessage);
 }
 
-
 /**
  * Binds event listeners.
  */
 function listen() {
   document.addEventListener('DOMContentLoaded', init);
 }
-
 
 return {
   Grid: Grid,  // Exposed for testing.

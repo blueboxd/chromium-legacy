@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está desactivada, se solicitará la verificación cada vez que se intente iniciar sesión en un sitio web.</translation>
 <translation id="3658159451045945436">Restablecerlo borra tu historial de ahorro de datos, incluidas las listas de los sitios web que has visitado.</translation>
 <translation id="3662546969139119822">Ningún elemento del historial</translation>
+<translation id="3663367437272849150">Agrupa <ph name="NUM_SELECTED" /> pestañas.</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
 <translation id="3692944402865947621">No se ha podido descargar <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
@@ -466,6 +467,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4479647676395637221">Preguntar antes de permitir que los sitios web utilicen la cámara (recomendado)</translation>
 <translation id="4479972344484327217">Instalando <ph name="MODULE" /> para Chrome…</translation>
+<translation id="4482194545587547824">Google puede utilizar tu historial de navegación para personalizar la Búsqueda y otros servicios de Google</translation>
 <translation id="4487967297491345095">Todos los datos de la aplicación Chrome se eliminarán de forma permanente. Esto incluye todos los archivos, ajustes, cuentas, bases de datos, etc.</translation>
 <translation id="4493497663118223949">El modo básico está activado</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Hace # día}other{Hace # días}}</translation>
@@ -476,6 +478,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4538018662093857852">Activar el modo básico</translation>
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, configura el bloqueo de pantalla en este dispositivo.</translation>
+<translation id="4556110439722119938">Tus marcadores, historial, contraseñas y otros ajustes se sincronizarán con tu cuenta de Google para que puedas utilizarlos en todos tus dispositivos</translation>
 <translation id="4558311620361989323">Combinaciones de teclas en páginas web</translation>
 <translation id="4561979708150884304">Sin conexión</translation>
 <translation id="4565377596337484307">Ocultar contraseña</translation>
@@ -630,6 +633,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="557283862590186398">Chrome necesita permiso para acceder al micrófono en este sitio web.</translation>
 <translation id="55737423895878184">Las notificaciones y la ubicación están permitidas</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Se han agrupado <ph name="TAB_COUNT" /> pestañas</translation>
 <translation id="5581519193887989363">Siempre puedes seleccionar qué contenido quieres sincronizar desde <ph name="BEGIN_LINK1" />Ajustes<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
@@ -708,6 +712,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6192792657125177640">Excepciones</translation>
+<translation id="6193448654517602979">Selecciona pestañas</translation>
 <translation id="6194112207524046168">Para que Chrome pueda acceder a tu cámara, activa la cámara en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceros</translation>
 <translation id="6206551242102657620">La conexión es segura. Información del sitio web</translation>
@@ -824,6 +829,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6978479750597523876">Restablecer ajustes de traducción</translation>
 <translation id="6979737339423435258">Desde siempre</translation>
+<translation id="6980462514016882061">Google puede utilizar tu historial de navegación para personalizar la Búsqueda, los anuncios y otros servicios de Google</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="6985347914332179298">No hay descargas</translation>
 <translation id="6989267951144302301">Error al descargar</translation>
@@ -850,11 +856,13 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7141896414559753902">Impedir que los sitios web muestren ventanas emergentes y redirecciones (recomendado)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar página original<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7161892015146974550">Selecciona la pestaña <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189372733857464326">Esperando a que Servicios de Google Play termine de actualizarse</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano.</translation>
+<translation id="722055596168483966">Personalizar los servicios de Google</translation>
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7233236755231902816">Si quieres ver la Web en tu idioma, consigue la última versión de Chrome</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
@@ -881,6 +889,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="7403691278183511381">Primera experiencia de ejecución de Chrome</translation>
 <translation id="741204030948306876">Sí, acepto</translation>
 <translation id="7413229368719586778">Fecha de inicio: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Agrupar pestañas...</translation>
 <translation id="7423098979219808738">Preguntar antes</translation>
 <translation id="7423538860840206698">Se ha bloqueado la lectura del portapapeles</translation>
 <translation id="7431991332293347422">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda y otras opciones</translation>
@@ -1017,6 +1026,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos usados</translation>
 <translation id="8364299278605033898">Descubre los sitios web populares</translation>
+<translation id="8364603787714420828">Cancela la selección de la pestaña <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8378714024927312812">Gestionado por tu organización</translation>
@@ -1082,6 +1092,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8901170036886848654">No se han encontrado marcadores</translation>
+<translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando detalles de los padres.</translation>
@@ -1099,6 +1110,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abre una nueva pestaña en modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
+<translation id="9005637476204108703">Toca aquí para gestionar tus cuentas</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>
@@ -1119,6 +1131,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
 <translation id="9169594135889675189">Añadir una pestaña al grupo</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
+<translation id="9190112541605496997">Toca el botón Gestionar cuenta para gestionar tus cuentas</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imágenes</translation>

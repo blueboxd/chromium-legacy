@@ -18,14 +18,14 @@
 <translation id="2501853267655415902">Enregistrement interrompu</translation>
 <translation id="2501953888035679275">Prenez des photos et enregistrez des vidéos avec votre appareil photo.</translation>
 <translation id="2549985041256363841">Démarrer l'enregistrement</translation>
-<translation id="2599796128805996109">Appareil photo arrière</translation>
+<translation id="2599796128805996109">Caméra arrière</translation>
 <translation id="2968794441791257519">Les photos et les vidéos prises avec l'appareil photo seront déplacées vers le dossier "Téléchargements". Vous pouvez y accéder via l'application Fichiers.
 
         Les applications disposant d'autorisations d'accès à l'espace de stockage pourront accéder à vos photos et vidéos.</translation>
 <translation id="3081586908890909590">Passer à l'enregistrement de vidéo</translation>
 <translation id="3183731565330012717">Type de grille</translation>
 <translation id="3227137524299004712">Micro</translation>
-<translation id="3259149966178251584">Résolution de l'appareil photo</translation>
+<translation id="3259149966178251584">Résolution de la caméra</translation>
 <translation id="3517926952904427380">Impossible de prendre une photo en mode portrait</translation>
 <translation id="3569311554794739032">Voulez-vous vraiment supprimer <ph name="FILE" /> ?</translation>
 <translation id="3810838688059735925">Vidéo</translation>
@@ -33,7 +33,7 @@
 <translation id="4329152592498422850">Bouton permettant de prendre une photo carrée</translation>
 <translation id="4445542136948522167">Arrêter de prendre la photo</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> mégapixels</translation>
-<translation id="4570032796877367747">Appareil photo avant</translation>
+<translation id="4570032796877367747">Caméra avant</translation>
 <translation id="4628948037717959914">Photo</translation>
 <translation id="4649291346448517080">Impossible d'enregistrer le fichier</translation>
 <translation id="4890010094662541459">3 x 3</translation>
@@ -47,7 +47,7 @@
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6233780560267770709">3 par 3</translation>
 <translation id="6243827288366940320">Ratio optimal</translation>
-<translation id="6248749904681914629">Appareil photo externe</translation>
+<translation id="6248749904681914629">Caméra externe</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" /> × <ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> mégapixels</translation>
 <translation id="6681668084120808868">Prendre une photo</translation>
 <translation id="6778482348691154169">Impossible de prendre la photo</translation>

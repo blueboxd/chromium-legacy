@@ -872,8 +872,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       static_cast<int>(FrameData::MediaStatus::kNotPlayed));
 }
 
+// Flaky on Mac. http://crbug.com/972822
+#if defined(OS_MACOSX)
+#define MAYBE_AdFrameSizeInterventionMediaStatusPlayed DISABLED_AdFrameSizeInterventionMediaStatusPlayed
+#else
+#define MAYBE_AdFrameSizeInterventionMediaStatusPlayed AdFrameSizeInterventionMediaStatusPlayed
+#endif
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       AdFrameSizeInterventionMediaStatusPlayed) {
+                       MAYBE_AdFrameSizeInterventionMediaStatusPlayed) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   embedded_test_server()->ServeFilesFromSourceDirectory(

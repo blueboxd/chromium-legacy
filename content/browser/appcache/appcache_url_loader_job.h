@@ -36,6 +36,15 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
                                             public AppCacheStorage::Delegate,
                                             public network::mojom::URLLoader {
  public:
+  // Use AppCacheRequestHandler::CreateJob() instead of calling the constructor
+  // directly.
+  //
+  // The constructor is exposed for std::make_unique.
+  AppCacheURLLoaderJob(
+      AppCacheURLLoaderRequest* appcache_request,
+      AppCacheStorage* storage,
+      NavigationLoaderInterceptor::LoaderCallback loader_callback);
+
   ~AppCacheURLLoaderJob() override;
 
   // Sets up the bindings.
@@ -68,14 +77,6 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   void DeleteIfNeeded();
 
  protected:
-  // AppCacheRequestHandler::CreateJob() creates this instance.
-  friend class AppCacheRequestHandler;
-
-  AppCacheURLLoaderJob(
-      AppCacheURLLoaderRequest* appcache_request,
-      AppCacheStorage* storage,
-      NavigationLoaderInterceptor::LoaderCallback loader_callback);
-
   // Invokes the loader callback which is expected to setup the mojo binding.
   void CallLoaderCallback();
 

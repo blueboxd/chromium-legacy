@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/wicg/event-timing
+// https://wicg.github.io/event-timing/#sec-performance-event-timing
 [Exposed=Window]
 interface PerformanceEventTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp processingStart;

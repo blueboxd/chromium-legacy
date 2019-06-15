@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Các phương thức nhập do quản trị viên của bạn định cấu hình.</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1761222317188459878">Bật/tắt kết nối mạng. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Cuộn sang phải</translation>
 <translation id="1812997170047690955">Trên màn hình của tôi có nội dung gì?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Pin ở mức <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
+<translation id="4021716437419160885">Cuộn xuống</translation>
 <translation id="4042660782729322247">Bạn đang chia sẻ màn hình</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tắt thông báo của một ứng dụng}other{Tắt thông báo của # ứng dụng}}</translation>
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="4924411785043111640">Khởi động lại và đặt lại</translation>
+<translation id="495046168593986294">Cuộn lên</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5030687792513154421">Đã hết thời gian</translation>
 <translation id="5035236842988137213">Đã kết nối <ph name="DEVICE_NAME" /> với một điện thoại mới</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">Để cập nhật, hãy khởi động lại Chromebook bằng bàn phím đã kết nối.</translation>
 <translation id="5992218262414051481">Đã bật Chế độ tương phản cao. Nhấn lại Ctrl+Search+H để tắt.</translation>
 <translation id="6018164090099858612">Đang thoát chế độ phản chiếu</translation>
+<translation id="602001110135236999">Cuộn sang trái</translation>
+<translation id="6040143037577758943">Đóng</translation>
 <translation id="6043212731627905357">Màn hình này không tương thích với <ph name="DEVICE_TYPE" /> của bạn (màn hình không được hỗ trợ).</translation>
 <translation id="6043994281159824495">Đăng xuất bây giờ</translation>
 <translation id="6047696787498798094">Chia sẻ màn hình sẽ dừng khi bạn chuyển sang người dùng khác. Bạn có muốn tiếp tục không?</translation>

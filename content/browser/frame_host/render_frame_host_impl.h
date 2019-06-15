@@ -942,6 +942,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   scoped_refptr<PrefetchedSignedExchangeCache>
   EnsurePrefetchedSignedExchangeCache();
 
+  // Adds |message| to the DevTools console only if it is unique (i.e. has not
+  // been added to the console previously from this frame).
+  virtual void AddUniqueMessageToConsole(
+      blink::mojom::ConsoleMessageLevel level,
+      const std::string& message);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1641,6 +1647,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // them immediately, without waiting for unload completion.
   // https://crbug.com/950625.
   void EnsureDescendantsAreUnloading();
+
+  // Implements AddMessageToConsole() and AddUniqueMessageToConsole().
+  void AddMessageToConsoleImpl(blink::mojom::ConsoleMessageLevel level,
+                               const std::string& message,
+                               bool discard_duplicates);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

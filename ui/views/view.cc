@@ -1955,6 +1955,7 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
     InvalidateLayout();
   if (effects & kPropertyEffectsPaint)
     SchedulePaint();
+  OnHandlePropertyChangeEffects(effects);
 }
 
 PropertyChangedSubscription View::AddPropertyChangedCallback(

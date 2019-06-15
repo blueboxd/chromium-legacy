@@ -35,11 +35,13 @@ cr.define('layout_settings_test', function() {
       const select = layoutSection.$$('select');
       assertEquals('portrait', select.value);
       assertFalse(layoutSection.getSettingValue('layout'));
+      assertFalse(layoutSection.getSetting('layout').setFromUi);
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
       await print_preview_test_utils.selectOption(layoutSection, 'landscape');
       assertTrue(layoutSection.getSettingValue('layout'));
+      assertTrue(layoutSection.getSetting('layout').setFromUi);
     });
   });
 });

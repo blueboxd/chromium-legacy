@@ -311,9 +311,9 @@ static bool IsMatchingFileURL(const std::string& url,
   if (url.length() <= 8)
     return false;
   if (std::string("file:///") != url.substr(0, 8))
-    return false; // no file:/// prefix
+    return false;  // no file:/// prefix
   if (url.find('\\') != std::string::npos)
-    return false; // contains backslashes
+    return false;  // contains backslashes
 
   base::FilePath derived_path;
   net::FileURLToFilePath(GURL(url), &derived_path);
@@ -339,6 +339,11 @@ struct FixupCase {
     {"about:version", "chrome://version/"},
     {"about:blank", "about:blank"},
     {"About:blaNk", "about:blank"},
+    {"about:blank#blah", "about:blank#blah"},
+    {"about:blank/#blah", "about:blank/#blah"},
+    {"about:srcdoc", "about:srcdoc"},
+    {"about:srcdoc#blah", "about:srcdoc#blah"},
+    {"about:srcdoc/#blah", "about:srcdoc/#blah"},
     {"about:usr:pwd@hst:20/pth?qry#ref", "chrome://hst/pth?qry#ref"},
     {"about://usr:pwd@hst/pth?qry#ref", "chrome://hst/pth?qry#ref"},
     {"chrome:usr:pwd@hst/pth?qry#ref", "chrome://hst/pth?qry#ref"},
@@ -398,7 +403,6 @@ struct FixupCase {
     {"chrome-devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/"
      "guid",
      "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
-
 };
 
 TEST(URLFixerTest, FixupURL) {

@@ -4,6 +4,7 @@
 
 #include "content/test/test_render_frame_host.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -95,6 +96,16 @@ void TestRenderFrameHost::AddMessageToConsole(
     const std::string& message) {
   console_messages_.push_back(message);
   RenderFrameHostImpl::AddMessageToConsole(level, message);
+}
+
+void TestRenderFrameHost::AddUniqueMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
+  if (std::find(console_messages_.begin(), console_messages_.end(), message) ==
+      console_messages_.end()) {
+    console_messages_.push_back(message);
+  }
+  RenderFrameHostImpl::AddUniqueMessageToConsole(level, message);
 }
 
 bool TestRenderFrameHost::IsTestRenderFrameHost() const {

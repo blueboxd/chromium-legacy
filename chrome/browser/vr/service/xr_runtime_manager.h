@@ -30,23 +30,39 @@ class VRDeviceProvider;
 namespace vr {
 
 class BrowserXRRuntime;
+class XRRuntimeManagerTest;
 
 // Singleton used to provide the platform's VR devices to VRServiceImpl
 // instances.
-class VR_EXPORT XRRuntimeManager {
+class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
  public:
-  virtual ~XRRuntimeManager();
+  friend base::RefCounted<XRRuntimeManager>;
+  static constexpr auto kRefCountPreference =
+      base::subtle::kStartRefCountFromOneTag;
 
-  // Returns the XRRuntimeManager singleton.
-  static XRRuntimeManager* GetInstance();
+  friend XRRuntimeManagerTest;
+
+  // Returns a pointer to the XRRuntimeManager singleton.
+  // If The singleton is not currently instantiated, this instantiates it with
+  // the built-in set of providers.
+  // The singleton will persist until all pointers have been dropped.
+  static scoped_refptr<XRRuntimeManager> GetOrCreateInstance();
+
+  // If there is no-one currently using the XRRuntimeManager, then it won't be
+  // instantiated.
   static bool HasInstance();
-  static void RecordVrStartupHistograms();
 
-  // Statics for global obrservers
+  // Provides access to the XRRuntimeManager singleton without causing
+  // reference count churn. This method does not extend the lifetime of the
+  // singleton, so you should be careful with the lifetime of this reference.
+  static XRRuntimeManager* GetInstanceIfCreated();
+
+  // Statics for global observers.
   static void AddObserver(XRRuntimeManagerObserver* observer);
   static void RemoveObserver(XRRuntimeManagerObserver* observer);
 
   static void ExitImmersivePresentation();
+  static void RecordVrStartupHistograms();
 
   // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.
@@ -69,23 +85,29 @@ class VR_EXPORT XRRuntimeManager {
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::XRDevice::SupportsSessionCallback callback);
 
-  void ForEachRuntime(
-      const base::RepeatingCallback<void(BrowserXRRuntime*)>& fn);
-
- protected:
-  using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
-
-  // Constructor also used by tests to supply an arbitrary list of providers, so
-  // make it protected rather than private.
-  explicit XRRuntimeManager(ProviderList providers);
-
-  // Used by tests to check on device state.
-  // TODO: Use XRDeviceId as appropriate.
-  device::mojom::XRRuntime* GetRuntimeForTest(device::mojom::XRDeviceId id);
-
-  size_t NumberOfConnectedServices();
+  template <typename Fn>
+  void ForEachRuntime(Fn&& fn) {
+    for (auto& rt : runtimes_) {
+      fn(rt.second.get());
+    }
+  }
 
  private:
+  using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
+
+  // Constructor also used by tests to supply an arbitrary list of providers
+  static scoped_refptr<XRRuntimeManager> CreateInstance(ProviderList providers);
+
+  // Used by tests to check on device state.
+  device::mojom::XRRuntime* GetRuntimeForTest(device::mojom::XRDeviceId id);
+
+  // Used by tests
+  size_t NumberOfConnectedServices();
+
+  explicit XRRuntimeManager(ProviderList providers);
+
+  ~XRRuntimeManager();
+
   void InitializeProviders();
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();

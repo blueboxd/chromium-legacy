@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
@@ -74,10 +75,34 @@
 
 <dom-module id="add-printer-manually-dialog">
   <template>
-    <style include="cups-printer-shared"> </style>
+    <style include="cups-printer-shared">
+      #general-error-container {
+        height: 20px;
+        margin-inline-start: 20px;
+      }
+
+      #general-error-icon {
+       --iron-icon-fill-color: var(--google-red-600);
+      }
+
+      #general-error-message {
+        color: var(--google-red-600);
+        display: inline-block;
+        font-size: 10px;
+        margin-inline-start: 5px;
+      }
+    </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
       <div slot="dialog-body">
+        <div id="general-error-container">
+            <div id="general-error" hidden="[[!showGeneralError_]]">
+              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+              <div id="general-error-message">
+                $i18n{generalPrinterDialogError}
+              </div>
+            </div>
+        </div>
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
             id="printerNameInput" value="{{newPrinter.printerName}}"
@@ -86,7 +111,8 @@
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
-              value="{{newPrinter.printerAddress}}" maxlength=63>
+              value="{{newPrinter.printerAddress}}" maxlength=63
+              error-message="$i18n{ippPrinterUnreachable}">
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -125,7 +151,7 @@
           </cr-button>
           <cr-button id="addPrinterButton" class="action-button"
               on-click="addPressed_"
-              disabled="[[!canAddPrinter_(newPrinter.*)]]">
+              disabled="[[!canAddPrinter_(newPrinter.*, inProgress_)]]">
             $i18n{addPrinterButtonText}
           </cr-button>
         </div>

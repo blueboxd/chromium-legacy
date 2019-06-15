@@ -41,6 +41,9 @@ class ToolbarActionView : public views::MenuButton,
     // Whether the container for this button is shown inside a menu.
     virtual bool ShownInsideMenu() const = 0;
 
+    // Whether the container supports showing extensions outside of the menu.
+    virtual bool CanShowIconInToolbar() const;
+
     // Notifies that a drag completed.
     virtual void OnToolbarActionViewDragDone() = 0;
 
@@ -115,6 +118,7 @@ class ToolbarActionView : public views::MenuButton,
   views::FocusManager* GetFocusManagerForAccelerator() override;
   views::Button* GetReferenceButtonForPopup() override;
   bool IsMenuRunning() const override;
+  bool CanShowIconInToolbar() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;
 

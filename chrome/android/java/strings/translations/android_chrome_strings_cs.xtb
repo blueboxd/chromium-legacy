@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o ověření.</translation>
 <translation id="3658159451045945436">Resetováním vymažete historii úspory dat, včetně seznamu navštívených webů.</translation>
 <translation id="3662546969139119822">Zde žádná historie není</translation>
+<translation id="3663367437272849150">Seskupit tento počet karet: <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Návrhy při chybách navigace</translation>
 <translation id="3692944402865947621">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo, protože umístění úložiště není dostupné.</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
@@ -466,6 +467,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
 <translation id="4479647676395637221">Pokud web bude chtít použít vaši kameru, zobrazit dotaz (doporučeno)</translation>
 <translation id="4479972344484327217">Instalace modulu <ph name="MODULE" /> pro Chrome…</translation>
+<translation id="4482194545587547824">Google vaši historii procházení může používat k přizpůsobení Vyhledávání a dalších služeb Google.</translation>
 <translation id="4487967297491345095">Všechna data aplikace Chrome budou trvale smazána. Zahrnuje to soubory, nastavení, účty, databáze apod.</translation>
 <translation id="4493497663118223949">Zjednodušený režim je zapnutý</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{před # dnem}few{před # dny}many{před # dne}other{před # dny}}</translation>
@@ -476,6 +478,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4532845899244822526">Výběr složky</translation>
 <translation id="4538018662093857852">Zapnout zjednodušený režim</translation>
 <translation id="4550003330909367850">Chcete-li zde zobrazovat či kopírovat hesla, nastavte v tomto zařízení zámek obrazovky.</translation>
+<translation id="4556110439722119938">Vaše záložky, historie, hesla a další nastavení budou synchronizována do účtu Google, abyste je mohli používat ve všech svých zařízeních.</translation>
 <translation id="4558311620361989323">Zkratky webových stránek</translation>
 <translation id="4561979708150884304">Žádné připojení</translation>
 <translation id="4565377596337484307">Skrýt heslo</translation>
@@ -630,6 +633,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="557283862590186398">Chrome pro tento web potřebuje oprávnění k přístupu k mikrofonu.</translation>
 <translation id="55737423895878184">Určování polohy a oznámení jsou povoleny</translation>
 <translation id="5578795271662203820">Hledat obrázek pomocí <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Byl seskupen tento počet karet: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Synchronizované položky můžete kdykoliv vybrat v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="5596627076506792578">Další možnosti</translation>
@@ -708,6 +712,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6192792657125177640">Výjimky</translation>
+<translation id="6193448654517602979">Vyberte karty</translation>
 <translation id="6194112207524046168">Chcete-li Chromu umožnit přístup k fotoaparátu, zapněte fotoaparát také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
 <translation id="6206551242102657620">Připojení je zabezpečené. Informace o webu</translation>
@@ -824,6 +829,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Obnovit nastavení překladače</translation>
 <translation id="6979737339423435258">Od počátku věků</translation>
+<translation id="6980462514016882061">Google vaši historii procházení může používat k personalizaci Vyhledávání, reklam a dalších služeb Google</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="6985347914332179298">Nejsou k dispozici žádné stažené soubory</translation>
 <translation id="6989267951144302301">Stažení se nezdařilo</translation>
@@ -850,11 +856,13 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7141896414559753902">Bránit webům v zobrazování vyskakovacích oken a v přesměrování (doporučeno)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Načíst původní stránku<ph name="END_LINK" /> z domény <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Posledních 24 hodin</translation>
+<translation id="7161892015146974550">Vybrat kartu <ph name="TAB_TITLE" /></translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Svoji volbu můžete později změnit v nabídce Nastavení</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7189372733857464326">Počkejte prosím, než služby Google Play dokončí aktualizaci</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
+<translation id="722055596168483966">Přizpůsobení služeb Google</translation>
 <translation id="723171743924126238">Vyberte fotky</translation>
 <translation id="7233236755231902816">Chcete-li si web prohlížet ve svém jazyce, stáhněte si nejnovější verzi Chromu</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
@@ -881,6 +889,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7403691278183511381">První spuštění Chromu</translation>
 <translation id="741204030948306876">Ano</translation>
 <translation id="7413229368719586778">Datum zahájení <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Seskupit karty...</translation>
 <translation id="7423098979219808738">Nejprve se dotázat</translation>
 <translation id="7423538860840206698">Čtení schránky je blokováno</translation>
 <translation id="7431991332293347422">Nastavte, jak se má vaše historie prohlížení používat k personalizaci Vyhledávání a dalších služeb</translation>
@@ -1017,6 +1026,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>
 <translation id="8349013245300336738">Seřadit podle množství využitých dat</translation>
 <translation id="8364299278605033898">Zobrazit populární weby</translation>
+<translation id="8364603787714420828">Zrušit výběr karty <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Povolit synchronizaci na pozadí konkrétnímu webu.</translation>
 <translation id="8374821112118309944">Aplikaci TalkBack je potřeba aktualizovat na novější verzi.</translation>
 <translation id="8378714024927312812">Spravováno vaší organizací</translation>
@@ -1082,6 +1092,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, karta</translation>
 <translation id="885701979325669005">Úložiště</translation>
 <translation id="8901170036886848654">Nebyly nalezeny žádné záložky</translation>
+<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">Sdílet…</translation>
 <translation id="8912362522468806198">Účet Google</translation>
 <translation id="8920114477895755567">Čekáme na podrobnosti o rodičích.</translation>

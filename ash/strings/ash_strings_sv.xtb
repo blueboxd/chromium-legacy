@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Inmatningsmetoderna konfigureras av administratören.</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="1761222317188459878">Aktivera och inaktivera nätverksanslutning. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Rulla åt höger</translation>
 <translation id="1812997170047690955">Vad visas på skärmen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (läses in …)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Batterinivån är på <ph name="PERCENTAGE" /> % och batteriet laddas.</translation>
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
 <translation id="4017989525502048489">Laserpekare</translation>
+<translation id="4021716437419160885">Rulla ned</translation>
 <translation id="4042660782729322247">Skärmen delas</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Av för en app}other{Av för # appar}}</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4924411785043111640">Starta om och återställ</translation>
+<translation id="495046168593986294">Rulla upp</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5030687792513154421">Tiden är slut</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har anslutits till en ny mobil</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Starta om Chromebook-enheten med tangentbordet tillkopplat för att uppdatera.</translation>
 <translation id="5992218262414051481">Högkontrastläget har aktiverats. Tryck på Ctrl+Sök+H igen om du vill inaktivera det.</translation>
 <translation id="6018164090099858612">Spegelläge avslutas</translation>
+<translation id="602001110135236999">Rulla åt vänster</translation>
+<translation id="6040143037577758943">Stäng</translation>
 <translation id="6043212731627905357">Skärmen kan inte användas med <ph name="DEVICE_TYPE" /> (det finns inte stöd för skärmen).</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
 <translation id="6047696787498798094">Skärmdelningen avbryts när du byter till en annan användare. Vill du fortsätta?</translation>

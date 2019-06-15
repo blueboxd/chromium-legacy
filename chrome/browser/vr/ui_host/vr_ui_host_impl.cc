@@ -131,8 +131,9 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-  BrowserXRRuntime* runtime =
-      XRRuntimeManager::GetInstance()->GetRuntime(device_id);
+  auto* runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  DCHECK(runtime_manager != nullptr);
+  BrowserXRRuntime* runtime = runtime_manager->GetRuntime(device_id);
   if (runtime) {
     runtime->AddObserver(this);
   }

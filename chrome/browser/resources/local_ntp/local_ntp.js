@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview The local InstantExtended NTP.
  */
-
 
 /**
  * Whether the most visited tiles have finished loading, i.e. we've received the
@@ -16,7 +14,6 @@
  */
 let tilesAreLoaded = false;
 
-
 /**
  * Whether the Most Visited and edit custom link iframes should be created while
  * running tests. Currently the SimpleJavascriptTests are flaky due to some
@@ -25,14 +22,12 @@ let tilesAreLoaded = false;
  */
 let iframesAndVoiceSearchDisabledForTesting = false;
 
-
 /**
  * Controls rendering the new tab page for InstantExtended.
  * @return {Object} A limited interface for testing the local NTP.
  */
 function LocalNTP() {
 'use strict';
-
 
 /**
  * Called by tests to disable the creation of Most Visited and edit custom link
@@ -41,7 +36,6 @@ function LocalNTP() {
 function disableIframesAndVoiceSearchForTesting() {
   iframesAndVoiceSearchDisabledForTesting = true;
 }
-
 
 /**
  * Specifications for an NTP design (not comprehensive).
@@ -74,7 +68,6 @@ const NTP_DESIGN = {
   titleColor: [60, 64, 67, 255],               /** GG800 */
   titleColorAgainstDark: [248, 249, 250, 255], /** GG050 */
 };
-
 
 /**
  * Enum for classnames.
@@ -119,7 +112,6 @@ const CLASSES = {
   USE_NOTIFIER: 'use-notifier',
 };
 
-
 /**
  * Enum for HTML element ids.
  * @enum {string}
@@ -154,7 +146,6 @@ const IDS = {
   UNDO_LINK: 'mv-undo',
   USER_CONTENT: 'user-content',
 };
-
 
 /**
  * The different types of events that are logged from the NTP. This enum is
@@ -195,14 +186,12 @@ const LOG_TYPE = {
   NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED: 61,
 };
 
-
 /**
  * The maximum number of tiles to show in the Most Visited section.
  * @type {number}
  * @const
  */
 const MAX_NUM_TILES_MOST_VISITED = 8;
-
 
 /**
  * The maximum number of tiles to show in the Most Visited section if custom
@@ -212,16 +201,13 @@ const MAX_NUM_TILES_MOST_VISITED = 8;
  */
 const MAX_NUM_TILES_CUSTOM_LINKS = 10;
 
-
 /**
  * Background colors considered "white". Used to determine if it is possible to
  * display a Google Doodle, or if the notifier should be used instead. Also used
  * to determine if a colored or white logo should be used.
- * @type {Array<string>}
  * @const
  */
 const WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
-
 
 /**
  * Background color for Chrome dark mode. Used to determine if it is possible to
@@ -231,7 +217,6 @@ const WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
  */
 const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
 
-
 /**
  * Enum for keycodes.
  * @enum {number}
@@ -239,13 +224,11 @@ const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
  */
 const KEYCODE = {ENTER: 13, SPACE: 32};
 
-
 /**
  * The period of time (ms) before the Most Visited notification is hidden.
  * @type {number}
  */
 const NOTIFICATION_TIMEOUT = 10000;
-
 
 /**
  * The period of time (ms) before transitions can be applied to a toast
@@ -254,14 +237,12 @@ const NOTIFICATION_TIMEOUT = 10000;
  */
 const DISPLAY_TIMEOUT = 20;
 
-
 /**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
  */
 let lastBlacklistedTile = null;
-
 
 /**
  * The timeout function for automatically hiding the pop-up notification. Only
@@ -270,7 +251,6 @@ let lastBlacklistedTile = null;
  */
 let delayedHideNotification = null;
 
-
 /**
  * The currently visible notification element. Null if no notification is
  * present.
@@ -278,13 +258,11 @@ let delayedHideNotification = null;
  */
 let currNotification = null;
 
-
 /**
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
 let ntpApiHandle;
-
 
 /**
  * True if dark mode is enabled.
@@ -292,14 +270,12 @@ let ntpApiHandle;
  */
 let isDarkModeEnabled = false;
 
-
 /**
  * True if dark colored chips should be used instead of light mode chips when
  * dark mode is enabled.
  * @type {boolean}
  */
 let useDarkChips = false;
-
 
 /**
  * Returns a timeout that can be executed early. Calls back true if this was
@@ -323,7 +299,6 @@ function createExecutableTimeout(timeout, delay) {
   };
 }
 
-
 /**
  * Called by tests to override the executable timeout with a test timeout.
  * @param {!Function} timeout The timeout function. Requires a boolean param.
@@ -331,7 +306,6 @@ function createExecutableTimeout(timeout, delay) {
 function overrideExecutableTimeoutForTesting(timeout) {
   createExecutableTimeout = timeout;
 }
-
 
 /**
  * Returns theme background info, first checking for history.state.notheme. If
@@ -364,7 +338,6 @@ function getThemeBackgroundInfo() {
   return ntpApiHandle.themeBackgroundInfo;
 }
 
-
 /**
  * Determine whether dark chips should be used if dark mode is enabled. This is
  * is the case when dark mode is enabled and a background image (from a custom
@@ -377,7 +350,6 @@ function getThemeBackgroundInfo() {
 function getUseDarkChips(info) {
   return info.usingDarkMode && !info.imageUrl;
 }
-
 
 /**
  * Updates the NTP based on the current theme.
@@ -502,7 +474,6 @@ function sendThemeInfoToMostVisitedIframe() {
   $(IDS.TILES_IFRAME).contentWindow.postMessage(message, '*');
 }
 
-
 /**
  * Sends the current theme info to the edit custom link iframe.
  * @private
@@ -522,7 +493,6 @@ function sendThemeInfoToEditCustomLinkIframe() {
 
   $(IDS.CUSTOM_LINKS_EDIT_IFRAME).contentWindow.postMessage(message, '*');
 }
-
 
 /**
  * Updates the OneGoogleBar (if it is loaded) based on the current theme.
@@ -545,7 +515,6 @@ function renderOneGoogleBarTheme() {
   }
 }
 
-
 /**
  * Callback for embeddedSearch.newTabPage.onthemechange.
  * @private
@@ -565,7 +534,6 @@ function onThemeChange() {
     reloadTiles();
   }
 }
-
 
 /**
  * Updates the NTP style according to theme.
@@ -591,12 +559,11 @@ function setCustomThemeStyle(themeInfo) {
   document.body.style.setProperty('--text-color-link', textColorLight);
 }
 
-
 /**
  * Renders the attribution if the URL is present, otherwise hides it.
  * @param {string} url The URL of the attribution image, if any.
  * @param {string} themeBackgroundAlignment The alignment of the theme
- *  background image. This is used to compute the attribution's alignment.
+ *     background image. This is used to compute the attribution's alignment.
  * @private
  */
 function updateThemeAttribution(url, themeBackgroundAlignment) {
@@ -615,11 +582,10 @@ function updateThemeAttribution(url, themeBackgroundAlignment) {
 
   // To avoid conflicts, place the attribution on the left for themes that
   // right align their background images.
-  attribution.classList.toggle(CLASSES.LEFT_ALIGN_ATTRIBUTION,
-                               themeBackgroundAlignment == 'right');
+  attribution.classList.toggle(
+      CLASSES.LEFT_ALIGN_ATTRIBUTION, themeBackgroundAlignment == 'right');
   setAttributionVisibility_(true);
 }
-
 
 /**
  * Sets the visibility of the theme attribution.
@@ -630,7 +596,6 @@ function setAttributionVisibility_(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
-
 /**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
  * @param {Array<number>} color Array of rgba color components.
@@ -639,9 +604,8 @@ function setAttributionVisibility_(show) {
  */
 function convertToRGBAColor(color) {
   return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' +
-                    color[3] / 255 + ')';
+      color[3] / 255 + ')';
 }
-
 
 /**
  * Callback for embeddedSearch.newTabPage.onmostvisitedchange. Called when the
@@ -650,7 +614,6 @@ function convertToRGBAColor(color) {
 function onMostVisitedChange() {
   reloadTiles();
 }
-
 
 /**
  * Fetches new data (RIDs) from the embeddedSearch.newTabPage API and passes
@@ -678,7 +641,6 @@ function reloadTiles() {
   $(IDS.TILES_IFRAME).contentWindow.postMessage(cmds, '*');
 }
 
-
 /**
  * Callback for embeddedSearch.newTabPage.onaddcustomlinkdone. Called when the
  * custom link was successfully added. Shows the "Shortcut added" notification.
@@ -693,7 +655,6 @@ function onAddCustomLinkDone(success) {
   }
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
-
 
 /**
  * Callback for embeddedSearch.newTabPage.onupdatecustomlinkdone. Called when
@@ -710,7 +671,6 @@ function onUpdateCustomLinkDone(success) {
   }
 }
 
-
 /**
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
@@ -726,7 +686,6 @@ function onDeleteCustomLinkDone(success) {
   }
 }
 
-
 /**
  * Shows the Most Visited pop-up notification and triggers a delay to hide it.
  * The message will be set to |msg|.
@@ -741,7 +700,6 @@ function showNotification(msg) {
   $(IDS.UNDO_LINK).focus();
 }
 
-
 /**
  * Hides the Most Visited pop-up notification.
  */
@@ -749,7 +707,6 @@ function hideNotification() {
   floatDownNotification(
       $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
 }
-
 
 /**
  * Shows the error pop-up notification and triggers a delay to hide it. The
@@ -773,7 +730,6 @@ function showErrorNotification(msg, linkName, linkOnClick) {
   }
   floatUpNotification(notification, $(IDS.ERROR_NOTIFICATION_CONTAINER));
 }
-
 
 /**
  * Animates the specified notification to float up. Automatically hides any
@@ -830,7 +786,6 @@ function floatUpNotification(notification, notificationContainer) {
   currNotification = notificationContainer;
 }
 
-
 /**
  * Animates the pop-up notification to float down, and clears the timeout to
  * hide the notification.
@@ -885,7 +840,6 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
   notificationContainer.classList.remove(CLASSES.FLOAT_UP);
 }
 
-
 /**
  * Return true if custom links are enabled.
  * @return {boolean}
@@ -894,7 +848,6 @@ function customLinksEnabled() {
   return configData.isGooglePage &&
       !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
 }
-
 
 /**
  * Handles a click on the notification undo link by hiding the notification and
@@ -911,7 +864,6 @@ function onUndo() {
   }
 }
 
-
 /**
  * Handles a click on the restore all notification link by hiding the
  * notification and informing Chrome.
@@ -927,7 +879,6 @@ function onRestoreAll() {
   }
 }
 
-
 /**
  * Callback for embeddedSearch.newTabPage.oninputstart. Handles new input by
  * disposing the NTP, according to where the input was entered.
@@ -940,7 +891,6 @@ function onInputStart() {
   }
 }
 
-
 /**
  * Callback for embeddedSearch.newTabPage.oninputcancel. Restores the NTP
  * (re-enables the fakebox and unhides the logo.)
@@ -948,7 +898,6 @@ function onInputStart() {
 function onInputCancel() {
   setFakeboxVisibility(true);
 }
-
 
 /**
  * @param {boolean} focus True to focus the fakebox.
@@ -972,7 +921,6 @@ function isFakeboxFocused() {
       document.body.classList.contains(CLASSES.FAKEBOX_DRAG_FOCUS);
 }
 
-
 /**
  * @param {!Event} event The click event.
  * @return {boolean} True if the click occurred in an enabled fakebox.
@@ -983,14 +931,12 @@ function isFakeboxClick(event) {
            .contains(/** @type HTMLElement */ (event.target));
 }
 
-
 /**
  * @param {boolean} show True to show the fakebox and logo.
  */
 function setFakeboxVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX, !show);
 }
-
 
 /**
  * @param {!Element} element The element to register the handler for.
@@ -1004,7 +950,6 @@ function registerKeyHandler(element, keycode, handler) {
     }
   });
 }
-
 
 /**
  * Event handler for messages from the most visited and edit custom link iframe.
@@ -1100,7 +1045,6 @@ function requestAndInsertGoogleResources() {
     };
   }
 }
-
 
 /**
  * Prepares the New Tab Page by adding listeners, the most visited pages
@@ -1267,7 +1211,6 @@ function init() {
   document.body.classList.add(CLASSES.INITED);
 }
 
-
 /**
  * Create the Most Visited and edit custom links iframes.
  */
@@ -1287,7 +1230,8 @@ function createIframes() {
   args.push(
       'title=' +
       encodeURIComponent(configData.translatedStrings.mostVisitedTitle));
-  args.push('removeTooltip=' +
+  args.push(
+      'removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
   if (configData.isGooglePage) {
@@ -1377,14 +1321,12 @@ function createIframes() {
   window.addEventListener('message', handlePostMessage);
 }
 
-
 /**
  * Binds event listeners.
  */
 function listen() {
   document.addEventListener('DOMContentLoaded', init);
 }
-
 
 /**
  * Injects a middle-slot promo into the page. Called asynchronously, so that it
@@ -1419,7 +1361,6 @@ function injectPromo(promo) {
   }
 }
 
-
 /**
  * Injects search suggestions into the page. Called *synchronously* with cached
  * data as not to cause shifting of the most visited tiles.
@@ -1441,7 +1382,6 @@ function injectSearchSuggestions(suggestions) {
       document.createTextNode(suggestions.suggestionsEndOfBodyScript));
   document.body.appendChild(endOfBodyScript);
 }
-
 
 /**
  * Injects the One Google Bar into the page. Called asynchronously, so that it
@@ -1481,7 +1421,6 @@ function injectOneGoogleBar(ogb) {
 
   ntpApiHandle.logEvent(LOG_TYPE.NTP_ONE_GOOGLE_BAR_SHOWN);
 }
-
 
 return {
   init: init,  // Exposed for testing.

@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1409544243779336081">Sovellussuositus</translation>
+<translation id="1498028757988366001">Hait tätä aiemmin. Jos <ph name="QUERY" /> poistetaan historiastasi, se poistetaan pysyvästi tililtäsi kaikilla laitteillasi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
 <translation id="1643823602425662293">Ilmoitus</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min sitten}other{# min sitten}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuutti jäljellä}other{# minuuttia jäljellä}}</translation>
+<translation id="7430878839542012341">Poistetaanko tämä haku historiastasi?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> Tt</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Peruuta</translation>

@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
-#import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
@@ -324,18 +323,7 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Close the tab by tapping link2.
-  NSError* error = [ChromeEarlGrey tapWebStateElementWithID:@"link2"];
-  if (error != nil) {
-    // Sometimes, the tap will be unsuccessful due to the window.close()
-    // operation invalidating the WKWebView.  If this occurs, verify the error.
-    // This results in |TapWebViewElementWithId| returning false.
-    // TODO(crbug.com/824879): Remove conditional once flake is eliminated from
-    // TapWebViewElementWithId() for window.close() links.
-    GREYAssert(error.code == WKErrorWebViewInvalidated,
-               @"Failed to receive WKErrorWebViewInvalidated error");
-    GREYAssert([error.domain isEqualToString:WKErrorDomain],
-               @"Failed to receive WKErrorDomain error");
-  }
+  [ChromeEarlGrey tapWebStateElementWithID:@"link2"];
 
   [ChromeEarlGrey waitForWebStateContainingText:"link1"];
 

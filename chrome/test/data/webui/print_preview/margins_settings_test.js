@@ -40,12 +40,14 @@ cr.define('margins_settings_test', function() {
       assertEquals(
           marginsTypeEnum.DEFAULT, marginsSection.getSettingValue('margins'));
       assertEquals(4, select.options.length);
+      assertFalse(marginsSection.getSetting('margins').setFromUi);
 
       // Verify that selecting an new option in the dropdown sets the setting.
       await print_preview_test_utils.selectOption(
           marginsSection, marginsTypeEnum.MINIMUM.toString());
       assertEquals(
           marginsTypeEnum.MINIMUM, marginsSection.getSettingValue('margins'));
+      assertTrue(marginsSection.getSetting('margins').setFromUi);
     });
 
     // This test verifies that changing pages per sheet to N > 1 disables the

@@ -192,7 +192,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
     const Extension* extension,
     Browser* browser,
     ButtonVisibility button_visibility,
-    PopupDelegate* delegate)
+    PopupDelegate* delegate,
+    bool can_show_icon_in_toolbar)
     : SimpleMenuModel(this),
       extension_id_(extension->id()),
       is_component_(Manifest::IsComponentLocation(extension->location())),
@@ -200,7 +201,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       profile_(browser->profile()),
       delegate_(delegate),
       action_type_(NO_ACTION),
-      button_visibility_(button_visibility) {
+      button_visibility_(button_visibility),
+      can_show_icon_in_toolbar_(can_show_icon_in_toolbar) {
   InitMenu(extension, button_visibility);
 }
 
@@ -231,7 +233,12 @@ bool ExtensionContextMenuModel::IsCommandIdVisible(int command_id) const {
     return extension_items_->IsCommandIdVisible(command_id);
   }
 
-  // Standard menu items are always visible.
+  // The command is hidden in app windows because they don't
+  // support showing extensions in the app window frame.
+  if (command_id == TOGGLE_VISIBILITY)
+    return can_show_icon_in_toolbar_;
+
+  // Standard menu items are visible.
   return true;
 }
 

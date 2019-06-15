@@ -40,9 +40,11 @@ void MockOfflineContentProvider::NotifyOnItemRemoved(const ContentId& id) {
     observer.OnItemRemoved(id);
 }
 
-void MockOfflineContentProvider::NotifyOnItemUpdated(const OfflineItem& item) {
+void MockOfflineContentProvider::NotifyOnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   for (auto& observer : observers_)
-    observer.OnItemUpdated(item);
+    observer.OnItemUpdated(item, update_delta);
 }
 
 void MockOfflineContentProvider::GetVisualsForItem(const ContentId& id,

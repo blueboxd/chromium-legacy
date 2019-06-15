@@ -42,6 +42,10 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if defined(OS_WIN)
+#include "third_party/blink/public/web/win/web_font_rendering.h"
+#endif
+
 using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
@@ -290,6 +294,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
+
+#if defined(OS_WIN)
+    // Autofill uses the system font to render suggestion previews. On Windows
+    // an extra step is required to ensure that the system font is configured.
+    blink::WebFontRendering::SetMenuFontMetrics(
+        base::ASCIIToUTF16("Arial").c_str(), 12);
+#endif
 
     // TODO(crbug/862989): Remove workaround preventing non-test classes to bind
     // fake_driver_ or fake_pw_client_.

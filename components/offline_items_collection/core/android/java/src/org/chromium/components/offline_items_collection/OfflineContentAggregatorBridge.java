@@ -128,9 +128,9 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
     }
 
     @CalledByNative
-    private void onItemUpdated(OfflineItem item) {
+    private void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
         for (Observer observer : mObservers) {
-            observer.onItemUpdated(item);
+            observer.onItemUpdated(item, updateDelta);
         }
     }
 

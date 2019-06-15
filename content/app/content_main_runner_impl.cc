@@ -885,8 +885,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   bool should_start_service_manager_only = start_service_manager_only;
   if (!service_manager_environment_) {
     if (delegate_->ShouldCreateFeatureList()) {
-      DCHECK(!field_trial_list_);
-      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      // This is intentionally leaked since it needs to live for the duration
+      // of the process and there's no benefit in cleaning it up at exit.
+      base::FieldTrialList* leaked_field_trial_list =
+          SetUpFieldTrialsAndFeatureList().release();
+      ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
+      ignore_result(leaked_field_trial_list);
       delegate_->PostFieldTrialInitialization();
     }
 

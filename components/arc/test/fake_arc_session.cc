@@ -39,6 +39,8 @@ void FakeArcSession::OnShutdown() {
   StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
+void FakeArcSession::SetUserIdHashForProfile(const std::string& hash) {}
+
 void FakeArcSession::StopWithReason(ArcStopReason reason) {
   bool was_mojo_connected = running_;
   running_ = false;

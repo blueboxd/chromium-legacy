@@ -206,7 +206,17 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           result->SetInteger("frameId", frame_id);
           existing_window->GetSerializedState(result.get());
           result->SetBoolean("existingWindow", true);
-          return RespondNow(OneArgument(std::move(result)));
+          // We should not return the window until that window is properly
+          // initialized. Hence, adding a callback for window first navigation
+          // completion.
+          if (existing_window->DidFinishFirstNavigation()) 
+            return RespondNow(OneArgument(std::move(result)));
+          
+          existing_window->AddOnDidFinishFirstNavigationCallback(
+            base::BindOnce(&AppWindowCreateFunction::
+                           OnAppWindowFinishedFirstNavigationOrClosed,
+                           this, OneArgument(std::move(result))));
+          return RespondLater();
         }
       }
     }
@@ -420,10 +430,10 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
-  // Delay sending the response until the newly created window has been told to
-  // navigate, and blink has been correctly initialized in the renderer.
-  // SetOnFirstCommitOrWindowClosedCallback() will respond asynchronously.
-  app_window->SetOnDidFinishFirstNavigationCallback(base::BindOnce(
+  // Delay sending the response until the newly created window has finished its
+  // navigation or was closed during that process.
+  // AddOnDidFinishFirstNavigationCallback() will respond asynchrously.
+  app_window->AddOnDidFinishFirstNavigationCallback(base::BindOnce(
       &AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed,
       this, std::move(result_arg)));
   return RespondLater();

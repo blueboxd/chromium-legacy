@@ -458,6 +458,12 @@
       Jei politika nesukonfigūruota ar išjungta, naudotojai galės pakeisti šį nustatymą (pvz., įrašydami „Išjungti svetainių izoliavimą“ adresu chrome://flags).
       </translation>
 <translation id="1767673020408652620">Įgalinamos programos rekomendacijos tuščiame paieškos laukelyje</translation>
+<translation id="17719159826324007">
+      Kai ši politika nustatyta kaip „ArcSession“, įrenginys priverstinai paleidžiamas iš naujo naudotojui atsijungus (jei „Android“ paleista).
+      Kai nustatyta „Visada“, įrenginys priverstinai paleidžiamas iš naujo kiekvieną kartą naudotojui atsijungus.
+      Jei politika nenustatyta, ji nedaro jokio poveikio ir naudotojui atsijungus įrenginys iš naujo nepaleidžiamas. Tas pats taikoma, jei nustatyta „Niekada“.
+      Ši politika taikoma tik nesusietiems naudotojams.
+      </translation>
 <translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
 <translation id="1793346220873697538">Išjungti spausdinimą naudojant PIN kodą pagal numatytuosius nustatymus</translation>
 <translation id="1797233582739332495">Pasikartojančio raginimo, kuriame nurodoma, kad būtina paleisti iš naujo, rodymas naudotojui</translation>
@@ -958,6 +964,7 @@
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="268577405881275241">Įgalinti duomenų glaudinimo tarpinio serverio funkciją</translation>
 <translation id="2693108589792503178">Slaptažodžio keitimo URL konfigūravimas.</translation>
+<translation id="2694143893026486692">Prie doko prijungtas didintuvas įgalintas</translation>
 <translation id="2706708761587205154">Leisti spausdinti tik naudojant PIN kodą</translation>
 <translation id="2710534340210290498">Jei ši politika nustatyta kaip „Netiesa“, naudotojai negalės užrakinti ekrano (bus galima tik atsijungti nuo naudotojo sesijos). Jei šis nustatymas nustatytas kaip „Tiesa“ arba nenustatytas, ekraną galės užrakinti naudotojai, autentifikuoti naudojant slaptažodį.</translation>
 <translation id="2731627323327011390">Neleisti naudoti „<ph name="PRODUCT_OS_NAME" />“ sertifikatų ARC programose</translation>
@@ -1192,6 +1199,7 @@
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Įgalintas numatytasis paieškos teikėjas“.</translation>
+<translation id="3053265701996417839">„Microsoft Windows 7“</translation>
 <translation id="306887062252197004">Pagal šią politiką „WebDriver“ funkcijos naudotojai gali perrašyti
       politikos nuostatas, kurios gali trikdyti vykdomą operaciją.
 
@@ -1711,12 +1719,6 @@
       „<ph name="PRODUCT_OS_NAME" />“ įrenginiai automatiškai tikrina, ar yra naujinių, kai šis nustatymas nesukonfigūruotas ar nustatytas į „false“.
 
       Įspėjimas: rekomenduojama įgalinti automatinius naujinius, kad naudotojai gautų programinės įrangos naujinius ir svarbias saugos pataisas. Išjungus automatinius naujinius gali kilti grėsmė naudotojų saugai.</translation>
-<translation id="4018000735882846261">Pagal šią politiką „Google“ padėjėjui suteikiamas leidimas klausyti suaktyvinimo balsu frazės.
-
-      Jei politika įgalinta, „Google“ padėjėjas klauso suaktyvinimo balsu frazės.
-      Jei politika išjungta, „Google“ padėjėjas neklauso suaktyvinimo balsu frazės.
-      Jei politika nenustatyta, „Google“ padėjėjas neklauso suaktyvinimo balsu frazės.
-      </translation>
 <translation id="4020682745012723568">Į naudotojo profilį perkeltų slapukų „Android“ programos pasiekti negali.</translation>
 <translation id="402759845255257575">Neleisti jokioje svetainėje paleisti „JavaScript“</translation>
 <translation id="4027608872760987929">Įgalinti numatytąjį paieškos teikėją</translation>

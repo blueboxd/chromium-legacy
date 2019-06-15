@@ -105,7 +105,7 @@ void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
 }
 
-bool HeapObjectHeader::HasFinalizer() const {
+bool HeapObjectHeader::HasNonTrivialFinalizer() const {
   const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
   return gc_info->finalize;
 }
@@ -115,13 +115,16 @@ BaseArena::BaseArena(ThreadState* state, int index)
 
 BaseArena::~BaseArena() {
   DCHECK(swept_pages_.IsEmpty());
-  DCHECK(SweepingCompleted());
+  DCHECK(unswept_pages_.IsEmpty());
+  DCHECK(swept_unfinalized_pages_.IsEmpty());
+  DCHECK(swept_unfinalized_empty_pages_.IsEmpty());
+  DCHECK(SweepingAndFinalizationCompleted());
 }
 
 void BaseArena::RemoveAllPages() {
   ClearFreeLists();
 
-  DCHECK(SweepingCompleted());
+  DCHECK(SweepingAndFinalizationCompleted());
   while (BasePage* page = swept_pages_.Pop()) {
     page->RemoveFromHeap();
   }
@@ -156,16 +159,19 @@ void BaseArena::TakeSnapshot(const String& dump_base_name,
 
 #if DCHECK_IS_ON()
 BasePage* BaseArena::FindPageFromAddress(Address address) {
-  if (currently_processed_page_ &&
-      currently_processed_page_->Contains(address)) {
-    return currently_processed_page_;
-  }
-
   for (BasePage* page : swept_pages_) {
     if (page->Contains(address))
       return page;
   }
   for (BasePage* page : unswept_pages_) {
+    if (page->Contains(address))
+      return page;
+  }
+  for (BasePage* page : swept_unfinalized_pages_) {
+    if (page->Contains(address))
+      return page;
+  }
+  for (BasePage* page : swept_unfinalized_empty_pages_) {
     if (page->Contains(address))
       return page;
   }
@@ -179,7 +185,7 @@ void BaseArena::MakeConsistentForGC() {
 #endif
 
   // We should not start a new GC until we finish sweeping in the current GC.
-  CHECK(SweepingCompleted());
+  CHECK(SweepingAndFinalizationCompleted());
 
   HeapCompact* heap_compactor = GetThreadState()->Heap().Compaction();
   if (!heap_compactor->IsCompactingArena(ArenaIndex()))
@@ -201,14 +207,12 @@ void BaseArena::MakeConsistentForMutator() {
   // Drop marks from marked objects and rebuild free lists in preparation for
   // resuming the executions of mutators.
   for (BasePage* page : unswept_pages_) {
-    SetCurrentlyProccesedPage(page);
     page->MakeConsistentForMutator();
     page->MarkAsSwept();
   }
-  SetCurrentlyProccesedPage(nullptr);
 
   swept_pages_ = std::move(unswept_pages_);
-  DCHECK(SweepingCompleted());
+  DCHECK(SweepingAndFinalizationCompleted());
 
   VerifyObjectStartBitmap();
 }
@@ -228,7 +232,7 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 
 void BaseArena::PrepareForSweep() {
   DCHECK(GetThreadState()->InAtomicMarkingPause());
-  DCHECK(SweepingCompleted());
+  DCHECK(SweepingAndFinalizationCompleted());
 
   ClearFreeLists();
 
@@ -254,7 +258,7 @@ void BaseArena::PoisonArena() {
 
 Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   // If there are no pages to be swept, return immediately.
-  if (SweepingCompleted())
+  if (SweepingAndFinalizationCompleted())
     return nullptr;
 
   CHECK(GetThreadState()->IsSweepingInProgress());
@@ -274,15 +278,27 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   return LazySweepPages(allocation_size, gc_info_index);
 }
 
-void BaseArena::SweepUnsweptPage(BasePage* page) {
-  SetCurrentlyProccesedPage(page);
-  if (page->Sweep()) {
-    page->RemoveFromHeap();
+bool BaseArena::SweepUnsweptPageOnConcurrentThread(BasePage* page) {
+  const bool is_empty = page->Sweep(FinalizeType::kDeferred);
+  if (is_empty) {
+    swept_unfinalized_empty_pages_.Push(page);
   } else {
-    swept_pages_.Push(page);
-    page->MarkAsSwept();
+    swept_unfinalized_pages_.Push(page);
   }
-  SetCurrentlyProccesedPage(nullptr);
+  return is_empty;
+}
+
+bool BaseArena::SweepUnsweptPage(BasePage* page) {
+  const bool is_empty = page->Sweep(FinalizeType::kInlined);
+  if (is_empty) {
+    page->FinalizeSweep(SweepResult::kPageEmpty);
+  } else {
+    // First, we add page to the list of swept pages
+    // so that the FindPageFromAddress check is happy.
+    swept_pages_.Push(page);
+    page->FinalizeSweep(SweepResult::kPageNotEmpty);
+  }
+  return is_empty;
 }
 
 bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
@@ -306,6 +322,9 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
     }
   }
   int page_count = 1;
+  // TODO(bikineev): We should probably process pages in the reverse order. This
+  // will leave more work for concurrent sweeper and reduce memory footprint
+  // faster.
   while (BasePage* page = unswept_pages_.Pop()) {
     SweepUnsweptPage(page);
     if (page_count % kDeadlineCheckInterval == 0) {
@@ -313,14 +332,46 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
         // Deadline has come.
         if (normal_arena)
           normal_arena->SetIsLazySweeping(false);
-        return SweepingCompleted();
+        return SweepingAndFinalizationCompleted();
       }
     }
     page_count++;
   }
+  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
+    swept_pages_.Push(page);
+    page->FinalizeSweep(SweepResult::kPageNotEmpty);
+    if (page_count % kDeadlineCheckInterval == 0) {
+      if (deadline <= CurrentTimeTicks()) {
+        // Deadline has come.
+        if (normal_arena)
+          normal_arena->SetIsLazySweeping(false);
+        return SweepingAndFinalizationCompleted();
+      }
+    }
+    page_count++;
+  }
+  while (BasePage* page = swept_unfinalized_empty_pages_.Pop()) {
+    page->FinalizeSweep(SweepResult::kPageEmpty);
+    if (page_count % kDeadlineCheckInterval == 0) {
+      if (deadline <= CurrentTimeTicks()) {
+        // Deadline has come.
+        if (normal_arena)
+          normal_arena->SetIsLazySweeping(false);
+        return SweepingAndFinalizationCompleted();
+      }
+    }
+    page_count++;
+  }
+
   if (normal_arena)
     normal_arena->SetIsLazySweeping(false);
   return true;
+}
+
+void BaseArena::SweepOnConcurrentThread() {
+  while (BasePage* page = unswept_pages_.Pop()) {
+    SweepUnsweptPageOnConcurrentThread(page);
+  }
 }
 
 void BaseArena::CompleteSweep() {
@@ -334,6 +385,17 @@ void BaseArena::CompleteSweep() {
   while (BasePage* page = unswept_pages_.Pop()) {
     SweepUnsweptPage(page);
   }
+
+  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
+    swept_pages_.Push(page);
+    page->FinalizeSweep(SweepResult::kPageNotEmpty);
+  }
+  while (BasePage* page = swept_unfinalized_empty_pages_.Pop()) {
+    page->FinalizeSweep(SweepResult::kPageEmpty);
+  }
+
+  // Verify object start bitmap after all freelists have been merged.
+  VerifyObjectStartBitmap();
 }
 
 Address BaseArena::AllocateLargeObject(size_t allocation_size,
@@ -431,7 +493,6 @@ void NormalPageArena::SweepAndCompact() {
   context.compacted_pages_ = &swept_pages_;
 
   while (BasePage* page = unswept_pages_.Pop()) {
-    SetCurrentlyProccesedPage(page);
     // Large objects do not belong to this arena.
     DCHECK(!page->IsLargeObjectPage());
     NormalPage* normal_page = static_cast<NormalPage*>(page);
@@ -444,7 +505,6 @@ void NormalPageArena::SweepAndCompact() {
     }
     normal_page->SweepAndCompact(context);
   }
-  SetCurrentlyProccesedPage(nullptr);
 
   // All pages were empty; nothing to compact.
   if (!context.current_page_) {
@@ -769,21 +829,27 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
   DCHECK(!HasCurrentAllocationArea());
   base::AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
   Address result = nullptr;
+  // First, process unfinalized pages as finalizing a page is faster than
+  // sweeping.
+  while (BasePage* page = swept_unfinalized_pages_.Pop()) {
+    swept_pages_.Push(page);
+    page->FinalizeSweep(SweepResult::kPageNotEmpty);
+    // For NormalPage, stop lazy sweeping once we find a slot to
+    // allocate a new object.
+    result = AllocateFromFreeList(allocation_size, gc_info_index);
+    if (result)
+      return result;
+  }
   while (BasePage* page = unswept_pages_.Pop()) {
-    SetCurrentlyProccesedPage(page);
-    if (page->Sweep()) {
-      page->RemoveFromHeap();
-    } else {
-      swept_pages_.Push(page);
-      page->MarkAsSwept();
+    const bool is_empty = SweepUnsweptPage(page);
+    if (!is_empty) {
       // For NormalPage, stop lazy sweeping once we find a slot to
       // allocate a new object.
       result = AllocateFromFreeList(allocation_size, gc_info_index);
       if (result)
-        break;
+        return result;
     }
   }
-  SetCurrentlyProccesedPage(nullptr);
   return result;
 }
 
@@ -971,9 +1037,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
   Address result = nullptr;
   size_t swept_size = 0;
   while (BasePage* page = unswept_pages_.Pop()) {
-    SetCurrentlyProccesedPage(page);
-    const bool is_empty = page->Sweep();
-    if (is_empty) {
+    if (page->Sweep(FinalizeType::kInlined)) {
       swept_size += static_cast<LargeObjectPage*>(page)->ObjectSize();
       page->RemoveFromHeap();
       // For LargeObjectPage, stop lazy sweeping once we have swept
@@ -988,7 +1052,6 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
       page->MarkAsSwept();
     }
   }
-  SetCurrentlyProccesedPage(nullptr);
   return result;
 }
 
@@ -1298,10 +1361,71 @@ static void DiscardPages(Address begin, Address end) {
 }
 #endif
 
-bool NormalPage::Sweep() {
+void NormalPage::ToBeFinalizedObject::Finalize() {
+  const size_t size = header->size();
+  // This is a fast version of header->PayloadSize().
+  const size_t payload_size = size - sizeof(HeapObjectHeader);
+  const Address payload = header->Payload();
+  // For ASan, unpoison the object before calling the finalizer. The
+  // finalized object will be zero-filled and poison'ed afterwards.
+  // Given all other unmarked objects are poisoned, ASan will detect
+  // an error if the finalizer touches any other on-heap object that
+  // die at the same GC cycle.
+  ASAN_UNPOISON_MEMORY_REGION(payload, payload_size);
+
+  header->Finalize(payload, payload_size);
+  // This memory will be added to the freelist. Maintain the invariant
+  // that memory on the freelist is zero filled.
+  SET_MEMORY_INACCESSIBLE(reinterpret_cast<Address>(header), size);
+}
+
+void NormalPage::FinalizeSweep(SweepResult action) {
+  for (ToBeFinalizedObject& object : to_be_finalized_objects_) {
+    object.Finalize();
+  }
+  to_be_finalized_objects_.clear();
+
+  if (action == SweepResult::kPageNotEmpty) {
+    MergeFreeLists();
+    MarkAsSwept();
+  } else {
+    DCHECK(action == SweepResult::kPageEmpty);
+    RemoveFromHeap();
+  }
+}
+
+void NormalPage::AddToFreeList(Address start,
+                               size_t size,
+                               FinalizeType finalize_type,
+                               bool found_finalizer) {
+  // If a free allocation block contains an object that is yet to be
+  // finalized, push it in a separate freelist to preserve the guarantee
+  // that all freelist entries are zeroed out.
+  if (found_finalizer && finalize_type == FinalizeType::kDeferred) {
+    FutureFreelistEntry entry{start, size};
+    unfinalized_freelist_.push_back(std::move(entry));
+  } else {
+    cached_freelist_.Add(start, size);
+  }
+}
+
+void NormalPage::MergeFreeLists() {
+  NormalPageArena* arena = ArenaForNormalPage();
+  arena->AddToFreeList(&cached_freelist_);
+  DCHECK(cached_freelist_.IsEmpty());
+
+  for (const FutureFreelistEntry& entry : unfinalized_freelist_) {
+    arena->AddToFreeList(entry.start, entry.size);
+  }
+  unfinalized_freelist_.clear();
+}
+
+bool NormalPage::Sweep(FinalizeType finalize_type) {
   object_start_bit_map()->Clear();
+  cached_freelist_.Clear();
+  unfinalized_freelist_.clear();
   Address start_of_gap = Payload();
-  NormalPageArena* page_arena = ArenaForNormalPage();
+  bool found_finalizer = false;
   for (Address header_address = start_of_gap; header_address < PayloadEnd();) {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
@@ -1321,24 +1445,24 @@ bool NormalPage::Sweep() {
       continue;
     }
     if (!header->IsMarked()) {
-      // This is a fast version of header->PayloadSize().
-      size_t payload_size = size - sizeof(HeapObjectHeader);
-      Address payload = header->Payload();
-      // For ASan, unpoison the object before calling the finalizer. The
-      // finalized object will be zero-filled and poison'ed afterwards.
-      // Given all other unmarked objects are poisoned, ASan will detect
-      // an error if the finalizer touches any other on-heap object that
-      // die at the same GC cycle.
-      ASAN_UNPOISON_MEMORY_REGION(payload, payload_size);
-      header->Finalize(payload, payload_size);
-      // This memory will be added to the freelist. Maintain the invariant
-      // that memory on the freelist is zero filled.
-      SET_MEMORY_INACCESSIBLE(header_address, size);
+      ToBeFinalizedObject object{header};
+      if (finalize_type == FinalizeType::kInlined ||
+          !header->HasNonTrivialFinalizer()) {
+        // In case the header doesn't have a finalizer, we eagerly call a
+        // freehook.
+        // TODO(bikineev): It may be unsafe to do this concurrently.
+        object.Finalize();
+      } else {
+        to_be_finalized_objects_.push_back(std::move(object));
+        found_finalizer = true;
+      }
       header_address += size;
       continue;
     }
     if (start_of_gap != header_address) {
-      page_arena->AddToFreeList(start_of_gap, header_address - start_of_gap);
+      AddToFreeList(start_of_gap, header_address - start_of_gap, finalize_type,
+                    found_finalizer);
+      found_finalizer = false;
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
       // Discarding pages increases page faults and may regress performance.
       // So we enable this only on low-RAM devices.
@@ -1355,14 +1479,14 @@ bool NormalPage::Sweep() {
   // and we are not at the end of the page. Empty pages are not added to the
   // free list as the pages are removed immediately.
   if (start_of_gap != Payload() && start_of_gap != PayloadEnd()) {
-    page_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
+    AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap, finalize_type,
+                  found_finalizer);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     if (MemoryPressureListenerRegistry::IsLowEndDevice())
       DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
 #endif
   }
 
-  VerifyObjectStartBitmapIsConsistentWithPayload();
   return start_of_gap == Payload();
 }
 
@@ -1401,6 +1525,9 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
       // an error if the finalizer touches any other on-heap object that
       // die at the same GC cycle.
       ASAN_UNPOISON_MEMORY_REGION(header_address, size);
+      // Compaction is currently launched only from AtomicPhaseEpilogue, so it's
+      // guaranteed to be on the mutator thread - no need to postpone
+      // finalization.
       header->Finalize(payload, payload_size);
 
 // As compaction is under way, leave the freed memory accessible
@@ -1667,7 +1794,7 @@ void LargeObjectPage::RemoveFromHeap() {
   static_cast<LargeObjectArena*>(Arena())->FreeLargeObjectPage(this);
 }
 
-bool LargeObjectPage::Sweep() {
+bool LargeObjectPage::Sweep(FinalizeType) {
   if (!ObjectHeader()->IsMarked()) {
     return true;
   }
@@ -1679,6 +1806,15 @@ void LargeObjectPage::MakeConsistentForMutator() {
   HeapObjectHeader* header = ObjectHeader();
   if (header->IsMarked()) {
     header->Unmark();
+  }
+}
+
+void LargeObjectPage::FinalizeSweep(SweepResult action) {
+  if (action == SweepResult::kPageNotEmpty) {
+    MarkAsSwept();
+  } else {
+    DCHECK(action == SweepResult::kPageEmpty);
+    RemoveFromHeap();
   }
 }
 

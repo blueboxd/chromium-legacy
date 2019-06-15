@@ -51,7 +51,7 @@ AppCacheGroup::AppCacheGroup(AppCacheStorage* storage,
       storage_(storage),
       is_in_dtor_(false) {
   storage_->working_set()->AddGroup(this);
-  host_observer_.reset(new HostObserver(this));
+  host_observer_ = std::make_unique<HostObserver>(this);
 }
 
 AppCacheGroup::~AppCacheGroup() {

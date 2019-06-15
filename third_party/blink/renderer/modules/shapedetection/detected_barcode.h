@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_BARCODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_BARCODE_H_
 
-#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-shared.h"
+#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"

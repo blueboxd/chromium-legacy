@@ -195,7 +195,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
       "CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage",
       TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT, "url", url.spec());
 
-  if (!cache_storage_context_->cache_manager())
+  if (!cache_storage_context_->CacheManager())
     return;
 
   scoped_refptr<net::IOBuffer> buf =
@@ -204,7 +204,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     memcpy(buf->data(), data.data(), data.size());
 
   CacheStorageHandle cache_storage =
-      cache_storage_context_->cache_manager()->OpenCacheStorage(
+      cache_storage_context_->CacheManager()->OpenCacheStorage(
           cache_storage_origin, CacheStorageOwner::kCacheAPI);
   cache_storage.value()->OpenCache(
       cache_storage_cache_name, trace_id,

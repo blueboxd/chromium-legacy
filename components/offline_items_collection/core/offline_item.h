@@ -116,9 +116,6 @@ struct OfflineItem {
   // Whether this item is going through accelerated download.
   bool is_accelerated;
 
-  // Whether there are new visuals available.
-  bool refresh_visuals;
-
   // Whether the origin should be displayed.
   bool promote_origin;
 

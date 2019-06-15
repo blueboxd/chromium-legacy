@@ -14,6 +14,7 @@ cr.exportPath('print_preview');
  *   valid: boolean,
  *   available: boolean,
  *   setByPolicy: boolean,
+ *   setFromUi: boolean,
  *   key: string,
  *   updatesPreview: boolean,
  * }}
@@ -193,15 +194,17 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: false,
           },
           copies: {
-            value: '1',
-            unavailableValue: '1',
+            value: 1,
+            unavailableValue: 1,
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: false,
           },
@@ -211,6 +214,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isCollateEnabled',
             updatesPreview: false,
           },
@@ -220,6 +224,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isLandscapeEnabled',
             updatesPreview: true,
           },
@@ -229,6 +234,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isColorEnabled',
             updatesPreview: true,
           },
@@ -241,6 +247,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'mediaSize',
             updatesPreview: true,
           },
@@ -251,6 +258,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'marginsType',
             updatesPreview: true,
           },
@@ -260,6 +268,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'customMargins',
             updatesPreview: true,
           },
@@ -269,6 +278,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'dpi',
             updatesPreview: false,
           },
@@ -278,6 +288,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isFitToPageEnabled',
             updatesPreview: true,
           },
@@ -287,6 +298,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'scaling',
             updatesPreview: true,
           },
@@ -296,6 +308,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'customScaling',
             updatesPreview: true,
           },
@@ -305,6 +318,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isDuplexEnabled',
             updatesPreview: false,
           },
@@ -314,6 +328,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isDuplexShortEdge',
             updatesPreview: false,
           },
@@ -323,6 +338,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isCssBackgroundEnabled',
             updatesPreview: true,
           },
@@ -332,6 +348,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: true,
           },
@@ -341,6 +358,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isHeaderFooterEnabled',
             updatesPreview: true,
           },
@@ -350,6 +368,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: true,
           },
@@ -359,6 +378,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'vendorOptions',
             updatesPreview: false,
           },
@@ -368,6 +388,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: true,
           },
@@ -379,6 +400,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: false,
           },
@@ -390,6 +412,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: '',
             updatesPreview: true,
           },
@@ -399,6 +422,7 @@ Polymer({
             valid: true,
             available: true,
             setByPolicy: false,
+            setFromUi: false,
             key: 'recentDestinations',
             updatesPreview: false,
           },
@@ -409,6 +433,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'isPinEnabled',
             updatesPreview: false,
           },
@@ -418,6 +443,7 @@ Polymer({
             valid: true,
             available: false,
             setByPolicy: false,
+            setFromUi: false,
             key: 'pinValue',
             updatesPreview: false,
           },
@@ -523,17 +549,22 @@ Polymer({
    * Sets settings.settingName.value to |value|, unless updating the setting is
    * disallowed by enterprise policy. Fires preview-setting-changed and
    * sticky-setting-changed events if the update impacts the preview or requires
-   * an update to sticky settings.
+   * an update to sticky settings. Used for setting settings from UI elements.
    * @param {string} settingName Name of the setting to set
    * @param {*} value The value to set the setting to.
+   * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
+   *     to false.
    */
-  setSetting: function(settingName, value) {
+  setSetting: function(settingName, value, noSticky) {
     const setting = this.getSetting(settingName);
     if (setting.setByPolicy) {
       return;
     }
-    const fireStickyEvent = setting.value !== value && setting.key;
+    const fireStickyEvent = !noSticky && setting.value !== value && setting.key;
     this.setSettingPath_(`${settingName}.value`, value);
+    if (!noSticky) {
+      this.setSettingPath_(`${settingName}.setFromUi`, true);
+    }
     if (fireStickyEvent && this.initialized_) {
       this.fire('sticky-setting-changed', this.getStickySettings_());
     }
@@ -544,8 +575,10 @@ Polymer({
    * @param {number} start
    * @param {number} end
    * @param {*} newValue The value to add (if any).
+   * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
+   *     to false.
    */
-  setSettingSplice: function(settingName, start, end, newValue) {
+  setSettingSplice: function(settingName, start, end, newValue, noSticky) {
     const setting = this.getSetting(settingName);
     if (setting.setByPolicy) {
       return;
@@ -555,7 +588,10 @@ Polymer({
     } else {
       this.splice(`settings.${settingName}.value`, start, end);
     }
-    if (setting.key && this.initialized_) {
+    if (!noSticky) {
+      this.setSettingPath_(`${settingName}.setFromUi`, true);
+    }
+    if (!noSticky && setting.key && this.initialized_) {
       this.fire('sticky-setting-changed', this.getStickySettings_());
     }
   },
@@ -795,40 +831,41 @@ Polymer({
       // If the setting does not have a valid value, the UI has just started so
       // do not try to get a matching value; just set the printer default in
       // case the user doesn't have sticky settings.
-      if (this.settings.mediaSize.value.height_microns !== undefined) {
+      if (this.settings.mediaSize.setFromUi) {
         const currentMediaSize = this.getSettingValue('mediaSize');
         matchingOption = caps.media_size.option.find(o => {
           return o.height_microns === currentMediaSize.height_microns &&
               o.width_microns === currentMediaSize.width_microns;
         });
       }
-      this.setSetting('mediaSize', matchingOption || defaultOption);
+      this.setSetting('mediaSize', matchingOption || defaultOption, true);
     }
 
     if (this.settings.dpi.available) {
       const defaultOption =
           caps.dpi.option.find(o => !!o.is_default) || caps.dpi.option[0];
       let matchingOption = null;
-      if (this.settings.dpi.value.horizontal_dpi !== undefined) {
+      if (this.settings.dpi.setFromUi) {
         const currentDpi = this.getSettingValue('dpi');
         matchingOption = caps.dpi.option.find(o => {
           return o.horizontal_dpi === currentDpi.horizontal_dpi &&
               o.vertical_dpi === currentDpi.vertical_dpi;
         });
       }
-      this.setSetting('dpi', matchingOption || defaultOption);
+      this.setSetting('dpi', matchingOption || defaultOption, true);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.setSettingPath_('dpi.unavailableValue', caps.dpi.option[0]);
     }
 
-    if (!this.initialized_ && this.settings.color.available) {
+    if (!this.settings.color.setFromUi && this.settings.color.available) {
       const defaultOption = this.destination.defaultColorOption;
       if (defaultOption) {
         this.setSetting(
             'color',
             !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
-                defaultOption.type));
+                defaultOption.type),
+            true);
       }
     } else if (
         !this.settings.color.available &&
@@ -848,19 +885,21 @@ Polymer({
       this.setSettingPath_('color.unavailableValue', false);
     }
 
-    if (!this.initialized_ && this.settings.duplex.available) {
+    if (!this.settings.duplex.setFromUi && this.settings.duplex.available) {
       const defaultOption = caps.duplex.option.find(o => !!o.is_default);
       this.setSetting(
           'duplex',
           defaultOption ?
               (defaultOption.type == print_preview.DuplexType.LONG_EDGE ||
                defaultOption.type == print_preview.DuplexType.SHORT_EDGE) :
-              false);
+              false,
+          true);
       this.setSetting(
           'duplexShortEdge',
           defaultOption ?
               defaultOption.type == print_preview.DuplexType.SHORT_EDGE :
-              false);
+              false,
+          true);
 
       if (!this.settings.duplexShortEdge.available) {
         // Duplex is available, so must have only one two sided printing option.
@@ -911,7 +950,7 @@ Polymer({
           vendorSettings[item.id] = defaultValue;
         }
       }
-      this.setSetting('vendorItems', vendorSettings);
+      this.setSetting('vendorItems', vendorSettings, true);
     }
   },
 
@@ -968,17 +1007,21 @@ Polymer({
   },
 
   applyStickySettings: function() {
+    const defaultScaling = '100';
     if (this.stickySettings_) {
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
         if (value != undefined) {
           this.setSetting(settingName, value);
-        } else if (settingName === 'customScaling') {
-          // Use the stored scaling value instead of resetting users with an
-          // older set of sticky settings.
-          this.setSetting(
-              settingName, this.stickySettings_['scaling'] !== '100');
+        } else if (
+            settingName === 'customScaling' &&
+            !!this.stickySettings_['scaling']) {
+          // If users with an old set of sticky settings intentionally set a non
+          // default value, set customScaling to true so the value is restored.
+          // Otherwise, set to false with noSticky=true.
+          const scalingIsDefault = this.stickySettings_['scaling'] === '100';
+          this.setSetting(settingName, !scalingIsDefault, scalingIsDefault);
         }
       });
     }
@@ -986,7 +1029,7 @@ Polymer({
       for (const [settingName, policy] of Object.entries(
                this.policySettings_)) {
         if (policy.value !== undefined) {
-          this.setSetting(settingName, policy.value);
+          this.setSetting(settingName, policy.value, true);
         }
         if (policy.managed) {
           this.set(`settings.${settingName}.setByPolicy`, true);
@@ -1085,7 +1128,9 @@ Polymer({
 
     STICKY_SETTING_NAMES.forEach(settingName => {
       const setting = this.get(settingName, this.settings);
-      serialization[assert(setting.key)] = setting.value;
+      if (setting.setFromUi) {
+        serialization[assert(setting.key)] = setting.value;
+      }
     });
 
     return JSON.stringify(serialization);
@@ -1145,7 +1190,7 @@ Polymer({
       headerFooterEnabled: false,  // only used in print preview
       marginsType: this.getSettingValue('margins'),
       duplex: this.getDuplexMode_(),
-      copies: parseInt(this.getSettingValue('copies'), 10),
+      copies: this.getSettingValue('copies'),
       collate: this.getSettingValue('collate'),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
@@ -1247,7 +1292,7 @@ Polymer({
       }
     }
     if (this.settings.copies.available) {
-      cjt.print.copies = {copies: parseInt(this.getSettingValue('copies'), 10)};
+      cjt.print.copies = {copies: this.getSettingValue('copies')};
     }
     if (this.settings.duplex.available) {
       cjt.print.duplex = {

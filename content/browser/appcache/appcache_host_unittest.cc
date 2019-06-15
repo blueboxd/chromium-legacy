@@ -247,7 +247,7 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   // Precondition, a cache with an entry that is not marked as foreign.
   const int kCacheId = 22;
   const GURL kDocumentURL("http://origin/document");
-  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+  auto cache = base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
@@ -601,7 +601,7 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
   // should cause a BadMessage.
   const int kCacheId = 22;
   const GURL kDocumentURL("http://origin/document");
-  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+  auto cache = base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
                     nullptr, &service_);
   host.set_frontend_for_testing(&mock_frontend_);

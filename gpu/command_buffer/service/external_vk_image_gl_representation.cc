@@ -89,7 +89,7 @@ bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
 
   std::vector<SemaphoreHandle> handles;
 
-  if (!backing_impl()->BeginAccess(readonly, &handles))
+  if (!backing_impl()->BeginAccess(readonly, &handles, true /* is_gl */))
     return false;
 
   for (auto& handle : handles) {
@@ -124,48 +124,56 @@ void ExternalVkImageGlRepresentation::EndAccess() {
       (current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   current_access_mode_ = 0;
 
-  VkSemaphore semaphore =
-      vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
-  if (semaphore == VK_NULL_HANDLE) {
-    // TODO(crbug.com/933452): We should be able to handle this failure more
-    // gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to create a VkSemaphore in "
-               << "ExternalVkImageGlRepresentation for synchronization with "
-               << "Vulkan";
-    return;
-  }
+  VkSemaphore semaphore = VK_NULL_HANDLE;
+  SemaphoreHandle semaphore_handle;
+  GLuint gl_semaphore = 0;
+  if (backing_impl()->need_sychronization()) {
+    semaphore =
+        vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
+    if (semaphore == VK_NULL_HANDLE) {
+      // TODO(crbug.com/933452): We should be able to handle this failure more
+      // gracefully rather than shutting down the whole process.
+      LOG(FATAL) << "Unable to create a VkSemaphore in "
+                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "Vulkan";
+      return;
+    }
 
-  SemaphoreHandle semaphore_handle =
-      vk_implementation()->GetSemaphoreHandle(vk_device(), semaphore);
-  vkDestroySemaphore(backing_impl()->device(), semaphore, nullptr);
-  if (!semaphore_handle.is_valid()) {
-    LOG(FATAL) << "Unable to export VkSemaphore into GL in "
-               << "ExternalVkImageGlRepresentation for synchronization with "
-               << "Vulkan";
-    return;
-  }
+    semaphore_handle =
+        vk_implementation()->GetSemaphoreHandle(vk_device(), semaphore);
+    vkDestroySemaphore(backing_impl()->device(), semaphore, nullptr);
+    if (!semaphore_handle.is_valid()) {
+      LOG(FATAL) << "Unable to export VkSemaphore into GL in "
+                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "Vulkan";
+      return;
+    }
 
-  SemaphoreHandle dup_semaphore_handle = semaphore_handle.Duplicate();
-  GLuint gl_semaphore =
-      ImportVkSemaphoreIntoGL(std::move(dup_semaphore_handle));
+    SemaphoreHandle dup_semaphore_handle = semaphore_handle.Duplicate();
+    gl_semaphore = ImportVkSemaphoreIntoGL(std::move(dup_semaphore_handle));
 
-  if (!gl_semaphore) {
-    // TODO(crbug.com/933452): We should be able to semaphore_handle this
-    // failure more gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to export VkSemaphore into GL in "
-               << "ExternalVkImageGlRepresentation for synchronization with "
-               << "Vulkan";
-    return;
+    if (!gl_semaphore) {
+      // TODO(crbug.com/933452): We should be able to semaphore_handle this
+      // failure more gracefully rather than shutting down the whole process.
+      LOG(FATAL) << "Unable to export VkSemaphore into GL in "
+                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "Vulkan";
+      return;
+    }
   }
 
   GrVkImageInfo info;
   auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
   DCHECK(result);
   GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
-  api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
-                                &texture_service_id_, &dst_layout);
-  api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
-  backing_impl()->EndAccess(readonly, std::move(semaphore_handle));
+  if (backing_impl()->need_sychronization()) {
+    api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
+                                  &texture_service_id_, &dst_layout);
+    api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
+  }
+
+  backing_impl()->EndAccess(readonly, std::move(semaphore_handle),
+                            true /* is_gl */);
 }
 
 GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(

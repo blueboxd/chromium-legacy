@@ -45,7 +45,7 @@ public class TabGridSheetCoordinator {
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, bottomSheetController.getBottomSheet(), null, false,
+                null, null, bottomSheetController.getBottomSheet(), null, false,
                 R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
         mMediator = new TabGridSheetMediator(mContext, bottomSheetController,

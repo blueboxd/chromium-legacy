@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">আপনার প্রশাসক ইনপুটের পদ্ধতিগুলি কনফিগার করে।</translation>
 <translation id="1747827819627189109">অন-স্ক্রিন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1761222317188459878">নেটওয়ার্ক কানেকশন টগল করুন। <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">ডান দিকে স্ক্রল করুন</translation>
 <translation id="1812997170047690955">আমার স্ক্রিনে কী রয়েছে?</translation>
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">সহায়ক (লোড হচ্ছে...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">ব্যাটারি <ph name="PERCENTAGE" /> শতাংশ চার্জ করা হয়েছে এবং এখনও চার্জ করা চলছে।</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4017989525502048489">লেজার পয়েন্টার</translation>
+<translation id="4021716437419160885">নিচের দিকে স্ক্রল করুন</translation>
 <translation id="4042660782729322247">আপনার স্ক্রিন শেয়ার করছেন</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{একটি অ্যাপের জন্য বন্ধ আছে}one{#টি অ্যাপের জন্য বন্ধ আছে}other{#টি অ্যাপের জন্য বন্ধ আছে}}</translation>
 <translation id="4072264167173457037">মাঝারি সিগন্যাল</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">জোরালো</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4924411785043111640">রিস্টার্ট করুন এবং রিসেট করুন</translation>
+<translation id="495046168593986294">উপরের দিকে স্ক্রল করুন</translation>
 <translation id="4961318399572185831">স্ক্রিন কাস্ট করুন</translation>
 <translation id="5030687792513154421">সময় শেষ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />টি নতুন ফোনে কানেক্ট করা হয়েছে</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">আপডেট পেতে, অ্যাটাচ করা কীবোর্ডের মাধ্যমে আপনার Chromebook রিস্টার্ট করুন।</translation>
 <translation id="5992218262414051481">উচ্চ কনট্রাস্ট মোড চালু করা হয়েছে। টগল করে বন্ধ করার জন্য Ctrl+Search+H টিপুন।</translation>
 <translation id="6018164090099858612">মিরর মোড থেকে প্রস্থান করছে</translation>
+<translation id="602001110135236999">বাঁ দিকে স্ক্রল করুন</translation>
+<translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6043212731627905357">এই মনিটরটি আপনার <ph name="DEVICE_TYPE" /> এর সাথে তাল মেলাতে পারছে না (মনিটরটি সমর্থিত নয়)।</translation>
 <translation id="6043994281159824495">এখনই সাইন-আউট করুন</translation>
 <translation id="6047696787498798094">আপনি ব্যবহারকারী পাল্টালে স্ক্রিন শেয়ার করা বন্ধ হবে৷ আপনি কি চালিয়ে যেতে চান?</translation>

@@ -25,7 +25,12 @@ print_preview.PreviewAreaState = {
 Polymer({
   is: 'print-preview-preview-area',
 
-  behaviors: [WebUIListenerBehavior, SettingsBehavior, I18nBehavior],
+  behaviors: [
+    WebUIListenerBehavior,
+    SettingsBehavior,
+    I18nBehavior,
+    print_preview.DarkModeBehavior,
+  ],
 
   properties: {
     /** @type {print_preview.Destination} */
@@ -89,6 +94,7 @@ Polymer({
   },
 
   observers: [
+    'onDarkModeChanged_(inDarkMode)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
     'onStateOrErrorChange_(state, error)',
   ],
@@ -113,17 +119,17 @@ Polymer({
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
-    if (this.newPrintPreviewLayout) {
-      this.addWebUIListener(
-          'dark-mode-changed', this.onDarkModeChanged_.bind(this));
-    }
 
-    this.pluginProxy_ = print_preview.PluginProxy.getInstance();
     if (!this.pluginProxy_.checkPluginCompatibility(assert(
             this.$$('.preview-area-compatibility-object-out-of-process')))) {
       this.error = print_preview.Error.NO_PLUGIN;
       this.previewState = print_preview.PreviewAreaState.ERROR;
     }
+  },
+
+  /** @override */
+  created: function() {
+    this.pluginProxy_ = print_preview.PluginProxy.getInstance();
   },
 
   /**
@@ -321,7 +327,7 @@ Polymer({
     }
 
     this.pluginLoaded_ = false;
-    if (inDarkMode() && this.newPrintPreviewLayout) {
+    if (this.inDarkMode && this.newPrintPreviewLayout) {
       this.pluginProxy_.darkModeChanged(true);
     }
     this.pluginProxy_.resetPrintPreviewMode(
@@ -396,13 +402,14 @@ Polymer({
     }
   },
 
-  /**
-   * @param {boolean} darkMode Whether the page is now in dark mode.
-   * @private
-   */
-  onDarkModeChanged_: function(darkMode) {
+  /** @private */
+  onDarkModeChanged_: function() {
+    if (!this.newPrintPreviewLayout) {
+      return;
+    }
+
     if (this.pluginProxy_.pluginReady()) {
-      this.pluginProxy_.darkModeChanged(darkMode);
+      this.pluginProxy_.darkModeChanged(this.inDarkMode);
     }
 
     if (this.previewState === print_preview.PreviewAreaState.DISPLAY_PREVIEW) {

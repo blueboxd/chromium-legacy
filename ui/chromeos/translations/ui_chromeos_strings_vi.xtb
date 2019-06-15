@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Tiếng Serbia</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3855472144336161447">Neo 2 tiếng Đức</translation>
+<translation id="3856075812838139784">Chỉ đọc</translation>
 <translation id="3858678421048828670">Bàn phím tiếng Ý</translation>
 <translation id="386548886866354912">Gói đi kèm <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Mô tả</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Thời gian sửa đổi</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
+<translation id="4579744207439506346">Đã thêm <ph name="ENTRY_NAME" /> vào lựa chọn.</translation>
 <translation id="4582497162516204941">Cài đặt bằng Linux (Beta)</translation>
 <translation id="4594543368593301662">Đang hiển thị kết quả cho <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Nghệ sĩ</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 bộ (Cuối cùng)</translation>
 <translation id="5833610766403489739">Tệp này đã thất lạc ở đâu đó. Vui lòng kiểm tra cài đặt vị trí tải xuống của bạn và thử lại.</translation>
 <translation id="5838051104334203064">Các ứng dụng trên Cửa hàng Play không thể truy cập vào thiết bị này</translation>
+<translation id="5838451609423551646">Đã xóa tất cả các mục khỏi lựa chọn.</translation>
 <translation id="5838825566232597749">Bàn phím quốc tế Workman Hoa Kỳ</translation>
 <translation id="5850516540536751549">Loại tệp này không được hỗ trợ. Vui lòng truy cập <ph name="BEGIN_LINK" />Cửa hàng Chrome trực tuyến<ph name="END_LINK" /> để tìm ứng dụng có thể mở loại tệp này.
     <ph name="BEGIN_LINK_HELP" />Tìm hiểu thêm<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Lưu trữ tar được nén bởi Gzip</translation>
 <translation id="6825883775269213504">Tiếng Nga</translation>
 <translation id="6827236167376090743">Video này sẽ tiếp tục phát đi phát lại.</translation>
+<translation id="6847101934483209767">Đã xóa <ph name="ENTRY_NAME" /> khỏi lựa chọn.</translation>
 <translation id="6862635236584086457">Tất cả tệp được lưu trong thư mục này đều tự động được sao lưu trực tuyến</translation>
 <translation id="6870130893560916279">Bàn phím tiếng Ukraina</translation>
 <translation id="6876155724392614295">Xe đạp</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Phương pháp nhập Pinyin</translation>
 <translation id="8151638057146502721">Định cấu hình</translation>
 <translation id="8153607920959057464">Không thể hiển thị tệp này.</translation>
+<translation id="8154842056504218462">Đã chọn tất cả các mục.</translation>
 <translation id="8157684860301034423">Không truy xuất được thông tin ứng dụng.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Bàn phím tiếng Tây Ban Nha</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Tệp Drive này chưa được chia sẻ</translation>
 <translation id="8698464937041809063">Bản vẽ Google</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
+<translation id="8719721339511222681">Đã chọn <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Bàn phím quốc tế Hoa Kỳ</translation>
 <translation id="872537912056138402">Tiếng Croatia</translation>
 <translation id="874420130893181774">Phương thức nhập Bính âm truyền thống</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Không có hình ảnh nào trong thư mục này.</translation>
 <translation id="943972244133411984">Người sửa đổi:</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
+<translation id="947144732524271678">Đã chọn một loạt <ph name="ENTRY_COUNT" /> mục từ <ph name="FROM_ENTRY_NAME" /> đến <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="988685240266037636">Một tệp có tên <ph name="FILE_NAME" /> đã tồn tại. Bạn có muốn thay thế tệp đó không?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

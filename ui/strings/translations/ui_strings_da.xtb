@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1409544243779336081">Anbefalet app</translation>
+<translation id="1498028757988366001">Du har tidligere søgt efter dette. Hvis du sletter "<ph name="QUERY" />" fra din historik, fjernes den permanent på fra din konto på alle dine enheder.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut og }one{# minutter og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Notifikation</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{for 1 min. siden}one{for # min. siden}other{for # min. siden}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut tilbage}one{# minutter tilbage}other{# minutter tilbage}}</translation>
+<translation id="7430878839542012341">Vil du slette denne søgning fra historikken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Annuller</translation>

@@ -422,6 +422,12 @@
       如果未配置或停用了此政策，则用户可以更改此设置（例如，使用 chrome://flags 中的“停用网站隔离”条目）。
       </translation>
 <translation id="1767673020408652620">在处于零状态的搜索框内启用应用推荐</translation>
+<translation id="17719159826324007">
+      如果将此政策设为 ArcSession，系统会在用户退出后强制设备重新启动（如果 Android 已启动）。
+      如果将此政策设为 Always，系统会在每位用户退出后都强制设备重新启动。
+      如果未设置此政策，它将不会产生任何效力，系统也不会在用户退出后强制设备重新启动。如果设为 Never，效果与未设置时一样。
+      此政策仅对独立用户有效。
+      </translation>
 <translation id="1781356041596378058">此政策亦用于控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
 <translation id="1793346220873697538">默认停用 PIN 码打印</translation>
 <translation id="1797233582739332495">显示要求用户重新启动浏览器的周期性提示</translation>
@@ -885,6 +891,7 @@
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2693108589792503178">配置用于更改密码的网址。</translation>
+<translation id="2694143893026486692">已启用停靠的放大镜</translation>
 <translation id="2706708761587205154">仅允许在有 PIN 码的情况下打印</translation>
 <translation id="2710534340210290498">如果将此政策设为 false，用户将无法锁定屏幕（只能退出用户会话）。如果不设置此政策或将其设为 true，则使用密码通过身份验证的用户可以锁定屏幕。</translation>
 <translation id="2731627323327011390">禁止 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> 证书</translation>
@@ -1119,6 +1126,7 @@
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">此政策允许 WebDriver 功能的用户替换那些可能会干扰该功能运行的政策。
 
       目前，此政策可停用 SitePerProcess 和 IsolateOrigins 政策。
@@ -1612,12 +1620,6 @@
       如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />设备就会自动检查更新。
 
       警告：建议您让自动更新功能始终处于启用状态，以便您的用户接收软件更新和重要的安全修补程序。停用自动更新功能可能会将用户置于风险之中。</translation>
-<translation id="4018000735882846261">此政策用于授权 Google 助理听取语音启动词组。
-
-      如果启用了此政策，Google 助理将会听取语音启动词组。
-      如果停用了此政策，Google 助理将不会听取语音启动词组。
-      如果未设置此政策，Google 助理将不会听取语音启动词组。
-      </translation>
 <translation id="4020682745012723568">Android 应用无法访问已转移到用户个人资料中的 Cookie。</translation>
 <translation id="402759845255257575">不允许任何网站运行 JavaScript</translation>
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
@@ -1764,9 +1766,9 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4285674129118156176">允许独立用户使用 ARC</translation>
-<translation id="4289903996435140853">让您能够以列表的形式设置一系列网址，从而指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
+<translation id="4289903996435140853">让您能够以列表的形式设置一系列网址，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
 
-        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
 
         如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
 
@@ -1916,7 +1918,7 @@
 <translation id="4639407427807680016">免于列入黑名单的本地消息传递主机名</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
 <translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
-<translation id="4661889655253181651">“内容设置”让您能够指定对特定类型内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
+<translation id="4661889655253181651">“内容设置”可用来指定对特定类型内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="4665897631924472251">扩展程序管理设置</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
 <translation id="4670865688564083639">下限：</translation>
@@ -2155,9 +2157,9 @@
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5213038356678567351">始终不应触发浏览器切换的网站。</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
-<translation id="5221394278852982313">让您能够以列表的形式设置一系列网址，从而指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
+<translation id="5221394278852982313">让您能够以列表的形式设置一系列网址，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
 
-        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
 
         如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
 
@@ -2867,9 +2869,9 @@
 
       通过此政策，管理员可为用户提供打印机配置。
 
-      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可自定义，以便用户选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
 
-      要么 <ph name="PRINTER_EFFECTIVE_MODEL" /> 应该包含打印机的名称，要么 <ph name="PRINTER_AUTOCONF" /> 应该设为 true。具有这两种属性或者不具有任一属性的打印机将会被忽略。
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> 应该包含打印机的名称，或者 <ph name="PRINTER_AUTOCONF" /> 应该设为 true。同时兼具这两种属性或者不具其中任一属性的打印机将会被忽略。
 
       打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统会缓存经常使用的 PPD。
 
@@ -4150,8 +4152,8 @@
 <translation id="915194831143859291">如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />将允许用户关闭设备。
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
 <translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
-<translation id="9153446010242995516">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。会尽量尝试通过回滚过程继承设备级配置（包括网络凭据），但即使无法恢复数据（因为目标版本不支持恢复数据，或因为发生了无法向后兼容的更改），也会通过执行完整的 Powerwash 操作进行回滚。
-          在 <ph name="PRODUCT_OS_NAME" />版本 75 及更高版本上均受支持。对于旧版客户端，此值意味着已停用回滚。</translation>
+<translation id="9153446010242995516">如果操作系统版本比目标版本新，则回滚到目标版本，并一直使用此版本。如果可能，会尝试通过回滚过程保留设备级配置（包括网络凭据），但即使无法恢复数据（因为目标版本不支持恢复数据，或因为发生了无法向后兼容的更改），也会通过执行完整的 Powerwash 操作进行回滚。
+          <ph name="PRODUCT_OS_NAME" /> 75 及更高版本均支持。对于旧版客户端，此值意味着禁用回滚。</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
 <translation id="9159126470527871268">必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />以应用待应用的更新时，通知用户。
 

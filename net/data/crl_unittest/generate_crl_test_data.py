@@ -148,6 +148,13 @@ LEAF_CRLDP_CRLISSUER = CreateCert('Test Cert', CA,
          }
          '''))
 
+# Self-issued intermediate with a new key signed by the |CA| key.
+CA_NEW_BY_OLD = CreateCert('Test Intermediate CA', CA,
+                           key_usage='critical, keyCertSign, cRLSign')
+
+# Target cert signed by |CA_NEW_BY_OLD|'s key.
+LEAF_BY_NEW = CreateCert(
+    'Test Cert', CA_NEW_BY_OLD, crl_dp='URI:http://example.com/foo.crl')
 
 
 def SignAsciiCRL(tbs_inner_txt, signer=CA):
@@ -183,7 +190,7 @@ def WriteStringToFile(data, path):
     f.write(data)
 
 
-def Store(fname, description, leaf, ca, crl_der):
+def Store(fname, description, leaf, ca, crl_der, ca2=None):
   ca_cert_der = crypto.dump_certificate(crypto.FILETYPE_ASN1, ca['cert'])
   cert_der = crypto.dump_certificate(crypto.FILETYPE_ASN1, leaf['cert'])
 
@@ -193,6 +200,11 @@ def Store(fname, description, leaf, ca, crl_der):
       MakePemBlock(crl_der, 'CRL'),
       MakePemBlock(ca_cert_der, 'CA CERTIFICATE'),
       MakePemBlock(cert_der, 'CERTIFICATE')])
+
+  if ca2:
+    ca_cert_2_der = crypto.dump_certificate(crypto.FILETYPE_ASN1, ca2['cert'])
+    out += '\n\n' + MakePemBlock(ca_cert_2_der, 'CA CERTIFICATE 2')
+
   open('%s.pem' % fname, 'w').write(out)
 
 
@@ -497,6 +509,21 @@ Store(
 
 
 Store(
+    'good_key_rollover',
+    "Leaf issued by CA's new key but CRL is signed by old key",
+    LEAF_BY_NEW, CA_NEW_BY_OLD, ca2=CA,
+    crl_der=SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  # no crlExtensions
+''' % crl_strings))
+
+
+Store(
     'revoked',
     'Leaf is revoked',
     LEAF, CA,
@@ -554,6 +581,28 @@ Store(
   %(leaf_revoked_generalizedtime)s
   # no crlExtensions
 ''' % crl_strings))
+
+
+Store(
+    'revoked_key_rollover',
+    "Leaf issued by CA's new key but CRL is signed by old key",
+    LEAF_BY_NEW, CA_NEW_BY_OLD, ca2=CA,
+    crl_der=SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  SEQUENCE {
+    SEQUENCE {
+      INTEGER { %(LEAF_SERIAL)i }
+      UTCTime { "170201001122Z" }
+      # no crlEntryExtensions
+    }
+  }
+  # no crlExtensions
+''' % DictUnion(crl_strings,
+                {'LEAF_SERIAL':LEAF_BY_NEW['cert'].get_serial_number()})))
 
 
 Store(
@@ -693,6 +742,22 @@ Store(
 
 
 Store(
+    'bad_key_rollover_signature',
+    "Leaf issued by CA's new key which is signed by old key, but CRL isn't "
+    "signed by either",
+    LEAF_BY_NEW, CA_NEW_BY_OLD, ca2=CA,
+    crl_der=SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  # no crlExtensions
+''' % crl_strings, signer=OTHER_CA))
+
+
+Store(
     'invalid_mismatched_signature_algorithm',
     'Leaf covered by CRLs and not revoked, but signatureAlgorithm in '
     'CertificateList does not match the one in TBSCertList.',
@@ -795,6 +860,22 @@ Store(
     'without the cRLSign bit set',
     LEAF, CA_KEYUSAGE_NOCRLSIGN,
     SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  # no crlExtensions
+''' % crl_strings, signer=CA_KEYUSAGE_NOCRLSIGN))
+
+
+Store(
+    'invalid_key_rollover_issuer_keyusage_no_crlsign',
+    "Leaf issued by CA's new key but CRL is signed by old key, and the old "
+    "key cert has keyUsage extension without the cRLSign bit set",
+    LEAF_BY_NEW, CA_NEW_BY_OLD, ca2=CA_KEYUSAGE_NOCRLSIGN,
+    crl_der=SignAsciiCRL('''
   INTEGER { 1 }
   %(sha256WithRSAEncryption)s
   %(CA_name)s

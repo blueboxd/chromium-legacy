@@ -68,12 +68,13 @@ function observerDepsDefined(args) {
 function getSelectDropdownBackground(iconset, iconName, el) {
   const serializer = new XMLSerializer();
   const iconElement = iconset.createIcon(iconName, isRTL());
+  const inDarkMode = print_preview.DarkModeBehavior.inDarkMode();
   const fillColor = getComputedStyle(el).getPropertyValue(
-      inDarkMode() ? '--google-grey-refresh-500' : '--google-grey-600');
+      inDarkMode ? '--google-grey-refresh-500' : '--google-grey-600');
   iconElement.style.fill = fillColor;
   const serializedIcon = serializer.serializeToString(iconElement);
   const uri = encodeURIComponent(serializedIcon);
-  const arrowDownPath = inDarkMode() ?
+  const arrowDownPath = inDarkMode ?
       'chrome://resources/images/dark/arrow_down.svg' :
       'chrome://resources/images/arrow_down.svg';
   return `url("data:image/svg+xml;charset=utf-8,${uri}"),` +

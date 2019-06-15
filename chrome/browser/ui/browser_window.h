@@ -35,6 +35,7 @@
 class Browser;
 class DownloadShelf;
 class ExclusiveAccessContext;
+class ExtensionsContainer;
 class FindBar;
 class GURL;
 class LocationBar;
@@ -276,7 +277,12 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void FocusToolbar() = 0;
 
   // Returns the ToolbarActionsBar associated with the window, if any.
+  // TODO(pbos): Replace usages of |GetToolbarActionsBar| with
+  // |GetExtensionsContainer|.
   virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
+
+  // Returns the ExtensionsContainer associated with the window, if any.
+  virtual ExtensionsContainer* GetExtensionsContainer() = 0;
 
   // Called from toolbar subviews during their show/hide animations.
   virtual void ToolbarSizeChanged(bool is_animating) = 0;

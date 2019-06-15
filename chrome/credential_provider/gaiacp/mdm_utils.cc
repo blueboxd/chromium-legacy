@@ -13,7 +13,6 @@
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
@@ -28,6 +27,7 @@
 namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
+constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 
@@ -48,7 +48,24 @@ enum class EnrolledStatus {
 };
 EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 
+#if !defined(GOOGLE_CHROME_BUILD)
+enum class EscrowServiceStatus {
+  kDisabled,
+  kEnabled,
+};
+
+EscrowServiceStatus g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
+#endif
+
 namespace {
+
+constexpr wchar_t kDefaultMdmUrl[] =
+    L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
+
+// TODO(crbug.com/973115): Empty escrow service url will implicitly disable the
+// feature. It can be enabled by setting kRegMdmEscrowServiceServerUrl. When the
+// feature is ready, this url should be updated to production endpoint.
+constexpr wchar_t kDefaultEscrowServiceServerUrl[] = L"";
 
 template <typename T>
 T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
@@ -63,13 +80,7 @@ T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
   GetMdmFunctionPointer<decltype(&::name)>(library, #name)
 
 base::string16 GetMdmUrl() {
-  wchar_t mdm_url[256];
-  ULONG length = base::size(mdm_url);
-  HRESULT hr = GetGlobalFlag(kRegMdmUrl, mdm_url, &length);
-  if (FAILED(hr))
-    return L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
-
-  return mdm_url;
+  return GetGlobalFlagOrDefault(kRegMdmUrl, kDefaultMdmUrl);
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
@@ -259,6 +270,32 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
+GURL MdmEscrowServiceUrl() {
+  base::string16 escrow_service_url = GetGlobalFlagOrDefault(
+      kRegMdmEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
+
+  if (escrow_service_url.empty())
+    return GURL();
+
+  return GURL(base::UTF16ToUTF8(escrow_service_url));
+}
+
+bool MdmPasswordRecoveryEnabled() {
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (g_escrow_service_enabled == EscrowServiceStatus::kDisabled)
+    return false;
+#endif
+
+  // Password recovery is enabled only if MDM is enabled.
+  if (!MdmEnrollmentEnabled())
+    return false;
+
+  if (MdmEscrowServiceUrl().is_empty())
+    return false;
+
+  return true;
+}
+
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   LOGFN(INFO);
 
@@ -304,5 +341,20 @@ GoogleMdmEnrolledStatusForTesting::GoogleMdmEnrolledStatusForTesting(
 GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
   g_enrolled_status = EnrolledStatus::kDontForce;
 }
+
+// GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
+
+#if !defined(GOOGLE_CHROME_BUILD)
+GoogleMdmEscrowServiceEnablerForTesting::
+    GoogleMdmEscrowServiceEnablerForTesting(bool enable) {
+  g_escrow_service_enabled =
+      enable ? EscrowServiceStatus::kEnabled : EscrowServiceStatus::kDisabled;
+}
+
+GoogleMdmEscrowServiceEnablerForTesting::
+    ~GoogleMdmEscrowServiceEnablerForTesting() {
+  g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
+}
+#endif
 
 }  // namespace credential_provider

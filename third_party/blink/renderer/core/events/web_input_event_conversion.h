@@ -92,10 +92,10 @@ CORE_EXPORT WebPointerEvent TransformWebPointerEvent(LocalFrameView*,
 
 Vector<WebMouseEvent> CORE_EXPORT
 TransformWebMouseEventVector(LocalFrameView*,
-                             const std::vector<const WebInputEvent*>&);
+                             const WebVector<const WebInputEvent*>&);
 Vector<WebPointerEvent> CORE_EXPORT
 TransformWebPointerEventVector(LocalFrameView*,
-                               const std::vector<const WebInputEvent*>&);
+                               const WebVector<const WebInputEvent*>&);
 
 }  // namespace blink
 

@@ -313,13 +313,14 @@ bool WorkerGlobalScope::IsContextThread() const {
   return GetThread()->IsCurrentThread();
 }
 
-void WorkerGlobalScope::AddConsoleMessage(ConsoleMessage* console_message) {
+void WorkerGlobalScope::AddConsoleMessageImpl(ConsoleMessage* console_message,
+                                              bool discard_duplicates) {
   DCHECK(IsContextThread());
   ReportingProxy().ReportConsoleMessage(
       console_message->Source(), console_message->Level(),
       console_message->Message(), console_message->Location());
-  GetThread()->GetConsoleMessageStorage()->AddConsoleMessage(this,
-                                                             console_message);
+  GetThread()->GetConsoleMessageStorage()->AddConsoleMessage(
+      this, console_message, discard_duplicates);
 }
 
 CoreProbeSink* WorkerGlobalScope::GetProbeSink() {

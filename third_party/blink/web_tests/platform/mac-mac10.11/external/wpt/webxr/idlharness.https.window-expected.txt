@@ -1,0 +1,207 @@
+This is a testharness.js-based test.
+Found 203 tests; 199 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS idl_test setup
+PASS Partial interface Navigator: original interface defined
+PASS Partial dictionary WebGLContextAttributes: original dictionary defined
+PASS Partial interface mixin WebGLRenderingContextBase: original interface mixin defined
+PASS XR interface: existence and properties of interface object
+PASS XR interface object length
+PASS XR interface object name
+PASS XR interface: existence and properties of interface prototype object
+PASS XR interface: existence and properties of interface prototype object's "constructor" property
+PASS XR interface: existence and properties of interface prototype object's @@unscopables property
+PASS XR interface: operation supportsSession(XRSessionMode)
+PASS XR interface: operation requestSession(XRSessionMode)
+PASS XR interface: attribute ondevicechange
+PASS XR must be primary interface of navigator.xr
+PASS Stringification of navigator.xr
+PASS XR interface: navigator.xr must inherit property "supportsSession(XRSessionMode)" with the proper type
+PASS XR interface: calling supportsSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
+PASS XR interface: navigator.xr must inherit property "requestSession(XRSessionMode)" with the proper type
+PASS XR interface: calling requestSession(XRSessionMode) on navigator.xr with too few arguments must throw TypeError
+PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
+PASS XRSession interface: existence and properties of interface object
+PASS XRSession interface object length
+PASS XRSession interface object name
+PASS XRSession interface: existence and properties of interface prototype object
+PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
+PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRSession interface: attribute environmentBlendMode
+FAIL XRSession interface: attribute visibilityState assert_true: The prototype object must have a property "visibilityState" expected true got false
+PASS XRSession interface: attribute renderState
+PASS XRSession interface: attribute inputSources
+PASS XRSession interface: operation updateRenderState(XRRenderStateInit)
+PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceType)
+PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
+PASS XRSession interface: operation cancelAnimationFrame(long)
+PASS XRSession interface: operation end()
+PASS XRSession interface: attribute onend
+PASS XRSession interface: attribute onselect
+PASS XRSession interface: attribute oninputsourceschange
+PASS XRSession interface: attribute onselectstart
+PASS XRSession interface: attribute onselectend
+FAIL XRSession interface: attribute onvisibilitychange assert_true: The prototype object must have a property "onvisibilitychange" expected true got false
+PASS XRRenderState interface: existence and properties of interface object
+PASS XRRenderState interface object length
+PASS XRRenderState interface object name
+PASS XRRenderState interface: existence and properties of interface prototype object
+PASS XRRenderState interface: existence and properties of interface prototype object's "constructor" property
+PASS XRRenderState interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRRenderState interface: attribute depthNear
+PASS XRRenderState interface: attribute depthFar
+PASS XRRenderState interface: attribute inlineVerticalFieldOfView
+PASS XRRenderState interface: attribute baseLayer
+PASS XRFrame interface: existence and properties of interface object
+PASS XRFrame interface object length
+PASS XRFrame interface object name
+PASS XRFrame interface: existence and properties of interface prototype object
+PASS XRFrame interface: existence and properties of interface prototype object's "constructor" property
+PASS XRFrame interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRFrame interface: attribute session
+PASS XRFrame interface: operation getViewerPose(XRReferenceSpace)
+PASS XRFrame interface: operation getPose(XRSpace, XRSpace)
+PASS XRSpace interface: existence and properties of interface object
+PASS XRSpace interface object length
+PASS XRSpace interface object name
+PASS XRSpace interface: existence and properties of interface prototype object
+PASS XRSpace interface: existence and properties of interface prototype object's "constructor" property
+PASS XRSpace interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRReferenceSpace interface: existence and properties of interface object
+PASS XRReferenceSpace interface object length
+PASS XRReferenceSpace interface object name
+PASS XRReferenceSpace interface: existence and properties of interface prototype object
+PASS XRReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
+PASS XRReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRReferenceSpace interface: operation getOffsetReferenceSpace(XRRigidTransform)
+PASS XRReferenceSpace interface: attribute onreset
+PASS XRBoundedReferenceSpace interface: existence and properties of interface object
+PASS XRBoundedReferenceSpace interface object length
+PASS XRBoundedReferenceSpace interface object name
+PASS XRBoundedReferenceSpace interface: existence and properties of interface prototype object
+PASS XRBoundedReferenceSpace interface: existence and properties of interface prototype object's "constructor" property
+PASS XRBoundedReferenceSpace interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRBoundedReferenceSpace interface: attribute boundsGeometry
+PASS XRView interface: existence and properties of interface object
+PASS XRView interface object length
+PASS XRView interface object name
+PASS XRView interface: existence and properties of interface prototype object
+PASS XRView interface: existence and properties of interface prototype object's "constructor" property
+PASS XRView interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRView interface: attribute eye
+PASS XRView interface: attribute projectionMatrix
+PASS XRView interface: attribute transform
+PASS XRViewport interface: existence and properties of interface object
+PASS XRViewport interface object length
+PASS XRViewport interface object name
+PASS XRViewport interface: existence and properties of interface prototype object
+PASS XRViewport interface: existence and properties of interface prototype object's "constructor" property
+PASS XRViewport interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRViewport interface: attribute x
+PASS XRViewport interface: attribute y
+PASS XRViewport interface: attribute width
+PASS XRViewport interface: attribute height
+PASS XRRigidTransform interface: existence and properties of interface object
+PASS XRRigidTransform interface object length
+PASS XRRigidTransform interface object name
+PASS XRRigidTransform interface: existence and properties of interface prototype object
+PASS XRRigidTransform interface: existence and properties of interface prototype object's "constructor" property
+PASS XRRigidTransform interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRRigidTransform interface: attribute position
+PASS XRRigidTransform interface: attribute orientation
+PASS XRRigidTransform interface: attribute matrix
+PASS XRRigidTransform interface: attribute inverse
+PASS XRRay interface: existence and properties of interface object
+PASS XRRay interface object length
+PASS XRRay interface object name
+PASS XRRay interface: existence and properties of interface prototype object
+PASS XRRay interface: existence and properties of interface prototype object's "constructor" property
+PASS XRRay interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRRay interface: attribute origin
+PASS XRRay interface: attribute direction
+PASS XRRay interface: attribute matrix
+PASS XRPose interface: existence and properties of interface object
+PASS XRPose interface object length
+PASS XRPose interface object name
+PASS XRPose interface: existence and properties of interface prototype object
+PASS XRPose interface: existence and properties of interface prototype object's "constructor" property
+PASS XRPose interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRPose interface: attribute transform
+PASS XRPose interface: attribute emulatedPosition
+PASS XRViewerPose interface: existence and properties of interface object
+PASS XRViewerPose interface object length
+PASS XRViewerPose interface object name
+PASS XRViewerPose interface: existence and properties of interface prototype object
+PASS XRViewerPose interface: existence and properties of interface prototype object's "constructor" property
+PASS XRViewerPose interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRViewerPose interface: attribute views
+PASS XRInputSource interface: existence and properties of interface object
+PASS XRInputSource interface object length
+PASS XRInputSource interface object name
+PASS XRInputSource interface: existence and properties of interface prototype object
+PASS XRInputSource interface: existence and properties of interface prototype object's "constructor" property
+PASS XRInputSource interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRInputSource interface: attribute handedness
+PASS XRInputSource interface: attribute targetRayMode
+PASS XRInputSource interface: attribute targetRaySpace
+PASS XRInputSource interface: attribute gripSpace
+PASS XRInputSource interface: attribute gamepad
+PASS XRInputSourceArray interface: existence and properties of interface object
+PASS XRInputSourceArray interface object length
+PASS XRInputSourceArray interface object name
+PASS XRInputSourceArray interface: existence and properties of interface prototype object
+PASS XRInputSourceArray interface: existence and properties of interface prototype object's "constructor" property
+PASS XRInputSourceArray interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRInputSourceArray interface: iterable<XRInputSource>
+PASS XRInputSourceArray interface: attribute length
+FAIL XRWebGLLayer interface: existence and properties of interface object assert_equals: prototype of self's property "XRWebGLLayer" is not Function.prototype expected function "function () { [native code] }" but got function "function XRLayer() { [native code] }"
+PASS XRWebGLLayer interface object length
+PASS XRWebGLLayer interface object name
+FAIL XRWebGLLayer interface: existence and properties of interface prototype object assert_equals: prototype of XRWebGLLayer.prototype is not Object.prototype expected object "[object Object]" but got object "[object XRLayer]"
+PASS XRWebGLLayer interface: existence and properties of interface prototype object's "constructor" property
+PASS XRWebGLLayer interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRWebGLLayer interface: attribute context
+PASS XRWebGLLayer interface: attribute antialias
+PASS XRWebGLLayer interface: attribute ignoreDepthValues
+PASS XRWebGLLayer interface: attribute framebuffer
+PASS XRWebGLLayer interface: attribute framebufferWidth
+PASS XRWebGLLayer interface: attribute framebufferHeight
+PASS XRWebGLLayer interface: operation getViewport(XRView)
+PASS XRWebGLLayer interface: operation getNativeFramebufferScaleFactor(XRSession)
+PASS XRSessionEvent interface: existence and properties of interface object
+PASS XRSessionEvent interface object length
+PASS XRSessionEvent interface object name
+PASS XRSessionEvent interface: existence and properties of interface prototype object
+PASS XRSessionEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS XRSessionEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRSessionEvent interface: attribute session
+PASS XRInputSourceEvent interface: existence and properties of interface object
+PASS XRInputSourceEvent interface object length
+PASS XRInputSourceEvent interface object name
+PASS XRInputSourceEvent interface: existence and properties of interface prototype object
+PASS XRInputSourceEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS XRInputSourceEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRInputSourceEvent interface: attribute frame
+PASS XRInputSourceEvent interface: attribute inputSource
+PASS XRInputSourceEvent interface: attribute buttonIndex
+PASS XRInputSourcesChangeEvent interface: existence and properties of interface object
+PASS XRInputSourcesChangeEvent interface object length
+PASS XRInputSourcesChangeEvent interface object name
+PASS XRInputSourcesChangeEvent interface: existence and properties of interface prototype object
+PASS XRInputSourcesChangeEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS XRInputSourcesChangeEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRInputSourcesChangeEvent interface: attribute session
+PASS XRInputSourcesChangeEvent interface: attribute added
+PASS XRInputSourcesChangeEvent interface: attribute removed
+PASS XRReferenceSpaceEvent interface: existence and properties of interface object
+PASS XRReferenceSpaceEvent interface object length
+PASS XRReferenceSpaceEvent interface object name
+PASS XRReferenceSpaceEvent interface: existence and properties of interface prototype object
+PASS XRReferenceSpaceEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS XRReferenceSpaceEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS XRReferenceSpaceEvent interface: attribute referenceSpace
+PASS XRReferenceSpaceEvent interface: attribute transform
+PASS WebGLRenderingContext interface: operation makeXRCompatible()
+PASS Navigator interface: attribute xr
+PASS Navigator interface: navigator must inherit property "xr" with the proper type
+Harness: the test ran to completion.
+

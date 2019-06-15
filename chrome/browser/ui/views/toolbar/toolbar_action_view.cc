@@ -47,6 +47,13 @@ const int kBorderInset = 0;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// ToolbarActionView::Delegate
+
+bool ToolbarActionView::Delegate::CanShowIconInToolbar() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
 
 const char ToolbarActionView::kClassName[] = "ToolbarActionView";
@@ -296,6 +303,10 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
 
 bool ToolbarActionView::IsMenuRunning() const {
   return menu_ != nullptr;
+}
+
+bool ToolbarActionView::CanShowIconInToolbar() const {
+  return delegate_->CanShowIconInToolbar();
 }
 
 void ToolbarActionView::OnPopupShown(bool by_user) {

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1492646418094134664">Toca per emplenar la informació de la targeta de crèdit amb Chrome</translation>
+<translation id="1566281227936819866">S'estan mostrant les formes de pagament desades</translation>
 <translation id="2610239185026711824">Suggereix una contrasenya</translation>
 <translation id="2803478378562657435">S'estan mostrant les contrasenyes desades i les opcions de contrasenyes</translation>
 <translation id="2903493209154104877">Adreces</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Toca per emplenar la contrasenya amb Chrome</translation>
 <translation id="7299100402441711551">Mostra les adreces</translation>
 <translation id="7494879913343971937">Mostra les contrasenyes</translation>
+<translation id="8037472847879765671">Mostra les formes de pagament</translation>
 <translation id="8507520749471379845">Contrasenyes disponibles</translation>
 </translationbundle>

@@ -1711,12 +1711,6 @@
       Awtomatikong tumitingin ng mga update ang mga device ng <ph name="PRODUCT_OS_NAME" /> kapag hindi naka-configure, o nakatakda sa False ang setting na ito.
 
       Babala: Inirerekomendang panatilihing naka-enable ang mga awtomatikong pag-update upang makatanggap ang mga user ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung io-off ang mga awtomatikong pag-update.</translation>
-<translation id="4018000735882846261">Ang patakarang ito ay nagbibigay ng pahintulot sa Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses.
-
-      Kung naka-enable ang patakaran, makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
-      Kung naka-disable ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
-      Kung hindi nakatakda ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
-      </translation>
 <translation id="4020682745012723568">Hindi maa-access sa mga Android app ang cookies na inilipat sa profile ng user.</translation>
 <translation id="402759845255257575">Huwag payagang magpatakbo ng JavaScript ang anumang site</translation>
 <translation id="4027608872760987929">Paganahin ang default na provider ng paghahanap</translation>

@@ -443,6 +443,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare (de exemplu, folosind intrarea „Dezactivează izolarea site-ului” în chrome://flags).
       </translation>
 <translation id="1767673020408652620">Activează recomandările de aplicații în starea zero a casetei de căutare</translation>
+<translation id="17719159826324007">
+      Când politica este setată la ArcSession, forțează dispozitivul să repornească la deconectarea utilizatorului dacă Android a pornit.
+      Când este setată la Întotdeauna, forțează dispozitivul să repornească de fiecare dată când utilizatorul se deconectează.
+      Dacă nu este setată, nu are niciun efect și nu este forțată repornirea la deconectarea utilizatorului. Același lucru este valabil dacă este setată la Niciodată.
+      Politica are efect numai pentru utilizatori neafiliați.
+      </translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="1793346220873697538">Dezactivează printarea cu PIN prestabilită</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
@@ -923,6 +929,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
 <translation id="2693108589792503178">Configurează adresa URL de modificare a parolei.</translation>
+<translation id="2694143893026486692">Lupă andocată a fost activată</translation>
 <translation id="2706708761587205154">Permite printarea numai cu PIN</translation>
 <translation id="2710534340210290498">Dacă politica este dezactivată, utilizatorii nu vor putea bloca ecranul (va fi posibilă doar conectarea de la sesiunea utilizatorului). Dacă această setare este activată sau neconfigurată, utilizatorii care s-au autentificat cu o parolă pot bloca ecranul.</translation>
 <translation id="2731627323327011390">Dezactivează folosirea certificatelor <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
@@ -1157,6 +1164,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Această politică este opțională. Dacă nu este setată, nu se va efectua înlocuirea termenilor de căutare.
 
           Această politică este respectată doar dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Această politică permite utilizatorilor funcției WebDriver să ignore
       politicile care pot afecta funcționarea acesteia.
 
@@ -1671,12 +1679,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dispozitivele cu <ph name="PRODUCT_OS_NAME" /> caută automat actualizări atunci când această setare nu este configurată sau nu este activată.
 
       Avertisment: se recomandă să se mențină activate actualizările automate, ca utilizatorii să primească actualizări de software și remedieri importante de securitate. Dacă dezactivezi actualizările automate, este posibil să pui în pericol utilizatorii.</translation>
-<translation id="4018000735882846261">Politica oferă Asistentului Google permisiunea de a asculta expresia de activare vocală.
-
-      Dacă politica este activată, Asistentul Google va asculta expresia de activare vocală.
-      Dacă politica este dezactivată, Asistentul Google nu va asculta expresia de activare vocală.
-      Dacă politica nu este configurată, Asistentul Google nu va asculta expresia de activare vocală.
-      </translation>
 <translation id="4020682745012723568">Aplicațiile Android nu au acces la cookie-urile transferate în profilul utilizatorului.</translation>
 <translation id="402759845255257575">Nu permite niciunui site să ruleze JavaScript</translation>
 <translation id="4027608872760987929">Activează furnizorul de căutare prestabilit</translation>
@@ -1975,7 +1977,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4639407427807680016">Numele gazdelor de mesagerie nativă de exclus din lista neagră.</translation>
 <translation id="4650759511838826572">Dezactivează schemele pentru protocolul adresei URL</translation>
 <translation id="465099050592230505">Adresa URL a magazinului web pentru întreprinderi (politică învechită)</translation>
-<translation id="4661889655253181651">Folosind Setările privind conținutul, poți să specifici modul în care este gestionat conținutul de un anumit tip (de exemplu: cookie-uri, imagini sau JavaScript)</translation>
+<translation id="4661889655253181651">Folosind Setările privind conținutul, poți să specifici modul în care este gestionat conținutul de un anumit tip (de exemplu: cookie-uri, imagini sau JavaScript).</translation>
 <translation id="4665897631924472251">Setările de gestionare a extensiilor</translation>
 <translation id="4668325077104657568">Setare pentru imagini prestabilite</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2020,11 +2022,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
 
       Dacă setarea este dezactivată, nu se vor prelua și nu se vor afișa sugestii.</translation>
-<translation id="4759650396863318477">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
+<translation id="4759650396863318477">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv cu <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
 
-      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem, conform politicii <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
+      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele cu <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem, conform politicii <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
 
-      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele cu <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit în formularele web folosind informațiile stocate anterior.
 
       Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
@@ -4278,7 +4280,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9152473318295429890">Activează sugestiile contextuale ale paginilor web asociate</translation>
-<translation id="9153446010242995516">Revino la starea anterioară și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta. Încearcă să preiei configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin procesul de revenire, dacă este posibil, dar fă revenirea cu un Powerwash complet, chiar dacă restabilirea datelor nu este posibilă (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
+<translation id="9153446010242995516">Revino la starea anterioară și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta. Încearcă să preiei configurația la nivel de dispozitiv (inclusiv datele de conectare la rețea) prin procesul de revenire, dacă este posibil, dar fă revenirea cu un Powerwash complet, chiar dacă restabilirea datelor nu este posibilă (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
           Se acceptă în versiunea 75 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
 <translation id="9159126470527871268">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru aplicarea unei actualizări în așteptare.

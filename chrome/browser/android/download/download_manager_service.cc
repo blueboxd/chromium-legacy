@@ -42,6 +42,7 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
@@ -210,11 +211,6 @@ DownloadManagerService::DownloadManagerService()
       off_the_record_coordinator_(nullptr) {}
 
 DownloadManagerService::~DownloadManagerService() {}
-
-void DownloadManagerService::BindServiceRequest(
-    service_manager::mojom::ServiceRequest request) {
-  service_binding_.Bind(std::move(request));
-}
 
 void DownloadManagerService::Init(JNIEnv* env,
                                   jobject obj,
@@ -495,15 +491,6 @@ void DownloadManagerService::OnDownloadRemoved(
       content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord());
 }
 
-void DownloadManagerService::OnDisconnected() {
-  // Some unit tests recreate |ServiceManagerContext| inside
-  // |TestServiceManagerContext|. Closing |service_binding_| will prevent DCHECK
-  // in such tests, because |DownloadManagerService| starts automatically in
-  // |ServiceManagerContext|.
-  service_binding_.Close();
-  Terminate();
-}
-
 void DownloadManagerService::ResumeDownloadInternal(
     const std::string& download_guid,
     bool is_off_the_record,
@@ -699,7 +686,7 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
     return;
   base::FilePath data_dir;
   base::android::GetDataDirectory(&data_dir);
-  service_manager::Connector* connector = service_binding_.GetConnector();
+  service_manager::Connector* connector = content::GetSystemConnector();
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
       nullptr, data_dir.Append(chrome::kInitialProfile),
       base::BindRepeating(&IgnoreOriginSecurityCheck),

@@ -26,7 +26,7 @@ const base::Feature kBackgroundTracingProtoOutput{
 
 // Causes Perfetto to run in-process mode for in-process tracing producers.
 const base::Feature kPerfettoForceOutOfProcessProducer{
-    "PerfettoForceOutOfProcessProducer", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PerfettoForceOutOfProcessProducer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Runs the tracing service as an in-process browser service.
 const base::Feature kTracingServiceInProcess {

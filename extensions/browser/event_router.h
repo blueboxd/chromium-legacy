@@ -103,6 +103,8 @@ class EventRouter : public KeyedService,
   //
   // It is very rare to call this function directly. Instead use the instance
   // methods BroadcastEvent or DispatchEventToExtension.
+  // Note that this method will dispatch the event with
+  // UserGestureState:USER_GESTURE_UNKNOWN.
   static void DispatchEventToSender(IPC::Sender* ipc_sender,
                                     void* browser_context_id,
                                     const std::string& extension_id,
@@ -112,7 +114,6 @@ class EventRouter : public KeyedService,
                                     int worker_thread_id,
                                     int64_t service_worker_version_id,
                                     std::unique_ptr<base::ListValue> event_args,
-                                    UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
 
   // Returns false when the event is scoped to a context and the listening

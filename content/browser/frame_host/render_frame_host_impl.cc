@@ -1267,7 +1267,7 @@ gfx::NativeView RenderFrameHostImpl::GetNativeView() {
 void RenderFrameHostImpl::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
-  Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message));
+  AddMessageToConsoleImpl(level, message, false /* discard_duplicates */);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript,
@@ -7020,8 +7020,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // situation) then we clear it after a while anyway.
   // See https://crbug.com/497588.
   if (frame_tree_node_->IsMainFrame() && GetView()) {
-    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
-        ->DidNavigate(validated_params->content_source_id);
+    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())->DidNavigate();
   }
 
   // TODO(arthursonzogni): This can be removed when RenderDocument will be
@@ -7145,6 +7144,20 @@ void RenderFrameHostImpl::EnsureDescendantsAreUnloading() {
   }
   for (RenderFrameHostImpl* document : rfhs_to_be_checked)
     document->parent_->RemoveChild(document->frame_tree_node());
+}
+
+void RenderFrameHostImpl::AddUniqueMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
+  AddMessageToConsoleImpl(level, message, true /* discard_duplicates */);
+}
+
+void RenderFrameHostImpl::AddMessageToConsoleImpl(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message,
+    bool discard_duplicates) {
+  Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message,
+                                        discard_duplicates));
 }
 
 }  // namespace content

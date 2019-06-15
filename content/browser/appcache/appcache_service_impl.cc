@@ -34,10 +34,6 @@
 
 namespace content {
 
-AppCacheInfoCollection::AppCacheInfoCollection() = default;
-
-AppCacheInfoCollection::~AppCacheInfoCollection() = default;
-
 // AsyncHelper -------
 
 class AppCacheServiceImpl::AsyncHelper : public AppCacheStorage::Delegate {
@@ -328,7 +324,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnGroupLoaded(
   expected_total_size_ = entry->response_size();
   response_reader_ =
       service_->storage()->CreateResponseReader(manifest_url_, response_id_);
-  info_buffer_ = new HttpResponseInfoIOBuffer();
+  info_buffer_ = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
   response_reader_->ReadInfo(
       info_buffer_.get(),
       base::BindOnce(&CheckResponseHelper::OnReadInfoComplete,
@@ -400,6 +396,9 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       force_keep_session_state_(false),
       weak_factory_(this) {
   if (quota_manager_proxy_.get()) {
+    // The operator new is used here because this AppCacheQuotaClient instance
+    // deletes itself after both the QuotaManager and the AppCacheService are
+    // destroyed.
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);
   }
@@ -424,9 +423,9 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
 void AppCacheServiceImpl::Initialize(const base::FilePath& cache_directory) {
   DCHECK(!storage_.get());
   cache_directory_ = cache_directory;
-  AppCacheStorageImpl* storage = new AppCacheStorageImpl(this);
+  auto storage = std::make_unique<AppCacheStorageImpl>(this);
   storage->Initialize(cache_directory, db_task_runner_);
-  storage_.reset(storage);
+  storage_ = std::move(storage);
 }
 
 void AppCacheServiceImpl::ScheduleReinitialize() {
@@ -462,8 +461,8 @@ void AppCacheServiceImpl::Reinitialize() {
 
   // Inform observers of about this and give them a chance to
   // defer deletion of the old storage object.
-  scoped_refptr<AppCacheStorageReference> old_storage_ref(
-      new AppCacheStorageReference(std::move(storage_)));
+  auto old_storage_ref =
+      base::MakeRefCounted<AppCacheStorageReference>(std::move(storage_));
   for (auto& observer : observers_)
     observer.OnServiceReinitialized(old_storage_ref.get());
 

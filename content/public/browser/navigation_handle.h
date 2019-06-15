@@ -14,6 +14,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"

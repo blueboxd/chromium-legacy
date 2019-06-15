@@ -148,11 +148,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       class GamepadBoxSet {
         constructor(button_count, y) {
-          // Place the boxes in a horizontal line.
+          // Place the boxes in a horizontal line 2 meters in front of the user.
           this.boxes = [];
           let x_shift = button_count / 2;
           for (let x = 1; x <= button_count; ++x) {
-            this.boxes.push(new GamepadBox([x - x_shift, y, 1]));
+            this.boxes.push(new GamepadBox([x - x_shift, y, -2]));
           }
         }
 

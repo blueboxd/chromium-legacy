@@ -18,6 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -187,6 +189,8 @@ void TrayBluetoothHelperLegacy::Initialize() {
 }
 
 void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
+  discovery_start_timestamp_ = base::DefaultClock::GetInstance()->Now();
+
   if (HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "Already have active Bluetooth device discovery session.";
     return;
@@ -200,6 +204,8 @@ void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
 }
 
 void TrayBluetoothHelperLegacy::StopBluetoothDiscovering() {
+  discovery_start_timestamp_ = base::Time();
+
   should_run_discovery_ = false;
   if (!HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "No active Bluetooth device discovery session.";
@@ -217,6 +223,14 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
   if (!device || device->IsConnecting() ||
       (device->IsConnected() && device->IsPaired())) {
     return;
+  }
+
+  if (!discovery_start_timestamp_.is_null()) {
+    device::RecordDeviceSelectionDuration(
+        base::DefaultClock::GetInstance()->Now() - discovery_start_timestamp_,
+        device::BluetoothUiSurface::kSystemTray, device->IsPaired(),
+        device->GetType());
+    discovery_start_timestamp_ = base::Time();
   }
 
   // Extra consideration taken for already paired devices, for metrics

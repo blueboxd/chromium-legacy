@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt kinnitust iga kord enne veebisaidile sisselogimist.</translation>
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
 <translation id="3662546969139119822">Ajalugu puudub</translation>
+<translation id="3663367437272849150">Grupeerige <ph name="NUM_SELECTED" /> vahekaarti.</translation>
 <translation id="3672452749423051839">Soovitused navigeerimisvigade korral</translation>
 <translation id="3692944402865947621">Faili <ph name="FILE_NAME" /> allalaadimine nurjus, kuna salvestuskoht ei ole saadaval.</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
@@ -466,6 +467,7 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="447252321002412580">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="4479647676395637221">Küsi enne saitidele minu kaamera kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
 <translation id="4479972344484327217">Chrome'i jaoks installitakse moodulit <ph name="MODULE" /> …</translation>
+<translation id="4482194545587547824">Google võib kasutada teie sirvimisajalugu otsingu ja teiste Google'i teenuste isikupärastamiseks</translation>
 <translation id="4487967297491345095">Kõik Chrome'i rakenduse andmed kustutatakse jäädavalt. See hõlmab kõiki faile, seadeid, kontosid, andmebaase jms.</translation>
 <translation id="4493497663118223949">Lihtsustatud režiim on sees</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# päev tagasi}other{# päeva tagasi}}</translation>
@@ -476,6 +478,7 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4532845899244822526">Kausta valimine</translation>
 <translation id="4538018662093857852">Lülita lihtsustatud režiim sisse</translation>
 <translation id="4550003330909367850">Parooli vaatamiseks või siia kleepimiseks määrake selles seadmes ekraanilukk.</translation>
+<translation id="4556110439722119938">Teie järjehoidjad, ajalugu, paroolid ja muud seaded sünkroonitakse teie Google'i kontoga, et saaksite neid kasutada kõigis oma seadmetes</translation>
 <translation id="4558311620361989323">Veebilehe otseteed</translation>
 <translation id="4561979708150884304">Ühendus puudub</translation>
 <translation id="4565377596337484307">Peida parool</translation>
@@ -630,6 +633,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="557283862590186398">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
 <translation id="55737423895878184">Asukoht ja märguanded on lubatud</translation>
 <translation id="5578795271662203820">Otsi otsingust <ph name="SEARCH_ENGINE" /> kujutist</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> vahekaarti grupeeriti</translation>
 <translation id="5581519193887989363">Jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /> saate igal ajal valida, mida sünkroonida.</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
 <translation id="5596627076506792578">Rohkem valikuid</translation>
@@ -708,6 +712,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6181444274883918285">Lisa saidi erand</translation>
 <translation id="6192333916571137726">Faili allalaadimine</translation>
 <translation id="6192792657125177640">Erandid</translation>
+<translation id="6193448654517602979">Valige vahelehed</translation>
 <translation id="6194112207524046168">Selleks et anda Chrome'ile juurdepääs teie kaamerale, lülitage kaamera sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokeeri kolmanda osapoole küpsisefailid</translation>
 <translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
@@ -824,6 +829,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Tõlkimisseadete lähtestamine</translation>
 <translation id="6979737339423435258">Algusest</translation>
+<translation id="6980462514016882061">Google võib kasutada teie sirvimisajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="6985347914332179298">Siin ei ole ühtki allalaadimist</translation>
 <translation id="6989267951144302301">Ei saanud alla laadida</translation>
@@ -850,11 +856,13 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7141896414559753902">Blokeeri saitidel hüpikakende ja ümbersuunamiste kuvamine (soovitatav)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Laadi originaalleht<ph name="END_LINK" /> domeenilt <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Viimased 24 tundi</translation>
+<translation id="7161892015146974550">Valige vahekaart <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Seda saate hiljem muuta jaotises Seaded</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="7189372733857464326">Google Play teenuste värskendamise lõpetamise ootamine</translation>
 <translation id="7191430249889272776">Taustal on avatud vaheleht.</translation>
+<translation id="722055596168483966">Google'i teenuste isikupärastamine</translation>
 <translation id="723171743924126238">Kujutiste valimine</translation>
 <translation id="7233236755231902816">Hankige Chrome'i uusim versioon, et saaksite oma keeles veebi sirvida</translation>
 <translation id="7243308994586599757">Valikud on saadaval ekraani allosas</translation>
@@ -881,6 +889,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7403691278183511381">Chrome'i esmakordse käitamise kasutuskogemus</translation>
 <translation id="741204030948306876">Jah, sobib</translation>
 <translation id="7413229368719586778">Alguskuupäev: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Vahelehtede grupeerimine …</translation>
 <translation id="7423098979219808738">Esmalt küsib</translation>
 <translation id="7423538860840206698">Lõikelaua lugemine on blokeeritud</translation>
 <translation id="7431991332293347422">Juhtige, kuidas kasutatakse teie sirvimisajalugu otsingu ja muu isikupärastamiseks</translation>
@@ -1017,6 +1026,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> keeles olevaid lehti ei tõlgita</translation>
 <translation id="8349013245300336738">Sordi kasutatud andmemahu alusel</translation>
 <translation id="8364299278605033898">Vaadake populaarseid veebisaite</translation>
+<translation id="8364603787714420828">Tühistage vahekaardi <ph name="TAB_TITLE" /> valik.</translation>
 <translation id="8372893542064058268">Konkreetse saidi jaoks taustal sünkroonimise lubamine.</translation>
 <translation id="8374821112118309944">Peate värskendama TalkBacki uuemale versioonile.</translation>
 <translation id="8378714024927312812">Haldab teie organisatsioon</translation>
@@ -1082,6 +1092,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, vahekaart</translation>
 <translation id="885701979325669005">Salvestamine</translation>
 <translation id="8901170036886848654">Ei leitud ühtegi järjehoidjat</translation>
+<translation id="8904976895050290827">Chrome'i sünkroonimine</translation>
 <translation id="8909135823018751308">Jaga ...</translation>
 <translation id="8912362522468806198">Google'i konto</translation>
 <translation id="8920114477895755567">Vanema üksikasjade ootamine.</translation>
@@ -1099,6 +1110,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8986494364107987395">Saada kasutusstatistika ja krahhiaruanded automaatselt Google'ile</translation>
 <translation id="8993760627012879038">Uue vahelehe avamine inkognito režiimis</translation>
 <translation id="8998729206196772491">Logite sisse kontoga, mida haldab <ph name="MANAGED_DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
+<translation id="9005637476204108703">Puudutage oma kontode haldamiseks siin</translation>
 <translation id="9019902583201351841">Vanemate hallatud</translation>
 <translation id="9040142327097499898">Märguanded on lubatud. Asukoht on selle seadme puhul välja lülitatud.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videot}}</translation>
@@ -1119,6 +1131,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="9155898266292537608">Otsimiseks võite ka kiirelt sõna puudutada</translation>
 <translation id="9169594135889675189">Lisa gruppi uus vaheleht</translation>
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
+<translation id="9190112541605496997">Puudutage oma kontode haldamiseks nuppu „Konto haldamine”</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Pildid</translation>

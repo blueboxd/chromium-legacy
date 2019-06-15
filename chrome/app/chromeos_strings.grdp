@@ -1732,7 +1732,13 @@
   <message name="IDS_NETWORK_TYPE_BLUETOOTH" desc="Label for Bluetooth networks.">
     Bluetooth
   </message>
-  <message name="IDS_NETWORK_TYPE_MOBILE_DATA" desc="Label for Cellular and Tether networks.">
+  <message name="IDS_NETWORK_TYPE_CELLULAR" desc="Label for Cellular networks.">
+    Cellular
+  </message>
+  <message name="IDS_NETWORK_TYPE_TETHER" desc="Label for Instant Tethering networks.">
+    Instant Tethering
+  </message>
+  <message name="IDS_NETWORK_TYPE_MOBILE_DATA" desc="Label for category which includes both Cellular and Tether networks.">
     Mobile data
   </message>
   <message name="IDS_NETWORK_TYPE_VPN" desc="Label for VPN networks.">

@@ -127,7 +127,6 @@ class CONTENT_EXPORT AppCacheGroup
 
   ~AppCacheGroup();
 
-  using Caches = std::vector<AppCache*>;
   using QueuedUpdates =
       std::map<UpdateObserver*, std::pair<AppCacheHost*, GURL>>;
 
@@ -138,7 +137,7 @@ class CONTENT_EXPORT AppCacheGroup
 
   void NotifyContentBlocked();
 
-  const Caches& old_caches() const { return old_caches_; }
+  const std::vector<AppCache*>& old_caches() const { return old_caches_; }
 
   // Update cannot be processed at this time. Queue it for a later run.
   void QueueUpdate(AppCacheHost* host, const GURL& new_master_resource);
@@ -167,7 +166,7 @@ class CONTENT_EXPORT AppCacheGroup
   base::Time first_evictable_error_time_;
 
   // Old complete app caches.
-  Caches old_caches_;
+  std::vector<AppCache*> old_caches_;
 
   // Newest cache in this group to be complete, aka relevant cache.
   AppCache* newest_complete_cache_;

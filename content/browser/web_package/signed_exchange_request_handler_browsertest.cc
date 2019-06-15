@@ -124,11 +124,11 @@ class SignedExchangeRequestHandlerBrowserTestBase
     // created. (Needed for the tests that use real certificate, i.e.
     // RealCertVerifier)
     net::EmbeddedTestServer::RegisterTestCerts();
+    feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
   }
 
   void SetUp() override {
     sxg_test_helper_.SetUp();
-    feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
     CertVerifierBrowserTest::SetUp();
   }
 
@@ -209,10 +209,7 @@ class SignedExchangeRequestHandlerBrowserTest
                      bool /* sxg_subresource_prefetch_enabled */>>,
       public SignedExchangeRequestHandlerBrowserTestBase {
  public:
-  SignedExchangeRequestHandlerBrowserTest() = default;
-  ~SignedExchangeRequestHandlerBrowserTest() = default;
-
-  void SetUp() override {
+  SignedExchangeRequestHandlerBrowserTest() {
     bool network_service_enabled;
     bool sxg_subresource_prefetch_enabled;
     std::tie(prefetch_enabled_, network_service_enabled,
@@ -230,14 +227,14 @@ class SignedExchangeRequestHandlerBrowserTest
       disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     }
     feature_list_.InitWithFeatures(enable_features, disabled_features);
-    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
   }
+  ~SignedExchangeRequestHandlerBrowserTest() = default;
 
  protected:
   bool PrefetchIsEnabled() const { return prefetch_enabled_; }
 
  private:
-  bool prefetch_enabled_;
+  bool prefetch_enabled_ = false;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);

@@ -72,14 +72,15 @@ class ResourceLoadSchedulerTest : public testing::Test {
     USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 
    public:
-    void AddConsoleMessage(mojom::ConsoleMessageSource,
-                           mojom::ConsoleMessageLevel,
-                           const String&) override {
-      has_message_ = true;
-    }
     bool HasMessage() const { return has_message_; }
 
    private:
+    void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                               mojom::ConsoleMessageLevel,
+                               const String&,
+                               bool discard_duplicates) override {
+      has_message_ = true;
+    }
     bool has_message_ = false;
   };
 

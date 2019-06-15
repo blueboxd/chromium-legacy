@@ -7,8 +7,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 group("closure_compile") {
   deps = [
     ":cr_elements_resources",
-    "chromeos/cr_picture:closure_compile",
-    "chromeos/network:closure_compile",
     "cr_action_menu:closure_compile",
     "cr_button:closure_compile",
     "cr_checkbox:closure_compile",
@@ -21,7 +19,6 @@ group("closure_compile") {
     "cr_profile_avatar_selector:closure_compile",
     "cr_radio_button:closure_compile",
     "cr_radio_group:closure_compile",
-    "cr_searchable_drop_down:closure_compile",
     "cr_slider:closure_compile",
     "cr_tabs:closure_compile",
     "cr_toast:closure_compile",
@@ -29,6 +26,16 @@ group("closure_compile") {
     "cr_view_manager:closure_compile",
     "policy:closure_compile",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      "chromeos:closure_compile",
+
+      # cr-searchable-drop-down is only used in smb and cups dialogs, both of
+      # which are chromeos only.
+      "cr_searchable_drop_down:closure_compile",
+    ]
+  }
 }
 
 js_type_check("cr_elements_resources") {

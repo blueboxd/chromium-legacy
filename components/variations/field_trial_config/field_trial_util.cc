@@ -15,12 +15,10 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
-#include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_seed_processor.h"
 #include "net/base/escape.h"
 #include "ui/base/device_form_factor.h"
@@ -89,12 +87,12 @@ void AssociateParamsFromExperiment(
     const VariationsSeedProcessor::UIStringOverrideCallback& callback,
     base::FeatureList* feature_list) {
   if (experiment.params_size != 0) {
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     for (size_t i = 0; i < experiment.params_size; ++i) {
       const FieldTrialTestingExperimentParams& param = experiment.params[i];
       params[param.key] = param.value;
     }
-    AssociateVariationParams(study_name, experiment.name, params);
+    base::AssociateFieldTrialParams(study_name, experiment.name, params);
   }
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(study_name, experiment.name);
@@ -188,55 +186,8 @@ std::string EscapeValue(const std::string& value) {
 }
 
 bool AssociateParamsFromString(const std::string& varations_string) {
-  // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2
-  std::set<std::pair<std::string, std::string>> trial_groups;
-  for (const base::StringPiece& experiment_group : base::SplitStringPiece(
-           varations_string, ",",
-           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    std::vector<base::StringPiece> experiment = base::SplitStringPiece(
-        experiment_group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (experiment.size() != 2) {
-      DLOG(ERROR) << "Experiment and params should be separated by ':'";
-      return false;
-    }
-
-    std::vector<std::string> group_parts = base::SplitString(
-        experiment[0], ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (group_parts.size() != 2) {
-      DLOG(ERROR) << "Trial and group name should be separated by '.'";
-      return false;
-    }
-
-    std::vector<std::string> key_values = base::SplitString(
-        experiment[1], "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (key_values.size() % 2 != 0) {
-      DLOG(ERROR) << "Param name and param value should be separated by '/'";
-      return false;
-    }
-    std::string trial = UnescapeValue(group_parts[0]);
-    std::string group = UnescapeValue(group_parts[1]);
-    auto trial_group = std::make_pair(trial, group);
-    if (trial_groups.find(trial_group) != trial_groups.end()) {
-      DLOG(ERROR) << base::StringPrintf(
-          "A (trial, group) pair listed more than once. (%s, %s)",
-          trial.c_str(), group.c_str());
-      return false;
-    }
-    trial_groups.insert(trial_group);
-    std::map<std::string, std::string> params;
-    for (size_t i = 0; i < key_values.size(); i += 2) {
-      std::string key = UnescapeValue(key_values[i]);
-      std::string value = UnescapeValue(key_values[i + 1]);
-      params[key] = value;
-    }
-    bool result = AssociateVariationParams(trial, group, params);
-    if (!result) {
-      DLOG(ERROR) << "Failed to associate variation params for group \""
-                  << group << "\" in trial \"" << trial << "\"";
-      return false;
-    }
-  }
-  return true;
+  return base::AssociateFieldTrialParamsFromString(varations_string,
+                                                   &UnescapeValue);
 }
 
 void AssociateParamsFromFieldTrialConfig(

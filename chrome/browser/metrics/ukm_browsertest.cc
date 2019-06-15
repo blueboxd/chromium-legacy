@@ -158,14 +158,10 @@ class UkmBrowserTestBase : public SyncTest {
             is_unified_consent_enabled
                 ? unified_consent::UnifiedConsentFeatureState::kEnabled
                 : unified_consent::UnifiedConsentFeatureState::kDisabled) {
-  }
-
-  void SetUp() override {
     // Explicitly enable UKM and disable the MetricsReporting (which should
     // not affect UKM).
     scoped_feature_list_.InitWithFeatures({ukm::kUkmFeature},
                                           {internal::kMetricsReportingFeature});
-    SyncTest::SetUp();
   }
 
   bool ukm_enabled() const {
@@ -300,7 +296,7 @@ class UkmBrowserTestBase : public SyncTest {
   ukm::UkmService* ukm_service() const {
     return g_browser_process->GetMetricsServicesManager()->GetUkmService();
   }
-  base::test::ScopedFeatureList scoped_feature_list_;
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // ScopedAccountConsistencyDice is required for unified consent to be enabled.
   // Note that it uses forced field trials to enable DICE which disable metrics
@@ -309,6 +305,8 @@ class UkmBrowserTestBase : public SyncTest {
   const std::unique_ptr<ScopedAccountConsistencyDice> scoped_dice_;
 #endif
   const unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestBase);
 };
 

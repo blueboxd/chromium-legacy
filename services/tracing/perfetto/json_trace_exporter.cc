@@ -584,6 +584,11 @@ void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadTimestamp(
   out_->AppendF(",\"tts\":%" PRId64, thread_timestamp);
 }
 
+void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadInstructionDelta(
+    int64_t thread_instruction_delta) {
+  out_->AppendF(",\"tidelta\":%" PRId64, thread_instruction_delta);
+}
+
 void JSONTraceExporter::ScopedJSONTraceEventAppender::AddBindId(
     uint64_t bind_id) {
   out_->AppendF(",\"bind_id\":\"0x%" PRIx64 "\"",

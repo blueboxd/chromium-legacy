@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
 <translation id="3658159451045945436">Resetowanie usuwa historię oszczędzania danych, w tym listę odwiedzonych stron.</translation>
 <translation id="3662546969139119822">Brak historii</translation>
+<translation id="3663367437272849150">Grupuj karty (<ph name="NUM_SELECTED" />).</translation>
 <translation id="3672452749423051839">Podpowiedzi przy błędach nawigacji</translation>
 <translation id="3692944402865947621">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu niedostępności pamięci.</translation>
 <translation id="3714981814255182093">Otwórz pasek wyszukiwania</translation>
@@ -466,6 +467,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="447252321002412580">Pomóż w ulepszaniu funkcji i działania Chrome</translation>
 <translation id="4479647676395637221">Pytaj, zanim zezwolisz stronom na korzystanie z kamery (zalecane)</translation>
 <translation id="4479972344484327217">Instaluję moduł <ph name="MODULE" /> do Chrome…</translation>
+<translation id="4482194545587547824">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług</translation>
 <translation id="4487967297491345095">Wszystkie dane aplikacji Chrome zostaną trwale usunięte. Dotyczy to wszystkich plików, ustawień, kont, baz danych itp.</translation>
 <translation id="4493497663118223949">Wersja uproszczona jest włączona</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
@@ -476,6 +478,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4532845899244822526">Wybierz folder</translation>
 <translation id="4538018662093857852">Włącz wersję uproszczoną</translation>
 <translation id="4550003330909367850">Aby wyświetlić lub skopiować hasło, ustaw blokadę ekranu na urządzeniu.</translation>
+<translation id="4556110439722119938">Zakładki, historia, hasła i inne ustawienia zostaną zsynchronizowane z kontem Google, by można było z nich korzystać na dowolnym urządzeniu.</translation>
 <translation id="4558311620361989323">Skróty stron internetowych</translation>
 <translation id="4561979708150884304">Brak połączenia</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
@@ -630,6 +633,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="557283862590186398">Chrome potrzebuje uprawnień dostępu do mikrofonu na tej stronie.</translation>
 <translation id="55737423895878184">Lokalizacja i powiadomienia są włączone</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Pogrupowane karty: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">W <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
@@ -708,6 +712,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192333916571137726">Pobranie pliku</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
+<translation id="6193448654517602979">Wybierz karty</translation>
 <translation id="6194112207524046168">Aby zezwolić Chrome na dostęp do aparatu, musisz też włączyć aparat w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6206551242102657620">Połączenie jest bezpieczne. Informacje o witrynie</translation>
@@ -824,6 +829,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Zresetuj ustawienia tłumaczenia</translation>
 <translation id="6979737339423435258">Od początku</translation>
+<translation id="6980462514016882061">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6985347914332179298">Brak pobranych plików</translation>
 <translation id="6989267951144302301">Nie udało się pobrać</translation>
@@ -850,11 +856,13 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7141896414559753902">Blokuj wyskakujące okienka i przekierowania na stronach (zalecane)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Załaduj oryginalną stronę<ph name="END_LINK" /> z domeny <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Ostatnie 24 godziny</translation>
+<translation id="7161892015146974550">Wybierz kartę <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
+<translation id="722055596168483966">Dostosowywanie usług Google</translation>
 <translation id="723171743924126238">Wybierz zdjęcia</translation>
 <translation id="7233236755231902816">Aby wyświetlać strony internetowe w swoim języku, pobierz najnowszą wersję Chrome</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
@@ -881,6 +889,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7403691278183511381">Pierwsze uruchomienie Chrome</translation>
 <translation id="741204030948306876">Tak</translation>
 <translation id="7413229368719586778">Data rozpoczęcia: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Grupuj karty…</translation>
 <translation id="7423098979219808738">Najpierw zapytaj</translation>
 <translation id="7423538860840206698">Zablokowano odczytywanie schowka</translation>
 <translation id="7431991332293347422">Zarządzaj personalizacją wyszukiwarki i innych funkcji na podstawie historii przeglądania</translation>
@@ -1017,6 +1026,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>
 <translation id="8364299278605033898">Zobacz najpopularniejsze strony</translation>
+<translation id="8364603787714420828">Anuluj wybór karty <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>
@@ -1082,6 +1092,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8853345339104747198">Karta <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Pamięć</translation>
 <translation id="8901170036886848654">Nie znaleziono zakładek</translation>
+<translation id="8904976895050290827">Synchronizacja Chrome</translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>

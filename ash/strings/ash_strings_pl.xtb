@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Metody wprowadzania zostały skonfigurowane przez administratora.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1761222317188459878">Włącz lub wyłącz połączenie sieciowe. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Przewiń w prawo</translation>
 <translation id="1812997170047690955">Co widać na moim ekranie?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4017989525502048489">Wskaźnik laserowy</translation>
+<translation id="4021716437419160885">Przewiń w dół</translation>
 <translation id="4042660782729322247">Udostępniasz ekran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączono w przypadku jednej aplikacji}few{Wyłączono w przypadku # aplikacji}many{Wyłączono w przypadku # aplikacji}other{Wyłączono w przypadku # aplikacji}}</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">Silny</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
+<translation id="495046168593986294">Przewiń w górę</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5030687792513154421">Czas minął</translation>
 <translation id="5035236842988137213">Urządzenie <ph name="DEVICE_NAME" /> zostało połączone z nowym telefonem</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">Aby pobrać aktualizację, uruchom Chromebooka ponownie z podłączoną klawiaturą.</translation>
 <translation id="5992218262414051481">Tryb wysokiego kontrastu został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
+<translation id="602001110135236999">Przewiń w lewo</translation>
+<translation id="6040143037577758943">Zamknij</translation>
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>

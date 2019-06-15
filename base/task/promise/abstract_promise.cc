@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/task/promise/abstract_promise.h"
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/promise/dependent_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
@@ -373,38 +375,37 @@ bool AbstractPromise::OnPrerequisiteCancelled() {
 }
 
 void AbstractPromise::OnResolveDispatchReadyDependents() {
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForResolve();
-  dependent_list = NonThreadSafeReverseList(dependent_list);
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* resolved_prerequisite)
+        : resolved_prerequisite_(resolved_prerequisite) {}
 
-  // Propagate resolve to dependents.
-  DependentList::Node* next;
-  for (DependentList::Node* node = dependent_list; node; node = next) {
-    // We want to release |node->dependent| but we need to do so before
-    // we post a task to execute |dependent| on what might be another thread.
-    scoped_refptr<AbstractPromise> dependent = std::move(node->dependent);
-    // OnPrerequisiteResolved might post a task which destructs |node| on
-    // another thread so load |node->next| now.
-    next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteResolved(this);
-  }
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteResolved(resolved_prerequisite_);
+    }
+    AbstractPromise* resolved_prerequisite_;
+  };
+
+  Visitor visitor(this);
+  dependents_.ResolveAndConsumeAllDependents(&visitor);
 }
 
 void AbstractPromise::OnRejectDispatchReadyDependents() {
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForReject();
-  dependent_list = NonThreadSafeReverseList(dependent_list);
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* rejected_prerequisite)
+        : rejected_prerequisite_(rejected_prerequisite) {}
 
-  // Propagate rejection to dependents. We always propagate rejection
-  // immediately.
-  DependentList::Node* next;
-  for (DependentList::Node* node = dependent_list; node; node = next) {
-    // We want to release |node->dependent| but we need to do so before
-    // we post a task to execute |dependent| on what might be another thread.
-    scoped_refptr<AbstractPromise> dependent = std::move(node->dependent);
-    // OnPrerequisiteRejected might post a task which destructs |node| on
-    // another thread so load |node->next| now.
-    next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteRejected(this);
-  }
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteRejected(rejected_prerequisite_);
+    }
+    AbstractPromise* rejected_prerequisite_;
+  };
+
+  Visitor visitor(this);
+  dependents_.RejectAndConsumeAllDependents(&visitor);
 }
 
 void AbstractPromise::DispatchPromise() {
@@ -416,10 +417,16 @@ void AbstractPromise::DispatchPromise() {
 }
 
 void AbstractPromise::OnCanceled() {
-  if (dependents_.IsCanceled() || dependents_.IsResolved() ||
-      dependents_.IsRejected()) {
+  class Visitor : public DependentList::Visitor {
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteCancelled();
+    }
+  };
+
+  Visitor visitor;
+  if (!dependents_.CancelAndConsumeAllDependents(&visitor))
     return;
-  }
 
   // The executor could be keeping a promise alive, but it's never going to run
   // so clear it.
@@ -431,16 +438,6 @@ void AbstractPromise::OnCanceled() {
     passed_catch_responsibility_ = true;
   }
 #endif
-
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForCancel();
-
-  // Propagate cancellation to dependents.
-  while (dependent_list) {
-    scoped_refptr<AbstractPromise> dependent =
-        std::move(dependent_list->dependent);
-    dependent_list = dependent_list->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteCancelled();
-  }
 
   // We need to release any AdjacencyListNodes we own to prevent memory leaks
   // due to refcount cycles. We can't just clear |prerequisite_list| (which
@@ -526,19 +523,6 @@ void AbstractPromise::OnRejected() {
       node.prerequisite = nullptr;
     }
   }
-}
-
-// static
-DependentList::Node* AbstractPromise::NonThreadSafeReverseList(
-    DependentList::Node* list) {
-  DependentList::Node* prev = nullptr;
-  while (list) {
-    DependentList::Node* next = list->next.load(std::memory_order_relaxed);
-    list->next.store(prev, std::memory_order_relaxed);
-    prev = list;
-    list = next;
-  }
-  return prev;
 }
 
 AbstractPromise::AdjacencyListNode::AdjacencyListNode() = default;

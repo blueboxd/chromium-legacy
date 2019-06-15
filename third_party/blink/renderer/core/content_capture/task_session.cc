@@ -28,7 +28,7 @@ void TaskSession::DocumentSession::AddNodeHolder(cc::NodeHolder node_holder) {
 }
 
 void TaskSession::DocumentSession::AddDetachedNode(int64_t id) {
-  detached_nodes_.push_back(id);
+  detached_nodes_.emplace_back(id);
 }
 
 void TaskSession::DocumentSession::AddChangedNodeHolder(
@@ -36,14 +36,14 @@ void TaskSession::DocumentSession::AddChangedNodeHolder(
   changed_content_.push_back(node_holder);
 }
 
-std::vector<int64_t> TaskSession::DocumentSession::MoveDetachedNodes() {
+WebVector<int64_t> TaskSession::DocumentSession::MoveDetachedNodes() {
   return std::move(detached_nodes_);
 }
 
 scoped_refptr<blink::ContentHolder>
 TaskSession::DocumentSession::GetNextUnsentContentHolder() {
   scoped_refptr<ContentHolder> content_holder;
-  while (!captured_content_.empty() && !content_holder) {
+  while (!captured_content_.IsEmpty() && !content_holder) {
     auto node_holder = captured_content_.back();
     if (node_holder.type == cc::NodeHolder::Type::kID) {
       Node* node = DOMNodeIds::NodeForId(node_holder.id);
@@ -72,7 +72,7 @@ TaskSession::DocumentSession::GetNextUnsentContentHolder() {
 scoped_refptr<blink::ContentHolder>
 TaskSession::DocumentSession::GetNextChangedContentHolder() {
   scoped_refptr<ContentHolder> content_holder;
-  while (!changed_content_.empty() && !content_holder) {
+  while (!changed_content_.IsEmpty() && !content_holder) {
     auto node_holder = changed_content_.back();
     if (node_holder.type == cc::NodeHolder::Type::kID) {
       Node* node = DOMNodeIds::NodeForId(node_holder.id);
@@ -100,7 +100,7 @@ void TaskSession::DocumentSession::Trace(blink::Visitor* visitor) {
 void TaskSession::DocumentSession::Reset() {
   changed_content_.clear();
   captured_content_.clear();
-  detached_nodes_.clear();
+  detached_nodes_.Clear();
 }
 
 TaskSession::TaskSession(SentNodes& sent_nodes) : sent_nodes_(sent_nodes) {}
@@ -116,15 +116,15 @@ TaskSession::DocumentSession* TaskSession::GetNextUnsentDocumentSession() {
 }
 
 void TaskSession::SetCapturedContent(
-    const std::vector<cc::NodeHolder>& captured_content) {
+    const Vector<cc::NodeHolder>& captured_content) {
   DCHECK(!HasUnsentData());
-  DCHECK(!captured_content.empty());
+  DCHECK(!captured_content.IsEmpty());
   GroupCapturedContentByDocument(captured_content);
   has_unsent_data_ = true;
 }
 
 void TaskSession::GroupCapturedContentByDocument(
-    const std::vector<cc::NodeHolder>& captured_content) {
+    const Vector<cc::NodeHolder>& captured_content) {
   for (const cc::NodeHolder& node_holder : captured_content) {
     if (const Node* node = GetNode(node_holder)) {
       node = changed_nodes_.Take(node);

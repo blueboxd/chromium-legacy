@@ -36,6 +36,10 @@ const wchar_t kLogonUiUserTileRegKey[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI"
     L"\\UserTile";
 
+const wchar_t kMicrosoftCryptographyRegKey[] =
+    L"SOFTWARE\\Microsoft\\Cryptography";
+const wchar_t kMicrosoftCryptographyMachineGuidRegKey[] = L"MachineGuid";
+
 namespace {
 
 constexpr wchar_t kAccountPicturesRootRegKey[] =
@@ -167,6 +171,17 @@ HRESULT GetGlobalFlag(const base::string16& name,
                       wchar_t* value,
                       ULONG* length) {
   return GetMachineRegString(kGcpRootKeyName, name, value, length);
+}
+
+base::string16 GetGlobalFlagOrDefault(const base::string16& reg_key,
+                                      const base::string16& default_value) {
+  wchar_t reg_value_buffer[256];
+  ULONG length = base::size(reg_value_buffer);
+  HRESULT hr = GetGlobalFlag(reg_key, reg_value_buffer, &length);
+  if (FAILED(hr))
+    return default_value;
+
+  return reg_value_buffer;
 }
 
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
@@ -320,6 +335,33 @@ HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
 HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid) {
   return SetMachineRegString(kLogonUiUserTileRegKey, sid,
                              base::win::String16FromGUID(cp_guid));
+}
+
+HRESULT GetMachineGuid(base::string16* machine_guid) {
+  // The machine guid is a unique identifier assigned to a computer on every
+  // install of Windows. This guid can be used to uniquely identify this device
+  // to various management services. The same guid is used to identify the
+  // device to Chrome Browser Cloud Management. It is fetched in this file:
+  // chrome/browser/policy/browser_dm_token_storage_win.cc:InitClientId.
+  DCHECK(machine_guid);
+  wchar_t machine_guid_buffer[64];
+  ULONG guid_length = base::size(machine_guid_buffer);
+  HRESULT hr = GetMachineRegString(kMicrosoftCryptographyRegKey,
+                                   kMicrosoftCryptographyMachineGuidRegKey,
+                                   machine_guid_buffer, &guid_length);
+
+  if (SUCCEEDED(hr))
+    *machine_guid = machine_guid_buffer;
+
+  return hr;
+}
+
+HRESULT SetMachineGuidForTesting(const base::string16& machine_guid) {
+  // Set a debug guid for the machine so that unit tests that override the
+  // registry can run properly.
+  return SetMachineRegString(kMicrosoftCryptographyRegKey,
+                             kMicrosoftCryptographyMachineGuidRegKey,
+                             machine_guid);
 }
 
 }  // namespace credential_provider

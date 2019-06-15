@@ -37,10 +37,8 @@ namespace {
 
 class KioskNextShellClientTest : public OobeBaseTest {
  public:
-  // OobeBaseTest:
-  void SetUp() override {
+  KioskNextShellClientTest() : OobeBaseTest() {
     feature_list_.InitAndEnableFeature(ash::features::kKioskNextShell);
-    OobeBaseTest::SetUp();
   }
 
   void Login(const std::string& username) {
@@ -143,11 +141,8 @@ IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest,
 // to the KioskNextShellLaunch test.
 class KioskNextShellClientMashDisabledTest : public KioskNextShellClientTest {
  public:
-  // KioskNextShellClientTest:
-  void SetUp() override {
+  KioskNextShellClientMashDisabledTest() : KioskNextShellClientTest() {
     feature_list_.InitAndDisableFeature(features::kSingleProcessMash);
-
-    KioskNextShellClientTest::SetUp();
   }
 
  private:

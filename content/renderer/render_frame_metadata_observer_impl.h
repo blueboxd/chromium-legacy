@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_FRAME_METADATA_OBSERVER_IMPL_H_
 #define CONTENT_RENDERER_RENDER_FRAME_METADATA_OBSERVER_IMPL_H_
 
+#include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "content/common/content_export.h"
@@ -39,6 +40,9 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
       bool force_send) override;
 
   // mojom::RenderFrameMetadataObserver:
+#if defined(OS_ANDROID)
+  void ReportAllRootScrollsForAccessibility(bool enabled) override;
+#endif
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;
 
  private:
@@ -50,12 +54,19 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
   // |needs_activation_notification| indicates whether the browser process
   // expects notification of activation of the assoicated CompositorFrame from
   // Viz.
-  static bool ShouldSendRenderFrameMetadata(
-      const cc::RenderFrameMetadata& rfm1,
-      const cc::RenderFrameMetadata& rfm2,
-      bool* needs_activation_notification);
+  bool ShouldSendRenderFrameMetadata(const cc::RenderFrameMetadata& rfm1,
+                                     const cc::RenderFrameMetadata& rfm2,
+                                     bool* needs_activation_notification) const;
 
-  // When true this will notifiy |render_frame_metadata_observer_client_| of all
+  void SendLastRenderFrameMetadata();
+
+#if defined(OS_ANDROID)
+  // When true this will notify |render_frame_metadata_observer_client_| of all
+  // frame submissions that involve a root scroll offset change.
+  bool report_all_root_scrolls_for_accessibility_enabled_ = false;
+#endif
+
+  // When true this will notify |render_frame_metadata_observer_client_| of all
   // frame submissions.
   bool report_all_frame_submissions_for_testing_enabled_ = false;
 

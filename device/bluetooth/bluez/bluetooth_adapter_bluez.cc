@@ -69,6 +69,12 @@ namespace {
 const char kAgentPath[] = "/org/chromium/bluetooth_agent";
 const char kGattApplicationObjectPath[] = "/gatt_application";
 
+#if defined(OS_CHROMEOS)
+// Twice the period that field trial configs are fetched at.
+constexpr base::TimeDelta kSetLongTermKeysAfterFirstTimeInstallDuration =
+    base::TimeDelta::FromMinutes(60);
+#endif
+
 void OnUnregisterAgentError(const std::string& error_name,
                             const std::string& error_message) {
   // It's okay if the agent didn't exist, it means we never saw an adapter.
@@ -1137,12 +1143,18 @@ void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
 void BluetoothAdapterBlueZ::PresentChanged(bool present) {
 #if defined(OS_CHROMEOS)
   if (present) {
-    bluez::BluezDBusManager::Get()
-        ->GetBluetoothAdapterClient()
-        ->SetLongTermKeys(
-            object_path_, device::GetBlockedLongTermKeys(),
-            base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeysError,
-                       weak_ptr_factory_.GetWeakPtr()));
+    SetLongTermKeys();
+
+    if (!set_long_term_keys_after_first_time_install_timer_.IsRunning()) {
+      // The LTK list in field trials would not yet have been available if we
+      // are in a first-time install situation. Schedule SetLongTermKeys() to be
+      // called again in the future when the field trials will definitely be
+      // available.
+      set_long_term_keys_after_first_time_install_timer_.Start(
+          FROM_HERE, kSetLongTermKeysAfterFirstTimeInstallDuration,
+          base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeys,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 #endif
 
@@ -1912,11 +1924,25 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
   error_callback.Run(code);
 }
 
+#if defined(OS_CHROMEOS)
+void BluetoothAdapterBlueZ::SetLongTermKeys() {
+  // This method will be called and also queued up again when the adapter
+  // becomes present. See PresentChanged().
+  if (!IsPresent())
+    return;
+
+  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->SetLongTermKeys(
+      object_path_, device::GetBlockedLongTermKeys(),
+      base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeysError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void BluetoothAdapterBlueZ::SetLongTermKeysError(
     const std::string& error_name,
     const std::string& error_message) {
   BLUETOOTH_LOG(ERROR) << "Setting long term keys failed: error: " << error_name
                        << " - " << error_message;
 }
+#endif
 
 }  // namespace bluez

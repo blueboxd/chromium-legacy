@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/metrics/field_trial.h"
 #include "base/win/windows_version.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

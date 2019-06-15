@@ -180,6 +180,18 @@ static const int kInvalidNextPreviousFlagsValue = -1;
 static const char* kOOPIF = "OOPIF";
 static const char* kRenderer = "Renderer";
 
+#if defined(OS_ANDROID)
+// With 32 bit pixels, this would mean less than 400kb per buffer. Much less
+// than required for, say, nHD.
+static const int kSmallScreenPixelThreshold = 1e5;
+bool IsSmallScreen(const gfx::Size& size) {
+  int area = 0;
+  if (!size.GetCheckedArea().AssignIfValid(&area))
+    return false;
+  return area < kSmallScreenPixelThreshold;
+}
+#endif
+
 class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
  public:
   explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
@@ -462,7 +474,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #endif
       first_update_visual_state_after_hidden_(false),
       was_shown_time_(base::TimeTicks::Now()),
-      current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
@@ -1777,7 +1788,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportSize(), screen_info_);
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is frozen, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -3019,7 +3029,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
       compositor_deps->UsingSynchronousCompositing();
-  bool using_low_memory_policy = base::SysInfo::IsLowEndDevice();
+  bool using_low_memory_policy =
+      base::SysInfo::IsLowEndDevice() && !IsSmallScreen(screen_size);
 
   settings.use_stream_video_draw_quad = true;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
@@ -3610,10 +3621,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                      image_offset, possible_drag_event_info_));
 }
 
-uint32_t RenderWidget::GetContentSourceId() {
-  return current_content_source_id_;
-}
-
 void RenderWidget::DidNavigate() {
   // Blink may be navigating still between the Close IPC and the task that
   // actually closes this class, and for a main frame that would come through
@@ -3621,8 +3628,6 @@ void RenderWidget::DidNavigate() {
   if (closing_)
     return;
 
-  ++current_content_source_id_;
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   layer_tree_view_->ClearCachesOnNextCommit();
 }
 

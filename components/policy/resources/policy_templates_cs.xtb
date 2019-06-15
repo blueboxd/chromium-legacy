@@ -426,6 +426,12 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatel toto nastavení bude moci změnit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).
       </translation>
 <translation id="1767673020408652620">Povolit doporučení aplikací ve spouštěči při prázdném vyhledávacím poli</translation>
+<translation id="17719159826324007">
+      Když je tato zásada nastavená na hodnotu ArcSession a byl spuštěn systém Android, bude po odhlášení uživatele vynucen restart zařízení.
+      Když je nastavená na možnost Always (Vždy), bude restart zařízení vynucen po každém odhlášení uživatele.
+      Pokud je ponechána nenastavená, nemá žádný účinek a restart se po odhlášení uživatele nevynucuje. To samé platí i v případě, že je nastavená na možnost Never (Nikdy).
+      Tato zásada se projeví jen u nepřidružených uživatelů.
+      </translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
 <translation id="1793346220873697538">Ve výchozím nastavení vypnout tisk s kódem PIN</translation>
 <translation id="1797233582739332495">Zobrazovat uživateli opakovaně výzvu s oznámením, že je vyžadován restart</translation>
@@ -916,6 +922,7 @@ Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na j
           Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="268577405881275241">Aktivace funkce datové komprese proxy serveru</translation>
 <translation id="2693108589792503178">Konfiguruje adresu URL pro změnu hesla.</translation>
+<translation id="2694143893026486692">Aktivace zadokované lupy</translation>
 <translation id="2706708761587205154">Povolit pouze tisk s kódem PIN</translation>
 <translation id="2710534340210290498">Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci uzamknout obrazovku (k dispozici bude pouze odhlášení od uživatelské relace). Pokud je tato zásada nastavena na hodnotu true nebo není nastavena, uživatelé ověření pomocí hesla budou moci obrazovku uzamknout.</translation>
 <translation id="2731627323327011390">Zakázat aplikacím ARC používání certifikátů systému <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1152,6 +1159,7 @@ Platné jsou tyto specifikace vzorů adres URL:
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
 
           Tato zásada je zohledňována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Tato zásada povoluje uživatelům funkce WebDriver přepsat zásady, které by mohly narušovat operace této funkce.
 
 V současné době tato zásada deaktivuje zásady SitePerProcess a IsolateOrigins.
@@ -1653,12 +1661,6 @@ Tato zásada se nevztahuje na anonymní režim.</translation>
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, zařízení se systémem <ph name="PRODUCT_OS_NAME" /> automaticky kontrolují aktualizace.
 
       Upozornění: Doporučuje se ponechat automatické aktualizace zapnuté, aby uživatelé mohli dostávat aktualizace softwaru a kritické opravy zabezpečení. Vypnutí automatických aktualizací by uživatele mohlo vystavit riziku.</translation>
-<translation id="4018000735882846261">Tato zásada dává Asistentovi Google oprávnění naslouchat hlasové aktivační frázi.
-
-      Pokud je tato zásada zapnutá, Asistent Google bude naslouchat hlasové aktivační frázi.
-      Pokud je tato zásada vypnutá, Asistent Google hlasové aktivační frázi naslouchat nebude.
-      Pokud tato zásada není nastavená, Asistent Google hlasové aktivační frázi naslouchat nebude.
-      </translation>
 <translation id="4020682745012723568">Aplikace Android k souborům cookie převedeným do profilu uživatele nemají přístup.</translation>
 <translation id="402759845255257575">Nepovolovat spouštění JavaScriptu žádnému webu</translation>
 <translation id="4027608872760987929">Aktivovat výchozího poskytovatele vyhledávání</translation>

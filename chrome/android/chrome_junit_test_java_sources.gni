@@ -148,6 +148,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/geo/PlatformNetworksManagerTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTrackerTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionProcessorTest.java",
   "junit/src/org/chromium/chrome/browser/page_info/PermissionParamsListBuilderUnitTest.java",

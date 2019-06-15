@@ -742,13 +742,15 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
+    const int index =
+        browser->tab_strip_model()->GetIndexOfWebContents(contents);
     pinned = browser->tab_strip_model()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
+    const auto old_group = browser->tab_strip_model()->GetTabGroupForTab(index);
     browser->tab_strip_model()->InsertWebContentsAt(
-        index + 1, std::move(contents_dupe), add_types);
+        index + 1, std::move(contents_dupe), add_types, old_group);
   } else {
     Browser* new_browser = NULL;
     if (browser->is_app() && !browser->is_type_popup()) {

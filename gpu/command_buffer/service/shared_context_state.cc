@@ -223,11 +223,16 @@ bool SharedContextState::InitializeGL(
     context_ = std::move(virtual_context);
     MakeCurrent(nullptr);
   }
+
+  // TODO(penghuang): query extension from VulkanInstance.
+  support_vulkan_external_object_ =
+      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative;
+
   return true;
 }
 
-bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
-  if (!GrContextIsGL())
+bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
+  if (!GrContextIsGL() && !needs_gl)
     return true;
 
   if (context_lost_)

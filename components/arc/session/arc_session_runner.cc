@@ -220,6 +220,11 @@ void ArcSessionRunner::OnShutdown() {
   DCHECK(!arc_session_);
 }
 
+void ArcSessionRunner::SetUserIdHashForProfile(const std::string& hash) {
+  if (arc_session_)
+    arc_session_->SetUserIdHashForProfile(hash);
+}
+
 void ArcSessionRunner::SetRestartDelayForTesting(
     const base::TimeDelta& restart_delay) {
   DCHECK(!arc_session_);

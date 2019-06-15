@@ -62,7 +62,6 @@ class PrefetchRequestTestBase : public testing::Test {
       test_shared_url_loader_factory_;
   network::ResourceRequest last_resource_request_;
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

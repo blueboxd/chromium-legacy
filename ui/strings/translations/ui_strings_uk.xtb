@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="1409544243779336081">Рекомендовані додатки</translation>
+<translation id="1498028757988366001">Ви раніше це шукали. Якщо видалити запит "<ph name="QUERY" />" з історії, він назавжди зникне з вашого облікового запису на всіх пристроях.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвилина та }one{# хвилина та }few{# хвилини та }many{# хвилин і }other{# хвилини та }}</translation>
 <translation id="1643823602425662293">Сповіщення</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 хв тому}one{# хв тому}few{# хв тому}many{# хв тому}other{# хв тому}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Залишилась 1 хвилина}one{Залишилася # хвилина}few{Залишилося # хвилини}many{Залишилося # хвилин}other{Залишилося # хвилини}}</translation>
+<translation id="7430878839542012341">Видалити цей пошуковий запит з історії?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Смайли</translation>
 <translation id="7658239707568436148">Скасувати</translation>

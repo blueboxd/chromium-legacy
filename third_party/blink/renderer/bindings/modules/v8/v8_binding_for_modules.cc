@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"

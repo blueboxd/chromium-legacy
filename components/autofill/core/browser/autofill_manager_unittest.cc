@@ -597,8 +597,8 @@ class AutofillManagerTest : public testing::Test {
   MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   variations::testing::VariationParamsManager variation_params_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {

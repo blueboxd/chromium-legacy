@@ -1677,7 +1677,7 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         listener->histogram_value, listener->id.sub_event_name,
         listener->id.render_process_id, listener->id.worker_thread_id,
         listener->id.service_worker_version_id, std::move(args_filtered),
-        EventRouter::USER_GESTURE_UNKNOWN, EventFilteringInfo());
+        EventFilteringInfo());
   }
 }
 

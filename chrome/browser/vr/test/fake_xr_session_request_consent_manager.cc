@@ -49,6 +49,15 @@ FakeXRSessionRequestConsentManager::ShowDialogAndGetConsent(
       confirm_dialog->CloseDialog();
       break;
   }
+
+  // Allow the dialog to close cleanly.
+  base::RunLoop dialog_clean_close_loop(
+      base::RunLoop::Type::kNestableTasksAllowed);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, dialog_clean_close_loop.QuitWhenIdleClosure(),
+      kConsentDialogDisplayingTime);
+  dialog_clean_close_loop.Run();
+
   return confirm_dialog;
 }
 

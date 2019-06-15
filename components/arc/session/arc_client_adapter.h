@@ -43,6 +43,9 @@ class ArcClientAdapter {
   // Asynchronously stops the ARC instance.
   virtual void StopArcInstance() = 0;
 
+  // Sets a hash string of the profile user ID.
+  virtual void SetUserIdHashForProfile(const std::string& hash) = 0;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

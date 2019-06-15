@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1409544243779336081">توصیه برنامه</translation>
+<translation id="1498028757988366001">قبلاً این را جستجو کردید. اگر «<ph name="QUERY" />» را از سابقه‌تان حذف کنید، این پرسمان در همه دستگاه‌ها از حسابتان به‌طور دائم برداشته خواهد شد.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
 <translation id="1643823602425662293">اعلان</translation>
 <translation id="169515659049020177">تبدیل</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
+<translation id="7430878839542012341">این جستجو از سابقه‌تان حذف شود؟</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ترابایت</translation>
 <translation id="7507604095951736240">اموجی</translation>
 <translation id="7658239707568436148">لغو</translation>

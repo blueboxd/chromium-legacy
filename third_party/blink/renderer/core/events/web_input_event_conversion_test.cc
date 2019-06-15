@@ -384,9 +384,9 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
                                          120);
     web_mouse_event2.movement_y = 30;
 
-    std::vector<const WebInputEvent*> events;
-    events.push_back(&web_mouse_event1);
-    events.push_back(&web_mouse_event2);
+    WebVector<const WebInputEvent*> events;
+    events.emplace_back(&web_mouse_event1);
+    events.emplace_back(&web_mouse_event2);
 
     Vector<WebMouseEvent> coalescedevents =
         TransformWebMouseEventVector(view, events);
@@ -558,9 +558,9 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
                              WebFloatPoint(120, 90), WebFloatPoint(120, 90)),
         60, 30);
 
-    std::vector<const WebInputEvent*> events;
-    events.push_back(&web_pointer_event1);
-    events.push_back(&web_pointer_event2);
+    WebVector<const WebInputEvent*> events;
+    events.emplace_back(&web_pointer_event1);
+    events.emplace_back(&web_pointer_event2);
 
     Vector<WebPointerEvent> coalescedevents =
         TransformWebPointerEventVector(view, events);

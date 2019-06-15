@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3658159451045945436">Om du återställer begränsat läge raderas databesparingshistoriken, inklusive listan med webbplatser som du har besökt.</translation>
 <translation id="3662546969139119822">Det finns ingen historik här</translation>
+<translation id="3663367437272849150">Gruppera <ph name="NUM_SELECTED" /> flikar.</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
 <translation id="3692944402865947621">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte gick att nå lagringsplatsen.</translation>
 <translation id="3714981814255182093">Öppna sökfältet</translation>
@@ -466,6 +467,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="447252321002412580">Bidra till att förbättra Chromes funktioner och prestanda</translation>
 <translation id="4479647676395637221">Fråga innan webbplatser tillåts att använda kameran (rekommenderas)</translation>
 <translation id="4479972344484327217"><ph name="MODULE" /> installeras i Chrome …</translation>
+<translation id="4482194545587547824">Google kan använda webbhistoriken för att anpassa Sök och andra tjänster från Google.</translation>
 <translation id="4487967297491345095">All appdata i Chrome raderas permanent. Detta omfattar alla filer, inställningar, konton, databaser osv.</translation>
 <translation id="4493497663118223949">Begränsat läge har aktiverats</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{för # dag sedan}other{för # dagar sedan}}</translation>
@@ -476,6 +478,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4538018662093857852">Aktivera begränsat läge</translation>
 <translation id="4550003330909367850">Ange ett skärmlås på enheten om du vill visa eller kopiera lösenordet här.</translation>
+<translation id="4556110439722119938">Bokmärken, historik, lösenord och andra inställningar synkroniseras med ditt Google-konto så att du kan använda dem på alla enheter.</translation>
 <translation id="4558311620361989323">Kortkommandon på webbsidor</translation>
 <translation id="4561979708150884304">Ingen anslutning</translation>
 <translation id="4565377596337484307">Dölj lösenord</translation>
@@ -630,6 +633,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="557283862590186398">Du behöver ge Chrome behörighet att använda mikrofonen på den här webbplatsen.</translation>
 <translation id="55737423895878184">Plats och aviseringar tillåts</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> flikar har grupperats</translation>
 <translation id="5581519193887989363">Du kan alltid välja vad som ska synkroniseras i <ph name="BEGIN_LINK1" />inställningarna<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="5596627076506792578">Fler alternativ</translation>
@@ -708,6 +712,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192333916571137726">Ladda ned fil</translation>
 <translation id="6192792657125177640">Undantag</translation>
+<translation id="6193448654517602979">Välj flikar</translation>
 <translation id="6194112207524046168">Om du vill ge Chrome åtkomst till kameran måste du även aktivera kameran i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
 <translation id="6206551242102657620">Anslutningen är säker. Webbplatsinformation</translation>
@@ -824,6 +829,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Återställ översättningsinställningar</translation>
 <translation id="6979737339423435258">Genom tiderna</translation>
+<translation id="6980462514016882061">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="6985347914332179298">Det finns inga nedladdningar här</translation>
 <translation id="6989267951144302301">Nedladdning misslyckades</translation>
@@ -850,11 +856,13 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7141896414559753902">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Läs in originalsidan<ph name="END_LINK" /> från <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Senaste 24 timmarna</translation>
+<translation id="7161892015146974550">Markera fliken <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan ändra detta senare i inställningarna</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
+<translation id="722055596168483966">Anpassa Googles tjänster</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7233236755231902816">Skaffa den senaste versionen av Chrome och få webben översatt till ditt språk</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
@@ -881,6 +889,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7403691278183511381">Första körningen av Chrome</translation>
 <translation id="741204030948306876">Ja</translation>
 <translation id="7413229368719586778">Startdatum <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Gruppera flikar …</translation>
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7423538860840206698">Läsbehörighet till Urklipp har nekats</translation>
 <translation id="7431991332293347422">Styr hur webbhistoriken får användas för att anpassa Sök med mera</translation>
@@ -1017,6 +1026,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
+<translation id="8364603787714420828">Avmarkera fliken <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8378714024927312812">Hanteras av organisationen</translation>
@@ -1082,6 +1092,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Inga bokmärken hittades</translation>
+<translation id="8904976895050290827">Synkronisera med Chrome</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
@@ -1099,6 +1110,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8986494364107987395">Skicka användningsstatistik och kraschrapporter till Google automatiskt</translation>
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
+<translation id="9005637476204108703">Tryck här för att hantera dina konton</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>
@@ -1119,6 +1131,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="9155898266292537608">Du kan även söka med ett snabbt tryck eller ett ord</translation>
 <translation id="9169594135889675189">Lägg till ny flik i gruppen</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
+<translation id="9190112541605496997">Tryck på knappen Hantera konto om du vill hantera dina konton</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>

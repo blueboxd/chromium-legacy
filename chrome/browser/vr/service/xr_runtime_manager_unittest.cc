@@ -21,30 +21,6 @@
 
 namespace vr {
 
-namespace {
-
-class XRRuntimeManagerForTesting : public XRRuntimeManager {
- public:
-  explicit XRRuntimeManagerForTesting(ProviderList providers)
-      : XRRuntimeManager(std::move(providers)) {}
-  ~XRRuntimeManagerForTesting() override = default;
-
-  size_t NumberOfConnectedServices() {
-    return XRRuntimeManager::NumberOfConnectedServices();
-  }
-
-  // Expose this test-only method as public for tests.
-  using XRRuntimeManager::GetRuntimeForTest;
-};
-
-class VRServiceImplForTesting : public VRServiceImpl {
- public:
-  VRServiceImplForTesting() : VRServiceImpl() {}
-  ~VRServiceImplForTesting() override = default;
-};
-
-}  // namespace
-
 class XRRuntimeManagerTest : public testing::Test {
  public:
   static void onDeviceReturned(device::mojom::XRDevicePtr ptr) {}
@@ -56,39 +32,52 @@ class XRRuntimeManagerTest : public testing::Test {
   void SetUp() override {
     std::vector<std::unique_ptr<device::VRDeviceProvider>> providers;
     provider_ = new device::FakeVRDeviceProvider();
-    providers.emplace_back(
-        std::unique_ptr<device::FakeVRDeviceProvider>(provider_));
-    new XRRuntimeManagerForTesting(std::move(providers));
+    providers.emplace_back(base::WrapUnique(provider_));
+    xr_runtime_manager_ =
+        XRRuntimeManager::CreateInstance(std::move(providers));
   }
 
-  void TearDown() override { EXPECT_FALSE(XRRuntimeManager::HasInstance()); }
+  void TearDown() override {
+    DropRuntimeManagerRef();
+    EXPECT_FALSE(XRRuntimeManager::HasInstance());
+  }
 
-  std::unique_ptr<VRServiceImplForTesting> BindService() {
+  std::unique_ptr<VRServiceImpl> BindService() {
     device::mojom::VRServiceClientPtr proxy;
     device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
-    auto service = base::WrapUnique(new VRServiceImplForTesting());
-    XRRuntimeManager::GetInstance()->AddService(service.get());
+    auto service = base::WrapUnique(new VRServiceImpl());
     service->RequestDevice(
         base::BindRepeating(&XRRuntimeManagerTest::onDeviceReturned));
     service->SetClient(std::move(proxy));
     return service;
   }
 
-  XRRuntimeManagerForTesting* DeviceManager() {
+  scoped_refptr<XRRuntimeManager> GetRuntimeManager() {
     EXPECT_TRUE(XRRuntimeManager::HasInstance());
-    return static_cast<XRRuntimeManagerForTesting*>(
-        XRRuntimeManager::GetInstance());
+    return XRRuntimeManager::GetOrCreateInstance();
   }
 
-  size_t ServiceCount() { return DeviceManager()->NumberOfConnectedServices(); }
+  device::mojom::XRRuntime* GetRuntimeForTest(
+      device::mojom::XRDeviceId device_id) {
+    return GetRuntimeManager()->GetRuntimeForTest(device_id);
+  }
+
+  size_t ServiceCount() {
+    return GetRuntimeManager()->NumberOfConnectedServices();
+  }
 
   device::FakeVRDeviceProvider* Provider() {
     EXPECT_TRUE(XRRuntimeManager::HasInstance());
     return provider_;
   }
 
+  // Drops the internal XRRuntimeManagerRef. This is useful for testing the
+  // reference counting behavior of the XRRuntimeManager singleton.
+  void DropRuntimeManagerRef() { xr_runtime_manager_ = nullptr; }
+
  private:
   device::FakeVRDeviceProvider* provider_ = nullptr;
+  scoped_refptr<XRRuntimeManager> xr_runtime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(XRRuntimeManagerTest);
 };
@@ -111,8 +100,8 @@ TEST_F(XRRuntimeManagerTest, GetNoDevicesTest) {
   EXPECT_TRUE(Provider()->Initialized());
 
   // GetDeviceByIndex should return nullptr if an invalid index in queried.
-  device::mojom::XRRuntime* queried_device = DeviceManager()->GetRuntimeForTest(
-      device::mojom::XRDeviceId::GVR_DEVICE_ID);
+  device::mojom::XRRuntime* queried_device =
+      GetRuntimeForTest(device::mojom::XRDeviceId::GVR_DEVICE_ID);
   EXPECT_EQ(nullptr, queried_device);
 }
 
@@ -127,6 +116,8 @@ TEST_F(XRRuntimeManagerTest, DeviceManagerRegistration) {
   service_1.reset();
   EXPECT_EQ(1u, ServiceCount());
   service_2.reset();
+
+  DropRuntimeManagerRef();
   EXPECT_FALSE(XRRuntimeManager::HasInstance());
 }
 
@@ -143,9 +134,9 @@ TEST_F(XRRuntimeManagerTest, AddRemoveDevices) {
   device::mojom::XRSessionOptions options = {};
   options.environment_integration = true;
   options.immersive = true;
-  EXPECT_TRUE(DeviceManager()->GetRuntimeForOptions(&options));
+  EXPECT_TRUE(GetRuntimeManager()->GetRuntimeForOptions(&options));
   Provider()->RemoveDevice(device->GetId());
-  EXPECT_TRUE(!DeviceManager()->GetRuntimeForOptions(&options));
+  EXPECT_TRUE(!GetRuntimeManager()->GetRuntimeForOptions(&options));
 }
 
 }  // namespace vr

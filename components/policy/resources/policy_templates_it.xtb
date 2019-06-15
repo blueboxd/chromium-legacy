@@ -433,6 +433,12 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
       Se il criterio non è configurato o è disattivato, l'utente potrà modificare questa impostazione (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).
       </translation>
 <translation id="1767673020408652620">Attiva consigli di app a stato nullo della casella di ricerca</translation>
+<translation id="17719159826324007">
+      Se è impostato su ArcSession, questa norma forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
+      Se è impostato su Sempre, forza il riavvio del dispositivo a ogni uscita dell'utente.
+      Se non è impostato, non sortisce alcun effetto e non viene forzato alcun riavvio all'uscita dell'utente. Lo stesso accade se è impostato su Mai.
+      Questo criterio ha effetti solo per gli utenti non affiliati.
+      </translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
 <translation id="1793346220873697538">Disattiva la stampa PIN per impostazione predefinita</translation>
 <translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
@@ -907,6 +913,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
+<translation id="2694143893026486692">Lente d'ingrandimento ancorata attivata</translation>
 <translation id="2706708761587205154">Consenti la stampa solo con PIN</translation>
 <translation id="2710534340210290498">Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se l'impostazione viene impostata su true o non viene configurata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
@@ -1093,9 +1100,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
-          Se questo criterio non viene impostata, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.
+          Se questo criterio non viene impostato, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.
 
-          Quando vengono attivate le funzionalità di accessibilità (in altri modi, ad esempio con una combinazione di tasti), le opzioni di accessibilità verranno sempre visualizzate nel menu della barra delle applicazioni.</translation>
+          Quando vengono attivate le funzioni di accessibilità (in altri modi, ad esempio con una combinazione di tasti), le opzioni di accessibilità verranno sempre visualizzate nel menu della barra delle applicazioni.</translation>
 <translation id="3011301228198307065">Consente di configurare l'URL della home page predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
 
           La home page è la pagina che viene aperta facendo clic sul pulsante Home. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
@@ -1141,6 +1148,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Questa norma consente agli utenti della funzione WebDriver di eseguire l'override delle norme che possono interferire con il relativo funzionamento.
 
       Al momento questa norma disattiva le norme SitePerProcess e IsolateOrigins.
@@ -1639,12 +1647,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 Se questa norma non viene configurata o viene impostata su False, i dispositivi <ph name="PRODUCT_OS_NAME" /> controllano automaticamente la disponibilità di aggiornamenti.
 
 Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per consentire agli utenti di ricevere gli aggiornamenti software e le correzioni di sicurezza fondamentali. Disattivare gli aggiornamenti automatici potrebbe mettere a rischio gli utenti.</translation>
-<translation id="4018000735882846261">Questa norma autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
-
-      Se la norma viene attivata, l'Assistente Google ascolta la frase di attivazione vocale.
-      Se la norma viene disattivata, l'Assistente Google non ascolta la frase di attivazione vocale.
-      Se la norma non è impostata, l'Assistente Google non ascolta la frase di attivazione vocale.
-      </translation>
 <translation id="4020682745012723568">Le app Android non possono accedere ai cookie trasferiti al profilo dell'utente.</translation>
 <translation id="402759845255257575">Non consentire ad alcun sito di eseguire JavaScript</translation>
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
@@ -1791,7 +1793,7 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="4285674129118156176">Consenti agli utenti non affiliati di usare ARC</translation>
-<translation id="4289903996435140853">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
+<translation id="4289903996435140853">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
 
         Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
 
@@ -1937,7 +1939,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
-<translation id="4661889655253181651">Le Impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
+<translation id="4661889655253181651">Le impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
 <translation id="4665897631924472251">Impostazioni di gestione delle estensioni</translation>
 <translation id="4668325077104657568">Impostazione immagini predefinite</translation>
 <translation id="4670865688564083639">Minimo:</translation>
@@ -2179,7 +2181,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5213038356678567351">Siti web che non devono mai attivare il cambio di browser.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
-<translation id="5221394278852982313">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
+<translation id="5221394278852982313">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
 
         Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
 

@@ -17,11 +17,7 @@ namespace content {
 // URLLoader.
 class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
  public:
-  // Factory function to create an instance of the AppCacheResourceRequest
-  // class.
-  static std::unique_ptr<AppCacheURLLoaderRequest> Create(
-      const network::ResourceRequest& request);
-
+  explicit AppCacheURLLoaderRequest(const network::ResourceRequest& request);
   ~AppCacheURLLoaderRequest() override;
 
   // AppCacheRequest overrides.
@@ -48,9 +44,6 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   }
 
   base::WeakPtr<AppCacheURLLoaderRequest> GetWeakPtr();
-
- protected:
-  explicit AppCacheURLLoaderRequest(const network::ResourceRequest& request);
 
  private:
   network::ResourceRequest request_;

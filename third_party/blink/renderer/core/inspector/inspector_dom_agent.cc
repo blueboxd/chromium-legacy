@@ -976,6 +976,7 @@ Response InspectorDOMAgent::performSearch(
 
   unsigned query_length = whitespace_trimmed_query.length();
   bool start_tag_found = !whitespace_trimmed_query.find('<');
+  bool start_closing_tag_found = !whitespace_trimmed_query.Find("</");
   bool end_tag_found =
       whitespace_trimmed_query.ReverseFind('>') + 1 == query_length;
   bool start_quote_found = !whitespace_trimmed_query.find('"');
@@ -985,7 +986,9 @@ Response InspectorDOMAgent::performSearch(
 
   String tag_name_query = whitespace_trimmed_query;
   String attribute_query = whitespace_trimmed_query;
-  if (start_tag_found)
+  if (start_closing_tag_found)
+    tag_name_query = tag_name_query.Right(tag_name_query.length() - 2);
+  else if (start_tag_found)
     tag_name_query = tag_name_query.Right(tag_name_query.length() - 1);
   if (end_tag_found)
     tag_name_query = tag_name_query.Left(tag_name_query.length() - 1);

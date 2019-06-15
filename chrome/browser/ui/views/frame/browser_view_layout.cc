@@ -124,25 +124,8 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
-BrowserViewLayout::BrowserViewLayout()
-    : browser_(nullptr),
-      browser_view_(nullptr),
-      top_container_(nullptr),
-      tab_strip_(nullptr),
-      toolbar_(nullptr),
-      bookmark_bar_(nullptr),
-      infobar_container_(nullptr),
-      contents_container_(nullptr),
-      download_shelf_(nullptr),
-      immersive_mode_controller_(nullptr),
-      dialog_host_(new WebContentsModalDialogHostViews(this)),
-      web_contents_modal_dialog_top_y_(-1) {}
-
-BrowserViewLayout::~BrowserViewLayout() {
-}
-
-void BrowserViewLayout::Init(
-    BrowserViewLayoutDelegate* delegate,
+BrowserViewLayout::BrowserViewLayout(
+    std::unique_ptr<BrowserViewLayoutDelegate> delegate,
     Browser* browser,
     views::ClientView* browser_view,
     views::View* top_container,
@@ -151,18 +134,20 @@ void BrowserViewLayout::Init(
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    ImmersiveModeController* immersive_mode_controller) {
-  delegate_.reset(delegate);
-  browser_ = browser;
-  browser_view_ = browser_view;
-  top_container_ = top_container;
-  tab_strip_region_view_ = tab_strip_region_view;
-  tab_strip_ = tab_strip;
-  toolbar_ = toolbar;
-  infobar_container_ = infobar_container;
-  contents_container_ = contents_container;
-  immersive_mode_controller_ = immersive_mode_controller;
-}
+    ImmersiveModeController* immersive_mode_controller)
+    : delegate_(std::move(delegate)),
+      browser_(browser),
+      browser_view_(browser_view),
+      top_container_(top_container),
+      tab_strip_region_view_(tab_strip_region_view),
+      toolbar_(toolbar),
+      infobar_container_(infobar_container),
+      contents_container_(contents_container),
+      immersive_mode_controller_(immersive_mode_controller),
+      tab_strip_(tab_strip),
+      dialog_host_(std::make_unique<WebContentsModalDialogHostViews>(this)) {}
+
+BrowserViewLayout::~BrowserViewLayout() = default;
 
 WebContentsModalDialogHost*
     BrowserViewLayout::GetWebContentsModalDialogHost() {

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class BLINK_EXPORT VideoTrackAdapterSettings {
+class BLINK_MODULES_EXPORT VideoTrackAdapterSettings {
  public:
   // Creates a VideoTrackAdapterSettings with no target resolution or frame rate
   // and without any constraints on the resolution.
@@ -66,7 +66,7 @@ class BLINK_EXPORT VideoTrackAdapterSettings {
 // |desired_size| is updated successfully, false otherwise.
 // |desired_size| is not updated if |settings| has rescaling disabled and
 // |input_size| is invalid.
-BLINK_EXPORT bool CalculateDesiredVideoTrackSize(
+BLINK_MODULES_EXPORT bool CalculateDesiredVideoTrackSize(
     bool is_rotated,
     const gfx::Size& input_size,
     const VideoTrackAdapterSettings& settings,

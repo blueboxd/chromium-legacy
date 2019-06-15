@@ -69,12 +69,16 @@ cr.define('duplex_settings_test', function() {
       assertFalse(collapse.opened);
       assertFalse(duplexSection.getSettingValue('duplex'));
       assertFalse(duplexSection.getSettingValue('duplexShortEdge'));
+      assertFalse(duplexSection.getSetting('duplex').setFromUi);
+      assertFalse(duplexSection.getSetting('duplexShortEdge').setFromUi);
 
       checkbox.checked = true;
       checkbox.dispatchEvent(new CustomEvent('change'));
       assertTrue(collapse.opened);
       assertTrue(duplexSection.getSettingValue('duplex'));
       assertFalse(duplexSection.getSettingValue('duplexShortEdge'));
+      assertTrue(duplexSection.getSetting('duplex').setFromUi);
+      assertFalse(duplexSection.getSetting('duplexShortEdge').setFromUi);
 
       const select = duplexSection.$$('select');
       assertEquals(print_preview.DuplexMode.LONG_EDGE.toString(), select.value);
@@ -85,6 +89,8 @@ cr.define('duplex_settings_test', function() {
           duplexSection, print_preview.DuplexMode.SHORT_EDGE.toString());
       assertTrue(duplexSection.getSettingValue('duplex'));
       assertTrue(duplexSection.getSettingValue('duplexShortEdge'));
+      assertTrue(duplexSection.getSetting('duplex').setFromUi);
+      assertTrue(duplexSection.getSetting('duplexShortEdge').setFromUi);
     });
 
     if (cr.isChromeOS) {

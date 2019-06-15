@@ -133,6 +133,12 @@
       <structure name="IDR_PRINT_PREVIEW_PRINT_PREVIEW_UTILS_JS"
                  file="print_preview_utils.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_PRINT_DARK_MODE_BEHAVIOR_HTML"
+                 file="dark_mode_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_PRINT_DARK_MODE_BEHAVIOR_JS"
+                 file="dark_mode_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_DOCUMENT_INFO_HTML"
                  file="data/document_info.html"
                  type="chrome_html" />

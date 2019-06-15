@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 450 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 452 PASS, 54 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -492,10 +492,10 @@ FAIL RTCStatsEvent interface: existence and properties of interface prototype ob
 FAIL RTCStatsEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
 FAIL RTCStatsEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
 FAIL RTCStatsEvent interface: attribute report assert_own_property: self does not have own property "RTCStatsEvent" expected property "RTCStatsEvent" missing
-FAIL RTCError interface: existence and properties of interface object assert_equals: prototype of self's property "RTCError" is not Function.prototype expected function "function () { [native code] }" but got function "function DOMException() { [native code] }"
+PASS RTCError interface: existence and properties of interface object
 PASS RTCError interface object length
 PASS RTCError interface object name
-FAIL RTCError interface: existence and properties of interface prototype object assert_equals: prototype of RTCError.prototype is not Object.prototype expected object "[object Object]" but got [stringifying object threw TypeError: Illegal invocation with type object]
+PASS RTCError interface: existence and properties of interface prototype object
 PASS RTCError interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCError interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCError interface: attribute errorDetail

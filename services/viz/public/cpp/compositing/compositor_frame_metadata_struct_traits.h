@@ -73,11 +73,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.deadline;
   }
 
-  static uint32_t content_source_id(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.content_source_id;
-  }
-
   static const viz::BeginFrameAck& begin_frame_ack(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.begin_frame_ack;

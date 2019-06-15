@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1398853756734560583">Maksimeeri</translation>
 <translation id="1409544243779336081">Rakenduse soovitus</translation>
+<translation id="1498028757988366001">Olete seda varem otsinud. Päringu „<ph name="QUERY" />” kustutamisel ajaloost eemaldatakse see teie kontolt jäädavalt kõigis teie seadmetes.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut ja }other{# minutit ja }}</translation>
 <translation id="1643823602425662293">Märguanne</translation>
 <translation id="169515659049020177">Tõstuklahv</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min tagasi}other{# min tagasi}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut on jäänud}other{# minutit on jäänud}}</translation>
+<translation id="7430878839542012341">Kas kustutada see otsing teie ajaloost?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emotikonid</translation>
 <translation id="7658239707568436148">Tühista</translation>

@@ -458,6 +458,12 @@
       Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).
       </translation>
 <translation id="1767673020408652620">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0</translation>
+<translation id="17719159826324007">
+      Khi bạn đặt chính sách này thành ArcSession, nếu Android đã khởi động, thì chính sách này sẽ buộc thiết bị khởi động lại khi người dùng đăng xuất.
+      Khi bạn đặt chính sách này thành Luôn luôn, chính sách này sẽ buộc thiết bị khởi động lại mỗi khi người dùng đăng xuất.
+      Nếu bạn không đặt chính sách này, thì chính sách sẽ không có hiệu lực và không buộc thiết bị khởi động lại khi người dùng đăng xuất. Điều này cũng áp dụng nếu bạn đặt chính sách này thành Không bao giờ.
+      Chính sách này chỉ có hiệu lực đối với người dùng chưa liên kết.
+      </translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="1793346220873697538">Tắt tính năng in mã PIN theo mặc định</translation>
 <translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
@@ -951,6 +957,7 @@
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
+<translation id="2694143893026486692">Đã bật tùy chọn phóng to ở vị trí cố định</translation>
 <translation id="2706708761587205154">Chỉ cho phép in khi có mã PIN</translation>
 <translation id="2710534340210290498">Nếu bạn đặt chính sách này thành false, người dùng sẽ không thể khóa màn hình (chỉ có thể đăng xuất khỏi phiên người dùng). Nếu bạn không đặt tùy chọn cài đặt này hoặc đặt thành true, người dùng đã xác thực bằng mật khẩu có thể khóa màn hình.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
@@ -1132,15 +1139,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi bạn không đặt chính sách này, hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
-<translation id="2990018289267778247">Nếu bạn đặt chính sách này thành true, thì các tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong menu khay hệ thống.
+<translation id="2990018289267778247">Nếu bạn đặt chính sách này thành true, thì các tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong menu ở khay hệ thống.
 
-          Nếu bạn đặt chính sách này thành false, thì các tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong menu khay hệ thống.
+          Nếu bạn đặt chính sách này thành false, thì các tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong menu ở khay hệ thống.
 
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
-          Nếu bạn không đặt chính sách này, thì các tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong menu khay hệ thống. Tuy nhiên, người dùng có thể đặt để các tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.
+          Nếu bạn không đặt chính sách này, thì các tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong menu ở khay hệ thống. Tuy nhiên, người dùng có thể đặt để các tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.
 
-          Khi bạn bật các tính năng hỗ trợ truy cập (bằng các phương tiện khác, chẳng hạn như một tổ hợp phím), thì các tùy chọn này sẽ luôn xuất hiện trong menu khay hệ thống.</translation>
+          Khi bạn bật các tính năng hỗ trợ truy cập (bằng các phương tiện khác, chẳng hạn như một tổ hợp phím), thì các tùy chọn này sẽ luôn xuất hiện trong menu ở khay hệ thống.</translation>
 <translation id="3011301228198307065">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
 
           Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động chịu sự kiểm soát của chính sách RestoreOnStartup.
@@ -1186,6 +1193,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
 
           Chính sách này chỉ được lưu tâm nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Chính sách này cho phép người dùng tính năng WebDriver ghi đè
       các chính sách có thể can thiệp vào hoạt động của chính sách đó.
 
@@ -1706,12 +1714,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Thiết bị <ph name="PRODUCT_OS_NAME" /> sẽ tự động kiểm tra các cập nhật khi cài đặt này không được định cấu hình hoặc được đặt thành False.
 
       Cảnh báo: Bạn nên bật cập nhật tự động liên tục để người dùng nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Tắt cập nhật tự động có thể khiến người dùng gặp rủi ro.</translation>
-<translation id="4018000735882846261">Chính sách này cấp cho Trợ lý Google quyền nghe cụm từ kích hoạt bằng giọng nói.
-
-      Nếu bạn bật chính sách này, thì Trợ lý Google sẽ lắng nghe cụm từ kích hoạt bằng giọng nói.
-      Nếu bạn tắt chính sách này, thì Trợ lý Google sẽ không lắng nghe cụm từ kích hoạt bằng giọng nói.
-      Nếu bạn không đặt chính sách này, thì Trợ lý Google sẽ không lắng nghe cụm từ kích hoạt bằng giọng nói.
-      </translation>
 <translation id="4020682745012723568">Cookie được chuyển tới hồ sơ của người dùng không thể truy cập vào các ứng dụng Android.</translation>
 <translation id="402759845255257575">Không cho phép bất kỳ trang web nào chạy JavaScript</translation>
 <translation id="4027608872760987929">Bật nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -3032,7 +3034,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Chính sách này cho phép quản trị viên cung cấp cấu hình máy in cho
       người dùng của mình.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi dạng tự do có thể tùy chỉnh để dễ dàng chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> giúp người dùng cuối dễ dàng nhận diện máy in. Các thông tin này cho biết nhà sản xuất và kiểu máy in. <ph name="PRINTER_URI" /> phải là một địa chỉ có thể truy cập được từ máy khách, bao gồm cả <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> là không bắt buộc. Nếu được cung cấp, tùy chọn này sẽ dùng để giúp loại bỏ tình trạng trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi dạng tự do có thể tùy chỉnh để dễ dàng chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> giúp người dùng cuối dễ dàng nhận dạng máy in. Các thông tin này cho biết nhà sản xuất và kiểu máy in. <ph name="PRINTER_URI" /> phải là một địa chỉ có thể truy cập được từ máy khách, bao gồm cả <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> là không bắt buộc. Nếu được cung cấp, tùy chọn này sẽ dùng để giúp loại bỏ tình trạng trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> phải chứa tên của máy in, hoặc bạn phải đặt <ph name="PRINTER_AUTOCONF" /> thành true. Các máy in có cả hai hoặc không có thuộc tính nào đều bị bỏ qua.
 
@@ -3040,7 +3042,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho quá trình định cấu hình máy in theo từng người dùng.
 
-      Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Chẳng hạn, nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, tức là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Xin lưu ý rằng vị trí này được tính từ đầu.
+      Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Chẳng hạn, nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, tức là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Xin lưu ý rằng vị trí này được tính theo kiểu ký tự đầu tiên là vị trí 0.
       </translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
 <translation id="6603004149426829878">Luôn gửi mọi tín hiệu vị trí có sẵn cho máy chủ trong khi phân giải múi giờ</translation>
@@ -4397,7 +4399,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ kích hoạt khởi động lại khi người dùng tắt thiết bị. <ph name="PRODUCT_OS_NAME" /> sẽ thay thế tất cả số lần xuất hiện nút tắt trong Giao diện người dùng bằng nút khởi động lại. Nếu người dùng tắt thiết bị bằng nút nguồn thì thiết bị đó sẽ không tự động khởi động lại ngay cả khi đã bật chính sách.</translation>
 <translation id="9152473318295429890">Bật nội dung đề xuất theo ngữ cảnh của các trang web liên quan</translation>
 <translation id="9153446010242995516">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
-          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 75 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
+          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 75 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị tắt.</translation>
 <translation id="9158929520101169054">Cho phép đăng nhập nhiều tài khoản trong trình duyệt</translation>
 <translation id="9159126470527871268">Thông báo cho người dùng biết phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
 

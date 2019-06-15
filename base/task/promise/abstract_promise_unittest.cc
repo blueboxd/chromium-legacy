@@ -2386,7 +2386,7 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
 
 TEST_F(AbstractPromiseTest, MAYBE_MutipleThreadsAddingDependants) {
   constexpr int num_threads = 4;
-  constexpr int num_promises = 10000;
+  constexpr int num_promises = 100000;
 
   std::unique_ptr<Thread> thread[num_threads];
   for (int i = 0; i < num_threads; i++) {

@@ -13,7 +13,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
@@ -269,12 +268,15 @@ bool WindowResizer::IsBottomEdge(int window_component) {
 void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
   aura::Window* window = GetTarget();
   DCHECK(window);
+  auto ptr = weak_ptr_factory_.GetWeakPtr();
   const gfx::Rect original_bounds = window->bounds();
   window->SetBounds(bounds);
-  aura::WindowTracker tracker;
-  tracker.Add(window);
-  if (tracker.windows().empty())
-    return;  // Assume we've been destroyed.
+
+  // Resizer can be destroyed when a window is attached during tab dragging.
+  // crbug.com/970911.
+  if (!ptr)
+    return;
+
   if (bounds.size() == original_bounds.size())
     return;
   recorder_->RequestNext();

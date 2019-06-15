@@ -79,6 +79,8 @@ cr.define('model_test', function() {
         stickySettingsChange.pinValue = '0000';
       }
 
+      const settingsSet = ['version'];
+
       /**
        * @param {string} setting The name of the setting to check.
        * @param {string} field The name of the field in the serialized state
@@ -90,6 +92,7 @@ cr.define('model_test', function() {
       const testStickySetting = function(setting, field) {
         let promise = test_util.eventToPromise('sticky-setting-changed', model);
         model.setSetting(setting, stickySettingsChange[field]);
+        settingsSet.push(field);
         return promise.then(
             /**
              * @param {!CustomEvent} e Event containing the serialized settings
@@ -98,9 +101,14 @@ cr.define('model_test', function() {
             function(e) {
               let settings = JSON.parse(e.detail);
               Object.keys(stickySettingsDefault).forEach(settingName => {
-                let toCompare = settingName == field ? stickySettingsChange :
-                                                       stickySettingsDefault;
-                assertDeepEquals(toCompare[settingName], settings[settingName]);
+                let set = settingsSet.includes(settingName);
+                assertEquals(set, settings[settingName] !== undefined);
+                if (set) {
+                  let toCompare = settingName == field ? stickySettingsChange :
+                                                         stickySettingsDefault;
+                  assertDeepEquals(
+                      toCompare[settingName], settings[settingName]);
+                }
               });
               let restorePromise =
                   test_util.eventToPromise('sticky-setting-changed', model);
@@ -175,7 +183,7 @@ cr.define('model_test', function() {
       model.settings.fitToPage.available = true;
       const settingsChange = {
         pages: [2],
-        copies: '2',
+        copies: 2,
         collate: false,
         layout: true,
         color: false,

@@ -1016,6 +1016,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowPopupsDuringPageUnload,
     prefs::kAllowPopupsDuringPageUnload,
     base::Value::Type::BOOLEAN },
+  { key::kUserFeedbackAllowed,
+    prefs::kUserFeedbackAllowed,
+    base::Value::Type::BOOLEAN },
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

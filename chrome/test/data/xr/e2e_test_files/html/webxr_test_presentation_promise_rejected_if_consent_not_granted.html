@@ -1,0 +1,25 @@
+<!doctype html>
+<!--
+Used to test that the promise returned by WebXR's requestSession rejects if
+the user denies permission on a consent dialog.
+-->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../resources/webxr_e2e.css">
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
+    <script src="../resources/webxr_e2e.js"></script>
+    <script src="../resources/webxr_boilerplate.js"></script>
+    <script>
+      function onImmersiveRequestWithConsent() {
+        navigator.xr.requestSession('immersive-vr').then(() => {
+          assert_unreached("requestPresent promise shouldn't resolve when consent not granted");
+        }).catch(() => {
+          done();
+        });
+      }
+    </script>
+  </body>
+</html>

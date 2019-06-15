@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">ఇన్‌పుట్ పద్ధతులు మీ నిర్వాహకుల ద్వారా కాన్ఫిగర్ చేయబడ్డాయి.</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1761222317188459878">నెట్‌వర్క్ కనెక్షన్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">కుడికి స్క్రోల్ చేయి</translation>
 <translation id="1812997170047690955">నా స్క్రీన్‌పై ఏమి ఉన్నాయి?</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
@@ -205,6 +206,7 @@
 <translation id="3977512764614765090">బ్యాటరీ <ph name="PERCENTAGE" />% ఉంది. ఛార్జ్ అవుతోంది.</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4017989525502048489">లేజర్ పాయింటర్</translation>
+<translation id="4021716437419160885">కిందికి స్క్రోల్ చేయి</translation>
 <translation id="4042660782729322247">మీరు మీ స్క్రీన్‌ను షేర్ చేస్తున్నారు</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ఒక యాప్‌కు ఆఫ్‌లో ఉంది}other{# యాప్‌లకు ఆఫ్‌లో ఉంది}}</translation>
 <translation id="4072264167173457037">సిగ్నల్ ఓ మోస్తరుగా ఉంది</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">బలమైన</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4924411785043111640">మళ్లీ ప్రారంభించి, రీసెట్ చేయండి</translation>
+<translation id="495046168593986294">పైకి స్క్రోల్ చేయి</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5030687792513154421">సమయం ముగిసింది</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ఒక కొత్త ఫోన్‌కి కనెక్ట్ చేయబడింది</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">అప్‌డేట్‌ను పొందడానికి, కీబోర్డ్‌ను అలానే జోడించి ఉంచి మీ Chromebookను పునఃప్రారంభించండి.</translation>
 <translation id="5992218262414051481">అధిక క్రాంటాస్ట్ మోడ్ ఆరంభించబడింది. దానిని ఆఫ్‌కు టోగుల్ చేయడం కోసం మళ్లీ Ctrl+Search+Hను నొక్కండి.</translation>
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
+<translation id="602001110135236999">ఎడమకు స్క్రోల్ చేయి</translation>
+<translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
 <translation id="6047696787498798094">మీరు మరొక వినియోగదారుకు మారినప్పుడు స్క్రీన్ షేర్‌ ఆపివేయబడుతుంది. మీరు కొనసాగించాలని అనుకుంటున్నారా?</translation>

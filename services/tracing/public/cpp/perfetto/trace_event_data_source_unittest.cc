@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "base/trace_event/thread_instruction_count.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -854,7 +855,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, kEventName, handle,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
-      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50),
+      base::trace_event::ThreadInstructionCount());
 
   // The call to UpdateTraceEventDurationExplicit should have successfully
   // updated the duration of the event which was added in the
@@ -875,7 +877,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, kEventName, handle,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
-      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50),
+      base::trace_event::ThreadInstructionCount());
 
   // No further packets should have been emitted.
   EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);

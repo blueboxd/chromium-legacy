@@ -143,6 +143,18 @@ Polymer({
       type: Number,
       value: 1000,
     },
+
+    /**
+     * The time in milliseconds at which discovery was started attempt (when the
+     * page was opened with Bluetooth on, or when Bluetooth turned on while the
+     * page was active).
+     * @private {?number}
+     */
+    discoveryStartTimestampMs_: {
+      type: Number,
+      value: null,
+    },
+
   },
 
   observers: [
@@ -392,6 +404,10 @@ Polymer({
       this.openDialog_();
     }
 
+    if (isPaired !== undefined && device.transport !== undefined) {
+      this.recordDeviceSelectionDuration_(isPaired, device.transport);
+    }
+
     const address = device.address;
     this.bluetoothPrivate.connect(address, result => {
       if (isPaired) {
@@ -492,10 +508,12 @@ Polymer({
       this.updateTimerId_ =
         window.setInterval(this.refreshBluetoothList_.bind(this),
                            this.listUpdateFrequencyMs);
+      this.discoveryStartTimestampMs_ = Date.now();
       return;
     }
     window.clearInterval(this.updateTimerId_);
     this.updateTimerId_ = undefined;
+    this.discoveryStartTimestampMs_ = null;
     this.deviceList_ = [];
   },
 
@@ -542,5 +560,31 @@ Polymer({
     }
 
     chrome.bluetoothPrivate.recordReconnection(success);
-  }
+  },
+
+  /**
+   * Record metrics for how long it took between when discovery started on the
+   * Settings page, and the user selected the device they wanted to connect to.
+   * @param {!boolean} wasPaired If the selected device was already
+   *     paired.
+   * @param {!chrome.bluetooth.Transport} transport The transport type
+   *     of the device.
+   * @private
+   */
+  recordDeviceSelectionDuration_: function(wasPaired, transport) {
+    if (!this.discoveryStartTimestampMs_) {
+      // It's not necessarily an error that |discoveryStartTimestampMs_| isn't
+      // present; it's intentionally cleared after the first device selection
+      // (see further on in this method). Recording subsequent device selections
+      // after the first would provide inflated durations that don't truly
+      // reflect how long it took for the user to find the device they're
+      // looking for.
+      return;
+    }
+
+    chrome.bluetoothPrivate.recordDeviceSelection(
+        Date.now() - this.discoveryStartTimestampMs_, wasPaired, transport);
+
+    this.discoveryStartTimestampMs_ = null;
+  },
 });

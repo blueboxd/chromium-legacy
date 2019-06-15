@@ -662,11 +662,11 @@ void CacheStorageDispatcherHost::AddCacheBinding(
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!context_ || !context_->cache_manager() ||
+  if (!context_ || !context_->CacheManager() ||
       !OriginCanAccessCacheStorage(origin))
     return CacheStorageHandle();
 
-  return context_->cache_manager()->OpenCacheStorage(
+  return context_->CacheManager()->OpenCacheStorage(
       origin, CacheStorageOwner::kCacheAPI);
 }
 

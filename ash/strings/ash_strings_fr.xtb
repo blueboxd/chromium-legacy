@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Les modes de saisie sont configurés par votre administrateur.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Vers la droite</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">La batterie est en charge, avec un niveau de <ph name="PERCENTAGE" /> % pour l'instant.</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4017989525502048489">Pointeur laser</translation>
+<translation id="4021716437419160885">Faire défiler vers le bas</translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
+<translation id="495046168593986294">Faire défiler vers le haut</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5030687792513154421">Temps écoulé</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est associé à un nouveau téléphone</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
+<translation id="602001110135236999">Vers la gauche</translation>
+<translation id="6040143037577758943">Fermer</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>

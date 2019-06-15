@@ -61,7 +61,7 @@ class CORE_EXPORT WorkletGlobalScope
   const SecurityContext& GetSecurityContext() const final { return *this; }
   bool IsSecureContext(String& error_message) const final;
   bool IsContextThread() const final;
-  void AddConsoleMessage(ConsoleMessage*) final;
+  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   void ExceptionThrown(ErrorEvent*) final;
   CoreProbeSink* GetProbeSink() final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;

@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Os métodos de entrada são configurados pelo administrador.</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
 <translation id="1761222317188459878">Alternar conexão de rede. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Rolar para a direita</translation>
 <translation id="1812997170047690955">O que está na minha tela?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (carregando…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Bateria em <ph name="PERCENTAGE" />% e carregando.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4017989525502048489">Apontador laser</translation>
+<translation id="4021716437419160885">Rolar para baixo</translation>
 <translation id="4042660782729322247">Você está compartilhando sua tela</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativadas para um app}one{Desativadas para # app}other{Desativadas para # apps}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4924411785043111640">Reiniciar e redefinir</translation>
+<translation id="495046168593986294">Rolar para cima</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5030687792513154421">Tempo esgotado</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectado a um novo smartphone</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">Para receber a atualização, reinicie seu Chromebook com o teclado conectado.</translation>
 <translation id="5992218262414051481">Modo de alto contraste ativado. Pressione Ctrl+Pesquisa+H novamente para desativá-lo.</translation>
 <translation id="6018164090099858612">Saindo do modo espelhado</translation>
+<translation id="602001110135236999">Rolar para a esquerda</translation>
+<translation id="6040143037577758943">Fechar</translation>
 <translation id="6043212731627905357">Este monitor não está funcionando bem com seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Sair agora</translation>
 <translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Quer continuar?</translation>

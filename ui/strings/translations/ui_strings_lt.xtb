@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="1409544243779336081">Programos rekomendacija</translation>
+<translation id="1498028757988366001">Jau anksčiau to ieškojote. Ištrynę „<ph name="QUERY" />“ iš istorijos, visam laikui ją pašalinsite iš savo paskyros visuose įrenginiuose.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutė ir }one{# minutė ir }few{# minutės ir }many{# minutės ir }other{# minučių ir }}</translation>
 <translation id="1643823602425662293">Pranešimas</translation>
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prieš 1 min.}one{Prieš # min.}few{Prieš # min.}many{Prieš # min.}other{Prieš # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>
+<translation id="7430878839542012341">Ištrinti šią paiešką iš istorijos?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Jaustukai</translation>
 <translation id="7658239707568436148">Atšaukti</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1492646418094134664">Tap untuk mengisi info kartu kredit dengan Chrome</translation>
+<translation id="1566281227936819866">Menampilkan metode pembayaran yang tersimpan</translation>
 <translation id="2610239185026711824">Sarankan sandi</translation>
 <translation id="2803478378562657435">Menampilkan opsi sandi dan sandi yang disimpan</translation>
 <translation id="2903493209154104877">Alamat</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Tap untuk mengisi sandi dengan Chrome</translation>
 <translation id="7299100402441711551">Tampilkan Alamat</translation>
 <translation id="7494879913343971937">Tampilkan sandi</translation>
+<translation id="8037472847879765671">Tampilkan metode pembayaran</translation>
 <translation id="8507520749471379845">Sandi tersedia</translation>
 </translationbundle>

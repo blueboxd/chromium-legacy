@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Сербский</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3855472144336161447">Немецкая (Neo 2)</translation>
+<translation id="3856075812838139784">Только чтение</translation>
 <translation id="3858678421048828670">Итальянская раскладка</translation>
 <translation id="386548886866354912">Создать архив <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Описание</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Время изменения</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-файл</translation>
 <translation id="457386861538956877">Ещё...</translation>
+<translation id="4579744207439506346">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="4582497162516204941">Установка Linux (бета)</translation>
 <translation id="4594543368593301662">Результаты поиска по запросу "<ph name="SEARCH_TERM" />".</translation>
 <translation id="4631887759990505102">Исполнитель</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Корейская раскладка (Sebeolsik Final)</translation>
 <translation id="5833610766403489739">Файл не найден. Проверьте параметр места для скачивания и повторите попытку.</translation>
 <translation id="5838051104334203064">Приложениям из Play Маркета закрыт доступ к этому устройству.</translation>
+<translation id="5838451609423551646">Выбор отменен.</translation>
 <translation id="5838825566232597749">США (Workman, международная)</translation>
 <translation id="5850516540536751549">Файлы этого типа не поддерживаются. Попробуйте найти приложение, с помощью которого их можно открыть, в <ph name="BEGIN_LINK" />Интернет-магазине Chrome<ph name="END_LINK" />.
     <ph name="BEGIN_LINK_HELP" />Подробнее…<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Сжатый TAR-архив Gzip</translation>
 <translation id="6825883775269213504">Русский</translation>
 <translation id="6827236167376090743">Видео будет воспроизводиться в режиме повтора.</translation>
+<translation id="6847101934483209767">Выбор объекта "<ph name="ENTRY_NAME" />" отменен.</translation>
 <translation id="6862635236584086457">Для всех файлов, сохраненных в этой папке, автоматически создается резервная копия в Интернете</translation>
 <translation id="6870130893560916279">Украинская раскладка</translation>
 <translation id="6876155724392614295">Велосипед</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">раскладка пиньинь</translation>
 <translation id="8151638057146502721">Настроить</translation>
 <translation id="8153607920959057464">Просмотр невозможен.</translation>
+<translation id="8154842056504218462">Выбраны все объекты.</translation>
 <translation id="8157684860301034423">Не удалось получить информацию о приложении.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Испанская раскладка</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">К этому файлу на Диске пока нет доступа</translation>
 <translation id="8698464937041809063">Рисунок Google</translation>
 <translation id="8714406895390098252">Велосипед</translation>
+<translation id="8719721339511222681">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="8722421161699219904">Раскладка США (международная)</translation>
 <translation id="872537912056138402">Хорватский</translation>
 <translation id="874420130893181774">Пиньинь</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">В этом каталоге нет изображений.</translation>
 <translation id="943972244133411984">Кем изменено</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
+<translation id="947144732524271678">Выбраны объекты от "<ph name="FROM_ENTRY_NAME" />" до "<ph name="TO_ENTRY_NAME" />" (всего <ph name="ENTRY_COUNT" />).</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="988685240266037636">Файл "<ph name="FILE_NAME" />" уже существует. Заменить его?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> МБ</translation>

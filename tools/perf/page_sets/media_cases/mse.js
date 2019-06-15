@@ -13,6 +13,7 @@
     "aac_audio.mp4": "audio/mp4; codecs=\"mp4a.40.2\"",
     "h264_video.mp4": "video/mp4; codecs=\"avc1.640028\"",
     "tulip0.av1.mp4": "video/mp4; codecs=\"av01.0.05M.08\"",
+    "tulip2.vp9.webm": "video/webm; codecs=\"opus,vp9\"",
   };
   const testParams = {}
 

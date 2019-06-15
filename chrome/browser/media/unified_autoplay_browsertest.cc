@@ -419,10 +419,10 @@ class UnifiedAutoplaySettingBrowserTest : public UnifiedAutoplayBrowserTest {
   ~UnifiedAutoplaySettingBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
+    UnifiedAutoplayBrowserTest::SetUpOnMainThread();
     scoped_feature_list_.InitWithFeatures(
         {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
         {});
-    UnifiedAutoplayBrowserTest::SetUpOnMainThread();
   }
 
   bool AutoplayAllowed(const content::ToRenderFrameHost& adapter) {

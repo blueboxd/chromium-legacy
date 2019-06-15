@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">ઇનપુટ પદ્ધતિઓને તમારા વ્યવસ્થાપક દ્વારા ગોઠવવામાં આવી છે.</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1761222317188459878">નેટવર્ક કનેક્શન ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">જમણે સ્ક્રોલ કરો</translation>
 <translation id="1812997170047690955">મારી સ્ક્રીન પર શું છે?</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">સહાયક (લોડ થઈ રહ્યું છે…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">બૅટરી <ph name="PERCENTAGE" />% પર છે અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
+<translation id="4021716437419160885">નીચે સ્ક્રોલ કરો</translation>
 <translation id="4042660782729322247">તમે તમારી સ્ક્રીન શેર કરી રહ્યા છો</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{એક ઍપ માટે બંધ છે}one{# ઍપ માટે બંધ છે}other{# ઍપ માટે બંધ છે}}</translation>
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">સશક્ત</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
+<translation id="495046168593986294">ઉપર સ્ક્રોલ કરો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5030687792513154421">સમય પૂરો થયો</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />, નવા ફોન સાથે કનેક્ટ થયું</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">અપડેટ મેળવવા માટે, તમારી Chromebookને જોડાયેલ કીબોર્ડ સાથે ફરીથી શરૂ કરો.</translation>
 <translation id="5992218262414051481">હાઇ કોન્ટ્રાસ્ટ મોડ સક્ષમ કર્યો. ટૉગલ બંધ કરવા માટે ફરીથી Ctrl+Search+H ફરીથી દબાવો.</translation>
 <translation id="6018164090099858612">મીરર મોડથી બહાર નીકળે છે</translation>
+<translation id="602001110135236999">ડાબે સ્ક્રોલ કરો</translation>
+<translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6043212731627905357">આ મૉનિટર તમારા <ph name="DEVICE_TYPE" /> સાથે કામ કરી રહ્યું નથી (મૉનિટર સમર્થિત નથી).</translation>
 <translation id="6043994281159824495">હવે સાઇન આઉટ કરો</translation>
 <translation id="6047696787498798094">જ્યારે તમે બીજા વપરાશકર્તા પર સ્વિચ કરો ત્યારે સ્ક્રીન શેરિંગ રોકવામાં આવશે. શું તમે ચાલુ રાખવા માંગો છો?</translation>

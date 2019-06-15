@@ -39,10 +39,11 @@ class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
   USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 
  public:
-  MOCK_METHOD3(AddConsoleMessage,
+  MOCK_METHOD4(AddConsoleMessageImpl,
                void(mojom::ConsoleMessageSource,
                     mojom::ConsoleMessageLevel,
-                    const String&));
+                    const String&,
+                    bool));
 };
 
 }  // namespace
@@ -111,7 +112,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 
     EXPECT_CALL(*use_counter, CountUse(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
+      EXPECT_CALL(*logger, AddConsoleMessageImpl(_, _, _, _));
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                                  MimeTypeCheck::kLax));
@@ -119,7 +120,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 
     EXPECT_CALL(*use_counter, CountUse(_)).Times(::testing::AnyNumber());
     if (!testcase.strict_allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
+      EXPECT_CALL(*logger, AddConsoleMessageImpl(_, _, _, _));
     EXPECT_EQ(testcase.strict_allowed,
               AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                                  MimeTypeCheck::kStrict));
@@ -214,7 +215,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     auto* use_counter = MockUseCounter::Create();
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
-    EXPECT_CALL(*logger, AddConsoleMessage(_, _, _))
+    EXPECT_CALL(*logger, AddConsoleMessageImpl(_, _, _, _))
         .Times(::testing::AnyNumber());
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
                                     << "\n  allowed: " << testcase.allowed);

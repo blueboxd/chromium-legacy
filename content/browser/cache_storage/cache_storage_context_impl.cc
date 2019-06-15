@@ -12,6 +12,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
+#include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -90,9 +91,15 @@ void CacheStorageContextImpl::AddBinding(
                         std::move(request), origin);
 }
 
-CacheStorageManager* CacheStorageContextImpl::cache_manager() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return cache_manager_.get();
+scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {
+  // If we're shutdown or already on the target sequence, then just return the
+  // real manager.
+  if (!cache_manager_ || task_runner_->RunsTasksInCurrentSequence())
+    return cache_manager_;
+  // Otherwise we have to create a cross-sequence wrapper to provide safe
+  // access.
+  return base::MakeRefCounted<CrossSequenceCacheStorageManager>(task_runner_,
+                                                                cache_manager_);
 }
 
 void CacheStorageContextImpl::SetBlobParametersForCache(
@@ -123,11 +130,11 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
       base::BindOnce(
           [](scoped_refptr<CacheStorageContextImpl> context,
              GetUsageInfoCallback callback) {
-            if (!context->cache_manager()) {
+            if (!context->CacheManager()) {
               std::move(callback).Run(std::vector<StorageUsageInfo>());
               return;
             }
-            context->cache_manager()->GetAllOriginsUsage(
+            context->CacheManager()->GetAllOriginsUsage(
                 CacheStorageOwner::kCacheAPI, std::move(callback));
           },
           base::RetainedRef(this), std::move(callback)));
@@ -139,9 +146,9 @@ void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
                          base::BindOnce(
                              [](scoped_refptr<CacheStorageContextImpl> context,
                                 const GURL& origin) {
-                               if (!context->cache_manager())
+                               if (!context->CacheManager())
                                  return;
-                               context->cache_manager()->DeleteOriginData(
+                               context->CacheManager()->DeleteOriginData(
                                    url::Origin::Create(origin),
                                    CacheStorageOwner::kCacheAPI);
                              },
@@ -232,9 +239,9 @@ void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
   if (!quota_manager_proxy.get())
     return;
   quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
-      cache_manager(), CacheStorageOwner::kCacheAPI));
+      CacheManager(), CacheStorageOwner::kCacheAPI));
   quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
-      cache_manager(), CacheStorageOwner::kBackgroundFetch));
+      CacheManager(), CacheStorageOwner::kBackgroundFetch));
 }
 
 }  // namespace content

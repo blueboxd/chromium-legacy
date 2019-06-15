@@ -574,6 +574,9 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  // Note: This needs a base::FieldTrialList instance because it does not use
+  // ScopedFeatureList, which provides its own, unlike other tests that do via
+  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
@@ -590,7 +593,6 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTestExperimentFlagOff) {
   // observe some other field trial list, so reset it.
   DisableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
@@ -702,6 +704,9 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  // Note: This needs a base::FieldTrialList instance because it does not use
+  // ScopedFeatureList, which provides its own, unlike other tests that do via
+  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
@@ -719,7 +724,6 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTestExperimentFlagOff) {
   // observe some other field trial list, so reset it.
   DisableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
 
@@ -734,6 +738,9 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  // Note: This needs a base::FieldTrialList instance because it does not use
+  // ScopedFeatureList, which provides its own, unlike other tests that do via
+  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking();
@@ -751,7 +758,6 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
   // observe some other field trial list, so reset it.
   DisableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking();
 
@@ -767,7 +773,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // observe some other field trial list, so reset it.
   EnableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
@@ -784,7 +789,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
   // observe some other field trial list, so reset it.
   DisableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
 

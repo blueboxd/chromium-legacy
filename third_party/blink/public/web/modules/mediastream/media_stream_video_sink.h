@@ -20,7 +20,7 @@ namespace blink {
 //
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls must be made from the main render thread.
-class BLINK_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
+class BLINK_MODULES_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
  public:
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
 

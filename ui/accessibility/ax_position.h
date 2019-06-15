@@ -760,6 +760,19 @@ class AXPosition {
 
         AXPositionInstance parent_position = CreateTextPosition(
             tree_id, parent_id, parent_offset, parent_affinity);
+        if (parent_position->IsNullPosition()) {
+          // Workaround: When the autofill feature populates a text field, it
+          // doesn't immediately update its value, which causes the text inside
+          // the user-agent shadow DOM to be different than the text in the text
+          // field itself. As a result, the parent_offset calculated above might
+          // appear to be temporarily invalid.
+          // TODO(nektar): Fix this better by ensuring that the text field's
+          // hypertext is always kept up to date.
+          parent_position =
+              CreateTextPosition(tree_id, parent_id, 0 /* text_offset */,
+                                 ax::mojom::TextAffinity::kDownstream);
+        }
+
         // We check if the parent position has introduced ambiguity as to
         // whether it refers to the end of the current or the start of the next
         // line. We do this check by creating the parent position and testing if

@@ -1414,6 +1414,12 @@
                   '|ios/chrome/browser/ui/payments'\
                   '|ios/web/public/payments'
     },
+    'pdf': {
+      'filepath': 'components/pdf'\
+                  '|chrome/browser/pdf'\
+                  '|chrome/browser/ui/pdf'\
+                  '|pdf'
+    },
     'pepper_api': {
       'filepath': 'ppapi/api'\
                   '|ppapi/c',
@@ -2478,6 +2484,7 @@
                  'danyao+paymentswatch@chromium.org'],
     'payments_ios': ['mahmadi+paymentsioswatch@chromium.org',
                      'danyao+paymentswatch@chromium.org'],
+    'pdf': ['pdf-reviews@chromium.org'],
     'pepper_api': ['binji+watch@chromium.org',
                    'bradnelson+warch@chromium.org',
                    'ihf+watch@chromium.org',

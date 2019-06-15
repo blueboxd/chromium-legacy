@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://gist.github.com/skobes/2f296da1b0a88cc785a4bf10a42bca07
+// https://wicg.github.io/layout-instability/#sec-layout-shift
 [Exposed=Window, RuntimeEnabled=LayoutInstabilityAPI]
 interface LayoutShift : PerformanceEntry {
     readonly attribute double value;

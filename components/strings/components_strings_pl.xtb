@@ -1159,6 +1159,7 @@ Dodatkowe informacje:
 <translation id="7334320624316649418">&amp;Ponów zmianę kolejności</translation>
 <translation id="733923710415886693">Certyfikat serwera nie został ujawniony przez protokół Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
+<translation id="7346048084945669753">Jest w tej samej domenie:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Wiersz poleceń</translation>
 <translation id="7372973238305370288">wynik wyszukiwania</translation>
@@ -1191,6 +1192,7 @@ Dodatkowe informacje:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o tym problemie.</translation>
 <translation id="7455133967321480974">Użyj globalnej wartości domyślnej (Blokuj)</translation>
 <translation id="7460618730930299168">Godziny seansów są inne niż wybrane przez Ciebie. Czy chcesz kontynuować?</translation>
+<translation id="7465410862124366659">Ta strona została zidentyfikowana jako własność organizacji <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />].</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>

@@ -101,6 +101,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       GLuint gl_type,
       const gles2::Texture::CompatibilitySwizzle* swizzle,
       bool is_cleared,
+      bool has_immutable_storage,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,

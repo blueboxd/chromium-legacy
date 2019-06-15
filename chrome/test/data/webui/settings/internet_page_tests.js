@@ -33,6 +33,7 @@ suite('InternetPage', function() {
     CrOncStrings = {
       OncTypeCellular: 'OncTypeCellular',
       OncTypeEthernet: 'OncTypeEthernet',
+      OncTypeMobile: 'OncTypeMobile',
       OncTypeTether: 'OncTypeTether',
       OncTypeVPN: 'OncTypeVPN',
       OncTypeWiFi: 'OncTypeWiFi',

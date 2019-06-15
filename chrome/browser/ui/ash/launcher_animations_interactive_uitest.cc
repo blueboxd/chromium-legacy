@@ -20,16 +20,15 @@
 #include "ui/base/test/ui_controls.h"
 
 // TODO(oshima): Add tablet mode overview transition.
-class LauncherAnimationsTest : public UIPerformanceTest,
-                               public ::testing::WithParamInterface<bool> {
+class LauncherAnimationsTestBase : public UIPerformanceTest,
+                                   public ::testing::WithParamInterface<bool> {
  public:
-  LauncherAnimationsTest() = default;
-  ~LauncherAnimationsTest() override = default;
+  LauncherAnimationsTestBase() = default;
+  ~LauncherAnimationsTestBase() override = default;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    reuse_widget_ = GetParam();
 
     test::PopulateDummyAppListItems(100);
     if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -38,66 +37,65 @@ class LauncherAnimationsTest : public UIPerformanceTest,
                             base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
+
+    const bool reuse_widget = GetParam();
+    if (reuse_widget)
+      CreateCachedWidget();
   }
 
-  // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
-    DCHECK(!suffix_.empty());
-    return {
-        std::string("Apps.StateTransition.AnimationSmoothness.") + suffix_,
+    const std::string suffix = GetAnimationSmoothnessMetricsName();
+    DCHECK(!suffix.empty());
+    std::vector<std::string> names{
+        "Apps.StateTransition.AnimationSmoothness." + suffix,
         "Apps.StateTransition.AnimationSmoothness.Close.ClamshellMode",
+        "Apps.AppListHide.InputLatency",
     };
+    if (MeasureShowLatency())
+      names.push_back("Apps.AppListShow.InputLatency");
+    return names;
   }
 
  protected:
-  void set_suffix(const std::string& suffix) { suffix_ = suffix; }
+  virtual std::string GetAnimationSmoothnessMetricsName() const = 0;
 
-  // Create the cached widget of the app-list prior to the actual test scenario.
-  void MaybeCreateCachedWidget() {
-    if (!reuse_widget_)
-      return;
+  virtual bool MeasureShowLatency() const { return false; }
 
-    // Here goes through several states of the app-list so that the cached
-    // widget can contain relevant data.
+  void SendKeyAndWaitForState(ui::KeyboardCode key_code,
+                              bool shift_key,
+                              ash::AppListViewState target_state) {
+    // Browser window is used to identify display, so we can use
+    // use the 1st browser window regardless of number of windows created.
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
     aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
     ash::ShellTestApi shell_test_api;
+    ui_controls::SendKeyPress(browser_window, key_code, /*control=*/false,
+                              /*shift=*/shift_key, /*alt=*/false,
+                              /*command=*/false);
+    shell_test_api.WaitForLauncherAnimationState(target_state);
+  }
+
+  // Create the cached widget of the app-list prior to the actual test scenario.
+  void CreateCachedWidget() {
+    // Here goes through several states of the app-list so that the cached
+    // widget can contain relevant data.
+
     // Open the app-list with peeking state.
-    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                              /*control=*/false,
-                              /*shift=*/false,
-                              /*alt=*/false,
-                              /* command = */ false);
-    shell_test_api.WaitForLauncherAnimationState(
-        ash::AppListViewState::kPeeking);
+    SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                           ash::AppListViewState::kPeeking);
 
     // Expand to the fullscreen with list of applications.
-    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                              /*control=*/false,
-                              /*shift=*/true,
-                              /*alt=*/false,
-                              /* command = */ false);
-    shell_test_api.WaitForLauncherAnimationState(
-        ash::AppListViewState::kFullscreenAllApps);
+    SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                           ash::AppListViewState::kFullscreenAllApps);
 
     // Type a random query to switch to search result view.
-    ui_controls::SendKeyPress(browser_window, ui::VKEY_X,
-                              /*control=*/false,
-                              /*shift=*/false,
-                              /*alt=*/false,
-                              /* command = */ false);
-    shell_test_api.WaitForLauncherAnimationState(
-        ash::AppListViewState::kFullscreenSearch);
+    SendKeyAndWaitForState(ui::VKEY_X, false,
+                           ash::AppListViewState::kFullscreenSearch);
 
     // Close.
-    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                              /*control=*/false,
-                              /*shift=*/false,
-                              /*alt=*/false,
-                              /* command = */ false);
-    shell_test_api.WaitForLauncherAnimationState(
-        ash::AppListViewState::kClosed);
+    SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                           ash::AppListViewState::kClosed);
 
     // Takes the snapshot delta; so that the samples created so far will be
     // eliminated from the samples.
@@ -110,137 +108,126 @@ class LauncherAnimationsTest : public UIPerformanceTest,
   }
 
  private:
-  bool reuse_widget_ = false;
-  std::string suffix_;
-
-  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsTest);
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsTestBase);
 };
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Fullscreen) {
-  set_suffix("FullscreenAllApps.ClamshellMode");
-  MaybeCreateCachedWidget();
-  // Browser window is used to identify display, so we can use
-  // use the 1st browser window regardless of number of windows created.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::ShellTestApi shell_test_api;
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/true,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::AppListViewState::kFullscreenAllApps);
+class LauncherAnimationsFullscreenTest : public LauncherAnimationsTestBase {
+ public:
+  LauncherAnimationsFullscreenTest() = default;
+  ~LauncherAnimationsFullscreenTest() override = default;
 
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/true,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
+ private:
+  // LauncherAnimationsTestBase:
+  std::string GetAnimationSmoothnessMetricsName() const override {
+    return "FullscreenAllApps.ClamshellMode";
+  }
+  bool MeasureShowLatency() const override { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsFullscreenTest);
+};
+
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenTest, Run) {
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kFullscreenAllApps);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Peeking) {
-  set_suffix("Peeking.ClamshellMode");
-  MaybeCreateCachedWidget();
-  // Browser window is used to identify display, so we can use
-  // use the 1st browser window regardless of number of windows created.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::ShellTestApi shell_test_api;
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
+INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
+                         LauncherAnimationsFullscreenTest,
+                         /*reuse_widget=*/::testing::Bool());
 
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
+class LauncherAnimationsPeekingTest : public LauncherAnimationsTestBase {
+ public:
+  LauncherAnimationsPeekingTest() = default;
+  ~LauncherAnimationsPeekingTest() override = default;
+
+ private:
+  // LauncherAnimationsTestBase:
+  std::string GetAnimationSmoothnessMetricsName() const override {
+    return "Peeking.ClamshellMode";
+  }
+  bool MeasureShowLatency() const override { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsPeekingTest);
+};
+
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsPeekingTest, Run) {
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kPeeking);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Half) {
-  set_suffix("Half.ClamshellMode");
-  MaybeCreateCachedWidget();
-  // Browser window is used to identify display, so we can use
-  // use the 1st browser window regardless of number of windows created.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::ShellTestApi shell_test_api;
+INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
+                         LauncherAnimationsPeekingTest,
+                         /*reuse_widget=*/::testing::Bool());
+
+class LauncherAnimationsHalfTest : public LauncherAnimationsTestBase {
+ public:
+  LauncherAnimationsHalfTest() = default;
+  ~LauncherAnimationsHalfTest() override = default;
+
+ private:
+  // LauncherAnimationsTestBase:
+  std::string GetAnimationSmoothnessMetricsName() const override {
+    return "Half.ClamshellMode";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsHalfTest);
+};
+
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsHalfTest, Run) {
   // Hit the search key; it should switch to kPeeking state.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kPeeking);
 
   // Type some query in the launcher; it should show search results in kHalf
   // state.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_A,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kHalf);
+  SendKeyAndWaitForState(ui::VKEY_A, false, ash::AppListViewState::kHalf);
 
   // Search key to close the launcher.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, FullscreenSearch) {
-  set_suffix("FullscreenSearch.ClamshellMode");
-  MaybeCreateCachedWidget();
-  // Browser window is used to identify display, so we can use
-  // use the 1st browser window regardless of number of windows created.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::ShellTestApi shell_test_api;
-  // Hit the search key; it should switch to the kPeeking state.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
+INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
+                         LauncherAnimationsHalfTest,
+                         /*reuse_widget=*/::testing::Bool());
+
+class LauncherAnimationsFullscreenSearchTest
+    : public LauncherAnimationsTestBase {
+ public:
+  LauncherAnimationsFullscreenSearchTest() = default;
+  ~LauncherAnimationsFullscreenSearchTest() override = default;
+
+ private:
+  // LauncherAnimationsTestBase:
+  std::string GetAnimationSmoothnessMetricsName() const override {
+    return "Half.ClamshellMode";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsFullscreenSearchTest);
+};
+
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsFullscreenSearchTest, Run) {
+  // Hit the search key; it should switch to kPeeking state.
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kPeeking);
 
   // Type some query; it should show the search results in the kHalf state.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_A,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kHalf);
+  SendKeyAndWaitForState(ui::VKEY_A, false, ash::AppListViewState::kHalf);
 
   // Shift+search key; it should expand to fullscreen with search results
   // (i.e. kFullscreenSearch state).
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/true,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::AppListViewState::kFullscreenSearch);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kFullscreenSearch);
 
   // Search key to close the launcher.
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kClosed);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         LauncherAnimationsTest,
+INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
+                         LauncherAnimationsFullscreenSearchTest,
                          /*reuse_widget=*/::testing::Bool());

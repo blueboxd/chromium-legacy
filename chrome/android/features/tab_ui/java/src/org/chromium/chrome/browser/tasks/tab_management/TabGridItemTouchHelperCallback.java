@@ -32,23 +32,28 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     private final TabModelSelector mTabModelSelector;
     private final TabListMediator.TabActionListener mTabClosedListener;
     private final String mComponentName;
+    private final TabListMediator.TabGridDialogHandler mTabGridDialogHandler;
     private float mSwipeToDismissThreshold;
     private float mMergeThreshold;
+    private float mUngroupThreshold;
     private boolean mActionsOnAllRelatedTabs;
     private int mDragFlags;
     private int mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
     private int mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
+    private int mUnGroupTabIndex = TabModel.INVALID_TAB_INDEX;
     private RecyclerView mRecyclerView;
 
     public TabGridItemTouchHelperCallback(TabListModel tabListModel,
             TabModelSelector tabModelSelector, TabListMediator.TabActionListener tabClosedListener,
-            String componentName, boolean actionsOnAllRelatedTabs) {
+            TabListMediator.TabGridDialogHandler tabGridDialogHandler, String componentName,
+            boolean actionsOnAllRelatedTabs) {
         super(0, 0);
         mModel = tabListModel;
         mTabModelSelector = tabModelSelector;
         mTabClosedListener = tabClosedListener;
         mComponentName = componentName;
         mActionsOnAllRelatedTabs = actionsOnAllRelatedTabs;
+        mTabGridDialogHandler = tabGridDialogHandler;
     }
 
     /**
@@ -59,9 +64,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
      * @param mergeThreshold                   Defines the threshold of how much two items need to
      *         be overlapped in order to be considered as a merge operation.
      */
-    void setupCallback(float swipeToDismissThreshold, float mergeThreshold) {
+    void setupCallback(
+            float swipeToDismissThreshold, float mergeThreshold, float ungroupThreshold) {
         mSwipeToDismissThreshold = swipeToDismissThreshold;
         mMergeThreshold = mergeThreshold;
+        mUngroupThreshold = ungroupThreshold;
         boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
         boolean isTabGroupUiImprovementEnabled =
                 FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
@@ -141,8 +148,20 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (mHoveredTabIndex == TabModel.INVALID_TAB_INDEX) {
                 mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             }
+            if (mUnGroupTabIndex != TabModel.INVALID_TAB_INDEX) {
+                TabGroupModelFilter filter =
+                        (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                                .getCurrentTabModelFilter();
+                filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
+                mRecyclerView.getAdapter().notifyDataSetChanged();
+            }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
+            mUnGroupTabIndex = TabModel.INVALID_TAB_INDEX;
+            if (mTabGridDialogHandler != null) {
+                mTabGridDialogHandler.updateUngroupBarStatus(
+                        TabGridDialogParent.UngroupBarStatus.HIDE);
+            }
         }
     }
 
@@ -165,6 +184,19 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (prev_hovered != mHoveredTabIndex) {
                 mModel.updateHoveredTabForMergeToGroup(prev_hovered, false);
             }
+        } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG
+                && mTabGridDialogHandler != null) {
+            // Not allow ungrouping the last tab in group.
+            if (recyclerView.getAdapter().getItemCount() == 1) return;
+            boolean isHoveredOnUngroupBar = viewHolder.itemView.getBottom() + dY
+                    > recyclerView.getBottom() - mUngroupThreshold;
+            mUnGroupTabIndex = isHoveredOnUngroupBar ? viewHolder.getAdapterPosition()
+                                                     : TabModel.INVALID_TAB_INDEX;
+            mTabGridDialogHandler.updateUngroupBarStatus(isHoveredOnUngroupBar
+                            ? TabGridDialogParent.UngroupBarStatus.HOVERED
+                            : (mSelectedTabIndex == TabModel.INVALID_TAB_INDEX
+                                            ? TabGridDialogParent.UngroupBarStatus.HIDE
+                                            : TabGridDialogParent.UngroupBarStatus.SHOW));
         }
     }
 
@@ -201,5 +233,10 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @VisibleForTesting
     void setSelectedTabIndexForTest(int index) {
         mSelectedTabIndex = index;
+    }
+
+    @VisibleForTesting
+    void setUnGroupTabIndexForTest(int index) {
+        mUnGroupTabIndex = index;
     }
 }

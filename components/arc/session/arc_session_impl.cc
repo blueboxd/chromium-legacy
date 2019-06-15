@@ -748,6 +748,11 @@ void ArcSessionImpl::OnShutdown() {
   OnStopped(ArcStopReason::SHUTDOWN);
 }
 
+void ArcSessionImpl::SetUserIdHashForProfile(const std::string& hash) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  client_->SetUserIdHashForProfile(hash);
+}
+
 std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
 #define MAP_STATE(name)             \
   case ArcSessionImpl::State::name: \

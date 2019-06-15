@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3658159451045945436">A redefinição limpa o histórico da economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3662546969139119822">Não há histórico aqui</translation>
+<translation id="3663367437272849150">Agrupar <ph name="NUM_SELECTED" /> guias.</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
 <translation id="3692944402865947621">Falha no download do arquivo <ph name="FILE_NAME" /> porque não foi possível acessar o local do armazenamento.</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
@@ -466,6 +467,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="447252321002412580">Ajude a melhorar os recursos e o desempenho do Chrome</translation>
 <translation id="4479647676395637221">Perguntar antes de permitir que sites usem sua câmera (recomendado)</translation>
 <translation id="4479972344484327217">Instalando <ph name="MODULE" /> para o Chrome…</translation>
+<translation id="4482194545587547824">O Google pode usar seu histórico de navegação para personalizar a Pesquisa e outros serviços Google</translation>
 <translation id="4487967297491345095">Todos os dados de app Chrome serão excluídos permanentemente. Isso inclui todos os arquivos, configurações, contas, bancos de dados etc.</translation>
 <translation id="4493497663118223949">Modo Lite ativado</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
@@ -477,6 +479,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4538018662093857852">Ativar Modo Lite</translation>
 <translation id="4550003330909367850">Para ver ou copiar sua senha aqui, defina um bloqueio de tela nesse dispositivo.</translation>
+<translation id="4556110439722119938">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google para que seja possível usá-los em todos os seus dispositivos</translation>
 <translation id="4558311620361989323">Atalhos de páginas da Web</translation>
 <translation id="4561979708150884304">Sem conexão</translation>
 <translation id="4565377596337484307">Ocultar senha</translation>
@@ -631,6 +634,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="557283862590186398">O Chrome precisa de permissão para este site acessar seu microfone.</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas</translation>
 <translation id="5578795271662203820">Pesquisar imagem no <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Guias agrupadas: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596627076506792578">Mais opções</translation>
@@ -709,6 +713,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6192792657125177640">Exceções</translation>
+<translation id="6193448654517602979">Selecione as guias</translation>
 <translation id="6194112207524046168">Para permitir que o Chrome acesse sua câmera, ative-a também nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A conexão é segura. Informações do site</translation>
@@ -825,6 +830,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
 <translation id="6979737339423435258">Todo o período</translation>
+<translation id="6980462514016882061">O Google pode usar seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="6985347914332179298">Não há downloads aqui</translation>
 <translation id="6989267951144302301">Falha no download</translation>
@@ -851,11 +857,13 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7141896414559753902">Impedir que sites exibam pop-ups e façam redirecionamentos (recomendado)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Carregar página original<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7161892015146974550">Selecione a guia <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Você poderá alterar isso mais tarde nas configurações</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7189372733857464326">Aguardando o fim da atualização do Google Play Services</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
+<translation id="722055596168483966">Personalizar os serviços do Google</translation>
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7233236755231902816">Para ver as páginas da Web no seu idioma, instale a versão mais recente do Chrome</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
@@ -882,6 +890,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7403691278183511381">Tela de apresentação do Chrome</translation>
 <translation id="741204030948306876">Sim</translation>
 <translation id="7413229368719586778">Data de início: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Agrupar guias…</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7423538860840206698">Leitura da área de transferência bloqueada</translation>
 <translation id="7431991332293347422">Controlar como o histórico de navegação é usado para personalizar a Pesquisa e muito mais</translation>
@@ -1018,6 +1027,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8339163506404995330">Páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8349013245300336738">Classificar por quantidade de dados usados</translation>
 <translation id="8364299278605033898">Ver sites conhecidos</translation>
+<translation id="8364603787714420828">Desmarcar a guia <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8378714024927312812">Gerenciado pela sua organização</translation>
@@ -1083,6 +1093,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, guia</translation>
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="8901170036886848654">Nenhum favorito encontrado</translation>
+<translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>

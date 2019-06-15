@@ -30,6 +30,7 @@
 
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGGraphicsElement
 
+[Exposed=Window]
 interface SVGGraphicsElement : SVGElement {
     [Measure] readonly attribute SVGAnimatedTransformList transform;
 

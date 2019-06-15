@@ -347,7 +347,7 @@ Polymer({
         return CrOnc.getNetworkName(networkStateList[0]);
       }
     }
-    return this.i18n('OncType' + deviceState.Type);
+    return this.getNetworkTypeString_(deviceState.Type);
   },
 
   /**
@@ -369,7 +369,7 @@ Polymer({
   getTitleText_: function() {
     assert(CrOncStrings);
     return this.networkTitleText ||
-        CrOncStrings['OncType' + this.activeNetworkState.Type];
+        this.getNetworkTypeString_(this.activeNetworkState.Type);
   },
 
   /**
@@ -379,5 +379,20 @@ Polymer({
    */
   doNothing_: function(event) {
     event.stopPropagation();
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.NetworkType} type
+   * @return {string}
+   * @private
+   */
+  getNetworkTypeString_: function(type) {
+    // The shared Cellular/Tether subpage is referred to as "Mobile".
+    // TODO(khorimoto): Remove once Cellular/Tether are split into their own
+    // sections.
+    if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) {
+      return this.i18n('OncTypeMobile');
+    }
+    return this.i18n('OncType' + type);
   },
 });

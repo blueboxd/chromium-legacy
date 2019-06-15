@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Sırpça</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3855472144336161447">Alman Neo 2</translation>
+<translation id="3856075812838139784">Salt okunur</translation>
 <translation id="3858678421048828670">İtalyanca klavye</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> uzantısıyla paketle</translation>
 <translation id="3866249974567520381">Açıklama</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Değiştirilme zamanı</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> seçime eklendi.</translation>
 <translation id="4582497162516204941">Linux (Beta) ile yükle</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> için sonuçlar gösteriliyor.</translation>
 <translation id="4631887759990505102">Sanatçı</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 Grubu (Son)</translation>
 <translation id="5833610766403489739">Bu dosya başka bir yere gitti. Lütfen indirilenler için konum ayarınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="5838051104334203064">Play Store uygulamaları bu cihaza erişemez</translation>
+<translation id="5838451609423551646">Tüm girişler seçimden kaldırıldı.</translation>
 <translation id="5838825566232597749">ABD Workman uluslararası</translation>
 <translation id="5850516540536751549">Bu dosya türü desteklenmiyor. Bu dosya türünü açabilecek bir uygulama bulmak için lütfen <ph name="BEGIN_LINK" />Chrome Web Mağazası<ph name="END_LINK" />'nı ziyaret edin.
     <ph name="BEGIN_LINK_HELP" />Daha Fazla Bilgi Edinin<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip sıkıştırılmış tar arşivi</translation>
 <translation id="6825883775269213504">Rusça</translation>
 <translation id="6827236167376090743">Bu video sürekli olarak oynatılacaktır.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> seçimden kaldırıldı.</translation>
 <translation id="6862635236584086457">Bu klasöre kaydedilen tüm dosyalar otomatik bir şekilde çevrimiçi olarak yedeklenir</translation>
 <translation id="6870130893560916279">Ukraynaca klavye</translation>
 <translation id="6876155724392614295">Bisiklet</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin giriş yöntemi</translation>
 <translation id="8151638057146502721">Yapılandır</translation>
 <translation id="8153607920959057464">Bu dosya görüntülenemedi.</translation>
+<translation id="8154842056504218462">Tüm girişler seçildi.</translation>
 <translation id="8157684860301034423">Uygulama bilgileri alınamadı.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">İspanyolca klavye</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Bu Drive dosyası henüz paylaşılmamış</translation>
 <translation id="8698464937041809063">Google çizimler</translation>
 <translation id="8714406895390098252">Bisiklet</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> seçildi.</translation>
 <translation id="8722421161699219904">ABD Uluslararası klavye</translation>
 <translation id="872537912056138402">Hırvatça</translation>
 <translation id="874420130893181774">Geleneksel Pinyin giriş yöntemi</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Bu dizinde resim yok.</translation>
 <translation id="943972244133411984">Değiştiren:</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> - <ph name="TO_ENTRY_NAME" /> arasında <ph name="ENTRY_COUNT" /> giriş seçildi.</translation>
 <translation id="981121421437150478">Çevrimdışı</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" adlı bir dosya zaten var. Değiştirmek istiyor musunuz?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

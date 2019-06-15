@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1409544243779336081">המלצה על אפליקציה</translation>
+<translation id="1498028757988366001">חיפשת את זה בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה לצמיתות מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{לפני דק‘ אחת}two{לפני # דק‘}many{לפני # דק‘}other{לפני # דק‘}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{נותרה דקה אחת}two{נותרו # דקות}many{נותרו # דקות}other{נותרו # דקות}}</translation>
+<translation id="7430878839542012341">למחוק את החיפוש הזה מההיסטוריה?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">אמוג'י</translation>
 <translation id="7658239707568436148">ביטול</translation>

@@ -240,6 +240,7 @@
 <translation id="383652340667548381">الصربية</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3855472144336161447">‏الألمانية Neo 2</translation>
+<translation id="3856075812838139784">للقراءة فقط</translation>
 <translation id="3858678421048828670">لوحة المفاتيح الإيطالية</translation>
 <translation id="386548886866354912">تجميع مع <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">الوصف</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">الوقت المُعدل</translation>
 <translation id="4572815280350369984">ملف <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">المزيد...</translation>
+<translation id="4579744207439506346">تمت إضافة <ph name="ENTRY_NAME" /> إلى الاختيار.</translation>
 <translation id="4582497162516204941">‏التثبيت باستخدام Linux (إصدار تجريبي)</translation>
 <translation id="4594543368593301662">يتم عرض نتائج عن <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">الفنان</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">المجموعة رقم 3 الهانغولية (النهائية)</translation>
 <translation id="5833610766403489739">يبدو أن هذا الملف قد اختفى في مكان. يُرجى التحقق من إعداد موقع التنزيل وإعادة المحاولة.</translation>
 <translation id="5838051104334203064">‏لا يمكن لتطبيقات "متجر Play" الوصول إلى هذا الجهاز</translation>
+<translation id="5838451609423551646">تمت إزالة جميع الإدخالات من الاختيار.</translation>
 <translation id="5838825566232597749">‏Workman الأمريكية الدولية</translation>
 <translation id="5850516540536751549">‏نوع الملف هذا غير متوافق. يُرجى الانتقال إلى <ph name="BEGIN_LINK" />سوق Chrome الإلكتروني<ph name="END_LINK" /> للعثور على تطبيق يمكنه فتح هذا النوع من الملفات.
     <ph name="BEGIN_LINK_HELP" />مزيد من المعلومات<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">‏أرشيف tar مضغوط ببرنامج Gzip</translation>
 <translation id="6825883775269213504">الروسية</translation>
 <translation id="6827236167376090743">سيستمر تشغيل هذا الفيديو إلى نهاية الفيلم.</translation>
+<translation id="6847101934483209767">تمت إزالة <ph name="ENTRY_NAME" /> من الاختيار.</translation>
 <translation id="6862635236584086457">جميع الملفات المحفوظة في هذا المجلد يتم الاحتفاظ بنسخة احتياطية منها تلقائيًا على الإنترنت</translation>
 <translation id="6870130893560916279">لوحة المفاتيح الأوكرانية</translation>
 <translation id="6876155724392614295">دراجة</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">‏أسلوب الإدخال لنظام Pinyin</translation>
 <translation id="8151638057146502721">تهيئة</translation>
 <translation id="8153607920959057464">يتعذر عرض هذا الملف.</translation>
+<translation id="8154842056504218462">تم اختيار جميع الإدخالات.</translation>
 <translation id="8157684860301034423">تعذّر جلب معلومات التطبيق.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">لوحة المفاتيح الأسبانية</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">‏لم تتم مشاركة ملف Drive هذا بعد</translation>
 <translation id="8698464937041809063">‏رسم Google</translation>
 <translation id="8714406895390098252">دراجة</translation>
+<translation id="8719721339511222681">تم اختيار <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">لوحة المفاتيح الأمريكية الدولية</translation>
 <translation id="872537912056138402">الكرواتية</translation>
 <translation id="874420130893181774">‏أسلوب إدخال Pinyin التقليدي</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">لا تتوفر أي صور في هذا الدليل.</translation>
 <translation id="943972244133411984">تم التعديل بواسطة</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
+<translation id="947144732524271678">تم اختيار مجموعة من <ph name="ENTRY_COUNT" /> من الإدخالات من <ph name="FROM_ENTRY_NAME" /> إلى <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
 <translation id="988685240266037636">يتوفَّر ملف باسم "<ph name="FILE_NAME" />" مسبقًا. هل تريد استبداله؟</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> ميغابايت</translation>

@@ -457,6 +457,12 @@
       Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menukar tetapan ini (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).
       </translation>
 <translation id="1767673020408652620">Dayakan Cadangan Apl dalam Keadaan Sifar Kotak Carian</translation>
+<translation id="17719159826324007">
+      Jika Android telah dimulakan, dasar ini akan memaksa peranti untuk but semula apabila pengguna log keluar jika dasar ditetapkan kepada ArcSession.
+      Apabila ditetapkan kepada Sentiasa, dasar ini memaksa peranti untuk but semula setiap kali pengguna log keluar.
+      Jika dibiarkan tidak ditetapkan, dasar ini tiada sebarang kesan dan but semula tidak akan dipaksa apabila pengguna log keluar. Begitu juga halnya jika ditetapkan kepada Jangan sekali-kali.
+      Dasar ini hanya memberikan kesan terhadap pengguna yang bukan ahli gabungan.
+      </translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="1793346220873697538">Lumpuhkan pencetakan PIN secara lalai</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
@@ -954,6 +960,7 @@
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="268577405881275241">Dayakan ciri proksi pemampatan data</translation>
 <translation id="2693108589792503178">Konfigurasikan URL tukar kata laluan.</translation>
+<translation id="2694143893026486692">Penggadang didok didayakan</translation>
 <translation id="2706708761587205154">Benarkan pencetakan dengan PIN sahaja</translation>
 <translation id="2710534340210290498">Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dapat mengunci skrin (hanya log keluar daripada sesi pengguna boleh dilakukan). Jika tetapan ini ditetapkan kepada benar atau tidak ditetapkan, pengguna yang membuat pengesahan dengan kata laluan boleh mengunci skrin.</translation>
 <translation id="2731627323327011390">Lumpuhkan penggunaan sijil <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
@@ -1190,6 +1197,7 @@
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada penggantian istilah carian akan dilaksanakan.
 
           Dasar ini dihormati hanya jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Dasar ini membenarkan pengguna ciri WebDriver untuk mengatasi
       dasar yang boleh campur tangan dalam operasi ini.
 
@@ -1709,12 +1717,6 @@
       Peranti <ph name="PRODUCT_OS_NAME" /> menyemak kemas kini secara automatik apabila tetapan ini tidak dikonfigurasi atau ditetapkan kepada Palsu.
 
       Amaran: Anda disyorkan supaya membiarkan kemas kini automatik didayakan agar pengguna dapat menerima kemas kini perisian dan pembetulan keselamatan kritikal. Tindakan mematikan kemas kini automatik boleh menyebabkan pengguna terdedah kepada risiko.</translation>
-<translation id="4018000735882846261">Dasar ini memberi Google Assistant kebenaran untuk mendengar ungkapan pengaktifan suara.
-
-      Jika dasar ini didayakan, Google Assistant akan mendengar ungkapan pengaktifan suara.
-      Jika dasar ini dilumpuhkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
-      Jika dasar ini tidak ditetapkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
-      </translation>
 <translation id="4020682745012723568">Kuki yang dipindahkan ke profil pengguna tidak boleh diakses oleh apl Android.</translation>
 <translation id="402759845255257575">Jangan benarkan mana-mana tapak untuk menjalankan JavaScript</translation>
 <translation id="4027608872760987929">Dayakan pembekal carian lalai</translation>
@@ -1863,7 +1865,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="4285674129118156176">Benarkan pengguna yang bukan ahli gabungan menggunakan ARC</translation>
-<translation id="4289903996435140853">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah dan akan diabaikan.
+<translation id="4289903996435140853">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak sah dan akan diabaikan.
 
         Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandungi hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira status pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
 
@@ -2023,7 +2025,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="4639407427807680016">Nama hos pemesejan natif untuk dikecualikan daripada senarai hitam</translation>
 <translation id="4650759511838826572">Lumpuhkan skim protokol URL</translation>
 <translation id="465099050592230505">URL kedai web perusahaan (tidak akan digunakan lagi)</translation>
-<translation id="4661889655253181651">Tetapan kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
+<translation id="4661889655253181651">Tetapan kandungan membolehkan anda menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="4665897631924472251">Tetapan pengurusan sambungan</translation>
 <translation id="4668325077104657568">Tetapan imej lalai</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2068,7 +2070,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Cadangan ini diambil secara jauh daripada pelayan Google.
 
       Sekiranya tetapan ini ditetapkan kepada palsu, cadangan tidak akan diambil atau dipaparkan.</translation>
-<translation id="4759650396863318477">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
+<translation id="4759650396863318477">Membolehkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
 
       Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem menurut dasar <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
 
@@ -2280,7 +2282,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="5213038356678567351">Tapak web yang tidak akan mencetuskan penukaran penyemak imbas.</translation>
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
-<translation id="5221394278852982313">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah dan akan diabaikan.
+<translation id="5221394278852982313">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak sah dan akan diabaikan.
 
         Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandungi hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira status pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
 
@@ -4417,8 +4419,8 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9152473318295429890">Dayakan cadangan kontekstual halaman web yang berkaitan</translation>
-<translation id="9153446010242995516">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran. Cuba bawa ke depan konfigurasi tahap peranti (termasuk bukti kelayakan rangkaian) melalui proses pengunduran, jika boleh, tetapi lakukan pengunduran dengan powerwash penuh walaupun pemulihan data tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
-          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 75 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
+<translation id="9153446010242995516">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran. Cuba bawa konfigurasi tahap peranti (termasuk bukti kelayakan rangkaian) melalui proses pengunduran, jika boleh, tetapi lakukan pengunduran dengan powerwash penuh walaupun pemulihan data tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
+          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 75 ke atas. Untuk klien lebih lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
 <translation id="9159126470527871268">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
 

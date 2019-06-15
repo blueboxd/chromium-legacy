@@ -240,6 +240,7 @@
 <translation id="383652340667548381">เซอร์เบีย</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3855472144336161447">Neo 2 แบบเยอรมัน</translation>
+<translation id="3856075812838139784">อ่านอย่างเดียว</translation>
 <translation id="3858678421048828670">แป้นพิมพ์ภาษาอิตาลี</translation>
 <translation id="386548886866354912">แพ็กด้วย <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">คำอธิบาย</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">เวลาที่แก้ไข</translation>
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
+<translation id="4579744207439506346">เพิ่ม <ph name="ENTRY_NAME" /> ไปยังรายการที่เลือกแล้ว</translation>
 <translation id="4582497162516204941">ติดตั้งด้วย Linux (เบต้า)</translation>
 <translation id="4594543368593301662">กำลังแสดงผลการค้นหาสำหรับ <ph name="SEARCH_TERM" /></translation>
 <translation id="4631887759990505102">ศิลปิน</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">ฮังกูลแบบ 3 ชุด (สุดท้าย)</translation>
 <translation id="5833610766403489739">ไฟล์นี้ไม่อยู่ในตำแหน่งที่กำหนดไว้ โปรดตรวจสอบการตั้งค่าตำแหน่งที่เก็บไฟล์ดาวน์โหลดและลองอีกครั้ง</translation>
 <translation id="5838051104334203064">แอปพลิเคชันใน Play Store จะเข้าถึงอุปกรณ์นี้ไม่ได้</translation>
+<translation id="5838451609423551646">นำรายการทั้งหมดออกจากรายการที่เลือกไว้</translation>
 <translation id="5838825566232597749">Workman สหรัฐฯ แบบสากล</translation>
 <translation id="5850516540536751549">ไม่สนับสนุนไฟล์ประเภทนี้ โปรดไปที่ <ph name="BEGIN_LINK" />Chrome เว็บสโตร์<ph name="END_LINK" />เพื่อหาแอปที่สามารถเปิดไฟล์ประเภทนี้
     <ph name="BEGIN_LINK_HELP" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">ไฟล์ Tar ที่บีบอัดโดย Gzip</translation>
 <translation id="6825883775269213504">รัสเซีย</translation>
 <translation id="6827236167376090743">วิดีโอนี้จะเล่นวนรอบ</translation>
+<translation id="6847101934483209767">ลบ <ph name="ENTRY_NAME" /> ออกจากรายการที่เลือกแล้ว</translation>
 <translation id="6862635236584086457">ไฟล์ทั้งหมดที่บันทึกไว้ในโฟลเดอร์นี้จะถูกสำรองข้อมูลแบบออนไลน์โดยอัตโนมัติ</translation>
 <translation id="6870130893560916279">แป้นพิมพ์ภาษายูเครน</translation>
 <translation id="6876155724392614295">จักรยาน</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">วิธีป้อนข้อมูลแบบพินอิน</translation>
 <translation id="8151638057146502721">กำหนดค่า</translation>
 <translation id="8153607920959057464">ไม่สามารถแสดงไฟล์นี้</translation>
+<translation id="8154842056504218462">เลือกรายการทั้งหมดอยู่</translation>
 <translation id="8157684860301034423">ดึงข้อมูลแอปไม่สำเร็จ</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">แป้นพิมพ์ภาษาสเปน</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">ยังไม่มีการแชร์ไฟล์ไดรฟ์นี้</translation>
 <translation id="8698464937041809063">ภาพวาดของ Google</translation>
 <translation id="8714406895390098252">จักรยาน</translation>
+<translation id="8719721339511222681">เลือก <ph name="ENTRY_NAME" /> ไว้</translation>
 <translation id="8722421161699219904">แป้นพิมพ์สากลสหรัฐอเมริกา</translation>
 <translation id="872537912056138402">โครเอเชีย</translation>
 <translation id="874420130893181774">วิธีการป้อนข้อมูลแบบพินอินดั้งเดิม</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">ไม่มีภาพในไดเรกทอรีนี้</translation>
 <translation id="943972244133411984">แก้ไขโดย</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>
+<translation id="947144732524271678">เลือกรายการทั้งหมด <ph name="ENTRY_COUNT" /> รายการตั้งแต่ <ph name="FROM_ENTRY_NAME" /> จนถึง <ph name="TO_ENTRY_NAME" /></translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
 <translation id="988685240266037636">มีไฟล์ชื่อ "<ph name="FILE_NAME" />" อยู่แล้ว คุณต้องการแทนที่ไฟล์ดังกล่าวไหม</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

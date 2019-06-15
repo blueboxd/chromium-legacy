@@ -252,7 +252,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // of, by decoding the bluetooth class information for Classic devices or
   // by decoding the device's appearance for LE devices. For example,
   // Microsoft Universal Foldable Keyboard only advertises the appearance.
-  BluetoothDeviceType GetDeviceType() const;
+  virtual BluetoothDeviceType GetDeviceType() const;
 
   // Indicates whether the device is known to support pairing based on its
   // device class and address.

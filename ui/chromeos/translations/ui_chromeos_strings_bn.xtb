@@ -240,6 +240,7 @@
 <translation id="383652340667548381">সার্বিয়</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3855472144336161447">জার্মান নিও ২</translation>
+<translation id="3856075812838139784">কেবল পঠনযোগ্য</translation>
 <translation id="3858678421048828670">ইতালিয় কীবোর্ড</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> দিয়ে প্যাক করুন</translation>
 <translation id="3866249974567520381">বর্ণনা</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">পরিবর্তিত সময়</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরও...</translation>
+<translation id="4579744207439506346">বেছে নেওয়া ফাইল বা ফোল্ডারের সাথে <ph name="ENTRY_NAME" /> যোগ করা হয়েছে।</translation>
 <translation id="4582497162516204941">Linux (বিটা) ব্যবহার করে ইনস্টল করুন</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" />-এর ফলাফল দেখানো হচ্ছে।</translation>
 <translation id="4631887759990505102">শিল্পী</translation>
@@ -417,6 +419,7 @@
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
 <translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড অবস্থানের সেটিংস পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="5838051104334203064">Play স্টোর অ্যাপ্লিকেশন এই ডিভাইস অ্যাক্সেস করতে পারছে না</translation>
+<translation id="5838451609423551646">সব বেছে নেওয়া এন্ট্রি সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
 <translation id="5850516540536751549">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
         <ph name="BEGIN_LINK_HELP" />আরও জানুন<ph name="END_LINK_HELP" /></translation>
@@ -490,6 +493,7 @@
 <translation id="6820687829547641339">Gzip কম্প্রেসযুক্ত টার আর্কাইভ</translation>
 <translation id="6825883775269213504">রাশিয়ান</translation>
 <translation id="6827236167376090743">পাশাপাশি এই ভিডিওটি দীর্ঘ সময় ধরে চলতে থাকবে৷</translation>
+<translation id="6847101934483209767">বেছে নেওয়া ফাইল বা ফোল্ডারগুলি থেকে <ph name="ENTRY_NAME" /> সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="6862635236584086457">এই ফোল্ডারটিতে সেভ করা সব ফাইল অনলাইনে অটোমেটিকভাবে ব্যাক আপ করা হয়েছে</translation>
 <translation id="6870130893560916279">ইউক্রেনীয় কীবোর্ড</translation>
 <translation id="6876155724392614295">সাইকেল</translation>
@@ -617,6 +621,7 @@
 <translation id="8148264977957212129">পিনইন ইনপুট পদ্ধতি</translation>
 <translation id="8151638057146502721">কনফিগার করুন</translation>
 <translation id="8153607920959057464">এই ফাইলটি প্রদর্শিত হতে পারে না৷ </translation>
+<translation id="8154842056504218462">সব এন্ট্রি বেছে নেওয়া হয়েছে।</translation>
 <translation id="8157684860301034423">অ্যাপের তথ্য ফিরিয়ে আনা যায়নি।</translation>
 <translation id="8157939133946352716">৭x৫</translation>
 <translation id="8160015581537295331">স্প্যানীয় কীবোর্ড</translation>
@@ -659,6 +664,7 @@
 <translation id="8686213429977032554">এই ড্রাইভ ফাইল এখনো শেয়ার করা হয়নি</translation>
 <translation id="8698464937041809063">Google অঙ্কন</translation>
 <translation id="8714406895390098252">সাইকেল</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> বেছে নেওয়া হয়েছে।</translation>
 <translation id="8722421161699219904">মার্কিন আন্তর্জাতিক কীবোর্ড</translation>
 <translation id="872537912056138402">ক্রোয়েশিয়</translation>
 <translation id="874420130893181774">ঐতিহ্যবাহি পিনয়িন ইনপুট পদ্ধতি</translation>
@@ -699,6 +705,7 @@
 <translation id="942954117721265519">এই ডিরেক্টরিতে কোনো ছবি নেই৷</translation>
 <translation id="943972244133411984">পরিবর্তন করেছেন</translation>
 <translation id="945522503751344254">মতামত জানান</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> থেকে <ph name="TO_ENTRY_NAME" />-এর মধ্যে <ph name="ENTRY_COUNT" />টি এন্ট্রি বেছে নেওয়া হয়েছে।</translation>
 <translation id="981121421437150478">অফলাইন</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" নামের ফাইল আগে থেকেই আছে। আপনি কি সেটি প্রতিস্থাপিত করতে চান?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> এমবি</translation>

@@ -440,6 +440,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).
       </translation>
 <translation id="1767673020408652620">Slå på appanbefalinger i nulltilstanden for søkefeltet</translation>
+<translation id="17719159826324007">
+      Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
+      Når regelen er satt til «Always» (Alltid), tvinges enheten til å starte på nytt hver gang brukeren logger av.
+      Hvis den ikke er angitt, har den ingen virkning, og enheten tvinges ikke til å starte på nytt når brukeren logger av. Det samme gjelder hvis den er satt til «Never» (Aldri).
+      Denne regelen har kun virkning for ikke-tilknyttede brukere.
+      </translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver utskrift med PIN-kode som standard</translation>
 <translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
@@ -929,6 +935,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurer nettadressen for endring av passord.</translation>
+<translation id="2694143893026486692">Den dokkede lupen er slått på</translation>
 <translation id="2706708761587205154">Tillat utskrift kun med PIN-kode</translation>
 <translation id="2710534340210290498">Hvis denne regelen settes til «false» (usann), kan ikke brukerne låse skjermen (det er bare mulig å logge av fra brukerøkten). Hvis denne regelen er satt til «true» (sann) eller ikke er angitt, kan brukere som har autentisert seg med passord, låse skjermen.</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
@@ -1165,6 +1172,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Denne regelen tillater at brukere av WebDriver-funksjoner overstyrer
       regler som kan forstyrre bruk av WebDriver.
 
@@ -1675,12 +1683,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       <ph name="PRODUCT_OS_NAME" />-enheter ser automatisk etter oppdateringer når denne innstillingen ikke er konfigurert eller den er angitt som «false» (usann).
 
       Advarsel: Vi anbefaler å ha automatiske oppdateringer slått på, slik at brukere får programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis automatiske oppdateringer slås av, kan brukerne bli utsatt for risiko.</translation>
-<translation id="4018000735882846261">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
-
-      Hvis regelen er aktivert, lytter Google-assistenten etter frasen for taleaktivering.
-      Hvis regelen er deaktivert, lytter ikke Google-assistenten etter frasen for taleaktivering.
-      Hvis regelen ikke er angitt, lytter ikke Google-assistenten etter frasen for taleaktivering.
-      </translation>
 <translation id="4020682745012723568">Informasjonskapsler som overføres til brukerens profil, kan ikke brukes av Android-apper.</translation>
 <translation id="402759845255257575">Ikke tillat nettsteder å kjøre JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standard søkeleverandør</translation>

@@ -338,9 +338,9 @@ void WebContentsAccessibilityAndroid::Connector::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
   if (old_rwhva)
-    old_rwhva->set_web_contents_accessibility(nullptr);
+    old_rwhva->SetWebContentsAccessibility(nullptr);
   if (new_rwhva)
-    new_rwhva->set_web_contents_accessibility(accessibility_.get());
+    new_rwhva->SetWebContentsAccessibility(accessibility_.get());
 }
 
 WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(

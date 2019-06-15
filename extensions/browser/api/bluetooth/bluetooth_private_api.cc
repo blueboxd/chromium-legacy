@@ -26,6 +26,10 @@
 #include "extensions/common/api/bluetooth.h"
 #include "extensions/common/api/bluetooth_private.h"
 
+#if defined(OS_CHROMEOS)
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
+#endif
+
 namespace bt = extensions::api::bluetooth;
 namespace bt_private = extensions::api::bluetooth_private;
 namespace SetDiscoveryFilter = bt_private::SetDiscoveryFilter;
@@ -675,6 +679,8 @@ void BluetoothPrivatePairFunction::OnErrorCallback(
   Respond(Error(kPairingFailed));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 BluetoothPrivateRecordPairingFunction::BluetoothPrivateRecordPairingFunction() =
     default;
 
@@ -692,6 +698,8 @@ void BluetoothPrivateRecordPairingFunction::DoWork(
                       params_->pairing_duration_ms);
   RecordPairingTransport(params_->transport);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 BluetoothPrivateRecordReconnectionFunction::
     BluetoothPrivateRecordReconnectionFunction() = default;
@@ -712,6 +720,44 @@ void BluetoothPrivateRecordReconnectionFunction::DoWork(
   base::UmaHistogramBoolean(
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
       params_->success);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BluetoothPrivateRecordDeviceSelectionFunction::
+    BluetoothPrivateRecordDeviceSelectionFunction() = default;
+
+BluetoothPrivateRecordDeviceSelectionFunction::
+    ~BluetoothPrivateRecordDeviceSelectionFunction() = default;
+
+bool BluetoothPrivateRecordDeviceSelectionFunction::CreateParams() {
+  params_ = bt_private::RecordDeviceSelection::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothPrivateRecordDeviceSelectionFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+#if defined(OS_CHROMEOS)
+  device::BluetoothTransport transport;
+  switch (params_->transport) {
+    case bt::Transport::TRANSPORT_CLASSIC:
+      transport = device::BLUETOOTH_TRANSPORT_CLASSIC;
+      break;
+    case bt::Transport::TRANSPORT_LE:
+      transport = device::BLUETOOTH_TRANSPORT_LE;
+      break;
+    case bt::Transport::TRANSPORT_DUAL:
+      transport = device::BLUETOOTH_TRANSPORT_DUAL;
+      break;
+    default:
+      transport = device::BLUETOOTH_TRANSPORT_INVALID;
+      break;
+  }
+
+  device::RecordDeviceSelectionDuration(
+      base::TimeDelta::FromMilliseconds(params_->selection_duration_ms),
+      device::BluetoothUiSurface::kSettings, params_->was_paired, transport);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

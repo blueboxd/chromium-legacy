@@ -18,6 +18,7 @@
 
 using testing::_;
 using testing::ContainerEq;
+using testing::Eq;
 using testing::Return;
 
 namespace offline_items_collection {
@@ -289,12 +290,12 @@ TEST_F(OfflineContentAggregatorTest, OnItemUpdatedPropagatedToObservers) {
   OfflineItem item1(ContentId("1", "A"));
   OfflineItem item2(ContentId("2", "B"));
 
-  EXPECT_CALL(observer1, OnItemUpdated(item1)).Times(1);
-  EXPECT_CALL(observer1, OnItemUpdated(item2)).Times(1);
-  EXPECT_CALL(observer2, OnItemUpdated(item1)).Times(1);
-  EXPECT_CALL(observer2, OnItemUpdated(item2)).Times(1);
-  provider1.NotifyOnItemUpdated(item1);
-  provider2.NotifyOnItemUpdated(item2);
+  EXPECT_CALL(observer1, OnItemUpdated(item1, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer1, OnItemUpdated(item2, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer2, OnItemUpdated(item1, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer2, OnItemUpdated(item2, Eq(base::nullopt))).Times(1);
+  provider1.NotifyOnItemUpdated(item1, base::nullopt);
+  provider2.NotifyOnItemUpdated(item2, base::nullopt);
 }
 
 TEST_F(OfflineContentAggregatorTest, ProviderRemovedDuringCallbackFlush) {

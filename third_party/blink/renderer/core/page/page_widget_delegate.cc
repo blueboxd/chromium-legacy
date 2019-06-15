@@ -210,8 +210,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
 void PageWidgetEventHandler::HandleMouseMove(
     LocalFrame& main_frame,
     const WebMouseEvent& event,
-    const std::vector<const WebInputEvent*>& coalesced_events,
-    const std::vector<const WebInputEvent*>& predicted_events) {
+    const WebVector<const WebInputEvent*>& coalesced_events,
+    const WebVector<const WebInputEvent*>& predicted_events) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(main_frame.View(), event);
   main_frame.GetEventHandler().HandleMouseMoveEvent(
@@ -252,8 +252,8 @@ WebInputEventResult PageWidgetEventHandler::HandleMouseWheel(
 WebInputEventResult PageWidgetEventHandler::HandlePointerEvent(
     LocalFrame& main_frame,
     const WebPointerEvent& event,
-    const std::vector<const WebInputEvent*>& coalesced_events,
-    const std::vector<const WebInputEvent*>& predicted_events) {
+    const WebVector<const WebInputEvent*>& coalesced_events,
+    const WebVector<const WebInputEvent*>& predicted_events) {
   WebPointerEvent transformed_event =
       TransformWebPointerEvent(main_frame.View(), event);
   return main_frame.GetEventHandler().HandlePointerEvent(

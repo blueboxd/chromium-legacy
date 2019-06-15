@@ -47,7 +47,7 @@ void WebXrVrConsentDialogBrowserTest::SetupFakeConsentManager(
 
 IN_PROC_BROWSER_TEST_F(
     WebXrVrConsentDialogBrowserTest,
-    DISABLED_TestWebXrVrSucceedsWhenUserClicksConsentDialogAllowButton) {
+    TestWebXrVrSucceedsWhenUserClicksConsentDialogAllowButton) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
@@ -70,24 +70,24 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     WebXrVrConsentDialogBrowserTest,
-    DISABLED_TestWebXrVrFailsWhenUserClicksConsentDialogCancelButton) {
+    TestWebXrVrFailsWhenUserClicksConsentDialogCancelButton) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton);
 
   LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
-      "webxr_test_presentation_promise_rejected_if_don_canceled"));
-  ExecuteStepAndWait("onImmersiveRequestWithDon()");
+      "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
+  ExecuteStepAndWait("onImmersiveRequestWithConsent()");
   EndTest();
 }
 
 IN_PROC_BROWSER_TEST_F(WebXrVrConsentDialogBrowserTest,
-                       DISABLED_TestWebXrVrFailsWhenUserClosesConsentDialog) {
+                       TestWebXrVrFailsWhenUserClosesConsentDialog) {
   SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog);
 
   LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
-      "webxr_test_presentation_promise_rejected_if_don_canceled"));
-  ExecuteStepAndWait("onImmersiveRequestWithDon()");
+      "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
+  ExecuteStepAndWait("onImmersiveRequestWithConsent()");
   EndTest();
 }
 

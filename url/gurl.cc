@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <ostream>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -339,16 +340,11 @@ bool GURL::IsStandard() const {
 }
 
 bool GURL::IsAboutBlank() const {
-  if (!SchemeIs(url::kAboutScheme))
-    return false;
+  return IsAboutUrl(url::kAboutBlankPath);
+}
 
-  if (has_host() || has_username() || has_password() || has_port())
-    return false;
-
-  if (path() != url::kAboutBlankPath && path() != url::kAboutBlankWithHashPath)
-    return false;
-
-  return true;
+bool GURL::IsAboutSrcdoc() const {
+  return IsAboutUrl(url::kAboutSrcdocPath);
 }
 
 bool GURL::SchemeIs(base::StringPiece lower_ascii_scheme) const {
@@ -485,6 +481,30 @@ size_t GURL::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(spec_) +
          base::trace_event::EstimateMemoryUsage(inner_url_) +
          (parsed_.inner_parsed() ? sizeof(url::Parsed) : 0);
+}
+
+bool GURL::IsAboutUrl(base::StringPiece allowed_path) const {
+  if (!SchemeIs(url::kAboutScheme))
+    return false;
+
+  if (has_host() || has_username() || has_password() || has_port())
+    return false;
+
+  if (!path_piece().starts_with(allowed_path))
+    return false;
+
+  if (path_piece().size() == allowed_path.size()) {
+    DCHECK_EQ(path_piece(), allowed_path);
+    return true;
+  }
+
+  if ((path_piece().size() == allowed_path.size() + 1) &&
+      path_piece().back() == '/') {
+    DCHECK_EQ(path_piece(), allowed_path.as_string() + '/');
+    return true;
+  }
+
+  return false;
 }
 
 std::ostream& operator<<(std::ostream& out, const GURL& url) {

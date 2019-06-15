@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -39,7 +40,7 @@ class RuleFeatureSetTest : public testing::Test {
         StrictCSSParserContext(SecureContextMode::kInsecureContext), nullptr,
         selector_text);
 
-    std::vector<wtf_size_t> indices;
+    Vector<wtf_size_t> indices;
     for (const CSSSelector* s = selector_list.First(); s;
          s = selector_list.Next(*s)) {
       indices.push_back(selector_list.SelectorIndex(*s));
@@ -1418,7 +1419,7 @@ TEST_F(RuleFeatureSetTest, CopyOnWrite) {
 
 TEST_F(RuleFeatureSetTest, CopyOnWrite_SiblingDescendantPairs) {
   // Test data:
-  std::vector<const char*> data;
+  Vector<const char*> data;
   // Descendant.
   data.push_back(".a .b0");
   data.push_back(".a .b1");

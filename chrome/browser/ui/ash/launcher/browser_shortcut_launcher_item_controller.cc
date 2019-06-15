@@ -410,7 +410,7 @@ void BrowserShortcutLauncherItemController::OnBrowserAdded(Browser* browser) {
 void BrowserShortcutLauncherItemController::OnBrowserClosing(Browser* browser) {
   DCHECK(browser);
   // Reset pointers to the closed browser, but leave menu indices intact.
-  for (auto it : app_menu_items_) {
+  for (auto& it : app_menu_items_) {
     if (it.first == browser)
       it.first = nullptr;
   }

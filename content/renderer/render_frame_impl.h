@@ -1122,7 +1122,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
   void OnAddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                             const std::string& message);
+                             const std::string& message,
+                             bool discard_duplicates);
   void OnVisualStateRequest(uint64_t key);
   void OnReload(bool bypass_cache);
   void OnReloadLoFiImages();
@@ -1451,6 +1452,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void AbortCommitNavigation(
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       blink::mojom::CommitResult reason);
+
+  // Implements AddMessageToConsole().
+  void AddMessageToConsoleImpl(blink::mojom::ConsoleMessageLevel level,
+                               const std::string& message,
+                               bool discard_duplicates);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after

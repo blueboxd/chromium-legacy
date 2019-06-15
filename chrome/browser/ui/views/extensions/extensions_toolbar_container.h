@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/optional.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
@@ -17,6 +18,7 @@
 class Browser;
 class ExtensionsToolbarButton;
 class ToolbarActionViewController;
+class ToolbarActionsBarBubbleViews;
 
 // Container for extensions shown in the toolbar. These include pinned
 // extensions and extensions that are 'popped out' transitively to show dialogs
@@ -29,13 +31,18 @@ class ToolbarActionViewController;
 class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ExtensionsContainer,
                                    public ToolbarActionsModel::Observer,
-                                   public ToolbarActionView::Delegate {
+                                   public ToolbarActionView::Delegate,
+                                   public views::WidgetObserver {
  public:
   explicit ExtensionsToolbarContainer(Browser* browser);
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
     return extensions_button_;
+  }
+
+  ToolbarActionsBarBubbleViews* action_bubble_public_for_testing() {
+    return active_bubble_;
   }
 
   // ToolbarIconContainerView:
@@ -54,6 +61,9 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // popped out actions, extensions button).
   void ReorderViews();
 
+  // Clears the |active_bubble_|, and unregisters the container as an observer.
+  void ClearActiveBubble(views::Widget* widget);
+
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(
       const std::string& action_id) override;
@@ -67,6 +77,10 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void PopOutAction(ToolbarActionViewController* action,
                     bool is_sticky,
                     const base::Closure& closure) override;
+  void ShowToolbarActionBubble(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,
@@ -97,6 +111,10 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
+
   Browser* const browser_;
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
@@ -115,6 +133,11 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.
   ToolbarActionViewController* popup_owner_ = nullptr;
+
+  // The extension bubble that is actively showing, if any.
+  ToolbarActionsBarBubbleViews* active_bubble_ = nullptr;
+
+  base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarContainer);
 };

@@ -40,11 +40,12 @@ class ContentCaptureSender : public content::RenderFrameObserver,
   void GetTaskTimingParameters(base::TimeDelta& short_delay,
                                base::TimeDelta& long_delay) const override;
   void DidCaptureContent(
-      const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
+      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data,
       bool first_data) override;
   void DidUpdateContent(
-      const std::vector<scoped_refptr<blink::WebContentHolder>>& data) override;
-  void DidRemoveContent(const std::vector<int64_t>& data) override;
+      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data)
+      override;
+  void DidRemoveContent(blink::WebVector<int64_t> data) override;
 
   // mojom::ContentCaptureSender:
   void StartCapture() override;
@@ -55,7 +56,8 @@ class ContentCaptureSender : public content::RenderFrameObserver,
 
  private:
   void FillContentCaptureData(
-      const std::vector<scoped_refptr<blink::WebContentHolder>>& node_holders,
+      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>&
+          node_holders,
       ContentCaptureData* data,
       bool set_url);
   const mojom::ContentCaptureReceiverAssociatedPtr& GetContentCaptureReceiver();

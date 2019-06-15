@@ -37,6 +37,7 @@ enum class VrSupportLevel : int {
 };
 
 class VrShell;
+class XRRuntimeManager;
 
 class VrShellDelegate : public device::GvrDelegateProvider,
                         XRRuntimeManagerObserver {
@@ -99,7 +100,6 @@ class VrShellDelegate : public device::GvrDelegateProvider,
       device::mojom::XRRuntimeSessionOptionsPtr options,
       base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
       bool success);
-  void SetInlineVrEnabled(bool enable);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 

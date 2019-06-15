@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Metode masukan dikonfigurasi oleh administrator.</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="1761222317188459878">Alihkan sambungan jaringan. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Scroll ke kanan</translation>
 <translation id="1812997170047690955">Konten apa yang ada di layar saya?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asisten (sedang dimuat...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Baterai <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
+<translation id="4021716437419160885">Scroll ke bawah</translation>
 <translation id="4042660782729322247">Anda membagikan layar Anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4924411785043111640">Mulai ulang dan setel ulang</translation>
+<translation id="495046168593986294">Scroll ke atas</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5030687792513154421">Waktu habis</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> terhubung ke ponsel baru</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard dalam keadaan terhubung.</translation>
 <translation id="5992218262414051481">Mode Kontras Tinggi diaktifkan. Tekan Ctrl+Search+H lagi untuk menonaktifkannya.</translation>
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
+<translation id="602001110135236999">Scroll ke kiri</translation>
+<translation id="6040143037577758943">Tutup</translation>
 <translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
 <translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>

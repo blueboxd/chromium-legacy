@@ -63,6 +63,7 @@ cr.define('other_options_settings_test', function() {
         assertFalse(isSectionHidden(element));
         assertTrue(element.checked);
         assertTrue(optionSetting.value);
+        assertFalse(optionSetting.setFromUi);
         element.checked = false;
         element.dispatchEvent(new CustomEvent('change'));
         return test_util
@@ -70,6 +71,7 @@ cr.define('other_options_settings_test', function() {
             .then(function(event) {
               assertEquals(element.id, event.detail);
               assertFalse(optionSetting.value);
+              assertTrue(optionSetting.setFromUi);
             });
       };
 

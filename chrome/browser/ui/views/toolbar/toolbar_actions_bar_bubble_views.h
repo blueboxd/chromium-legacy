@@ -32,6 +32,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   ~ToolbarActionsBarBubbleViews() override;
 
   void Show();
+  std::string GetAnchorActionId();
 
   const views::Label* body_text() const { return body_text_; }
   const views::Label* item_list() const { return item_list_; }

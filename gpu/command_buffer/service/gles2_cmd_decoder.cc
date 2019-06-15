@@ -18286,7 +18286,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
         level_depth = std::max(1, level_depth >> 1);
     }
     texture->ApplyFormatWorkarounds(feature_info_.get());
-    texture->SetImmutable(true);
+    texture->SetImmutable(true, true);
   }
 
   if (workarounds().reset_base_mipmap_level_before_texstorage &&
@@ -18422,7 +18422,7 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   if (texture->IsAttachedToFramebuffer())
     framebuffer_state_.clear_state_dirty = true;
 
-  texture->SetImmutable(true);
+  texture->SetImmutable(true, false);
 }
 
 void GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM(

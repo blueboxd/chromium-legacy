@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">I metodi di immissione vengono configurati dall'amministratore.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Scorri a destra</translation>
 <translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
@@ -205,6 +206,7 @@
 <translation id="3977512764614765090">Percentuale di carica della batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
+<translation id="4021716437419160885">Scorri verso il basso</translation>
 <translation id="4042660782729322247">Stai condividendo lo schermo</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Disattivata per un'app}other{Disattivate per # app}}</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
@@ -263,6 +265,7 @@
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
+<translation id="495046168593986294">Scorri verso l'alto</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5030687792513154421">Tempo scaduto</translation>
 <translation id="5035236842988137213">Il dispositivo <ph name="DEVICE_NAME" /> si è connesso a un nuovo telefono</translation>
@@ -320,6 +323,8 @@
 <translation id="598882571027504733">Per scaricare l'aggiornamento, riavvia il Chromebook con la tastiera collegata.</translation>
 <translation id="5992218262414051481">Modalità ad alto contrasto attivata. Premi di nuovo CTRL + tasto per la ricerca + H per disattivarla.</translation>
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
+<translation id="602001110135236999">Scorri a sinistra</translation>
+<translation id="6040143037577758943">Chiudi</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>

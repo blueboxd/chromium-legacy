@@ -23,8 +23,7 @@ TEST_F(WindowFinderTest, RealTopmostCanBeNullptr) {
       CreateTestWindow(gfx::Rect(0, 0, 100, 100));
   std::set<aura::Window*> ignore;
 
-  EXPECT_EQ(window1.get(),
-            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, nullptr));
+  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
 }
 
 TEST_F(WindowFinderTest, MultipleDisplays) {
@@ -37,12 +36,10 @@ TEST_F(WindowFinderTest, MultipleDisplays) {
   ASSERT_NE(window1->GetRootWindow(), window2->GetRootWindow());
 
   std::set<aura::Window*> ignore;
-  EXPECT_EQ(window1.get(),
-            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, nullptr));
+  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
   EXPECT_EQ(window2.get(),
-            GetTopmostWindowAtPoint(gfx::Point(210, 10), ignore, nullptr));
-  EXPECT_EQ(nullptr,
-            GetTopmostWindowAtPoint(gfx::Point(10, 210), ignore, nullptr));
+            GetTopmostWindowAtPoint(gfx::Point(210, 10), ignore));
+  EXPECT_EQ(nullptr, GetTopmostWindowAtPoint(gfx::Point(10, 210), ignore));
 }
 
 TEST_F(WindowFinderTest, WindowTargeterWithHitTestRects) {
@@ -53,21 +50,14 @@ TEST_F(WindowFinderTest, WindowTargeterWithHitTestRects) {
 
   std::set<aura::Window*> ignore;
 
-  aura::Window* real_topmost = nullptr;
-  EXPECT_EQ(window2.get(),
-            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, &real_topmost));
-  EXPECT_EQ(window2.get(), real_topmost);
+  EXPECT_EQ(window2.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
 
   auto targeter = std::make_unique<aura::WindowTargeter>();
   targeter->SetInsets(gfx::Insets(0, 50, 0, 0));
   window2->SetEventTargeter(std::move(targeter));
 
-  EXPECT_EQ(window1.get(),
-            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, &real_topmost));
-  EXPECT_EQ(window1.get(), real_topmost);
-  EXPECT_EQ(window2.get(),
-            GetTopmostWindowAtPoint(gfx::Point(60, 10), ignore, &real_topmost));
-  EXPECT_EQ(window2.get(), real_topmost);
+  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
+  EXPECT_EQ(window2.get(), GetTopmostWindowAtPoint(gfx::Point(60, 10), ignore));
 }
 
 // Tests that when overview is active, GetTopmostWindowAtPoint() will return
@@ -94,15 +84,14 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
       grid->GetOverviewItemContaining(window2.get())->target_bounds());
 
   std::set<aura::Window*> ignore;
-  aura::Window* real_topmost = nullptr;
-  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(bounds1.CenterPoint(),
-                                                   ignore, &real_topmost));
-  EXPECT_EQ(window2.get(), GetTopmostWindowAtPoint(bounds2.CenterPoint(),
-                                                   ignore, &real_topmost));
+  EXPECT_EQ(window1.get(),
+            GetTopmostWindowAtPoint(bounds1.CenterPoint(), ignore));
+  EXPECT_EQ(window2.get(),
+            GetTopmostWindowAtPoint(bounds2.CenterPoint(), ignore));
 
   wm::GetWindowState(window1.get())->Minimize();
-  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(bounds1.CenterPoint(),
-                                                   ignore, &real_topmost));
+  EXPECT_EQ(window1.get(),
+            GetTopmostWindowAtPoint(bounds1.CenterPoint(), ignore));
 }
 
 }  // namespace ash

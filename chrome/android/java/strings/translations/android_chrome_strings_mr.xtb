@@ -358,6 +358,7 @@
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
 <translation id="3662546969139119822">येथे कोणताही इतिहास नाही</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> टॅबची गटामध्ये विभागणी करा.</translation>
 <translation id="3672452749423051839">नेव्हिगेशन एरर सूचना</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
@@ -402,7 +403,7 @@
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# तास}other{# तास}}</translation>
 <translation id="4042870126885713738">वेब पत्ता निराकरण करत नाही किंवा कनेक्शन केले जाऊ शकत नाही तेव्हा सूचना दर्शवा</translation>
-<translation id="4044912625106523635">पूर्ण उंचीवर उघडलेल्या सह टॅब शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
+<translation id="4044912625106523635">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
 <translation id="4046123991198612571">पुढील ट्रॅक</translation>
 <translation id="4048707525896921369">पेज न सोडता वेबसाइटवरील विषयांबद्दल जाणून घ्या. शोधण्यासाठी टॅप करा शब्द आणि त्याच्या आसपासचा संदर्भ Google शोध ला पाठवते आणि व्याख्या, चित्रे, शोध परिणाम आणि इतर तपशील मिळवते.
 
@@ -466,6 +467,7 @@
 <translation id="447252321002412580">Chrome ची वैशिष्ट्ये आणि परफॉर्मन्स सुधारण्यात मदत करा</translation>
 <translation id="4479647676395637221">साइटना तुमचा कॅमेरा वापरण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>
 <translation id="4479972344484327217">Chrome साठी <ph name="MODULE" /> इंस्टॉल करत आहे…</translation>
+<translation id="4482194545587547824">शोध आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google तुमच्या ब्राउझिंग इतिहासाचा वापर करू शकते</translation>
 <translation id="4487967297491345095">Chrome चा सर्व ॲप डेटा कायमचा हटवला जाईल. यामध्ये सर्व फायली, सेटिंग्ज, खाती, डेटाबेस, इ. चा समावेश होतो.</translation>
 <translation id="4493497663118223949">लाइट मोड सुरू आहे</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# दिवसापूर्वी}other{# दिवसांपूर्वी}}</translation>
@@ -476,6 +478,7 @@
 <translation id="4532845899244822526">फोल्डर निवडा</translation>
 <translation id="4538018662093857852">लाइट मोड सुरू करा</translation>
 <translation id="4550003330909367850">तुमचा पासवर्ड येथे पाहण्यासाठी किंवा कॉपी करण्यासाठी या डीव्हाइसवर स्क्रीन लॉक सेट करा.</translation>
+<translation id="4556110439722119938">तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज आपल्या Google खात्यात संकालित केल्या जातील जेणेकरून तुम्ही आपल्या सर्व डिव्हाइसेसवर त्यांचा वापर करू शकता</translation>
 <translation id="4558311620361989323">वेबपेज शॉर्टकट</translation>
 <translation id="4561979708150884304">कनेक्शन नाही</translation>
 <translation id="4565377596337484307">पासवर्ड लपवा</translation>
@@ -630,6 +633,7 @@
 <translation id="557283862590186398">या साइटसाठी Chromeला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="55737423895878184">स्‍थान आणि सूचनांना अनुमती आहे</translation>
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> टॅबची गटामध्ये विभागणी केली आहे</translation>
 <translation id="5581519193887989363">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये कधीही निवडू शकता.</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
 <translation id="5596627076506792578">अधिक पर्याय</translation>
@@ -708,6 +712,7 @@
 <translation id="6181444274883918285">साइट एक्सेप्शन जोडा</translation>
 <translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6193448654517602979">टॅब निवडा</translation>
 <translation id="6194112207524046168">Chrome ला तुमच्या कॅमेराचा ॲक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील कॅमेरा सुरू करा.</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित आहे. साइट माहिती</translation>
@@ -742,7 +747,7 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="641643625718530986">प्रिंट करा...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB डाउनलोड केले</translation>
-<translation id="6418750371676080905">बंद केलेल्या सह शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
+<translation id="6418750371676080905">बंद केलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
 <translation id="6427112570124116297">वेबचे भाषांतर करा</translation>
 <translation id="6433501201775827830">तुमचे शोध इंजिन निवडा</translation>
 <translation id="6437478888915024427">पेज माहिती</translation>
@@ -782,7 +787,7 @@
 <translation id="666268767214822976">तुम्ही अ‍ॅड्रेस बारमध्ये टाइप करता त्याप्रमाणे संबंधित क्वेरी आणि लोकप्रिय वेबसाइट दर्शविण्यासाठी एक पूर्वानुमान सेवा वापरा</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मध्ये उघडा</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
-<translation id="6672986458216094438">अर्ध्या उंचीवर उघडलेल्या सह टॅब शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
+<translation id="6672986458216094438">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइस पिकर.</translation>
 <translation id="6697492270171225480">जेव्हा एखादे पेज सापडत नाही तेव्हा त्यासारख्या पेजच्या सूचना दाखवा</translation>
 <translation id="6697947395630195233">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chromeला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे.</translation>
 <translation id="6698801883190606802">संकालित केलेला डेटा व्यवस्थापित करा</translation>
@@ -824,6 +829,7 @@
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6978479750597523876">भाषांतर सेटिंग्‍ज रीसेट करा</translation>
 <translation id="6979737339423435258">पूर्णवेळ</translation>
+<translation id="6980462514016882061">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google तुमच्या ब्राउझिंग इतिहासाचा वापर करू शकते</translation>
 <translation id="6981982820502123353">अॅक्सेसिबिलिटी</translation>
 <translation id="6985347914332179298">येथे डाउनलोड नाहीत</translation>
 <translation id="6989267951144302301">डाउनलोड करता आले नाही</translation>
@@ -850,11 +856,13 @@
 <translation id="7141896414559753902">साइट पॉप-अप आणि रीडिरेक्ट दाखवण्यापासून ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> टॅब निवडा.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">तुम्ही हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
 <translation id="7189372733857464326">Google Play सेवांंनी अपडेट करणे समाप्त करण्याची प्रतीक्षा करीत आहे</translation>
 <translation id="7191430249889272776">पार्श्वभूमीवर उघडा असलेला टॅब.</translation>
+<translation id="722055596168483966">Google सेवा पर्सनलाइझ करा</translation>
 <translation id="723171743924126238">इमेज निवडा</translation>
 <translation id="7233236755231902816">तुमच्या भाषेत वेब पाहण्यासाठी, Chrome ची नवीनतम आवृत्ती मिळवा</translation>
 <translation id="7243308994586599757">स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत</translation>
@@ -881,6 +889,7 @@
 <translation id="7403691278183511381">Chrome फर्स्ट रन अनुभव</translation>
 <translation id="741204030948306876">होय, मला मान्य आहे</translation>
 <translation id="7413229368719586778">सुरू होण्याची तारीख <ph name="DATE" /></translation>
+<translation id="7418565925463285788">गट टॅब...</translation>
 <translation id="7423098979219808738">प्रथम विचारा</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड वाचणे ब्लॉक केले</translation>
 <translation id="7431991332293347422">शोध पर्सनलाइझ करण्यासाठी तुमचा ब्राउझिंग इतिहास कसा वापरला जातो ते आणि बरेच काही नियंत्रित करा</translation>
@@ -1017,6 +1026,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> टॅबची निवड रद्द करा.</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
 <translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>
@@ -1082,6 +1092,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टॅब</translation>
 <translation id="885701979325669005">स्टोरेज</translation>
 <translation id="8901170036886848654">कोणतेही बुकमार्क आढळले नाहीत</translation>
+<translation id="8904976895050290827">Chrome सिंक</translation>
 <translation id="8909135823018751308">शेअर करा...</translation>
 <translation id="8912362522468806198">Google खाते</translation>
 <translation id="8920114477895755567">पालकांच्या तपशीलांसाठी प्रतीक्षा करत आहोत.</translation>
@@ -1099,6 +1110,7 @@
 <translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवा</translation>
 <translation id="8993760627012879038">गुप्त मोडमध्ये एक नवीन टॅब उघडा</translation>
 <translation id="8998729206196772491">तुम्ही <ph name="MANAGED_DOMAIN" /> ने व्यवस्थापित केलेल्या खात्यासह साइन इन करत आहात आणि त्याच्या अॅडमिनिस्ट्रेटरला तुमच्या Chrome डेटाचे नियंत्रण देत आहात. तुमचा डेटा कायमचा या खात्यामध्ये असेल. Chrome मधून साइन आउट केल्याने तुमचा डेटा या डिव्हाइस वरून हटवला जाईल परंतु तो तुमच्या Google खात्यामध्ये स्टोअर केलेला असेल.</translation>
+<translation id="9005637476204108703">तुमची खाती व्यवस्थापित करण्यासाठी येथे टॅप करा</translation>
 <translation id="9019902583201351841">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
 <translation id="9040142327097499898">सूचनांना अनुमती आहे. या डिव्हाइससाठी स्‍थान बंद आहे.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# व्हिडिओ}other{# व्हिडिओ}}</translation>
@@ -1119,6 +1131,7 @@
 <translation id="9155898266292537608">तुम्ही शब्दावर जलद टॅप करूनदेखील शोधू शकता</translation>
 <translation id="9169594135889675189">गटामध्ये नवीन टॅब जोडा</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
+<translation id="9190112541605496997">तुमची खाती व्यवस्थापित करण्यासाठी "खाते व्यवस्थापित करा" बटणावर टॅप करा</translation>
 <translation id="9204836675896933765">1 फाइल शिल्लक</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">इमेज</translation>

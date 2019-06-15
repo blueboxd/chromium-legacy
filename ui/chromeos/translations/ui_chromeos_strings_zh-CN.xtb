@@ -240,6 +240,7 @@
 <translation id="383652340667548381">塞尔维亚语</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3855472144336161447">德语Neo 2</translation>
+<translation id="3856075812838139784">只读</translation>
 <translation id="3858678421048828670">意大利语键盘</translation>
 <translation id="386548886866354912">使用“<ph name="EXTENSION_NAME" />”打包</translation>
 <translation id="3866249974567520381">说明</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">修改时间</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
+<translation id="4579744207439506346">已将<ph name="ENTRY_NAME" />增加到已选项。</translation>
 <translation id="4582497162516204941">通过 Linux（测试版）安装</translation>
 <translation id="4594543368593301662">目前显示的是与“<ph name="SEARCH_TERM" />”相符的搜索结果。</translation>
 <translation id="4631887759990505102">艺术家</translation>
@@ -413,6 +415,7 @@
 <translation id="5819442873484330149">韩语（3 Set，终极版）</translation>
 <translation id="5833610766403489739">此文件已移至其他位置。请查看您的下载位置设置并重试。</translation>
 <translation id="5838051104334203064">Play 商店应用无法访问此设备</translation>
+<translation id="5838451609423551646">已取消选择所有条目。</translation>
 <translation id="5838825566232597749">美式 Workman 国际</translation>
 <translation id="5850516540536751549">不支持此文件类型。请在<ph name="BEGIN_LINK" />Chrome网上应用店<ph name="END_LINK" />中查找可打开此类文件的应用。
     <ph name="BEGIN_LINK_HELP" />了解详情<ph name="END_LINK_HELP" /></translation>
@@ -486,6 +489,7 @@
 <translation id="6820687829547641339">gzip 压缩的 tar 归档</translation>
 <translation id="6825883775269213504">俄语</translation>
 <translation id="6827236167376090743">此视频将不断循环播放。</translation>
+<translation id="6847101934483209767">已从所选项中移除<ph name="ENTRY_NAME" />。</translation>
 <translation id="6862635236584086457">系统会自动在线备份保存在此文件夹中的所有文件</translation>
 <translation id="6870130893560916279">乌克兰语键盘</translation>
 <translation id="6876155724392614295">自行车</translation>
@@ -613,6 +617,7 @@
 <translation id="8148264977957212129">拼音输入法</translation>
 <translation id="8151638057146502721">配置</translation>
 <translation id="8153607920959057464">此文件无法显示。</translation>
+<translation id="8154842056504218462">已选择所有条目。</translation>
 <translation id="8157684860301034423">未能检索应用信息。</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">西班牙语键盘</translation>
@@ -655,6 +660,7 @@
 <translation id="8686213429977032554">此云端硬盘文件尚未共享</translation>
 <translation id="8698464937041809063">Google 绘图</translation>
 <translation id="8714406895390098252">自行车</translation>
+<translation id="8719721339511222681">已选择<ph name="ENTRY_NAME" />。</translation>
 <translation id="8722421161699219904">美式国标键盘</translation>
 <translation id="872537912056138402">克罗地亚语</translation>
 <translation id="874420130893181774">传统拼音输入法</translation>
@@ -695,6 +701,7 @@
 <translation id="942954117721265519">此目录中没有图片。</translation>
 <translation id="943972244133411984">修改者</translation>
 <translation id="945522503751344254">发送反馈</translation>
+<translation id="947144732524271678">已选择从<ph name="FROM_ENTRY_NAME" />到<ph name="TO_ENTRY_NAME" />的 <ph name="ENTRY_COUNT" /> 个条目。</translation>
 <translation id="981121421437150478">离线</translation>
 <translation id="988685240266037636">已有名为“<ph name="FILE_NAME" />”的文件。要覆盖它吗？</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

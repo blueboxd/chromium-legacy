@@ -176,7 +176,7 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   base::Optional<base::Value> properties =
       base::JSONReader::Read(buffer, base::JSON_ALLOW_TRAILING_COMMAS);
 
-  ::RtlSecureZeroMemory(buffer, base::size(buffer));
+  credential_provider::SecurelyClearBuffer(buffer, base::size(buffer));
 
   if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed length=" << buffer_len_bytes;

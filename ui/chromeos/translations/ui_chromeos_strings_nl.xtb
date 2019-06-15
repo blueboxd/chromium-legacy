@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Servisch</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3855472144336161447">Duits Neo 2</translation>
+<translation id="3856075812838139784">Alleen-lezen</translation>
 <translation id="3858678421048828670">Italiaans toetsenbord</translation>
 <translation id="386548886866354912">Inpakken met <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Beschrijving</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Laatst gewijzigd op</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> aan selectie toegevoegd.</translation>
 <translation id="4582497162516204941">Installeren met Linux (bèta)</translation>
 <translation id="4594543368593301662">Resultaten voor <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artiest</translation>
@@ -419,6 +421,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5833610766403489739">Dit bestand staat ergens anders. Controleer je downloadlocatie-instelling en probeer het opnieuw.</translation>
 <translation id="5838051104334203064">Play Store-apps hebben geen toegang tot dit apparaat</translation>
+<translation id="5838451609423551646">Alle items uit selectie verwijderd.</translation>
 <translation id="5838825566232597749">Amerikaans Workman (internationaal)</translation>
 <translation id="5850516540536751549">Dit bestandstype wordt niet ondersteund. Ga naar de <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> om een app te vinden die dit type bestand kan openen.
     <ph name="BEGIN_LINK_HELP" />Meer informatie<ph name="END_LINK_HELP" /></translation>
@@ -492,6 +495,7 @@
 <translation id="6820687829547641339">Tot gzip gecomprimeerd tar-archief</translation>
 <translation id="6825883775269213504">Russisch</translation>
 <translation id="6827236167376090743">Deze video wordt eindeloos afgespeeld.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> uit selectie verwijderd.</translation>
 <translation id="6862635236584086457">Er wordt automatisch online een back-up gemaakt van alle bestanden die in deze map zijn opgeslagen</translation>
 <translation id="6870130893560916279">Oekraïens toetsenbord</translation>
 <translation id="6876155724392614295">Fiets</translation>
@@ -619,6 +623,7 @@
 <translation id="8148264977957212129">Pinyin-invoermethode</translation>
 <translation id="8151638057146502721">Configureren</translation>
 <translation id="8153607920959057464">Dit bestand kan niet worden weergegeven.</translation>
+<translation id="8154842056504218462">Alle items geselecteerd.</translation>
 <translation id="8157684860301034423">Het ophalen van app-informatie is mislukt.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Spaans toetsenbord</translation>
@@ -661,6 +666,7 @@
 <translation id="8686213429977032554">Dit Drive-bestand is nog niet gedeeld</translation>
 <translation id="8698464937041809063">Google-tekening</translation>
 <translation id="8714406895390098252">Fiets</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> geselecteerd.</translation>
 <translation id="8722421161699219904">Amerikaans toetsenbord (internationaal)</translation>
 <translation id="872537912056138402">Kroatisch</translation>
 <translation id="874420130893181774">Traditionele Pinyin-invoermethode</translation>
@@ -701,6 +707,7 @@
 <translation id="942954117721265519">Geen afbeeldingen in deze directory.</translation>
 <translation id="943972244133411984">Aangepast door</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>
+<translation id="947144732524271678">Een bereik van <ph name="ENTRY_COUNT" /> items van <ph name="FROM_ENTRY_NAME" /> tot <ph name="TO_ENTRY_NAME" /> geselecteerd.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Er bestaat al een bestand met de naam '<ph name="FILE_NAME" />'. Wil je dit bestand vervangen?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

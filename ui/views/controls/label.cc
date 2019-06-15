@@ -414,6 +414,11 @@ base::string16 Label::GetTooltipText(const gfx::Point& p) const {
   return base::string16();
 }
 
+void Label::OnHandlePropertyChangeEffects(PropertyEffects property_effects) {
+  if (property_effects & kPropertyEffectsLayout)
+    ResetLayout();
+}
+
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
   // Multi-line labels only support NO_ELIDE and ELIDE_TAIL for now.
   // TODO(warx): Investigate more elide text support.

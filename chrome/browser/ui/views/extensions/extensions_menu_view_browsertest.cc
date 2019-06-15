@@ -9,17 +9,24 @@
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "ui/views/test/button_test_api.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/window/dialog_client_view.h"
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
@@ -34,6 +41,11 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
     DialogBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    DialogBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void ShowUi(const std::string& name) override {
@@ -130,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       TriggeringExtensionClosesMenu) {
+                       ActivationWithReloadNeeded_Accept) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
   VerifyUi();
@@ -185,6 +197,69 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
       chrome::kChromeUIExtensionsURL,
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
+
+class ActivateWithReloadExtensionsMenuBrowserTest
+    : public ExtensionsMenuViewBrowserTest,
+      public ::testing::WithParamInterface<bool> {};
+
+IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
+                       ActivateWithReload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  LoadTestExtension("extensions/blocked_actions/content_scripts");
+  auto extension = extensions_.back();
+  extensions::ScriptingPermissionsModifier modifier(browser()->profile(),
+                                                    extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("example.com", "/empty.html"));
+
+  ShowUi("");
+  VerifyUi();
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  extensions::ExtensionActionRunner* action_runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+
+  EXPECT_TRUE(action_runner->WantsToRun(extension.get()));
+
+  TriggerSingleExtensionButton();
+
+  auto* const action_bubble = BrowserView::GetBrowserViewForBrowser(browser())
+                                  ->toolbar()
+                                  ->extensions_container()
+                                  ->action_bubble_public_for_testing();
+  ASSERT_TRUE(action_bubble);
+
+  views::DialogClientView* const dialog_client_view =
+      action_bubble->GetDialogClientView();
+
+  const bool accept_reload_dialog = GetParam();
+  if (accept_reload_dialog) {
+    content::TestNavigationObserver observer(web_contents);
+    dialog_client_view->AcceptWindow();
+    EXPECT_TRUE(web_contents->IsLoading());
+    // Wait for reload to finish.
+    observer.WaitForNavigationFinished();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    // After reload the extension should be allowed to run.
+    EXPECT_FALSE(action_runner->WantsToRun(extension.get()));
+  } else {
+    dialog_client_view->CancelWindow();
+    EXPECT_FALSE(web_contents->IsLoading());
+    EXPECT_TRUE(action_runner->WantsToRun(extension.get()));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(AcceptDialog,
+                         ActivateWithReloadExtensionsMenuBrowserTest,
+                         testing::Values(true));
+
+INSTANTIATE_TEST_SUITE_P(CancelDialog,
+                         ActivateWithReloadExtensionsMenuBrowserTest,
+                         testing::Values(false));
 
 // TODO(pbos): Add test coverage that makes sure removing popped-out extensions
 // properly disposes of the popup.

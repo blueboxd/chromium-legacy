@@ -33,13 +33,26 @@
       }
 
       #dropdown {
-        @apply --shadow-elevation-2dp;
-        background-color: rgb(256, 256, 256);
+        background-color: var(--cr-menu-background-color);
         border-radius: 4px;
         color: var(--cr-primary-text-color);
         overflow-y: hidden;
         padding-bottom: 2px;
         width: var(--dropdown-width);
+      }
+
+      @media (prefers-color-scheme: light) {
+        #dropdown {
+          @apply --shadow-elevation-2dp;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #dropdown {
+          background-image: linear-gradient(var(--cr-menu-background-sheen),
+                                            var(--cr-menu-background-sheen));
+          box-shadow: var(--cr-menu-shadow);
+        }
       }
 
       #scroll-container {
@@ -70,7 +83,7 @@
       }
 
       h1 {
-        border-bottom: 1px solid rgb(219, 219, 219);
+        border-bottom: var(--cr-separator-line);
         font-size: 0.87rem;
         font-weight: 500;
         margin: 0;

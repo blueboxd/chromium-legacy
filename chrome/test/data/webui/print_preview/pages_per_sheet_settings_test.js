@@ -51,11 +51,13 @@ cr.define('pages_per_sheet_settings_test', function() {
       const select = pagesPerSheetSection.$$('select');
       assertEquals('1', select.value);
       assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+      assertFalse(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
       assertEquals(6, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
       await print_preview_test_utils.selectOption(pagesPerSheetSection, '2');
       assertEquals(2, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+      assertTrue(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
     });
   });
 });

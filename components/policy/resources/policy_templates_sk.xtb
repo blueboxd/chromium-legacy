@@ -432,6 +432,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak ho nenakonfigurujete alebo zakážete, používateľ bude môcť toto nastavenie meniť (napr. použiť vstup Zakázať izolovanie webov na adrese chrome://flags).
       </translation>
 <translation id="1767673020408652620">Povoliť odporúčania aplikácií v nulovom stave vyhľadávacieho poľa</translation>
+<translation id="17719159826324007">
+      Keď toto pravidlo nastavíte na hodnotu ArcSession a je spustený Android, zariadenie sa po odhlásení používateľa reštartuje.
+      Keď ho nastavíte na hodnotu Vždy, zariadenie sa reštartuje po odhlásení každého používateľa.
+      Ak pravidlo nenastavíte, nebude platiť a po odhlásení používateľa sa zariadenie nereštartuje. To isté platí pri nastavení hodnoty Nikdy.
+      Toto pravidlo ovplyvní iba nepridružených používateľov.
+      </translation>
 <translation id="1781356041596378058">Toto pravidlo ovláda aj prístup k nastaveniu Androidu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu True, používatelia budú môcť pristupovať k nastaveniu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu False alebo ho ponecháte nenastavené, umožní to používateľom otvoriť nastavenie Pre vývojárov tým, že sedemkrát klepnú na číslo zostavy v aplikácii nastavení Androidu.</translation>
 <translation id="1793346220873697538">Predvolene zakázať tlač s kódom PIN</translation>
 <translation id="1797233582739332495">Zobrazovať používateľovi opakovanú výzvu, že sa vyžaduje opätovné spustenie</translation>
@@ -932,6 +938,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
+<translation id="2694143893026486692">Bola zapnutá ukotvená lupa</translation>
 <translation id="2706708761587205154">Povoliť tlač iba s kódom PIN</translation>
 <translation id="2710534340210290498">Ak je toto pravidlo nastavené na hodnotu false, používatelia nebudú môcť uzamykať obrazovku (možné bude iba odhlásenie sa z relácie používateľa). Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané nenastavené, používatelia, ktorí overili svoju totožnosť heslom, budú môcť obrazovku uzamykať.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
@@ -1168,6 +1175,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
 
           Toto pravidlo sa rešpektuje len vtedy, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Toto pravidlo umožňuje používateľom funkcie WebDriver prepísať
       pravidlá, ktoré môžu prekážať v jej fungovaní.
 
@@ -1680,12 +1688,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto nastavenie nenakonfigurované, alebo je nastavené na hodnotu False, budú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> automaticky kontrolovať aktualizácie.
 
       Upozornenie: Odporúča sa ponechať automatické aktualizácie povolené, aby mohli používatelia získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Vypnutie automatických aktualizácií môže vystaviť používateľov riziku.</translation>
-<translation id="4018000735882846261">Toto pravidlo povoľuje Asistentovi Google počúvať frázy aktivácie hlasom.
-
-      Ak toto pravidlo povolíte, Asistent Google bude počúvať frázy aktivácie hlasom.
-      Ak toto pravidlo zakážete, Asistent Google nebude počúvať frázy aktivácie hlasom.
-      Ak toto pravidlo nenastavíte, Asistent Google nebude počúvať frázy aktivácie hlasom.
-      </translation>
 <translation id="4020682745012723568">Aplikácie pre Android nemajú prístup k súborom cookie preneseným do profilu používateľa.</translation>
 <translation id="402759845255257575">Nepovoliť žiadnym stránkam spúšťať JavaScript</translation>
 <translation id="4027608872760987929">Povoliť predvoleného poskytovateľa vyhľadávania</translation>
@@ -1834,7 +1836,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="4285674129118156176">Povoliť používať funkciu ARC používateľom, ktorí nie sú partneri</translation>
-<translation id="4289903996435140853">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. Ak to neurobíte, pravidlo bude neplatné a ignorované.
+<translation id="4289903996435140853">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. V opačnom prípade bude pravidlo neplatné a ignorované.
 
         Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, keď je načítaná v prvku iframe. Pole pre webové adresy môže preto obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
 
@@ -2247,7 +2249,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultNotificationsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="5213038356678567351">Weby, ktoré nemajú nikdy spustiť prepnutie prehliadačov</translation>
 <translation id="5219844027738217407">V prípade aplikácii pre Android toto pravidlo ovplyvňuje iba mikrofón. Keď je toto pravidlo nastavené na hodnotu True, mikrofón je stlmený pre všetky aplikácie pre Android (bez výnimiek).</translation>
-<translation id="5221394278852982313">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. Ak to neurobíte, pravidlo bude neplatné a ignorované.
+<translation id="5221394278852982313">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. V opačnom prípade bude pravidlo neplatné a ignorované.
 
         Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, keď je načítaná v prvku iframe. Pole pre webové adresy môže preto obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
 
@@ -2997,7 +2999,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 
       Toto pravidlo nemá vplyv na to, či používatelia môžu konfigurovať tlačiarne v jednotlivých zariadeniach.  Je určené ako doplnok konfigurácie tlačiarní jednotlivými používateľmi.
 
-      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podradený reťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
+      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podreťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
       </translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
 <translation id="6603004149426829878">Počas rozpoznávania časového pásma vždy odosielať všetky dostupné signály polohy na server</translation>

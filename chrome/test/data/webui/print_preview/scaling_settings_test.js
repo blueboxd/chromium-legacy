@@ -90,15 +90,21 @@ cr.define('scaling_settings_test', function() {
 
       // Default is 100
       validateState('100', true, false, false, '100');
+      assertFalse(scalingSection.getSetting('scaling').setFromUi);
+      assertFalse(scalingSection.getSetting('customScaling').setFromUi);
+      assertFalse(scalingSection.getSetting('fitToPage').setFromUi);
 
       // Select custom
       await print_preview_test_utils.selectOption(
           scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       validateState('100', true, true, false, '100');
+      assertTrue(scalingSection.getSetting('customScaling').setFromUi);
+      assertTrue(scalingSection.getSetting('fitToPage').setFromUi);
 
       await print_preview_test_utils.triggerInputEvent(
           scalingInput, '105', scalingSection);
       validateState('105', true, true, false, '105');
+      assertTrue(scalingSection.getSetting('scaling').setFromUi);
 
       // Change to fit to page.
       await print_preview_test_utils.selectOption(

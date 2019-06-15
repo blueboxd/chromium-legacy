@@ -44,7 +44,8 @@ struct Env {
 
   void InitializeAppCacheService(
       network::TestURLLoaderFactory* mock_url_loader_factory) {
-    appcache_service = new ChromeAppCacheService(/*proxy=*/nullptr);
+    appcache_service =
+        base::MakeRefCounted<ChromeAppCacheService>(/*proxy=*/nullptr);
 
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter =
         base::MakeRefCounted<URLLoaderFactoryGetter>();
@@ -123,7 +124,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   }
   HeadersToRaw(&headers);
 
-  response.headers = new net::HttpResponseHeaders(headers);
+  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
 
   // To simplify the fuzzer, we respond to all requests with a manifest.
   // When we're performing a manifest fetch, this data will affect the

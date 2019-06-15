@@ -131,6 +131,12 @@ class FrameImpl : public fuchsia::web::Frame,
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
   // content::WebContentsDelegate implementation.
+  void CloseContents(content::WebContents* source) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              blink::mojom::ConsoleMessageLevel log_level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       content::RenderFrameHost* opener,
@@ -144,11 +150,6 @@ class FrameImpl : public fuchsia::web::Frame,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
-  bool DidAddMessageToConsole(content::WebContents* source,
-                              blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
-                              int32_t line_no,
-                              const base::string16& source_id) override;
 
   // content::WebContentsObserver implementation.
   void ReadyToCommitNavigation(

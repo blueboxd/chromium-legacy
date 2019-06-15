@@ -81,6 +81,7 @@ public class TabListCoordinator implements Destroyable {
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
+            @Nullable TabListMediator.TabGridDialogHandler dialogHandler,
             @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
             boolean attachToParent, @LayoutRes int layoutId, String componentName) {
         TabListModel tabListModel = new TabListModel();
@@ -141,12 +142,17 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
-                createGroupButtonProvider, null, gridCardOnClickListenerProvider, componentName);
+                createGroupButtonProvider, null, gridCardOnClickListenerProvider, dialogHandler,
+                componentName);
 
         if (mMode == TabListMode.GRID) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
                     context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
-                    context.getResources().getDimension(R.dimen.tab_grid_merge_threshold)));
+                    context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),
+                    context.getResources().getDimension(R.dimen.bottom_sheet_peek_height)));
+            touchHelper.attachToRecyclerView(mRecyclerView);
+            mMediator.registerOrientationListener(
+                    (GridLayoutManager) mRecyclerView.getLayoutManager());
             touchHelper.attachToRecyclerView(mRecyclerView);
             mMediator.registerOrientationListener(
                     (GridLayoutManager) mRecyclerView.getLayoutManager());

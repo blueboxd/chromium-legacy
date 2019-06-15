@@ -20,15 +20,13 @@ class Point;
 namespace ash {
 
 // Finds the topmost window at |screen_point| with ignoring |ignore|. If
-// |real_topmost| is not nullptr, it will be updated to the topmost visible
-// window regardless of |ignore|. If overview is active when this function is
-// called, the overview window that contains |screen_point| will be returned.
-// Note this overview window might not be visibile (e.g., it represents an aura
-// window whose window state is MINIMIZED).
+// overview is active when this function is called, the overview window that
+// contains |screen_point| will be returned. Note this overview window might not
+// be visibile (e.g., it represents an aura window whose window state is
+// MINIMIZED).
 ASH_EXPORT aura::Window* GetTopmostWindowAtPoint(
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore,
-    aura::Window** real_topmost);
+    const std::set<aura::Window*>& ignore);
 
 }  // namespace ash
 

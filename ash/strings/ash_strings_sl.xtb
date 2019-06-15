@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Načine vnosa konfigurira skrbnik.</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="1761222317188459878">Preklop omrežne povezave. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Pomik desno</translation>
 <translation id="1812997170047690955">Kaj je na zaslonu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Pomočnik (nalaganje ...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Akumulator je <ph name="PERCENTAGE" />-% napolnjen in se polni.</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="4017989525502048489">Laserski kazalnik</translation>
+<translation id="4021716437419160885">Pomik navzdol</translation>
 <translation id="4042660782729322247">Zaslon delite z drugimi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izklopljeno za eno aplikacijo}one{Izklopljeno za # aplikacijo}two{Izklopljeno za # aplikaciji}few{Izklopljeno za # aplikacije}other{Izklopljeno za # aplikacij}}</translation>
 <translation id="4072264167173457037">Srednje močan signal</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4924411785043111640">Znova zaženi in ponastavi</translation>
+<translation id="495046168593986294">Pomik navzgor</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
 <translation id="5030687792513154421">Dovoljeni čas je potekel</translation>
 <translation id="5035236842988137213">Naprava <ph name="DEVICE_NAME" /> je povezana z novim telefonom</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Če želite prejeti posodobitev, znova zaženite Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="5992218262414051481">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + H.</translation>
 <translation id="6018164090099858612">Izhod iz zrcalnega načina</translation>
+<translation id="602001110135236999">Pomik levo</translation>
+<translation id="6040143037577758943">Zapri</translation>
 <translation id="6043212731627905357">Ta monitor se ne ujema z napravo <ph name="DEVICE_TYPE" /> (monitor ni podprt).</translation>
 <translation id="6043994281159824495">Odjava</translation>
 <translation id="6047696787498798094">Ko preklopite na drugega uporabnika, bo skupna raba zaslona ustavljena. Ali želite nadaljevati?</translation>

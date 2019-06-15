@@ -1551,6 +1551,14 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE" desc="The message shown to users if a printer has a EULA agreement attached to it.">
       End User License Agreement
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE" desc="The message shown on the uri field of the add/edit printer dialogs when attempting to connect to an IPP printer that is not found on the network.">
+      Couldn't detect a printer. Please enter printer address again.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR" desc="General message shown on the top of the add/edit printer dialogs when adding/editting a printer fails.">
+      Unable to set up printer. Please check configuration and try again.
+    </message>
+
+
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE" desc="In Printing Settings, the title of local printers setting section on OS other than Chrome OS.">

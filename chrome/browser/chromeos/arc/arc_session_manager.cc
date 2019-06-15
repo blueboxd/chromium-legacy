@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -462,6 +463,9 @@ void ArcSessionManager::Initialize() {
 
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
   state_ = State::STOPPED;
+
+  arc_session_runner_->SetUserIdHashForProfile(
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).

@@ -27,17 +27,24 @@ void MarkCertificateRevoked(CertErrors* errors) {
   errors->AddError(cert_errors::kCertificateRevoked);
 }
 
-// Checks the revocation status of |cert| according to |policy|. If the checks
-// failed, returns false and adds errors to |cert_errors|.
+// Checks the revocation status of |certs[target_cert_index]| according to
+// |policy|. If the checks failed, returns false and adds errors to
+// |cert_errors|.
 //
 // TODO(eroman): Make the verification time an input.
-bool CheckCertRevocation(const ParsedCertificate* cert,
-                         const ParsedCertificate* issuer_cert,
+bool CheckCertRevocation(const ParsedCertificateList& certs,
+                         size_t target_cert_index,
                          const RevocationPolicy& policy,
                          base::StringPiece stapled_ocsp_response,
                          base::TimeDelta max_age,
                          CertNetFetcher* net_fetcher,
                          CertErrors* cert_errors) {
+  DCHECK_LT(target_cert_index, certs.size());
+  const ParsedCertificate* cert = certs[target_cert_index].get();
+  const ParsedCertificate* issuer_cert =
+      target_cert_index + 1 < certs.size() ? certs[target_cert_index + 1].get()
+                                           : nullptr;
+
   // Check using stapled OCSP, if available.
   if (!stapled_ocsp_response.empty() && issuer_cert) {
     // TODO(eroman): CheckOCSP() re-parses the certificates, perhaps just pass
@@ -201,7 +208,7 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
               base::StringPiece(
                   reinterpret_cast<const char*>(crl_response_bytes.data()),
                   crl_response_bytes.size()),
-              cert, &distribution_point, issuer_cert, base::Time::Now(),
+              certs, target_cert_index, &distribution_point, base::Time::Now(),
               max_age);
 
           switch (crl_status) {
@@ -264,9 +271,6 @@ void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
   // are added to |errors|.
   for (size_t reverse_i = 0; reverse_i < certs.size(); ++reverse_i) {
     size_t i = certs.size() - reverse_i - 1;
-    const ParsedCertificate* cert = certs[i].get();
-    const ParsedCertificate* issuer_cert =
-        i + 1 < certs.size() ? certs[i + 1].get() : nullptr;
 
     // Trust anchors bypass OCSP/CRL revocation checks. (The only way to revoke
     // trust anchors is via CRLSet or the built-in SPKI blacklist). Since
@@ -288,7 +292,7 @@ void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
     // Check whether this certificate's revocation status complies with the
     // policy.
     bool cert_ok =
-        CheckCertRevocation(cert, issuer_cert, policy, stapled_ocsp, max_age,
+        CheckCertRevocation(certs, i, policy, stapled_ocsp, max_age,
                             net_fetcher, errors->GetErrorsForCert(i));
 
     if (!cert_ok) {

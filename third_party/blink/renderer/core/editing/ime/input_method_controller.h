@@ -78,6 +78,9 @@ class CORE_EXPORT InputMethodController final
                   const Vector<ImeTextSpan>& ime_text_spans,
                   int relative_caret_position);
 
+  // Replaces the text in the specified range without changing the selection.
+  bool ReplaceText(const String&, PlainTextRange);
+
   // Inserts ongoing composing text; changes the selection to the end of
   // the inserting text if DoNotKeepSelection, or holds the selection if
   // KeepSelection.

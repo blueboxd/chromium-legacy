@@ -19,9 +19,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 using base::android::JavaParamRef;
 
@@ -36,8 +33,7 @@ class SimpleDownloadManagerCoordinator;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadEventNotifier::Observer,
-      public content::NotificationObserver,
-      public service_manager::Service {
+      public content::NotificationObserver {
  public:
   static void CreateAutoResumptionHandler();
 
@@ -53,8 +49,6 @@ class DownloadManagerService
 
   DownloadManagerService();
   ~DownloadManagerService() override;
-
-  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Called to Initialize this object. If |is_full_browser_started| is false,
   // it means only the service manager is launched. OnFullBrowserStarted() will
@@ -208,9 +202,6 @@ class DownloadManagerService
   friend class DownloadManagerServiceTest;
   friend struct base::DefaultSingletonTraits<DownloadManagerService>;
 
-  // service_manager::Service implementation.
-  void OnDisconnected() final;
-
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
                               bool is_off_the_record,
@@ -257,8 +248,6 @@ class DownloadManagerService
   void UpdateCoordinator(
       download::SimpleDownloadManagerCoordinator* coordinator,
       bool is_off_the_record);
-
-  service_manager::ServiceBinding service_binding_{this};
 
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

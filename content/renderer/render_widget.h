@@ -561,7 +561,6 @@ class CONTENT_EXPORT RenderWidget
   // Helper to convert |point| using ConvertWindowToViewport().
   gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);
   gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
-  uint32_t GetContentSourceId();
   void DidNavigate();
 
   bool auto_resize_mode() const { return auto_resize_mode_; }
@@ -1152,19 +1151,6 @@ class CONTENT_EXPORT RenderWidget
   // child RenderWidget.
   float page_scale_factor_from_mainframe_ = 1.f;
   bool is_pinch_gesture_active_from_mainframe_ = false;
-
-  // This is initialized to zero and is incremented on each non-same-page
-  // navigation commit by RenderFrameImpl. At that time it is sent to the
-  // compositor so that it can tag compositor frames, and RenderFrameImpl is
-  // responsible for sending it to the browser process to be used to match
-  // each compositor frame to the most recent page navigation before it was
-  // generated.
-  // This only applies to main frames, and is not touched for subframe
-  // RenderWidgets, where there is no concern around displaying unloaded
-  // content.
-  // TODO(kenrb, fsamuel): This should be removed when SurfaceIDs can be used
-  // to replace it. See https://crbug.com/695579.
-  uint32_t current_content_source_id_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 

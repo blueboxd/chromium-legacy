@@ -46,9 +46,8 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
     return base::TimeDelta::FromMilliseconds(500);
   }
 
-  void DidCaptureContent(
-      const std::vector<scoped_refptr<WebContentHolder>>& data,
-      bool first_data) override {
+  void DidCaptureContent(const WebVector<scoped_refptr<WebContentHolder>>& data,
+                         bool first_data) override {
     data_ = data;
     first_data_ = first_data;
     for (auto d : data)
@@ -56,47 +55,47 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
   }
 
   void DidUpdateContent(
-      const std::vector<scoped_refptr<WebContentHolder>>& data) override {
+      const WebVector<scoped_refptr<WebContentHolder>>& data) override {
     updated_data_ = data;
     for (auto d : data)
       updated_text_.push_back(d->GetValue().Utf8());
   }
 
-  void DidRemoveContent(const std::vector<int64_t>& data) override {
+  void DidRemoveContent(WebVector<int64_t> data) override {
     removed_data_ = data;
   }
 
   bool FirstData() const { return first_data_; }
 
-  const std::vector<scoped_refptr<WebContentHolder>>& Data() const {
+  const WebVector<scoped_refptr<WebContentHolder>>& Data() const {
     return data_;
   }
 
-  const std::vector<scoped_refptr<WebContentHolder>>& UpdatedData() const {
+  const WebVector<scoped_refptr<WebContentHolder>>& UpdatedData() const {
     return updated_data_;
   }
 
-  const std::vector<std::string>& AllText() const { return all_text_; }
+  const Vector<std::string>& AllText() const { return all_text_; }
 
-  const std::vector<std::string>& UpdatedText() const { return updated_text_; }
+  const Vector<std::string>& UpdatedText() const { return updated_text_; }
 
-  const std::vector<int64_t>& RemovedData() const { return removed_data_; }
+  const WebVector<int64_t>& RemovedData() const { return removed_data_; }
 
   void ResetResults() {
     first_data_ = false;
-    data_.clear();
-    updated_data_.clear();
-    removed_data_.clear();
+    data_.Clear();
+    updated_data_.Clear();
+    removed_data_.Clear();
   }
 
  private:
   bool first_data_ = false;
-  std::vector<scoped_refptr<WebContentHolder>> data_;
-  std::vector<scoped_refptr<WebContentHolder>> updated_data_;
-  std::vector<int64_t> removed_data_;
+  WebVector<scoped_refptr<WebContentHolder>> data_;
+  WebVector<scoped_refptr<WebContentHolder>> updated_data_;
+  WebVector<int64_t> removed_data_;
   NodeHolder::Type node_holder_type_;
-  std::vector<std::string> all_text_;
-  std::vector<std::string> updated_text_;
+  Vector<std::string> all_text_;
+  Vector<std::string> updated_text_;
 };
 
 class ContentCaptureTaskTestHelper : public ContentCaptureTask {
@@ -206,7 +205,7 @@ class ContentCaptureTest
     div_element->appendChild(element);
     UpdateAllLifecyclePhasesForTest();
     created_node_holder_ = GetContentCaptureManager()->GetNodeHolder(*node);
-    std::vector<NodeHolder> captured_content{created_node_holder_};
+    Vector<NodeHolder> captured_content{created_node_holder_};
     content_capture_manager_->GetContentCaptureTask()
         ->SetCapturedContentForTesting(captured_content);
   }
@@ -245,8 +244,8 @@ class ContentCaptureTest
     return node_holders_.size() - GetExpectedFirstResultSize();
   }
 
-  const std::vector<NodeHolder>& NodeHolders() const { return node_holders_; }
-  const std::vector<Node*> Nodes() const { return nodes_; }
+  const Vector<NodeHolder>& NodeHolders() const { return node_holders_; }
+  const Vector<Persistent<Node>> Nodes() const { return nodes_; }
 
  private:
   void ResetResult() {
@@ -255,8 +254,7 @@ class ContentCaptureTest
 
   // TODO(michaelbai): Remove this once integrate with LayoutText.
   void InitNodeHolders() {
-    std::vector<std::string> ids{"p1", "p2", "p3", "p4",
-                                 "p5", "p6", "p7", "p8"};
+    Vector<std::string> ids{"p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"};
     for (auto id : ids) {
       Node* node = GetElementById(id.c_str())->firstChild();
       CHECK(node);
@@ -268,8 +266,8 @@ class ContentCaptureTest
     }
   }
 
-  std::vector<Node*> nodes_;
-  std::vector<NodeHolder> node_holders_;
+  Vector<Persistent<Node>> nodes_;
+  Vector<NodeHolder> node_holders_;
   std::unique_ptr<WebContentCaptureClientTestHelper> content_capture_client_;
   Persistent<ContentCaptureManagerTestHelper> content_capture_manager_;
   Persistent<ContentCaptureLocalFrameClientHelper> local_frame_client_;
@@ -571,9 +569,9 @@ class ContentCaptureSimTest
     } else if (type == ContentType::kChildFrame) {
       SetCapturedContent(child_frame_content_);
     } else if (type == ContentType::kAll) {
-      std::vector<NodeHolder> holders(main_frame_content_);
-      holders.insert(holders.end(), child_frame_content_.begin(),
-                     child_frame_content_.end());
+      Vector<NodeHolder> holders(main_frame_content_);
+      holders.AppendRange(child_frame_content_.begin(),
+                          child_frame_content_.end());
       SetCapturedContent(holders);
     }
   }
@@ -597,11 +595,11 @@ class ContentCaptureSimTest
     DeleteNodeContent(GetDocument(), "editable_id", offset, length);
   }
 
-  const std::vector<std::string>& MainFrameExpectedText() const {
+  const Vector<std::string>& MainFrameExpectedText() const {
     return main_frame_expected_text_;
   }
 
-  const std::vector<std::string>& ChildFrameExpectedText() const {
+  const Vector<std::string>& ChildFrameExpectedText() const {
     return child_frame_expected_text_;
   }
 
@@ -654,8 +652,8 @@ class ContentCaptureSimTest
   }
 
   void InitMainFrameNodeHolders() {
-    std::vector<std::string> ids = {"p1", "p2", "p3", "p4", "p5",
-                                    "p6", "p7", "s8", "editable_id"};
+    Vector<std::string> ids = {"p1", "p2", "p3", "p4",         "p5",
+                               "p6", "p7", "s8", "editable_id"};
     main_frame_expected_text_ = {
         "Hello World1", "Hello World2", "Hello World3",
         "Hello World4", "Hello World5", "Hello World6",
@@ -665,14 +663,14 @@ class ContentCaptureSimTest
   }
 
   void InitChildFrameNodeHolders(const Document& doc) {
-    std::vector<std::string> ids = {"c1", "c2"};
+    Vector<std::string> ids = {"c1", "c2"};
     child_frame_expected_text_ = {"Hello World11", "Hello World12"};
     InitNodeHolders(child_frame_content_, ids, doc);
     EXPECT_EQ(2u, child_frame_content_.size());
   }
 
-  void InitNodeHolders(std::vector<NodeHolder>& buffer,
-                       const std::vector<std::string>& ids,
+  void InitNodeHolders(Vector<NodeHolder>& buffer,
+                       const Vector<std::string>& ids,
                        const Document& document) {
     for (auto id : ids) {
       LayoutText* layout_text = ToLayoutText(
@@ -682,7 +680,7 @@ class ContentCaptureSimTest
     }
   }
 
-  void AddNodeToDocument(Document& doc, std::vector<NodeHolder>& buffer) {
+  void AddNodeToDocument(Document& doc, Vector<NodeHolder>& buffer) {
     Node* node = doc.createTextNode("New Text");
     Element* element = Element::Create(html_names::kPTag, &doc);
     element->appendChild(node);
@@ -691,7 +689,7 @@ class ContentCaptureSimTest
     Compositor().BeginFrame();
     LayoutText* layout_text = ToLayoutText(node->GetLayoutObject());
     EXPECT_TRUE(layout_text->HasNodeHolder());
-    buffer.insert(buffer.begin(), layout_text->EnsureNodeHolder());
+    buffer.push_front(layout_text->EnsureNodeHolder());
   }
 
   void InsertNodeContent(Document& doc,
@@ -713,7 +711,7 @@ class ContentCaptureSimTest
     Compositor().BeginFrame();
   }
 
-  void SetCapturedContent(const std::vector<NodeHolder>& captured_content) {
+  void SetCapturedContent(const Vector<NodeHolder>& captured_content) {
     GetDocument()
         .GetFrame()
         ->LocalFrameRoot()
@@ -722,10 +720,10 @@ class ContentCaptureSimTest
         ->SetCapturedContentForTesting(captured_content);
   }
 
-  std::vector<std::string> main_frame_expected_text_;
-  std::vector<std::string> child_frame_expected_text_;
-  std::vector<NodeHolder> main_frame_content_;
-  std::vector<NodeHolder> child_frame_content_;
+  Vector<std::string> main_frame_expected_text_;
+  Vector<std::string> child_frame_expected_text_;
+  Vector<NodeHolder> main_frame_content_;
+  Vector<NodeHolder> child_frame_content_;
   WebContentCaptureClientTestHelper client_;
   WebContentCaptureClientTestHelper child_client_;
   Persistent<Document> child_document_;
@@ -799,7 +797,7 @@ TEST_P(ContentCaptureSimTest, ChangeNode) {
   EXPECT_TRUE(ChildClient().Data().empty());
   EXPECT_THAT(Client().AllText(),
               testing::UnorderedElementsAreArray(MainFrameExpectedText()));
-  std::vector<std::string> expected_text_update;
+  Vector<std::string> expected_text_update;
   std::string insert_text = "content ";
 
   // Changed content to 'content editable'.
@@ -876,7 +874,7 @@ TEST_P(ContentCaptureSimTest, DeleteNodeContent) {
   EXPECT_EQ(1u, Client().UpdatedData().size());
   EXPECT_FALSE(Client().FirstData());
   EXPECT_TRUE(ChildClient().Data().empty());
-  std::vector<std::string> expected_text_update;
+  Vector<std::string> expected_text_update;
   expected_text_update.push_back("edit");
   EXPECT_THAT(Client().UpdatedText(),
               testing::UnorderedElementsAreArray(expected_text_update));

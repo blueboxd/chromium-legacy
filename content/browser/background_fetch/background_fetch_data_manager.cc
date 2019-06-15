@@ -57,9 +57,8 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
 
 void BackgroundFetchDataManager::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // The CacheStorageManager can only be accessed from the IO thread.
-  cache_manager_ =
-      base::WrapRefCounted(cache_storage_context_->cache_manager());
+
+  cache_manager_ = cache_storage_context_->CacheManager();
 
   // Delete inactive registrations still in the DB.
   Cleanup();

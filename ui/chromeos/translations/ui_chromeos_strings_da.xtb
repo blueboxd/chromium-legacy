@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbisk</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3855472144336161447">Tysk (Neo 2)</translation>
+<translation id="3856075812838139784">Skrivebeskyttet</translation>
 <translation id="3858678421048828670">Italiensk tastatur</translation>
 <translation id="386548886866354912">Pak sammen med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Ændringstidspunkt</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Flere...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> blev føjet til det valgte.</translation>
 <translation id="4582497162516204941">Installer med Linux (beta)</translation>
 <translation id="4594543368593301662">Viser resultater for <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Kunstner</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3-sæt (endelig)</translation>
 <translation id="5833610766403489739">Denne fil er blevet væk. Kontrollér indstillingerne for din downloadplacering, og prøv igen.</translation>
 <translation id="5838051104334203064">Apps fra Play Butik kan ikke få adgang til denne enhed</translation>
+<translation id="5838451609423551646">Markeringen af alle elementer blev fjernet.</translation>
 <translation id="5838825566232597749">Internationalt amerikansk Workman</translation>
 <translation id="5850516540536751549">Denne filtype understøttes ikke. Gå til <ph name="BEGIN_LINK" />Chrome Webshop<ph name="END_LINK" /> for at finde en app, der kan åbne denne filtype.
     <ph name="BEGIN_LINK_HELP" />Få flere oplysninger<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip-komprimeret tar-arkiv</translation>
 <translation id="6825883775269213504">Russisk</translation>
 <translation id="6827236167376090743">Denne video vil spille lige til juleaften.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> blev fjernet fra det valgte.</translation>
 <translation id="6862635236584086457">Alle de filer, der er gemt i denne mappe, sikkerhedskopieres automatisk online</translation>
 <translation id="6870130893560916279">Ukrainsk tastatur</translation>
 <translation id="6876155724392614295">Cykel</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin indtastningsmetode</translation>
 <translation id="8151638057146502721">Konfigurer</translation>
 <translation id="8153607920959057464">Denne fil kunne ikke vises.</translation>
+<translation id="8154842056504218462">Alle elementer er valgt.</translation>
 <translation id="8157684860301034423">Appoplysningerne kunne ikke hentes.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Spansk tastatur</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Denne Drev-fil deles ikke endnu</translation>
 <translation id="8698464937041809063">Google-tegning</translation>
 <translation id="8714406895390098252">Cykel</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> er valgt.</translation>
 <translation id="8722421161699219904">Internationalt amerikansk tastatur</translation>
 <translation id="872537912056138402">Kroatisk</translation>
 <translation id="874420130893181774">Traditionel Pinyin-indtastningsmetode</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Ingen billeder i denne mappe.</translation>
 <translation id="943972244133411984">Ændret af</translation>
 <translation id="945522503751344254">Send feedback</translation>
+<translation id="947144732524271678">Valgte et interval med <ph name="ENTRY_COUNT" /> elementer fra <ph name="FROM_ENTRY_NAME" /> til <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Der findes allerede en fil med navnet "<ph name="FILE_NAME" />". Vil du erstatte den?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

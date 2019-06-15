@@ -111,6 +111,9 @@ void TabStripAnimator::AnimateTabTo(int index, TabAnimationState target_state) {
   if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE, kTickInterval, this,
                  &TabStripAnimator::TickAnimations);
+    // Tick animations immediately so that the animation starts from the
+    // beginning instead of kTickInterval ms into the animation.
+    TickAnimations();
   }
 }
 

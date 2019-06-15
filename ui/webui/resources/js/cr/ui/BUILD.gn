@@ -126,6 +126,7 @@ js_library("focus_outline_manager") {
 js_library("focus_row_behavior") {
   deps = [
     ":focus_row",
+    ":focus_without_ink",
   ]
 }
 

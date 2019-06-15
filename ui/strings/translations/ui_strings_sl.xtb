@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1409544243779336081">Priporočilo aplikacije</translation>
+<translation id="1498028757988366001">To ste v preteklosti že iskali. Če izbrišete poizvedbo »<ph name="QUERY" />« iz zgodovine, bo trajno odstranjena iz računa v vseh napravah.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -168,6 +169,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}one{Pred # min}two{Pred # min}few{Pred # min}other{Pred # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
+<translation id="7430878839542012341">Želite izbrisati to iskanje iz zgodovine?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Prekliči</translation>

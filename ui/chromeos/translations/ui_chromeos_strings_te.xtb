@@ -240,6 +240,7 @@
 <translation id="383652340667548381">సెర్బియన్</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3855472144336161447">జర్మన్ నియో 2</translation>
+<translation id="3856075812838139784">చదవడానికి మాత్రమే</translation>
 <translation id="3858678421048828670">ఇటాలియన్ కీబోర్డ్</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> గల ప్యాక్</translation>
 <translation id="3866249974567520381">వివరణ</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">సవరించిన సమయం</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ఫైల్</translation>
 <translation id="457386861538956877">మరిన్ని...</translation>
+<translation id="4579744207439506346">ఎంచుకున్న అంశాలకు <ph name="ENTRY_NAME" /> కూడా జోడించబడింది.</translation>
 <translation id="4582497162516204941">Linux (బీటా)తో ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ఫలితాలను చూపుతోంది.</translation>
 <translation id="4631887759990505102">చిత్రకారుడు</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">హాంగుల్ 3 సెట్ (తుది)</translation>
 <translation id="5833610766403489739">ఈ ఫైల్ ఉన్న స్థలం తెలియదు. దయచేసి మీ డౌన్‌లోడ్ స్థానం సెట్టింగ్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="5838051104334203064">Play స్టోర్ అప్లికేషన్‌లు ఈ పరికరాన్ని యాక్సెస్ చేయలేవు</translation>
+<translation id="5838451609423551646">అన్ని నమోదుల ఎంపిక తీసివేయబడింది.</translation>
 <translation id="5838825566232597749">US వర్క్‌మాన్ అంతర్జాతీయం</translation>
 <translation id="5850516540536751549">ఈ ఫైల్ రకానికి మద్దతు లేదు. దయచేసి ఈ రకమైన ఫైల్‌ను తెరవగల యాప్‌ను కనుగొనడానికి <ph name="BEGIN_LINK" />Chrome వెబ్ స్టోర్<ph name="END_LINK" />ను సందర్శించండి.
         <ph name="BEGIN_LINK_HELP" />మరింత తెలుసుకోండి<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip కుదించిన tar ఆర్కైవ్</translation>
 <translation id="6825883775269213504">రష్యన్</translation>
 <translation id="6827236167376090743">ఈ వీడియో నిరంతరంగా ప్లే అవుతూనే ఉంటుంది.</translation>
+<translation id="6847101934483209767">ఎంచుకున్న అంశాల నుండి <ph name="ENTRY_NAME" /> తీసివేయబడింది.</translation>
 <translation id="6862635236584086457">ఈ ఫోల్డర్‌లో సేవ్ చేసిన అన్ని ఫైల్‌లు ఆన్‌లైన్‌లో ఆటోమేటిక్‌గా బ్యాకప్ చేయబడతాయి</translation>
 <translation id="6870130893560916279">ఉక్రైనియన్ కీబోర్డ్</translation>
 <translation id="6876155724392614295">బైక్</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin ఇన్‌పుట్ పద్ధతి</translation>
 <translation id="8151638057146502721">కాన్ఫిగర్ చేయి</translation>
 <translation id="8153607920959057464">ఈ ఫైల్‌ని ప్రదర్శించడం సాధ్యం కాలేదు.</translation>
+<translation id="8154842056504218462">అన్ని నమోదులు ఎంపిక చేయబడ్డాయి.</translation>
 <translation id="8157684860301034423">యాప్ సమాచారాన్ని తిరిగి పొందడంలో విఫలమైంది.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">స్పానిష్ కీబోర్డ్</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">ఈ డిస్క్ ఫైల్ ఇంకా భాగస్వామ్యం చేయబడలేదు</translation>
 <translation id="8698464937041809063">Google డ్రాయింగ్</translation>
 <translation id="8714406895390098252">సైకిల్</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ఎంపిక చేయబడింది.</translation>
 <translation id="8722421161699219904">US అంతర్జాతీయ కీబోర్డ్</translation>
 <translation id="872537912056138402">క్రోవేషియన్</translation>
 <translation id="874420130893181774">సంప్రదాయ Pinyin ఇన్‌పుట్ పద్ధతి</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">ఈ డైరెక్టరీలో చిత్రాలు లేవు.</translation>
 <translation id="943972244133411984">వీరు సవరించారు</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> నుండి <ph name="TO_ENTRY_NAME" /> మధ్యలో ఉన్న <ph name="ENTRY_COUNT" /> నమోదులు ఎంపిక చేయబడ్డాయి.</translation>
 <translation id="981121421437150478">ఆఫ్‌లైన్</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" పేరు గల ఫైల్ ఇప్పటికే వినియోగంలో ఉంది. మీరు దీనిని భర్తీ చేయాలనుకుంటున్నారా?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

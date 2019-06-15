@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::ElementsAre;
 
@@ -34,14 +35,14 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
   }
 
   // Expose console output.
-  const std::vector<String>& Messages() { return messages_; }
-  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
+  const Vector<String>& Messages() { return messages_; }
+  const Vector<mojom::ConsoleMessageSource>& MessageSources() {
     return message_sources_;
   }
 
  private:
-  std::vector<String> messages_;
-  std::vector<mojom::ConsoleMessageSource> message_sources_;
+  Vector<String> messages_;
+  Vector<mojom::ConsoleMessageSource> message_sources_;
 };
 
 class TouchEventTest : public PageTestBase {
@@ -55,8 +56,8 @@ class TouchEventTest : public PageTestBase {
     Page::InsertOrdinaryPageForTesting(&GetPage());
   }
 
-  const std::vector<String>& Messages() { return chrome_client_->Messages(); }
-  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
+  const Vector<String>& Messages() { return chrome_client_->Messages(); }
+  const Vector<mojom::ConsoleMessageSource>& MessageSources() {
     return chrome_client_->MessageSources();
   }
 

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"

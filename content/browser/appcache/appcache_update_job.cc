@@ -382,8 +382,8 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* fetcher,
 
   if (is_valid_response_code) {
     manifest_data_ = fetcher->manifest_data();
-    manifest_response_info_.reset(
-        new net::HttpResponseInfo(request->GetResponseInfo()));
+    manifest_response_info_ =
+        std::make_unique<net::HttpResponseInfo>(request->GetResponseInfo());
     if (update_type_ == UPGRADE_ATTEMPT)
       CheckIfManifestChanged();  // continues asynchronously
     else
@@ -466,7 +466,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
   // Proceed with update process. Section 6.9.4 steps 8-20.
   internal_state_ = DOWNLOADING;
-  inprogress_cache_ = new AppCache(storage_, storage_->NewCacheId());
+  inprogress_cache_ =
+      base::MakeRefCounted<AppCache>(storage_, storage_->NewCacheId());
   BuildUrlFileList(manifest);
   inprogress_cache_->InitializeWithManifest(&manifest);
 

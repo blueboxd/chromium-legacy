@@ -29,7 +29,7 @@ class WebLocalFrame;
 // WebMediaStreamSource. Objects of this class are created and live on main
 // Render thread. Objects can be constructed either by indicating a |device| to
 // look for, or by plugging in a |source| constructed elsewhere.
-class BLINK_EXPORT MediaStreamVideoCapturerSource
+class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:
   using DeviceCapturerFactoryCallback =

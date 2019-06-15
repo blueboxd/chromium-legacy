@@ -128,6 +128,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[bookmarks::prefs::kShowBookmarkBar] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   (*s_whitelist)[::prefs::kUseCustomChromeFrame] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -577,6 +578,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   (*s_whitelist)[::prefs::kMediaRouterEnableCloudServices] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kUserFeedbackAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

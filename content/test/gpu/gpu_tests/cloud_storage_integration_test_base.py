@@ -473,7 +473,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
-      self._MaybeOutputSkiaGoldLink()
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed: ' + contents)
 
@@ -504,22 +503,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           self.GetParsedCommandLineOptions().generated_dir, image_name,
           screenshot, None)
       raise
-
-  def _MaybeOutputSkiaGoldLink(self):
-    # TODO(https://crbug.com/850107): Differentiate between an image mismatch
-    # and an infra/other failure, and only output the link on image mismatch.
-    skia_url = 'https://%s-gold.skia.org/search?' % SKIA_GOLD_INSTANCE
-    patch_issue = self.GetParsedCommandLineOptions().review_patch_issue
-    is_tryjob = patch_issue != None
-    # These URL formats were just taken from links on the Gold instance pointing
-    # to untriaged results.
-    if is_tryjob:
-      skia_url += 'issue=%s&unt=true&master=false' % patch_issue
-    else:
-      skia_url += 'blame=%s&unt=true&head=true&query=source_type%%3D%s' % (
-          self.GetParsedCommandLineOptions().build_revision,
-          SKIA_GOLD_INSTANCE)
-    logging.error('View and triage untriaged images at %s', skia_url)
 
   @classmethod
   def GenerateGpuTests(cls, options):

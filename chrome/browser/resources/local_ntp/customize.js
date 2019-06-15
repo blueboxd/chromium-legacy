@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 'use strict';
 
 // TODO(crbug.com/937570): After the RP launches this should be renamed to
@@ -175,13 +174,15 @@ customize.CUSTOM_BACKGROUND_OVERLAY =
 customize.delayedHideNotification = -1;
 customize.NOTIFICATION_TIMEOUT = 10000;
 
-/* Were the background tiles already created.
- * @type {bool}
+/**
+ * Were the background tiles already created.
+ * @type {boolean}
  */
 customize.builtTiles = false;
 
-/* Tile that was selected by the user.
- * @type {HTMLElement}
+/**
+ * Tile that was selected by the user.
+ * @type {?Element}
  */
 customize.selectedTile = null;
 
@@ -192,21 +193,21 @@ customize.selectedTile = null;
  */
 customize.ROWS_TO_PRELOAD = 3;
 
-/*
+/**
  * Called when the error notification should be shown.
  * @type {?Function}
  * @private
  */
 customize.showErrorNotification = null;
 
-/*
+/**
  * Called when the custom link notification should be hidden.
  * @type {?Function}
  * @private
  */
 customize.hideCustomLinkNotification = null;
 
-/*
+/**
  * The currently selected option in the richer picker.
  * @type {?Element}
  * @private
@@ -363,15 +364,20 @@ customize.richerPicker_resetImageMenu = function(showMenu) {
   $(customize.IDS.MENU_DONE).tabIndex = -1;
 };
 
-/* Close the collection selection dialog and cleanup the state
- * @param {dialog} menu The dialog to be closed
+/**
+ * Close the collection selection dialog and cleanup the state
+ * @param {?Element} menu The dialog to be closed
  */
 customize.closeCollectionDialog = function(menu) {
+  if (!menu) {
+    return;
+  }
   menu.close();
   customize.resetSelectionDialog();
 };
 
-/* Close and reset the dialog, and set the background.
+/**
+ * Close and reset the dialog, and set the background.
  * @param {string} url The url of the selected background.
  */
 customize.setBackground = function(
@@ -486,7 +492,8 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
   return null;
 };
 
-/* Get the next tile when the arrow keys are used to navigate the grid.
+/**
+ * Get the next tile when the arrow keys are used to navigate the grid.
  * Returns null if the tile doesn't exist.
  * @param {number} deltaX Change in the x direction.
  * @param {number} deltaY Change in the y direction.
@@ -785,7 +792,7 @@ customize.removeSelectedState = function(tile) {
  * loaded into collImg via
  * chrome-search://local-ntp/ntp-background-images.js?collection_id=<collection_id>
  * @param {string} dialogTitle The title to be displayed at the top of the
- *                 dialog.
+ *     dialog.
  */
 customize.showImageSelectionDialog = function(dialogTitle) {
   const firstNTile = customize.ROWS_TO_PRELOAD * customize.getTilesWide();
@@ -948,7 +955,7 @@ customize.showImageSelectionDialog = function(dialogTitle) {
  * @param {!Object} tile the tile that needs to be loaded.
  * @param {!Object} imageData the source imageData.
  * @param {?Function} countLoad If not null, called after the tile finishes
- * loading.
+ *     loading.
  */
 customize.loadTile = function(tile, imageData, countLoad) {
   if (imageData[tile.dataset.tileNum].collectionId === 'solidcolors') {
@@ -971,7 +978,7 @@ customize.loadTile = function(tile, imageData, countLoad) {
  * @param {!Object} tile The tile to add the fade in animation to.
  * @param {string} imageUrl the image url for the tile
  * @param {?Function} countLoad If not null, called after the tile finishes
- * loading.
+ *     loading.
  */
 customize.fadeInImageTile = function(tile, imageUrl, countLoad) {
   const image = new Image();
@@ -1006,7 +1013,9 @@ customize.loadChromeBackgrounds = function() {
   document.body.appendChild(collScript);
 };
 
-/* Close dialog when an image is selected via the file picker. */
+/**
+ * Close dialog when an image is selected via the file picker.
+ */
 customize.closeCustomizationDialog = function() {
   if (configData.richerPicker) {
     $(customize.IDS.CUSTOMIZATION_MENU).close();
@@ -1015,7 +1024,7 @@ customize.closeCustomizationDialog = function() {
   }
 };
 
-/*
+/**
  * Get the next visible option. There are times when various combinations of
  * options are hidden.
  * @param {number} current_index Index of the option the key press occurred on.
@@ -1046,8 +1055,9 @@ customize.getNextOption = function(current_index, deltaY) {
   return entries[idx];
 };
 
-/* Hide custom background options based on the network state
- * @param {bool} online The current state of the network
+/**
+ * Hide custom background options based on the network state
+ * @param {boolean} online The current state of the network
  */
 customize.networkStateChanged = function(online) {
   $(customize.IDS.DEFAULT_WALLPAPERS).hidden = !online;
@@ -1093,10 +1103,10 @@ customize.richerPicker_closeCustomizationMenu = function() {
  * Initialize the settings menu, custom backgrounds dialogs, and custom
  * links menu items. Set the text and event handlers for the various
  * elements.
- * @param {!Function} showErrorNotification Called when the error
- *                    notification should be displayed.
+ * @param {!Function} showErrorNotification Called when the error notification
+ *     should be displayed.
  * @param {!Function} hideCustomLinkNotification Called when the custom link
- *                    notification should be hidden.
+ *     notification should be hidden.
  */
 customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
@@ -1207,7 +1217,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
  * Initialize custom link items in the settings menu dialog. Set the text
  * and event handlers for the various elements.
  * @param {!Function} hideCustomLinkNotification Called when the custom link
- *                    notification should be hidden.
+ *     notification should be hidden.
  */
 customize.initCustomLinksItems = function(hideCustomLinkNotification) {
   customize.hideCustomLinkNotification = hideCustomLinkNotification;
@@ -1255,7 +1265,7 @@ customize.initCustomLinksItems = function(hideCustomLinkNotification) {
  * Initialize the settings menu and custom backgrounds dialogs. Set the
  * text and event handlers for the various elements.
  * @param {!Function} showErrorNotification Called when the error notification
- *                    should be displayed.
+ *     should be displayed.
  */
 customize.initCustomBackgrounds = function(showErrorNotification) {
   customize.showErrorNotification = showErrorNotification;

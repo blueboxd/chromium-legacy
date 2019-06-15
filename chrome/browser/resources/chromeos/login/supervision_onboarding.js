@@ -245,10 +245,13 @@
       /*
        * Properties to hide the main dialogs used to present the flow. Only one
        * of them can be shown at a time.
+       * Note: One of them needs to be visible when the element is being
+       * initialized, otherwise we risk having our width and height set to 0 by
+       * the display manager.
        */
-      hideContent_: {type: Boolean, value: true},
-      hideLoadingDialog_: {type: Boolean, value: true},
+      hideLoadingDialog_: {type: Boolean, value: false},
       hideRetryDialog_: {type: Boolean, value: true},
+      hideContent_: {type: Boolean, value: true},
 
       /*
        * Properties to hide the buttons that can trigger flow actions.

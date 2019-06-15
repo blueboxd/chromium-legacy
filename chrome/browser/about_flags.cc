@@ -3918,6 +3918,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookieDeprecationMessagesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kCookieDeprecationMessages)},
 
+    {"enable-caption-settings", flag_descriptions::kCaptionSettingsName,
+     flag_descriptions::kCaptionSettingsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kCaptionSettings)},
+
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},

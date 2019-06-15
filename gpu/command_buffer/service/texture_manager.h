@@ -341,11 +341,19 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     --framebuffer_attachment_count_;
   }
 
-  void SetImmutable(bool immutable);
+  // |immutable| indicates that the GPU clients cannot modify the format or
+  // dimensions of the texture object. This is an artificial restriction imposed
+  // by the GPU service on its clients. |immutable_storage| indicates that the
+  // storage for the texture is allocated using glTexStorage* functions and it
+  // is equivalent to the definition of immutability as defined in OpenGL
+  // specifications.
+  void SetImmutable(bool immutable, bool immutable_storage);
 
   bool IsImmutable() const {
     return immutable_;
   }
+
+  bool HasImmutableStorage() const { return immutable_storage_; }
 
   // Return 0 if it's not immutable.
   GLint GetImmutableLevels() const;
@@ -714,6 +722,10 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Whether the texture is immutable and no further changes to the format
   // or dimensions of the texture object can be made.
   bool immutable_ = false;
+
+  // Indicates that the storage for the texture is allocated using glTexStorage*
+  // functions.
+  bool immutable_storage_ = false;
 
   // Whether or not this texture has images.
   bool has_images_ = false;

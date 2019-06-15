@@ -267,10 +267,12 @@ void OfflineContentAggregator::OnItemRemoved(const ContentId& id) {
     observer.OnItemRemoved(id);
 }
 
-void OfflineContentAggregator::OnItemUpdated(const OfflineItem& item) {
+void OfflineContentAggregator::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
-    observer.OnItemUpdated(item);
+    observer.OnItemUpdated(item, update_delta);
 }
 
 }  // namespace offline_items_collection

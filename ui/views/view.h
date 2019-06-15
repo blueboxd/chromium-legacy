@@ -1572,6 +1572,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void OnPropertyChanged(PropertyKey property,
                          PropertyEffects property_effects);
 
+  // Empty function called in HandlePropertyChangeEffects to be overridden in
+  // subclasses if they have custom functions for property changes.
+  virtual void OnHandlePropertyChangeEffects(PropertyEffects property_effects) {
+  }
+
  private:
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;

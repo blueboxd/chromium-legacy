@@ -456,6 +456,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent modifier ce paramètre (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).
       </translation>
 <translation id="1767673020408652620">Activer les recommandations d'applications dans le champ de recherche vide</translation>
+<translation id="17719159826324007">
+      Lorsque l'option "ArcSession" est activée, cette règle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
+      Si l'option "Always" est sélectionnée, la règle imposera un redémarrage de l'appareil à chaque déconnexion d'utilisateur.
+      Si aucun paramètre n'est défini, la règle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion d'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
+      Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
+      </translation>
 <translation id="1781356041596378058">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="1793346220873697538">Désactiver l'impression par code définie par défaut</translation>
 <translation id="1797233582739332495">Afficher une invite récurrente indiquant qu'un redémarrage est nécessaire</translation>
@@ -959,6 +965,7 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
+<translation id="2694143893026486692">Loupe ancrée activée</translation>
 <translation id="2706708761587205154">Autoriser l'impression avec code uniquement</translation>
 <translation id="2710534340210290498">Si cette règle est définie sur "False", les utilisateurs ne peuvent pas verrouiller l'écran (seule la déconnexion de la session de l'utilisateur est possible). Si ce paramètre est défini sur "True", ou s'il n'est pas configuré, les utilisateurs ayant procédé à l'authentification avec un mot de passe peuvent verrouiller l'écran.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
@@ -1195,6 +1202,7 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Cette règle permet aux utilisateurs de la fonctionnalité WebDriver d'ignorer
       les règles pouvant affecter son fonctionnement.
 
@@ -1710,12 +1718,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Les appareils <ph name="PRODUCT_OS_NAME" /> recherchent automatiquement les mises à jour lorsque ce paramètre n'est pas configuré ou lorsqu'il est défini sur "False".
 
       Avertissement : Il est recommandé de ne pas désactiver les mises à jour automatiques afin que les utilisateurs continuent de recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La désactivation des mises à jour automatiques pourrait constituer un risque pour les utilisateurs.</translation>
-<translation id="4018000735882846261">Cette règle accorde à l'Assistant Google l'autorisation d'écouter l'expression servant à activer les commandes vocales.
-
-      Si cette règle est activée, l'Assistant Google écoute l'expression d'activation des commandes vocales.
-      Si elle est désactivée, l'Assistant Google n'écoute pas cette expression.
-      Si elle n'est pas définie, l'Assistant Google n'écoute pas cette expression.
-      </translation>
 <translation id="4020682745012723568">Les applications Android n'ont pas accès aux cookies transférés vers le profil de l'utilisateur.</translation>
 <translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
 <translation id="4027608872760987929">Activer le moteur de recherche par défaut</translation>
@@ -2025,7 +2027,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4639407427807680016">Noms des hôtes de messagerie native à exclure de la liste noire</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
-<translation id="4661889655253181651">L'option "Paramètres de contenu" permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, Cookies, Images ou JavaScript) est géré.</translation>
+<translation id="4661889655253181651">L'option "Paramètres de contenu" permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, cookies, images ou JavaScript) est géré.</translation>
 <translation id="4665897631924472251">Paramètres de gestion des extensions</translation>
 <translation id="4668325077104657568">Paramètres d'images par défaut</translation>
 <translation id="4670865688564083639">Plage minimale :</translation>
@@ -2072,7 +2074,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si cette règle est définie sur False, aucune suggestion n'est récupérée ni affichée.</translation>
 <translation id="4759650396863318477">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
 
-      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent ce même programme.
+      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
 
       Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à sa carte de crédit.

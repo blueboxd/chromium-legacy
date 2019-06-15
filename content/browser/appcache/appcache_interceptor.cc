@@ -63,7 +63,7 @@ void AppCacheInterceptor::SetExtraRequestInfoForHost(
     bool should_reset_appcache) {
   // Create a handler for this request and associate it with the request.
   std::unique_ptr<AppCacheRequestHandler> handler =
-      host->CreateRequestHandler(AppCacheURLRequest::Create(request),
+      host->CreateRequestHandler(std::make_unique<AppCacheURLRequest>(request),
                                  resource_type, should_reset_appcache);
   if (handler)
     SetHandler(request, std::move(handler));

@@ -386,13 +386,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // in flight change).
   bool RequestRepaintForTesting();
 
-  // Called after every cross-document navigation. If Surface Synchronizaton is
-  // on, we send a new LocalSurfaceId to RenderWidget to be used after
-  // navigation. If Surface Synchronization is off, we block CompositorFrames
-  // that have smaller content_source_id than |next_source_id|. In either case,
-  // we will clear the displayed graphics of the renderer after a certain
-  // timeout if it does not produce a new CompositorFrame after navigation.
-  void DidNavigate(uint32_t next_source_id);
+  // Called after every cross-document navigation. The displayed graphics of
+  // the renderer is cleared after a certain timeout if it does not produce a
+  // new CompositorFrame after navigation.
+  void DidNavigate();
 
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
@@ -711,8 +708,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // arriving, this call can be used for force a timeout, to avoid showing the
   // content of the old page under UI from the new page.
   void ForceFirstFrameAfterNavigationTimeout();
-
-  uint32_t current_content_source_id() { return current_content_source_id_; }
 
   void SetScreenOrientationForTesting(uint16_t angle,
                                       ScreenOrientationValues type);
@@ -1150,25 +1145,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // renderer process before clearing any previously displayed content.
   base::TimeDelta new_content_rendering_delay_;
 
-  // This identifier tags compositor frames according to the page load with
-  // which they are associated, to prevent an unloaded web page from being
-  // drawn after a navigation to a new page has already committed. This is
-  // a no-op for non-top-level RenderWidgets, as that should always be zero.
-  // TODO(kenrb, fsamuel): We should use SurfaceIDs for this purpose when they
-  // are available in the renderer process. See https://crbug.com/695579.
-  uint32_t current_content_source_id_ = 0;
-
   // When true, the RenderWidget is regularly sending updates regarding
   // composition info. It should only be true when there is a focused editable
   // node.
   bool monitoring_composition_info_ = false;
-
-  // This is the content_source_id of the latest frame received. This value is
-  // compared against current_content_source_id_ to determine whether the
-  // received frame belongs to the current page. If a frame for the current page
-  // does not arrive in time after nagivation, we clear the graphics of the old
-  // page. See RenderWidget::current_content_source_id_ for more information.
-  uint32_t last_received_content_source_id_ = 0;
 
 #if defined(OS_MACOSX)
   device::mojom::WakeLockPtr wake_lock_;

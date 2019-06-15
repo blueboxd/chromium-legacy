@@ -62,13 +62,10 @@ using ::testing::UnorderedElementsAre;
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  public:
-  ChromeNavigationBrowserTest() {}
-  ~ChromeNavigationBrowserTest() override {}
-
-  void SetUp() override {
+  ChromeNavigationBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
-    InProcessBrowserTest::SetUp();
   }
+  ~ChromeNavigationBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Backgrounded renderer processes run at a lower priority, causing the
@@ -1342,6 +1339,11 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
 class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
  public:
+  SiteIsolationForPasswordSitesBrowserTest() {
+    feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
+                                   {features::kSitePerProcess});
+  }
+
   std::vector<std::string> GetSavedIsolatedSites() {
     return GetSavedIsolatedSites(browser()->profile());
   }
@@ -1385,12 +1387,6 @@ class SiteIsolationForPasswordSitesBrowserTest
   const std::string kSyntheticTrialGroup = "Enabled";
 
  protected:
-  void SetUp() override {
-    feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
-                                   {features::kSitePerProcess});
-    ChromeNavigationBrowserTest::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
 

@@ -220,6 +220,15 @@ base::string16 GetSelectedLanguage();
 // Securely clear a base::Value that may be a dictionary value that may
 // have a password field.
 void SecurelyClearDictionaryValue(base::Optional<base::Value>* value);
+void SecurelyClearDictionaryValueWithKey(base::Optional<base::Value>* value,
+                                         const std::string& password_key);
+
+// Securely clear base:string16 and std::string.
+void SecurelyClearString(base::string16& str);
+void SecurelyClearString(std::string& str);
+
+// Securely clear a given |buffer| with size |length|.
+void SecurelyClearBuffer(void* buffer, size_t length);
 
 // Helpers to get strings from base::Values that are expected to be
 // DictionaryValues.

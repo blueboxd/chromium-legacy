@@ -25,31 +25,29 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
       render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_);
 
-  XRRuntimeManager::GetInstance()->AddService(this);
+  runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
+  runtime_manager_->AddService(this);
 }
 
 // Constructor for testing.
-VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {}
-
-void VRServiceImpl::SetBinding(mojo::StrongBindingPtr<VRService> binding) {
-  binding_ = std::move(binding);
+VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {
+  runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
+  runtime_manager_->AddService(this);
 }
 
 VRServiceImpl::~VRServiceImpl() {
-  // Destroy XRDeviceImpl before calling RemoveService below. RemoveService
-  // might implicitly destory the XRRuntimeManager, and therefore the
-  // BrowserXRRuntime that XRDeviceImpl needs to access in its dtor.
   device_ = nullptr;
-  XRRuntimeManager::GetInstance()->RemoveService(this);
+  runtime_manager_->RemoveService(this);
 }
 
 void VRServiceImpl::Create(content::RenderFrameHost* render_frame_host,
                            device::mojom::VRServiceRequest request) {
   std::unique_ptr<VRServiceImpl> vr_service_impl =
       std::make_unique<VRServiceImpl>(render_frame_host);
+
   VRServiceImpl* impl = vr_service_impl.get();
-  impl->SetBinding(
-      mojo::MakeStrongBinding(std::move(vr_service_impl), std::move(request)));
+  impl->binding_ =
+      mojo::MakeStrongBinding(std::move(vr_service_impl), std::move(request));
 }
 
 void VRServiceImpl::InitializationComplete() {
@@ -84,9 +82,9 @@ void VRServiceImpl::MaybeReturnDevice() {
     // one. We assume that the renderer will use the old device until it has
     // been destroyed, so it is safe to destroy it on the browser side.
     device::mojom::XRDevicePtr device;
-    if (XRRuntimeManager::GetInstance()->HasAnyRuntime()) {
-      device_ = std::make_unique<XRDeviceImpl>(render_frame_host_,
-                                               mojo::MakeRequest(&device));
+    if (runtime_manager_->HasAnyRuntime()) {
+      device_ = std::make_unique<XRDeviceImpl>(
+          render_frame_host_, mojo::MakeRequest(&device), runtime_manager_);
     }
     std::move(request_device_callback_).Run(std::move(device));
   }

@@ -266,7 +266,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
     } else if (info_buffer_.get()) {
       // Deserialize the http info structure, ensuring we got headers.
       base::Pickle pickle(buffer_->data(), result);
-      std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+      auto info = std::make_unique<net::HttpResponseInfo>();
       bool response_truncated = false;
       if (!info->InitFromPickle(pickle, &response_truncated) ||
           !info->headers.get()) {

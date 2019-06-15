@@ -470,11 +470,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * Starts monitoring network quality. Must be called after native initialization is complete.
-     */
-    public void startMonitoringNetworkQuality() {}
-
-    /**
      * Starts the observer for listening to system settings changes. Must be called on
      * ChromeActivity initialization.
      */

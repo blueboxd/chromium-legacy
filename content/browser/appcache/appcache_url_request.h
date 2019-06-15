@@ -17,10 +17,7 @@ namespace content {
 // AppCacheRequest wrapper for the URLRequest class.
 class CONTENT_EXPORT AppCacheURLRequest : public AppCacheRequest {
  public:
-  // Factory function to create an instance of the AppCacheURLRequest class.
-  static std::unique_ptr<AppCacheURLRequest> Create(
-      net::URLRequest* url_request);
-
+  explicit AppCacheURLRequest(net::URLRequest* url_request);
   ~AppCacheURLRequest() override;
 
   // AppCacheRequest overrides.
@@ -35,9 +32,6 @@ class CONTENT_EXPORT AppCacheURLRequest : public AppCacheRequest {
   std::string GetResponseHeaderByName(const std::string& name) const override;
   net::URLRequest* GetURLRequest() override;
   AppCacheURLRequest* AsURLRequest() override;
-
- protected:
-  explicit AppCacheURLRequest(net::URLRequest* url_request);
 
  private:
   net::URLRequest* url_request_;

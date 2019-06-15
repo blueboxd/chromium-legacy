@@ -98,7 +98,6 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     base::WaitableEvent* abort_event,
     base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
-  bool download_to_blob = download_to_blob_registry.is_valid();
   auto* context = new SyncLoadContext(
       request.get(), std::move(url_loader_factory_info), response,
       redirect_or_response_event, abort_event, timeout,
@@ -106,7 +105,6 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
       traffic_annotation, true /* is_sync */,
-      download_to_blob /* pass_response_pipe_to_peer */,
       base::WrapUnique(context), context->url_loader_factory_,
       std::move(throttles), nullptr /* navigation_response_override_params */);
 }

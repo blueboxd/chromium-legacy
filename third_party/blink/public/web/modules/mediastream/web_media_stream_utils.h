@@ -18,7 +18,7 @@ class WebMediaStreamTrack;
 
 // Requests that a refresh frame be sent "soon" (e.g., to resolve picture loss
 // or quality issues).
-BLINK_EXPORT void RequestRefreshFrameFromVideoTrack(
+BLINK_MODULES_EXPORT void RequestRefreshFrameFromVideoTrack(
     const WebMediaStreamTrack& video_track);
 
 // Calls to these methods must be done on the main render thread.
@@ -28,12 +28,12 @@ BLINK_EXPORT void RequestRefreshFrameFromVideoTrack(
 // a different thread.
 // |is_sink_secure| indicates if |sink| meets output protection requirement.
 // Generally, this should be false unless you know what you are doing.
-BLINK_EXPORT void AddSinkToMediaStreamTrack(
+BLINK_MODULES_EXPORT void AddSinkToMediaStreamTrack(
     const WebMediaStreamTrack& track,
     WebMediaStreamSink* sink,
     const VideoCaptureDeliverFrameCB& callback,
     bool is_sink_secure);
-BLINK_EXPORT void RemoveSinkFromMediaStreamTrack(
+BLINK_MODULES_EXPORT void RemoveSinkFromMediaStreamTrack(
     const WebMediaStreamTrack& track,
     WebMediaStreamSink* sink);
 }  // namespace blink

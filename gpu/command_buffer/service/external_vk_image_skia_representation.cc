@@ -93,7 +93,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
 
   std::vector<SemaphoreHandle> handles;
-  if (!backing_impl()->BeginAccess(readonly, &handles))
+  if (!backing_impl()->BeginAccess(readonly, &handles, false /* is_gl */))
     return nullptr;
 
   for (auto& handle : handles) {
@@ -137,7 +137,7 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
     DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
   }
 
-  backing_impl()->EndAccess(readonly, std::move(handle));
+  backing_impl()->EndAccess(readonly, std::move(handle), false /* is_gl */);
 }
 
 }  // namespace gpu

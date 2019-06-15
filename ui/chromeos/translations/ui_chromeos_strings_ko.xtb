@@ -240,6 +240,7 @@
 <translation id="383652340667548381">세르비아어</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3855472144336161447">독일어 Neo 2</translation>
+<translation id="3856075812838139784">읽기 전용</translation>
 <translation id="3858678421048828670">이탈리아어 키보드</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" />(으)로 보관처리</translation>
 <translation id="3866249974567520381">설명</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">수정한 시간</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
 <translation id="457386861538956877">더보기...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> 항목이 선택되었습니다.</translation>
 <translation id="4582497162516204941">Linux(베타)로 설치</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" />에 관한 검색결과를 표시합니다.</translation>
 <translation id="4631887759990505102">아티스트</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">한글 세벌식(최종)</translation>
 <translation id="5833610766403489739">파일이 어디론가 사라졌습니다. 다운로드 위치 설정을 확인하고 다시 시도해 주세요.</translation>
 <translation id="5838051104334203064">Play 스토어 애플리케이션에서 이 기기에 액세스할 수 없음</translation>
+<translation id="5838451609423551646">모든 항목이 선택 해제되었습니다.</translation>
 <translation id="5838825566232597749">미국 워크맨(국제)</translation>
 <translation id="5850516540536751549">이 파일 형식은 지원되지 않습니다. 이 파일 형식을 열 수 있는 앱을 찾으려면 <ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />를 방문하세요.
     <ph name="BEGIN_LINK_HELP" />자세히 알아보기<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip으로 압축된 tar 압축 파일</translation>
 <translation id="6825883775269213504">러시아어</translation>
 <translation id="6827236167376090743">이 동영상이 계속 반복 재생됩니다.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> 항목이 선택 해제되었습니다.</translation>
 <translation id="6862635236584086457">이 폴더에 저장된 모든 파일은 온라인으로 자동 백업됨</translation>
 <translation id="6870130893560916279">우크라이나어 키보드</translation>
 <translation id="6876155724392614295">자전거</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">병음 입력 방법</translation>
 <translation id="8151638057146502721">구성</translation>
 <translation id="8153607920959057464">이 파일은 표시할 수 없습니다.</translation>
+<translation id="8154842056504218462">모든 항목이 선택되었습니다.</translation>
 <translation id="8157684860301034423">앱 정보를 가져오지 못했습니다.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">스페인어 키보드</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">드라이브 파일이 아직 공유되지 않음</translation>
 <translation id="8698464937041809063">Google 드로잉</translation>
 <translation id="8714406895390098252">자전거</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> 항목이 선택되었습니다.</translation>
 <translation id="8722421161699219904">미국 국제 키보드</translation>
 <translation id="872537912056138402">크로아티아어</translation>
 <translation id="874420130893181774">번체 병음 입력 방법</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">이 디렉터리에 이미지가 없습니다.</translation>
 <translation id="943972244133411984">수정한 사용자</translation>
 <translation id="945522503751344254">의견 보내기</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" />부터 <ph name="TO_ENTRY_NAME" />까지 <ph name="ENTRY_COUNT" />개를 선택했습니다.</translation>
 <translation id="981121421437150478">오프라인</translation>
 <translation id="988685240266037636">이름이 '<ph name="FILE_NAME" />'인 파일이 이미 존재합니다. 덮어쓰시겠습니까?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" />MB</translation>

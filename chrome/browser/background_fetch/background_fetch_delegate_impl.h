@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
+#include "components/offline_items_collection/core/update_delta.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/image/image.h"
@@ -217,6 +218,7 @@ class BackgroundFetchDelegateImpl
     std::map<std::string, RequestData> current_fetch_guids;
 
     offline_items_collection::OfflineItem offline_item;
+    base::Optional<offline_items_collection::UpdateDelta> update_delta;
     State job_state;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
     bool cancelled_from_ui = false;

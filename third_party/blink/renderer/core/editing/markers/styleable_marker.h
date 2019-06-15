@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "ui/base/ime/mojo/ime_types.mojom-shared.h"
+#include "ui/base/ime/mojo/ime_types.mojom-blink.h"
 
 namespace blink {
 

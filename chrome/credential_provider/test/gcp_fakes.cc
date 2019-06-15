@@ -51,6 +51,8 @@ void InitializeRegistryOverrideForTesting(
   ASSERT_EQ(ERROR_SUCCESS,
             key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmUrl, L""));
+  ASSERT_EQ(ERROR_SUCCESS,
+            SetMachineGuidForTesting(L"f418a124-4d92-469b-afa5-0f8af537b965"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -655,6 +657,23 @@ bool FakeInternetAvailabilityChecker::HasInternetConnection() {
 void FakeInternetAvailabilityChecker::SetHasInternetConnection(
     HasInternetConnectionCheckType has_internet_connection) {
   has_internet_connection_ = has_internet_connection;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakePasswordRecoveryManager::FakePasswordRecoveryManager()
+    : FakePasswordRecoveryManager(
+          PasswordRecoveryManager::kDefaultEscrowServiceRequestTimeout) {}
+
+FakePasswordRecoveryManager::FakePasswordRecoveryManager(
+    base::TimeDelta request_timeout)
+    : PasswordRecoveryManager(request_timeout),
+      original_validator_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+}
+
+FakePasswordRecoveryManager::~FakePasswordRecoveryManager() {
+  *GetInstanceStorage() = original_validator_;
 }
 
 }  // namespace credential_provider

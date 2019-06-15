@@ -1151,25 +1151,17 @@ void RenderWidgetHostImpl::StopInputEventAckTimeout() {
   RendererIsResponsive();
 }
 
-void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
-  current_content_source_id_ = next_source_id;
+void RenderWidgetHostImpl::DidNavigate() {
   // Stop the flinging after navigating to a new page.
   StopFling();
 
-  if (enable_surface_synchronization_) {
-    // Resize messages before navigation are not acked, so reset
-    // |visual_properties_ack_pending_| and make sure the next resize will be
-    // acked if the last resize before navigation was supposed to be acked.
-    visual_properties_ack_pending_ = false;
-    if (view_)
-      view_->DidNavigate();
-  } else {
-    // It is possible for a compositor frame to arrive before the browser is
-    // notified about the page being committed, in which case no timer is
-    // necessary.
-    if (last_received_content_source_id_ >= current_content_source_id_)
-      return;
-  }
+  DCHECK(enable_surface_synchronization_);
+  // Resize messages before navigation are not acked, so reset
+  // |visual_properties_ack_pending_| and make sure the next resize will be
+  // acked if the last resize before navigation was supposed to be acked.
+  visual_properties_ack_pending_ = false;
+  if (view_)
+    view_->DidNavigate();
 
   if (!new_content_rendering_timeout_)
     return;
@@ -1977,8 +1969,6 @@ void RenderWidgetHostImpl::RendererExited() {
   // destroy the aura window, which may dispatch a synthetic mouse move.)
   SetupInputRouter();
   synthetic_gesture_controller_.reset();
-
-  current_content_source_id_ = 0;
 
   frame_token_message_queue_->Reset();
 }
@@ -2982,49 +2972,17 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  last_received_content_source_id_ = frame.metadata.content_source_id;
-
-  if (enable_surface_synchronization_) {
-    if (view_) {
-      // If Surface Synchronization is on, then |new_content_rendering_timeout_|
-      // is stopped in DidReceiveFirstFrameAfterNavigation.
-      view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                   std::move(hit_test_region_list));
-      view_->DidReceiveRendererFrame();
-    } else {
-      std::vector<viz::ReturnedResource> resources =
-          viz::TransferableResource::ReturnResources(frame.resource_list);
-      renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
-    }
+  DCHECK(enable_surface_synchronization_);
+  if (view_) {
+    // If Surface Synchronization is on, then |new_content_rendering_timeout_|
+    // is stopped in DidReceiveFirstFrameAfterNavigation.
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                 std::move(hit_test_region_list));
+    view_->DidReceiveRendererFrame();
   } else {
-    // Ignore this frame if its content has already been unloaded. Source ID
-    // is always zero for an OOPIF because we are only concerned with displaying
-    // stale graphics on top-level frames. We accept frames that have a source
-    // ID greater than |current_content_source_id_| because in some cases the
-    // first compositor frame can arrive before the navigation commit message
-    // that updates that value.
-    if (view_ &&
-        frame.metadata.content_source_id >= current_content_source_id_) {
-      view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                   std::move(hit_test_region_list));
-      view_->DidReceiveRendererFrame();
-    } else {
-      if (view_) {
-        frame.metadata.begin_frame_ack.has_damage = false;
-        view_->OnDidNotProduceFrame(frame.metadata.begin_frame_ack);
-      }
-      std::vector<viz::ReturnedResource> resources =
-          viz::TransferableResource::ReturnResources(frame.resource_list);
-      renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
-    }
-
-    // After navigation, if a frame belonging to the new page is received, stop
-    // the timer that triggers clearing the graphics of the last page.
-    if (last_received_content_source_id_ >= current_content_source_id_ &&
-        new_content_rendering_timeout_ &&
-        new_content_rendering_timeout_->IsRunning()) {
-      new_content_rendering_timeout_->Stop();
-    }
+    std::vector<viz::ReturnedResource> resources =
+        viz::TransferableResource::ReturnResources(frame.resource_list);
+    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
   }
 }
 

@@ -109,10 +109,12 @@ void ExecutionContext::NotifyContextDestroyed() {
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
-void ExecutionContext::AddConsoleMessage(mojom::ConsoleMessageSource source,
-                                         mojom::ConsoleMessageLevel level,
-                                         const String& message) {
-  AddConsoleMessage(ConsoleMessage::Create(source, level, message));
+void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
+                                             mojom::ConsoleMessageLevel level,
+                                             const String& message,
+                                             bool discard_duplicates) {
+  AddConsoleMessage(ConsoleMessage::Create(source, level, message),
+                    discard_duplicates);
 }
 
 void ExecutionContext::DispatchErrorEvent(

@@ -178,7 +178,8 @@ class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
               rb.GetNativeImageNamed(IDR_HELP_MENU));
     }
-    AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
+    if (browser->profile()->GetPrefs()->GetBoolean(prefs::kUserFeedbackAllowed))
+      AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
   }
 
   DISALLOW_COPY_AND_ASSIGN(HelpMenuModel);

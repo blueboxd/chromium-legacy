@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
 <translation id="3658159451045945436">Als je reset, wordt je databesparingsgeschiedenis gewist, waaronder de lijst met bezochte sites.</translation>
 <translation id="3662546969139119822">Geen geschiedenis hier</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> tabbladen groeperen.</translation>
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
 <translation id="3692944402865947621">Downloaden van <ph name="FILE_NAME" /> mislukt omdat de opslaglocatie niet bereikbaar is.</translation>
 <translation id="3714981814255182093">De zoekbalk openen</translation>
@@ -466,6 +467,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="4479647676395637221">Eerst vragen voordat sites je camera mogen gebruiken (aanbevolen)</translation>
 <translation id="4479972344484327217"><ph name="MODULE" /> installeren voor Chrome…</translation>
+<translation id="4482194545587547824">Google kan je browsegeschiedenis gebruiken om Google Zoeken en andere Google-services te personaliseren</translation>
 <translation id="4487967297491345095">Alle app-gegevens voor Chrome worden definitief verwijderd. Dit omvat alle bestanden, instellingen, accounts, databases, enzovoort.</translation>
 <translation id="4493497663118223949">Lite-versie is ingeschakeld</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dag geleden}other{# dagen geleden}}</translation>
@@ -476,6 +478,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4532845899244822526">Map kiezen</translation>
 <translation id="4538018662093857852">Lite-versie inschakelen</translation>
 <translation id="4550003330909367850">Als je hier je wachtwoord wilt bekijken of kopiëren, stel je schermvergrendeling in op dit apparaat.</translation>
+<translation id="4556110439722119938">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account, zodat je ze op al je apparaten kunt gebruiken</translation>
 <translation id="4558311620361989323">Sneltoetsen voor webpagina's</translation>
 <translation id="4561979708150884304">Geen verbinding</translation>
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
@@ -630,6 +633,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="557283862590186398">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
 <translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabbladen gegroepeerd</translation>
 <translation id="5581519193887989363">Je kunt altijd in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> bepalen wat je wilt synchroniseren.</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
 <translation id="5596627076506792578">Meer opties</translation>
@@ -708,6 +712,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
+<translation id="6193448654517602979">Tabbladen selecteren</translation>
 <translation id="6194112207524046168">Als je Chrome toegang wilt geven tot je camera, moet je de camera ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
@@ -824,6 +829,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Vertaalinstellingen opnieuw instellen</translation>
 <translation id="6979737339423435258">Alles</translation>
+<translation id="6980462514016882061">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="6985347914332179298">Geen downloads hier</translation>
 <translation id="6989267951144302301">Kan niet downloaden</translation>
@@ -850,11 +856,13 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7141896414559753902">Sites niet toestaan pop-ups weer te geven en omleidingen uit te voeren (aanbevolen)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Oorspronkelijke pagina laden <ph name="END_LINK" /> van <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Afgelopen 24 uur</translation>
+<translation id="7161892015146974550">Tabblad <ph name="TAB_TITLE" /> selecteren.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Je kunt dit later wijzigen in Instellingen</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7189372733857464326">Wachten tot Google Play-services is geüpdatet</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
+<translation id="722055596168483966">Google-services personaliseren</translation>
 <translation id="723171743924126238">Afbeeldingen selecteren</translation>
 <translation id="7233236755231902816">Als je webpagina's in je eigen taal wilt kunnen lezen, download je de nieuwste versie van Chrome</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
@@ -881,6 +889,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7403691278183511381">Functionaliteit bij eerste uitvoering van Chrome</translation>
 <translation id="741204030948306876">Ja, inschakelen</translation>
 <translation id="7413229368719586778">Begindatum: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Tabbladen groeperen...</translation>
 <translation id="7423098979219808738">Eerst vragen</translation>
 <translation id="7423538860840206698">Lezen van het klembord geblokkeerd</translation>
 <translation id="7431991332293347422">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken en meer te personaliseren</translation>
@@ -1017,6 +1026,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8349013245300336738">Sorteren op hoeveelheid gebruikte data</translation>
 <translation id="8364299278605033898">Bekijk populaire websites</translation>
+<translation id="8364603787714420828">Tabblad <ph name="TAB_TITLE" /> deselecteren.</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
 <translation id="8378714024927312812">Beheerd door je organisatie</translation>
@@ -1082,6 +1092,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tabblad</translation>
 <translation id="885701979325669005">Opslag</translation>
 <translation id="8901170036886848654">Geen bladwijzers gevonden</translation>
+<translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="8909135823018751308">Delen</translation>
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>

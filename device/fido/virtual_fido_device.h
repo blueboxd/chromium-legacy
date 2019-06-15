@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     using RegistrationsMap = std::map<std::vector<uint8_t>,
                                       RegistrationData,
                                       fido_parsing_utils::RangeLess>;
+    using SimulatePressCallback =
+        base::RepeatingCallback<bool(VirtualFidoDevice*)>;
 
     State();
 
@@ -86,9 +88,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // Registered keys. Keyed on key handle (a.k.a. "credential ID").
     RegistrationsMap registrations;
 
-    // If set, this callback is called whenever a "press" is required. It allows
-    // tests to change the state of the world during processing.
-    base::RepeatingCallback<void(void)> simulate_press_callback;
+    // If set, this callback is called whenever a "press" is required. Returning
+    // `true` will simulate a press and continue the request, returning `false`
+    // simulates the user not pressing the device and leaves the request idle.
+    SimulatePressCallback simulate_press_callback;
 
     // If true, causes the response from the device to be invalid.
     bool simulate_invalid_response = false;

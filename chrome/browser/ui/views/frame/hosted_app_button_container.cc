@@ -309,6 +309,10 @@ base::Optional<int> HostedAppButtonContainer::GetMaxBrowserActionsWidth()
   return base::Optional<int>();
 }
 
+bool HostedAppButtonContainer::CanShowIconInToolbar() const {
+  return false;
+}
+
 std::unique_ptr<ToolbarActionsBar>
 HostedAppButtonContainer::CreateToolbarActionsBar(
     ToolbarActionsBarDelegate* delegate,

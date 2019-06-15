@@ -30,6 +30,7 @@ cr.define('print_header_interactive_test', function() {
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
       header.state = print_preview.State.NOT_READY;
+      header.firstLoad = true;
       test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });

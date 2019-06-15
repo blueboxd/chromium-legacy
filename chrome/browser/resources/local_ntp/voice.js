@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 'use strict';
-
 
 /**
  * Get the preferred language for UI localization. Represents Chrome's UI
@@ -22,7 +20,6 @@ function getChromeUILanguage() {
   // |window.navigator.languages[0]|.
   return window.navigator.language;
 }
-
 
 /**
  * The different types of user action and error events that are logged
@@ -60,7 +57,6 @@ const LOG_TYPE = {
   ERROR_OTHER: 29
 };
 
-
 /**
  * Enum for keyboard event codes.
  * @enum {!string}
@@ -74,7 +70,6 @@ const KEYCODE = {
   SPACE: 'Space',
   TAB: 'Tab'
 };
-
 
 /**
  * The set of possible recognition errors.
@@ -94,14 +89,12 @@ const RecognitionError = {
   OTHER: 9
 };
 
-
 /**
  * Provides methods for communicating with the <a
  * href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API">
  * Web Speech API</a>, error handling and executing search queries.
  */
 const speech = {};
-
 
 /**
  * Localized translations for messages used in the Speech UI.
@@ -136,7 +129,6 @@ speech.messages = {
   tryAgain: '',
   waiting: ''
 };
-
 
 /**
  * The set of controller states.
@@ -181,7 +173,6 @@ speech.State_ = {
   STOPPED: 6
 };
 
-
 /**
  * Threshold for considering an interim speech transcript result as "confident
  * enough". The more confident the API is about a transcript, the higher the
@@ -199,7 +190,6 @@ speech.RECOGNITION_CONFIDENCE_THRESHOLD_ = 0.5;
  */
 speech.ERROR_TIMEOUT_SHORT_MS_ = 3000;
 
-
 /**
  * Time in milliseconds to wait before closing the UI after an error has
  * occured. This is a longer timeout used when there is a click-target is
@@ -209,7 +199,6 @@ speech.ERROR_TIMEOUT_SHORT_MS_ = 3000;
  */
 speech.ERROR_TIMEOUT_LONG_MS_ = 8000;
 
-
 /**
  * Time in milliseconds to wait before closing the UI if no interaction has
  * occured.
@@ -217,7 +206,6 @@ speech.ERROR_TIMEOUT_LONG_MS_ = 8000;
  * @const
  */
 speech.IDLE_TIMEOUT_MS_ = 8000;
-
 
 /**
  * Maximum number of characters recognized before force-submitting a query.
@@ -227,7 +215,6 @@ speech.IDLE_TIMEOUT_MS_ = 8000;
  */
 speech.QUERY_LENGTH_LIMIT_ = 120;
 
-
 /**
  * Specifies the current state of the controller.
  * Note: Different than the UI state.
@@ -235,13 +222,11 @@ speech.QUERY_LENGTH_LIMIT_ = 120;
  */
 speech.currentState_ = speech.State_.UNINITIALIZED;
 
-
 /**
  * The ID for the error timer.
  * @private {number}
  */
 speech.errorTimer_;
-
 
 /**
  * The duration of the timeout for the UI elements during an error state.
@@ -250,7 +235,6 @@ speech.errorTimer_;
  */
 speech.errorTimeoutMs_ = 0;
 
-
 /**
  * The last high confidence voice transcript received from the Web Speech API.
  * This is the actual query that could potentially be submitted to Search.
@@ -258,13 +242,11 @@ speech.errorTimeoutMs_ = 0;
  */
 speech.finalResult_;
 
-
 /**
  * Base URL for sending queries to Search. Includes trailing forward slash.
  * @private {string}
  */
 speech.googleBaseUrl_;
-
 
 /**
  * The ID for the idle timer.
@@ -272,13 +254,11 @@ speech.googleBaseUrl_;
  */
 speech.idleTimer_;
 
-
 /**
  * The last low confidence voice transcript received from the Web Speech API.
  * @private {string}
  */
 speech.interimResult_;
-
 
 /**
  * The Web Speech API object driving the speech recognition transaction.
@@ -286,13 +266,11 @@ speech.interimResult_;
  */
 speech.recognition_;
 
-
 /**
  * Indicates if the user is using keyboard navigation (i.e. tab).
  * @private {boolean}
  */
 speech.usingKeyboardNavigation_ = false;
-
 
 /**
  * Log an event from Voice Search.
@@ -301,7 +279,6 @@ speech.usingKeyboardNavigation_ = false;
 speech.logEvent = function(eventType) {
   window.chrome.embeddedSearch.newTabPage.logEvent(eventType);
 };
-
 
 /**
  * Initialize the speech module as part of the local NTP. Adds event handlers
@@ -368,7 +345,6 @@ speech.init = function(
   speech.reset_();
 };
 
-
 /**
  * Initializes and configures the speech recognition API.
  * @private
@@ -385,7 +361,6 @@ speech.initWebkitSpeech_ = function() {
   speech.recognition_.onresult = speech.handleRecognitionResult_;
   speech.recognition_.onspeechstart = speech.handleRecognitionSpeechStart_;
 };
-
 
 /**
  * Sets up the necessary states for voice search and then starts the
@@ -421,7 +396,6 @@ speech.start = function() {
   }
 };
 
-
 /**
  * Hides the overlay and resets the speech state.
  */
@@ -431,7 +405,6 @@ speech.stop = function() {
   view.hide();
   speech.reset_();
 };
-
 
 /**
  * Resets the internal state to the READY state.
@@ -450,7 +423,6 @@ speech.reset_ = function() {
   speech.usingKeyboardNavigation_ = false;
 };
 
-
 /**
  * Informs the view that the browser is receiving audio input.
  * @param {Event=} opt_event Emitted event for audio start.
@@ -462,7 +434,6 @@ speech.handleRecognitionAudioStart_ = function(opt_event) {
   view.setReadyForSpeech();
 };
 
-
 /**
  * Function is called when the user starts speaking.
  * @param {Event=} opt_event Emitted event for speech start.
@@ -473,7 +444,6 @@ speech.handleRecognitionSpeechStart_ = function(opt_event) {
   speech.currentState_ = speech.State_.SPEECH_RECEIVED;
   view.setReceivingSpeech();
 };
-
 
 /**
  * Processes the recognition results arriving from the Web Speech API.
@@ -540,7 +510,6 @@ speech.handleRecognitionResult_ = function(responseEvent) {
   }
 };
 
-
 /**
  * Convert a |RecognitionError| to a |LOG_TYPE| error constant,
  * for UMA logging.
@@ -572,7 +541,6 @@ speech.errorToLogType_ = function(error) {
   }
 };
 
-
 /**
  * Handles state transition for the controller when an error occurs
  * during speech recognition.
@@ -592,7 +560,6 @@ speech.onErrorReceived_ = function(error) {
   }
 };
 
-
 /**
  * Called when an error from Web Speech API is received.
  * @param {SpeechRecognitionError} error The error event.
@@ -602,7 +569,6 @@ speech.handleRecognitionError_ = function(error) {
   speech.onErrorReceived_(speech.getRecognitionError_(error.error));
 };
 
-
 /**
  * Stops speech recognition when no matches are found.
  * @private
@@ -610,7 +576,6 @@ speech.handleRecognitionError_ = function(error) {
 speech.handleRecognitionOnNoMatch_ = function() {
   speech.onErrorReceived_(RecognitionError.NO_MATCH);
 };
-
 
 /**
  * Stops the UI when the Web Speech API reports that it has halted speech
@@ -647,7 +612,6 @@ speech.handleRecognitionEnd_ = function() {
   speech.currentState_ = speech.State_.STOPPED;
 };
 
-
 /**
  * Determines whether the user's browser is probably running on a Mac.
  * @return {boolean} True iff the user's browser is running on a Mac.
@@ -656,7 +620,6 @@ speech.handleRecognitionEnd_ = function() {
 speech.isUserAgentMac_ = function() {
   return window.navigator.userAgent.includes('Macintosh');
 };
-
 
 /**
  * Determines, if the given KeyboardEvent |code| is a space or enter key.
@@ -675,7 +638,6 @@ speech.isSpaceOrEnter_ = function(code) {
   }
 };
 
-
 /**
  * Determines if the given event's target id is for a button or navigation link.
  * @param {string} id An event's target id.
@@ -692,7 +654,6 @@ speech.isButtonOrLink_ = function(id) {
       return false;
   }
 };
-
 
 /**
  * Handles the following keyboard actions.
@@ -733,7 +694,6 @@ speech.onKeyDown = function(event) {
   }
 };
 
-
 /**
  * Displays the no match error if no interactions occur after some time while
  * the interface is active. This is a safety net in case the onend event
@@ -759,7 +719,6 @@ speech.onIdleTimeout_ = function() {
   }
 };
 
-
 /**
  * Aborts the speech recognition interface when the user switches to a new
  * tab or window.
@@ -775,7 +734,6 @@ speech.onVisibilityChange_ = function() {
   }
 };
 
-
 /**
  * Aborts the speech session if the UI is showing and omnibox gets focused. Does
  * not abort if the user is using keyboard navigation (i.e. tab).
@@ -787,7 +745,6 @@ speech.onOmniboxFocused = function() {
   }
 };
 
-
 /**
  * Change the location of this tab to the new URL. Used for query submission.
  * @param {!URL} url The URL to navigate to.
@@ -796,7 +753,6 @@ speech.onOmniboxFocused = function() {
 speech.navigateToUrl_ = function(url) {
   window.location.href = url.href;
 };
-
 
 /**
  * Submits the final spoken speech query to perform a search.
@@ -823,7 +779,6 @@ speech.submitFinalResult_ = function() {
   speech.stop();
   speech.navigateToUrl_(queryUrl);
 };
-
 
 /**
  * Returns the error type based on the error string received from the webkit
@@ -877,7 +832,6 @@ speech.getRecognitionErrorTimeout_ = function(error) {
   }
 };
 
-
 /**
  * Resets the idle state timeout.
  * @param {number} duration The duration after which to close the UI.
@@ -887,7 +841,6 @@ speech.resetIdleTimer_ = function(duration) {
   window.clearTimeout(speech.idleTimer_);
   speech.idleTimer_ = window.setTimeout(speech.onIdleTimeout_, duration);
 };
-
 
 /**
  * Resets the idle error state timeout.
@@ -900,7 +853,6 @@ speech.resetErrorTimer_ = function(duration) {
   speech.errorTimer_ = window.setTimeout(speech.stop, duration);
 };
 
-
 /**
  * Check to see if the speech recognition interface is running, and has
  * received any results.
@@ -910,7 +862,6 @@ speech.resetErrorTimer_ = function(duration) {
 speech.hasReceivedResults = function() {
   return speech.currentState_ == speech.State_.RESULT_RECEIVED;
 };
-
 
 /**
  * Check to see if the speech recognition interface is running.
@@ -926,7 +877,6 @@ speech.isRecognizing = function() {
   }
   return false;
 };
-
 
 /**
  * Check if the controller is in a state where the UI is definitely hidden.
@@ -945,7 +895,6 @@ speech.isUiDefinitelyHidden_ = function() {
   }
   return false;
 };
-
 
 /**
  * Handles click events during speech recognition.
@@ -970,14 +919,13 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
   }
 };
 
-
 /* TEXT VIEW */
+
 /**
  * Provides methods for styling and animating the text areas
  * left of the microphone button.
  */
 const text = {};
-
 
 /**
  * ID for the "Try Again" link shown in error output.
@@ -985,20 +933,17 @@ const text = {};
  */
 text.RETRY_LINK_ID = 'voice-retry-link';
 
-
 /**
  * ID for the Voice Search support site link shown in error output.
  * @const
  */
 text.SUPPORT_LINK_ID = 'voice-support-link';
 
-
 /**
  * Class for the links shown in error output.
  * @const @private
  */
 text.ERROR_LINK_CLASS_ = 'voice-text-link';
-
 
 /**
  * Class name for the speech recognition result output area.
@@ -1012,13 +957,11 @@ text.TEXT_AREA_CLASS_ = 'voice-text';
  */
 text.LISTENING_ANIMATION_CLASS_ = 'listening-animation';
 
-
 /**
  * ID of the final / high confidence speech recognition results element.
  * @const @private
  */
 text.FINAL_TEXT_AREA_ID_ = 'voice-text-f';
-
 
 /**
  * ID of the interim / low confidence speech recognition results element.
@@ -1026,13 +969,11 @@ text.FINAL_TEXT_AREA_ID_ = 'voice-text-f';
  */
 text.INTERIM_TEXT_AREA_ID_ = 'voice-text-i';
 
-
 /**
  * The line height of the speech recognition results text.
  * @const @private
  */
 text.LINE_HEIGHT_ = 1.2;
-
 
 /**
  * Font size in the full page view in pixels.
@@ -1040,20 +981,17 @@ text.LINE_HEIGHT_ = 1.2;
  */
 text.FONT_SIZE_ = 32;
 
-
 /**
  * Delay in milliseconds before showing the initializing message.
  * @const @private
  */
 text.INITIALIZING_TIMEOUT_MS_ = 300;
 
-
 /**
  * Delay in milliseconds before showing the listening message.
  * @const @private
  */
 text.LISTENING_TIMEOUT_MS_ = 2000;
-
 
 /**
  * Base link target for help regarding voice search. To be appended
@@ -1063,13 +1001,11 @@ text.LISTENING_TIMEOUT_MS_ = 2000;
 text.SUPPORT_LINK_BASE_ =
     'https://support.google.com/chrome/?p=ui_voice_search&hl=';
 
-
 /**
  * The final / high confidence speech recognition result element.
  * @private {Element}
  */
 text.final_;
-
 
 /**
  * The interim / low confidence speech recognition result element.
@@ -1077,20 +1013,17 @@ text.final_;
  */
 text.interim_;
 
-
 /**
  * Stores the ID of the initializing message timer.
  * @private {number}
  */
 text.initializingTimer_;
 
-
 /**
  * Stores the ID of the listening message timer.
  * @private {number}
  */
 text.listeningTimer_;
-
 
 /**
  * Finds the text view elements.
@@ -1100,7 +1033,6 @@ text.init = function() {
   text.interim_ = $(text.INTERIM_TEXT_AREA_ID_);
   text.clear();
 };
-
 
 /**
  * Updates the text elements with new recognition results.
@@ -1117,7 +1049,6 @@ text.updateTextArea = function(interimText, opt_finalText = '') {
 
   text.interim_.className = text.final_.className = text.getTextClassName_();
 };
-
 
 /**
  * Sets the text view to the initializing state. The initializing message
@@ -1140,7 +1071,6 @@ text.showInitializingMessage = function() {
       window.setTimeout(displayMessage, text.INITIALIZING_TIMEOUT_MS_);
 };
 
-
 /**
  * Sets the text view to the ready state.
  */
@@ -1150,7 +1080,6 @@ text.showReadyMessage = function() {
   text.updateTextArea(speech.messages.ready);
   text.startListeningMessageAnimation_();
 };
-
 
 /**
  * Display an error message in the text area for the given error.
@@ -1166,7 +1095,6 @@ text.showErrorMessage = function(error) {
     text.interim_.appendChild(linkElement);
   }
 };
-
 
 /**
  * Returns an error message based on the error.
@@ -1192,7 +1120,6 @@ text.getErrorMessage_ = function(error) {
       return speech.messages.otherError;
   }
 };
-
 
 /**
  * Returns an error message help link based on the error.
@@ -1229,7 +1156,6 @@ text.getErrorLink_ = function(error) {
   }
 };
 
-
 /**
  * Clears the text elements.
  */
@@ -1243,14 +1169,12 @@ text.clear = function() {
   text.final_.className = text.TEXT_AREA_CLASS_;
 };
 
-
 /**
  * Cancels listening message display.
  */
 text.clearListeningTimeout = function() {
   window.clearTimeout(text.listeningTimer_);
 };
-
 
 /**
  * Determines the class name of the text output Elements.
@@ -1279,7 +1203,6 @@ text.getTextClassName_ = function() {
   return className;
 };
 
-
 /**
  * Displays the listening message animation after the ready message has been
  * shown for |text.LISTENING_TIMEOUT_MS_| milliseconds without further user
@@ -1298,16 +1221,16 @@ text.startListeningMessageAnimation_ = function() {
   text.listeningTimer_ =
       window.setTimeout(animateListeningText, text.LISTENING_TIMEOUT_MS_);
 };
+
 /* END TEXT VIEW */
 
-
 /* MICROPHONE VIEW */
+
 /**
  * Provides methods for animating the microphone button and icon
  * on the Voice Search full screen overlay.
  */
 const microphone = {};
-
 
 /**
  * ID for the button Element.
@@ -1315,13 +1238,11 @@ const microphone = {};
  */
 microphone.RED_BUTTON_ID = 'voice-button';
 
-
 /**
  * ID for the level animations Element that indicates input volume.
  * @const @private
  */
 microphone.LEVEL_ID_ = 'voice-level';
-
 
 /**
  * ID for the container of the microphone, red button and level animations.
@@ -1329,13 +1250,11 @@ microphone.LEVEL_ID_ = 'voice-level';
  */
 microphone.CONTAINER_ID_ = 'voice-button-container';
 
-
 /**
  * The minimum transform scale for the volume rings.
  * @const @private
  */
 microphone.LEVEL_SCALE_MINIMUM_ = 0.5;
-
 
 /**
  * The range of the transform scale for the volume rings.
@@ -1343,13 +1262,11 @@ microphone.LEVEL_SCALE_MINIMUM_ = 0.5;
  */
 microphone.LEVEL_SCALE_RANGE_ = 0.55;
 
-
 /**
  * The minimum transition time (in milliseconds) for the volume rings.
  * @const @private
  */
 microphone.LEVEL_TIME_STEP_MINIMUM_ = 170;
-
 
 /**
  * The range of the transition time for the volume rings.
@@ -1357,13 +1274,11 @@ microphone.LEVEL_TIME_STEP_MINIMUM_ = 170;
  */
 microphone.LEVEL_TIME_STEP_RANGE_ = 10;
 
-
 /**
  * The button with the microphone icon.
  * @private {Element}
  */
 microphone.button_;
-
 
 /**
  * The voice level element that is displayed when the user starts speaking.
@@ -1371,13 +1286,11 @@ microphone.button_;
  */
 microphone.level_;
 
-
 /**
  * Variable to indicate whether level animations are underway.
  * @private {boolean}
  */
 microphone.isLevelAnimating_ = false;
-
 
 /**
  * Creates/finds the output elements for the microphone rendering and animation.
@@ -1390,7 +1303,6 @@ microphone.init = function() {
   microphone.level_ = $(microphone.LEVEL_ID_);
 };
 
-
 /**
  * Starts the volume circles animations, if it has not started yet.
  */
@@ -1401,14 +1313,12 @@ microphone.startInputAnimation = function() {
   }
 };
 
-
 /**
  * Stops the volume circles animations.
  */
 microphone.stopInputAnimation = function() {
   microphone.isLevelAnimating_ = false;
 };
-
 
 /**
  * Runs the volume level animation.
@@ -1431,16 +1341,16 @@ microphone.runLevelAnimation_ = function() {
   microphone.level_.style.setProperty('transform', 'scale(' + scale + ')');
   window.setTimeout(microphone.runLevelAnimation_, timeStep);
 };
+
 /* END MICROPHONE VIEW */
 
-
 /* VIEW */
+
 /**
  * Provides methods for manipulating and animating the Voice Search
  * full screen overlay.
  */
 const view = {};
-
 
 /**
  * ID for the close button in the speech output container.
@@ -1448,13 +1358,11 @@ const view = {};
  */
 view.CLOSE_BUTTON_ID = 'voice-close-button';
 
-
 /**
  * Class name of the speech recognition interface on the homepage.
  * @const @private
  */
 view.OVERLAY_CLASS_ = 'overlay';
-
 
 /**
  * Class name of the speech recognition interface when it is hidden on the
@@ -1463,13 +1371,11 @@ view.OVERLAY_CLASS_ = 'overlay';
  */
 view.OVERLAY_HIDDEN_CLASS_ = 'overlay-hidden';
 
-
 /**
  * ID for the dialog that contains the speech recognition interface.
  * @const @private
  */
 view.DIALOG_ID_ = 'voice-overlay-dialog';
-
 
 /**
  * ID for the speech output background.
@@ -1477,13 +1383,11 @@ view.DIALOG_ID_ = 'voice-overlay-dialog';
  */
 view.BACKGROUND_ID_ = 'voice-overlay';
 
-
 /**
  * ID for the speech output container.
  * @const @private
  */
 view.CONTAINER_ID_ = 'voice-outer';
-
 
 /**
  * Class name used to modify the UI to the 'listening' state.
@@ -1491,13 +1395,11 @@ view.CONTAINER_ID_ = 'voice-outer';
  */
 view.MICROPHONE_LISTENING_CLASS_ = 'outer voice-ml';
 
-
 /**
  * Class name used to modify the UI to the 'receiving speech' state.
  * @const @private
  */
 view.RECEIVING_SPEECH_CLASS_ = 'outer voice-rs';
-
 
 /**
  * Class name used to modify the UI to the 'error received' state.
@@ -1505,13 +1407,11 @@ view.RECEIVING_SPEECH_CLASS_ = 'outer voice-rs';
  */
 view.ERROR_RECEIVED_CLASS_ = 'outer voice-er';
 
-
 /**
  * Class name used to modify the UI to the inactive state.
  * @const @private
  */
 view.INACTIVE_CLASS_ = 'outer';
-
 
 /**
  * Background element and container of all other elements.
@@ -1519,13 +1419,11 @@ view.INACTIVE_CLASS_ = 'outer';
  */
 view.background_;
 
-
 /**
  * The container used to position the microphone and text output area.
  * @private {Element}
  */
 view.container_;
-
 
 /**
  * True if the the last error message shown was for the 'no-match' error.
@@ -1533,20 +1431,17 @@ view.container_;
  */
 view.isNoMatchShown_ = false;
 
-
 /**
  * True if the UI elements are visible.
  * @private {boolean}
  */
 view.isVisible_ = false;
 
-
 /**
  * The function to call when there is a click event.
  * @private {Function}
  */
 view.onClick_;
-
 
 /**
  * Displays the UI.
@@ -1570,7 +1465,6 @@ view.setReadyForSpeech = function() {
   }
 };
 
-
 /**
  * Shows the pulsing animation emanating from the microphone. This should only
  * be called when the Web Speech API starts receiving speech input (i.e.,
@@ -1585,7 +1479,6 @@ view.setReceivingSpeech = function() {
     text.clearListeningTimeout();
   }
 };
-
 
 /**
  * Updates the speech recognition results output with the latest results.
@@ -1603,7 +1496,6 @@ view.updateSpeechResult = function(interimResultText, finalResultText) {
   }
 };
 
-
 /**
  * Hides the UI and stops animations.
  */
@@ -1614,7 +1506,6 @@ view.hide = function() {
   view.isNoMatchShown_ = false;
   text.clear();
 };
-
 
 /**
  * Find the page elements that will be used to render the speech recognition
@@ -1633,7 +1524,6 @@ view.init = function(onClick) {
   microphone.init();
 };
 
-
 /**
  * Sets accessibility titles/labels for the page elements.
  * @param {!Object} translatedStrings Dictionary of localized title strings.
@@ -1643,7 +1533,6 @@ view.setTitles = function(translatedStrings) {
   closeButton.title = translatedStrings.voiceCloseTooltip;
   closeButton.setAttribute('aria-label', translatedStrings.voiceCloseTooltip);
 };
-
 
 /**
  * Displays an error message and stops animations.
@@ -1655,7 +1544,6 @@ view.showError = function(error) {
   view.stopMicrophoneAnimations_();
   view.isNoMatchShown_ = (error == RecognitionError.NO_MATCH);
 };
-
 
 /**
  * Makes the view visible.
@@ -1670,7 +1558,6 @@ view.showView_ = function() {
   }
 };
 
-
 /**
  * Hides the view.
  * @private
@@ -1683,7 +1570,6 @@ view.hideView_ = function() {
   view.isVisible_ = false;
 };
 
-
 /**
  * Stops the animations in the microphone view.
  * @private
@@ -1691,7 +1577,6 @@ view.hideView_ = function() {
 view.stopMicrophoneAnimations_ = function() {
   microphone.stopInputAnimation();
 };
-
 
 /**
  * Makes sure that a click anywhere closes the UI when it is active.
@@ -1726,4 +1611,5 @@ view.onWindowClick_ = function(event) {
 
   view.onClick_(submitQuery, shouldRetry, navigatingAway);
 };
+
 /* END VIEW */

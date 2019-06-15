@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREFETCHED_SIGNED_EXCHANGE_MANAGER_H_
 
 #include "base/macros.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"

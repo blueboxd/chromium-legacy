@@ -1159,6 +1159,7 @@ Yderligere oplysninger:
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
 <translation id="733923710415886693">Servercertifikatet blev ikke fremvist via Certifikatsgennemsigtighed.</translation>
 <translation id="734600844861828519">11x15</translation>
+<translation id="7346048084945669753">Er tilknyttet:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Kommandolinje</translation>
 <translation id="7372973238305370288">søgeresultat</translation>
@@ -1191,6 +1192,7 @@ Yderligere oplysninger:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>
 <translation id="7455133967321480974">Brug global standard (bloker)</translation>
 <translation id="7460618730930299168">Screeningen stemmer ikke overens med det, du har valgt. Vil du fortsætte?</translation>
+<translation id="7465410862124366659"><ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />] blev identificeret som ejer af denne side.</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>

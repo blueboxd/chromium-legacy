@@ -344,6 +344,13 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
         legacy_event->set_thread_duration_us(thread_duration);
       }
     }
+
+    // TODO(acomminos): Add thread instruction count for BEGIN/END events
+    if (!trace_event->thread_instruction_count().is_null()) {
+      int64_t instruction_delta =
+          trace_event->thread_instruction_delta().ToInternalValue();
+      legacy_event->set_thread_instruction_delta(instruction_delta);
+    }
   } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
     switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
       case TRACE_EVENT_SCOPE_GLOBAL:
@@ -473,7 +480,8 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 void TrackEventThreadLocalEventSink::UpdateDuration(
     base::trace_event::TraceEventHandle handle,
     const base::TimeTicks& now,
-    const base::ThreadTicks& thread_now) {
+    const base::ThreadTicks& thread_now,
+    base::trace_event::ThreadInstructionCount thread_instruction_now) {
   if (!handle.event_index || handle.chunk_index != kMagicChunkIndex ||
       handle.chunk_seq != session_id_) {
     return;
@@ -494,7 +502,8 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
   }
 
   current_stack_depth_--;
-  complete_event_stack_[current_stack_depth_].UpdateDuration(now, thread_now);
+  complete_event_stack_[current_stack_depth_].UpdateDuration(
+      now, thread_now, thread_instruction_now);
   AddTraceEvent(&complete_event_stack_[current_stack_depth_], nullptr);
 
 #if defined(OS_ANDROID)

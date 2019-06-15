@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Els mètodes d'introducció estan configurats per l'administrador.</translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1761222317188459878">Activa o desactiva la connexió a la xarxa. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Desplaça't cap a la dreta</translation>
 <translation id="1812997170047690955">Què hi ha a la pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (s'està carregant...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">La bateria s'està carregant i està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
+<translation id="4021716437419160885">Desplaça't cap avall</translation>
 <translation id="4042660782729322247">Estàs compartint la pantalla</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4924411785043111640">Reinicia i restableix</translation>
+<translation id="495046168593986294">Desplaça't cap amunt</translation>
 <translation id="4961318399572185831">Emet la pantalla</translation>
 <translation id="5030687792513154421">S'ha acabat el temps</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> s'ha connectat a un altre telèfon</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Per obtenir l'actualització, reinicia Chromebook amb el teclat connectat.</translation>
 <translation id="5992218262414051481">El mode d'alt contrast està activat. Torna a prémer Ctrl+Cerca+H per desactivar-lo.</translation>
 <translation id="6018164090099858612">S'està sortint del mode de rèplica</translation>
+<translation id="602001110135236999">Desplaça't cap a l'esquerra</translation>
+<translation id="6040143037577758943">Tanca</translation>
 <translation id="6043212731627905357">Aquest monitor i el teu <ph name="DEVICE_TYPE" /> no s'entenen (el monitor no és compatible).</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
 <translation id="6047696787498798094">La compartició de pantalla s'aturarà quan canviïs d'usuari. Vols continuar?</translation>

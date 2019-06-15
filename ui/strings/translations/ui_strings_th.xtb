@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="1409544243779336081">แอปแนะนำ</translation>
+<translation id="1498028757988366001">คุณเคยค้นหารายการนี้ การลบ "<ph name="QUERY" />" ออกจากประวัติการเข้าชมจะนำรายการนี้ออกจากบัญชีของคุณในอุปกรณ์ทุกเครื่องอย่างถาวร</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
 <translation id="1643823602425662293">การแจ้งเตือน</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>
+<translation id="7430878839542012341">ลบการค้นหานี้ออกจากประวัติการเข้าชมใช่ไหม</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">อีโมจิ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>

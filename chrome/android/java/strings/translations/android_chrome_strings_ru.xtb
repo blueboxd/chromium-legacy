@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3658159451045945436">Будет удалена вся информация о сэкономленных данных, в том числе список просмотренных сайтов.</translation>
 <translation id="3662546969139119822">Нет записей</translation>
+<translation id="3663367437272849150">Сгруппировать вкладки (всего <ph name="NUM_SELECTED" />).</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
@@ -466,6 +467,7 @@
 <translation id="447252321002412580">Помогать повышать производительность Chrome и улучшать функции</translation>
 <translation id="4479647676395637221">Запрашивать разрешение на доступ к камере (рекомендуется)</translation>
 <translation id="4479972344484327217">Установка модуля "<ph name="MODULE" />" для Chrome…</translation>
+<translation id="4482194545587547824">Google может использовать историю браузера для персонализации Поиска и других сервисов.</translation>
 <translation id="4487967297491345095">Все данные приложения Chrome, включая файлы, настройки, аккаунты и базы данных, будут безвозвратно удалены.</translation>
 <translation id="4493497663118223949">Включен упрощенный режим</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
@@ -476,6 +478,7 @@
 <translation id="4532845899244822526">Выбор папки</translation>
 <translation id="4538018662093857852">Включить упрощенный режим</translation>
 <translation id="4550003330909367850">Чтобы просмотреть или скопировать пароль, включите блокировку экрана на этом устройстве.</translation>
+<translation id="4556110439722119938">Пароли, закладки, история и другие параметры будут синхронизированы с аккаунтом Google, чтобы у вас был доступ к ним на любом устройстве.</translation>
 <translation id="4558311620361989323">Работа с веб-страницами</translation>
 <translation id="4561979708150884304">Нет подключения</translation>
 <translation id="4565377596337484307">Скрыть пароль</translation>
@@ -630,6 +633,7 @@
 <translation id="557283862590186398">Для этого сайта Chrome запрашивает разрешение на доступ к микрофону.</translation>
 <translation id="55737423895878184">Может определять местоположение и отправлять уведомления</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Вкладки сгруппированы (всего <ph name="TAB_COUNT" />).</translation>
 <translation id="5581519193887989363">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
@@ -708,6 +712,7 @@
 <translation id="6181444274883918285">Добавить исключение</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
+<translation id="6193448654517602979">Выберите вкладки</translation>
 <translation id="6194112207524046168">Чтобы Chrome получил доступ к камере, включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
@@ -824,6 +829,7 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
 <translation id="6979737339423435258">Все время</translation>
+<translation id="6980462514016882061">Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="6985347914332179298">Нет скачанных объектов</translation>
 <translation id="6989267951144302301">Не удалось скачать</translation>
@@ -850,11 +856,13 @@
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Загрузить исходную версию страницы<ph name="END_LINK" /> из <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
+<translation id="7161892015146974550">Выбрать вкладку "<ph name="TAB_TITLE" />".</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7189372733857464326">Обновление сервисов Google Play…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
+<translation id="722055596168483966">Персонализация сервисов Google</translation>
 <translation id="723171743924126238">Выберите изображения</translation>
 <translation id="7233236755231902816">Чтобы просматривать веб-страницы на своем языке, обновите Chrome до последней версии.</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
@@ -881,6 +889,7 @@
 <translation id="7403691278183511381">Первый запуск Chrome</translation>
 <translation id="741204030948306876">ОК</translation>
 <translation id="7413229368719586778">Дата начала: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Сгруппировать вкладки…</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
 <translation id="7431991332293347422">Укажите, как Google может использовать историю браузера для персонализации Поиска и других сервисов.</translation>
@@ -1017,6 +1026,7 @@
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8364299278605033898">Показать популярные сайты</translation>
+<translation id="8364603787714420828">Отменить выбор вкладки "<ph name="TAB_TITLE" />".</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8378714024927312812">Управляется вашей организацией</translation>
@@ -1082,6 +1092,7 @@
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="8901170036886848654">Ничего не найдено</translation>
+<translation id="8904976895050290827">Синхронизация Chrome</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
@@ -1099,6 +1110,7 @@
 <translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
+<translation id="9005637476204108703">Нажмите здесь, чтобы перейти к управлению аккаунтами</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеофайл}one{# видеофайл}few{# видеофайла}many{# видеофайлов}other{# видеофайла}}</translation>
@@ -1119,6 +1131,7 @@
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>
 <translation id="9169594135889675189">Добавить новую вкладку в группу</translation>
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
+<translation id="9190112541605496997">Чтобы управлять аккаунтами, нажмите соответствующую кнопку.</translation>
 <translation id="9204836675896933765">Остался 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9219103736887031265">Картинки</translation>

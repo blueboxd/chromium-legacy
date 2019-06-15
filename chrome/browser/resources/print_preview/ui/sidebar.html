@@ -4,11 +4,11 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/dark_mode.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../metrics.html">
+<link rel="import" href="../dark_mode_behavior.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/state.html">
 <link rel="import" href="advanced_options_settings.html">
@@ -97,15 +97,16 @@
     <template is="dom-if" if="[[!newPrintPreviewLayout]]">
       <print-preview-header id="header" destination="[[destination]]"
           cloud-print-error-message="[[cloudPrintErrorMessage]]"
-          error="[[error]]" state="[[state]]"
-          settings="[[settings]]" managed="[[controlsManaged]]">
+          error="[[error]]" first-load="[[firstLoad_]]" state="[[state]]"
+          settings="[[settings]]" managed="[[controlsManaged]]"
+          on-print-button-focused="onPrintButtonFocused_">
       </print-preview-header>
     </template>
     <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout]]">
       <print-preview-destination-settings id="destinationSettings"
-          cloud-print-interface="[[cloudPrintInterface]]" dark="[[dark_]]"
+          cloud-print-interface="[[cloudPrintInterface]]" dark="[[inDarkMode]]"
           destination="{{destination}}" destination-state="{{destinationState}}"
-          error="{{error}}" settings="[[settings]]"
+          error="{{error}}" first-load="[[firstLoad_]]" settings="[[settings]]"
           state="[[state]]" app-kiosk-mode="[[isInAppKioskMode_]]"
           disabled="[[controlsDisabled_]]"
           available class="settings-section">
@@ -167,7 +168,7 @@
             class="settings-section">
         </print-preview-scaling-settings>
         <print-preview-duplex-settings settings="[[settings]]"
-            disabled="[[controlsDisabled_]]" dark="[[dark_]]"
+            disabled="[[controlsDisabled_]]" dark="[[inDarkMode]]"
             hidden$="[[!settings.duplex.available]]"
             class="settings-section">
         </print-preview-duplex-settings>
@@ -202,7 +203,8 @@
     </div>
     <template is="dom-if" if="[[newPrintPreviewLayout]]">
       <print-preview-button-strip destination="[[destination]]"
-          state="[[state]]">
+          state="[[state]]" first-load="[[firstLoad_]]"
+          on-print-button-focused="onPrintButtonFocused_">
       </print-preview-button-strip>
     </template>
   </template>

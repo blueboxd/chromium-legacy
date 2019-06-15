@@ -1458,8 +1458,11 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
                               int32_t line_no,
                               const base::string16& source_id) override;
 
+  // Returns all the messages sent to the console.
+  std::vector<std::string> messages() { return messages_; }
+
   // Returns the most recent message sent to the console.
-  std::string message() { return message_; }
+  std::string message();
 
   // Waits for the next message captured by the filter to be sent to the
   // console.
@@ -1468,7 +1471,7 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
  private:
   WebContents* web_contents_;
   std::string filter_;
-  std::string message_;
+  std::vector<std::string> messages_;
 
   base::RunLoop run_loop_;
 

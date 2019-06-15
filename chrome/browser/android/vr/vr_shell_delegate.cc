@@ -36,6 +36,12 @@ namespace vr {
 
 namespace {
 
+void SetInlineVrEnabled(XRRuntimeManager& runtime_manager, bool enable) {
+  runtime_manager.ForEachRuntime([enable](BrowserXRRuntime* runtime) {
+    runtime->GetRuntime()->SetInlinePosesEnabled(enable);
+  });
+}
+
 class VrShellDelegateProviderFactory
     : public device::GvrDelegateProviderFactory {
  public:
@@ -90,10 +96,17 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
 void VrShellDelegate::SetDelegate(VrShell* vr_shell,
                                   gvr::ViewerType viewer_type) {
   vr_shell_ = vr_shell;
+
   // When VrShell is created, we disable magic window mode as the user is inside
   // the headset. As currently implemented, orientation-based magic window
   // doesn't make sense when the window is fixed and the user is moving.
-  SetInlineVrEnabled(false);
+  auto* xr_runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  if (xr_runtime_manager) {
+    // If the XRRuntimeManager singleton currently exists, this will disable
+    // inline VR. Otherwise, the callback for 'XRRuntimeManagerObserver'
+    // ('OnRuntimeAdded') will take care of it.
+    SetInlineVrEnabled(*xr_runtime_manager, false);
+  }
 
   if (pending_successful_present_request_) {
     CHECK(!on_present_result_callback_.is_null());
@@ -118,7 +131,12 @@ void VrShellDelegate::RemoveDelegate() {
     pending_successful_present_request_ = false;
     std::move(on_present_result_callback_).Run(false);
   }
-  SetInlineVrEnabled(true);
+
+  auto* xr_runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  if (xr_runtime_manager) {
+    SetInlineVrEnabled(*xr_runtime_manager, true);
+  }
+
   device::GvrDevice* gvr_device = GetGvrDevice();
   if (gvr_device)
     gvr_device->OnExitPresent();
@@ -182,15 +200,6 @@ void VrShellDelegate::OnPresentResult(
   request_present_response_callback_ = std::move(callback);
   vr_shell_->ConnectPresentingService(std::move(display_info),
                                       std::move(options));
-}
-
-void VrShellDelegate::SetInlineVrEnabled(bool enable) {
-  base::RepeatingCallback<void(BrowserXRRuntime*)> fn = base::BindRepeating(
-      [](bool flag, BrowserXRRuntime* runtime) {
-        runtime->GetRuntime()->SetInlinePosesEnabled(flag);
-      },
-      enable);
-  XRRuntimeManager::GetInstance()->ForEachRuntime(fn);
 }
 
 void VrShellDelegate::SendRequestPresentReply(

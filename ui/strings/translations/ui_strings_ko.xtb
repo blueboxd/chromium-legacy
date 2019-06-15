@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1409544243779336081">앱 추천</translation>
+<translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
 <translation id="1643823602425662293">알림</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1분 전}other{#분 전}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
+<translation id="7430878839542012341">기록에서 검색어를 삭제하시겠습니까?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" />TB</translation>
 <translation id="7507604095951736240">그림 이모티콘</translation>
 <translation id="7658239707568436148">취소</translation>

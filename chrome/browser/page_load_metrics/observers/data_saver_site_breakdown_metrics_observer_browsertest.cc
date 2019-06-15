@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -129,6 +130,71 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     observer.WaitForScrollOffset(gfx::Vector2dF(0, scroll_offset));
   }
 
+  // Navigates to |url| waiting until |expected_resources| are received and then
+  // returns the data savings. |expected_resources| should include main html,
+  // subresources and favicon.
+  int64_t NavigateAndGetDataSavings(const std::string& url,
+                                    int expected_resources) {
+    WaitForDBToInitialize();
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    GURL test_url(embedded_test_server()->GetURL(url));
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            browser()->tab_strip_model()->GetActiveWebContents());
+
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    waiter->AddMinimumCompleteResourcesExpectation(expected_resources);
+    waiter->Wait();
+
+    // Navigate away to force the histogram recording.
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+    return GetDataSavings(test_url.HostNoBrackets()) -
+           data_savings_before_navigation;
+  }
+
+  // Navigates to |url| waiting until |expected_initial_resources| are received.
+  // Then scrolls down the page and waits until |expected_resources_post_scroll|
+  // more resources are received. Finally returns the data savings. The resource
+  // counts should include main html, subresources and favicon.
+  int64_t NavigateAndGetDataSavingsAfterScroll(
+      const std::string& url,
+      size_t expected_initial_resources,
+      size_t expected_resources_post_scroll) {
+    WaitForDBToInitialize();
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    GURL test_url(embedded_test_server()->GetURL(url));
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            browser()->tab_strip_model()->GetActiveWebContents());
+
+    ui_test_utils::NavigateToURL(browser(), test_url);
+    waiter->AddMinimumCompleteResourcesExpectation(expected_initial_resources);
+    waiter->Wait();
+
+    // Scroll to remove data savings by loading the images.
+    ScrollToAndWaitForScroll(10000);
+
+    waiter->AddMinimumCompleteResourcesExpectation(
+        expected_initial_resources + expected_resources_post_scroll);
+    waiter->Wait();
+
+    // Navigate away to force the histogram recording.
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+    return GetDataSavings(test_url.HostNoBrackets()) -
+           data_savings_before_navigation;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -169,55 +235,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LazyImagesDataSavings) {
-  WaitForDBToInitialize();
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL test_url(
-      embedded_test_server()->GetURL("/lazyload/css-background-image.html"));
-
-  uint64_t data_savings_before_navigation =
-      GetDataSavings(test_url.HostNoBrackets());
-
-  ui_test_utils::NavigateToURL(browser(), test_url);
-  base::RunLoop().RunUntilIdle();
-
-  // Navigate away to force the histogram recording.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-
-  // Default image size value.
-  uint64_t image_size = 10000u;
-
-  // 2 deferred images.
-  EXPECT_EQ(image_size * 2u, GetDataSavings(test_url.HostNoBrackets()) -
-                                 data_savings_before_navigation);
-}
-
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LazyImagesDataSavingsScrollRemovesSavings) {
-  WaitForDBToInitialize();
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL test_url(
-      embedded_test_server()->GetURL("/lazyload/css-background-image.html"));
-
-  uint64_t data_savings_before_navigation =
-      GetDataSavings(test_url.HostNoBrackets());
-
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
-  // Scroll to remove data savings by loading the images.
-  ScrollToAndWaitForScroll(10000);
-  base::RunLoop().RunUntilIdle();
-
-  // Navigate away to force the histogram recording.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-
-  EXPECT_EQ(0u, GetDataSavings(test_url.HostNoBrackets()) -
-                    data_savings_before_navigation);
-}
-
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                        NavigateToPlaintext) {
   std::unique_ptr<net::EmbeddedTestServer> plaintext_server =
       std::make_unique<net::EmbeddedTestServer>(
@@ -243,6 +260,58 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   // Choose reasonable maximum (500 is the most we expect from headers).
   EXPECT_GE(500u, GetDataUsage(test_url.HostNoBrackets()) -
                       data_usage_before_navigation);
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesCSSBackgroundImage) {
+  // 2 deferred images.
+  EXPECT_EQ(10000 * 2,
+            NavigateAndGetDataSavings("/lazyload/css-background-image.html",
+                                      2 /* main html, favicon */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesCSSBackgroundImageScrollRemovesSavings) {
+  // Scrolling should remove the savings.
+  EXPECT_EQ(0u, NavigateAndGetDataSavingsAfterScroll(
+                    "/lazyload/css-background-image.html", 2,
+                    2 /* lazyloaded images */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesImgElement) {
+  // Choose reasonable minimum, any savings is indicative of the mechanism
+  // working.
+  EXPECT_LE(
+      10000,
+      NavigateAndGetDataSavings(
+          "/lazyload/img.html",
+          5 /* main html, favicon and 2 placeholder images, 1 full image */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesImgElementScrollRemovesSavings) {
+  // Choose reasonable minimum, any savings is indicative of the mechanism
+  // working.
+  // TODO(rajendrant): Check why sometimes data savings goes negative.
+  EXPECT_GE(0, NavigateAndGetDataSavingsAfterScroll("/lazyload/img.html", 5,
+                                                    1 /* lazyloaded image */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesImgWithDimension) {
+  // 1 deferred image.
+  EXPECT_EQ(10000,
+            NavigateAndGetDataSavings("/lazyload/img-with-dimension.html",
+                                      3 /* main html, favicon, full image */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImagesImgWithDimensionScrollRemovesSavings) {
+  // Scrolling should remove the savings.
+  EXPECT_EQ(0u, NavigateAndGetDataSavingsAfterScroll(
+                    "/lazyload/img-with-dimension.html", 3,
+                    1 /* lazyloaded image */));
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,

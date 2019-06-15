@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">Die Eingabemethoden werden von Ihrem Administrator konfiguriert.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1761222317188459878">Netzwerkverbindung aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Nach rechts scrollen</translation>
 <translation id="1812997170047690955">Was wird auf meinem Bildschirm angezeigt?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">Der Akkustand ist <ph name="PERCENTAGE" /> %. Der Akku wird aufgeladen.</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
+<translation id="4021716437419160885">Nach unten scrollen</translation>
 <translation id="4042660782729322247">Sie geben Ihren Bildschirm frei</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Für eine App deaktiviert}other{Für # Apps deaktiviert}}</translation>
 <translation id="4072264167173457037">Durchschnittliches Signal</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4924411785043111640">Neu starten und zurücksetzen</translation>
+<translation id="495046168593986294">Nach oben scrollen</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5030687792513154421">Die Zeit ist abgelaufen</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ist mit einem neuen Smartphone verbunden</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">Sie können das Update vornehmen, indem Sie das Chromebook mit angeschlossener Tastatur neu starten.</translation>
 <translation id="5992218262414051481">Modus mit hohem Kontrast aktiviert. Drücken Sie Strg + Suche + H, um ihn zu deaktivieren.</translation>
 <translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
+<translation id="602001110135236999">Nach links scrollen</translation>
+<translation id="6040143037577758943">Schließen</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
 <translation id="6047696787498798094">Wenn Sie zu einem anderen Nutzer wechseln, wird die Bildschirmfreigabe beendet. Möchten Sie fortfahren?</translation>

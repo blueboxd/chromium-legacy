@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Sérvio</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3855472144336161447">Alemão (Neo 2)</translation>
+<translation id="3856075812838139784">Somente leitura</translation>
 <translation id="3858678421048828670">Teclado italiano</translation>
 <translation id="386548886866354912">Compactar com <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descrição</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Horário modificado</translation>
 <translation id="4572815280350369984">Arquivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
+<translation id="4579744207439506346">Adicionado à seleção: <ph name="ENTRY_NAME" />.</translation>
 <translation id="4582497162516204941">Instalar com o Linux (Beta)</translation>
 <translation id="4594543368593301662">Exibindo resultados para <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Conjunto de letras coreanas final (Hangul 3)</translation>
 <translation id="5833610766403489739">Este arquivo está perdido em algum lugar. Verifique sua configuração de local de download e tente novamente.</translation>
 <translation id="5838051104334203064">Os aplicativos da Play Store não podem acessar esse dispositivo</translation>
+<translation id="5838451609423551646">Todas as entradas removidas da seleção.</translation>
 <translation id="5838825566232597749">Workman internacional dos EUA</translation>
 <translation id="5850516540536751549">Este tipo de arquivo não é compatível. Visite a <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> para encontrar um aplicativo que possa abri-lo.
     <ph name="BEGIN_LINK_HELP" />Saiba mais<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Arquivo tar comprimido Gzip</translation>
 <translation id="6825883775269213504">Russo</translation>
 <translation id="6827236167376090743">Este vídeo continuará sendo reproduzido indefinidamente.</translation>
+<translation id="6847101934483209767">Removido da seleção: <ph name="ENTRY_NAME" />.</translation>
 <translation id="6862635236584086457">Todos os arquivos salvos nessa pasta são salvos em backup on-line automaticamente</translation>
 <translation id="6870130893560916279">Teclado ucraniano</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Método de entrada Pinyin</translation>
 <translation id="8151638057146502721">Configurar</translation>
 <translation id="8153607920959057464">Não foi possível exibir este arquivo.</translation>
+<translation id="8154842056504218462">Todas as entradas selecionadas.</translation>
 <translation id="8157684860301034423">Falha ao recuperar informações do app.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Teclado espanhol</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Este arquivo do Google Drive ainda não foi compartilhado.</translation>
 <translation id="8698464937041809063">Desenho do Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
+<translation id="8719721339511222681">Selecionado: <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Teclado americano internacional</translation>
 <translation id="872537912056138402">Croata</translation>
 <translation id="874420130893181774">Método de entrada Pinyin tradicional</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Não há imagens neste diretório.</translation>
 <translation id="943972244133411984">Modificado por</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
+<translation id="947144732524271678">Foram selecionadas <ph name="ENTRY_COUNT" /> entradas de <ph name="FROM_ENTRY_NAME" /> até <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Off-line</translation>
 <translation id="988685240266037636">Já existe um arquivo chamado "<ph name="FILE_NAME" />". Você quer substitui-lo?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

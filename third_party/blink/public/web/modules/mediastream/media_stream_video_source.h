@@ -43,7 +43,7 @@ class VideoTrackAdapterSettings;
 // MediaStreamVideoSources such as local video capture, video sources received
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
-class BLINK_EXPORT MediaStreamVideoSource
+class BLINK_MODULES_EXPORT MediaStreamVideoSource
     : public WebPlatformMediaStreamSource {
  public:
   enum {

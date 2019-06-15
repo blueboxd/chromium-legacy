@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/views/widget/widget_observer.h"
 
 ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
     : ToolbarIconContainerView(/*uses_highlight=*/true),
@@ -21,7 +23,13 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
   CreateActions();
 }
 
-ExtensionsToolbarContainer::~ExtensionsToolbarContainer() = default;
+ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
+  if (active_bubble_)
+    active_bubble_->GetWidget()->Close();
+  // We should synchronously receive the OnWidgetClosing() event, so we should
+  // always have cleared the active bubble by now.
+  DCHECK(!active_bubble_);
+}
 
 void ExtensionsToolbarContainer::UpdateAllIcons() {
   extensions_button_->UpdateIcon();
@@ -44,7 +52,9 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
   return model_->IsActionPinned(action->GetId()) ||
-         action == popped_out_action_;
+         action == popped_out_action_ ||
+         (active_bubble_ &&
+          action->GetId() == active_bubble_->GetAnchorActionId());
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -90,6 +100,34 @@ void ExtensionsToolbarContainer::PopOutAction(
   icons_[popped_out_action_->GetId()]->SetVisible(true);
   ReorderViews();
   closure.Run();
+}
+
+void ExtensionsToolbarContainer::ShowToolbarActionBubble(
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
+  // TODO(pbos): Make sure we finish animations before showing the bubble.
+
+  auto iter = icons_.find(controller->GetAnchorActionId());
+
+  views::View* const anchor_view = iter != icons_.end()
+                                       ? static_cast<View*>(iter->second.get())
+                                       : extensions_button_;
+
+  anchor_view->SetVisible(true);
+
+  active_bubble_ = new ToolbarActionsBarBubbleViews(
+      anchor_view, gfx::Point(), anchor_view != extensions_button_,
+      std::move(controller));
+  views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
+      ->AddObserver(this);
+  active_bubble_->Show();
+}
+
+void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExtensionsToolbarContainer::ShowToolbarActionBubble,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionAdded(
@@ -218,4 +256,28 @@ bool ExtensionsToolbarContainer::CanStartDragForView(View* sender,
                                                      const gfx::Point& p) {
   // TODO(pbos): Implement
   return false;
+}
+
+void ExtensionsToolbarContainer::OnWidgetClosing(views::Widget* widget) {
+  ClearActiveBubble(widget);
+}
+
+void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
+  ClearActiveBubble(widget);
+}
+
+void ExtensionsToolbarContainer::ClearActiveBubble(views::Widget* widget) {
+  DCHECK(active_bubble_);
+  DCHECK_EQ(active_bubble_->GetWidget(), widget);
+  ToolbarActionViewController* const action =
+      GetActionForId(active_bubble_->GetAnchorActionId());
+  // TODO(pbos): Note that this crashes if a bubble anchors to the menu and not
+  // to an extension that gets popped out. This should be fixed, but a test
+  // should first be added to make sure that it's covered.
+  CHECK(action);
+  active_bubble_ = nullptr;
+  widget->RemoveObserver(this);
+  // Note that we only hide this view if it's not visible for other reasons
+  // than displaying the bubble.
+  icons_[action->GetId()]->SetVisible(IsActionVisibleOnToolbar(action));
 }

@@ -5689,7 +5689,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->Show();
   // No new LocalSurfaceId should be allocated for the first navigation and the
   // timer should not fire.
-  widget_host_->DidNavigate(1);
+  widget_host_->DidNavigate();
   viz::LocalSurfaceId id1 =
       view_->GetLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_EQ(id0, id1);
@@ -5704,7 +5704,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   widget_host_->reset_new_content_rendering_timeout_fired();
 
   // Start the timer. Verify that a new LocalSurfaceId is allocated.
-  widget_host_->DidNavigate(5);
+  widget_host_->DidNavigate();
   viz::LocalSurfaceId id2 =
       view_->GetLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_TRUE(id2.is_valid());

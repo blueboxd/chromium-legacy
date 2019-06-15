@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1409544243779336081">Javasolt alkalmazás</translation>
+<translation id="1498028757988366001">Korábban már rákeresett erre. Ha törli a(z) <ph name="QUERY" /> lekérdezést az előzmények közül, azzal véglegesen eltávolítja fiókjából minden eszközén.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
 <translation id="1643823602425662293">Értesítés</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
+<translation id="7430878839542012341">Törli ezt a keresést az előzmények közül?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Hangulatjel</translation>
 <translation id="7658239707568436148">Mégse</translation>

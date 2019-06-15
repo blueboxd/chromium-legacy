@@ -455,6 +455,12 @@
       If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
       </translation>
 <translation id="1767673020408652620">Enable App Recommendations in Zero State of Search Box</translation>
+<translation id="17719159826324007">
+      This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
+      When set to Always, it forces the device to reboot on every user sign-out.
+      If left unset, it has no effect and no reboot is forced on user sign-out. The same applies if set to Never.
+      This policy has effect only for unaffiliated users.
+      </translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1793346220873697538">Disable PIN printing by default</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
@@ -952,6 +958,7 @@
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
 <translation id="2693108589792503178">Configure the change password URL.</translation>
+<translation id="2694143893026486692">Docked magnifier enabled</translation>
 <translation id="2706708761587205154">Allow printing only with PIN</translation>
 <translation id="2710534340210290498">If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
@@ -1188,6 +1195,7 @@
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
@@ -1705,12 +1713,6 @@
       <ph name="PRODUCT_OS_NAME" /> devices automatically check for updates when this setting is not configured or set to False.
 
       Warning: It is recommended to keep auto-updates enabled so that users receive software updates and critical security fixes. Turning off auto-updates might leave users at risk.</translation>
-<translation id="4018000735882846261">This policy gives Google Assistant permission to listen for the voice activation phrase.
-
-      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
-      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
-      </translation>
 <translation id="4020682745012723568">Cookies transferred to the user's profile are not accessible to Android apps.</translation>
 <translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>

@@ -164,7 +164,8 @@ Polymer({
   onInputChanged_: function() {
     this.setSettingValid('scaling', this.inputValid_);
 
-    if (this.currentValue_ !== '' && this.inputValid_) {
+    if (this.currentValue_ !== '' && this.inputValid_ &&
+        this.currentValue_ !== this.getSettingValue('scaling')) {
       this.setSetting('scaling', this.currentValue_);
     }
   },

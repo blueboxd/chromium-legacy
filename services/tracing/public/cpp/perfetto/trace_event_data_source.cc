@@ -493,7 +493,8 @@ void TraceEventDataSource::OnAddTraceEvent(
 void TraceEventDataSource::OnUpdateDuration(
     base::trace_event::TraceEventHandle handle,
     const base::TimeTicks& now,
-    const base::ThreadTicks& thread_now) {
+    const base::ThreadTicks& thread_now,
+    base::trace_event::ThreadInstructionCount thread_instruction_now) {
   if (GetThreadIsInTraceEventTLS()->Get()) {
     return;
   }
@@ -503,7 +504,8 @@ void TraceEventDataSource::OnUpdateDuration(
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
   if (thread_local_event_sink) {
-    thread_local_event_sink->UpdateDuration(handle, now, thread_now);
+    thread_local_event_sink->UpdateDuration(handle, now, thread_now,
+                                            thread_instruction_now);
   }
 }
 

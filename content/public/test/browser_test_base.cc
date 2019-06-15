@@ -155,8 +155,7 @@ class InitialNavigationObserver : public WebContentsObserver {
 extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
-    : field_trial_list_(std::make_unique<base::FieldTrialList>(nullptr)),
-      expected_exit_code_(0),
+    : expected_exit_code_(0),
       enable_pixel_output_(false),
       use_software_compositing_(false),
       set_up_called_(false) {
@@ -334,7 +333,6 @@ void BrowserTestBase::SetUp() {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     field_trial_states);
   }
-  field_trial_list_.reset();
 
   // Need to wipe feature list clean, since BrowserMain calls
   // FeatureList::SetInstance, which expects no instance to exist.

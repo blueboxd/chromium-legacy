@@ -175,7 +175,10 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   }
 
   void OnItemRemoved(const ContentId& id) override {}
-  void OnItemUpdated(const OfflineItem& item) override {
+  void OnItemUpdated(
+      const OfflineItem& item,
+      const base::Optional<offline_items_collection::UpdateDelta>& update_delta)
+      override {
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&
         item.state != offline_items_collection::OfflineItemState::PAUSED &&

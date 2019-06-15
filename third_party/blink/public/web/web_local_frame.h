@@ -392,8 +392,13 @@ class WebLocalFrame : public WebFrame {
       ScriptExecutionType,
       WebScriptExecutionCallback*) = 0;
 
-  // Logs to the console associated with this frame.
-  virtual void AddMessageToConsole(const WebConsoleMessage&) = 0;
+  // Logs to the console associated with this frame. If |discard_duplicates| is
+  // set, the message will only be added if it is unique (i.e. has not been
+  // added to the console previously from this page).
+  void AddMessageToConsole(const WebConsoleMessage& message,
+                           bool discard_duplicates = false) {
+    AddMessageToConsoleImpl(message, discard_duplicates);
+  }
 
   // Expose modal dialog methods to avoid having to go through JavaScript.
   virtual void Alert(const WebString& message) = 0;
@@ -771,6 +776,10 @@ class WebLocalFrame : public WebFrame {
   WebLocalFrame* ToWebLocalFrame() override = 0;
   bool IsWebRemoteFrame() const override = 0;
   WebRemoteFrame* ToWebRemoteFrame() override = 0;
+
+ private:
+  virtual void AddMessageToConsoleImpl(const WebConsoleMessage&,
+                                       bool discard_duplicates) = 0;
 };
 
 }  // namespace blink

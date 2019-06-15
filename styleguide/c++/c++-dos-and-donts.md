@@ -81,7 +81,7 @@ general rules:
    };
    class Vexing {
     public:
-     explicit Vexing(const std::string&amp; s) { ... };
+     explicit Vexing(const std::string& s) { ... };
      ...
    };
    void func() {
@@ -96,6 +96,34 @@ general rules:
    ```cpp
    auto x{1};  // Until C++17, decltype(x) is std::initializer_list<int>, not int!
    ```
+
+## Initialize members in the declaration where possible
+
+If possible, initialize class members in their declarations, except where a
+member's value is explicitly set by every constructor.
+
+This reduces the chance of uninitialized variables, documents default values in
+the declaration, and increases the number of constructors that can use
+`=default` (see below).
+
+```cpp
+class C {
+ public:
+  C() : a_(2) {}
+  C(int b) : a_(1), b_(b) {}
+
+ private:
+  int a_;          // Not necessary to init this since all constructors set it.
+  int b_ = 0;      // Not all constructors set this.
+  std::string c_;  // No initializer needed due to string's default constructor.
+  base::WeakPtrFactory<C> factory_{this};
+                   // {} allows calling of explicit constructors.
+};
+```
+
+Note that it's possible to call functions or pass `this` and other expressions
+in initializers, so even some complex initializations can be done in the
+declaration.
 
 ## Prefer structs over pairs/tuples when used repeatedly
 

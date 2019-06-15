@@ -34,7 +34,9 @@ class TabGridSheetProperties {
             new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableObjectPropertyKey<Rect> ANIMATION_SOURCE_RECT =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableIntPropertyKey UNGROUP_BAR_STATUS =
+            new PropertyModel.WritableIntPropertyKey();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
-            IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_SOURCE_RECT};
+            IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_SOURCE_RECT, UNGROUP_BAR_STATUS};
 }

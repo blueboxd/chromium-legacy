@@ -84,7 +84,7 @@ bool CheckPINToken(base::span<const uint8_t> pin_token,
 
 // CheckUserVerification implements the first, common steps of
 // makeCredential and getAssertion from the CTAP2 spec.
-CtapDeviceResponseCode CheckUserVerification(
+base::Optional<CtapDeviceResponseCode> CheckUserVerification(
     bool is_make_credential,
     const AuthenticatorSupportedOptions& options,
     const base::Optional<std::vector<uint8_t>>& pin_auth,
@@ -92,7 +92,7 @@ CtapDeviceResponseCode CheckUserVerification(
     base::span<const uint8_t> pin_token,
     base::span<const uint8_t> client_data_hash,
     UserVerificationRequirement user_verification,
-    base::RepeatingCallback<void(void)> simulate_press_callback,
+    base::RepeatingCallback<bool(void)> simulate_press_callback,
     bool* out_user_verified) {
   // The following quotes are from the CTAP2 spec:
 
@@ -103,9 +103,9 @@ CtapDeviceResponseCode CheckUserVerification(
       options.client_pin_availability !=
       AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
   if (supports_pin && pin_auth && pin_auth->empty()) {
-    if (simulate_press_callback) {
-      simulate_press_callback.Run();
-    }
+    if (simulate_press_callback && !simulate_press_callback.Run())
+      return base::nullopt;
+
     switch (options.client_pin_availability) {
       case AuthenticatorSupportedOptions::ClientPinAvailability::
           kSupportedAndPinSet:
@@ -149,9 +149,9 @@ CtapDeviceResponseCode CheckUserVerification(
           AuthenticatorSupportedOptions::UserVerificationAvailability::
               kSupportedAndConfigured) {
         // Internal UV is assumed to always succeed.
-        if (simulate_press_callback) {
-          simulate_press_callback.Run();
-        }
+        if (simulate_press_callback && !simulate_press_callback.Run())
+          return base::nullopt;
+
         uv = true;
       } else {
         // UV was requested, but either not supported or not configured.
@@ -558,12 +558,24 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
 
       response_code = OnAuthenticatorGetInfo(&response_data);
       break;
-    case CtapRequestCommand::kAuthenticatorMakeCredential:
-      response_code = OnMakeCredential(request_bytes, &response_data);
+    case CtapRequestCommand::kAuthenticatorMakeCredential: {
+      auto opt_response_code = OnMakeCredential(request_bytes, &response_data);
+      if (!opt_response_code) {
+        // Simulate timeout due to unresponded User Presence check.
+        return 0;
+      }
+      response_code = *opt_response_code;
       break;
-    case CtapRequestCommand::kAuthenticatorGetAssertion:
-      response_code = OnGetAssertion(request_bytes, &response_data);
+    }
+    case CtapRequestCommand::kAuthenticatorGetAssertion: {
+      auto opt_response_code = OnGetAssertion(request_bytes, &response_data);
+      if (!opt_response_code) {
+        // Simulate timeout due to unresponded User Presence check.
+        return 0;
+      }
+      response_code = *opt_response_code;
       break;
+    }
     case CtapRequestCommand::kAuthenticatorGetNextAssertion:
       response_code = OnGetNextAssertion(request_bytes, &response_data);
       break;
@@ -595,7 +607,7 @@ void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
   device_info_->options = options;
 }
 
-CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
+base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   const auto& cbor_request = cbor::Reader::Read(request_bytes);
@@ -616,10 +628,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
-  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+  const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       true /* is makeCredential */, options, request.pin_auth,
       request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, mutable_state()->simulate_press_callback,
+      request.user_verification,
+      mutable_state()->simulate_press_callback
+          ? base::BindRepeating(mutable_state()->simulate_press_callback,
+                                base::Unretained(this))
+          : base::RepeatingCallback<bool(void)>(),
       &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
@@ -643,8 +659,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
           // a credentials ends up being created it'll overwrite this one.
           continue;
         }
-        if (mutable_state()->simulate_press_callback) {
-          mutable_state()->simulate_press_callback.Run();
+        if (mutable_state()->simulate_press_callback &&
+            !mutable_state()->simulate_press_callback.Run(this)) {
+          return base::nullopt;
         }
         return CtapDeviceResponseCode::kCtap2ErrCredentialExcluded;
       }
@@ -665,8 +682,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   // Step 10.
-  if (!user_verified && mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+  if (!user_verified && mutable_state()->simulate_press_callback &&
+      !mutable_state()->simulate_press_callback.Run(this)) {
+    return base::nullopt;
   }
 
   // Create key to register.
@@ -764,7 +782,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   return CtapDeviceResponseCode::kSuccess;
 }
 
-CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
+base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   // Step numbers in this function refer to
@@ -787,10 +805,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
-  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+  const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       false /* not makeCredential */, options, request.pin_auth,
       request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, mutable_state()->simulate_press_callback,
+      request.user_verification,
+      mutable_state()->simulate_press_callback
+          ? base::BindRepeating(mutable_state()->simulate_press_callback,
+                                base::Unretained(this))
+          : base::RepeatingCallback<bool(void)>(),
       &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
@@ -871,8 +893,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
 
   // Step 7.
   if (request.user_presence_required && !user_verified &&
-      mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+      mutable_state()->simulate_press_callback &&
+      !mutable_state()->simulate_press_callback.Run(this)) {
+    return base::nullopt;
   }
 
   // Step 8.

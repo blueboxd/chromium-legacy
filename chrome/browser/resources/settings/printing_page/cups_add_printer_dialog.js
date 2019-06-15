@@ -164,7 +164,23 @@ Polymer({
   properties: {
     /** @type {!CupsPrinterInfo} */
     newPrinter: {type: Object, notify: true, value: getEmptyPrinter_},
+
+    /** @private */
+    addPrinterInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showGeneralError_: {
+      type: Boolean,
+      value: false,
+    },
   },
+
+  observers: [
+    'printerInfoChanged_(newPrinter.*)',
+  ],
 
   /** @private */
   switchToDiscoveryDialog_: function() {
@@ -213,16 +229,22 @@ Polymer({
 
   /**
    * Handler for getPrinterInfo failure.
-   * @param {*} rejected
+   * @param {*} result a PrinterSetupResult with an error code indicating why
+   * getPrinterInfo failed.
    * @private
    */
-  infoFailed_: function(rejected) {
-    this.$$('add-printer-dialog').close();
-    this.fire('open-manufacturer-model-dialog');
+  infoFailed_: function(result) {
+    this.addPrinterInProgress_ = false;
+    if (result == PrinterSetupResult.PRINTER_UNREACHABLE) {
+      this.$.printerAddressInput.invalid = true;
+      return;
+    }
+    this.showGeneralError_ = true;
   },
 
   /** @private */
   addPressed_: function() {
+    this.addPrinterInProgress_ = true;
     // Set the default printer queue to be "ipp/print".
     if (!this.newPrinter.printerQueue) {
       this.set('newPrinter.printerQueue', 'ipp/print');
@@ -252,8 +274,16 @@ Polymer({
    * @private
    */
   canAddPrinter_: function() {
-    return settings.printing.isNameAndAddressValid(this.newPrinter);
+    return !this.addPrinterInProgress_ &&
+        settings.printing.isNameAndAddressValid(this.newPrinter);
   },
+
+  /** @private */
+  printerInfoChanged_: function() {
+    this.$.printerAddressInput.invalid = false;
+    this.showGeneralError_ = false;
+  },
+
 });
 
 Polymer({

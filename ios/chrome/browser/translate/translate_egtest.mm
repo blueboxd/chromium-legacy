@@ -21,7 +21,6 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -31,7 +30,6 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#include "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -436,17 +434,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 @end
 
 @implementation TranslateTestCase
-
-+ (void)setUp {
-  [super setUp];
-
-  if (!base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
-    // translate::kCompactTranslateInfobarIOS feature is not enabled. You need
-    // to pass --enable-features=CompactTranslateInfobarIOS command line
-    // argument in order to run this test.
-    DCHECK(false);
-  }
-}
 
 - (void)setUp {
   [super setUp];

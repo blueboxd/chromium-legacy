@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Bahasa Serbia</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3855472144336161447">Bahasa Jerman Neo 2</translation>
+<translation id="3856075812838139784">Baca sahaja</translation>
 <translation id="3858678421048828670">Papan kekunci Itali</translation>
 <translation id="386548886866354912">Dipek dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Huraian</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Masa diubah suai</translation>
 <translation id="4572815280350369984">Fail <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lagi...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" />ditambahkan pada pilihan.</translation>
 <translation id="4582497162516204941">Pasang dengan Linux (Beta)</translation>
 <translation id="4594543368593301662">Menunjukkan hasil untuk <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artis</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Akhir)</translation>
 <translation id="5833610766403489739">Fail ini ada di tempat lain. Sila semak tetapan lokasi muat turun anda, kemudian cuba lagi.</translation>
 <translation id="5838051104334203064">Aplikasi Gedung Play tidak boleh mengakses peranti ini</translation>
+<translation id="5838451609423551646">Semua masukan dialih keluar daripada pilihan.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5850516540536751549">Jenis fail ini tidak disokong. Sila lawati<ph name="BEGIN_LINK" />Gedung Web Chrome<ph name="END_LINK" /> untuk mendapatkan apl yang boleh membuka jenis fail ini.
     <ph name="BEGIN_LINK_HELP" />Ketahui Lebih Lanjut<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Arkib tar Gzip dimampatkan</translation>
 <translation id="6825883775269213504">Bahasa Rusia</translation>
 <translation id="6827236167376090743">Video ini akan terus dimainkan untuk tempoh yang lama.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> dialih keluar daripada pilihan.</translation>
 <translation id="6862635236584086457">Semua fail yang disimpan di dalam folder ini disokong dalam talian secara automatik</translation>
 <translation id="6870130893560916279">Papan kekunci Ukraine</translation>
 <translation id="6876155724392614295">Basikal</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Kaedah input Pinyin</translation>
 <translation id="8151638057146502721">Konfigurasi</translation>
 <translation id="8153607920959057464">Fail ini tidak dapat dipaparkan.</translation>
+<translation id="8154842056504218462">Semua masukan dipilih.</translation>
 <translation id="8157684860301034423">Gagal mengambil maklumat apl.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Papan kekunci Sepanyol</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Fail Drive ini belum dikongsi lagi</translation>
 <translation id="8698464937041809063">Lukisan Google</translation>
 <translation id="8714406895390098252">Basikal</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> dipilih.</translation>
 <translation id="8722421161699219904">Papan kekunci Antarabangsa AS</translation>
 <translation id="872537912056138402">Bahasa Croatia</translation>
 <translation id="874420130893181774">Kaedah input Pinyin Tradisional</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Tiada imej dalam direktori ini.</translation>
 <translation id="943972244133411984">Diubah suai oleh</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>
+<translation id="947144732524271678">Memilih <ph name="ENTRY_COUNT" /> masukan daripada <ph name="FROM_ENTRY_NAME" /> hingga <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Luar talian</translation>
 <translation id="988685240266037636">Fail bernama "<ph name="FILE_NAME" />" sudah wujud. Adakah anda mahu menggantikannya?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

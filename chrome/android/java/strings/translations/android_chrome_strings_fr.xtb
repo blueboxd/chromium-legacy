@@ -358,6 +358,7 @@
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
 <translation id="3662546969139119822">Aucun historique ici</translation>
+<translation id="3663367437272849150">Regrouper les onglets <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
@@ -466,6 +467,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4479647676395637221">Demander avant d'autoriser des sites à utiliser ma caméra (recommandé)</translation>
 <translation id="4479972344484327217">Installation du module <ph name="MODULE" /> pour Chrome…</translation>
+<translation id="4482194545587547824">Google peut utiliser votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="4487967297491345095">Toutes les données de l'application Chrome seront supprimées de façon définitive, y compris les fichiers, paramètres, comptes, bases de données, etc.</translation>
 <translation id="4493497663118223949">Mode simplifié activé</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Il y a # jour}one{Il y a # jour}other{Il y a # jours}}</translation>
@@ -476,6 +478,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
 <translation id="4538018662093857852">Activer le mode simplifié</translation>
 <translation id="4550003330909367850">Pour afficher ou copier votre mot de passe ici, définissez le verrouillage de l'écran sur cet appareil.</translation>
+<translation id="4556110439722119938">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>
 <translation id="4558311620361989323">Raccourcis de pages Web</translation>
 <translation id="4561979708150884304">Aucune connexion</translation>
 <translation id="4565377596337484307">Masquer le mot de passe</translation>
@@ -630,6 +633,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="557283862590186398">Chrome a besoin de votre autorisation pour accéder à votre micro pour ce site.</translation>
 <translation id="55737423895878184">La localisation et les notifications sont autorisées</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets regroupés</translation>
 <translation id="5581519193887989363">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5596627076506792578">Plus d'options</translation>
@@ -708,6 +712,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6181444274883918285">Ajouter une exception pour un site</translation>
 <translation id="6192333916571137726">Télécharger le fichier</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6193448654517602979">Sélectionner des onglets</translation>
 <translation id="6194112207524046168">Pour autoriser Chrome à accéder à votre appareil photo, activez également ce dernier dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
@@ -824,6 +829,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Réinitialiser les paramètres de Google Traduction</translation>
 <translation id="6979737339423435258">Toutes les périodes</translation>
+<translation id="6980462514016882061">Google peut utiliser votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="6985347914332179298">Aucun téléchargement ici</translation>
 <translation id="6989267951144302301">Échec du téléchargement</translation>
@@ -850,11 +856,13 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7141896414559753902">Bloquer l'affichage de fenêtres pop-up et de redirections par les sites (recommandé)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Charger la page originale<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Dernières 24 heures</translation>
+<translation id="7161892015146974550">Sélectionner l'onglet <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> Ko</translation>
 <translation id="7177466738963138057">Vous pourrez modifier le moteur de recherche plus tard dans les paramètres</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
+<translation id="722055596168483966">Personnaliser les services Google</translation>
 <translation id="723171743924126238">Sélectionner des images</translation>
 <translation id="7233236755231902816">Pour afficher le Web dans votre langue, téléchargez la dernière version de Chrome</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
@@ -881,6 +889,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7403691278183511381">Expérience de première utilisation de Chrome</translation>
 <translation id="741204030948306876">J'accepte</translation>
 <translation id="7413229368719586778">Date de début : <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Regrouper les onglets…</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7423538860840206698">Accès en lecture au presse-papiers bloqué</translation>
 <translation id="7431991332293347422">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche et plus encore</translation>
@@ -1017,6 +1026,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
 <translation id="8349013245300336738">Trier en fonction de la quantité de données utilisées</translation>
 <translation id="8364299278605033898">Affichez les sites Web populaires</translation>
+<translation id="8364603787714420828">Désélectionner l'onglet <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Autorise la synchronisation en arrière-plan pour un site spécifique.</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>
@@ -1082,6 +1092,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Données stockées</translation>
 <translation id="8901170036886848654">Aucun favori trouvé</translation>
+<translation id="8904976895050290827">Synchronisation Chrome</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
@@ -1099,6 +1110,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8986494364107987395">Envoie automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
+<translation id="9005637476204108703">Appuyez ici pour gérer vos comptes</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>
@@ -1119,6 +1131,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche en appuyant brièvement sur un mot</translation>
 <translation id="9169594135889675189">Ajouter un nouvel onglet au groupe</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
+<translation id="9190112541605496997">Appuyez sur le bouton "Gérer le compte" pour gérer vos comptes</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>

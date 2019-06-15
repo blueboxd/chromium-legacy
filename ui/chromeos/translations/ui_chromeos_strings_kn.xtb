@@ -236,6 +236,7 @@
 <translation id="383652340667548381">ಸೆರ್ಬಿಯನ್</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3855472144336161447">ಜರ್ಮನ್ ನಿಯೊ 2</translation>
+<translation id="3856075812838139784">ಓದಲು ಮಾತ್ರ</translation>
 <translation id="3858678421048828670">ಇಟಾಲಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> ಜೊತೆಗೆ ಪ್ಯಾಕ್</translation>
 <translation id="3866249974567520381">ವಿವರಣೆ</translation>
@@ -281,6 +282,7 @@
 <translation id="4568854179928172494">ಮಾರ್ಪಡಿಸಿದ ಸಮಯ</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ಫೈಲ್</translation>
 <translation id="457386861538956877">ಇನ್ನಷ್ಟು...</translation>
+<translation id="4579744207439506346">ಆಯ್ಕೆಗೆ <ph name="ENTRY_NAME" /> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="4582497162516204941">Linux (ಬೀಟಾ) ನೊಂದಿಗೆ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ಗಾಗಿ ಫಲಿತಾಂಶಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4631887759990505102">ಕಲೆಗಾರ</translation>
@@ -414,6 +416,7 @@
 <translation id="5819442873484330149">ಹಂಗುಲ್ 3 ಸೆಟ್ (ಅಂತಿಮ)</translation>
 <translation id="5833610766403489739">ಈ ಫೈಲ್ ಎಲ್ಲಿಯೋ ಹೋಗಿಬಿಟ್ಟಿದೆ. ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್ ಸ್ಥಳ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5838051104334203064">Play ಸ್ಟೋರ್‌‌ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಈ ಸಾಧನಕ್ಕೆ ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
+<translation id="5838451609423551646">ಆಯ್ಕೆಯಿಂದ ಎಲ್ಲಾ ನಮೂದುಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
 <translation id="5838825566232597749">US ವರ್ಕ್‌ಮ್ಯಾನ್ ಇಂಟರ್‌ನ್ಯಾಶನಲ್</translation>
 <translation id="5850516540536751549">ಈ ಫೈಲ್ ಪ್ರಕಾರವು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಈ ಪ್ರಕಾರದ ಫೈಲ್ ಅನ್ನು ತೆರೆಯಬಹುದಾದ ಅಪ್ಲಿಕೇಶನ್ ಹುಡುಕಲು <ph name="BEGIN_LINK" />Chrome ವೆಬ್ ಅಂಗಡಿಗೆ<ph name="END_LINK" /> ಭೇಟಿ ನೀಡಿ.
 	      <ph name="BEGIN_LINK_HELP" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK_HELP" /></translation>
@@ -487,6 +490,7 @@
 <translation id="6820687829547641339">Gzip ಸಂಕ್ಷೇಪಿಸಿದ tar ಆರ್ಕೈವ್</translation>
 <translation id="6825883775269213504">ರಷ್ಯನ್</translation>
 <translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
+<translation id="6847101934483209767">ಆಯ್ಕೆಯಿಂದ <ph name="ENTRY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
 <translation id="6862635236584086457">ಈ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಉಳಿಸಲಾದ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳನ್ನು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6870130893560916279">ಉಕ್ರೇನಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="6876155724392614295">ಬೈಕ್</translation>
@@ -606,6 +610,7 @@
 <translation id="8148264977957212129">ಪಿನ್‌ಯಿನ್ ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>
 <translation id="8151638057146502721">ಕಾನ್ಫಿಗರ್ ಮಾಡಿ</translation>
 <translation id="8153607920959057464">ಈ ಫೈಲ್ ಅನ್ನು ಪ್ರದರ್ಶಿಸಲಾಗಿಲ್ಲ.</translation>
+<translation id="8154842056504218462">ಎಲ್ಲಾ ನಮೂದುಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="8157684860301034423">ಆ್ಯಪ್‌ ಮಾಹಿತಿಯನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">ಸ್ಪ್ಯಾನಿಷ್ ಕೀಬೋರ್ಡ್</translation>
@@ -648,6 +653,7 @@
 <translation id="8686213429977032554">ಈ ಡ್ರೈವ್ ಫೈಲ್ ಅನ್ನು ಇನ್ನೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ</translation>
 <translation id="8698464937041809063">Google ರೇಖಾಚಿತ್ರ</translation>
 <translation id="8714406895390098252">ಬೈಸಿಕಲ್</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="8722421161699219904">ಯುಎಸ್ ಅಂತರರಾಷ್ಟ್ರೀಯ ಕೀಬೋರ್ಡ್</translation>
 <translation id="872537912056138402">ಕ್ರೋಯೇಶಿಯನ್</translation>
 <translation id="874420130893181774">ಸಾಂಪ್ರದಾಯಿಕ ಪಿನ್‌ಯಿನ್ ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>
@@ -688,6 +694,7 @@
 <translation id="942954117721265519">ಈ ಡೈರೆಕ್ಟರಿಯಲ್ಲಿ ಯಾವುದೇ ಚಿತ್ರಗಳಿಲ್ಲ.</translation>
 <translation id="943972244133411984">ಮಾರ್ಪಡಿಸಿದವರು</translation>
 <translation id="945522503751344254">ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> ನಿಂದ <ph name="TO_ENTRY_NAME" /> ವರೆಗಿನ <ph name="ENTRY_COUNT" /> ನಮೂದುಗಳ ಶ್ರೇಣಿಯನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="981121421437150478">ಆಫ್‌ಲೈನ್</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" ಹೆಸರಿನ ಫೈಲ್ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ಇದನ್ನು ನೀವು ಬದಲಾಯಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

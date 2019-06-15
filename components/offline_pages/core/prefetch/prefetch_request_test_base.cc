@@ -31,9 +31,6 @@ PrefetchRequestTestBase::PrefetchRequestTestBase()
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
 void PrefetchRequestTestBase::SetUp() {
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(
-      std::make_unique<base::MockEntropyProvider>());
-
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         last_resource_request_ = request;
@@ -41,23 +38,11 @@ void PrefetchRequestTestBase::SetUp() {
 }
 
 void PrefetchRequestTestBase::SetUpExperimentOption() {
-  const std::string kTrialName = "trial_name";
-  const std::string kGroupName = "group_name";
-
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
   std::map<std::string, std::string> params;
   params[kPrefetchingOfflinePagesExperimentsOption] =
       kExperimentValueSetInFieldTrial;
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-
-  std::unique_ptr<base::FeatureList> feature_list =
-      std::make_unique<base::FeatureList>();
-  feature_list->RegisterFieldTrialOverride(
-      kPrefetchingOfflinePagesFeature.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-  scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      kPrefetchingOfflinePagesFeature, params);
 }
 
 void PrefetchRequestTestBase::RespondWithNetError(int net_error) {

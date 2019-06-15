@@ -96,6 +96,8 @@ class SearchBoxImageButton : public views::ImageButton {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     SetInkDropMode(InkDropMode::ON);
+    // InkDropState will reset after clicking.
+    set_has_ink_drop_action_on_click(true);
 
     SetPreferredSize({kButtonSizeDip, kButtonSizeDip});
     SetImageHorizontalAlignment(ALIGN_CENTER);

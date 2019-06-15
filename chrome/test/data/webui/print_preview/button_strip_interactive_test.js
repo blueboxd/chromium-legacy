@@ -27,6 +27,7 @@ cr.define('button_strip_interactive_test', function() {
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
       buttonStrip.state = print_preview.State.NOT_READY;
+      buttonStrip.firstLoad = true;
       document.body.appendChild(buttonStrip);
     });
 

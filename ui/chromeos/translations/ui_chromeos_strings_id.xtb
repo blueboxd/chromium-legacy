@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serb</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3855472144336161447">Neo 2 Jerman</translation>
+<translation id="3856075812838139784">Hanya baca</translation>
 <translation id="3858678421048828670">Keyboard untuk bahasa Italia</translation>
 <translation id="386548886866354912">Paketkan dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Deskripsi</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Waktu perubahan</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lainnya...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> ditambahkan ke pilihan.</translation>
 <translation id="4582497162516204941">Instal dengan Linux (Beta)</translation>
 <translation id="4594543368593301662">Menampilkan hasil untuk <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artis</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">3 Himpunan Hangul (Akhir)</translation>
 <translation id="5833610766403489739">File ini tidak terdeteksi berada di mana. Periksa setelan lokasi download dan coba lagi.</translation>
 <translation id="5838051104334203064">Aplikasi Play Store tidak dapat mengakses perangkat ini</translation>
+<translation id="5838451609423551646">Semua entri dihapus dari pilihan.</translation>
 <translation id="5838825566232597749">Internasional Workman AS</translation>
 <translation id="5850516540536751549">Jenis file ini tidak didukung. Kunjungi <ph name="BEGIN_LINK" />Chrome Webstore<ph name="END_LINK" /> untuk menemukan aplikasi yang dapat membuka jenis file ini.
         <ph name="BEGIN_LINK_HELP" />Pelajari Lebih Lanjut<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Arsip tar terkompresi Gzip</translation>
 <translation id="6825883775269213504">Rusia</translation>
 <translation id="6827236167376090743">Video ini akan terus berputar sampai sapinya pulang.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> dihapus dari pilihan.</translation>
 <translation id="6862635236584086457">Semua file yang disimpan dalam folder ini otomatis dicadangkan secara online</translation>
 <translation id="6870130893560916279">Keyboard untuk bahasa Ukraina</translation>
 <translation id="6876155724392614295">Sepeda</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Metode masukan Pinyin</translation>
 <translation id="8151638057146502721">Konfigurasi</translation>
 <translation id="8153607920959057464">File ini tidak dapat ditampilkan.</translation>
+<translation id="8154842056504218462">Semua entri dipilih.</translation>
 <translation id="8157684860301034423">Gagal mengambil info aplikasi.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Keyboard untuk bahasa Spanyol</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">File Drive ini belum dibagikan</translation>
 <translation id="8698464937041809063">Gambar Google</translation>
 <translation id="8714406895390098252">Sepeda</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> dipilih.</translation>
 <translation id="8722421161699219904">Keyboard Internasional AS</translation>
 <translation id="872537912056138402">Kroat</translation>
 <translation id="874420130893181774">Metode masukan Pinyin Tradisional</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Tidak ada gambar dalam direktori ini.</translation>
 <translation id="943972244133411984">Diubah oleh</translation>
 <translation id="945522503751344254">Kirim masukan</translation>
+<translation id="947144732524271678">Rentang <ph name="ENTRY_COUNT" /> entri dari <ph name="FROM_ENTRY_NAME" /> ke <ph name="TO_ENTRY_NAME" /> dipilih.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">File bernama "<ph name="FILE_NAME" />" sudah ada. Ingin menggantinya?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

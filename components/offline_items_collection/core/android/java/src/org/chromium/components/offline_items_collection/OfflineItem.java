@@ -74,7 +74,6 @@ public class OfflineItem implements Cloneable {
     public boolean isTransient;
     public boolean isSuggested;
     public boolean isAccelerated;
-    public boolean refreshVisuals;
     public boolean promoteOrigin;
     public boolean canRename;
 
@@ -123,7 +122,6 @@ public class OfflineItem implements Cloneable {
         clone.isTransient = isTransient;
         clone.isSuggested = isSuggested;
         clone.isAccelerated = isAccelerated;
-        clone.refreshVisuals = refreshVisuals;
         clone.promoteOrigin = promoteOrigin;
         clone.totalSizeBytes = totalSizeBytes;
         clone.externallyRemoved = externallyRemoved;

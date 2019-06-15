@@ -240,6 +240,7 @@
 <translation id="383652340667548381">сръбски</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3855472144336161447">Немска (Neo 2) клавиатура</translation>
+<translation id="3856075812838139784">Само за четене</translation>
 <translation id="3858678421048828670">Италианска клавиатура</translation>
 <translation id="386548886866354912">Пакетиране с/ъс <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Описание</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Час на промяна</translation>
 <translation id="4572815280350369984">Файл от тип <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Още...</translation>
+<translation id="4579744207439506346">Добавихте <ph name="ENTRY_NAME" /> към избраните.</translation>
 <translation id="4582497162516204941">Инсталиране чрез Linux (бета)</translation>
 <translation id="4594543368593301662">Показани са резултати за „<ph name="SEARCH_TERM" />“.</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Хангъл, 3 набора (окончателна)</translation>
 <translation id="5833610766403489739">Този файл се е скрил някъде. Моля, проверете настройката си за местоположението на изтеглянията и опитайте отново.</translation>
 <translation id="5838051104334203064">Приложенията от Google Play Магазин нямат достъп до това устройство</translation>
+<translation id="5838451609423551646">Премахнахте избора на всички елементи.</translation>
 <translation id="5838825566232597749">Американска (Уъркман) международна клавиатура</translation>
 <translation id="5850516540536751549">Този файлов тип не се поддържа. Моля, посетете <ph name="BEGIN_LINK" />уеб магазина на Chrome<ph name="END_LINK" />, за да намерите приложение, което може да го отвори.
    <ph name="BEGIN_LINK_HELP" />Научете повече<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Tar архив, компресиран във формат Gzip</translation>
 <translation id="6825883775269213504">руски</translation>
 <translation id="6827236167376090743">Видеоклипът ще продължи да се възпроизвежда до края на света.</translation>
+<translation id="6847101934483209767">Премахнахте <ph name="ENTRY_NAME" /> от избраните.</translation>
 <translation id="6862635236584086457">За всички файлове, запазени в тази папка, автоматично се създават резервни копия онлайн</translation>
 <translation id="6870130893560916279">Украинска клавиатура</translation>
 <translation id="6876155724392614295">Колело</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Метод за въвеждане на пинин</translation>
 <translation id="8151638057146502721">Конфигуриране</translation>
 <translation id="8153607920959057464">Този файл не можа да бъде показан.</translation>
+<translation id="8154842056504218462">Избрахте всички елементи.</translation>
 <translation id="8157684860301034423">Извличането на информацията за приложението не бе успешно.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Испанска клавиатура</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Този файл в Диск още не е споделен</translation>
 <translation id="8698464937041809063">Рисунка в Google</translation>
 <translation id="8714406895390098252">Велосипед</translation>
+<translation id="8719721339511222681">Избрахте <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Американска международна клавиатура</translation>
 <translation id="872537912056138402">хърватски</translation>
 <translation id="874420130893181774">Метод на въвеждане за традиционен пинин</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Няма изображения в тази директория.</translation>
 <translation id="943972244133411984">Променено от</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
+<translation id="947144732524271678">Избрахте <ph name="ENTRY_COUNT" /> елемента – от <ph name="FROM_ENTRY_NAME" /> до <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="988685240266037636">Вече съществува файл с име „<ph name="FILE_NAME" />“. Искате ли да го замените?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> МБ</translation>

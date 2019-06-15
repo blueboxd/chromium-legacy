@@ -2,12 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-
 /**
  * Contains common animations used in the main NTP page and its iframes.
  */
 const animations = {};
-
 
 /**
  * Enum for classnames.
@@ -21,7 +19,6 @@ animations.CLASSES = {
   RIPPLE_EFFECT: 'ripple-effect',
 };
 
-
 /**
  * The duration of the ripple animation.
  * @type {number}
@@ -29,14 +26,12 @@ animations.CLASSES = {
  */
 animations.RIPPLE_DURATION_MS = 800;
 
-
 /**
  * The max size of the ripple animation.
  * @type {number}
  * @const
  */
 animations.RIPPLE_MAX_RADIUS_PX = 300;
-
 
 /**
  * Enables ripple animations for elements with CLASSES.RIPPLE. The target

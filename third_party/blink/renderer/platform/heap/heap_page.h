@@ -242,7 +242,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Finalize(Address, size_t);
 
   // Returns true if object has finalizer.
-  bool HasFinalizer() const;
+  bool HasNonTrivialFinalizer() const;
 
   // Returns true if magic number is valid.
   bool IsValid() const;
@@ -405,6 +405,14 @@ inline bool IsPageHeaderAddress(Address address) {
 
 #endif
 
+// |FinalizeType| specifies when finalization should take place.
+// In case of concurrent sweeper we defer finalization to be done
+// on the main thread.
+enum class FinalizeType : uint8_t { kInlined, kDeferred };
+
+// |SweepResult| indicates if page turned out to be empty after sweeping.
+enum class SweepResult : uint8_t { kPageEmpty, kPageNotEmpty };
+
 // |BasePage| is a base class for |NormalPage| and |LargeObjectPage|.
 //
 // - |NormalPage| is a page whose size is |kBlinkPageSize|. A |NormalPage| can
@@ -431,8 +439,11 @@ class BasePage {
   virtual void RemoveFromHeap() = 0;
   // Sweeps a page. Returns true when that page is empty and false otherwise.
   // Does not create free list entries for empty pages.
-  virtual bool Sweep() = 0;
+  virtual bool Sweep(FinalizeType) = 0;
   virtual void MakeConsistentForMutator() = 0;
+
+  // Calls finalizers after sweeping is done.
+  virtual void FinalizeSweep(SweepResult) = 0;
 
 #if defined(ADDRESS_SANITIZER)
   virtual void PoisonUnmarkedObjects() = 0;
@@ -594,8 +605,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 
   size_t ObjectPayloadSizeForTesting() override;
   void RemoveFromHeap() override;
-  bool Sweep() override;
+  bool Sweep(FinalizeType) override;
   void MakeConsistentForMutator() override;
+  void FinalizeSweep(SweepResult) override;
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
 #endif
@@ -657,7 +669,25 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   void VerifyMarking() override;
 
  private:
+  struct ToBeFinalizedObject {
+    HeapObjectHeader* header;
+    void Finalize();
+  };
+  struct FutureFreelistEntry {
+    Address start;
+    size_t size;
+  };
+
+  void MergeFreeLists();
+  void AddToFreeList(Address start,
+                     size_t size,
+                     FinalizeType finalize_type,
+                     bool found_finalizer);
+
   ObjectStartBitmap object_start_bit_map_;
+  Vector<ToBeFinalizedObject> to_be_finalized_objects_;
+  FreeList cached_freelist_;
+  Vector<FutureFreelistEntry> unfinalized_freelist_;
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -719,8 +749,9 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
 
   size_t ObjectPayloadSizeForTesting() override;
   void RemoveFromHeap() override;
-  bool Sweep() override;
+  bool Sweep(FinalizeType) override;
   void MakeConsistentForMutator() override;
+  void FinalizeSweep(SweepResult) override;
 
   void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
@@ -788,11 +819,13 @@ class PLATFORM_EXPORT BaseArena {
   void PoisonArena();
 #endif
   Address LazySweep(size_t, size_t gc_info_index);
-  void SweepUnsweptPage(BasePage*);
+  bool SweepUnsweptPage(BasePage*);
+  bool SweepUnsweptPageOnConcurrentThread(BasePage*);
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
   bool LazySweepWithDeadline(TimeTicks deadline);
   void CompleteSweep();
+  void SweepOnConcurrentThread();
 
   ThreadState* GetThreadState() { return thread_state_; }
   int ArenaIndex() const { return index_; }
@@ -805,24 +838,24 @@ class PLATFORM_EXPORT BaseArena {
 
  protected:
   bool SweepingCompleted() const { return unswept_pages_.IsEmpty(); }
-
-  PageStack swept_pages_;
-  PageStack unswept_pages_;
-
-  void SetCurrentlyProccesedPage(BasePage* page) {
-#if DCHECK_IS_ON()
-    currently_processed_page_ = page;
-#endif
+  bool SweepingAndFinalizationCompleted() const {
+    return unswept_pages_.IsEmpty() && swept_unfinalized_pages_.IsEmpty() &&
+           swept_unfinalized_empty_pages_.IsEmpty();
   }
+
+  // Pages for allocation.
+  PageStack swept_pages_;
+  // Pages that are being swept.
+  PageStack unswept_pages_;
+  // Pages that have been swept but contain unfinalized objects.
+  PageStack swept_unfinalized_pages_;
+  // Pages that have been swept and need to be removed from the heap.
+  PageStack swept_unfinalized_empty_pages_;
 
  private:
   virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;
 
   ThreadState* thread_state_;
-
-#if DCHECK_IS_ON()
-  BasePage* currently_processed_page_ = nullptr;
-#endif
 
   // Index into the page pools. This is used to ensure that the pages of the
   // same type go into the correct page pool and thus avoid type confusion.

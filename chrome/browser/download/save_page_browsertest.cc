@@ -420,6 +420,28 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
+                       SaveHTMLOnly_CrossOriginReadPolicy) {
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/cross-origin-resource-policy-resource.txt");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_ONLY_HTML, "a", 1, &dir,
+                 &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
+
+  const base::FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("downloads");
+  const base::FilePath kTestFile =
+      test_dir_.Append(base::FilePath(kTestDir))
+          .AppendASCII("cross-origin-resource-policy-resource.txt");
+  EXPECT_TRUE(base::ContentsEqual(kTestFile, full_file_name));
+}
+
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager = GetDownloadManager();
@@ -529,6 +551,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
+// Regression test for https://crbug.com/974312 (saving a page that was served
+// with `Cross-Origin-Resource-Policy: same-origin` http response header).
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   GURL url = NavigateToMockURL("b");
 

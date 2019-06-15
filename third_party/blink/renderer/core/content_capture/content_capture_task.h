@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CONTENT_CAPTURE_CONTENT_CAPTURE_TASK_H_
 
 #include <memory>
-#include <vector>
 
 #include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_task_histogram_reporter.h"
@@ -14,6 +13,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   }
 
   void SetCapturedContentForTesting(
-      const std::vector<cc::NodeHolder>& captured_content) {
+      const Vector<cc::NodeHolder>& captured_content) {
     captured_content_for_testing_ = captured_content;
   }
 
@@ -94,7 +94,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   void SendContent(TaskSession::DocumentSession& doc_session);
 
   void ScheduleInternal(ScheduleReason reason);
-  bool CaptureContent(std::vector<cc::NodeHolder>& data);
+  bool CaptureContent(Vector<cc::NodeHolder>& data);
 
   bool is_scheduled_ = false;
 
@@ -112,7 +112,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   base::TimeDelta task_long_delay_;
   scoped_refptr<ContentCaptureTaskHistogramReporter> histogram_reporter_;
   base::Optional<TaskState> task_stop_for_testing_;
-  base::Optional<std::vector<cc::NodeHolder>> captured_content_for_testing_;
+  base::Optional<Vector<cc::NodeHolder>> captured_content_for_testing_;
 };
 
 }  // namespace blink

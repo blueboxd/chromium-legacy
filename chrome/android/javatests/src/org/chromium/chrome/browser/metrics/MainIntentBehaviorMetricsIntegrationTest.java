@@ -84,6 +84,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
+    @DisabledTest(message = "crbug.com/972759")
     public void testSwitchTabs() {
         startActivity(true);
         assertMainIntentBehavior(null);

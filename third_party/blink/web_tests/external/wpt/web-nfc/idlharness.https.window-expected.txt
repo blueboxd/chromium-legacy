@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 50 tests; 1 PASS, 49 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 50 tests; 11 PASS, 39 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 FAIL NFCWriter interface: existence and properties of interface object assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface object length assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
@@ -40,15 +40,15 @@ FAIL NFCReadingEvent must be primary interface of new NFCReadingEvent("reading",
 FAIL Stringification of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} }) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCReadingEvent is not defined"
 FAIL NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} }) must inherit property "serialNumber" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCReadingEvent is not defined"
 FAIL NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} }) must inherit property "message" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCReadingEvent is not defined"
-FAIL NFCErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface object length assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface object name assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent interface: attribute error assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
-FAIL NFCErrorEvent must be primary interface of new NFCErrorEvent("error", { error: new DOMException() }); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCErrorEvent is not defined"
-FAIL Stringification of new NFCErrorEvent("error", { error: new DOMException() }); assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCErrorEvent is not defined"
-FAIL NFCErrorEvent interface: new NFCErrorEvent("error", { error: new DOMException() }); must inherit property "error" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: NFCErrorEvent is not defined"
+PASS NFCErrorEvent interface: existence and properties of interface object
+PASS NFCErrorEvent interface object length
+PASS NFCErrorEvent interface object name
+PASS NFCErrorEvent interface: existence and properties of interface prototype object
+PASS NFCErrorEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS NFCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS NFCErrorEvent interface: attribute error
+PASS NFCErrorEvent must be primary interface of new NFCErrorEvent("error", { error: new DOMException() });
+PASS Stringification of new NFCErrorEvent("error", { error: new DOMException() });
+PASS NFCErrorEvent interface: new NFCErrorEvent("error", { error: new DOMException() }); must inherit property "error" with the proper type
 Harness: the test ran to completion.
 

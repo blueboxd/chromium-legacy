@@ -451,6 +451,11 @@ void DeprecateSameSiteCookies(int process_id,
   // returning early should this be the case.
   WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
 
+  // |web_contents| will be null on interstitial pages, which means the frame
+  // has been navigated away from and the function should return early.
+  if (!web_contents)
+    return;
+
   RenderFrameHostImpl* root_frame_host = frame;
   while (root_frame_host->GetParent() != nullptr)
     root_frame_host = root_frame_host->GetParent();
@@ -476,7 +481,7 @@ void DeprecateSameSiteCookies(int process_id,
       samesite_treated_as_lax_cookies = true;
 
       if (emit_messages) {
-        frame->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a cross-site resource at " +
                 cookie_url +
@@ -494,7 +499,7 @@ void DeprecateSameSiteCookies(int process_id,
       samesite_none_insecure_cookies = true;
 
       if (emit_messages) {
-        frame->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a resource at " +
                 cookie_url +

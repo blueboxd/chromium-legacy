@@ -462,10 +462,14 @@ void BackgroundFetchDelegateImpl::UpdateUI(
 
   if (icon) {
     job_details.fetch_description->icon = *icon;
-    job_details.offline_item.refresh_visuals = true;
+    offline_items_collection::UpdateDelta update_delta;
+    update_delta.visuals_changed = true;
+    job_details.update_delta = update_delta;
   }
 
-  bool should_update_visuals = job_details.offline_item.refresh_visuals;
+  bool should_update_visuals = job_details.update_delta.has_value()
+                                   ? job_details.update_delta->visuals_changed
+                                   : false;
 #if !defined(OS_ANDROID)
   should_update_visuals = false;
 #endif
@@ -651,8 +655,9 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
     JobDetails* job_details) {
   job_details->UpdateOfflineItem();
 
+  auto update_delta = std::move(job_details->update_delta);
   for (auto* observer : observers_)
-    observer->OnItemUpdated(job_details->offline_item);
+    observer->OnItemUpdated(job_details->offline_item, update_delta);
 }
 
 void BackgroundFetchDelegateImpl::OpenItem(
@@ -788,7 +793,6 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
     auto& job_details = it->second;
     visuals->icon =
         gfx::Image::CreateFrom1xBitmap(job_details.fetch_description->icon);
-    job_details.offline_item.refresh_visuals = false;
     if (job_details.client &&
         job_details.job_state == JobDetails::State::kDownloadsComplete) {
       job_details.client->OnUIUpdated(id.id);

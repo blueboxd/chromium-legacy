@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"

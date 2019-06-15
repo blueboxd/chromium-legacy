@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">ഇൻപുട്ട് രീതികൾ കോൺഫിഗർ ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററാണ്.</translation>
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1761222317188459878">നെറ്റ്‌വർക്ക് കണക്ഷൻ മാറ്റുക. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">വലത്തോട്ട് സ്ക്രോൾ ചെയ്യുക</translation>
 <translation id="1812997170047690955">എന്റെ സ്‌ക്രീനിൽ എന്താണുള്ളത്?</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">സഹായി (ലോഡുചെയ്യുന്നു...)</translation>
@@ -204,6 +205,7 @@
 <translation id="3977512764614765090">ബാറ്ററി <ph name="PERCENTAGE" />% ഉണ്ട്, ചാർജ് ചെയ്യുകയുമാണ്.</translation>
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
 <translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
+<translation id="4021716437419160885">താഴേയ്‌ക്ക് സ്ക്രോൾ ചെയ്യുക</translation>
 <translation id="4042660782729322247">നിങ്ങൾ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ഒരു ആപ്പിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}other{# ആപ്പുകളിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}}</translation>
 <translation id="4072264167173457037">ഇടത്തരം സിഗ്നൽ</translation>
@@ -262,6 +264,7 @@
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4924411785043111640">പുനഃരാരംഭിച്ച് പുനഃസജ്ജീകരിക്കുക</translation>
+<translation id="495046168593986294">മുകളിലേയ്ക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റ് ചെയ്യുക</translation>
 <translation id="5030687792513154421">സമയം കഴിഞ്ഞു</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> പുതിയ ഫോണിലേക്ക് കണക്‌റ്റ് ചെയ്‌തു</translation>
@@ -319,6 +322,8 @@
 <translation id="598882571027504733">അപ്ഡേറ്റ് നേടാൻ, അറ്റാച്ച് ചെയ്‌ത കീബോഡിനൊപ്പം Chromebook റീസ്‌റ്റാർട്ട് ചെയ്യുക.</translation>
 <translation id="5992218262414051481">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് പ്രവർത്തനക്ഷമമാക്കി. ഇത് ഓഫാക്കാൻ, Ctrl+തിരയൽ+H വീണ്ടും അമർത്തുക.</translation>
 <translation id="6018164090099858612">മിറർ മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
+<translation id="602001110135236999">ഇടത്തോട്ട് സ്ക്രോൾ ചെയ്യുക</translation>
+<translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6043212731627905357">ഈ മോണിറ്റർ നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നില്ല (മോണിറ്റർ ഇതിൽ പ്രവർത്തിക്കില്ല).</translation>
 <translation id="6043994281159824495">ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="6047696787498798094">മറ്റൊരു ഉപയോക്താവിലേക്ക് മാറുമ്പോൾ സ്ക്രീൻ പങ്കിടൽ നിർത്തും. നിങ്ങൾക്ക് തുടരണോ?</translation>

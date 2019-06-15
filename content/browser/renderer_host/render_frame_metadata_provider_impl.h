@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -39,6 +40,12 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
             mojom::RenderFrameMetadataObserverPtr observer);
 
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
+
+#if defined(OS_ANDROID)
+  // Notifies the renderer to begin sending a notification on all root scroll
+  // changes, which is needed for accessibility on Android.
+  void ReportAllRootScrollsForAccessibility(bool enabled);
+#endif
 
   // Notifies the renderer to begin sending a notification on all frame
   // submissions.
@@ -81,7 +88,10 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
       render_frame_metadata_observer_client_binding_;
   mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr_;
 
-  base::Optional<bool> pending_report_all_frame_submission_;
+#if defined(OS_ANDROID)
+  base::Optional<bool> pending_report_all_root_scrolls_for_accessibility_;
+#endif
+  base::Optional<bool> pending_report_all_frame_submission_for_testing_;
 
   base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_;
 

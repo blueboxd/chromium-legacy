@@ -65,7 +65,7 @@ public class DownloadGlue implements DownloadObserver {
     @Override
     public void onDownloadItemUpdated(DownloadItem item) {
         if (!canShowDownloadItem(item)) return;
-        mDelegate.onItemUpdated(DownloadItem.createOfflineItem(item));
+        mDelegate.onItemUpdated(DownloadItem.createOfflineItem(item), null);
     }
 
     /** @see OfflineContentProvider.Observer#onItemRemoved(ContentId) */

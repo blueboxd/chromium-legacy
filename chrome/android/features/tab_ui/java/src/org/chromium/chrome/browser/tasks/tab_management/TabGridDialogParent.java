@@ -12,20 +12,25 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.support.annotation.IntDef;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Parent for TabGridDialog component.
@@ -34,6 +39,15 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  */
 public class TabGridDialogParent {
     private static final int DIALOG_ANIMATION_DURATION = 300;
+    @IntDef({UngroupBarStatus.SHOW, UngroupBarStatus.HIDE, UngroupBarStatus.HOVERED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UngroupBarStatus {
+        int SHOW = 0;
+        int HIDE = 1;
+        int HOVERED = 2;
+        int NUM_ENTRIES = 3;
+    }
+
     private final ComponentCallbacks mComponentCallbacks;
     private final FrameLayout.LayoutParams mContainerParams;
     private final ViewGroup mParent;
@@ -56,6 +70,8 @@ public class TabGridDialogParent {
     private int mDialogHeight;
     private int mSideMargin;
     private int mTopMargin;
+    private View mContentView;
+    private TextView mUngroupBar;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
@@ -79,23 +95,22 @@ public class TabGridDialogParent {
             public void onLowMemory() {}
         };
         ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
-        setupDialogContent(context);
+        setupDialogContent(context, parent);
         prepareAnimation();
     }
 
-    private void setupDialogContent(Context context) {
+    private void setupDialogContent(Context context, ViewGroup parent) {
         FrameLayout backgroundView = new FrameLayout(context);
-        mDialogContainerView = new RelativeLayout(context);
+        mDialogContainerView = (RelativeLayout) LayoutInflater.from(context).inflate(
+                R.layout.tab_grid_dialog_layout, parent, false);
         mDialogContainerView.setLayoutParams(mContainerParams);
-        mDialogContainerView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
+        mUngroupBar = mDialogContainerView.findViewById(R.id.dialog_ungroup_bar);
+        backgroundView.addView(mDialogContainerView);
+
         mScrimView = new ScrimView(context, null, backgroundView);
         mPopupWindow = new PopupWindow(backgroundView, 0, 0);
         mBlockView = new View(context);
-        mBlockView.setLayoutParams(new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mBlockView.setOnClickListener(null);
-        backgroundView.addView(mDialogContainerView);
         updateDialogWithOrientation(context, context.getResources().getConfiguration().orientation);
     }
 
@@ -248,9 +263,11 @@ public class TabGridDialogParent {
      * @param recyclerView The recyclerview to be added to dialog.
      */
     void resetDialog(View toolbarView, View recyclerView) {
+        mContentView = recyclerView;
         mDialogContainerView.removeAllViews();
         mDialogContainerView.addView(toolbarView);
-        mDialogContainerView.addView(recyclerView);
+        mDialogContainerView.addView(mContentView);
+        mDialogContainerView.addView(mUngroupBar);
         RelativeLayout.LayoutParams params =
                 (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
         params.setMargins(0, mToolbarHeight, 0, 0);
@@ -293,5 +310,24 @@ public class TabGridDialogParent {
      */
     public void destroy() {
         ContextUtils.getApplicationContext().unregisterComponentCallbacks(mComponentCallbacks);
+    }
+
+    /**
+     * Update the ungroup bar based on {@code status}.
+     *
+     * @param status The status in {@link TabGridDialogParent.UngroupBarStatus} that the ungroup bar
+     *         should be updated to.
+     */
+    public void updateUngroupBar(int status) {
+        if (status == UngroupBarStatus.SHOW) {
+            mUngroupBar.setVisibility(View.VISIBLE);
+            mUngroupBar.setAlpha(1f);
+            mUngroupBar.bringToFront();
+        } else if (status == UngroupBarStatus.HIDE) {
+            mUngroupBar.setVisibility(View.INVISIBLE);
+        } else if (status == UngroupBarStatus.HOVERED) {
+            mUngroupBar.setAlpha(0.7f);
+            mContentView.bringToFront();
+        }
     }
 }

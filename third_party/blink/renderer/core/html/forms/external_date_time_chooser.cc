@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
-#include "ui/base/ime/mojo/ime_types.mojom-shared.h"
+#include "ui/base/ime/mojo/ime_types.mojom-blink.h"
 
 namespace blink {
 

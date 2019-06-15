@@ -15,6 +15,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -78,7 +79,7 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 const Feature kDCheckIsFatalFeature{"DcheckIsFatal",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 FeatureList::FeatureList() = default;
@@ -214,8 +215,8 @@ FieldTrial* FeatureList::GetFieldTrial(const Feature& feature) {
 }
 
 // static
-std::vector<base::StringPiece> FeatureList::SplitFeatureListString(
-    base::StringPiece input) {
+std::vector<StringPiece> FeatureList::SplitFeatureListString(
+    StringPiece input) {
   return SplitStringPiece(input, ",", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
 }
 
@@ -244,9 +245,9 @@ bool FeatureList::InitializeInstance(const std::string& enable_features,
     instance_existed_before = true;
   }
 
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<FeatureList> feature_list(new FeatureList);
   feature_list->InitializeFromCommandLine(enable_features, disable_features);
-  base::FeatureList::SetInstance(std::move(feature_list));
+  FeatureList::SetInstance(std::move(feature_list));
   return !instance_existed_before;
 }
 
@@ -268,8 +269,8 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   // DCHECK is also forced to be FATAL if we are running a death-test.
   // TODO(asvitkine): If we find other use-cases that need integrating here
   // then define a proper API/hook for the purpose.
-  if (base::FeatureList::IsEnabled(kDCheckIsFatalFeature) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (FeatureList::IsEnabled(kDCheckIsFatalFeature) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
           "gtest_internal_run_death_test")) {
     logging::LOG_DCHECK = logging::LOG_FATAL;
   } else {
@@ -283,7 +284,7 @@ std::unique_ptr<FeatureList> FeatureList::ClearInstanceForTesting() {
   FeatureList* old_instance = g_feature_list_instance;
   g_feature_list_instance = nullptr;
   g_initialized_from_accessor = false;
-  return base::WrapUnique(old_instance);
+  return WrapUnique(old_instance);
 }
 
 // static
@@ -296,6 +297,8 @@ void FeatureList::RestoreInstanceForTesting(
 
 void FeatureList::FinalizeInitialization() {
   DCHECK(!initialized_);
+  // Store the field trial list pointer for DCHECKing.
+  field_trial_list_ = FieldTrialList::GetInstance();
   initialized_ = true;
 }
 
@@ -341,14 +344,19 @@ void FeatureList::RegisterOverridesFromCommandLine(
     OverrideState overridden_state) {
   for (const auto& value : SplitFeatureListString(feature_list)) {
     StringPiece feature_name = value;
-    base::FieldTrial* trial = nullptr;
+    FieldTrial* trial = nullptr;
 
     // The entry may be of the form FeatureName<FieldTrialName - in which case,
     // this splits off the field trial name and associates it with the override.
     std::string::size_type pos = feature_name.find('<');
     if (pos != std::string::npos) {
       feature_name.set(value.data(), pos);
-      trial = base::FieldTrialList::Find(value.substr(pos + 1).as_string());
+      trial = FieldTrialList::Find(value.substr(pos + 1).as_string());
+#if !defined(OS_NACL)
+      // If the below DCHECK fires, it means a non-existent trial name was
+      // specified via the "Feature<Trial" command-line syntax.
+      DCHECK(trial) << "trial=" << value.substr(pos + 1);
+#endif  // !defined(OS_NACL)
     }
 
     RegisterOverride(feature_name, overridden_state, trial);
@@ -379,6 +387,13 @@ void FeatureList::GetFeatureOverridesImpl(std::string* enable_overrides,
                                           std::string* disable_overrides,
                                           bool command_line_only) {
   DCHECK(initialized_);
+
+  // Check that the FieldTrialList this is associated with, if any, is the
+  // active one. If not, it likely indicates that this FeatureList has override
+  // entries from a freed FieldTrial, which may be caused by an incorrect test
+  // set up.
+  if (field_trial_list_)
+    DCHECK_EQ(field_trial_list_, FieldTrialList::GetInstance());
 
   enable_overrides->clear();
   disable_overrides->clear();

@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Srbčina</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3855472144336161447">Nemecká klávesnica Neo 2</translation>
+<translation id="3856075812838139784">Iba na čítanie</translation>
 <translation id="3858678421048828670">talianska klávesnica</translation>
 <translation id="386548886866354912">Komprimovať pomocou rozšírenia <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Popis</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Čas úpravy</translation>
 <translation id="4572815280350369984">Súbor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Viac...</translation>
+<translation id="4579744207439506346">Položka <ph name="ENTRY_NAME" /> bola pridaná do výberu.</translation>
 <translation id="4582497162516204941">Nainštalovať pomocou systému Linux (beta)</translation>
 <translation id="4594543368593301662">Zobrazujú sa výsledky pre dopyt <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Interpret</translation>
@@ -418,6 +420,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5819442873484330149">Hangul 3 Set (konečné)</translation>
 <translation id="5833610766403489739">Umiestnenie tohto súboru sa zmenilo. Skontrolujte nastavenie umiestnenia pre sťahované súbory a skúste to znova.</translation>
 <translation id="5838051104334203064">Aplikácie z Obchodu Play nemajú prístup k tomuto zariadeniu</translation>
+<translation id="5838451609423551646">Z výberu boli odstránené všetky položky.</translation>
 <translation id="5838825566232597749">US Workman international – medzinárodná</translation>
 <translation id="5850516540536751549">Tento typ súboru nie je podporovaný. Navštívte <ph name="BEGIN_LINK" />Internetový obchod Chrome<ph name="END_LINK" />, kde nájdete aplikáciu, pomocou ktorej môžete otvoriť tento typ súboru.
         <ph name="BEGIN_LINK_HELP" />Ďalšie informácie<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6820687829547641339">Archív vo formáte Tar komprimovaný metódou Gzip</translation>
 <translation id="6825883775269213504">Ruština</translation>
 <translation id="6827236167376090743">Toto video sa bude prehrávať počas neurčitej doby.</translation>
+<translation id="6847101934483209767">Položka <ph name="ENTRY_NAME" /> bola odstránená z výberu.</translation>
 <translation id="6862635236584086457">Všetky súbory uložené v tomto priečinku sa automaticky zálohujú online</translation>
 <translation id="6870130893560916279">ukrajinská klávesnica</translation>
 <translation id="6876155724392614295">Bicykel</translation>
@@ -618,6 +622,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8148264977957212129">Metóda vstupu Pinyin</translation>
 <translation id="8151638057146502721">Konfigurovať</translation>
 <translation id="8153607920959057464">Tento súbor nie je možné zobraziť.</translation>
+<translation id="8154842056504218462">Boli vybrané všetky položky.</translation>
 <translation id="8157684860301034423">Nepodarilo sa načítať informácie o aplikácii.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">španielska klávesnica</translation>
@@ -654,12 +659,13 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8569764466147087991">Vyberte súbor, ktorý chcete otvoriť</translation>
 <translation id="8579285237314169903">Synchronizujú sa položky (počet: <ph name="NUMBER_OF_FILES" />)...</translation>
-<translation id="8600173386174225982">Zoznam súborov sa zmenil na zobrazenie miniatúry.</translation>
+<translation id="8600173386174225982">Zoznam súborov sa zmenil na zobrazenie miniatúr.</translation>
 <translation id="8669949407341943408">Presúva sa...</translation>
 <translation id="8671210955687109937">Môže pridávať komentáre</translation>
 <translation id="8686213429977032554">Tento súbor na Disku sa zatiaľ nezdieľa</translation>
 <translation id="8698464937041809063">Nákres Google</translation>
 <translation id="8714406895390098252">Bicykel</translation>
+<translation id="8719721339511222681">Bola vybraná položka <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Americká klávesnica s medzinárodným rozložením klávesov</translation>
 <translation id="872537912056138402">Chorvátčina</translation>
 <translation id="874420130893181774">Metóda vstupu tradičnej Pchin-jin</translation>
@@ -700,6 +706,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="942954117721265519">V tomto adresári nie sú žiadne obrázky.</translation>
 <translation id="943972244133411984">Upravil(a):</translation>
 <translation id="945522503751344254">Poslať spätnú väzbu</translation>
+<translation id="947144732524271678">Bol vybraný rozsah <ph name="ENTRY_COUNT" /> položiek od <ph name="FROM_ENTRY_NAME" /> do <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Súbor s názvom <ph name="FILE_NAME" /> už existuje. Chcete ho nahradiť?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

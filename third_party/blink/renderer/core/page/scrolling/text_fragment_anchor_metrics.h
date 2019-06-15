@@ -17,7 +17,6 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
     : public GarbageCollectedFinalized<TextFragmentAnchorMetrics> {
  public:
   TextFragmentAnchorMetrics(Document* document);
-  ~TextFragmentAnchorMetrics();
 
   void DidCreateAnchor(int selector_count);
 

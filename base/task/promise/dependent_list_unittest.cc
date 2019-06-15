@@ -3,10 +3,43 @@
 // found in the LICENSE file.
 
 #include "base/task/promise/dependent_list.h"
+
+#include <cstdint>
+#include <limits>
+
+#include "base/memory/scoped_refptr.h"
+#include "base/task/promise/abstract_promise.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace internal {
+namespace {
+
+class PushBackVisitor : public DependentList::Visitor {
+ public:
+  void Visit(scoped_refptr<AbstractPromise> dependent) override {
+    dependents_.push_back(dependent.get());
+  }
+
+  const std::vector<AbstractPromise*> visited_dependents() const {
+    return dependents_;
+  }
+
+ private:
+  std::vector<AbstractPromise*> dependents_;
+};
+
+class FailTestVisitor : public DependentList::Visitor {
+ public:
+  void Visit(scoped_refptr<AbstractPromise> dependent) override {
+    ADD_FAILURE();
+  }
+};
+
+}  // namespace
+
+using ::testing::ElementsAre;
 
 TEST(DependentList, ConstructUnresolved) {
   DependentList list(DependentList::ConstructUnresolved{});
@@ -40,7 +73,7 @@ TEST(DependentList, ConstructRejected) {
   EXPECT_TRUE(list.IsSettled());
 }
 
-TEST(DependentList, ConsumeOnceForResolve) {
+TEST(DependentList, ResolveAndConsumeAllDependents) {
   DependentList list(DependentList::ConstructUnresolved{});
   DependentList::Node node1;
   DependentList::Node node2;
@@ -51,16 +84,16 @@ TEST(DependentList, ConsumeOnceForResolve) {
 
   EXPECT_FALSE(list.IsResolved());
   EXPECT_FALSE(list.IsSettled());
-  DependentList::Node* result = list.ConsumeOnceForResolve();
+
+  std::vector<AbstractPromise*> expected_dependants = {
+      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+
+  PushBackVisitor visitor;
+  list.ResolveAndConsumeAllDependents(&visitor);
   EXPECT_TRUE(list.IsResolved());
-  EXPECT_FALSE(list.IsRejected());
-  EXPECT_FALSE(list.IsCanceled());
   EXPECT_TRUE(list.IsSettled());
 
-  EXPECT_EQ(&node3, result);
-  EXPECT_EQ(&node2, result->next.load());
-  EXPECT_EQ(&node1, result->next.load()->next.load());
-  EXPECT_EQ(nullptr, result->next.load()->next.load()->next.load());
+  EXPECT_EQ(expected_dependants, visitor.visited_dependents());
 
   // Can't insert any more nodes.
   DependentList::Node node4;
@@ -68,7 +101,7 @@ TEST(DependentList, ConsumeOnceForResolve) {
             list.Insert(&node4));
 }
 
-TEST(DependentList, ConsumeOnceForReject) {
+TEST(DependentList, RejectAndConsumeAllDependents) {
   DependentList list(DependentList::ConstructUnresolved{});
   DependentList::Node node1;
   DependentList::Node node2;
@@ -77,18 +110,17 @@ TEST(DependentList, ConsumeOnceForReject) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsRejected());
-  EXPECT_FALSE(list.IsSettled());
-  DependentList::Node* result = list.ConsumeOnceForReject();
-  EXPECT_TRUE(list.IsRejected());
   EXPECT_FALSE(list.IsResolved());
-  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_FALSE(list.IsSettled());
+  std::vector<AbstractPromise*> expected_dependants = {
+      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+
+  PushBackVisitor visitor;
+  list.RejectAndConsumeAllDependents(&visitor);
+  EXPECT_TRUE(list.IsRejected());
   EXPECT_TRUE(list.IsSettled());
 
-  EXPECT_EQ(&node3, result);
-  EXPECT_EQ(&node2, result->next.load());
-  EXPECT_EQ(&node1, result->next.load()->next.load());
-  EXPECT_EQ(nullptr, result->next.load()->next.load()->next.load());
+  EXPECT_EQ(expected_dependants, visitor.visited_dependents());
 
   // Can't insert any more nodes.
   DependentList::Node node4;
@@ -96,7 +128,7 @@ TEST(DependentList, ConsumeOnceForReject) {
             list.Insert(&node4));
 }
 
-TEST(DependentList, ConsumeOnceForCancel) {
+TEST(DependentList, CancelAndConsumeAllDependents) {
   DependentList list(DependentList::ConstructUnresolved{});
   DependentList::Node node1;
   DependentList::Node node2;
@@ -105,23 +137,48 @@ TEST(DependentList, ConsumeOnceForCancel) {
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node2));
   EXPECT_EQ(DependentList::InsertResult::SUCCESS, list.Insert(&node3));
 
-  EXPECT_FALSE(list.IsCanceled());
-  EXPECT_FALSE(list.IsSettled());
-  DependentList::Node* result = list.ConsumeOnceForCancel();
-  EXPECT_TRUE(list.IsCanceled());
   EXPECT_FALSE(list.IsResolved());
-  EXPECT_FALSE(list.IsRejected());
+  EXPECT_FALSE(list.IsSettled());
+  std::vector<AbstractPromise*> expected_dependants = {
+      node1.dependent.get(), node2.dependent.get(), node3.dependent.get()};
+
+  PushBackVisitor visitor;
+  EXPECT_TRUE(list.CancelAndConsumeAllDependents(&visitor));
+  EXPECT_TRUE(list.IsCanceled());
   EXPECT_TRUE(list.IsSettled());
 
-  EXPECT_EQ(&node3, result);
-  EXPECT_EQ(&node2, result->next.load());
-  EXPECT_EQ(&node1, result->next.load()->next.load());
-  EXPECT_EQ(nullptr, result->next.load()->next.load()->next.load());
+  EXPECT_EQ(expected_dependants, visitor.visited_dependents());
 
   // Can't insert any more nodes.
   DependentList::Node node4;
   EXPECT_EQ(DependentList::InsertResult::FAIL_PROMISE_CANCELED,
             list.Insert(&node4));
+}
+
+TEST(DependentList, CancelAndConsumeAllDependentsFailsIfAlreadySettled) {
+  DependentList list(DependentList::ConstructUnresolved{});
+
+  FailTestVisitor visitor;
+  list.ResolveAndConsumeAllDependents(&visitor);
+
+  EXPECT_FALSE(list.CancelAndConsumeAllDependents(&visitor));
+
+  EXPECT_FALSE(list.IsCanceled());
+  EXPECT_TRUE(list.IsResolved());
+}
+
+TEST(DependentList, NextPowerOfTwo) {
+  static_assert(NextPowerOfTwo(0) == 1u, "");
+  static_assert(NextPowerOfTwo(1) == 2u, "");
+  static_assert(NextPowerOfTwo(2) == 4u, "");
+  static_assert(NextPowerOfTwo(3) == 4u, "");
+  static_assert(NextPowerOfTwo(4) == 8u, "");
+  static_assert(NextPowerOfTwo((1ull << 21) + (1ull << 19)) == 1ull << 22, "");
+  static_assert(NextPowerOfTwo(std::numeric_limits<uintptr_t>::max() >> 1) ==
+                    1ull << (sizeof(uintptr_t) * 8 - 1),
+                "");
+  static_assert(NextPowerOfTwo(std::numeric_limits<uintptr_t>::max()) == 0u,
+                "");
 }
 
 }  // namespace internal

@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -112,6 +113,7 @@ typedef struct {
 } OriginClaimedAuthorityPair;
 
 constexpr char kTestOrigin1[] = "https://a.google.com";
+constexpr char kTestOrigin2[] = "https://acme.org";
 constexpr char kTestRelyingPartyId[] = "google.com";
 constexpr char kCryptotokenOrigin[] =
     "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
@@ -1327,19 +1329,14 @@ TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
   TestGetAssertionCallback callback_receiver;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
-  // Delete the |AuthenticatorImpl| during the registration operation to
-  // simulate a navigation while waiting for the user to press the token.
+  // Simulate a navigation while waiting for the user to press the token.
   virtual_device_factory_->mutable_state()->simulate_press_callback =
-      base::BindRepeating(
-          [](std::unique_ptr<AuthenticatorImpl>* ptr) {
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::BindOnce(
-                               [](std::unique_ptr<AuthenticatorImpl>* ptr) {
-                                 ptr->reset();
-                               },
-                               ptr));
-          },
-          &authenticator_impl_);
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindLambdaForTesting(
+                           [&]() { SimulateNavigation(GURL(kTestOrigin2)); }));
+        return false;
+      });
 
   run_loop.Run();
 }
@@ -1399,7 +1396,12 @@ TEST_F(AuthenticatorImplTest, Ctap2AssertionWithUnknownCredential) {
 
     bool pressed = false;
     virtual_device_factory_->mutable_state()->simulate_press_callback =
-        base::BindRepeating([](bool* flag) { *flag = true; }, &pressed);
+        base::BindRepeating(
+            [](bool* flag, device::VirtualFidoDevice* device) {
+              *flag = true;
+              return true;
+            },
+            &pressed);
 
     TestGetAssertionCallback callback_receiver;
     AuthenticatorPtr authenticator = ConnectToAuthenticator();

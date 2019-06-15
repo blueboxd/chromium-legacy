@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 
 namespace base {
 class CommandLine;
@@ -26,6 +25,10 @@ class ScopedFeatureList;
 namespace variations {
 namespace testing {
 
+// NOTE: THIS CLASS IS DEPRECATED. Please use ScopedFeatureList instead, which
+// provides equivalent functionality.
+// TODO(asvitkine): Migrate callers and remove this class.
+//
 // Use this class as a member in your test class to set variation params for
 // your tests. You can directly set the parameters in the constructor (if they
 // are used by other members upon construction). You can change them later

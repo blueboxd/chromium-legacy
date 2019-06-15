@@ -6,15 +6,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CONTENT_CAPTURE_TASK_SESSION_H_
 
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/paint/node_holder.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -59,10 +60,12 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
       return HasUnsentCapturedContent() || HasUnsentChangedContent() ||
              HasUnsentDetachedNodes();
     }
-    bool HasUnsentCapturedContent() const { return !captured_content_.empty(); }
-    bool HasUnsentChangedContent() const { return !changed_content_.empty(); }
+    bool HasUnsentCapturedContent() const {
+      return !captured_content_.IsEmpty();
+    }
+    bool HasUnsentChangedContent() const { return !changed_content_.IsEmpty(); }
     bool HasUnsentDetachedNodes() const { return !detached_nodes_.empty(); }
-    std::vector<int64_t> MoveDetachedNodes();
+    WebVector<int64_t> MoveDetachedNodes();
     const Document* GetDocument() const { return document_; }
     bool FirstDataHasSent() const { return first_data_has_sent_; }
     void SetFirstDataHasSent() { first_data_has_sent_ = true; }
@@ -82,14 +85,14 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
 
    private:
     // The captured content that belongs to this document.
-    std::vector<cc::NodeHolder> captured_content_;
+    Vector<cc::NodeHolder> captured_content_;
     // The list of content id of node that has been detached from the
     // LayoutTree.
-    std::vector<int64_t> detached_nodes_;
+    WebVector<int64_t> detached_nodes_;
     WeakMember<const Document> document_;
     Member<SentNodes> sent_nodes_;
     // The list of changed nodes that needs to be sent.
-    std::vector<cc::NodeHolder> changed_content_;
+    Vector<cc::NodeHolder> changed_content_;
 
     bool first_data_has_sent_ = false;
     // This is for the metrics to record the total node that has been sent.
@@ -106,7 +109,7 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
 
   // This can only be invoked when all data has been sent (i.e. HasUnsentData()
   // returns False).
-  void SetCapturedContent(const std::vector<cc::NodeHolder>& captured_content);
+  void SetCapturedContent(const Vector<cc::NodeHolder>& captured_content);
 
   void OnNodeDetached(const cc::NodeHolder& node_holder);
 
@@ -125,7 +128,7 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
 
  private:
   void GroupCapturedContentByDocument(
-      const std::vector<cc::NodeHolder>& captured_content);
+      const Vector<cc::NodeHolder>& captured_content);
   DocumentSession& EnsureDocumentSession(const Document& doc);
   DocumentSession* GetDocumentSession(const Document& document) const;
   const Node* GetNodeIf(bool sent, const cc::NodeHolder& node_holder) const;

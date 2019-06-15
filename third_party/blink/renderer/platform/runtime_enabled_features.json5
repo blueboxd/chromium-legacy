@@ -516,7 +516,7 @@
     },
     {
       name: "EnterKeyHintAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EventTiming",

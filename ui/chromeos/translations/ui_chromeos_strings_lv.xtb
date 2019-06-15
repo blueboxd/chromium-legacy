@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbu valoda</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3855472144336161447">Vācu Neo 2</translation>
+<translation id="3856075812838139784">Tikai lasāms</translation>
 <translation id="3858678421048828670">Itāļu valodas tastatūra</translation>
 <translation id="386548886866354912">Sapakot kā: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Apraksts</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Izmaiņu veikšanas laiks</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fails</translation>
 <translation id="457386861538956877">Vēl...</translation>
+<translation id="4579744207439506346">Vienums “<ph name="ENTRY_NAME" />” ir pievienots atlasei.</translation>
 <translation id="4582497162516204941">Instalēt operētājsistēmā Linux (Beta)</translation>
 <translation id="4594543368593301662">Tiek rādīti rezultāti šādam vaicājumam: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Izpildītājs</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangils (3 Set, Final)</translation>
 <translation id="5833610766403489739">Šo failu nevar atrast. Lūdzu, pārbaudiet lejupielādes vietas iestatījumu un mēģiniet vēlreiz.</translation>
 <translation id="5838051104334203064">Play veikala lietojumprogrammas nevar piekļūt šai ierīcei</translation>
+<translation id="5838451609423551646">Visi vienumi noņemti no atlases.</translation>
 <translation id="5838825566232597749">Workman (ASV starptautiskā)</translation>
 <translation id="5850516540536751549">Šis faila tips netiek atbalstīts. Lūdzu, apmeklējiet <ph name="BEGIN_LINK" />Chrome interneta veikalu<ph name="END_LINK" />, lai atrastu lietotni, ar kuru var atvērt šo failu.
     <ph name="BEGIN_LINK_HELP" />Uzziniet vairāk<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip saspiests Tar arhīvs</translation>
 <translation id="6825883775269213504">Krievu valoda</translation>
 <translation id="6827236167376090743">Šis videoklips tiks atkārtoti atskaņots.</translation>
+<translation id="6847101934483209767">Vienums “<ph name="ENTRY_NAME" />” ir noņemts no atlases.</translation>
 <translation id="6862635236584086457">Visi faili, kas saglabāti šajā mapē, tiek automātiski dublēti tiešsaistē.</translation>
 <translation id="6870130893560916279">Ukraiņu valodas tastatūra</translation>
 <translation id="6876155724392614295">Velosipēds</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin valodas ievades metode</translation>
 <translation id="8151638057146502721">Konfigurēt</translation>
 <translation id="8153607920959057464">Šo failu nevarēja parādīt.</translation>
+<translation id="8154842056504218462">Atlasīti visi vienumi.</translation>
 <translation id="8157684860301034423">Neizdevās izgūt informāciju par lietotni.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Spāņu valodas tastatūra</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Šis Diska fails vēl nav kopīgots</translation>
 <translation id="8698464937041809063">Google zīmējums</translation>
 <translation id="8714406895390098252">Velosipēds</translation>
+<translation id="8719721339511222681">Atlasīts vienums “<ph name="ENTRY_NAME" />”.</translation>
 <translation id="8722421161699219904">ASV starptautiskā tastatūra</translation>
 <translation id="872537912056138402">Horvātu valoda</translation>
 <translation id="874420130893181774">Tradicionālā piņjiņa ievades metode</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Šajā katalogā nav neviena attēla.</translation>
 <translation id="943972244133411984">Pārveidoja</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>
+<translation id="947144732524271678">Atlasīts diapazons (<ph name="ENTRY_COUNT" /> vienumi) no “<ph name="FROM_ENTRY_NAME" />” līdz “<ph name="TO_ENTRY_NAME" />”.</translation>
 <translation id="981121421437150478">Bezsaistē</translation>
 <translation id="988685240266037636">Fails ar nosaukumu “<ph name="FILE_NAME" />” jau pastāv. Vai vēlaties to aizstāt?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

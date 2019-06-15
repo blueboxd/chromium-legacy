@@ -33,6 +33,13 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
      * @private {string}
      */
     this.eulaUrl_ = '';
+
+    /**
+     * If set, 'getPrinterInfo' will fail and the promise will be reject with
+     * this PrinterSetupResult.
+     * @private {PrinterSetupResult}
+     */
+    this.getPrinterInfoResult_ = null;
   }
 
   /** @override */
@@ -66,6 +73,9 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @override */
   getPrinterInfo(newPrinter) {
     this.methodCalled('getPrinterInfo', newPrinter);
+    if (this.getPrinterInfoResult_ != null) {
+      return Promise.reject(this.getPrinterInfoResult_);
+    }
     return Promise.resolve(this.printerInfo);
   }
 
@@ -109,6 +119,11 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @param {string} eulaUrl */
   setEulaUrl(eulaUrl) {
     this.eulaUrl_ = eulaUrl;
+  }
+
+  /** @param {PrinterSetupResult} result */
+  setGetPrinterInfoResult(result) {
+    this.getPrinterInfoResult_ = result;
   }
 }
 
@@ -315,6 +330,74 @@ suite('CupsAddPrinterDialogTests', function() {
           assertFalse(dialog.showDiscoveryDialog_);
         });
   });
+
+  /**
+   * Test that when getPrinterInfo fails for a generic reason, the general error
+   * message is shown.
+   */
+  test('GetPrinterInfoFailsGeneralError', function() {
+    // Starts in discovery dialog, select add manually button.
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    discoveryDialog.$.manuallyAddPrinterButton.click();
+    Polymer.dom.flush();
+
+    // Now we should be in the manually add dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+
+    fillAddManuallyDialog(addDialog);
+
+    // Make the getPrinterInfo fail for a generic error.
+    cupsPrintersBrowserProxy.setGetPrinterInfoResult(
+        PrinterSetupResult.FATAL_ERROR);
+
+    // Attempt to add the printer.
+    addDialog.$$('.action-button').click();
+    Polymer.dom.flush();
+
+    // Upon rejection, show model.
+    return cupsPrintersBrowserProxy.whenCalled('getPrinterInfo')
+        .then(function(result) {
+          // The general error should be showing.
+          assertTrue(addDialog.showGeneralError_);
+          assertFalse(addDialog.$$('#general-error').hidden);
+        });
+  });
+
+  /**
+   * Test that when getPrinterInfo fails for an unreachable printer, the printer
+   * address field is marked as invalid.
+   */
+  test('GetPrinterInfoFailsUnreachableError', function() {
+    // Starts in discovery dialog, select add manually button.
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    discoveryDialog.$.manuallyAddPrinterButton.click();
+    Polymer.dom.flush();
+
+    // Now we should be in the manually add dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+
+    fillAddManuallyDialog(addDialog);
+
+    // Make the getPrinterInfo fail for an unreachable printer.
+    cupsPrintersBrowserProxy.setGetPrinterInfoResult(
+        PrinterSetupResult.PRINTER_UNREACHABLE);
+
+    // Attempt to add the printer.
+    addDialog.$$('.action-button').click();
+    Polymer.dom.flush();
+
+    // Upon rejection, show model.
+    return cupsPrintersBrowserProxy.whenCalled('getPrinterInfo')
+        .then(function(result) {
+          // The printer address input should be marked as invalid.
+          assertTrue(addDialog.$$('#printerAddressInput').invalid);
+        });
+  });
+
 
   /**
    * Test that getModels isn't called with a blank query.

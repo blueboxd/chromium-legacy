@@ -21,8 +21,8 @@ using InterfacePtrSetElementId = size_t;
 
 namespace internal {
 
-// TODO(blundell): This class should be rewritten to be structured
-// similarly to BindingSet if possible, with PtrSet owning its
+// TODO(https://crbug.com/965668): This class should be rewritten to be
+// structured similarly to BindingSet if possible, with PtrSet owning its
 // Elements and those Elements calling back into PtrSet on connection
 // error.
 template <typename Interface, template <typename> class Ptr>

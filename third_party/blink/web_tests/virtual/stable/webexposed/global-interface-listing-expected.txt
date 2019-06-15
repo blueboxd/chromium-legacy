@@ -2195,6 +2195,7 @@ interface HTMLElement : Element
     getter dataset
     getter dir
     getter draggable
+    getter enterKeyHint
     getter hidden
     getter innerText
     getter inputMode
@@ -2302,6 +2303,7 @@ interface HTMLElement : Element
     setter contentEditable
     setter dir
     setter draggable
+    setter enterKeyHint
     setter hidden
     setter innerText
     setter inputMode

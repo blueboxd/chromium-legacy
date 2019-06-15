@@ -137,7 +137,6 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                                         int worker_thread_id,
                                         int64_t service_worker_version_id,
                                         std::unique_ptr<ListValue> event_args,
-                                        UserGestureState user_gesture,
                                         const EventFilteringInfo& info) {
   int event_id = g_extension_event_id.GetNext();
 
@@ -158,7 +157,7 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
 
   DispatchExtensionMessage(ipc_sender, worker_thread_id, browser_context_id,
                            extension_id, event_id, event_name, event_args.get(),
-                           user_gesture, info);
+                           UserGestureState::USER_GESTURE_UNKNOWN, info);
 }
 
 // static.

@@ -218,25 +218,25 @@ inline bool DiscreteSet<bool>::is_universal() const {
   return Contains(true) && Contains(false);
 }
 
-// TODO(crbug.com/704136): Remove BLINK_EXPORT when this file is moved
+// TODO(crbug.com/704136): Remove BLINK_MODULES_EXPORT when this file is moved
 // out of blink/public/platform.
-BLINK_EXPORT DiscreteSet<std::string> StringSetFromConstraint(
+BLINK_MODULES_EXPORT DiscreteSet<std::string> StringSetFromConstraint(
     const StringConstraint& constraint);
-BLINK_EXPORT DiscreteSet<bool> BoolSetFromConstraint(
+BLINK_MODULES_EXPORT DiscreteSet<bool> BoolSetFromConstraint(
     const BooleanConstraint& constraint);
 
 // This class represents a set of (height, width) screen resolution candidates
 // determined by width, height and aspect-ratio constraints.
 // This class supports widths and heights from 0 to kMaxDimension, both
 // inclusive and aspect ratios from 0.0 to positive infinity, both inclusive.
-class BLINK_EXPORT ResolutionSet {
+class BLINK_MODULES_EXPORT ResolutionSet {
  public:
   static const int kMaxDimension = std::numeric_limits<int>::max();
 
   // Helper class that represents (height, width) points on a plane.
   // TODO(guidou): Use a generic point/vector class that uses double once it
   // becomes available (e.g., a gfx::Vector2dD).
-  class BLINK_EXPORT Point {
+  class BLINK_MODULES_EXPORT Point {
    public:
     // Creates a (|height|, |width|) point. |height| and |width| must be finite.
     Point(double height, double width);
@@ -438,8 +438,9 @@ class BLINK_EXPORT ResolutionSet {
 };
 
 // Scalar multiplication for Points.
-BLINK_EXPORT ResolutionSet::Point operator*(double d,
-                                            const ResolutionSet::Point& p);
+BLINK_MODULES_EXPORT ResolutionSet::Point operator*(
+    double d,
+    const ResolutionSet::Point& p);
 
 // This function returns a set of bools from a resizeMode StringConstraint.
 // If |resize_mode_constraint| includes
@@ -447,7 +448,7 @@ BLINK_EXPORT ResolutionSet::Point operator*(double d,
 // returned value. If |resize_mode_constraint| includes
 // WebMediaStreamTrack::kResizeModeRescale, true is included in the
 // returned value.
-BLINK_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
+BLINK_MODULES_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
     const StringConstraint& resize_mode_constraint);
 
 }  // namespace media_constraints

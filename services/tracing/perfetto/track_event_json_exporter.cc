@@ -522,6 +522,9 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   if (event.has_thread_duration_us()) {
     builder.AddThreadDuration(event.thread_duration_us());
   }
+  if (event.has_thread_instruction_delta()) {
+    builder.AddThreadInstructionDelta(event.thread_instruction_delta());
+  }
 
   // For flags and ID we need to determine all possible flag bits and set them
   // correctly.

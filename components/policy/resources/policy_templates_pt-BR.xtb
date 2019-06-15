@@ -446,6 +446,12 @@ Cada item da lista da política é uma string que contém um código de extensã
       Se a política não for configurada ou estiver desativada, o usuário poderá alterar essa configuração (por exemplo, usando a entrada "Disable site isolation" em chrome://flags).
       </translation>
 <translation id="1767673020408652620">Ativar recomendações de app no estado inicial da caixa de pesquisa</translation>
+<translation id="17719159826324007">
+      Esta política, quando definida como ArcSession, força o dispositivo a reinicializar depois que o usuário sai, se o Android tiver sido iniciado.
+      Quando definida como "Sempre", ela força o dispositivo a reinicializar sempre que o usuário sai.
+      Se não for definida, a política não terá efeito, e a reinicialização não será forçada quando o usuário sair. O mesmo se aplica à opção "Nunca".
+      Esta política tem efeito apenas para usuários não afiliados.
+      </translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções do desenvolvedor Android. Se você configurar essa política como true, os usuários não poderão acessar as Opções do desenvolvedor. Se configurá-la como false ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocado sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="1793346220873697538">Desativar impressão com PIN como padrão</translation>
 <translation id="1797233582739332495">Mostrar um prompt recorrente ao usuário indicando que é necessário reiniciar</translation>
@@ -921,6 +927,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
+<translation id="2694143893026486692">Lupa ancorada ativada</translation>
 <translation id="2706708761587205154">Permitir impressão apenas com PIN</translation>
 <translation id="2710534340210290498">Se esta política for definida como falsa, os usuários não conseguirão bloquear a tela, apenas sair da sessão do usuário. Se esta política for definida como verdadeira ou não for definida, os usuários que tiverem feito a autenticação com uma senha poderão bloquear a tela.</translation>
 <translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
@@ -1155,6 +1162,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Esta política permite que os usuários do recurso WebDriver modifiquem
       políticas que possam interferir na operação.
 
@@ -1656,12 +1664,6 @@ Observe que esta política não se aplica ao modo de navegação anônima.</tran
       Quando essa configuração não é definida ou quando é configurada como false, os dispositivos <ph name="PRODUCT_OS_NAME" /> verificam automaticamente se há atualizações.
 
       Aviso: recomendamos que você deixe as atualizações automáticas ativadas para que os usuários recebam atualizações de software e correções de segurança críticas. A desativação das atualizações automáticas coloca os usuários em risco.</translation>
-<translation id="4018000735882846261">Esta política concede ao Google Assistente a permissão para ouvir a frase de ativação por voz.
-
-      Se a política for ativada, a frase de ativação por voz será ouvida pelo Google Assistente.
-      Se a política for desativada, a frase de ativação por voz não será ouvida pelo Google Assistente.
-      Se a política não for definida, a frase de ativação por voz não será ouvida pelo Google Assistente.
-      </translation>
 <translation id="4020682745012723568">Os cookies transferidos para o perfil do usuário não podem ser acessados por apps Android.</translation>
 <translation id="402759845255257575">Não permitir que nenhum site execute o JavaScript</translation>
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>

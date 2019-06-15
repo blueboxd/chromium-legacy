@@ -147,9 +147,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
                               bool thread_will_flush,
                               base::trace_event::TraceEventHandle* handle);
-  static void OnUpdateDuration(base::trace_event::TraceEventHandle handle,
-                               const base::TimeTicks& now,
-                               const base::ThreadTicks& thread_now);
+  static void OnUpdateDuration(
+      base::trace_event::TraceEventHandle handle,
+      const base::TimeTicks& now,
+      const base::ThreadTicks& thread_now,
+      base::trace_event::ThreadInstructionCount thread_instruction_now);
 
   // Extracts UMA histogram names that should be logged in traces and logs their
   // starting values.

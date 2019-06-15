@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -38,7 +37,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
-#import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
@@ -83,10 +81,6 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
-
-// Coordinator for a language selection UI.
-@property(nonatomic, strong)
-    LanguageSelectionCoordinator* languageSelectionCoordinator;
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
@@ -256,19 +250,11 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
-  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
-    self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                      browserState:self.browserState
-                      webStateList:self.tabModel.webStateList];
-    [self.translateInfobarCoordinator start];
-  } else {
-    self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                      browserState:self.browserState
-                      webStateList:self.tabModel.webStateList];
-    [self.languageSelectionCoordinator start];
-  }
+  self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                    webStateList:self.tabModel.webStateList];
+  [self.translateInfobarCoordinator start];
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -313,9 +299,6 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
-
-  [self.languageSelectionCoordinator stop];
-  self.languageSelectionCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;

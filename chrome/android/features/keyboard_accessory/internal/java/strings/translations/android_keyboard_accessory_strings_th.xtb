@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1492646418094134664">แตะเพื่อกรอกข้อมูลบัตรเครดิตด้วย Chrome</translation>
+<translation id="1566281227936819866">กำลังแสดงวิธีการชำระเงินที่บันทึกไว้</translation>
 <translation id="2610239185026711824">แนะนำรหัสผ่าน</translation>
 <translation id="2803478378562657435">กำลังแสดงรหัสผ่านที่บันทึกไว้และตัวเลือกรหัสผ่าน</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">แตะเพื่อกรอกรหัสผ่านด้วย Chrome</translation>
 <translation id="7299100402441711551">แสดงที่อยู่</translation>
 <translation id="7494879913343971937">แสดงรหัสผ่าน</translation>
+<translation id="8037472847879765671">แสดงวิธีการชำระเงิน</translation>
 <translation id="8507520749471379845">รหัสผ่านที่มีอยู่</translation>
 </translationbundle>

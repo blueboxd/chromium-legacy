@@ -2832,10 +2832,16 @@ bool ConsoleObserverDelegate::DidAddMessageToConsole(
 
   std::string ascii_message = base::UTF16ToASCII(message);
   if (base::MatchPattern(ascii_message, filter_)) {
-    message_ = ascii_message;
+    messages_.push_back(ascii_message);
     run_loop_.Quit();
   }
   return false;
+}
+
+std::string ConsoleObserverDelegate::message() {
+  if (messages_.empty())
+    return std::string();
+  return messages_.back();
 }
 
 // static

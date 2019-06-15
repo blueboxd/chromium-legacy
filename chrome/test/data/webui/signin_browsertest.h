@@ -21,9 +21,9 @@ class SigninBrowserTest : public WebUIBrowserTest {
   void EnableUnity();
 
  private:
+  std::unique_ptr<ScopedAccountConsistency> scoped_account_consistency_;
   std::unique_ptr<unified_consent::ScopedUnifiedConsent>
       scoped_unified_consent_;
-  std::unique_ptr<ScopedAccountConsistency> scoped_account_consistency_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninBrowserTest);
 };

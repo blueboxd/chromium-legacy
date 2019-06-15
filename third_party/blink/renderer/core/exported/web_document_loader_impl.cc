@@ -34,7 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"

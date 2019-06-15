@@ -240,6 +240,7 @@
 <translation id="383652340667548381">סרבית</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3855472144336161447">‏גרמנית - Neo 2</translation>
+<translation id="3856075812838139784">קריאה בלבד</translation>
 <translation id="3858678421048828670">מקלדת איטלקית</translation>
 <translation id="386548886866354912">הוסף לחבילה יחד עם <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">תיאור</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">שעת השינוי</translation>
 <translation id="4572815280350369984">קובץ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">עוד...</translation>
+<translation id="4579744207439506346">הוספת את <ph name="ENTRY_NAME" /> לבחירה</translation>
 <translation id="4582497162516204941">‏התקנה באמצעות Linux (בטא)</translation>
 <translation id="4594543368593301662">מוצגות תוצאות עבור <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">אמן</translation>
@@ -419,6 +421,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (Final)‎</translation>
 <translation id="5833610766403489739">הקובץ הזה עבר למקום אחר. בדוק את הגדרות מיקום ההורדה ונסה שוב.</translation>
 <translation id="5838051104334203064">‏לאפליקציות של חנות Play אין גישה למכשיר הזה</translation>
+<translation id="5838451609423551646">הסרת את כל הפריטים מהבחירה.</translation>
 <translation id="5838825566232597749">‏US Workman בינלאומית</translation>
 <translation id="5850516540536751549">‏סוג קובץ זה אינו נתמך. בקר ב<ph name="BEGIN_LINK" />חנות האינטרנט של Chrome‏<ph name="END_LINK" /> כדי למצוא יישום שבאמצעותו ניתן לפתוח קובץ מסוג זה.
 	      <ph name="BEGIN_LINK_HELP" />למידע נוסף<ph name="END_LINK_HELP" /></translation>
@@ -492,6 +495,7 @@
 <translation id="6820687829547641339">‏ארכיון Gzip מכווץ של Bzip2</translation>
 <translation id="6825883775269213504">רוסית</translation>
 <translation id="6827236167376090743">סרטון זה ימשיך לפעול ללא הפסקה.</translation>
+<translation id="6847101934483209767">הסרת את<ph name="ENTRY_NAME" /> מהבחירה.</translation>
 <translation id="6862635236584086457">כל הקבצים השמורים בתיקיה זו מגובים באופן אוטומטי באינטרנט</translation>
 <translation id="6870130893560916279">מקלדת אוקראינית</translation>
 <translation id="6876155724392614295">אופניים</translation>
@@ -619,6 +623,7 @@
 <translation id="8148264977957212129">‏שיטת קלט Pinyin</translation>
 <translation id="8151638057146502721">הגדר</translation>
 <translation id="8153607920959057464">לא ניתן להציג קובץ זה.</translation>
+<translation id="8154842056504218462">בחרת את כל הפריטים.</translation>
 <translation id="8157684860301034423">אחזור פרטי האפליקציה נכשל.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">מקלדת ספרדית</translation>
@@ -661,6 +666,7 @@
 <translation id="8686213429977032554">‏קובץ זה של Drive עדיין לא משותף</translation>
 <translation id="8698464937041809063">‏איור של Google</translation>
 <translation id="8714406895390098252">אופניים</translation>
+<translation id="8719721339511222681">בחרת את <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">מקלדת בינ"ל של ארה"ב</translation>
 <translation id="872537912056138402">קרואטית</translation>
 <translation id="874420130893181774">‏שיטת קלט Traditional Pinyin</translation>
@@ -701,6 +707,7 @@
 <translation id="942954117721265519">אין תמונות בספריה הזו.</translation>
 <translation id="943972244133411984">שונה על ידי</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>
+<translation id="947144732524271678">בחרת טווח של <ph name="ENTRY_COUNT" /> פריטים, מ-<ph name="FROM_ENTRY_NAME" /> עד <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">לא מקוון</translation>
 <translation id="988685240266037636">כבר קיים קובץ בשם "<ph name="FILE_NAME" />". רוצה להחליף אותו?</translation>
 <translation id="996903396648773764">‎<ph name="NUMBER_OF_MB" /> MB</translation>

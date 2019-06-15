@@ -451,6 +451,12 @@
       Si se inhabilita la política o no se configura, el usuario podrá cambiar esta configuración (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).
       </translation>
 <translation id="1767673020408652620">Habilitar las recomendaciones de apps cuando el cuadro de búsqueda se encuentra sin estado</translation>
+<translation id="17719159826324007">
+      Si se establece en ArcSession, esta política forzará el reinicio del dispositivo después de que el usuario salga de su cuenta en el caso de que se inicie Android.
+      Si se establece en Siempre, forzará el reinicio del dispositivo cada vez que el usuario salga de su cuenta.
+      Si no se establece, no tendrá ningún efecto y no se reiniciará el dispositivo cuando el usuario salga de su cuenta. El efecto es el mismo si se establece en Nunca.
+      Esta política solo afecta a los usuarios no afiliados.
+      </translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
 <translation id="1793346220873697538">Desactiva la impresión con PIN de forma predeterminada</translation>
 <translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que se debe realizar un reinicio</translation>
@@ -922,6 +928,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseña.</translation>
+<translation id="2694143893026486692">Se habilitó la lupa con vista acoplada</translation>
 <translation id="2706708761587205154">Permite la impresión solo con PIN</translation>
 <translation id="2710534340210290498">Si esta política se configura como falsa, los usuarios no podrán bloquear la pantalla (solo podrán salir de la sesión). Si esta política se configura como verdadera, o no se configura, los usuarios autenticados con una contraseña podrán bloquear la pantalla.</translation>
 <translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> para apps de ARC</translation>
@@ -1108,7 +1115,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si la estableces, los usuarios no podrán cambiarla ni anularla.
 
-          Si no configuras esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá modificar esto en la página de configuración.
+          Si no configuras esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá modificar esta opción en la página de configuración.
 
           Si se habilitan las funciones de accesibilidad (por otros medios, p. ej., con una combinación de llaves), las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.</translation>
 <translation id="3011301228198307065">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
@@ -1156,6 +1163,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política es opcional. Si no se establece, no se realizará ningún reemplazo de los términos de búsqueda.
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Esta política permite que los usuarios de la función WebDriver anulen
       las políticas que puedan interferir con su funcionamiento.
 
@@ -1667,12 +1675,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando esta configuración no se establece o se establece como falsa, <ph name="PRODUCT_OS_NAME" /> busca actualizaciones de forma automática.
 
       Advertencia: Se recomienda mantener habilitadas las actualizaciones automáticas para que los usuarios reciban actualizaciones de software y correcciones de seguridad críticas. Desactivar las actualizaciones automáticas puede poner en riesgo a los usuarios.</translation>
-<translation id="4018000735882846261">Esta política le otorga permiso al Asistente de Google para escuchar la frase de activación de voz.
-
-      Si se habilita la política, el Asistente de Google escuchará la frase de activación de voz.
-      Si se inhabilita, el Asistente de Google no escuchará la frase de activación de voz.
-      Si no se establece, el Asistente de Google no escuchará la frase de activación de voz.
-      </translation>
 <translation id="4020682745012723568">Las apps de Android no pueden acceder a las cookies transferidas al perfil del usuario.</translation>
 <translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript.</translation>
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
@@ -1821,7 +1823,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4285674129118156176">Permitir que los usuarios no afiliados usen ARC</translation>
 <translation id="4289903996435140853">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
 
-        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
+        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación, respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
 
         Si no se establece esta política, se usará el valor predeterminado general para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
 
@@ -2214,7 +2216,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5219844027738217407">Para las apps de Android, esta política solo afecta al micrófono. Cuando esta política se establece como falsa, se silencia el micrófono para todas las apps de Android, sin excepciones.</translation>
 <translation id="5221394278852982313">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
 
-        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
+        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación, respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
 
         Si no se establece esta política, se usará el valor predeterminado general para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
 
@@ -2944,7 +2946,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Esta política permite que los administradores proporcionen configuraciones de impresoras
       para sus usuarios.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente (que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional). Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente (que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional). Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> debe incluir el nombre de la impresora, o debe establecerse <ph name="PRINTER_AUTOCONF" /> como verdadero. Se ignorarán las impresoras que tengan ambas propiedades o ninguna de las dos.
 

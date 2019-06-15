@@ -18,7 +18,6 @@
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -26,13 +25,9 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/language/language_model_manager_factory.h"
-#import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
-#import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
-#import "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #import "ios/chrome/browser/translate/translate_infobar_controller.h"
-#import "ios/chrome/browser/translate/translate_message_infobar_controller.h"
 #import "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -96,44 +91,12 @@ translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {
 
 std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
-    TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
-        initWithInfoBarDelegate:delegate.get()];
-    controller.languageSelectionHandler = language_selection_handler_;
-    controller.translateOptionSelectionHandler =
-        translate_option_selection_handler_;
-    controller.translateNotificationHandler = translate_notification_handler_;
-    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
-  }
-
-  translate::TranslateStep step = delegate->translate_step();
-
-  InfoBarController* controller;
-  switch (step) {
-    case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
-      controller = [[AfterTranslateInfoBarController alloc]
-          initWithInfoBarDelegate:delegate.get()];
-      break;
-    case translate::TRANSLATE_STEP_BEFORE_TRANSLATE: {
-      BeforeTranslateInfoBarController* beforeController =
-          [[BeforeTranslateInfoBarController alloc]
-              initWithInfoBarDelegate:delegate.get()];
-      beforeController.languageSelectionHandler = language_selection_handler_;
-      controller = beforeController;
-      break;
-    }
-    case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
-      controller = [[NeverTranslateInfoBarController alloc]
-          initWithInfoBarDelegate:delegate.get()];
-      break;
-    case translate::TRANSLATE_STEP_TRANSLATING:
-    case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
-      controller = [[TranslateMessageInfoBarController alloc]
-          initWithInfoBarDelegate:delegate.get()];
-      break;
-    default:
-      NOTREACHED();
-  }
+  TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
+      initWithInfoBarDelegate:delegate.get()];
+  controller.languageSelectionHandler = language_selection_handler_;
+  controller.translateOptionSelectionHandler =
+      translate_option_selection_handler_;
+  controller.translateNotificationHandler = translate_notification_handler_;
   return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }
 

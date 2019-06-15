@@ -278,7 +278,13 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
             GetConfiguredProxiesForHttp());
 }
 
-TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
+// Flaky on Linux. http://crbug.com/973385
+#if defined(OS_LINUX)
+#define MAYBE_TestOnNetworkChanged DISABLED_TestOnNetworkChanged
+#else
+#define MAYBE_TestOnNetworkChanged TestOnNetworkChanged
+#endif
+TEST_F(DataReductionProxyConfigTest, MAYBE_TestOnNetworkChanged) {
   // The test manually controls the fetch of warmup URL and the response.
   test_context_->DisableWarmupURLFetchCallback();
 

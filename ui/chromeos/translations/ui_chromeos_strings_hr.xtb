@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Srpski</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3855472144336161447">njemačka (Neo 2)</translation>
+<translation id="3856075812838139784">Samo za čitanje</translation>
 <translation id="3858678421048828670">Talijanska tipkovnica</translation>
 <translation id="386548886866354912">Zapakiraj proširenjem <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Opis</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Vrijeme izmjene</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
 <translation id="457386861538956877">Više...</translation>
+<translation id="4579744207439506346">Stavka <ph name="ENTRY_NAME" /> dodana je odabiru.</translation>
 <translation id="4582497162516204941">Instalacija uz Linux (Beta)</translation>
 <translation id="4594543368593301662">Prikazuju se rezultati za <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Izvođač</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5833610766403489739">Datoteka nije pronađena. Provjerite postavku lokacije preuzimanja i pokušajte ponovo.</translation>
 <translation id="5838051104334203064">Aplikacije iz Trgovine Play ne mogu pristupiti ovom uređaju</translation>
+<translation id="5838451609423551646">Uklonjeni su svi unosi iz odabira.</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5850516540536751549">Ta vrsta datoteke nije podržana. Posjetite <ph name="BEGIN_LINK" />Chrome web-trgovinu<ph name="END_LINK" /> da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.
     <ph name="BEGIN_LINK_HELP" />Saznajte više<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Sažeta tar arhiva Gzip</translation>
 <translation id="6825883775269213504">Ruski</translation>
 <translation id="6827236167376090743">Videozapis će se reproducirati unedogled.</translation>
+<translation id="6847101934483209767">Stavka <ph name="ENTRY_NAME" /> uklonjena je iz odabira.</translation>
 <translation id="6862635236584086457">Za sve datoteke spremljene u ovoj mapi automatski se izrađuje sigurnosna kopija na mreži</translation>
 <translation id="6870130893560916279">Ukrajinska tipkovnica</translation>
 <translation id="6876155724392614295">Voziti bicikl</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Pinyin način unosa</translation>
 <translation id="8151638057146502721">Konfiguracija</translation>
 <translation id="8153607920959057464">Nije bilo moguće prikazati datoteku.</translation>
+<translation id="8154842056504218462">Odabrane su sve stavke.</translation>
 <translation id="8157684860301034423">Dohvaćanje informacija o aplikaciji nije uspjelo.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Španjolska tipkovnica</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Ova datoteka na Disku još se ne dijeli</translation>
 <translation id="8698464937041809063">Googleov crtež</translation>
 <translation id="8714406895390098252">Bicikl</translation>
+<translation id="8719721339511222681">Odabrana je stavka <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">američka međunarodna tipkovnica</translation>
 <translation id="872537912056138402">Hrvatski</translation>
 <translation id="874420130893181774">tradicionalni pinyin način unosa</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">Nema slika u ovom direktoriju.</translation>
 <translation id="943972244133411984">Izmijenio</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>
+<translation id="947144732524271678">Odabran je raspon od <ph name="ENTRY_COUNT" /> unosa od stavke <ph name="FROM_ENTRY_NAME" /> do stavke <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Izvanmrežno</translation>
 <translation id="988685240266037636">Datoteka s nazivom "<ph name="FILE_NAME" />" već postoji. Želite li je zamijeniti?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

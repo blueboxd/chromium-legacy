@@ -498,7 +498,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
-  const uint32_t content_source_id = 3;
   const BeginFrameAck begin_frame_ack(5, 10, false);
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
@@ -510,7 +509,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.metadata.scrollable_viewport_size = scrollable_viewport_size;
   input.render_pass_list.push_back(std::move(render_pass));
   input.resource_list.push_back(resource);
-  input.metadata.content_source_id = content_source_id;
   input.metadata.begin_frame_ack = begin_frame_ack;
   input.metadata.frame_token = 1;
   input.metadata.local_surface_id_allocation_time =
@@ -523,7 +521,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(root_scroll_offset, output.metadata.root_scroll_offset);
   EXPECT_EQ(page_scale_factor, output.metadata.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
-  EXPECT_EQ(content_source_id, output.metadata.content_source_id);
   EXPECT_EQ(begin_frame_ack, output.metadata.begin_frame_ack);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.metadata.local_surface_id_allocation_time);

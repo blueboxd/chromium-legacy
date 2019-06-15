@@ -358,6 +358,7 @@
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="3658159451045945436">リセットすると、アクセスしたサイトのリストなど、節約したデータの履歴が削除されます。</translation>
 <translation id="3662546969139119822">履歴はありません</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> 個のタブをグループ化します。</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
 <translation id="3692944402865947621">保存場所にアクセスできないため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
@@ -466,6 +467,7 @@
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4479972344484327217">Chrome 用の <ph name="MODULE" /> をインストールしています…</translation>
+<translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="4487967297491345095">Chrome のすべてのアプリデータを完全に削除します。削除されるデータには、すべてのファイル、設定、アカウント、データベースなどが含まれます。</translation>
 <translation id="4493497663118223949">ライトモードはオンです</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
@@ -476,6 +478,7 @@
 <translation id="4532845899244822526">フォルダの選択</translation>
 <translation id="4538018662093857852">ライトモードをオンにする</translation>
 <translation id="4550003330909367850">ここでパスワードを表示またはコピーするには、このデバイスに画面ロックを設定してください。</translation>
+<translation id="4556110439722119938">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期され、どのデバイスでも利用できるようになります</translation>
 <translation id="4558311620361989323">ウェブページのショートカット</translation>
 <translation id="4561979708150884304">接続されていません</translation>
 <translation id="4565377596337484307">パスワードを表示しない</translation>
@@ -630,6 +633,7 @@
 <translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
 <translation id="55737423895878184">位置情報の使用と通知の送信が許可されています</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> 個のタブがグループ化されました</translation>
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
@@ -708,6 +712,7 @@
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6193448654517602979">タブを選択</translation>
 <translation id="6194112207524046168">Chrome にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
@@ -824,6 +829,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6979737339423435258">全期間</translation>
+<translation id="6980462514016882061">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6985347914332179298">ここにダウンロードしたアイテムはありません</translation>
 <translation id="6989267951144302301">ダウンロードできませんでした</translation>
@@ -850,11 +856,13 @@
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> から<ph name="BEGIN_LINK" />元のページを読み込む<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
+<translation id="7161892015146974550">「<ph name="TAB_TITLE" />」タブを選択します。</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
+<translation id="722055596168483966">Google サービスのカスタマイズ</translation>
 <translation id="723171743924126238">画像を選択</translation>
 <translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
@@ -881,6 +889,7 @@
 <translation id="7403691278183511381">Chrome 初回起動時の操作</translation>
 <translation id="741204030948306876">有効にする</translation>
 <translation id="7413229368719586778">開始日: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">タブをグループ化...</translation>
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7423538860840206698">クリップボードの読み取りがブロックされています</translation>
 <translation id="7431991332293347422">検索などのカスタマイズを目的とした閲覧履歴の使用方法を設定</translation>
@@ -1017,6 +1026,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
 <translation id="8364299278605033898">人気のウェブサイトを表示します</translation>
+<translation id="8364603787714420828">「<ph name="TAB_TITLE" />」タブの選択を解除</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8378714024927312812">組織によって管理されています</translation>
@@ -1082,6 +1092,7 @@
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>
+<translation id="8904976895050290827">Chrome の同期</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>

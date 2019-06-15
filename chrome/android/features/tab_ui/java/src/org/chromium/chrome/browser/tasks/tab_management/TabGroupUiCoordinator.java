@@ -77,7 +77,7 @@ public class TabGroupUiCoordinator
         TabContentManager tabContentManager = activity.getTabContentManager();
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, null, null, false, null, null,
+                mContext, tabModelSelector, null, null, false, null, null, null,
                 mTabStripToolbarCoordinator.getTabListContainerView(), null, true,
                 R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 

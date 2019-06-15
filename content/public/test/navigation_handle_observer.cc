@@ -35,7 +35,6 @@ void NavigationHandleObserver::DidStartNavigation(
   was_redirected_ = navigation_handle->WasServerRedirect();
   frame_tree_node_id_ = navigation_handle->GetFrameTreeNodeId();
   navigation_id_ = navigation_handle->GetNavigationId();
-  auth_challenge_info_ = navigation_handle->GetAuthChallengeInfo();
 }
 
 void NavigationHandleObserver::DidFinishNavigation(

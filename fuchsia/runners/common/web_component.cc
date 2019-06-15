@@ -33,12 +33,19 @@ WebComponent::WebComponent(
           << " ComponentController disconnected";
       // Teardown the component with dummy values, since ComponentController
       // channel isn't there to receive them.
-      DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+      DestroyComponent(0, fuchsia::sys::TerminationReason::UNKNOWN);
     });
   }
 
   // Create the underlying Frame and get its NavigationController.
   runner_->context()->CreateFrame(frame_.NewRequest());
+
+  // If the Frame unexpectedly disconnect us then tear-down this Component.
+  frame_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+        << " Frame disconnected";
+    DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+  });
 
   if (startup_context()->public_services()) {
     // Publish services before returning control to the message-loop, to ensure

@@ -13,6 +13,5 @@ FAIL Reject promise with SyntaxError if 'json' record cannot be serialized. NFCW
 FAIL NFCWriter.push should fail with TypeError when invalid target value is provided. NFCWriter is not defined
 FAIL Test that WebNFC API is not accessible from iframe context. promise_test: Unhandled rejection with value: undefined
 FAIL Test that promise is rejected with TypeError if NDEFMessageSource contains non-string url. NFCWriter is not defined
-FAIL Test that promise is rejected with TypeError if NDEFMessageSource contains non-string serialNumber. NFCWriter is not defined
 Harness: the test ran to completion.
 

@@ -1174,8 +1174,9 @@ class MetaBuildWrapper(object):
     isolate_map = self.ReadIsolateMap()
 
     is_android = 'target_os="android"' in vals['gn_args']
-    is_simplechrome = vals.get('cros_passthrough', False)
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
+    is_simplechrome = vals.get('cros_passthrough', False)
+    is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
 
     # This should be true if tests with type='windowed_test_launcher' are
@@ -1247,16 +1248,17 @@ class MetaBuildWrapper(object):
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
       cmdline = [
-        '../../testing/xvfb.py',
-        './' + str(executable) + executable_suffix,
-        '--test-launcher-bot-mode',
-        '--asan=%d' % asan,
-        # Enable lsan when asan is enabled except on Windows where LSAN isn't
-        # supported.
-        '--lsan=%d' % (asan and not is_win),
-        '--msan=%d' % msan,
-        '--tsan=%d' % tsan,
-        '--cfi-diag=%d' % cfi_diag,
+          '../../testing/xvfb.py',
+          './' + str(executable) + executable_suffix,
+          '--test-launcher-bot-mode',
+          '--asan=%d' % asan,
+          # Enable lsan when asan is enabled except on Windows where LSAN isn't
+          # supported.
+          # TODO(https://crbug.com/948939): Enable on Mac once things pass.
+          '--lsan=%d' % (asan and not is_mac and not is_win),
+          '--msan=%d' % msan,
+          '--tsan=%d' % tsan,
+          '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
       cmdline = [
@@ -1266,7 +1268,8 @@ class MetaBuildWrapper(object):
           '--asan=%d' % asan,
           # Enable lsan when asan is enabled except on Windows where LSAN isn't
           # supported.
-          '--lsan=%d' % (asan and not is_win),
+          # TODO(https://crbug.com/948939): Enable on Mac once things pass.
+          '--lsan=%d' % (asan and not is_mac and not is_win),
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,

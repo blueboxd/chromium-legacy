@@ -83,6 +83,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -1165,6 +1166,12 @@ ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
   BrowserActionsContainer* container =
       toolbar_button_provider_->GetBrowserActionsContainer();
   return container ? container->toolbar_actions_bar() : nullptr;
+}
+
+ExtensionsContainer* BrowserView::GetExtensionsContainer() {
+  if (toolbar_ && toolbar_->extensions_container())
+    return toolbar_->extensions_container();
+  return GetToolbarActionsBar();
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -2602,11 +2609,11 @@ void BrowserView::InitViews() {
   immersive_mode_controller_->Init(this);
   immersive_mode_controller_->AddObserver(this);
 
-  auto browser_view_layout = std::make_unique<BrowserViewLayout>();
-  browser_view_layout->Init(
-      new BrowserViewLayoutDelegateImpl(this), browser(), this, top_container_,
-      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, immersive_mode_controller_.get());
+  auto browser_view_layout = std::make_unique<BrowserViewLayout>(
+      std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
+      top_container_, tab_strip_region_view_, tabstrip_, toolbar_,
+      infobar_container_, contents_container_,
+      immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

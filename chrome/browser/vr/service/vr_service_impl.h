@@ -19,12 +19,16 @@
 namespace vr {
 
 class XRDeviceImpl;
+class XRRuntimeManager;
+class XRRuntimeManagerTest;
 
 // Browser process implementation of the VRService mojo interface. Instantiated
 // through Mojo once the user loads a page containing WebXR.
 class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
                                 content::WebContentsObserver {
  public:
+  friend XRRuntimeManagerTest;
+
   explicit VRServiceImpl(content::RenderFrameHost* render_frame_host);
   ~VRServiceImpl() override;
 
@@ -40,12 +44,9 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void InitializationComplete();
 
- protected:
+ private:
   // Constructor for tests.
   VRServiceImpl();
-
- private:
-  void SetBinding(mojo::StrongBindingPtr<VRService> binding);
 
   // device::mojom::VRService implementation
   void SetListeningForActivate(
@@ -60,6 +61,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void MaybeReturnDevice();
 
+  scoped_refptr<XRRuntimeManager> runtime_manager_;
   std::unique_ptr<XRDeviceImpl> device_;
   RequestDeviceCallback request_device_callback_;
   device::mojom::VRServiceClientPtr client_;

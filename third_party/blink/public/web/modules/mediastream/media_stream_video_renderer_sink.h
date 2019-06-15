@@ -34,7 +34,7 @@ namespace blink {
 // TODO(wuchengli): Add unit test. See the link below for reference.
 // https://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_
 // video_decoder_unittest.cc?revision=180591&view=markup
-class BLINK_EXPORT MediaStreamVideoRendererSink
+class BLINK_MODULES_EXPORT MediaStreamVideoRendererSink
     : public blink::WebMediaStreamVideoRenderer,
       public blink::MediaStreamVideoSink {
  public:

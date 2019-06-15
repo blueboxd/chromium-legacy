@@ -376,7 +376,6 @@ TEST_F(PreviewsOfflinePagesIntegrationTest, TestOfflinePagesDBQuery) {
 // we instead set the freshness duration to negative to make any newly saved
 // offline page stale.
 TEST_F(PreviewsOfflinePagesIntegrationTest, TestOfflinePagesDBQuery_Expired) {
-  base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::AssociateFieldTrialParams(
       "ClientSidePreviews", "Enabled",
       {{"offline_preview_freshness_duration_in_days", "-1"}}));

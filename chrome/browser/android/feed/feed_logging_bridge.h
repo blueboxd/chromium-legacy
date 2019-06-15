@@ -28,13 +28,14 @@ class FeedLoggingBridge {
                        const jint j_position,
                        const jlong j_publishedTimeMs,
                        const jlong j_timeContentBecameAvailableMs,
-                       const jfloat j_score);
+                       const jfloat j_score,
+                       const jboolean j_is_available_offline);
 
   void OnContentDismissed(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
                           const jint j_position,
                           const base::android::JavaRef<jstring>& j_url,
-                          const jboolean was_committed);
+                          const jboolean j_was_committed);
 
   void OnContentSwiped(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this);
@@ -44,7 +45,8 @@ class FeedLoggingBridge {
                       const jint j_window_open_disposition,
                       const jint j_position,
                       const jlong j_publishedTimeMs,
-                      const jfloat j_score);
+                      const jfloat j_score,
+                      const jboolean j_is_available_offline);
 
   void OnContentContextMenuOpened(JNIEnv* j_env,
                                   const base::android::JavaRef<jobject>& j_this,
@@ -63,12 +65,12 @@ class FeedLoggingBridge {
   void OnNotInterestedInSource(JNIEnv* j_env,
                                const base::android::JavaRef<jobject>& j_this,
                                const jint j_position,
-                               const jboolean was_committed);
+                               const jboolean j_was_committed);
 
   void OnNotInterestedInTopic(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
                               const jint j_position,
-                              const jboolean was_committed);
+                              const jboolean j_was_committed);
 
   void OnOpenedWithContent(JNIEnv* j_env,
                            const base::android::JavaRef<jobject>& j_this,
@@ -152,8 +154,8 @@ class FeedLoggingBridge {
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
                               const jlong visit_time_ms,
-                              const jboolean is_offline,
-                              const jboolean return_to_ntp);
+                              const jboolean j_is_offline,
+                              const jboolean j_return_to_ntp);
 
   void ReportScrolledAfterOpen(JNIEnv* j_env,
                                const base::android::JavaRef<jobject>& j_this);

@@ -17,6 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -447,9 +448,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const std::string& error_name,
       const std::string& error_message);
 
-  // Called by dbus:: on an error while trying to set long term keys.
+#if defined(OS_CHROMEOS)
+  // Inform DBus of the current list of long term keys.
+  void SetLongTermKeys();
+
+  // Called by dbus:: on an error while trying to set long term keys, see
+  // SetLongTermKeys().
   void SetLongTermKeysError(const std::string& error_name,
                             const std::string& error_message);
+#endif
 
   InitCallback init_callback_;
 
@@ -519,6 +526,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // unregistered ones will just be inactive). This will be fixed with
   // crbug.com/687396.
   std::vector<scoped_refptr<BluetoothAdvertisementBlueZ>> advertisements_;
+
+#if defined(OS_CHROMEOS)
+  // Timer used to schedule a second update to BlueZ's long term keys. This
+  // second update is necessary in a first-time install situation, where field
+  // trials might not yet have been available. By scheduling a second update
+  // sometime later, the field trials will be guaranteed to be present.
+  base::OneShotTimer set_long_term_keys_after_first_time_install_timer_;
+#endif
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -2519,4 +2519,15 @@ void RenderWidgetHostViewAndroid::OnUpdateScopedSelectionHandles() {
   }
 }
 
+void RenderWidgetHostViewAndroid::SetWebContentsAccessibility(
+    WebContentsAccessibilityAndroid* web_contents_accessibility) {
+  web_contents_accessibility_ = web_contents_accessibility;
+
+  if (host()) {
+    host()
+        ->render_frame_metadata_provider()
+        ->ReportAllRootScrollsForAccessibility(!!web_contents_accessibility_);
+  }
+}
+
 }  // namespace content

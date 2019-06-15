@@ -58,7 +58,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     request_id_ = dispatcher_->StartAsync(
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, false, false,
+        TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),

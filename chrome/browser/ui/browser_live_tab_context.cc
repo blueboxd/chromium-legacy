@@ -36,7 +36,6 @@ namespace {
 // app window in those cases.
 bool ShouldCreateAppWindowForAppName(Profile* profile,
                                      const std::string& app_name) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (app_name.empty())
     return false;
 
@@ -50,9 +49,6 @@ bool ShouldCreateAppWindowForAppName(Profile* profile,
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           app_id);
   return extension;
-#else
-  return !app_name.empty();
-#endif
 }
 
 }  // namespace

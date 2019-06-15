@@ -89,7 +89,6 @@ class DownloadOfflineContentProvider
   void AddCompletedDownloadDone(DownloadItem* item,
                                 int64_t system_download_id,
                                 bool can_resolve);
-  void UpdateObservers(DownloadItem* item);
 
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;

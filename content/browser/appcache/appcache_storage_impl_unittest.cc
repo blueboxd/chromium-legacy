@@ -1729,9 +1729,9 @@ class AppCacheStorageImplTest : public testing::Test {
       AppCacheHost* host2 = service_->GetHost(host2_id_);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");
-      handler_ =
-          host2->CreateRequestHandler(AppCacheURLLoaderRequest::Create(request),
-                                      ResourceType::kMainFrame, false);
+      handler_ = host2->CreateRequestHandler(
+          std::make_unique<AppCacheURLLoaderRequest>(request),
+          ResourceType::kMainFrame, false);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }

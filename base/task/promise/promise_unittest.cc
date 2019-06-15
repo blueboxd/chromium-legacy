@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/task/promise/promise.h"
+
 #include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/promise/promise.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/do_nothing_promise.h"
 #include "base/test/gtest_util.h"
@@ -1637,16 +1638,15 @@ TEST_F(MultiThreadedPromiseTest, SimpleThreadHopping) {
           thread_c_->task_runner(), FROM_HERE, BindLambdaForTesting([&]() {
             EXPECT_TRUE(thread_c_->task_runner()->RunsTasksInCurrentSequence());
           }))
-      .ThenHere(
-          FROM_HERE, BindLambdaForTesting([&]() {
-            EXPECT_FALSE(
-                thread_a_->task_runner()->RunsTasksInCurrentSequence());
-            EXPECT_FALSE(
-                thread_b_->task_runner()->RunsTasksInCurrentSequence());
-            EXPECT_FALSE(
-                thread_c_->task_runner()->RunsTasksInCurrentSequence());
-            run_loop.Quit();
-          }));
+      .ThenHere(FROM_HERE, BindLambdaForTesting([&]() {
+                  EXPECT_FALSE(
+                      thread_a_->task_runner()->RunsTasksInCurrentSequence());
+                  EXPECT_FALSE(
+                      thread_b_->task_runner()->RunsTasksInCurrentSequence());
+                  EXPECT_FALSE(
+                      thread_c_->task_runner()->RunsTasksInCurrentSequence());
+                  run_loop.Quit();
+                }));
 
   promise_resolver.Resolve();
   run_loop.Run();
@@ -1688,6 +1688,55 @@ TEST_F(MultiThreadedPromiseTest, CrossThreadThens) {
       }));
 
   run_loop.Run();
+}
+
+TEST_F(MultiThreadedPromiseTest, CrossThreadThensOrdering) {
+  constexpr int kNumThenTasks = 1000;
+  constexpr int kNumRepetitions = 25;
+  for (int repetition = 0; repetition < kNumRepetitions; ++repetition) {
+    RunLoop run_loop;
+
+    std::vector<int> order;
+    std::vector<OnceCallback<void()>> then_tasks;
+
+    for (int i = 0; i < kNumThenTasks; ++i) {
+      then_tasks.push_back(
+          BindOnce(BindLambdaForTesting([&order, &run_loop, i]() {
+            order.push_back(i);
+            if (i == (kNumThenTasks - 1)) {
+              run_loop.Quit();
+            }
+          })));
+    }
+
+    ManualPromiseResolver<void> promise_resolver(FROM_HERE);
+    auto resolve_callback = promise_resolver.GetResolveCallback();
+
+    thread_a_->task_runner()->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          // Post 500 thens.
+          for (int i = 0; i < kNumThenTasks / 2; ++i) {
+            promise_resolver.promise().ThenOn(
+                thread_c_->task_runner(), FROM_HERE, std::move(then_tasks[i]));
+          }
+
+          // Post a task onto |thread_b| to resolve |promise_resolver|.
+          // This should run at an undefined time yet all the thens should run.
+          thread_b_->task_runner()->PostTask(FROM_HERE,
+                                             std::move(resolve_callback));
+
+          // Post another 500 thens.
+          for (int i = kNumThenTasks / 2; i < kNumThenTasks; ++i) {
+            promise_resolver.promise().ThenOn(
+                thread_c_->task_runner(), FROM_HERE, std::move(then_tasks[i]));
+          }
+        }));
+
+    run_loop.Run();
+    for (int i = 0; i < kNumThenTasks; ++i) {
+      EXPECT_EQ(order[i], i);
+    }
+  }
 }
 
 TEST_F(PromiseTest, ThreadPoolThenChain) {

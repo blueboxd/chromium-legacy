@@ -240,6 +240,7 @@
 <translation id="383652340667548381">सर्बियाई</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3855472144336161447">जर्मन नियो 2</translation>
+<translation id="3856075812838139784">केवल पढ़ने के लिए</translation>
 <translation id="3858678421048828670">इटैलियन कीबोर्ड</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> के साथ पैक करें</translation>
 <translation id="3866249974567520381">वर्णन</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">बदलाव करने का समय</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> को चुनी गई चीज़ों के साथ जोड़ा गया.</translation>
 <translation id="4582497162516204941">Linux (बीटा) वाला पैकेज इंस्टॉल करें</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> के लिए खोज नतीजे दिखाए जा रहे हैं.</translation>
 <translation id="4631887759990505102">कलाकार</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">हंगुल 3 सेट (अंतिम)</translation>
 <translation id="5833610766403489739">यह फ़ाइल कहीं इधर-उधर हो गई है. कृपया अपनी डाउनलोड स्थान सेटिंग जाँचें और फिर से कोशिश करें.</translation>
 <translation id="5838051104334203064">Play स्टोर ऐप्लिकेशन इस डिवाइस को एक्सेस नहीं कर सकता</translation>
+<translation id="5838451609423551646">सभी एंट्री से चुने हुए का निशान हटाया गया</translation>
 <translation id="5838825566232597749">यूएस वर्कमैन अंतर्राष्‍ट्रीय</translation>
 <translation id="5850516540536751549">इस तरह की फ़ाइल नहीं खुल सकती है. इस तरह के फ़ाइल को खोल सकने वाले ऐप्लिकेशन खोजने के लिए कृपया <ph name="BEGIN_LINK" />Chrome वेब स्टोर<ph name="END_LINK" /> पर जाएं.
     <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Gzip संकुचित tar संग्रह</translation>
 <translation id="6825883775269213504">रूसी</translation>
 <translation id="6827236167376090743">यह वीडियो शाम होने तक लगातार चलता रहेगा.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> को चुनी गई चीज़ों से हटाया गया.</translation>
 <translation id="6862635236584086457">इस फ़ोल्डर में सहेजी गई सभी फ़ाइलों का अपने आप ऑनलाइन बैकअप लिया जाता है</translation>
 <translation id="6870130893560916279">यूक्रेनियाई कीबोर्ड</translation>
 <translation id="6876155724392614295">बाइक</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">पिनयिन इनपुट पद्धति</translation>
 <translation id="8151638057146502721">कॉन्फ़िगर करें</translation>
 <translation id="8153607920959057464">यह फ़ाइल प्रदर्शित नहीं की जा सकी.</translation>
+<translation id="8154842056504218462">सभी एंट्री चुनी गईं.</translation>
 <translation id="8157684860301034423">ऐप्लिकेशन जानकारी बहाल नहीं की जा सकी.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">स्‍पेनिश कीबोर्ड</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">यह डिस्क अभी तक शेयर नहीं की गई है</translation>
 <translation id="8698464937041809063">Google ड्रॉइंग</translation>
 <translation id="8714406895390098252">साइकिल</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> को चुना गया.</translation>
 <translation id="8722421161699219904">यूएस अंतर्राष्‍ट्रीय कीबोर्ड</translation>
 <translation id="872537912056138402">क्रोएशियाई</translation>
 <translation id="874420130893181774">पारंपरिक पिनयिन इनपुट पद्धति</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">इस निर्देशिका में कोई चित्र नहीं है.</translation>
 <translation id="943972244133411984">बदलाव करने वाले</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
+<translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" /> से <ph name="TO_ENTRY_NAME" /> तक की <ph name="ENTRY_COUNT" /> एंट्री को चुना गया.</translation>
 <translation id="981121421437150478">ऑफ़लाइन</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" की एक फ़ाइल पहले से मौजूद है. क्या आप उसे बदलना चाहते हैं?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> एमबी</translation>

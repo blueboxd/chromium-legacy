@@ -155,6 +155,11 @@ public class TabCountProvider {
             @Override
             public void didMoveWithinGroup(
                     Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
+
+            @Override
+            public void didMoveTabOutOfGroup(Tab moveTab, int oldFilterIndex) {
+                updateTabCount();
+            }
         };
 
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()

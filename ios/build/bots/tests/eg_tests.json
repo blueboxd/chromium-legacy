@@ -20,9 +20,6 @@
     },
     {
       "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS"
-      ],
       "xctest": true,
       "xcode parallelization": true
     },

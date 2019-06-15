@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1492646418094134664">クレジット カード情報を自動入力するにはタップしてください</translation>
+<translation id="1566281227936819866">保存されているお支払い方法を表示します</translation>
 <translation id="2610239185026711824">パスワードを自動生成</translation>
 <translation id="2803478378562657435">保存したパスワードとパスワードのオプションを表示しています</translation>
 <translation id="2903493209154104877">住所</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">パスワードを自動入力するにはタップしてください</translation>
 <translation id="7299100402441711551">住所を表示</translation>
 <translation id="7494879913343971937">パスワードを表示</translation>
+<translation id="8037472847879765671">お支払い方法を表示</translation>
 <translation id="8507520749471379845">使用可能なパスワード</translation>
 </translationbundle>

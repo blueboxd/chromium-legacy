@@ -373,18 +373,18 @@ void ExtensionActionRunner::ShowBlockedActionBubble(
     const base::Callback<void(ToolbarActionsBarBubbleDelegate::CloseAction)>&
         callback) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser ? browser->window()->GetToolbarActionsBar() : nullptr;
-  if (toolbar_actions_bar) {
-    if (default_bubble_close_action_for_testing_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, *default_bubble_close_action_for_testing_));
-    } else {
-      toolbar_actions_bar->ShowToolbarActionBubble(
-          std::make_unique<BlockedActionBubbleDelegate>(callback,
-                                                        extension->id()));
-    }
+  ExtensionsContainer* const extensions_container =
+      browser ? browser->window()->GetExtensionsContainer() : nullptr;
+  if (!extensions_container)
+    return;
+  if (default_bubble_close_action_for_testing_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(callback, *default_bubble_close_action_for_testing_));
+  } else {
+    extensions_container->ShowToolbarActionBubble(
+        std::make_unique<BlockedActionBubbleDelegate>(callback,
+                                                      extension->id()));
   }
 }
 

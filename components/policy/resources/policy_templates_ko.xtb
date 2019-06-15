@@ -457,6 +457,12 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 구성되지 않거나 사용 중지되면 사용자가 설정을 변경할 수 있습니다(예: chrome://flags에서 '사이트 격리 사용 중지' 항목 사용).
       </translation>
 <translation id="1767673020408652620">검색창이 0 상태일 때 앱 추천을 사용 설정합니다.</translation>
+<translation id="17719159826324007">
+      이 정책을 ArcSession으로 설정하면 Android 시작 시 사용자가 로그아웃한 경우 기기가 강제로 재부팅됩니다.
+      항상으로 설정하면 사용자가 로그아웃할 때마다 기기가 강제로 재부팅됩니다.
+      정책을 설정하지 않으면 정책이 적용되지 않으며 사용자가 로그아웃해도 강제로 재부팅하지 않습니다. 이는 사용 안함으로 설정했을 때도 마찬가지입니다.
+      이 정책은 연결되지 않은 사용자에게만 영향을 미칩니다.
+      </translation>
 <translation id="1781356041596378058">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 true로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 false로 설정하거나 설정하지 않은 채로 두는 경우 Android 설정 앱에서 빌드 번호를 7번 탭하면 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="1793346220873697538">기본적으로 PIN 인쇄를 사용하지 않습니다.</translation>
 <translation id="1797233582739332495">사용자에게 재실행이 필요하다는 메시지를 반복하여 표시</translation>
@@ -957,6 +963,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="268577405881275241">데이터 압축 프록시 기능 사용</translation>
 <translation id="2693108589792503178">비밀번호 변경 URL을 설정합니다.</translation>
+<translation id="2694143893026486692">고정 돋보기 사용 설정됨</translation>
 <translation id="2706708761587205154">PIN이 있을 때만 인쇄 허용</translation>
 <translation id="2710534340210290498">이 정책을 false로 설정하면 사용자가 화면을 잠글 수 없습니다(사용자 세션에서 로그아웃만 가능). 이 설정이 true로 설정되거나 설정되지 않으면 비밀번호로 인증받은 사용자는 화면을 잠글 수 있습니다.</translation>
 <translation id="2731627323327011390">ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> 인증서를 사용하지 않도록 설정</translation>
@@ -1193,6 +1200,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">이 정책은 WebDriver 기능 사용자가 작업을 방해할 수 있는 정책을
       재정의할 수 있도록 해 줍니다.
 
@@ -1713,12 +1721,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       <ph name="PRODUCT_OS_NAME" /> 기기는 설정이 구성되지 않거나 False로 설정된 경우 자동으로 업데이트를 확인합니다.
 
       경고: 자동 업데이트를 사용 설정해야 사용자가 소프트웨어 업데이트나 주요 보안 수정사항을 받을 수 있으므로 사용하도록 설정하는 것이 좋습니다. 자동 업데이트를 사용 중지하면 사용자가 위험에 처할 수 있습니다.</translation>
-<translation id="4018000735882846261">이 정책은 Google 어시스턴트에 음성 활성화 문구를 감지할 권한을 부여합니다.
-
-      정책을 사용 설정할 경우 Google 어시스턴트가 음성 활성화 문구를 감지합니다.
-      정책을 사용 중지할 경우 Google 어시스턴트가 음성 활성화 문구를 감지하지 않습니다.
-      정책이 설정되어 있지 않으면 Google 어시스턴트가 음성 활성화 문구를 감지하지 않습니다.
-      </translation>
 <translation id="4020682745012723568">사용자의 프로필로 전송된 쿠키는 Android 앱에 액세스할 수 없습니다.</translation>
 <translation id="402759845255257575">모든 사이트에서 자바스크립트 실행 허용 안함</translation>
 <translation id="4027608872760987929">기본 검색 공급자 사용</translation>
@@ -1867,7 +1869,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정된 경우에만 적용됩니다.</translation>
 <translation id="4285674129118156176">제휴되지 않은 사용자가 ARC를 사용할 수 있게 허용</translation>
-<translation id="4289903996435140853">URL 목록을 설정하여 주어진 공급업체 및 제품 ID로 USB 기기에 액세스할 권한을 자동으로 부여할 사이트를 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
+<translation id="4289903996435140853">URL 목록을 설정하여 해당 공급업체 및 제품 ID로 USB 기기에 액세스 권한을 자동으로 부여할 사이트를 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
 
         USB 권한 모델은 요청하는 사이트의 URL('요청 URL')과 최상위 프레임 사이트의 URL('삽입 URL')을 사용하여 요청 URL에 USB 기기 액세스 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL과 삽입 URL이 다를 수 있습니다. 따라서 'URL' 입력란에는 요청 URL과 삽입 URL을 구분하여 지정할 수 있도록 쉼표로 구분된 URL 문자열이 두 개까지 포함될 수 있습니다. URL이 하나만 지정된 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 이 URL과 일치하면 해당하는 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 유효한 URL이어야 하며, 그렇지 않으면 정책이 무시됩니다.
 
@@ -2072,7 +2074,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이러한 추천 페이지는 Google 서버에서 원격으로 가져옵니다.
 
       이 설정을 False로 지정하면 추천 페이지를 가져오거나 표시하지 않습니다.</translation>
-<translation id="4759650396863318477">대기 중인 업데이트를 적용하려면 <ph name="PRODUCT_NAME" />을(를) 재실행하거나 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다는 알림을 사용자에게 표시할 기간을 밀리초로 설정할 수 있습니다.
+<translation id="4759650396863318477"><ph name="PRODUCT_NAME" />을(를) 재실행할 필요가 있거나 대기 중인 업데이트 적용을 위해 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다는 알림 기간을 밀리초 간격으로 설정할 수 있습니다.
 
       이 기간 동안 업데이트를 해야 한다는 알림이 사용자에게 반복적으로 표시됩니다. <ph name="PRODUCT_OS_NAME" /> 기기의 경우 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 정책에 따라 재시작 알림이 작업 표시줄에 표시됩니다. <ph name="PRODUCT_NAME" /> 브라우저의 경우 알림 기간 중 3분의 1이 지나면 앱 메뉴가 변경되면서 재실행이 필요하다는 알림이 표시됩니다. 알림 기간 중 3분의 2가 지나면 알림 색상이 바뀌며 알림 기간이 모두 지나면 다시 한번 바뀝니다. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책을 통해 사용 설정되는 추가 알림도 이와 동일한 일정을 따릅니다.
 
@@ -2285,7 +2287,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="5213038356678567351">브라우저 전환을 실행해서는 안 되는 웹사이트입니다.</translation>
 <translation id="5219844027738217407">Android 앱의 경우 이 정책은 마이크에만 영향을 줍니다. 이 정책이 true로 설정되면 마이크는 모든 앱에서 음소거되며 예외는 없습니다.</translation>
-<translation id="5221394278852982313">URL 목록을 설정하여 주어진 공급업체 및 제품 ID로 USB 기기에 액세스할 권한을 자동으로 부여할 사이트를 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
+<translation id="5221394278852982313">해당 공급업체 및 제품 ID로 USB 기기에 대한 액세스 권한이 자동 부여되는 사이트를 URL 목록 설정을 통해 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
 
         USB 권한 모델은 요청하는 사이트의 URL('요청 URL')과 최상위 프레임 사이트의 URL('삽입 URL')을 사용하여 요청 URL에 USB 기기 액세스 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL과 삽입 URL이 다를 수 있습니다. 따라서 'URL' 입력란에는 요청 URL과 삽입 URL을 구분하여 지정할 수 있도록 쉼표로 구분된 URL 문자열이 2개까지 포함될 수 있습니다. URL이 하나만 지정된 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 이 URL과 일치하면 해당하는 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 유효한 URL이어야 하며, 그렇지 않으면 정책이 무시됩니다.
 
@@ -3043,15 +3045,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 사용하면 관리자가 사용자에게 프린터 설정을 제공할 수
       있습니다.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> 및 <ph name="PRINTER_DESCRIPTION" />은(는) 손쉽게 프린터를 선택하도록 맞춤설정할 수 있는 자유 형식 문자열입니다. <ph name="PRINTER_MANUFACTURER" /> 및 <ph name="PRINTER_MODEL" />은(는) 최종 사용자가 손쉽게 프린터를 식별할 수 있도록 제공되며 프린터의 제조업체 및 모델을 나타냅니다. <ph name="PRINTER_URI" />은(는) <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" /> 등 클라이언트 컴퓨터에서 연결할 수 있는 주소여야 합니다. <ph name="PRINTER_UUID" />은(는) 선택사항입니다. 제공되는 경우 <ph name="ZEROCONF_DISCOVERY" /> 프린터의 중복을 삭제하는 데 사용됩니다.
+      <ph name="PRINTER_DISPLAY_NAME" /> 및 <ph name="PRINTER_DESCRIPTION" />은(는) 프린터 선택을 용이하게 하기 위해 맞춤설정이 가능한 자유 형식 문자열로 구성되어 있습니다. <ph name="PRINTER_MANUFACTURER" /> 및 <ph name="PRINTER_MODEL" />을 통해 최종 사용자가 손쉽게 프린터를 식별할 수 있습니다. 프린터의 제조업체 및 모델을 나타냅니다. <ph name="PRINTER_URI" />은(는) <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" /> 등 클라이언트 컴퓨터에서 연결할 수 있는 주소여야 합니다. <ph name="PRINTER_UUID" />은(는) 선택사항입니다. 제공되는 경우 <ph name="ZEROCONF_DISCOVERY" /> 프린터의 중복을 제거하는 데 사용됩니다.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" />이(가) 프린터 이름을 포함하거나 <ph name="PRINTER_AUTOCONF" />이(가) True로 설정되어야 합니다. 이 두 가지 속성이 모두 포함되거나 속성이 없는 프린터는 무시됩니다.
 
-      프린터 설정은 프린터 최초 사용 시 완료됩니다.  프린터가 사용될 때까지 PPD는 다운로드되지 않습니다.  이후 자주 사용되는 PPD가 캐시됩니다.
+      프린터 설정은 프린터 최초 사용 시 완료됩니다.  프린터가 사용되어야 PPD가 다운로드됩니다.  이후 자주 사용되는 PPD가 캐시됩니다.
 
-      이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지 여부에는 영향을 미치지 않습니다.  이 정책은 개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
+      이 정책은 개별 기기에서의 프린터 설정 가능 여부에는 영향을 미치지 않습니다.  이 정책은 개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
 
-      Active Directory 관리 대상 기기에서는 이 정책을 통해 <ph name="MACHINE_NAME_VARIABLE" />을(를) Active Directory 컴퓨터 이름 또는 관련 하위 문자열로 확장할 수 있습니다. 예를 들어, 컴퓨터 이름이 <ph name="MACHINE_NAME_EXAMPLE" />인 경우, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />이(가) 6번째 위치 이후에 시작되는 4자로 대체되어 <ph name="MACHINE_NAME_PART_EXAMPLE" />이(가) 됩니다. 이 위치는 0을 기준으로 합니다.
+      Active Directory 관리 대상 기기에서는 이 정책을 통해 <ph name="MACHINE_NAME_VARIABLE" />을(를) Active Directory 컴퓨터 이름 또는 관련 하위 문자열로 확장할 수 있습니다. 예를 들어, 컴퓨터 이름이 <ph name="MACHINE_NAME_EXAMPLE" />인 경우, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />이(가) 6번째 위치 이후에 시작되는 네 글자로 대체되어 <ph name="MACHINE_NAME_PART_EXAMPLE" />이(가) 됩니다. 이 위치는 0을 기준으로 합니다.
       </translation>
 <translation id="6598235178374410284">사용자 아바타 이미지</translation>
 <translation id="6603004149426829878">시간대를 파악하는 동안 항상 사용 가능한 위치 신호를 모두 서버로 전송합니다.</translation>
@@ -4420,8 +4422,8 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="915194831143859291">이 정책을 false로 설정하거나 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 사용자가 기기를 종료할 수 있도록 허용합니다.
       이 정책을 true로 설정하면 사용자가 기기를 종료할 때 <ph name="PRODUCT_OS_NAME" />에서 재부팅을 시작하며 <ph name="PRODUCT_OS_NAME" />에서 UI의 종료 버튼을 모두 재부팅 버튼으로 바꿉니다. 정책을 사용하도록 설정해도 사용자가 전원 버튼을 사용하여 기기를 종료하면 자동으로 재부팅하지 않습니다.</translation>
 <translation id="9152473318295429890">상황에 따라 관련 웹페이지 추천</translation>
-<translation id="9153446010242995516">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 가능한 경우 롤백 과정을 통해 기기 수준 설정(네트워크 사용자 인증 정보 포함)을 이전하려고 시도하지만, 대상 버전에서 데이터 복원을 지원하지 않거나 하위 비호환 변경사항으로 인해 데이터 복원이 불가능한 경우에도 전체 파워워시로 롤백합니다.
-          <ph name="PRODUCT_OS_NAME" /> 버전 75 이상에서 지원됩니다. 이전 버전 클라이언트에서 이 값은 롤백을 사용할 수 없다는 의미입니다.</translation>
+<translation id="9153446010242995516">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 가능하다면 롤백 과정에서 기기 수준 설정(네트워크 사용자 인증 정보 포함) 이전을 시도하지만, 대상 버전에서 데이터 복원을 지원하지 않거나 하위 비호환 변경사항으로 인해 데이터 복원이 불가능한 경우에도 전체 파워워시로 롤백합니다.
+          <ph name="PRODUCT_OS_NAME" /> 버전 75 이상에서 지원됩니다. 이전 버전의 클라이언트에서는 이 값으로는 롤백을 사용할 수 없다는 의미입니다.</translation>
 <translation id="9158929520101169054">브라우저 내 멀티 로그인 허용</translation>
 <translation id="9159126470527871268">대기 중인 업데이트를 적용하려면 <ph name="PRODUCT_NAME" />을(를) 재실행하거나 <ph name="PRODUCT_OS_NAME" />을(를) 재시작해야 한다고 사용자에게 알립니다.
 

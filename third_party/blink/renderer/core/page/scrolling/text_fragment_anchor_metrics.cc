@@ -13,12 +13,6 @@ namespace blink {
 TextFragmentAnchorMetrics::TextFragmentAnchorMetrics(Document* document)
     : document_(document) {}
 
-TextFragmentAnchorMetrics::~TextFragmentAnchorMetrics() {
-#ifndef NDEBUG
-  DCHECK(metrics_reported_);
-#endif
-}
-
 void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count) {
   UseCounter::Count(document_, WebFeature::kTextFragmentAnchor);
   create_time_ = WTF::CurrentTimeTicks();

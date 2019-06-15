@@ -3276,6 +3276,21 @@
             ]
         }
     ],
+    "NetworkServiceSandbox": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NetworkServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
     "NewAnswersLayoutAndroidOmniboxM74": [
         {
             "platforms": [

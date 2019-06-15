@@ -102,27 +102,6 @@ const service_manager::Manifest& GetChromeManifest() {
   return *manifest;
 }
 
-#if defined(OS_ANDROID)
-const service_manager::Manifest& GetAndroidDownloadManagerManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .WithServiceName("download_manager")
-          .WithDisplayName("Download Manager")
-          .WithOptions(
-              service_manager::ManifestOptionsBuilder()
-                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
-                                         kInProcessBuiltin)
-                  .WithInstanceSharingPolicy(
-                      service_manager::Manifest::InstanceSharingPolicy::
-                          kSingleton)
-                  .Build())
-          .RequireCapability("network", "network_service")
-          .RequireCapability("device", "device:wake_lock")
-          .Build()};
-  return *manifest;
-}
-#endif
-
 }  // namespace
 
 const std::vector<service_manager::Manifest>&
@@ -158,9 +137,7 @@ GetChromeBuiltinServiceManifests() {
       GetUtilWinManifest(),
       GetWifiUtilWinManifest(),
 #endif
-#if defined(OS_ANDROID)
-      GetAndroidDownloadManagerManifest(),
-#else
+#if !defined(OS_ANDROID)
       mirroring::GetManifest(),
       GetProfileImportManifest(),
 #endif

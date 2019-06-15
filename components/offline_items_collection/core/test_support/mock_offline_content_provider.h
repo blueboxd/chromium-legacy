@@ -23,7 +23,8 @@ class MockOfflineContentProvider : public OfflineContentProvider {
     // OfflineContentProvider::Observer implementation.
     MOCK_METHOD1(OnItemsAdded, void(const OfflineItemList&));
     MOCK_METHOD1(OnItemRemoved, void(const ContentId&));
-    MOCK_METHOD1(OnItemUpdated, void(const OfflineItem&));
+    MOCK_METHOD2(OnItemUpdated,
+                 void(const OfflineItem&, const base::Optional<UpdateDelta>&));
   };
 
   MockOfflineContentProvider();
@@ -36,7 +37,8 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   void SetVisuals(std::map<ContentId, OfflineItemVisuals> visuals);
   void NotifyOnItemsAdded(const OfflineItemList& items);
   void NotifyOnItemRemoved(const ContentId& id);
-  void NotifyOnItemUpdated(const OfflineItem& item);
+  void NotifyOnItemUpdated(const OfflineItem& item,
+                           const base::Optional<UpdateDelta>& update_delta);
 
   // OfflineContentProvider implementation.
   MOCK_METHOD2(OpenItem, void(LaunchLocation, const ContentId&));

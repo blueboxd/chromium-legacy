@@ -240,6 +240,7 @@
 <translation id="383652340667548381">Serbio</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3855472144336161447">Alemán (Neo 2)</translation>
+<translation id="3856075812838139784">Solo lectura</translation>
 <translation id="3858678421048828670">Teclado italiano</translation>
 <translation id="386548886866354912">Comprimir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descripción</translation>
@@ -285,6 +286,7 @@
 <translation id="4568854179928172494">Hora de modificación</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Más...</translation>
+<translation id="4579744207439506346">Se ha añadido <ph name="ENTRY_NAME" /> a la selección.</translation>
 <translation id="4582497162516204941">Instalar con Linux (Beta)</translation>
 <translation id="4594543368593301662">Mostrando resultados de <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
@@ -418,6 +420,7 @@
 <translation id="5819442873484330149">Hangul de triple alternancia (final)</translation>
 <translation id="5833610766403489739">Este archivo se ha perdido. Comprueba la opción de ubicación de descargas e inténtalo de nuevo.</translation>
 <translation id="5838051104334203064">Las aplicaciones de Play Store no pueden acceder a este dispositivo</translation>
+<translation id="5838451609423551646">Se ha cancelado la selección de todos los elementos.</translation>
 <translation id="5838825566232597749">Internacional estilo Workman (EE. UU.)</translation>
 <translation id="5850516540536751549">No se admite este tipo de archivo. Accede a <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> para buscar una aplicación que pueda abrir este tipo de archivo.
     <ph name="BEGIN_LINK_HELP" />Más información<ph name="END_LINK_HELP" /></translation>
@@ -491,6 +494,7 @@
 <translation id="6820687829547641339">Archivo tar comprimido en Gzip</translation>
 <translation id="6825883775269213504">Ruso</translation>
 <translation id="6827236167376090743">Este vídeo seguirá reproduciéndose sin parar.</translation>
+<translation id="6847101934483209767">Se ha quitado <ph name="ENTRY_NAME" /> de la selección.</translation>
 <translation id="6862635236584086457">Se realiza una copia de seguridad online de forma automática de todos los archivos guardados en esta carpeta.</translation>
 <translation id="6870130893560916279">Teclado ucraniano</translation>
 <translation id="6876155724392614295">Bici</translation>
@@ -618,6 +622,7 @@
 <translation id="8148264977957212129">Método de introducción de pinyin</translation>
 <translation id="8151638057146502721">Configurar</translation>
 <translation id="8153607920959057464">Este archivo no se puede mostrar.</translation>
+<translation id="8154842056504218462">Se han seleccionado todos los elementos.</translation>
 <translation id="8157684860301034423">No se ha podido recuperar la información de la aplicación.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Teclado español</translation>
@@ -660,6 +665,7 @@
 <translation id="8686213429977032554">Este archivo de Drive aún no se ha compartido</translation>
 <translation id="8698464937041809063">Dibujo de Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
+<translation id="8719721339511222681">Se ha seleccionado <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Teclado internacional de EE. UU.</translation>
 <translation id="872537912056138402">Croata</translation>
 <translation id="874420130893181774">Método de introducción de pinyin tradicional</translation>
@@ -700,6 +706,7 @@
 <translation id="942954117721265519">No hay imágenes en este directorio.</translation>
 <translation id="943972244133411984">Modificado por</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
+<translation id="947144732524271678">Se han seleccionado <ph name="ENTRY_COUNT" /> elementos desde <ph name="FROM_ENTRY_NAME" /> hasta <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Sin conexión</translation>
 <translation id="988685240266037636">Ya existe el archivo "<ph name="FILE_NAME" />". ¿Quieres sustituirlo?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

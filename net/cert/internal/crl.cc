@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "net/cert/internal/cert_errors.h"
-#include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/revocation_util.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/verify_name_match.h"
@@ -249,11 +248,14 @@ ParsedCrlTbsCertList::ParsedCrlTbsCertList() = default;
 ParsedCrlTbsCertList::~ParsedCrlTbsCertList() = default;
 
 CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
-                             const ParsedCertificate* cert,
+                             const ParsedCertificateList& valid_chain,
+                             size_t target_cert_index,
                              const ParsedDistributionPoint* cert_dp,
-                             const ParsedCertificate* issuer_cert,
                              const base::Time& verify_time,
                              const base::TimeDelta& max_age) {
+  DCHECK_LT(target_cert_index, valid_chain.size());
+  const ParsedCertificate* target_cert = valid_chain[target_cert_index].get();
+
   // 6.3.3 (a) Update the local CRL cache by obtaining a complete CRL, a
   //           delta CRL, or both, as required.
   //
@@ -270,6 +272,20 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
 
   ParsedCrlTbsCertList tbs_cert_list;
   if (!ParseCrlTbsCertList(tbs_cert_list_tlv, &tbs_cert_list))
+    return CRLRevocationStatus::UNKNOWN;
+
+  // 5.1.1.2  signatureAlgorithm
+  //    This field MUST contain the same algorithm identifier as the
+  //    signature field in the sequence tbsCertList (Section 5.1.2.2).
+  if (!SignatureAlgorithm::IsEquivalent(
+          signature_algorithm_tlv, tbs_cert_list.signature_algorithm_tlv)) {
+    return CRLRevocationStatus::UNKNOWN;
+  }
+  // TODO(https://crbug.com/749276): Check the signature algorithm against
+  // policy.
+  std::unique_ptr<SignatureAlgorithm> signature_algorithm =
+      SignatureAlgorithm::Create(signature_algorithm_tlv, /*errors=*/nullptr);
+  if (!signature_algorithm)
     return CRLRevocationStatus::UNKNOWN;
 
   // Check CRL dates. Roughly corresponds to 6.3.3 (a) (1) but does not attempt
@@ -317,7 +333,7 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
   std::string normalized_crl_issuer;
   if (!NormalizeNameTLV(tbs_cert_list.issuer_tlv, &normalized_crl_issuer))
     return CRLRevocationStatus::UNKNOWN;
-  if (der::Input(&normalized_crl_issuer) != cert->normalized_issuer())
+  if (der::Input(&normalized_crl_issuer) != target_cert->normalized_issuer())
     return CRLRevocationStatus::UNKNOWN;
 
   // 6.3.3 (b) (2) If the complete CRL includes an issuing distribution point
@@ -337,62 +353,62 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
 
   // 6.3.3 (c-e) skipped: delta CRLs and reason codes are not supported.
 
-  // 6.3.3 (f) Obtain and validate the certification path for the issuer of
-  //           the complete CRL.  The trust anchor for the certification
-  //           path MUST be the same as the trust anchor used to validate
-  //           the target certificate.
-  //
   // This implementation only supports direct CRLs where the CRL was signed by
-  // the same certificate that issued the target cert.
-  //
-  // Technically shouldn't even need to check that the CRL issuer name matches
-  // the |issuer_cert| subject since validation would already have confirmed
-  // that cert->issuer == issuer_cert->subject.
-  if (der::Input(&normalized_crl_issuer) != issuer_cert->normalized_subject())
-    return CRLRevocationStatus::UNKNOWN;
+  // one of the certs in its validated issuer chain. This allows handling some
+  // cases of key rollover without requiring additional CRL issuer cert
+  // discovery & path building.
+  // TODO(https://crbug.com/749276): should this loop start at
+  // |target_cert_index|? There doesn't seem to be anything in the specs that
+  // precludes a CRL signed by a self-issued cert from covering itself. On the
+  // other hand it seems like a pretty weird thing to allow and causes NIST
+  // PKITS 4.5.3 to pass when it seems like it would not be intended to (since
+  // issuingDistributionPoint CRL extension is not handled).
+  for (size_t i = target_cert_index + 1; i < valid_chain.size(); ++i) {
+    const ParsedCertificate* issuer_cert = valid_chain[i].get();
 
-  // 6.3.3 (f) If a key usage extension is present in the CRL issuer's
-  //           certificate, verify that the cRLSign bit is set.
-  if (issuer_cert->has_key_usage() &&
-      !issuer_cert->key_usage().AssertsBit(KEY_USAGE_BIT_CRL_SIGN)) {
-    return CRLRevocationStatus::UNKNOWN;
+    // 6.3.3 (f) Obtain and validate the certification path for the issuer of
+    //           the complete CRL.  The trust anchor for the certification
+    //           path MUST be the same as the trust anchor used to validate
+    //           the target certificate.
+    //
+    // As the |issuer_cert| is from the already validated chain, it is already
+    // known to chain to the same trust anchor as the target certificate.
+    if (der::Input(&normalized_crl_issuer) != issuer_cert->normalized_subject())
+      continue;
+
+    // 6.3.3 (f) If a key usage extension is present in the CRL issuer's
+    //           certificate, verify that the cRLSign bit is set.
+    if (issuer_cert->has_key_usage() &&
+        !issuer_cert->key_usage().AssertsBit(KEY_USAGE_BIT_CRL_SIGN)) {
+      continue;
+    }
+
+    // 6.3.3 (g) Validate the signature on the complete CRL using the public
+    //           key validated in step (f).
+    if (!VerifySignedData(*signature_algorithm, tbs_cert_list_tlv,
+                          signature_value, issuer_cert->tbs().spki_tlv)) {
+      continue;
+    }
+
+    // 6.3.3 (h,i) skipped. This implementation does not support delta CRLs.
+
+    // 6.3.3 (j) If (cert_status is UNREVOKED), then search for the
+    //           certificate on the complete CRL.  If an entry is found that
+    //           matches the certificate issuer and serial number as described
+    //           in Section 5.3.3, then set the cert_status variable to the
+    //           indicated reason as described in step (i).
+    //
+    // CRL is valid and covers |target_cert|, check if |target_cert| is present
+    // in the revokedCertificates sequence.
+    return GetCRLStatusForCert(target_cert->tbs().serial_number,
+                               tbs_cert_list.version,
+                               tbs_cert_list.revoked_certificates_tlv);
+
+    // 6.3.3 (k,l) skipped. This implementation does not support reason codes.
   }
 
-  // 5.1.1.2  signatureAlgorithm
-  //    This field MUST contain the same algorithm identifier as the
-  //    signature field in the sequence tbsCertList (Section 5.1.2.2).
-  if (!SignatureAlgorithm::IsEquivalent(
-          signature_algorithm_tlv, tbs_cert_list.signature_algorithm_tlv)) {
-    return CRLRevocationStatus::UNKNOWN;
-  }
-
-  // 6.3.3 (g) Validate the signature on the complete CRL using the public
-  //           key validated in step (f).
-  std::unique_ptr<SignatureAlgorithm> signature_algorithm =
-      SignatureAlgorithm::Create(signature_algorithm_tlv, /*errors=*/nullptr);
-  if (!signature_algorithm)
-    return CRLRevocationStatus::UNKNOWN;
-  // TODO(https://crbug.com/749276): Check the signature algorithm against
-  // policy.
-  if (!VerifySignedData(*signature_algorithm, tbs_cert_list_tlv,
-                        signature_value, issuer_cert->tbs().spki_tlv)) {
-    return CRLRevocationStatus::UNKNOWN;
-  }
-
-  // 6.3.3 (h,i) skipped. This implementation does not support delta CRLs.
-
-  // 6.3.3 (j) If (cert_status is UNREVOKED), then search for the
-  //           certificate on the complete CRL.  If an entry is found that
-  //           matches the certificate issuer and serial number as described
-  //           in Section 5.3.3, then set the cert_status variable to the
-  //           indicated reason as described in step (i).
-  //
-  // CRL is valid and covers |cert|, check if |cert| is present in the
-  // revokedCertificates sequence.
-  return GetCRLStatusForCert(cert->tbs().serial_number, tbs_cert_list.version,
-                             tbs_cert_list.revoked_certificates_tlv);
-
-  // 6.3.3 (k,l) skipped. This implementation does not support reason codes.
+  // Did not find the issuer & signer of |raw_crl| in |valid_chain|.
+  return CRLRevocationStatus::UNKNOWN;
 }
 
 }  // namespace net

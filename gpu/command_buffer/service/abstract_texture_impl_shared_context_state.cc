@@ -52,7 +52,7 @@ AbstractTextureImplOnSharedContext::AbstractTextureImplOnSharedContext(
   gfx::Rect cleared_rect;
   texture_->SetLevelInfo(target, 0, internal_format, width, height, depth,
                          border, format, type, cleared_rect);
-  texture_->SetImmutable(true);
+  texture_->SetImmutable(true, false);
   shared_context_state_->AddContextLostObserver(this);
 }
 

@@ -6,6 +6,7 @@
 #define NET_QUIC_ADDRESS_UTILS_H_
 
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address_family.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"

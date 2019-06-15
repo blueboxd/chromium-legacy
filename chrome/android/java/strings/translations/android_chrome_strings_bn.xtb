@@ -358,6 +358,7 @@
 <translation id="363596933471559332">সঞ্চিত ক্রেডেনশিয়াল ব্যবহার করে ওয়েবসাইটগুলিতে অটোমেটিক সাইন-ইন। যখন বৈশিষ্ট্যটি বন্ধ করা থাকে, তখন প্রতিবারই একটি ওয়েবসাইটে সাইন-ইন করার সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="3658159451045945436">রিসেট করলে আপনার ঘুরে দেখা সাইট সহ আপনার ডেটা সেভিংয়ের ইতিহাস মুছে দেয়।</translation>
 <translation id="3662546969139119822">এখানে কোনো ইতিহাস নেই</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" />টি ট্যাব গ্রুপ করুন।</translation>
 <translation id="3672452749423051839">নেভিগেশান ত্রুটির পরামর্শগুলি</translation>
 <translation id="3692944402865947621">স্টোর করার জায়গা খুঁজে না পাওয়ায় <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="3714981814255182093">খুঁজুন দণ্ডটি খুলুন</translation>
@@ -468,6 +469,7 @@
 <translation id="447252321002412580">Chrome-এর বৈশিষ্ট্য এবং পারফরম্যান্স আরও ভালো করতে সাহায্য করুন</translation>
 <translation id="4479647676395637221">সাইটগুলিকে আপনার ক্যামেরা ব্যবহার করতে দিতে মঞ্জুরি দেওয়ার আগে প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="4479972344484327217">Chrome-এর জন্য <ph name="MODULE" /> ইনস্টল করা হচ্ছে…</translation>
+<translation id="4482194545587547824">সার্চ এবং অন্যান্য Google পরিষেবাগুলি নিজের মতো করতে Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে</translation>
 <translation id="4487967297491345095">Chrome-এর সকল অ্যাপ ডেটা স্থায়ীভাবে মুছে ফেলা হবে। এর মধ্যে সব ফাইল, সেটিংস, অ্যাকাউন্ট, ডেটাবেস ইত্যাদি অন্তর্ভুক্ত।</translation>
 <translation id="4493497663118223949">লাইট মোড চালু আছে</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# দিন আগে}one{# দিন আগে}other{# দিন আগে}}</translation>
@@ -478,6 +480,7 @@
 <translation id="4532845899244822526">ফোল্ডার বেছে নিন</translation>
 <translation id="4538018662093857852">লাইট মোড চালু করুন</translation>
 <translation id="4550003330909367850">এখানে আপনার পাসওয়ার্ডটি দেখতে অথবা কপি করতে এই ডিভাইসে স্ক্রিন লক সেট করুন।</translation>
+<translation id="4556110439722119938">আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে যাতে আপনি আপনার সমস্ত ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>
 <translation id="4558311620361989323">ওয়েবপৃষ্ঠার শর্টকাটগুলি</translation>
 <translation id="4561979708150884304">কোনও কানেকশন নেই</translation>
 <translation id="4565377596337484307">পাসওয়ার্ড লুকান</translation>
@@ -632,6 +635,7 @@
 <translation id="557283862590186398">এই সাইটটির জন্য Chrome কে আপনার মাইক্রোফোনে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="55737423895878184">লোকেশন এবং বিজ্ঞপ্তিগুলি অনুমোদিত</translation>
 <translation id="5578795271662203820">এই ইমেজটির জন্য <ph name="SEARCH_ENGINE" /> খুঁজুন</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" />টি ট্যাব গ্রুপ করা হয়েছে</translation>
 <translation id="5581519193887989363"><ph name="BEGIN_LINK1" />সেটিংসে<ph name="END_LINK1" /> কী সিঙ্ক করা হবে তা আপনি সবসময় বেছে নিতে পারেন।</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
@@ -710,6 +714,7 @@
 <translation id="6181444274883918285">ব্যতিক্রমী সাইট যোগ করুন</translation>
 <translation id="6192333916571137726">ফাইল ডাউনলোড করুন</translation>
 <translation id="6192792657125177640">ব্যতিক্রমগুলি</translation>
+<translation id="6193448654517602979">ট্যাব বেছে নিন</translation>
 <translation id="6194112207524046168">Chrome যাতে আপনার ক্যামেরা অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে ক্যামেরা চালু করুন।</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
@@ -826,6 +831,7 @@
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6978479750597523876">অনুবাদ সেটিংস রিসেট করুন</translation>
 <translation id="6979737339423435258">শুরু থেকে</translation>
+<translation id="6980462514016882061">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবা নিজের মতো করতে Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে</translation>
 <translation id="6981982820502123353">ব্যবহারযোগ্যতা</translation>
 <translation id="6985347914332179298">এখানে কোনো ডাউনলোড নেই</translation>
 <translation id="6989267951144302301">ডাউনলোড করা যায়নি</translation>
@@ -852,11 +858,13 @@
 <translation id="7141896414559753902">সাইটগুলিকে পপ-আপ দেখাতে এবং রিডাইরেক্ট করা থেকে বাধা দিন (প্রস্তাবিত)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> থেকে <ph name="BEGIN_LINK" />মূল পৃষ্ঠাটি লোড করুন<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">গত ২৪ ঘণ্টা</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> ট্যাব বেছে নিন।</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কেবি</translation>
 <translation id="7177466738963138057">আপনি পরে সেটিংসে এই পরিবর্তন করতে পারবেন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7189372733857464326">Google Play পরিষেবাগুলির আপডেট শেষ হওয়ার জন্য অপেক্ষা করছে</translation>
 <translation id="7191430249889272776">পটভূমিতে ট্যাব খোলা হয়েছে।</translation>
+<translation id="722055596168483966">Google পরিষেবাগুলিকে নিজের মতো করুন</translation>
 <translation id="723171743924126238">ছবি বেছে নিন</translation>
 <translation id="7233236755231902816">ওয়েবের কন্টেন্ট নিজের ভাষায় পড়তে, Chrome-এর লেটেস্ট ভার্সন ইনস্টল করুন</translation>
 <translation id="7243308994586599757">স্ক্রীনের প্রায় নীচের দিকে বিকল্পগুলি উপলব্ধ</translation>
@@ -883,6 +891,7 @@
 <translation id="7403691278183511381">Chrome প্রথম চালানোর অভিজ্ঞতা</translation>
 <translation id="741204030948306876">হ্যাঁ, আমি রাজি</translation>
 <translation id="7413229368719586778">শুরুর তারিখ <ph name="DATE" /></translation>
+<translation id="7418565925463285788">ট্যাবগুলি গ্রুপ করুন…</translation>
 <translation id="7423098979219808738">প্রথমে জিজ্ঞাসা করুন</translation>
 <translation id="7423538860840206698">ক্লিপবোর্ড পড়া ব্লক করা হয়েছে</translation>
 <translation id="7431991332293347422">সার্চ এবং আরও অনেক কিছু নিজের মত করে সাজিয়ে নেওয়ার জন্য আপনার ব্রাউজিং ইতিহাস কীভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
@@ -1019,6 +1028,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ করা হবে না</translation>
 <translation id="8349013245300336738">ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজান</translation>
 <translation id="8364299278605033898">জনপ্রিয় ওয়েবসাইট দেখুন</translation>
+<translation id="8364603787714420828">বেছে নেওয়া ট্যাবগুলি থেকে <ph name="TAB_TITLE" /> বাদ দিন।</translation>
 <translation id="8372893542064058268">একটি নির্দিষ্ট সাইটের জন্য পটভূমি সিঙ্কের অনুমতি দিন।</translation>
 <translation id="8374821112118309944">আপনাকে একটি নতুন ভার্সনের TalkBack-এ আপডেট করতে হবে৷</translation>
 <translation id="8378714024927312812">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা</translation>
@@ -1084,6 +1094,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ট্যাব</translation>
 <translation id="885701979325669005">স্টোরেজ</translation>
 <translation id="8901170036886848654">কোনো বুকমার্ক পাওয়া যায়নি</translation>
+<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">শেয়ার করুন...</translation>
 <translation id="8912362522468806198">Google অ্যাকাউন্ট</translation>
 <translation id="8920114477895755567">অভিভাবকের বিশদ বিবরণের জন্য অপেক্ষা করা হচ্ছে৷</translation>
@@ -1101,6 +1112,7 @@
 <translation id="8986494364107987395">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি স্বয়ংক্রিয়ভাবে Google-এ পাঠান</translation>
 <translation id="8993760627012879038">ছদ্মবেশী মোডে একটি নতুন ট্যাব খুলুন</translation>
 <translation id="8998729206196772491">আপনি <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত একটি অ্যাকাউন্টের মাধ্যমে সাইন-ইন করছেন এবং এর অ্যাডমিনিস্ট্রেটরকে আপনার Chrome ডেটা নিয়ন্ত্রণ করতে দিচ্ছেন৷ আপনার ডেটা এই অ্যাকাউন্টের সাথে স্থায়ীভাবে আবদ্ধ হবে৷ Chrome থেকে সাইন-আউট করলে এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলা হবে, কিন্তু এটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
+<translation id="9005637476204108703">আপনার অ্যাকাউন্ট ম্যানেজ করতে এখানে ট্যাপ করুন</translation>
 <translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="9040142327097499898">বিজ্ঞপ্তির অনুমতি দেওয়া আছে। এই ডিভাইসে লোকেশন বন্ধ করা আছে।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{#টি ভিডিও}one{#টি ভিডিও}other{#টি ভিডিও}}</translation>
@@ -1121,6 +1133,7 @@
 <translation id="9155898266292537608">এছাড়াও কোনও শব্দের উপরে ট্যাপ করেও খুঁজতে পারেন</translation>
 <translation id="9169594135889675189">গ্রুপে নতুন ট্যাব যোগ করুন</translation>
 <translation id="9188680907066685419">ম্যানেজ করা অ্যাকাউন্ট থেকে সাইন-আউট করুন</translation>
+<translation id="9190112541605496997">আপনার অ্যাকাউন্ট ম্যানেজ করতে "অ্যাকাউন্ট ম্যানেজ করুন" বোতামে ট্যাপ করুন</translation>
 <translation id="9204836675896933765">১টি ফাইল বাকি</translation>
 <translation id="9206873250291191720">আ</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>

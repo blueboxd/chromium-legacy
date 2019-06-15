@@ -374,6 +374,13 @@ Polymer({
    * @private
    */
   getNetworksPageTitle_: function() {
+    // The shared Cellular/Tether subpage is referred to as "Mobile".
+    // TODO(khorimoto): Remove once Cellular/Tether are split into their own
+    // sections.
+    if (this.subpageType_ == CrOnc.Type.CELLULAR ||
+        this.subpageType_ == CrOnc.Type.TETHER) {
+      return this.i18n('OncTypeMobile');
+    }
     return this.i18n('OncType' + this.subpageType_);
   },
 

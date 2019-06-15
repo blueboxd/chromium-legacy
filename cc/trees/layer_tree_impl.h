@@ -343,9 +343,6 @@ class CC_EXPORT LayerTreeImpl {
     return painted_device_scale_factor_;
   }
 
-  void set_content_source_id(uint32_t id) { content_source_id_ = id; }
-  uint32_t content_source_id() { return content_source_id_; }
-
   void SetLocalSurfaceIdAllocationFromParent(
       const viz::LocalSurfaceIdAllocation&
           local_surface_id_allocation_from_parent);
@@ -704,7 +701,6 @@ class CC_EXPORT LayerTreeImpl {
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
-  uint32_t content_source_id_;
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
   gfx::Size device_viewport_size_;

@@ -76,6 +76,9 @@ struct Params;
 namespace RecordReconnection {
 struct Params;
 }  // namespace RecordReconnection
+namespace RecordDeviceSelection {
+struct Params;
+}  // namespace RecordDeviceSelection
 }  // namespace bluetooth_private
 
 class BluetoothPrivateSetAdapterStateFunction
@@ -280,6 +283,27 @@ class BluetoothPrivateRecordReconnectionFunction
   std::unique_ptr<bluetooth_private::RecordReconnection::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateRecordReconnectionFunction);
+};
+
+class BluetoothPrivateRecordDeviceSelectionFunction
+    : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.recordDeviceSelection",
+                             BLUETOOTHPRIVATE_RECORDDEVICESELECTION)
+
+  BluetoothPrivateRecordDeviceSelectionFunction();
+
+ protected:
+  ~BluetoothPrivateRecordDeviceSelectionFunction() override;
+
+  // BluetoothExtensionFunction:
+  bool CreateParams() override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  std::unique_ptr<bluetooth_private::RecordDeviceSelection::Params> params_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateRecordDeviceSelectionFunction);
 };
 
 }  // namespace api

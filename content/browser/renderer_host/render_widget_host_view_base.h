@@ -78,7 +78,6 @@ class RenderWidgetHostViewBaseObserver;
 class SyntheticGestureTarget;
 class TextInputManager;
 class TouchSelectionControllerClientManager;
-class WebContentsAccessibility;
 class WebCursor;
 class DelegatedFrameHost;
 struct TextInputState;
@@ -565,10 +564,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   bool is_fullscreen() { return is_fullscreen_; }
 
-  void set_web_contents_accessibility(WebContentsAccessibility* wcax) {
-    web_contents_accessibility_ = wcax;
-  }
-
   void set_is_currently_scrolling_viewport(
       bool is_currently_scrolling_viewport) {
     is_currently_scrolling_viewport_ = is_currently_scrolling_viewport;
@@ -659,8 +654,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The default background color used before getting the
   // |content_background_color|.
   base::Optional<SkColor> default_background_color_;
-
-  WebContentsAccessibility* web_contents_accessibility_ = nullptr;
 
   bool is_currently_scrolling_viewport_ = false;
 

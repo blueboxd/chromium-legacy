@@ -250,7 +250,7 @@
     {
       "app": "ios_chrome_translate_egtests",
       "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
+        "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -372,7 +372,7 @@
       {
       "app": "ios_chrome_translate_egtests",
       "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
+        "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -494,7 +494,7 @@
     {
       "app": "ios_chrome_translate_egtests",
       "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
+        "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -616,7 +616,7 @@
     {
       "app": "ios_chrome_translate_egtests",
       "test args": [
-        "--enable-features=CompactTranslateInfobarIOS,SlimNavigationManager,OfflineVersionWithoutNativeContent"
+        "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
       "os": "12.1",

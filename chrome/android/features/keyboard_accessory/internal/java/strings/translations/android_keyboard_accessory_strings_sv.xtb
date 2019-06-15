@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1492646418094134664">Tryck här om Chrome ska fylla i kreditkortsuppgifterna åt dig</translation>
+<translation id="1566281227936819866">Sparade betalningsmetoder visas</translation>
 <translation id="2610239185026711824">Föreslå lösenord</translation>
 <translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -12,5 +13,6 @@
 <translation id="6810986916917535017">Tryck här om Chrome ska fylla i lösenordet åt dig</translation>
 <translation id="7299100402441711551">Visa adresser</translation>
 <translation id="7494879913343971937">Visa lösenord</translation>
+<translation id="8037472847879765671">Visa betalningsmetoder</translation>
 <translation id="8507520749471379845">Lösenord finns tillgängliga</translation>
 </translationbundle>

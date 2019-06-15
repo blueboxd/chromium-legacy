@@ -446,6 +446,12 @@
       Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs mainīt iestatījumu (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).
       </translation>
 <translation id="1767673020408652620">Iespējot lietotņu ieteikumus meklēšanas lodziņa nulles stāvoklī</translation>
+<translation id="17719159826324007">
+      Kad šai politikai ir iestatīta vērtība “ArcSession”, tā liek ierīcei veikt atkārtotu palaišanu pēc lietotāja izrakstīšanās, ja operētājsistēma Android ir sākusi darbu.
+      Ja šai politikai ir iestatīta vērtība “Always”, tā liek ierīcei veikt atkārtotu palaišanu pēc katras lietotāja izrakstīšanās.
+      Ja šī politika nav iestatīta, tai nav nekādas ietekmes, un pēc lietotāja izrakstīšanās netiek veikta piespiedu atkārtota palaišana. Tas pats notiek, ja politikai ir iestatīta vērtība “Never”.
+      Šī politika ietekmē tikai nesaistītus lietotājus.
+      </translation>
 <translation id="1781356041596378058">Šī politika arī kontrolē piekļuvi Android izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā patiesu, lietotāji nevarēs piekļūt izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā aplamu vai neiestatīsiet politiku, lietotāji varēs piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android iestatījumu lietotnē.</translation>
 <translation id="1793346220873697538">Atspējot drukāšanu ar PIN kodu pēc noklusējuma</translation>
 <translation id="1797233582739332495">Periodiski rādīt lietotājam uzvedni par obligātu atkārtotu palaišanu</translation>
@@ -947,6 +953,7 @@
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="268577405881275241">Iespējot datu saspiešanas starpniekservera funkciju</translation>
 <translation id="2693108589792503178">Konfigurēt paroles maiņas URL.</translation>
+<translation id="2694143893026486692">Ir iespējota dokota lupa</translation>
 <translation id="2706708761587205154">Atļaut drukāšanu tikai ar PIN kodu</translation>
 <translation id="2710534340210290498">Ja šai politikai ir iestatīta vērtība “False”, lietotāji nevarēs bloķēt ekrānu (varēs tikai izrakstīties no lietotāja sesijas). Ja šī iestatījuma vērtība “True” vai tā nav iestatīta, lietotāji, kuri būs autentificējušies ar paroli, varēs bloķēt ekrānu.</translation>
 <translation id="2731627323327011390">Atspējot <ph name="PRODUCT_OS_NAME" /> sertifikātu izmantošanu ARC lietotnēm</translation>
@@ -1183,6 +1190,7 @@
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Ar šo politiku funkcijas WebDriver lietotāji var ignorēt
       politikas, kas var ietekmēt šīs funkcijas darbību.
 
@@ -1697,12 +1705,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šis iestatījums nav konfigurēts vai tam ir iestatīta vērtība “false”, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek automātiski meklēti atjauninājumi.
 
       Brīdinājums: ieteicams iespējot automātiskos atjauninājumus, lai lietotāji saņemtu programmatūras atjauninājumus un kritiskus drošības labojumus. Automātisko atjauninājumu izslēgšana var apdraudēt lietotājus.</translation>
-<translation id="4018000735882846261">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
-
-      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
-      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
-      Ja politika nav iestatīta, Google asistents neklausīsies balss aktivizēšanas frāzi.
-      </translation>
 <translation id="4020682745012723568">Android lietotnēm nav pieejami uz lietotāja profilu pārsūtītie sīkfaili.</translation>
 <translation id="402759845255257575">Neatļaut nevienai vietnei izpildīt JavaScript</translation>
 <translation id="4027608872760987929">Iespējo noklusējuma meklētājprogrammu</translation>

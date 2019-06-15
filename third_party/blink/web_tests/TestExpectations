@@ -2841,6 +2841,8 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Failure ]
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/start_alignment.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
@@ -5857,6 +5859,10 @@ crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout 
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
+
+# Sheriff 2019-06-14
+crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
+crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
 # Flaky on Linux
 crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]

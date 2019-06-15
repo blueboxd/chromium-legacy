@@ -235,6 +235,7 @@ class VIEWS_EXPORT Label : public View,
   WordLookupClient* GetWordLookupClient() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  void OnHandlePropertyChangeEffects(PropertyEffects property_effects) override;
 
  protected:
   // Create a single RenderText instance to actually be painted.

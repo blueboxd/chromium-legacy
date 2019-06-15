@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1409544243779336081">Appanbefaling</translation>
+<translation id="1498028757988366001">Du har søkt etter dette før. Hvis du sletter «<ph name="QUERY" />» fra loggen, blir det fjernet permanent fra kontoen din på alle enhetene dine.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutt og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Varsel</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{For 1 min siden}other{For # min siden}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutt igjen}other{# minutter igjen}}</translation>
+<translation id="7430878839542012341">Vil du slette dette søket fra loggen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Avbryt</translation>

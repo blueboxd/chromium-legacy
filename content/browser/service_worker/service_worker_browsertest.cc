@@ -3256,7 +3256,7 @@ class CacheStorageSideDataSizeChecker
 
   void OpenCacheOnIOThread(int* result, base::OnceClosure continuation) {
     CacheStorageHandle cache_storage =
-        cache_storage_context_->cache_manager()->OpenCacheStorage(
+        cache_storage_context_->CacheManager()->OpenCacheStorage(
             url::Origin::Create(origin_), CacheStorageOwner::kCacheAPI);
     cache_storage.value()->OpenCache(
         cache_name_, /* trace_id = */ 0,

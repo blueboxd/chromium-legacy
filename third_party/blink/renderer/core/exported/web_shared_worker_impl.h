@@ -40,7 +40,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"

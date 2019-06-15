@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/feedback/feedback_util.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -43,7 +45,6 @@ bool IsFromUserInteraction(FeedbackSource source) {
   }
 }
 #endif
-
 }  // namespace
 
 void ShowFeedbackPage(Browser* browser,
@@ -63,7 +64,9 @@ void ShowFeedbackPage(Browser* browser,
     LOG(ERROR) << "Cannot invoke feedback: No profile found!";
     return;
   }
-
+  if (!profile->GetPrefs()->GetBoolean(prefs::kUserFeedbackAllowed)) {
+    return;
+  }
   // Record an UMA histogram to know the most frequent feedback request source.
   UMA_HISTOGRAM_ENUMERATION("Feedback.RequestSource", source,
                             kFeedbackSourceCount);

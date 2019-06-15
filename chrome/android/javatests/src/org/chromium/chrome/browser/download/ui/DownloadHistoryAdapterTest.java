@@ -189,7 +189,7 @@ public class DownloadHistoryAdapterTest {
             throws Exception {
         int callCount = mObserver.onOfflineItemUpdatedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mOfflineContentProvider.observer.onItemUpdated(item); });
+                () -> { mOfflineContentProvider.observer.onItemUpdated(item, null); });
         if (numberOfCallsToWaitFor > 0) {
             mObserver.onChangedCallback.waitForCallback(callCount, numberOfCallsToWaitFor);
         }

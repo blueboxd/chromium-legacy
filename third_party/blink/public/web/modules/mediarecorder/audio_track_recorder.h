@@ -30,7 +30,7 @@ class Thread;
 // the "capture thread"). It owns an internal thread to use for encoding, on
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
-class BLINK_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
+class BLINK_MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.

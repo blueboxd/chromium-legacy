@@ -73,17 +73,21 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionsShown) {
   base::HistogramTester histogram_tester;
   feed_logging_metrics()->OnSuggestionShown(
       /*position=*/1, test_clock()->Now(),
-      /*score=*/0.01f, test_clock()->Now() - base::TimeDelta::FromHours(2));
+      /*score=*/0.01f, test_clock()->Now() - base::TimeDelta::FromHours(2),
+      /*is_available_offline=*/false);
   // Test corner cases for score.
   feed_logging_metrics()->OnSuggestionShown(
       /*position=*/2, test_clock()->Now(),
-      /*score=*/0.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
+      /*score=*/0.0f, test_clock()->Now() - base::TimeDelta::FromHours(2),
+      /*is_available_offline=*/true);
   feed_logging_metrics()->OnSuggestionShown(
       /*position=*/3, test_clock()->Now(),
-      /*score=*/1.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
+      /*score=*/1.0f, test_clock()->Now() - base::TimeDelta::FromHours(2),
+      /*is_available_offline=*/true);
   feed_logging_metrics()->OnSuggestionShown(
       /*position=*/4, test_clock()->Now(),
-      /*score=*/8.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
+      /*score=*/8.0f, test_clock()->Now() - base::TimeDelta::FromHours(2),
+      /*is_available_offline=*/true);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions.Shown"),
@@ -98,6 +102,10 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionsShown) {
                   base::Bucket(/*min=*/1, /*count=*/1),
                   base::Bucket(/*min=*/10, /*count=*/1),
                   base::Bucket(/*min=*/11, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "ContentSuggestions.Feed.AvailableOffline.Shown"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
+                          base::Bucket(/*min=*/1, /*count=*/3)));
 }
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnPageShown) {
@@ -112,16 +120,16 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionOpened) {
   base::HistogramTester histogram_tester;
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/11, test_clock()->Now(),
-      /*score=*/1.0f);
+      /*score=*/1.0f, /*is_available_offline=*/false);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/13, test_clock()->Now(),
-      /*score=*/1.0f);
+      /*score=*/1.0f, /*is_available_offline=*/false);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/15, test_clock()->Now(),
-      /*score=*/1.0f);
+      /*score=*/1.0f, /*is_available_offline=*/false);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/23, test_clock()->Now(),
-      /*score=*/1.0f);
+      /*score=*/1.0f, /*is_available_offline=*/true);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions.Opened"),
@@ -129,6 +137,10 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionOpened) {
                   base::Bucket(/*min=*/13, /*count=*/1),
                   base::Bucket(/*min=*/15, /*count=*/1),
                   base::Bucket(/*min=*/23, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "ContentSuggestions.Feed.AvailableOffline.Opened"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
+                          base::Bucket(/*min=*/1, /*count=*/1)));
 }
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {

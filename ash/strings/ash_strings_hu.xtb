@@ -57,6 +57,7 @@
 <translation id="1746730358044914197">A rendszergazda állította be a beviteli módszereket.</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1761222317188459878">Hálózati kapcsolat ki- és bekapcsolása. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Görgetés jobbra</translation>
 <translation id="1812997170047690955">Mi van a képernyőn?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Segéd (betöltés…)</translation>
@@ -205,6 +206,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3977512764614765090">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és a töltés jelenleg is folyamatban van.</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
+<translation id="4021716437419160885">Görgetés lefelé</translation>
 <translation id="4042660782729322247">Jelenleg megosztja a képernyőt</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Kikapcsolva 1 alkalmazás számára}other{Kikapcsolva # alkalmazás számára}}</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
@@ -263,6 +265,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4917385247580444890">Erős</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="4924411785043111640">Újraindítás és visszaállítás</translation>
+<translation id="495046168593986294">Görgetés felfelé</translation>
 <translation id="4961318399572185831">Képernyő átküldése</translation>
 <translation id="5030687792513154421">Lejárt az idő</translation>
 <translation id="5035236842988137213">A(z) <ph name="DEVICE_NAME" /> új telefonhoz csatlakozott</translation>
@@ -320,6 +323,8 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="598882571027504733">A frissítés lekéréséhez indítsa újra a Chromebookot a csatlakoztatott billentyűzet segítségével.</translation>
 <translation id="5992218262414051481">Nagy kontrasztú mód bekapcsolva. Kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+H billentyűparancsot.</translation>
 <translation id="6018164090099858612">Kilépés a tükrözési módból</translation>
+<translation id="602001110135236999">Görgetés balra</translation>
+<translation id="6040143037577758943">Bezárás</translation>
 <translation id="6043212731627905357">Ez a monitor nem illik össze <ph name="DEVICE_TYPE" />-eszközével (a monitor nem támogatott).</translation>
 <translation id="6043994281159824495">Kijelentkezés most</translation>
 <translation id="6047696787498798094">A képernyőmegosztás leáll, amikor másik felhasználóra vált. Folytatja?</translation>

@@ -2138,6 +2138,7 @@ if (!is_android) {
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
+        "../browser/ui/ash/launcher/browser_shortcut_launcher_item_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_test_util.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_test_util.h",
@@ -3715,6 +3716,9 @@ test("unit_tests") {
       "../utility/importer/firefox_importer_unittest_utils.h",
       "../utility/importer/firefox_importer_unittest_utils_mac.cc",
       "../utility/importer/safari_importer_unittest.mm",
+
+      # Android uses different way of showing feedback page
+      "../browser/feedback/show_feedback_page_unittest.cc",
     ]
     if (is_posix || is_fuchsia) {
       sources += [ "../browser/process_singleton_posix_unittest.cc" ]

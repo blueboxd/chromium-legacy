@@ -43,11 +43,12 @@ GrVkImageInfo CreateGrVkImageInfo(VkImage image,
                        1 /* levelCount */);
 }
 
-VkResult CreateExternalVkImage(SharedContextState* context_state,
-                               VkFormat format,
-                               const gfx::Size& size,
-                               bool is_transfer_dst,
-                               VkImage* image) {
+VkResult CreateVkImage(SharedContextState* context_state,
+                       VkFormat format,
+                       const gfx::Size& size,
+                       bool is_transfer_dst,
+                       bool is_external,
+                       VkImage* image) {
   VkExternalMemoryImageCreateInfoKHR external_info = {
       .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
       .handleTypes = context_state->vk_context_provider()
@@ -61,7 +62,7 @@ VkResult CreateExternalVkImage(SharedContextState* context_state,
 
   VkImageCreateInfo create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext = &external_info,
+      .pNext = is_external ? &external_info : nullptr,
       .flags = 0,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format,
@@ -102,6 +103,28 @@ uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
   return kInvalidTypeIndex;
 }
 
+class ScopedPixelStore {
+ public:
+  ScopedPixelStore(gl::GLApi* api, GLenum name, GLint value)
+      : api_(api), name_(name), value_(value) {
+    api_->glGetIntegervFn(name_, &old_value_);
+    if (value_ != old_value_)
+      api->glPixelStoreiFn(name_, value_);
+  }
+  ~ScopedPixelStore() {
+    if (value_ != old_value_)
+      api_->glPixelStoreiFn(name_, old_value_);
+  }
+
+ private:
+  gl::GLApi* const api_;
+  const GLenum name_;
+  const GLint value_;
+  GLint old_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
+};
+
 }  // namespace
 
 // static
@@ -120,8 +143,9 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   VkFormat vk_format = ToVkFormat(format);
   VkImage image;
   bool is_transfer_dst = using_gmb || !pixel_data.empty();
-  VkResult result = CreateExternalVkImage(context_state, vk_format, size,
-                                          is_transfer_dst, &image);
+  bool is_external = context_state->support_vulkan_external_object();
+  VkResult result = CreateVkImage(context_state, vk_format, size,
+                                  is_transfer_dst, is_external, &image);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "Failed to create external VkImage: " << result;
     return nullptr;
@@ -146,7 +170,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   VkMemoryAllocateInfo mem_alloc_info = {
       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .pNext = &external_info,
+      .pNext = is_external ? &external_info : nullptr,
       .allocationSize = requirements.size,
       .memoryTypeIndex = FindMemoryTypeIndex(
           context_state, requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
@@ -175,8 +199,13 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
       mailbox, format, size, color_space, usage, context_state, image, memory,
       requirements.size, vk_format, command_pool));
 
-  if (!pixel_data.empty())
-    backing->WritePixels(pixel_data, 0);
+  if (!pixel_data.empty()) {
+    backing->WritePixels(
+        pixel_data.size(), 0,
+        base::BindOnce([](const void* data, size_t size,
+                          void* buffer) { memcpy(buffer, data, size); },
+                       pixel_data.data(), pixel_data.size()));
+  }
 
   return backing;
 }
@@ -346,26 +375,24 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
 
 bool ExternalVkImageBacking::BeginAccess(
     bool readonly,
-    std::vector<SemaphoreHandle>* semaphore_handles) {
-  if (readonly) {
-    if (reads_in_progress_ == 0 && shared_memory_mapping_.IsValid() &&
-        shared_memory_is_updated_) {
-      if (!WritePixels(
-              shared_memory_mapping_.GetMemoryAsSpan<const uint8_t>().subspan(
-                  memory_offset_),
-              stride_))
-        return false;
-      shared_memory_is_updated_ = false;
-    }
-  }
+    std::vector<SemaphoreHandle>* semaphore_handles,
+    bool is_gl) {
+  if (readonly && !reads_in_progress_)
+    UpdateContent(is_gl ? kInGLTexture : kInVkImage);
   return BeginAccessInternal(readonly, semaphore_handles);
 }
 
 void ExternalVkImageBacking::EndAccess(bool readonly,
-                                       SemaphoreHandle semaphore_handle) {
+                                       SemaphoreHandle semaphore_handle,
+                                       bool is_gl) {
   EndAccessInternal(readonly, std::move(semaphore_handle));
-  // TODO(penghuang): read pixels back from VkImage to shared memory GMB, if
-  // this feature is needed.
+  if (!readonly) {
+    if (use_separate_gl_texture()) {
+      latest_content_ = is_gl ? kInGLTexture : kInVkImage;
+    } else {
+      latest_content_ = kInVkImage | kInGLTexture;
+    }
+  }
 }
 
 bool ExternalVkImageBacking::IsCleared() const {
@@ -378,7 +405,7 @@ void ExternalVkImageBacking::SetCleared() {
 
 void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
-  shared_memory_is_updated_ = true;
+  latest_content_ = kInSharedMemory;
 }
 
 void ExternalVkImageBacking::Destroy() {
@@ -397,8 +424,8 @@ void ExternalVkImageBacking::Destroy() {
   if (texture_) {
     // Ensure that a context is current before removing the ref and calling
     // glDeleteTextures.
-    if (!context_state()->context()->IsCurrent(nullptr))
-      context_state()->context()->MakeCurrent(context_state()->surface());
+    if (!gl::g_current_gl_context)
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
 }
@@ -427,47 +454,50 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
   if (!texture_) {
-    VkMemoryGetFdInfoKHR get_fd_info;
-    get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-    get_fd_info.pNext = nullptr;
-    get_fd_info.memory = image_info.fAlloc.fMemory;
-    get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+    gl::GLApi* api = gl::g_current_gl_context;
+    GLuint memory_object = 0;
+    if (!use_separate_gl_texture()) {
+      VkMemoryGetFdInfoKHR get_fd_info;
+      get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
+      get_fd_info.pNext = nullptr;
+      get_fd_info.memory = image_info.fAlloc.fMemory;
+      get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
-    int memory_fd = -1;
-    vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
-    if (memory_fd < 0) {
-      DLOG(ERROR)
-          << "Unable to extract file descriptor out of external VkImage";
-      return nullptr;
+      int memory_fd = -1;
+      vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
+      if (memory_fd < 0) {
+        DLOG(ERROR)
+            << "Unable to extract file descriptor out of external VkImage";
+        return nullptr;
+      }
+
+      api->glCreateMemoryObjectsEXTFn(1, &memory_object);
+      api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
+                                 GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
     }
 
-    gl::GLApi* api = gl::g_current_gl_context;
-
-    constexpr GLenum target = GL_TEXTURE_2D;
-    constexpr GLenum get_target = GL_TEXTURE_BINDING_2D;
     GLuint internal_format = viz::TextureStorageFormat(format());
-
-    GLuint memory_object;
-    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
-                               GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
+    GLint old_texture_binding = 0;
+    api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture_binding);
     GLuint texture_service_id;
     api->glGenTexturesFn(1, &texture_service_id);
-
-    GLint old_texture_binding = 0;
-    api->glGetIntegervFn(get_target, &old_texture_binding);
-    api->glBindTextureFn(target, texture_service_id);
-    api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                size().width(), size().height(), memory_object,
-                                0);
-
+    api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (use_separate_gl_texture()) {
+      api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                               size().width(), size().height());
+    } else {
+      DCHECK(memory_object);
+      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                  size().width(), size().height(),
+                                  memory_object, 0);
+    }
     texture_ = new gles2::Texture(texture_service_id);
     texture_->SetLightweightRef();
-    texture_->SetTarget(target, 1);
+    texture_->SetTarget(GL_TEXTURE_2D, 1);
     texture_->sampler_state_.min_filter = GL_LINEAR;
     texture_->sampler_state_.mag_filter = GL_LINEAR;
     texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
@@ -479,12 +509,12 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
 
     GLenum gl_format = viz::GLDataFormat(format());
     GLenum gl_type = viz::GLDataType(format());
-    texture_->SetLevelInfo(target, 0, internal_format, size().width(),
+    texture_->SetLevelInfo(GL_TEXTURE_2D, 0, internal_format, size().width(),
                            size().height(), 1, 0, gl_format, gl_type,
                            cleared_rect);
-    texture_->SetImmutable(true);
+    texture_->SetImmutable(true, true);
 
-    api->glBindTextureFn(target, old_texture_binding);
+    api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
   }
   return std::make_unique<ExternalVkImageGlRepresentation>(
       manager, this, tracker, texture_, texture_->service_id());
@@ -526,13 +556,57 @@ void ExternalVkImageBacking::InstallSharedMemory(
   Update(nullptr);
 }
 
-bool ExternalVkImageBacking::WritePixels(
-    const base::span<const uint8_t>& pixel_data,
-    size_t stride) {
-  DCHECK(stride == 0 || size().height() * stride <= pixel_data.size());
+void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
+  // Only support one backing for now.
+  DCHECK(content_flags == kInVkImage || content_flags == kInGLTexture ||
+         content_flags == kInSharedMemory);
+
+  if ((latest_content_ & content_flags) == content_flags)
+    return;
+
+  if (content_flags == kInGLTexture && !use_separate_gl_texture())
+    content_flags = kInVkImage;
+
+  if (content_flags == kInVkImage) {
+    if (latest_content_ & kInSharedMemory) {
+      if (!shared_memory_mapping_.IsValid())
+        return;
+      auto pixel_data =
+          shared_memory_mapping_.GetMemoryAsSpan<const uint8_t>().subspan(
+              memory_offset_);
+      if (!WritePixels(
+              pixel_data.size(), stride_,
+              base::BindOnce([](const void* data, size_t size,
+                                void* buffer) { memcpy(buffer, data, size); },
+                             pixel_data.data(), pixel_data.size()))) {
+        return;
+      }
+      latest_content_ |=
+          use_separate_gl_texture() ? kInVkImage : kInVkImage | kInGLTexture;
+      return;
+    }
+    if ((latest_content_ & kInGLTexture) && use_separate_gl_texture()) {
+      CopyPixelsFromGLTexture();
+      latest_content_ |= kInVkImage;
+      return;
+    }
+  } else if (content_flags == kInGLTexture) {
+    // TODO(penghuang): support updating content in gl texture.
+    NOTIMPLEMENTED_LOG_ONCE();
+  } else if (content_flags == kInSharedMemory) {
+    // TODO(penghuang): read pixels back from VkImage to shared memory GMB, if
+    // this feature is needed.
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
+}
+
+bool ExternalVkImageBacking::WritePixels(size_t data_size,
+                                         size_t stride,
+                                         FillBufferCallback callback) {
+  DCHECK(stride == 0 || size().height() * stride <= data_size);
   VkBufferCreateInfo buffer_create_info = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-      .size = pixel_data.size(),
+      .size = data_size,
       .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
@@ -576,16 +650,17 @@ bool ExternalVkImageBacking::WritePixels(
     return false;
   }
 
-  void* data = nullptr;
-  result = vkMapMemory(device(), stage_memory, 0 /* memoryOffset */,
-                       pixel_data.size(), 0, &data);
+  void* buffer = nullptr;
+  result = vkMapMemory(device(), stage_memory, 0 /* memoryOffset */, data_size,
+                       0, &buffer);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkMapMemory() failed. " << result;
     vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
     vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
     return false;
   }
-  memcpy(data, pixel_data.data(), pixel_data.size());
+
+  std::move(callback).Run(buffer);
   vkUnmapMemory(device(), stage_memory);
 
   std::vector<gpu::SemaphoreHandle> handles;
@@ -662,6 +737,97 @@ bool ExternalVkImageBacking::WritePixels(
                                                      stage_memory);
 
   return true;
+}
+
+void ExternalVkImageBacking::CopyPixelsFromGLTexture() {
+  DCHECK(use_separate_gl_texture());
+  DCHECK(texture_);
+
+  GLenum gl_format = GL_NONE;
+  GLenum gl_type = GL_NONE;
+  size_t bytes_per_pixel = 0;
+  switch (ToVkFormat(format())) {
+    case VK_FORMAT_R8G8B8A8_UNORM:
+      gl_format = GL_RGBA;
+      gl_type = GL_UNSIGNED_BYTE;
+      bytes_per_pixel = 4;
+      break;
+    case VK_FORMAT_B8G8R8A8_UNORM:
+      gl_format = GL_BGRA;
+      gl_type = GL_UNSIGNED_BYTE;
+      bytes_per_pixel = 4;
+      break;
+    case VK_FORMAT_R8_UNORM:
+      gl_format = GL_RED;
+      gl_type = GL_UNSIGNED_BYTE;
+      bytes_per_pixel = 1;
+      break;
+    case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+      gl_format = GL_RGBA;
+      gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
+      bytes_per_pixel = 2;
+      break;
+    case VK_FORMAT_R5G6B5_UNORM_PACK16:
+      gl_format = GL_RGB;
+      gl_type = GL_UNSIGNED_SHORT_5_6_5;
+      bytes_per_pixel = 2;
+      break;
+    case VK_FORMAT_R16_UNORM:
+      gl_format = GL_RED;
+      gl_type = GL_UNSIGNED_SHORT;
+      bytes_per_pixel = 2;
+      break;
+    case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+      gl_format = GL_RGBA;
+      gl_type = GL_UNSIGNED_INT_2_10_10_10_REV;
+      bytes_per_pixel = 4;
+      break;
+    default:
+      NOTREACHED() << "Not supported resource format=" << format();
+      return;
+  }
+
+  // Make sure GrContext is not using GL. So we don't need reset GrContext
+  DCHECK(!context_state_->GrContextIsGL());
+
+  // Make sure a gl context is current, since textures are shared between all gl
+  // contexts, we don't care which gl context is current.
+  if (!gl::g_current_gl_context &&
+      !context_state_->MakeCurrent(nullptr, true /* needs_gl */))
+    return;
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  GLuint framebuffer;
+  GLint old_framebuffer;
+  api->glGetIntegervFn(GL_READ_FRAMEBUFFER_BINDING, &old_framebuffer);
+  api->glGenFramebuffersEXTFn(1, &framebuffer);
+  api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, framebuffer);
+  api->glFramebufferTexture2DEXTFn(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texture_->service_id(), 0);
+  GLenum status = api->glCheckFramebufferStatusEXTFn(GL_READ_FRAMEBUFFER);
+  DCHECK_EQ(status, static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
+      << "CheckFramebufferStatusEXT() failed.";
+
+  base::CheckedNumeric<size_t> checked_size = bytes_per_pixel;
+  checked_size *= size().width();
+  checked_size *= size().height();
+  DCHECK(checked_size.IsValid());
+
+  ScopedPixelStore pack_row_length(api, GL_PACK_ROW_LENGTH, 0);
+  ScopedPixelStore pack_skip_pixels(api, GL_PACK_SKIP_PIXELS, 0);
+  ScopedPixelStore pack_skip_rows(api, GL_PACK_SKIP_ROWS, 0);
+  ScopedPixelStore pack_aligment(api, GL_PACK_ALIGNMENT, 1);
+
+  WritePixels(checked_size.ValueOrDie(), 0,
+              base::BindOnce(
+                  [](gl::GLApi* api, const gfx::Size& size, GLenum format,
+                     GLenum type, void* buffer) {
+                    api->glReadPixelsFn(0, 0, size.width(), size.height(),
+                                        format, type, buffer);
+                  },
+                  api, size(), gl_format, gl_type));
+  api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, old_framebuffer);
+  api->glDeleteFramebuffersEXTFn(1, &framebuffer);
 }
 
 bool ExternalVkImageBacking::BeginAccessInternal(

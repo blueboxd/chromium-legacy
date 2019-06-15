@@ -69,6 +69,26 @@ class TabListMediator {
     public interface TitleProvider { String getTitle(Tab tab); }
 
     /**
+     * An interface to handle requests about updating TabGridDialog.
+     */
+    public interface TabGridDialogHandler {
+        /**
+         * This method updates the status of the ungroup bar in TabGridDialog.
+         *
+         * @param status The status in {@link TabGridDialogParent.UngroupBarStatus} that the ungroup
+         *         bar should be updated to.
+         */
+        void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status);
+
+        /**
+         * This method updates the content of the TabGridDialog.
+         *
+         * @param tabId The id of the {@link Tab} that is used to update TabGridDialog.
+         */
+        void updateDialogContent(int tabId);
+    }
+
+    /**
      * The object to set to TabProperties.THUMBNAIL_FETCHER for the TabGridViewBinder to obtain
      * the thumbnail asynchronously.
      */
@@ -163,6 +183,7 @@ class TabListMediator {
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final SelectionDelegateProvider mSelectionDelegateProvider;
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
+    private final TabGridDialogHandler mTabGridDialogHandler;
     private final String mComponentName;
     private boolean mActionsOnAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
@@ -279,7 +300,7 @@ class TabListMediator {
             @Nullable CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable SelectionDelegateProvider selectionDelegateProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            String componentName) {
+            @Nullable TabGridDialogHandler dialogHandler, String componentName) {
         mTabModelSelector = tabModelSelector;
         mThumbnailProvider = thumbnailProvider;
         mModel = model;
@@ -289,6 +310,7 @@ class TabListMediator {
         mCreateGroupButtonProvider = createGroupButtonProvider;
         mSelectionDelegateProvider = selectionDelegateProvider;
         mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
+        mTabGridDialogHandler = dialogHandler;
         mActionsOnAllRelatedTabs = actionOnRelatedTabs;
 
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -372,6 +394,30 @@ class TabListMediator {
                     int newPosition = mModel.indexFromId(destinationTab.getId());
                     if (!isValidMovePosition(newPosition)) return;
                     mModel.move(curPosition, newPosition);
+                }
+
+                @Override
+                public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
+                    TabGroupModelFilter filter =
+                            (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                                    .getCurrentTabModelFilter();
+                    if (mTabGridDialogHandler != null) {
+                        int curIndex = mModel.indexFromId(movedTab.getId());
+                        if (!isValidMovePosition(curIndex)) return;
+                        mModel.removeAt(curIndex);
+                        mTabGridDialogHandler.updateDialogContent(
+                                filter.getTabAt(prevFilterIndex).getId());
+                        return;
+                    }
+                    if (mActionsOnAllRelatedTabs) {
+                        Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
+                        addTabInfoToModel(movedTab, mModel.size(),
+                                currentSelectedTab.getId() == movedTab.getId());
+                        boolean isSelected = mTabModelSelector.getCurrentTabId()
+                                == filter.getTabAt(prevFilterIndex).getId();
+                        updateTab(prevFilterIndex, filter.getTabAt(prevFilterIndex), isSelected,
+                                true, false);
+                    }
                 }
 
                 @Override
@@ -489,8 +535,9 @@ class TabListMediator {
             }
         };
 
-        mTabGridItemTouchHelperCallback = new TabGridItemTouchHelperCallback(mModel,
-                mTabModelSelector, mTabClosedListener, mComponentName, mActionsOnAllRelatedTabs);
+        mTabGridItemTouchHelperCallback =
+                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
+                        mTabGridDialogHandler, mComponentName, mActionsOnAllRelatedTabs);
     }
 
     private void onTabClosedFrom(int tabId, String fromComponent) {
@@ -637,7 +684,6 @@ class TabListMediator {
         mModel.get(index).set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(tab));
         mModel.get(index).set(TabProperties.IS_HIDDEN, false);
-
         Callback<Drawable> faviconCallback = drawable -> {
             int modelIndex = mModel.indexFromId(tab.getId());
             if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
@@ -656,9 +702,10 @@ class TabListMediator {
     /**
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
-    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(
-            final float swipeToDismissThreshold, final float mergeThreshold) {
-        mTabGridItemTouchHelperCallback.setupCallback(swipeToDismissThreshold, mergeThreshold);
+    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold,
+            final float mergeThreshold, final float ungroupThreshold) {
+        mTabGridItemTouchHelperCallback.setupCallback(
+                swipeToDismissThreshold, mergeThreshold, ungroupThreshold);
         return mTabGridItemTouchHelperCallback;
     }
 

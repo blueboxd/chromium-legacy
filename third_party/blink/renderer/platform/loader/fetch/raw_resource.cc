@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 #include <memory>
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"

@@ -137,7 +137,7 @@ class ResourceDispatcherTest : public testing::Test,
     int request_id = dispatcher()->StartAsync(
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, false, false, std::move(peer),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);

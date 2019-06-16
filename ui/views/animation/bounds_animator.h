@@ -38,8 +38,7 @@ class View;
 // You can attach an AnimationDelegate to the individual animation for a view
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
-class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews,
-                                    public gfx::AnimationContainerObserver {
+class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
  public:
   explicit BoundsAnimator(View* view);
   ~BoundsAnimator() override;
@@ -158,8 +157,6 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
-
-  // gfx::AnimationContainerObserver overrides.
   void AnimationContainerProgressed(
       gfx::AnimationContainer* container) override;
   void AnimationContainerEmpty(gfx::AnimationContainer* container) override;

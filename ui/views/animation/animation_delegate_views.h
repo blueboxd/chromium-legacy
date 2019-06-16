@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
+#include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
@@ -18,8 +19,10 @@ class View;
 
 // Provides default implementaton to adapt CompositorAnimationRunner for
 // Animation.
-class VIEWS_EXPORT AnimationDelegateViews : public gfx::AnimationDelegate,
-                                            public ViewObserver {
+class VIEWS_EXPORT AnimationDelegateViews
+    : public gfx::AnimationDelegate,
+      public ViewObserver,
+      public gfx::AnimationContainerObserver {
  public:
   explicit AnimationDelegateViews(View* view);
   ~AnimationDelegateViews() override;
@@ -31,6 +34,13 @@ class VIEWS_EXPORT AnimationDelegateViews : public gfx::AnimationDelegate,
   void OnViewAddedToWidget(View* observed_view) final;
   void OnViewRemovedFromWidget(View* observed_view) final;
   void OnViewIsDeleting(View* observed_view) final;
+
+  // gfx::AnimationContainerObserver:
+  void AnimationContainerProgressed(
+      gfx::AnimationContainer* container) override {}
+  void AnimationContainerEmpty(gfx::AnimationContainer* container) override {}
+  void AnimationContainerShuttingDown(
+      gfx::AnimationContainer* container) override;
 
   gfx::AnimationContainer* container() { return container_; }
 

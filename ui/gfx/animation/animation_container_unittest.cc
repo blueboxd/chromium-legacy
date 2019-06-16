@@ -38,6 +38,8 @@ class FakeAnimationContainerObserver : public AnimationContainerObserver {
     empty_ = true;
   }
 
+  void AnimationContainerShuttingDown(AnimationContainer* container) override {}
+
   int progressed_count_;
   bool empty_;
 

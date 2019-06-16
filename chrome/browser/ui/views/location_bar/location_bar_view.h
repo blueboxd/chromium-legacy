@@ -29,11 +29,11 @@
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
@@ -77,7 +77,7 @@ class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
                         public views::DragController,
-                        public gfx::AnimationDelegate,
+                        public views::AnimationDelegateViews,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
@@ -353,7 +353,7 @@ class LocationBarView : public LocationBar,
   content::WebContents* GetWebContentsForPageActionIconView() override;
   bool IsLocationBarUserInputInProgress() const override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;

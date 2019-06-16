@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
@@ -108,10 +108,11 @@ bool TabHoverCardBubbleView::disable_animations_for_testing_ = false;
 
 // TODO(corising): Move this to a place where it could be used for all widgets.
 class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
-    : public gfx::AnimationDelegate {
+    : public views::AnimationDelegateViews {
  public:
   explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
-      : widget_(hover_card),
+      : AnimationDelegateViews(hover_card->GetRootView()),
+        widget_(hover_card),
         fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {}
   ~WidgetFadeAnimationDelegate() override {}
 
@@ -200,11 +201,12 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
 };
 
 class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
-    : public gfx::AnimationDelegate {
+    : public views::AnimationDelegateViews {
  public:
   explicit WidgetSlideAnimationDelegate(
       TabHoverCardBubbleView* hover_card_delegate)
-      : bubble_delegate_(hover_card_delegate),
+      : AnimationDelegateViews(hover_card_delegate),
+        bubble_delegate_(hover_card_delegate),
         slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
     constexpr int kSlideDuration = 75;
     slide_animation_->SetSlideDuration(kSlideDuration);

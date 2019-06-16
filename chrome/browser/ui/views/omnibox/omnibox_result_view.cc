@@ -50,7 +50,8 @@ static size_t kKeywordSuggestionIndent = 70;
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
     int model_index)
-    : popup_contents_view_(popup_contents_view),
+    : AnimationDelegateViews(this),
+      popup_contents_view_(popup_contents_view),
       model_index_(model_index),
       is_hovered_(false),
       animation_(new gfx::SlideAnimation(this)) {

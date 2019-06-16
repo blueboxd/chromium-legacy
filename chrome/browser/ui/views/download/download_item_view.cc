@@ -128,7 +128,8 @@ class SeparatorBorder : public views::Border {
 DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                                    DownloadShelfView* parent,
                                    views::View* accessible_alert)
-    : shelf_(parent),
+    : AnimationDelegateViews(this),
+      shelf_(parent),
       dropdown_state_(NORMAL),
       mode_(NORMAL_MODE),
       dragging_(false),

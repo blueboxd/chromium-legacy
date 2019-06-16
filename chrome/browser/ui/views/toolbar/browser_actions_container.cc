@@ -81,7 +81,8 @@ BrowserActionsContainer::BrowserActionsContainer(
     BrowserActionsContainer* main_container,
     Delegate* delegate,
     bool interactive)
-    : delegate_(delegate),
+    : AnimationDelegateViews(this),
+      delegate_(delegate),
       browser_(browser),
       main_container_(main_container),
       interactive_(interactive) {

@@ -19,9 +19,9 @@
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -68,7 +68,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
                         public views::ButtonListener,
                         public views::ContextMenuController,
                         public views::DragController,
-                        public gfx::AnimationDelegate,
+                        public views::AnimationDelegateViews,
                         public BookmarkMenuControllerObserver,
                         public bookmarks::BookmarkBubbleObserver {
  public:
@@ -176,7 +176,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // AccessiblePaneView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 

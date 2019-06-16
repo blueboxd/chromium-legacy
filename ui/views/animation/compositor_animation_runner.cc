@@ -65,6 +65,7 @@ void CompositorAnimationRunner::OnStart(base::TimeDelta min_interval) {
   if (!compositor_)
     return;
 
+  last_tick_ = base::TimeTicks::Now();
   min_interval_ = min_interval;
   DCHECK(!compositor_->HasAnimationObserver(this));
   compositor_->AddAnimationObserver(this);

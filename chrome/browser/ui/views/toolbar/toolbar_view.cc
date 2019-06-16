@@ -122,7 +122,8 @@ const char ToolbarView::kViewClassName[] = "ToolbarView";
 // ToolbarView, public:
 
 ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
-    : browser_(browser),
+    : AnimationDelegateViews(this),
+      browser_(browser),
       browser_view_(browser_view),
       app_menu_icon_controller_(browser->profile(), this),
       display_mode_(GetDisplayMode(browser)) {

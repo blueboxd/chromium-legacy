@@ -82,7 +82,8 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 };
 
 TabIcon::TabIcon()
-    : clock_(base::DefaultTickClock::GetInstance()),
+    : AnimationDelegateViews(this),
+      clock_(base::DefaultTickClock::GetInstance()),
       use_new_loading_animation_(
           base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation)),
       favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),

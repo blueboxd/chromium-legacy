@@ -16,6 +16,9 @@ namespace gfx {
 AnimationContainer::AnimationContainer() = default;
 
 AnimationContainer::~AnimationContainer() {
+  if (observer_)
+    observer_->AnimationContainerShuttingDown(this);
+
   // The animations own us and stop themselves before being deleted. If
   // elements_ is not empty, something is wrong.
   DCHECK(elements_.empty());

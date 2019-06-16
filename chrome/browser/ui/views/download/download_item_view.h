@@ -30,8 +30,8 @@
 #include "chrome/browser/icon_manager.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -61,7 +61,7 @@ class DownloadItemView : public views::InkDropHostView,
                          public views::ButtonListener,
                          public views::ContextMenuController,
                          public DownloadUIModel::Observer,
-                         public gfx::AnimationDelegate {
+                         public views::AnimationDelegateViews {
  public:
   DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                    DownloadShelfView* parent,
@@ -119,7 +119,7 @@ class DownloadItemView : public views::InkDropHostView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // gfx::AnimationDelegate implementation.
+  // views::AnimationDelegateViews implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:

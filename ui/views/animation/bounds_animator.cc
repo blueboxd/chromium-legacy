@@ -18,14 +18,9 @@ BoundsAnimator::BoundsAnimator(View* parent)
     : AnimationDelegateViews(parent),
       parent_(parent),
       container_(new gfx::AnimationContainer()) {
-  container_->set_observer(this);
 }
 
 BoundsAnimator::~BoundsAnimator() {
-  // Reset the delegate so that we don't attempt to notify our observer from
-  // the destructor.
-  container_->set_observer(nullptr);
-
   // Delete all the animations, but don't remove any child views. We assume the
   // view owns us and is going to be deleted anyway.
   for (auto& entry : data_)

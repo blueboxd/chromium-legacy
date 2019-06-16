@@ -16,10 +16,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
@@ -41,7 +41,7 @@ class MenuRunner;
 }
 
 class OmniboxResultView : public views::View,
-                          public gfx::AnimationDelegate,
+                          public views::AnimationDelegateViews,
                           public views::ButtonListener,
                           public views::ContextMenuController,
                           public ui::SimpleMenuModel::Delegate {
@@ -129,7 +129,7 @@ class OmniboxResultView : public views::View,
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // The parent view.

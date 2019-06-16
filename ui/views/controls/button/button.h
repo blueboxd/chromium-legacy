@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
@@ -45,7 +45,7 @@ class VIEWS_EXPORT ButtonListener {
 // not be part of the focus chain, unless in accessibility mode (see
 // SetFocusForPlatform()).
 class VIEWS_EXPORT Button : public InkDropHostView,
-                            public gfx::AnimationDelegate {
+                            public AnimationDelegateViews {
  public:
   METADATA_HEADER(Button);
 
@@ -196,7 +196,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   SkColor GetInkDropBaseColor() const override;
 
-  // Overridden from gfx::AnimationDelegate:
+  // Overridden from views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Returns the click action for the given key event.

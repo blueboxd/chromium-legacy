@@ -128,11 +128,9 @@ class DoublyLinkedList {
 template <typename T, typename PointerType>
 inline DoublyLinkedList<T, PointerType>::DoublyLinkedList()
     : head_(nullptr), tail_(nullptr) {
-  static_assert(
-      !IsGarbageCollectedType<T>::value ||
-          !std::is_same<PointerType, T*>::value,
-      "Cannot use DoublyLinkedList<> with garbage collected types, use "
-      "HeapDoublyLinkedList<> instead.");
+  static_assert(!IsGarbageCollectedType<T>::value ||
+                    !std::is_same<PointerType, T*>::value,
+                "Cannot use DoublyLinkedList<> with garbage collected types.");
 }
 
 template <typename T, typename PointerType>

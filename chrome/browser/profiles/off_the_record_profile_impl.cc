@@ -319,6 +319,11 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }
 
+bool OffTheRecordProfileImpl::IsIndependentOffTheRecordProfile() {
+  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
+         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+}
+
 Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile() {
   return this;
 }

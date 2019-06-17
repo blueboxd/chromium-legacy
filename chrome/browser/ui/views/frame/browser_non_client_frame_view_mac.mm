@@ -228,7 +228,19 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForClientView() const {
 
 gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  return client_bounds;
+  int top_inset = GetTopInset(false);
+
+  // If the operating system is handling drawing the window titlebar then the
+  // titlebar height will not be included in |GetTopInset|, so we have to
+  // explicitly add it. If a custom titlebar is being drawn, this calculation
+  // will be zero.
+  NSWindow* window = GetWidget()->GetNativeWindow().GetNativeNSWindow();
+  DCHECK(window);
+  top_inset += window.frame.size.height -
+               [window contentRectForFrameRect:window.frame].size.height;
+
+  return gfx::Rect(client_bounds.x(), client_bounds.y() - top_inset,
+                   client_bounds.width(), client_bounds.height() + top_inset);
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {

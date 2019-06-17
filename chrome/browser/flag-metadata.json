@@ -741,11 +741,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-app-banners",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-app-data-search",
     "owners": [ "jennyz", "kaznacheev" ],
     "expiry_milestone": 78
@@ -2528,6 +2523,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "openxr",
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "out-of-blink-cors",
     "owners": [ "toyoshim" ],
     "expiry_milestone": 76
@@ -2628,11 +2628,6 @@
     "name": "pull-to-refresh",
     "owners": [ "afakhry" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "pwa-improved-splash-screen",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "pwa-persistent-notification",

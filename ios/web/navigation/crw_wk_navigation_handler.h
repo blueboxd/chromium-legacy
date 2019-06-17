@@ -138,7 +138,9 @@ class WKBackForwardListItemHolder;
 // WKWebView and maintains page loading state.
 @interface CRWWKNavigationHandler : NSObject <WKNavigationDelegate>
 
-@property(nonatomic, weak) id<CRWWKNavigationHandlerDelegate> delegate;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithDelegate:(id<CRWWKNavigationHandlerDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
 
 // TODO(crbug.com/956511): Change this to readonly when
 // |webViewWebProcessDidCrash| is moved to CRWWKNavigationHandler.

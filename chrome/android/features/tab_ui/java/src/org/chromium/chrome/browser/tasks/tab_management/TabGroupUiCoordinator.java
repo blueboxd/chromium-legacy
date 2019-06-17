@@ -138,7 +138,12 @@ public class TabGroupUiCoordinator
         if (mActivity == null) return;
 
         mTabStripCoordinator.destroy();
-        mTabGridSheetCoordinator.destroy();
+        if (mTabGridSheetCoordinator != null) {
+            mTabGridSheetCoordinator.destroy();
+        }
+        if (mTabGridDialogCoordinator != null) {
+            mTabGridDialogCoordinator.destroy();
+        }
         mMediator.destroy();
         mActivityLifecycleDispatcher.unregister(this);
     }

@@ -23,9 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/C/#the-video-element
+// https://html.spec.whatwg.org/multipage/media.html#htmlvideoelement
 
 [
+    Exposed=Window,
     HTMLConstructor,
     ActiveScriptWrappable
 ] interface HTMLVideoElement : HTMLMediaElement {

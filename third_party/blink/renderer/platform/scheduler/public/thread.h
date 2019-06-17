@@ -60,6 +60,8 @@ struct PLATFORM_EXPORT ThreadCreationParams {
   // of this thread.
   ThreadCreationParams& SetFrameOrWorkerScheduler(FrameOrWorkerScheduler*);
 
+  ThreadCreationParams& SetSupportsGC(bool supports_gc);
+
   WebThreadType thread_type;
   const char* name;
   FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
@@ -144,6 +146,12 @@ class PLATFORM_EXPORT Thread {
 
   // Returns the scheduler associated with the thread.
   virtual ThreadScheduler* Scheduler() = 0;
+
+  // See WorkerThread::ShutdownOnThread().
+  virtual void ShutdownOnThread() {}
+
+ protected:
+  static void UpdateThreadTLS(Thread* thread);
 
  private:
   // For Platform and ScopedMainThreadOverrider. Return the thread object

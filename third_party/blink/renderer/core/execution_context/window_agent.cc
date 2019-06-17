@@ -3,18 +3,21 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
-#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
+
+#include "third_party/blink/renderer/core/dom/mutation_observer_notifier.h"
 
 namespace blink {
 
-WindowAgent::WindowAgent(v8::Isolate* isolate) : Agent(isolate) {}
+WindowAgent::WindowAgent(v8::Isolate* isolate)
+    : Agent(isolate),
+      mutation_observer_notifier_(
+          MakeGarbageCollected<MutationObserverNotifier>()) {}
 
 WindowAgent::~WindowAgent() = default;
 
 void WindowAgent::Trace(Visitor* visitor) {
   Agent::Trace(visitor);
+  visitor->Trace(mutation_observer_notifier_);
 }
 
 }  // namespace blink

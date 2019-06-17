@@ -63,6 +63,32 @@
     });
   };
 
+  // https://w3c.github.io/webdriver/#element-send-keys
+  window.test_driver_internal.send_keys = function(element, keys) {
+    return new Promise((resolve, reject) => {
+      element.focus();
+      if (!window.eventSender)
+        reject(new Error("No eventSender"));
+      if (keys.length > 1)
+        reject(new Error("No support for a sequence of multiple keys"));
+      let eventSenderKeys = keys;
+      let charCode = keys.charCodeAt(0);
+      // See https://w3c.github.io/webdriver/#keyboard-actions and
+      // EventSender::KeyDown().
+      if (charCode == 0xE004) {
+        eventSenderKeys = "Tab";
+      } else if (charCode == 0xE050) {
+        eventSenderKeys = "ShiftRight";
+      } else if (charCode >= 0xE000 && charCode <= 0xF8FF) {
+        reject(new Error("No support for this code: U+" + charCode.toString(16)));
+      }
+      window.requestAnimationFrame(() => {
+        window.eventSender.keyDown(eventSenderKeys);
+        resolve();
+      });
+    });
+  };
+
   window.test_driver_internal.freeze = function() {
     return new Promise(function(resolve, reject) {
       if (window.chrome && chrome.gpuBenchmarking) {

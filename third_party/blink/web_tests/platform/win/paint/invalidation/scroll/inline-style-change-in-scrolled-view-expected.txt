@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
+          "object": "NGPhysicalTextFragment 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
           "rect": [0, 320, 386, 19],
           "reason": "style change"
         }

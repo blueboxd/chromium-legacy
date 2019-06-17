@@ -28,6 +28,10 @@ bool SimpleThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
 void SimpleThreadScheduler::PostIdleTask(const base::Location& location,
                                          Thread::IdleTask task) {}
 
+void SimpleThreadScheduler::PostDelayedIdleTask(const base::Location&,
+                                                base::TimeDelta delay,
+                                                Thread::IdleTask) {}
+
 void SimpleThreadScheduler::PostNonNestableIdleTask(
     const base::Location& location,
     Thread::IdleTask task) {}

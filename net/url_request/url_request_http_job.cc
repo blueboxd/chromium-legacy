@@ -408,7 +408,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
-  DCHECK(request_->not_stored_cookies().empty());
+  DCHECK(request_->maybe_stored_cookies().empty());
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -425,7 +425,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
 
   // Clear |cs_status_list_| after any processing in case
   // SaveCookiesAndNotifyHeadersComplete is called again.
-  request_->set_not_stored_cookies(std::move(cs_status_list_));
+  request_->set_maybe_stored_cookies(std::move(cs_status_list_));
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -649,49 +649,50 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieOptions& options,
     const CookieList& cookie_list,
     const CookieStatusList& excluded_list) {
-  DCHECK(request_->not_sent_cookies().empty());
-  CookieStatusList excluded_cookies = excluded_list;
+  DCHECK(request_->maybe_sent_cookies().empty());
+  CookieStatusList maybe_sent_cookies = excluded_list;
 
-  if (!cookie_list.empty()) {
-    if (!CanGetCookies(cookie_list)) {
-      for (const auto& cookie : cookie_list) {
-        excluded_cookies.push_back(
-            {cookie,
-             CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
-      }
-    } else {
-      LogCookieUMA(cookie_list, *request_, request_info_);
+  net::CanonicalCookie::CookieInclusionStatus status_for_cookie_list =
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES;
+  if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
+    status_for_cookie_list = CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    LogCookieUMA(cookie_list, *request_, request_info_);
 
-      std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
-      UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
-      request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
-                                            cookie_line);
+    std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
+    UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
+    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
+                                          cookie_line);
 
-      // Disable privacy mode as we are sending cookies anyway.
-      request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
-    }
+    // Disable privacy mode as we are sending cookies anyway.
+    request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
   }
 
+  // Report status for things in |cookie_list| after the delegate got a chance
+  // to block them.
+  for (const auto& cookie : cookie_list)
+    maybe_sent_cookies.push_back({cookie, status_for_cookie_list});
+
   // Copy any cookies that would not be sent under SameSiteByDefaultCookies
-  // and/or CookiesWithoutSameSiteMustBeSecure, into the |excluded_cookies| list
-  // so that we can display appropriate console warning messages about them.
-  // I.e. they are still included in the Cookie header, but they are *also*
-  // copied into |excluded_cookies| with the CookieInclusionStatus that *would*
-  // apply. This special-casing will go away once SameSiteByDefaultCookies and
-  // CookiesWithoutSameSiteMustBeSecure are on by default, as the affected
-  // cookies will just be excluded in the first place.
+  // and/or CookiesWithoutSameSiteMustBeSecure with an informative status into
+  // the |maybe_sent_cookies| list so that we can display appropriate console
+  // warning messages about them. I.e. they are still included in the Cookie
+  // header, but they are *also* copied into |maybe_sent_cookies| with the
+  // CookieInclusionStatus that *would* apply. This special-casing will go away
+  // once SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure are on
+  // by default, as the affected cookies will just be excluded in the first
+  // place.
   for (const CanonicalCookie& cookie : cookie_list) {
     CanonicalCookie::CookieInclusionStatus
         include_but_maybe_would_exclude_status =
             cookie_util::CookieWouldBeExcludedDueToSameSite(cookie, options);
     if (include_but_maybe_would_exclude_status !=
         CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-      excluded_cookies.push_back(
+      maybe_sent_cookies.push_back(
           {cookie, include_but_maybe_would_exclude_status});
     }
   }
 
-  request_->set_not_sent_cookies(std::move(excluded_cookies));
+  request_->set_maybe_sent_cookies(std::move(maybe_sent_cookies));
 
   StartTransaction();
 }
@@ -790,14 +791,14 @@ void URLRequestHttpJob::OnSetCookieResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
-                                 status);
-  } else {
+  cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
+                               status);
+
+  if (status == CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     DCHECK(cookie.has_value());
-    // Even if the status is INCLUDE, copy any cookies that would not be set
-    // under SameSiteByDefaultCookies and/or CookiesWithoutSameSiteMustBeSecure
-    // into |cs_status_list_| so that we can display appropriate console warning
+    // Copy any cookies that would not be sent under SameSiteByDefaultCookies
+    // and/or CookiesWithoutSameSiteMustBeSecure into |cs_status_list_| with a
+    // descriptive status so that we can display appropriate console warning
     // messages about them. I.e. they are still set, but they are *also* copied
     // into |cs_status_list_| with the CookieInclusionStatus that *would* apply.
     // This special-casing will go away once SameSiteByDefaultCookies and
@@ -997,8 +998,8 @@ void URLRequestHttpJob::RestartTransactionWithAuth(
   // TODO(https://crbug.com/968327/): This is weird, as all other clearing is at
   // the URLRequest layer. Should this call into URLRequest so it can share
   // logic at that layer with SetAuth()?
-  request_->set_not_sent_cookies({});
-  request_->set_not_stored_cookies({});
+  request_->set_maybe_sent_cookies({});
+  request_->set_maybe_stored_cookies({});
 
   AddCookieHeaderAndStart();
 }

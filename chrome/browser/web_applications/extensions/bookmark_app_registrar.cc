@@ -95,6 +95,10 @@ web_app::AppId BookmarkAppRegistrar::FindAppIdForUrl(const GURL& url) const {
   return extension ? extension->id() : web_app::AppId();
 }
 
+int BookmarkAppRegistrar::CountUserInstalledApps() const {
+  return CountUserInstalledBookmarkApps(profile());
+}
+
 void BookmarkAppRegistrar::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,

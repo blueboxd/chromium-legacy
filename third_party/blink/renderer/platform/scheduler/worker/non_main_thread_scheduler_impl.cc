@@ -61,6 +61,16 @@ void NonMainThreadSchedulerImpl::PostNonNestableIdleTask(
                                std::move(task)));
 }
 
+void NonMainThreadSchedulerImpl::PostDelayedIdleTask(
+    const base::Location& location,
+    base::TimeDelta delay,
+    Thread::IdleTask task) {
+  IdleTaskRunner()->PostDelayedIdleTask(
+      location, delay,
+      base::BindOnce(&NonMainThreadSchedulerImpl::RunIdleTask,
+                     std::move(task)));
+}
+
 std::unique_ptr<blink::PageScheduler>
 NonMainThreadSchedulerImpl::CreatePageScheduler(
     PageScheduler::Delegate* delegate) {

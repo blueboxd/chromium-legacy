@@ -18,7 +18,8 @@ constexpr int kCPBWindowSizeMs = 1500;
 
 // Based on WebRTC's defaults.
 constexpr int kMinQP = 4;
-constexpr int kMaxQP = 112;
+// b/110059922: Tuned 112->113 for bitrate issue in a lower resolution (180p).
+constexpr int kMaxQP = 113;
 constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 }  // namespace
 

@@ -22,24 +22,24 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow DIV class='overlap'",
+      "name": "LayoutNGBlockFlow DIV class='overlap'",
       "bounds": [300, 500],
       "drawsContent": false,
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [15, 35],
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 80, 38, 39],
+          "object": "NGPhysicalTextFragment 'ipsum'",
+          "rect": [0, 80, 38, 40],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 80, 38, 39],
+          "object": "NGPhysicalTextFragment 'lorem'",
+          "rect": [0, 80, 38, 40],
           "reason": "geometry"
         }
       ]
@@ -82,34 +82,34 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow DIV class='overlap'",
+      "name": "LayoutNGBlockFlow DIV class='overlap'",
       "bounds": [300, 500],
       "drawsContent": false,
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [15, 35],
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 80, 39, 39],
+          "object": "NGPhysicalTextFragment 'ipsum'",
+          "rect": [0, 160, 38, 40],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 80, 39, 39],
+          "object": "NGPhysicalTextFragment 'lorem'",
+          "rect": [0, 160, 38, 40],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'ipsum'",
-          "rect": [0, 160, 38, 39],
+          "object": "NGPhysicalTextFragment 'ipsum'",
+          "rect": [0, 80, 38, 40],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'lorem'",
-          "rect": [0, 160, 38, 39],
+          "object": "NGPhysicalTextFragment 'lorem'",
+          "rect": [0, 80, 38, 40],
           "reason": "geometry"
         }
       ]

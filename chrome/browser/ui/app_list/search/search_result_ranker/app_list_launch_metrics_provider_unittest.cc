@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider.h"
 
+#include <set>
 #include <string>
 
 #include "base/base64.h"
@@ -141,6 +142,22 @@ class AppListLaunchMetricsProviderTest : public testing::Test {
     return proto->secret();
   }
 
+  uint64_t ReadUserId() {
+    std::string proto_str;
+    {
+      base::ScopedBlockingCall scoped_blocking_call(
+          FROM_HERE, base::BlockingType::MAY_BLOCK);
+
+      base::FilePath path = temp_dir_.GetPath().AppendASCII(
+          AppListLaunchMetricsProvider::kStateProtoFilename);
+      CHECK(base::ReadFileToString(path, &proto_str));
+    }
+
+    auto proto = std::make_unique<AppListLaunchRecorderStateProto>();
+    CHECK(proto->ParseFromString(proto_str));
+    return proto->recurrence_ranker_user_id();
+  }
+
   void WriteStateProto(const std::string& secret) {
     AppListLaunchRecorderStateProto proto;
     proto.set_recurrence_ranker_user_id(kUserId);
@@ -158,6 +175,12 @@ class AppListLaunchMetricsProviderTest : public testing::Test {
     }
 
     Wait();
+  }
+
+  void DeleteStateProto() {
+    DeleteFile(temp_dir_.GetPath().AppendASCII(
+                   AppListLaunchMetricsProvider::kStateProtoFilename),
+               false);
   }
 
   void AddLog(
@@ -223,6 +246,17 @@ TEST_F(AppListLaunchMetricsProviderTest, SucceedsLoadingExistingSecret) {
   ExpectEnabled();
   EXPECT_EQ(kSecret, GetSecret().value().value);
   ExpectNoErrors();
+}
+
+TEST_F(AppListLaunchMetricsProviderTest, DisableOnInvalidSecret) {
+  WriteStateProto("wrong length");
+
+  MakeProvider();
+  InitProvider();
+
+  ExpectDisabled();
+  histogram_tester_.ExpectUniqueSample("Apps.AppListLaunchRecorderError",
+                                       MetricsProviderError::kInvalidSecret, 1);
 }
 
 // Tests that a call to ProvideCurrentSessionData populates protos for each log,
@@ -324,6 +358,26 @@ TEST_F(AppListLaunchMetricsProviderTest,
 
   EXPECT_TRUE(GetLogs().empty());
   ExpectNoErrors();
+}
+
+// Without an existing saved state, instantiating a metrics provider should save
+// an almost certainly unique user ID and secret. Test this by creating a few
+// blank-slate metrics providers.
+TEST_F(AppListLaunchMetricsProviderTest, UserIDsAndSecretsAreUnique) {
+  const int num_runs = 10;
+
+  std::set<uint64_t> user_ids;
+  std::set<std::string> secrets;
+  for (int i = 0; i < num_runs; ++i) {
+    DeleteStateProto();
+    MakeProvider();
+    InitProvider();
+    secrets.insert(ReadSecret());
+    user_ids.insert(ReadUserId());
+  }
+
+  EXPECT_EQ(static_cast<size_t>(num_runs), secrets.size());
+  EXPECT_EQ(static_cast<size_t>(num_runs), user_ids.size());
 }
 
 }  // namespace app_list

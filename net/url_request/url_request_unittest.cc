@@ -8598,7 +8598,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookiesCancelAuth) {
   EXPECT_EQ(1, network_delegate.set_cookie_count());
 }
 
-TEST_F(URLRequestTest, CatchFilteredCookies) {
+TEST_F(URLRequestTest, ReportCookieActivity) {
   HttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
@@ -8609,32 +8609,33 @@ TEST_F(URLRequestTest, CatchFilteredCookies) {
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.Init();
-  // Make sure cookies blocked from being stored are caught.
+  // Make sure cookies blocked from being stored are caught, and those that are
+  // accepted are reported as well.
   {
     TestDelegate d;
-    GURL test_url = test_server.GetURL("/set-cookie?not_stored_cookie=true");
+    GURL test_url = test_server.GetURL(
+        "/set-cookie?not_stored_cookie=true&"
+        "stored_cookie=tasty"
+        "&path_cookie=narrow;path=/set-cookie");
     std::unique_ptr<URLRequest> req(context.CreateRequest(
         test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_url);
     req->Start();
     d.RunUntilComplete();
 
-    ASSERT_EQ(1u, req->not_stored_cookies().size());
+    ASSERT_EQ(3u, req->maybe_stored_cookies().size());
     EXPECT_EQ("not_stored_cookie",
-              req->not_stored_cookies().front().cookie->Name());
+              req->maybe_stored_cookies()[0].cookie->Name());
     EXPECT_EQ(
         net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        req->not_stored_cookies().front().status);
-  }
-  // Set a cookie to be blocked later
-  {
-    TestDelegate d;
-    GURL test_url = test_server.GetURL("/set-cookie?not_sent_cookies=true");
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
-        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_site_for_cookies(test_url);
-    req->Start();
-    d.RunUntilComplete();
+        req->maybe_stored_cookies()[0].status);
+    EXPECT_EQ("stored_cookie", req->maybe_stored_cookies()[1].cookie->Name());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
+              req->maybe_stored_cookies()[1].status);
+    EXPECT_EQ("stored_cookie", req->maybe_stored_cookies()[1].cookie->Name());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
+              req->maybe_stored_cookies()[2].status);
+    EXPECT_EQ("path_cookie", req->maybe_stored_cookies()[2].cookie->Name());
   }
   {
     TestDelegate d;
@@ -8646,15 +8647,40 @@ TEST_F(URLRequestTest, CatchFilteredCookies) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("not_sent_cookies=true") ==
+    EXPECT_TRUE(d.data_received().find("stored_cookie=tasty") ==
                 std::string::npos);
 
-    ASSERT_EQ(1u, req->not_sent_cookies().size());
-    EXPECT_EQ("not_sent_cookies",
-              req->not_sent_cookies().front().cookie.Name());
+    ASSERT_EQ(2u, req->maybe_sent_cookies().size());
+    EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
+              req->maybe_sent_cookies()[0].status);
+    EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
     EXPECT_EQ(
         net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        req->not_sent_cookies().front().status);
+        req->maybe_sent_cookies()[1].status);
+  }
+
+  network_delegate.unset_block_get_cookies();
+  {
+    // Now with sending cookies re-enabled, it should actually be sent.
+    TestDelegate d;
+    GURL test_url = test_server.GetURL("/echoheader?Cookie");
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_url);
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_TRUE(d.data_received().find("stored_cookie=tasty") !=
+                std::string::npos);
+
+    ASSERT_EQ(2u, req->maybe_sent_cookies().size());
+    EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
+              req->maybe_sent_cookies()[0].status);
+    EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
+    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
+              req->maybe_sent_cookies()[1].status);
   }
 }
 
@@ -8679,12 +8705,12 @@ TEST_F(URLRequestTestHTTP, AuthChallengeCancelCookieCollect) {
   request->Start();
 
   delegate.RunUntilAuthRequired();
-  ASSERT_EQ(1u, request->not_stored_cookies().size());
+  ASSERT_EQ(1u, request->maybe_stored_cookies().size());
   EXPECT_EQ(
       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-      request->not_stored_cookies()[0].status);
+      request->maybe_stored_cookies()[0].status);
   EXPECT_EQ("got_challenged=true",
-            request->not_stored_cookies()[0].cookie_string);
+            request->maybe_stored_cookies()[0].cookie_string);
 
   // This shouldn't DCHECK-fail.
   request->CancelAuth();
@@ -8698,8 +8724,8 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
       http_test_server()->GetURL("/auth-basic?set-cookie-if-challenged");
   GURL url_requiring_auth_wo_cookies =
       http_test_server()->GetURL("/auth-basic");
-  // Check not_stored_cookies is populated first round trip, and cleared on the
-  // second.
+  // Check maybe_stored_cookies is populated first round trip, and cleared on
+  // the second.
   {
     FilteringTestLayeredNetworkDelegate filtering_network_delegate(
         std::make_unique<TestNetworkDelegate>());
@@ -8721,7 +8747,10 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_EQ(1, filtering_network_delegate.blocked_set_cookie_count());
 
     // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(1u, request->not_stored_cookies().size());
+    ASSERT_EQ(1u, request->maybe_stored_cookies().size());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_stored_cookies().front().status);
 
     // Now check the second round trip
     request->SetAuth(AuthCredentials(kUser, kSecret));
@@ -8729,17 +8758,17 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_THAT(delegate.request_status(), IsOk());
 
     // There are DCHECKs in URLRequestHttpJob that would fail if
-    // not_sent_cookies and not_stored_cookies were not cleared properly.
+    // maybe_sent_cookies and maybe_stored_cookies were not cleared properly.
 
     // Make sure the cookie was actually filtered and not sent.
     EXPECT_EQ(std::string::npos,
               delegate.data_received().find("Cookie: got_challenged=true"));
 
-    // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(0u, request->not_stored_cookies().size());
+    // The number of cookies that most recent round trip tried to set.
+    ASSERT_EQ(0u, request->maybe_stored_cookies().size());
   }
 
-  // Check not_sent_cookies on first round trip (and cleared for the second).
+  // Check maybe_sent_cookies on first round trip (and cleared for the second).
   {
     FilteringTestLayeredNetworkDelegate filtering_network_delegate(
         std::make_unique<TestNetworkDelegate>());
@@ -8765,13 +8794,16 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
 
     delegate.RunUntilAuthRequired();
 
-    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("another_cookie",
-              request->not_sent_cookies().front().cookie.Name());
-    EXPECT_EQ("true", request->not_sent_cookies().front().cookie.Value());
+              request->maybe_sent_cookies().front().cookie.Name());
+    EXPECT_EQ("true", request->maybe_sent_cookies().front().cookie.Value());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_sent_cookies().front().status);
 
-    // Check not_sent_cookies on second roundtrip.
-    request->set_not_sent_cookies({});
+    // Check maybe_sent_cookies on second roundtrip.
+    request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
     cm->SetCookieWithOptionsAsync(url_requiring_auth_wo_cookies,
                                   "one_more_cookie=true", CookieOptions(),
@@ -8782,7 +8814,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_THAT(delegate.request_status(), IsOk());
 
     // There are DCHECKs in URLRequestHttpJob that would fail if
-    // not_sent_cookies and not_stored_cookies we not cleared properly.
+    // maybe_sent_cookies and maybe_stored_cookies were not cleared properly.
 
     // Make sure the cookie was actually filtered.
     EXPECT_EQ(std::string::npos,
@@ -8792,9 +8824,12 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_EQ(2, filtering_network_delegate.blocked_get_cookie_count());
 
     // // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("one_more_cookie",
-              request->not_sent_cookies().front().cookie.Name());
+              request->maybe_sent_cookies().front().cookie.Name());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_sent_cookies().front().status);
   }
 }
 
@@ -9079,7 +9114,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
 
   GURL original_url_wo_cookie(
       http_test_server()->GetURL("/server-redirect?" + redirect_to.spec()));
-  // Check not_stored_cookies on first round trip.
+  // Check maybe_stored_cookies on first round trip.
   {
     FilteringTestLayeredNetworkDelegate filtering_network_delegate(
         std::make_unique<TestNetworkDelegate>());  // Must outlive URLRequest.
@@ -9102,31 +9137,37 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_EQ(1, filtering_network_delegate.blocked_set_cookie_count());
 
     // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(1u, request->not_stored_cookies().size());
+    ASSERT_EQ(1u, request->maybe_stored_cookies().size());
     EXPECT_EQ("server-redirect",
-              request->not_stored_cookies().front().cookie->Name());
-    EXPECT_EQ("true", request->not_stored_cookies().front().cookie->Value());
+              request->maybe_stored_cookies().front().cookie->Name());
+    EXPECT_EQ("true", request->maybe_stored_cookies().front().cookie->Value());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_stored_cookies().front().status);
 
-    // Check not_stored_cookies on second round trip (and clearing from the
+    // Check maybe_stored_cookies on second round trip (and clearing from the
     // first).
     request->FollowDeferredRedirect(base::nullopt, base::nullopt);
     delegate.RunUntilComplete();
     EXPECT_THAT(delegate.request_status(), IsOk());
 
     // There are DCHECKs in URLRequestHttpJob that would fail if
-    // not_sent_cookies and not_stored_cookies we not cleared properly.
+    // maybe_sent_cookies and maybe_stored_cookies we not cleared properly.
 
     // Make sure it was blocked twice.
     EXPECT_EQ(2, filtering_network_delegate.blocked_set_cookie_count());
 
     // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(1u, request->not_stored_cookies().size());
+    ASSERT_EQ(1u, request->maybe_stored_cookies().size());
     EXPECT_EQ("server-redirect",
-              request->not_stored_cookies().front().cookie->Name());
-    EXPECT_EQ("other", request->not_stored_cookies().front().cookie->Value());
+              request->maybe_stored_cookies().front().cookie->Name());
+    EXPECT_EQ("other", request->maybe_stored_cookies().front().cookie->Value());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_stored_cookies().front().status);
   }
 
-  // Check not_sent_cookies on first round trip.
+  // Check maybe_sent_cookies on first round trip.
   {
     FilteringTestLayeredNetworkDelegate filtering_network_delegate(
         std::make_unique<TestNetworkDelegate>());
@@ -9151,12 +9192,15 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
 
     delegate.RunUntilRedirect();
 
-    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("another_cookie",
-              request->not_sent_cookies().front().cookie.Name());
+              request->maybe_sent_cookies().front().cookie.Name());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_sent_cookies().front().status);
 
-    // Check not_sent_cookies on second round trip
-    request->set_not_sent_cookies({});
+    // Check maybe_sent_cookies on second round trip
+    request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
     cm->SetCookieWithOptionsAsync(original_url_wo_cookie,
                                   "one_more_cookie=true", CookieOptions(),
@@ -9167,15 +9211,18 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_THAT(delegate.request_status(), IsOk());
 
     // There are DCHECKs in URLRequestHttpJob that would fail if
-    // not_sent_cookies and not_stored_cookies we not cleared properly.
+    // maybe_sent_cookies and maybe_stored_cookies we not cleared properly.
 
     EXPECT_EQ(2, filtering_network_delegate.blocked_get_cookie_count());
 
     // The number of cookies blocked from the most recent round trip.
-    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    ASSERT_EQ(1u, request->maybe_sent_cookies().size());
     EXPECT_EQ("one_more_cookie",
-              request->not_sent_cookies().front().cookie.Name());
-    EXPECT_EQ("true", request->not_sent_cookies().front().cookie.Value());
+              request->maybe_sent_cookies().front().cookie.Name());
+    EXPECT_EQ("true", request->maybe_sent_cookies().front().cookie.Value());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        request->maybe_sent_cookies().front().status);
   }
 }
 

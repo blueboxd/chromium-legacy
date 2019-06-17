@@ -80,7 +80,7 @@ window.history.pushState = function(stateObject, pageTitle, pageUrl) {
   pageUrl = pageUrl || window.location.href;
   originalWindowHistoryPushState.call(history, stateObject, pageTitle, pageUrl);
   __gCrWeb.message.invokeOnHost({
-    'command': 'window.history.didPushState',
+    'command': 'navigation.didPushState',
     'stateObject': serializedState,
     'baseUrl': document.baseURI,
     'pageUrl': pageUrl.toString()
@@ -98,7 +98,7 @@ window.history.replaceState = function(stateObject, pageTitle, pageUrl) {
   originalWindowHistoryReplaceState.call(
       history, stateObject, pageTitle, pageUrl);
   __gCrWeb.message.invokeOnHost({
-    'command': 'window.history.didReplaceState',
+    'command': 'navigation.didReplaceState',
     'stateObject': serializedState,
     'baseUrl': document.baseURI,
     'pageUrl': pageUrl.toString()

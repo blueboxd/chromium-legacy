@@ -186,6 +186,9 @@ public class GridTabSwitcherCoordinator
                 mGridTabSwitcherMenuActionHandler);
         mTabGridCoordinator.destroy();
         mContainerViewChangeProcessor.destroy();
+        if (mTabGridDialogCoordinator != null) {
+            mTabGridDialogCoordinator.destroy();
+        }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }

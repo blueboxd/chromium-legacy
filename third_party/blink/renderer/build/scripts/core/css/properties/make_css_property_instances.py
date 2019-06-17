@@ -9,15 +9,14 @@ import template_expander
 from collections import namedtuple
 from core.css import css_properties
 
-
 class PropertyClassData(
         namedtuple('PropertyClassData', 'enum_key,enum_value,property_id,classname,namespace_group,filename')):
     pass
 
 
-class CSSPropertyBaseWriter(json5_generator.Writer):
+class CSSPropertyInstancesWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths, output_dir):
-        super(CSSPropertyBaseWriter, self).__init__([], output_dir)
+        super(CSSPropertyInstancesWriter, self).__init__([], output_dir)
         self._input_files = json5_file_paths
         self._outputs = {
             'css_property_instances.h': self.generate_property_instances_header,
@@ -36,28 +35,12 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
 
         self._css_properties = css_properties.CSSProperties(json5_file_paths)
 
-        # A list of (enum_value, property_id, property_classname) tuples.
-        self._property_classes_by_id = []
-        self._alias_classes_by_id = []
-        # Just a set of class names.
-        self._shorthand_property_filenames = set()
-        self._longhand_property_filenames = set()
-        for property_ in self._css_properties.longhands:
-            property_class = self.get_class(property_)
-            self._property_classes_by_id.append(property_class)
-            if property_class.classname != 'Longhand':
-                self._longhand_property_filenames.add(property_class.filename)
-        for property_ in self._css_properties.shorthands:
-            property_class = self.get_class(property_)
-            self._property_classes_by_id.append(property_class)
-            self._shorthand_property_filenames.add(property_class.filename)
-        for property_ in self._css_properties.aliases:
-            property_class = self.get_class(property_)
-            self._alias_classes_by_id.append(property_class)
-            if property_['longhands']:
-                self._shorthand_property_filenames.add(property_class.filename)
-            elif property_class.classname != 'Longhand':
-                self._longhand_property_filenames.add(property_class.filename)
+        properties = self._css_properties.longhands + self._css_properties.shorthands
+        aliases = self._css_properties.aliases
+
+        # Lists of PropertyClassData.
+        self._property_classes_by_id = map(self.get_class, properties)
+        self._alias_classes_by_id = map(self.get_class, aliases)
 
         # Sort by enum value.
         self._property_classes_by_id.sort(key=lambda t: t.enum_value)
@@ -98,14 +81,9 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
     def generate_property_instances_implementation(self):
         return {
             'input_files': self._input_files,
-            'longhand_property_filenames': self._longhand_property_filenames,
-            'shorthand_property_filenames': self._shorthand_property_filenames,
             'property_classes_by_property_id': self._property_classes_by_id,
             'alias_classes_by_property_id': self._alias_classes_by_id,
-            'last_unresolved_property_id':
-                self._css_properties.last_unresolved_property_id,
-            'last_property_id': self._css_properties.last_property_id
         }
 
 if __name__ == '__main__':
-    json5_generator.Maker(CSSPropertyBaseWriter).main()
+    json5_generator.Maker(CSSPropertyInstancesWriter).main()

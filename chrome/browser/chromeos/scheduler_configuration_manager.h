@@ -18,6 +18,13 @@ class DebugDaemonClient;
 
 // Tracks scheduler configuration as provided by the respective local state pref
 // and sends D-Bus IPC to reconfigure the system on config changes.
+//
+// This is the policy to enable and disable Hyper-Threading (H/T) on Intel CPUs.
+// Conservative -> Hyper-Threading disabled.
+// Performance -> Hyper-Threading enabled.
+// For more information on why H/T is configurable, see
+// https://www.chromium.org/chromium-os/mds-on-chromeos
+//
 class SchedulerConfigurationManager {
  public:
   SchedulerConfigurationManager(DebugDaemonClient* debug_daemon_client,

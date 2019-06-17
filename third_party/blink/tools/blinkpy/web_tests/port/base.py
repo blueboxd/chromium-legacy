@@ -255,13 +255,6 @@ class Port(object):
         # Clone list to avoid mutating option state.
         flags = list(self.get_option('additional_driver_flag', []))
 
-        # Disable LayoutNG unless explicitly enabled during transition period to
-        # avoid having to unnecessarily update test expectations every time the flag
-        # is flipped and to allow us to update expectations one bot at a time.
-        # TODO(eae): Remove once LayoutNG launches. https://crbug.com/961437
-        if not '--enable-blink-features=LayoutNG' in flags:
-            flags += ['--disable-blink-features=LayoutNG']
-
         if flags and flags[0] == self.primary_driver_flag():
             flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:

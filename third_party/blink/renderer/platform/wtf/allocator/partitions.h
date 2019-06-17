@@ -32,17 +32,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_PARTITIONS_H_
 
 #include <string.h>
+#include <memory>
+
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
-
-// Disables decommit in PartitionAlloc. Do not enable, as this regresses memory
-// usage.
-WTF_EXPORT const extern base::Feature kNoPartitionAllocDecommit;
 
 class WTF_EXPORT Partitions {
  public:
@@ -53,6 +52,8 @@ class WTF_EXPORT Partitions {
   static const char* const kAllocatedObjectPoolName;
 
   static void Initialize(ReportPartitionAllocSizeFunction);
+  static void StartPeriodicReclaim(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ALWAYS_INLINE static base::PartitionRootGeneric* ArrayBufferPartition() {
     DCHECK(initialized_);
     return array_buffer_allocator_->root();
@@ -91,8 +92,6 @@ class WTF_EXPORT Partitions {
   }
 
   static size_t TotalActiveBytes();
-
-  static void DecommitFreeableMemory();
 
   static void ReportMemoryUsageHistogram();
 

@@ -1,0 +1,39 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [500, 400],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [485, 400],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [485, 478],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
+          "rect": [8, 68, 402, 402],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [45, 103, 328, 330],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [18, 227, 82, 83],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+

@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [18, 18, 22, 19],
           "reason": "chunk disappeared"
         },
         {
-          "object": "InlineTextBox 'abc'",
+          "object": "NGPhysicalTextFragment 'abc'",
           "rect": [8, 187, 22, 19],
           "reason": "appeared"
         }

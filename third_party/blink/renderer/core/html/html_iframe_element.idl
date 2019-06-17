@@ -18,13 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/C/#the-iframe-element
+// https://html.spec.whatwg.org/multipage/iframe-embed-object.html#htmliframeelement
 
 // The `HTMLString` and `URLString` references below are from Trusted Types:
 // https://github.com/WICG/trusted-types/, which is still WIP.
 // https://crbug.com/739170.
-[HTMLConstructor]
-interface HTMLIFrameElement : HTMLElement {
+[
+    Exposed=Window,
+    HTMLConstructor
+] interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions, Reflect, RaisesException=Setter] attribute HTMLString srcdoc;
     [CEReactions, Reflect] attribute DOMString name;

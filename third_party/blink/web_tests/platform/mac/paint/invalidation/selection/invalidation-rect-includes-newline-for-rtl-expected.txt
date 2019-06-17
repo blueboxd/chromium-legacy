@@ -18,13 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'xx'",
-          "rect": [0, 8, 40, 34],
+          "object": "NGPhysicalTextFragment 'xx'",
+          "rect": [0, 8, 40, 33],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'y'",
-          "rect": [0, 8, 40, 34],
+          "object": "NGPhysicalTextFragment 'y'",
+          "rect": [0, 8, 40, 33],
           "reason": "geometry"
         }
       ]

@@ -87,9 +87,6 @@ extern const char kAndroidPictureInPictureAPIDescription[];
 extern const char kAndroidSiteSettingsUIRefreshName[];
 extern const char kAndroidSiteSettingsUIRefreshDescription[];
 
-extern const char kAppBannersName[];
-extern const char kAppBannersDescription[];
-
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
@@ -1429,8 +1426,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kPwaImprovedSplashScreenName[];
-extern const char kPwaImprovedSplashScreenDescription[];
 extern const char kPwaPersistentNotificationName[];
 extern const char kPwaPersistentNotificationDescription[];
 
@@ -2046,6 +2041,11 @@ extern const char kOpenVRDescription[];
 extern const char kWindowsMixedRealityName[];
 extern const char kWindowsMixedRealityDescription[];
 #endif  // ENABLE_WINDOWS_MR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+extern const char kOpenXRName[];
+extern const char kOpenXRDescription[];
+#endif  // ENABLE_OPENXR
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 extern const char kXRSandboxName[];

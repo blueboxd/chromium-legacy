@@ -9,7 +9,9 @@
 #include <memory>
 #include <random>
 #include <set>
+#include <stack>
 #include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
@@ -216,6 +218,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void PostIdleTask(const base::Location&, Thread::IdleTask) override;
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override;
+  void PostDelayedIdleTask(const base::Location&,
+                           base::TimeDelta delay,
+                           Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   // IPCTaskRunner() is implemented above in the WebThreadScheduler section.

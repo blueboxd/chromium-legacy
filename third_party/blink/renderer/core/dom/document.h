@@ -99,6 +99,7 @@ class CanvasFontCache;
 class ChromeClient;
 class Comment;
 class ComputedAccessibleNode;
+class WindowAgent;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
@@ -1477,6 +1478,9 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
+
+  // Agent may be null for Documents created in unit tests.
+  WindowAgent& GetAgent();
 
   // TODO(binji): See http://crbug.com/798572. This implementation shares the
   // same agent cluster ID for any one document. The proper implementation of

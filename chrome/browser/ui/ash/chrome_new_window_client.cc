@@ -211,8 +211,17 @@ class CustomTabSessionImpl
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContents::Create(create_params);
 
+    // Use the same version number as browser_commands.cc
+    // TODO(hashimoto): Get the actual Android version from the container.
+    constexpr char kOsOverrideForTabletSite[] =
+        "Linux; Android 9; Chrome tablet";
     // Override the user agent to request mobile version web sites.
-    chrome::SetAndroidOsForTabletSite(web_contents.get());
+    const std::string product =
+        version_info::GetProductNameAndVersionForUserAgent();
+    const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+        kOsOverrideForTabletSite, product);
+    web_contents->SetUserAgentOverride(user_agent,
+                                       false /*override_in_new_tabs=*/);
 
     content::NavigationController::LoadURLParams load_url_params(url);
     load_url_params.source_site_instance = site_instance;

@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_coordinator.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -59,8 +59,8 @@ void DatabaseThread::Start() {
   DCHECK(IsMainThread());
   if (thread_)
     return;
-  thread_ = std::make_unique<WebThreadSupportingGC>(
-      ThreadCreationParams(WebThreadType::kDatabaseThread));
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kDatabaseThread).SetSupportsGC(true));
   PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
                       CrossThreadBindOnce(&DatabaseThread::SetupDatabaseThread,
                                           WrapCrossThreadPersistent(this)));
@@ -68,7 +68,6 @@ void DatabaseThread::Start() {
 
 void DatabaseThread::SetupDatabaseThread() {
   DCHECK(thread_->IsCurrentThread());
-  thread_->InitializeOnThread();
   transaction_coordinator_ = MakeGarbageCollected<SQLTransactionCoordinator>();
 }
 
@@ -125,7 +124,6 @@ void DatabaseThread::CleanupDatabaseThread() {
 
 void DatabaseThread::CleanupDatabaseThreadCompleted() {
   DCHECK(thread_->IsCurrentThread());
-  thread_->ShutdownOnThread();
   if (cleanup_sync_)  // Someone wanted to know when we were done cleaning up.
     cleanup_sync_->Signal();
 }

@@ -319,6 +319,14 @@ class Profile : public content::BrowserContext {
   // off-the-record profile that is not a guest profile.
   bool IsIncognitoProfile() const;
 
+  // Returns true if this is an off the record profile that is independent from
+  // its original regular profile. This covers OTR profiles that are directly
+  // created using CreateOffTheRecordProfile() (such as done by
+  // IndependentOTRProfileManager). Calling GetOffTheRecordProfile on their
+  // GetOriginProfile will not point to themselves.
+  // This type of usage is not recommended.
+  virtual bool IsIndependentOffTheRecordProfile() = 0;
+
   // Returns whether it is a guest session. This covers both the guest profile
   // and its parent.
   virtual bool IsGuestSession() const;

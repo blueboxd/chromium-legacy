@@ -221,8 +221,12 @@ testcase.drivePinFileMobileNetwork = async () => {
   // Wait the toggle pinned async action to finish, so the next call to display
   // context menu is after the action has finished.
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
-  // TODO(crbug.com/953616): Change wait for a deterministic option.
-  await wait(100);
+
+  // Wait the pinned action to finish, it's flagged in the file list by
+  // removing CSS class "dim-offline".
+  await remoteCall.waitForElementLost(
+      appId, '#file-list .dim-offline[file-name="hello.txt"]');
+
 
   // Open context menu again.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

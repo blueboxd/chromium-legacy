@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "build/build_config.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,9 @@ namespace WTF {
 
 class PartitionsTest : public ::testing::Test {
  protected:
-  void TearDown() override { Partitions::DecommitFreeableMemory(); }
+  void TearDown() override {
+    base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+  }
 };
 
 TEST_F(PartitionsTest, MemoryIsInitiallyCommitted) {
@@ -46,26 +48,10 @@ TEST_F(PartitionsTest, Decommit) {
   // Decommit is not triggered by deallocation.
   EXPECT_GT(committed_after, committed_before);
   // Decommit works.
-  Partitions::DecommitFreeableMemory();
+  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
   EXPECT_EQ(committed_before, Partitions::TotalSizeOfCommittedPages());
 }
 
-TEST_F(PartitionsTest, DecommitCanBeDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kNoPartitionAllocDecommit);
-
-  size_t committed_before = Partitions::TotalSizeOfCommittedPages();
-  void* data = Partitions::BufferMalloc(1, "");
-  ASSERT_TRUE(data);
-  Partitions::BufferFree(data);
-  size_t committed_after = Partitions::TotalSizeOfCommittedPages();
-
-  // Decommit is not triggered by deallocation.
-  EXPECT_GT(committed_after, committed_before);
-  // Decommit is disabled.
-  Partitions::DecommitFreeableMemory();
-  EXPECT_EQ(committed_after, Partitions::TotalSizeOfCommittedPages());
-}
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 }  // namespace WTF

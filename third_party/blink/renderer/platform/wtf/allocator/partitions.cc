@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
@@ -39,9 +40,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace WTF {
-
-const base::Feature kNoPartitionAllocDecommit{
-    "NoPartitionAllocDecommit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
@@ -86,23 +84,19 @@ void Partitions::Initialize(
     buffer_allocator_->init();
     layout_allocator_->init();
     report_size_function_ = report_size_function;
+
     initialized_ = true;
   }
 }
 
-void Partitions::DecommitFreeableMemory() {
+// static
+void Partitions::StartPeriodicReclaim(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   CHECK(IsMainThread());
-  if (!initialized_ ||
-      base::FeatureList::IsEnabled(kNoPartitionAllocDecommit)) {
+  if (!initialized_)
     return;
-  }
-  base::internal::PartitionRootBase* partitions[] = {
-      ArrayBufferPartition(), BufferPartition(), FastMallocPartition(),
-      LayoutPartition()};
-  constexpr int kFlags = base::PartitionPurgeDecommitEmptyPages |
-                         base::PartitionPurgeDiscardUnusedSystemPages;
-  for (auto* partition : partitions)
-    partition->PurgeMemory(kFlags);
+
+  base::PartitionAllocMemoryReclaimer::Instance()->Start(task_runner);
 }
 
 void Partitions::ReportMemoryUsageHistogram() {
@@ -128,7 +122,7 @@ void Partitions::DumpMemoryStats(
   // accessed only on the main thread.
   DCHECK(IsMainThread());
 
-  DecommitFreeableMemory();
+  base::PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
   FastMallocPartition()->DumpStats("fast_malloc", is_light_dump,
                                    partition_stats_dumper);
   ArrayBufferPartition()->DumpStats("array_buffer", is_light_dump,

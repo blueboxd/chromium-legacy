@@ -109,15 +109,9 @@ DECLARE_LAZY_MATCHER(telephone_matcher, R"((mobile)?(telephone)?(number|no))");
 // field).
 struct InputHint {
   const re2::RE2* regex;
-  std::string tokens;
   size_t match;
 
   InputHint(const re2::RE2* regex) : regex(regex), match(std::string::npos) {}
-
-  InputHint(const re2::RE2* regex, const std::string tokens)
-      : InputHint(regex) {
-    this->tokens = " " + tokens;
-  }
 
   void MatchLabel(std::string& label_content, size_t index) {
     if (re2::RE2::FullMatch(label_content, *regex))
@@ -270,11 +264,10 @@ void InferUsernameField(
   DCHECK(!labels.IsNull());
 
   std::vector<InputHint> input_hints;
-  std::string username_field_guess_tokens;
 
   input_hints.push_back(InputHint(username_matcher.Pointer()));
-  input_hints.push_back(InputHint(email_matcher.Pointer(), "email"));
-  input_hints.push_back(InputHint(telephone_matcher.Pointer(), "tel"));
+  input_hints.push_back(InputHint(email_matcher.Pointer()));
+  input_hints.push_back(InputHint(telephone_matcher.Pointer()));
 
   for (blink::WebElement item = labels.FirstItem(); !item.IsNull();
        item = labels.NextItem()) {
@@ -299,13 +292,11 @@ void InferUsernameField(
   for (InputHint& input_hint : input_hints) {
     if (input_hint.match != std::string::npos) {
       username_field_guess = input_hint.match;
-      username_field_guess_tokens = input_hint.tokens;
       break;
     }
   }
 
-  (*autocomplete_suggestions)[username_field_guess] =
-      "username" + username_field_guess_tokens;
+  (*autocomplete_suggestions)[username_field_guess] = "username";
 }
 
 // Infer what kind of form a form corresponds to (e.g. a

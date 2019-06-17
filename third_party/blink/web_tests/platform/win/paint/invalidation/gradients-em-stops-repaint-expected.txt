@@ -18,29 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='box4' class='box'",
+          "object": "LayoutNGBlockFlow DIV id='box4' class='box'",
           "rect": [344, 18, 302, 122],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box3' class='box'",
-          "rect": [18, 18, 302, 122],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='indicator'",
+          "object": "LayoutNGBlockFlow DIV class='indicator'",
           "rect": [345, 19, 240, 20],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [330, 135, 4, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [330, 135, 4, 19],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

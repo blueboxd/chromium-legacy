@@ -15,8 +15,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -152,7 +152,7 @@ class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
   void OnEndOfStream();
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::vector<std::unique_ptr<BufferFeeder>> effects_feeders_;
   std::unique_ptr<BufferFeeder> audio_feeder_;
 

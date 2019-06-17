@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "url/gurl.h"
@@ -41,6 +41,11 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
                        int render_frame_id,
                        ServiceWorkerContextWrapper* service_worker_context);
 
+  void AddPushMessagingReceiver(
+      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
+
+  // Temporary method while RenderProcessHostImpl does not migrate from using
+  // service_manager::BinderRegistry to using service_manager::BinderMap.
   void BindRequest(blink::mojom::PushMessagingRequest request);
 
   base::WeakPtr<PushMessagingManager> AsWeakPtr() {
@@ -145,7 +150,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   GURL default_endpoint_;
   GURL web_push_protocol_endpoint_;
 
-  mojo::BindingSet<blink::mojom::PushMessaging> bindings_;
+  mojo::ReceiverSet<blink::mojom::PushMessaging> receivers_;
 
   base::WeakPtrFactory<PushMessagingManager> weak_factory_;
 

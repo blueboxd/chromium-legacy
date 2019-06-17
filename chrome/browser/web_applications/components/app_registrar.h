@@ -54,6 +54,10 @@ class AppRegistrar {
   // Returns the app id for which the |url| is in scope of, empty if none.
   virtual AppId FindAppIdForUrl(const GURL& url) const = 0;
 
+  // Count a number of all apps which are installed by user (non-default).
+  // Requires app registry to be in a ready state.
+  virtual int CountUserInstalledApps() const = 0;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 

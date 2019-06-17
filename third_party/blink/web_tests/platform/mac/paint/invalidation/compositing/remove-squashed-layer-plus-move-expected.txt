@@ -22,25 +22,25 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "bounds": [1000, 1000],
       "drawsContent": false,
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='mv-tile')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='mv-tile')",
       "position": [8, 8],
       "bounds": [1000, 104],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
           "rect": [0, 54, 100, 50],
-          "reason": "geometry"
+          "reason": "compositing update"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
           "rect": [0, 0, 100, 50],
-          "reason": "geometry"
+          "reason": "compositing update"
         }
       ]
     }

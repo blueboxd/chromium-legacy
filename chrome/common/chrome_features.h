@@ -42,10 +42,6 @@ extern const base::Feature kShow10_9ObsoleteInfobar;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAppBanners;
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppNotificationStatusMessaging;
@@ -199,6 +195,10 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenVR;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWindowsMixedReality;
 #endif  // ENABLE_WINDOWS_MR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenXR;
+#endif  // ENABLE_OPENXR
 
 #endif  // ENABLE_VR
 

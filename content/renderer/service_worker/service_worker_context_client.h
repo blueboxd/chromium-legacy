@@ -135,8 +135,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProviderOnMainThread() override;
   scoped_refptr<blink::WebWorkerFetchContext>
-  CreateServiceWorkerFetchContextOnMainThread(
+  CreateWorkerFetchContextOnMainThreadLegacy(
       blink::WebServiceWorkerNetworkProvider*) override;
+  scoped_refptr<blink::WebWorkerFetchContext>
+  CreateWorkerFetchContextOnMainThread() override;
 
   /////////////////////////////////////////////////////////////////////////////
   // The following are for use by NavigationPreloadRequest.

@@ -41,14 +41,11 @@ PushMessagingClient* PushMessagingClient::From(LocalFrame* frame) {
   return Supplement<LocalFrame>::From<PushMessagingClient>(frame);
 }
 
-mojom::blink::PushMessaging* PushMessagingClient::GetService() {
+mojom::blink::PushMessaging* PushMessagingClient::GetPushMessagingRemote() {
   if (!push_messaging_manager_) {
-    auto request = mojo::MakeRequest(
-        &push_messaging_manager_,
-        GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI));
-
     GetSupplementable()->GetDocumentInterfaceBroker().GetPushMessaging(
-        std::move(request));
+        push_messaging_manager_.BindNewPipeAndPassReceiver(
+            GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
 
   return push_messaging_manager_.get();
@@ -122,7 +119,7 @@ void PushMessagingClient::DoSubscribe(
     return;
   }
 
-  GetService()->Subscribe(
+  GetPushMessagingRemote()->Subscribe(
       service_worker_registration->RegistrationId(), std::move(options),
       user_gesture,
       WTF::Bind(&PushMessagingClient::DidSubscribe, WrapPersistent(this),

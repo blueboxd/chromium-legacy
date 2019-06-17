@@ -20,7 +20,7 @@ interface DocumentInterfaceBroker {
   GetAuthenticator(blink.mojom.Authenticator& request);
   GetCredentialManager(blink.mojom.CredentialManager& request);
   GetFrameHostTestInterface(blink.mojom.FrameHostTestInterface& request);
-  GetPushMessaging(blink.mojom.PushMessaging& request);
+  GetPushMessaging(pending_receiver<blink.mojom.PushMessaging> request);
   GetVirtualAuthenticatorManager(blink.test.mojom.VirtualAuthenticatorManager& request);
   RegisterAppCacheHost(blink.mojom.AppCacheHost& host_request,
                        AppCacheFrontend frontend,

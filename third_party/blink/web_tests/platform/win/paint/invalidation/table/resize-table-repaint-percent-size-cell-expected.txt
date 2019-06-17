@@ -33,24 +33,24 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'ROW2'",
+          "object": "NGPhysicalTextFragment 'ROW2'",
           "rect": [3, 400, 45, 19],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'ROW1'",
+          "object": "NGPhysicalTextFragment 'ROW1'",
           "rect": [3, 161, 45, 19],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'ROW2'",
+          "object": "NGPhysicalTextFragment 'ROW2'",
           "rect": [3, 115, 45, 19],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'ROW1'",
+          "object": "NGPhysicalTextFragment 'ROW1'",
           "rect": [3, 66, 45, 19],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

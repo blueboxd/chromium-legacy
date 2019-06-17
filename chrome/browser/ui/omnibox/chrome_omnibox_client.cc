@@ -35,6 +35,7 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -476,7 +477,8 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(nullptr, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+  RecordBookmarkLaunch(nullptr, BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+                       ProfileMetrics::GetBrowserProfileType(profile_));
 }
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {

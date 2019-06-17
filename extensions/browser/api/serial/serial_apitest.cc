@@ -76,11 +76,11 @@ class FakeSerialPort : public device::mojom::SerialPort {
   void Open(device::mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            device::mojom::SerialPortClientAssociatedPtrInfo client,
+            device::mojom::SerialPortClientPtr client,
             OpenCallback callback) override {
     DoConfigurePort(*options);
     DCHECK(client);
-    client_.Bind(std::move(client));
+    client_ = std::move(client);
     SetUpInStreamPipe(std::move(in_stream));
     SetUpOutStreamPipe(std::move(out_stream));
     std::move(callback).Run(true);
@@ -250,7 +250,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
   std::vector<uint8_t> buffer_;
   int read_step_ = 0;
   int write_step_ = 0;
-  device::mojom::SerialPortClientAssociatedPtr client_;
+  device::mojom::SerialPortClientPtr client_;
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;

@@ -75,6 +75,7 @@ class ASH_EXPORT AppListControllerImpl
 
   // app_list::AppListController:
   void SetClient(app_list::AppListClient* client) override;
+  app_list::AppListClient* GetClient() override;
   void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
   void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
                        const std::string& folder_id) override;

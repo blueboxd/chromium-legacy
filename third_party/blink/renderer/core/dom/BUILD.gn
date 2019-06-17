@@ -170,6 +170,8 @@ blink_core_sources("dom") {
     "mutation_observer.h",
     "mutation_observer_interest_group.cc",
     "mutation_observer_interest_group.h",
+    "mutation_observer_notifier.cc",
+    "mutation_observer_notifier.h",
     "mutation_observer_registration.cc",
     "mutation_observer_registration.h",
     "mutation_record.cc",

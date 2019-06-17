@@ -23,14 +23,14 @@ CASE 1, original layer tree
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [-1, -1],
       "bounds": [281, 281]
     }
@@ -74,19 +74,19 @@ CASE 2, hovering over the outer div
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [-1, -1],
       "bounds": [281, 281],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 142, 142],
           "reason": "background"
         }
@@ -132,24 +132,24 @@ CASE 3, hovering over the inner div
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [-1, -1],
       "bounds": [281, 281],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 142, 142],
           "reason": "background"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='smallbox'",
           "rect": [32, 32, 71, 71],
           "reason": "background"
         }

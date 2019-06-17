@@ -103,11 +103,6 @@ const char kAndroidSiteSettingsUIRefreshDescription[] =
     "Enable the new UI "
     "changes in Site Settings in Android.";
 
-const char kAppBannersName[] = "App Banners";
-const char kAppBannersDescription[] =
-    "Enable the display of Progressive Web App banners, which prompt a user to "
-    "add a web app to their shelf, or other platform-specific equivalent.";
-
 const char kAutomaticPasswordGenerationName[] = "Automatic password generation";
 const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
@@ -2409,11 +2404,6 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
-const char kPwaImprovedSplashScreenName[] =
-    "Improved Splash Screen for standalone PWAs";
-const char kPwaImprovedSplashScreenDescription[] =
-    "Enables the Improved Splash Screen UX for standalone PWAs based on new "
-    "Web App Manifest attributes";
 const char kPwaPersistentNotificationName[] =
     "Persistent notification in standalone PWA";
 const char kPwaPersistentNotificationDescription[] =
@@ -3183,8 +3173,10 @@ const char kPrinterProviderSearchAppDescription[] =
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
     "Instructs the OS to use a specific scheduler configuration setting.";
-const char kSchedulerConfigurationConservative[] = "Conservative";
-const char kSchedulerConfigurationPerformance[] = "Performance";
+const char kSchedulerConfigurationConservative[] =
+    "Disables Hyper-Threading on relevant CPUs.";
+const char kSchedulerConfigurationPerformance[] =
+    "Enables Hyper-Threading on relevant CPUs.";
 
 const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
 const char kShowBluetoothDeviceBatteryDescription[] =
@@ -3374,6 +3366,12 @@ const char kWindowsMixedRealityDescription[] =
     "If enabled, Chrome will use Windows Mixed Reality devices for VR"
     " (supported only on Windows 10 or later).";
 #endif  // ENABLE_WINDOWS_MR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+const char kOpenXRName[] = "OpenXR support";
+const char kOpenXRDescription[] =
+    "If enabled, Chrome will use OpenXR Backend for VR.";
+#endif  // ENABLE_OPENXR
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 const char kXRSandboxName[] = "XR device sandboxing";

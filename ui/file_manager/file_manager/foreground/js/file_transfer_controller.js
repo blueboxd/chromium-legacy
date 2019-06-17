@@ -1455,10 +1455,6 @@ class FileTransferController {
     this.metadataModel_
         .get(entries, ['alternateUrl', 'externalFileUrl', 'hosted'])
         .then(metadataList => {
-          // |Copy| is the only menu item affected by allDriveFilesAvailable_.
-          // It could be open right now, update its UI.
-          this.copyCommand_.disabled =
-              !this.canCutOrCopy_(false /* not move operation */);
           for (let i = 0; i < entries.length; i++) {
             if (entries[i].isFile) {
               if (metadataList[i].hosted) {

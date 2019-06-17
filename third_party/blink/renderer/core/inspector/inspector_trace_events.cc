@@ -682,6 +682,7 @@ const char kAnonymousBlockChange[] = "Anonymous block change";
 const char kFullscreen[] = "Fullscreen change";
 const char kChildChanged[] = "Child changed";
 const char kListValueChange[] = "List value change";
+const char kListStyleTypeChange[] = "List style type change";
 const char kImageChanged[] = "Image changed";
 const char kLineBoxesChanged[] = "Line boxes changed";
 const char kSliderValueChanged[] = "Slider value changed";

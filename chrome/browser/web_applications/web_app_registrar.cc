@@ -105,4 +105,9 @@ AppId WebAppRegistrar::FindAppIdForUrl(const GURL& url) const {
   return AppId();
 }
 
+int WebAppRegistrar::CountUserInstalledApps() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace web_app

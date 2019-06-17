@@ -2304,9 +2304,9 @@ TEST(HeapTest, LargeVector) {
 
   // Try to allocate a HeapVectors larger than kMaxHeapObjectSize
   // (crbug.com/597953).
-  wtf_size_t size = kMaxHeapObjectSize / sizeof(int);
-  Persistent<HeapVector<int>> vector =
-      MakeGarbageCollected<HeapVector<int>>(size);
+  const wtf_size_t size = kMaxHeapObjectSize / sizeof(Member<IntWrapper>);
+  Persistent<HeapVector<Member<IntWrapper>>> vector =
+      MakeGarbageCollected<HeapVector<Member<IntWrapper>>>(size);
   EXPECT_LE(size, vector->capacity());
 }
 
@@ -2529,7 +2529,7 @@ TEST(HeapTest, HeapCollectionTypes) {
       MakeGarbageCollected<PrimitiveMember>();
   Persistent<MemberSet> set = MakeGarbageCollected<MemberSet>();
   Persistent<MemberSet> set2 = MakeGarbageCollected<MemberSet>();
-  Persistent<MemberCountedSet> set3 = new MemberCountedSet();
+  Persistent<MemberCountedSet> set3 = MakeGarbageCollected<MemberCountedSet>();
   Persistent<MemberVector> vector = MakeGarbageCollected<MemberVector>();
   Persistent<MemberVector> vector2 = MakeGarbageCollected<MemberVector>();
   Persistent<VectorWU> vector_wu = MakeGarbageCollected<VectorWU>();
@@ -3107,7 +3107,8 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   Persistent<StrongWeak> strong_weak = MakeGarbageCollected<StrongWeak>();
   Persistent<WeakWeak> weak_weak = MakeGarbageCollected<WeakWeak>();
   Persistent<WeakSet> weak_set = MakeGarbageCollected<WeakSet>();
-  Persistent<WeakCountedSet> weak_counted_set = new WeakCountedSet();
+  Persistent<WeakCountedSet> weak_counted_set =
+      MakeGarbageCollected<WeakCountedSet>();
 
   Persistent<IntWrapper> two = MakeGarbageCollected<IntWrapper>(2);
 
@@ -5982,58 +5983,6 @@ TEST(HeapTest, HeapHashMapCallsDestructor) {
   EXPECT_TRUE(string.Impl()->HasOneRef());
 }
 
-class DoublyLinkedListNodeImpl
-    : public GarbageCollectedFinalized<DoublyLinkedListNodeImpl>,
-      public DoublyLinkedListNode<DoublyLinkedListNodeImpl> {
- public:
-  DoublyLinkedListNodeImpl() = default;
-
-  static int destructor_calls_;
-  ~DoublyLinkedListNodeImpl() { ++destructor_calls_; }
-
-  void Trace(Visitor* visitor) {
-    visitor->Trace(prev_);
-    visitor->Trace(next_);
-  }
-
- private:
-  friend class WTF::DoublyLinkedListNode<DoublyLinkedListNodeImpl>;
-  Member<DoublyLinkedListNodeImpl> prev_;
-  Member<DoublyLinkedListNodeImpl> next_;
-};
-
-int DoublyLinkedListNodeImpl::destructor_calls_ = 0;
-
-template <typename T>
-class HeapDoublyLinkedListContainer
-    : public GarbageCollected<HeapDoublyLinkedListContainer<T>> {
- public:
-  HeapDoublyLinkedListContainer<T>() = default;
-  HeapDoublyLinkedList<T> list_;
-  void Trace(Visitor* visitor) { visitor->Trace(list_); }
-};
-
-TEST(HeapTest, HeapDoublyLinkedList) {
-  Persistent<HeapDoublyLinkedListContainer<DoublyLinkedListNodeImpl>>
-      container = MakeGarbageCollected<
-          HeapDoublyLinkedListContainer<DoublyLinkedListNodeImpl>>();
-  DoublyLinkedListNodeImpl::destructor_calls_ = 0;
-
-  container->list_.Append(MakeGarbageCollected<DoublyLinkedListNodeImpl>());
-  container->list_.Append(MakeGarbageCollected<DoublyLinkedListNodeImpl>());
-
-  PreciselyCollectGarbage();
-  EXPECT_EQ(DoublyLinkedListNodeImpl::destructor_calls_, 0);
-
-  container->list_.RemoveHead();
-  PreciselyCollectGarbage();
-  EXPECT_EQ(DoublyLinkedListNodeImpl::destructor_calls_, 1);
-
-  container->list_.RemoveHead();
-  PreciselyCollectGarbage();
-  EXPECT_EQ(DoublyLinkedListNodeImpl::destructor_calls_, 2);
-}
-
 TEST(HeapTest, PromptlyFreeStackAllocatedHeapVector) {
   NormalPageArena* normal_arena;
   Address before;
@@ -6151,6 +6100,9 @@ TEST(HeapTest, GarbageCollectedMixinIsAliveDuringConstruction) {
   using O = ObjectWithMixinWithCallbackBeforeInitializer<IntWrapper>;
   MakeGarbageCollected<O>(base::BindOnce(
       [](O::Mixin* thiz) { CHECK(ThreadHeap::IsHeapObjectAlive(thiz)); }));
+
+  using P = HeapVector<Member<HeapLinkedHashSet<Member<IntWrapper>>>>;
+  MakeGarbageCollected<P>();
 }
 
 }  // namespace blink

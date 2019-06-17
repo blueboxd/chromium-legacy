@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -33,7 +33,6 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
   void ShutDown(base::WaitableEvent* waitable_event) {
     DCHECK(!IsMainThread());
-    thread_->ShutdownOnThread();
     waitable_event->Signal();
   }
 
@@ -101,7 +100,6 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
   void CheckStyleMap(base::WaitableEvent* waitable_event,
                      scoped_refptr<PaintWorkletInput> input) {
     DCHECK(!IsMainThread());
-    thread_->InitializeOnThread();
 
     PaintWorkletStylePropertyMap* map =
         MakeGarbageCollected<PaintWorkletStylePropertyMap>(
@@ -150,7 +148,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
   }
 
  protected:
-  std::unique_ptr<WebThreadSupportingGC> thread_;
+  std::unique_ptr<blink::Thread> thread_;
 };
 
 // This test ensures that Blink::PaintWorkletInput can be safely passed cross
@@ -194,8 +192,8 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
                                               std::move(input_arguments));
   DCHECK(input);
 
-  thread_ = std::make_unique<WebThreadSupportingGC>(
-      ThreadCreationParams(WebThreadType::kTestThread));
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,

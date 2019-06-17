@@ -115,6 +115,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_notifier.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_iterator.h"
@@ -745,20 +746,28 @@ Document::Document(const DocumentInit& initializer,
   }
 
   InitSecurityContext(initializer);
-  if (frame_) {
+  if (frame_)
     frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(), {});
 
+  Document* context_document = ContextDocument();
+  if (context_document) {
+    Frame* context_document_frame = context_document->GetFrame();
+    CHECK(context_document_frame);
     bool has_potential_universal_access_privilege = false;
-    if (Settings* settings = GetSettings()) {
+    if (Settings* settings = context_document_frame->GetSettings()) {
       // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
       // dynamically change.
       if (!settings->GetWebSecurityEnabled() ||
           settings->GetAllowUniversalAccessFromFileURLs())
         has_potential_universal_access_privilege = true;
     }
-    SetAgent(frame_->window_agent_factory().GetAgentForOrigin(
+    SetAgent(context_document_frame->window_agent_factory().GetAgentForOrigin(
         has_potential_universal_access_privilege, GetIsolate(),
         GetSecurityOrigin()));
+  } else {
+    // ContextDocument is null only for Documents created in unit tests.
+    // In that case, use a throw away WindowAgent.
+    SetAgent(MakeGarbageCollected<WindowAgent>(GetIsolate()));
   }
 
   InitDNSPrefetch();
@@ -6916,7 +6925,7 @@ void Document::TasksWereUnpaused() {
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 
-  MutationObserver::ResumeSuspendedObservers();
+  GetAgent().GetMutationObserverNotifier().ResumeSuspendedObservers();
   if (dom_window_)
     DOMWindowPerformance::performance(*dom_window_)->ResumeSuspendedObservers();
 }
@@ -7893,6 +7902,10 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   if (!lazy_load_image_observer_)
     lazy_load_image_observer_ = MakeGarbageCollected<LazyLoadImageObserver>();
   return *lazy_load_image_observer_;
+}
+
+WindowAgent& Document::GetAgent() {
+  return *static_cast<WindowAgent*>(ExecutionContext::GetAgent());
 }
 
 void Document::CountPotentialFeaturePolicyViolation(

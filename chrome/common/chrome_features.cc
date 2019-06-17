@@ -49,17 +49,6 @@ const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-#if !defined(OS_ANDROID)
-const base::Feature kAppBanners {
-  "AppBanners",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT,
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT,
-#endif  // defined(OS_CHROMEOS)
-};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID)
 // Enables messaging in site permissions UI informing user when notifications
 // are disabled for the entire app.
@@ -304,6 +293,11 @@ const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kWindowsMixedReality{"WindowsMixedReality",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // ENABLE_WINDOWS_MR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+// Controls OpenXR support.
+const base::Feature kOpenXR{"OpenXR", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_OPENXR
 
 #endif  // BUILDFLAG(ENABLE_VR)
 

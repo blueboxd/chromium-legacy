@@ -22,7 +22,7 @@ namespace {
 using ActiveScrollTimelineSet = HeapHashCountedSet<WeakMember<Node>>;
 ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
   DEFINE_STATIC_LOCAL(Persistent<ActiveScrollTimelineSet>, set,
-                      (new ActiveScrollTimelineSet));
+                      (MakeGarbageCollected<ActiveScrollTimelineSet>()));
   return *set;
 }
 

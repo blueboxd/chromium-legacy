@@ -184,15 +184,14 @@ class QuickViewController {
   /**
    * Display quick view.
    *
-   * @param {QuickViewUma.WayToOpen=} opt_wayToOpen in which way opening of
-   *     quick view was triggered. Can be omitted if quick view is already open.
+   * @param {QuickViewUma.WayToOpen} wayToOpen The open quick view trigger.
    * @private
    */
-  display_(opt_wayToOpen) {
+  display_(wayToOpen) {
     this.updateQuickView_().then(() => {
       if (!this.quickView_.isOpened()) {
         this.quickView_.open();
-        this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
+        this.quickViewUma_.onOpened(this.entries_[0], wayToOpen);
       }
     });
   }
@@ -244,8 +243,9 @@ class QuickViewController {
     const entry = this.entries_[0];
     this.quickViewModel_.setSelectedEntry(entry);
 
-    // TODO(noel): Record UMA _after_ the rendering work below is done?
-    this.quickViewUma_.onEntryChanged(entry);
+    requestIdleCallback(() => {
+      this.quickViewUma_.onEntryChanged(entry);
+    });
 
     return Promise
         .all([

@@ -6618,6 +6618,14 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Top edge of browser window tap"/>
 </enum>
 
+<enum name="BrowserProfileType">
+  <int value="0" label="Regular"/>
+  <int value="1" label="Incognito"/>
+  <int value="2" label="Guest"/>
+  <int value="3" label="System"/>
+  <int value="4" label="IndependentIncognito"/>
+</enum>
+
 <enum name="BrowserServicesVerificationResult">
   <summary>Result of Trusted Web Activity verification attempt.</summary>
   <int value="0" label="Online Success"/>

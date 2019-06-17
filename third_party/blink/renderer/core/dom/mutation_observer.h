@@ -56,10 +56,8 @@ class Node;
 class ScriptState;
 class V8MutationCallback;
 
-using MutationObserverSet = HeapHashSet<Member<MutationObserver>>;
 using MutationObserverRegistrationSet =
     HeapHashSet<WeakMember<MutationObserverRegistration>>;
-using MutationObserverVector = HeapVector<Member<MutationObserver>>;
 using MutationRecordVector = HeapVector<Member<MutationRecord>>;
 
 class CORE_EXPORT MutationObserver final
@@ -94,8 +92,6 @@ class CORE_EXPORT MutationObserver final
 
   static MutationObserver* Create(Delegate*);
   static MutationObserver* Create(ScriptState*, V8MutationCallback*);
-  static void ResumeSuspendedObservers();
-  static void DeliverMutations();
   static void EnqueueSlotChange(HTMLSlotElement&);
   static void CleanSlotChangeList(Document&);
 
@@ -118,12 +114,14 @@ class CORE_EXPORT MutationObserver final
   EAGERLY_FINALIZE();
   void Trace(Visitor*) override;
 
- private:
-  struct ObserverLessThan;
-
+  // Methods to be used by MutationObserverNotifier
   void Deliver();
   bool ShouldBeSuspended() const;
   void CancelInspectorAsyncTasks();
+  unsigned priority() { return priority_; }
+
+ private:
+  void Activate();
 
   Member<Delegate> delegate_;
   HeapVector<Member<MutationRecord>> records_;

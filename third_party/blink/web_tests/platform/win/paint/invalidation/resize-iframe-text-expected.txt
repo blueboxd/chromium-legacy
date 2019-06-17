@@ -23,8 +23,8 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 299, 64, 24],
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [8, 300, 64, 22],
           "reason": "chunk appeared"
         },
         {

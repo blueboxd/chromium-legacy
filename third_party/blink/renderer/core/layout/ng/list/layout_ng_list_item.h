@@ -67,6 +67,8 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void UpdateMarker();
   void DestroyMarker();
 
+  void ListStyleTypeChanged();
+
   ListItemOrdinal ordinal_;
   LayoutObject* marker_ = nullptr;
 

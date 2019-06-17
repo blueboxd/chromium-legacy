@@ -32,7 +32,9 @@
 
 #include <memory>
 
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -86,6 +88,41 @@ class DefaultConnector {
 
  private:
   std::unique_ptr<service_manager::Connector> connector_;
+};
+
+class IdleDelayedTaskHelper : public base::SingleThreadTaskRunner {
+  USING_FAST_MALLOC(IdleDelayedTaskHelper);
+
+ public:
+  IdleDelayedTaskHelper() = default;
+
+  bool RunsTasksInCurrentSequence() const override { return IsMainThread(); }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    ThreadScheduler::Current()->PostDelayedIdleTask(
+        from_here, delay,
+        base::BindOnce([](base::OnceClosure task,
+                          base::TimeTicks deadline) { std::move(task).Run(); },
+                       std::move(task)));
+    return true;
+  }
+
+ protected:
+  ~IdleDelayedTaskHelper() override = default;
+
+ private:
+  THREAD_CHECKER(thread_checker_);
+  DISALLOW_COPY_AND_ASSIGN(IdleDelayedTaskHelper);
 };
 
 }  // namespace
@@ -218,6 +255,10 @@ void Platform::InitializeCommon(Platform* platform,
       base::ThreadTaskRunnerHandle::Get());
 
   RendererResourceCoordinator::MaybeInitialize();
+  // Use a delayed idle task as this is low priority work that should stop when
+  // the main thread is not doing any work.
+  WTF::Partitions::StartPeriodicReclaim(
+      base::MakeRefCounted<IdleDelayedTaskHelper>());
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {

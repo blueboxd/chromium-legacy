@@ -1688,6 +1688,8 @@ jumbo_component("base") {
         # PartitionAlloc uses SpinLock, which doesn't work in NaCl (see below).
         "allocator/partition_allocator/address_space_randomization.cc",
         "allocator/partition_allocator/address_space_randomization.h",
+        "allocator/partition_allocator/memory_reclaimer.cc",
+        "allocator/partition_allocator/memory_reclaimer.h",
         "allocator/partition_allocator/oom.h",
         "allocator/partition_allocator/oom_callback.cc",
         "allocator/partition_allocator/oom_callback.h",
@@ -2912,6 +2914,7 @@ test("base_unittests") {
   if (use_partition_alloc) {
     sources += [
       "allocator/partition_allocator/address_space_randomization_unittest.cc",
+      "allocator/partition_allocator/memory_reclaimer_unittest.cc",
       "allocator/partition_allocator/page_allocator_unittest.cc",
       "allocator/partition_allocator/partition_alloc_unittest.cc",
       "allocator/partition_allocator/spin_lock_unittest.cc",

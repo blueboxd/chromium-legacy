@@ -207,8 +207,13 @@ class MockServiceWorkerContextClient final
   }
 
   scoped_refptr<WebWorkerFetchContext>
-  CreateServiceWorkerFetchContextOnMainThread(
+  CreateWorkerFetchContextOnMainThreadLegacy(
       WebServiceWorkerNetworkProvider* network_provider) override {
+    return base::MakeRefCounted<FakeWebWorkerFetchContext>();
+  }
+
+  scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContextOnMainThread()
+      override {
     return base::MakeRefCounted<FakeWebWorkerFetchContext>();
   }
 

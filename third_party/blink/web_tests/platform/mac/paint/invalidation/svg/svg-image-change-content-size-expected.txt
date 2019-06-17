@@ -18,13 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow div id='contentBox'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow div id='contentBox'",
           "rect": [8, 50, 602, 422],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutImage img",
-          "rect": [9, 51, 420, 420],
           "reason": "geometry"
         }
       ]

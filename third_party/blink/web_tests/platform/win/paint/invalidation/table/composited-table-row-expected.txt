@@ -24,7 +24,7 @@
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD id='target'",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD id='target'",
           "rect": [0, 0, 35, 23],
           "reason": "appeared"
         }

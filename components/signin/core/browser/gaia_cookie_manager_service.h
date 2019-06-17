@@ -371,8 +371,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   GaiaAccountsInCookieUpdatedCallback gaia_accounts_updated_in_cookie_callback_;
   GaiaCookieDeletedByUserActionCallback
       gaia_cookie_deleted_by_user_action_callback_;
-  base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
-      shared_url_loader_factory_getter_;
+
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<signin::UbertokenFetcherImpl> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;

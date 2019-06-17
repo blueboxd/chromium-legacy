@@ -26,7 +26,9 @@
 // https://html.spec.whatwg.org/C/#media-elements
 
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
+
 [
+    Exposed=Window,
     ActiveScriptWrappable
 ] interface HTMLMediaElement : HTMLElement {
 

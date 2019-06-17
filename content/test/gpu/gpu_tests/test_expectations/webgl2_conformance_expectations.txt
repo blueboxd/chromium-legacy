@@ -188,7 +188,6 @@ crbug.com/687374 [ win amd-0x6613 ] deqp/functional/gles3/multisample.html [ Ret
 crbug.com/angleproject/3354 [ win amd-0x699f ] deqp/functional/gles3/fborender/shared_colorbuffer_02.html [ Skip ]
 
 # Win / Intel
-crbug.com/782317 [ d3d11 win intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
 crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
 crbug.com/614418 [ d3d11 win intel ] deqp/functional/gles3/textureformat/unsized_3d.html [ RetryOnFailure ]
@@ -238,16 +237,6 @@ crbug.com/angleproject/2994 [ opengl passthrough ] conformance2/textures/misc/co
 crbug.com/835364 [ opengl win passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
 
-# Passthrough command decoder / OpenGL / Intel
-crbug.com/602688 [ opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb32f-rgb-float.html [ Failure ]
-crbug.com/602688 [ win opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ linux opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/misc/uninitialized-test.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
-
 # Passthrough command decoder / Windows / OpenGL / Intel
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
@@ -255,7 +244,6 @@ crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/texture-npot.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]

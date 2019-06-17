@@ -5,6 +5,7 @@
 #include "services/data_decoder/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
@@ -35,6 +36,9 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "xml_parser",
               service_manager::Manifest::InterfaceList<mojom::XmlParser>())
+          .ExposeCapability("bundled_exchanges_parser",
+                            service_manager::Manifest::InterfaceList<
+                                mojom::BundledExchangesParser>())
           .Build()};
   return *manifest;
 }

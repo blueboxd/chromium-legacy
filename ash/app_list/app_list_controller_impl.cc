@@ -176,6 +176,11 @@ void AppListControllerImpl::SetClient(app_list::AppListClient* client) {
   client_ = client;
 }
 
+app_list::AppListClient* AppListControllerImpl::GetClient() {
+  DCHECK(client_);
+  return client_;
+}
+
 app_list::AppListModel* AppListControllerImpl::GetModel() {
   return model_.get();
 }

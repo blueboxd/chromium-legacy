@@ -131,14 +131,15 @@ using DOMWindowSet = HeapHashCountedSet<WeakMember<LocalDOMWindow>>;
 
 static DOMWindowSet& WindowsWithUnloadEventListeners() {
   DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
-                      windows_with_unload_event_listeners, (new DOMWindowSet));
+                      windows_with_unload_event_listeners,
+                      (MakeGarbageCollected<DOMWindowSet>()));
   return *windows_with_unload_event_listeners;
 }
 
 static DOMWindowSet& WindowsWithBeforeUnloadEventListeners() {
   DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
                       windows_with_before_unload_event_listeners,
-                      (new DOMWindowSet));
+                      (MakeGarbageCollected<DOMWindowSet>()));
   return *windows_with_before_unload_event_listeners;
 }
 

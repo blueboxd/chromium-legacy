@@ -24,7 +24,6 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
@@ -245,14 +244,6 @@ void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
   } else {
     registry_ready_callback_ = std::move(callback);
   }
-}
-
-int WebAppProvider::CountUserInstalledApps() const {
-  // TODO: Implement for new Web Apps system. crbug.com/918986.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
-    return 0;
-
-  return extensions::CountUserInstalledBookmarkApps(profile_);
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

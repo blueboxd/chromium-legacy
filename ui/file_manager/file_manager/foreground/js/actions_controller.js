@@ -248,6 +248,9 @@ class ActionsController {
         this.volumeManager_, this.metadataModel_, this.shortcutsModel_,
         this.driveSyncHandler_, this.ui_, entries);
 
+    actionsModel.addEventListener(
+        'invalidated', this.clearLocalCache_.bind(this, key), {once: true});
+
     // Once it's initialized, move to readyModels_ so we don't have to construct
     // and initialized again.
     const init = actionsModel.initialize().then(() => {

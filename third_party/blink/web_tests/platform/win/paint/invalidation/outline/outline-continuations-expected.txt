@@ -18,27 +18,27 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='outer'",
+          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='outer'",
           "rect": [16, 108, 87, 63],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'CONTENTS'",
+          "object": "NGPhysicalTextFragment 'CONTENTS'",
           "rect": [18, 150, 83, 19],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'CONTENTS'",
+          "object": "NGPhysicalTextFragment 'CONTENTS'",
           "rect": [18, 150, 83, 19],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'CONTENTS'",
+          "object": "NGPhysicalTextFragment 'CONTENTS'",
           "rect": [18, 110, 83, 19],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'CONTENTS'",
+          "object": "NGPhysicalTextFragment 'CONTENTS'",
           "rect": [18, 110, 83, 19],
           "reason": "disappeared"
         }

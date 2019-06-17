@@ -18,17 +18,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 7, 200, 101],
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [8, 8, 200, 100],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 100, 100],
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 100, 100],
           "reason": "chunk disappeared"
         }

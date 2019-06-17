@@ -97,10 +97,6 @@ class WebAppProvider : public WebAppProviderBase,
   // subscribers needed.
   void SetRegistryReadyCallback(base::OnceClosure callback);
 
-  // Count a number of all apps which are installed by user (non-default).
-  // Requires app registry to be in a ready state.
-  int CountUserInstalledApps() const;
-
  protected:
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);

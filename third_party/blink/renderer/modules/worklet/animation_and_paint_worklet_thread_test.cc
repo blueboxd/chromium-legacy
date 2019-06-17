@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -103,7 +102,7 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
   std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
       CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
                                                         reporting_proxy_.get());
-  WebThreadSupportingGC* first_thread =
+  Thread* first_thread =
       &first_worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
   v8::Isolate* first_isolate = first_worklet->GetIsolate();
@@ -119,7 +118,7 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
 
   // Wait until the second worklet is initialized. Verify that the second
   // worklet is using the same thread and Isolate as the first worklet.
-  WebThreadSupportingGC* second_thread =
+  Thread* second_thread =
       &second_worklet->GetWorkerBackingThread().BackingThread();
   ASSERT_EQ(first_thread, second_thread);
 
@@ -141,8 +140,7 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
       CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
                                                         reporting_proxy_.get());
-  WebThreadSupportingGC* first_thread =
-      &worklet->GetWorkerBackingThread().BackingThread();
+  Thread* first_thread = &worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(worklet.get());
 
   // We don't use terminateAndWait here to avoid forcible termination.
@@ -152,8 +150,7 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the second worklet. The backing thread is same.
   worklet = CreateThreadAndProvideAnimationWorkletProxyClient(
       &GetDocument(), reporting_proxy_.get());
-  WebThreadSupportingGC* second_thread =
-      &worklet->GetWorkerBackingThread().BackingThread();
+  Thread* second_thread = &worklet->GetWorkerBackingThread().BackingThread();
   EXPECT_EQ(first_thread, second_thread);
   CheckWorkletCanExecuteScript(worklet.get());
 

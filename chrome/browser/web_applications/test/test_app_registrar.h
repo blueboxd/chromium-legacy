@@ -34,6 +34,7 @@ class TestAppRegistrar : public AppRegistrar {
   bool HasScopeUrl(const AppId& app_id) const override;
   GURL GetScopeUrlForApp(const AppId& app_id) const override;
   AppId FindAppIdForUrl(const GURL& url) const override;
+  int CountUserInstalledApps() const override;
 
  private:
   std::set<AppId> installed_apps_;

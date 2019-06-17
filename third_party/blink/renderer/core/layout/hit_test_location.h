@@ -69,9 +69,8 @@ class CORE_EXPORT HitTestLocation {
   }
 
   // Returns the 1px x 1px hit test rect for a point.
-  // TODO(pdr): Should we be using a one-layout-unit rect instead?
   static PhysicalRect RectForPoint(const PhysicalOffset& point) {
-    return PhysicalRect(IntRect(FlooredIntPoint(point), IntSize(1, 1)));
+    return PhysicalRect(point, PhysicalSize(LayoutUnit(1), LayoutUnit(1)));
   }
 
   bool Intersects(const PhysicalRect&) const;

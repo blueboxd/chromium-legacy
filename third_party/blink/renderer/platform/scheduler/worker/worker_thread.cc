@@ -153,7 +153,14 @@ void WorkerThread::SimpleThreadImpl::Run() {
   base::RunLoop run_loop;
   run_loop_ = &run_loop;
   is_initialized_.Set();
+  // UpdateThreadTLS requires |default_task_runner_| and |is_initialized| set.
+  Thread::UpdateThreadTLS(thread_);
+
+  if (supports_gc_)
+    gc_support_ = std::make_unique<GCSupport>(thread_);
   run_loop_->Run();
+  gc_support_.reset();
+
   non_main_thread_scheduler_.reset();
   run_loop_ = nullptr;
 }
@@ -165,7 +172,6 @@ void WorkerThread::SimpleThreadImpl::Quit() {
                                   base::Unretained(this)));
     return;
   }
-  non_main_thread_scheduler_.reset();
   // We should only get here if we are called by the run loop.
   DCHECK(run_loop_);
   run_loop_->Quit();

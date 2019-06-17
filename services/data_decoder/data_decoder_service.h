@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -35,6 +36,7 @@ class DataDecoderService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
+  void BindBundledExchangesParser(mojom::BundledExchangesParserRequest request);
   void BindImageDecoder(mojom::ImageDecoderRequest request);
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);

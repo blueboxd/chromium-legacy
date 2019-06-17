@@ -44,6 +44,9 @@ MediaStreamVideoSource::MediaStreamVideoSource()
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (remove_last_track_callback_) {
+    std::move(remove_last_track_callback_).Run();
+  }
 }
 
 void MediaStreamVideoSource::AddTrack(
@@ -129,9 +132,9 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
       // stopping a source with StopSource() can have side effects that affect
       // sources created after that StopSource() call, but before the actual
       // stop takes place. See https://crbug.com/778039.
+      remove_last_track_callback_ = std::move(callback);
       StopForRestart(WTF::Bind(&MediaStreamVideoSource::DidStopSource,
-                               weak_factory_.GetWeakPtr(),
-                               std::move(callback)));
+                               weak_factory_.GetWeakPtr()));
       if (state_ == STOPPING_FOR_RESTART || state_ == STOPPED_FOR_RESTART) {
         // If the source supports restarting, it is necessary to call
         // FinalizeStopSource() to ensure the same behavior as StopSource(),
@@ -155,10 +158,9 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
   }
 }
 
-void MediaStreamVideoSource::DidStopSource(base::OnceClosure callback,
-                                           RestartResult result) {
+void MediaStreamVideoSource::DidStopSource(RestartResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(callback);
+  DCHECK(remove_last_track_callback_);
   if (result == RestartResult::IS_STOPPED) {
     state_ = ENDED;
   }
@@ -171,7 +173,7 @@ void MediaStreamVideoSource::DidStopSource(base::OnceClosure callback,
                     "sending notification anyway";
     StopSource();
   }
-  std::move(callback).Run();
+  std::move(remove_last_track_callback_).Run();
 }
 
 void MediaStreamVideoSource::ReconfigureTrack(

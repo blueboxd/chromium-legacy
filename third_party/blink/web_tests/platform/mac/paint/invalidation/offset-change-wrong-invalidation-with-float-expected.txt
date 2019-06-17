@@ -18,14 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) UL id='submenu'",
+          "object": "LayoutNGBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
           "reason": "chunk disappeared"
         }
       ]
     },
     {
-      "name": "LayoutListItem (floating) LI id='watches'",
+      "name": "LayoutNGListItem (floating) LI id='watches'",
       "position": [31, 42],
       "bounds": [7, 18]
     },
@@ -36,16 +36,9 @@
       "backfaceVisibility": "hidden"
     },
     {
-      "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
+      "name": "LayoutNGListItem (relative positioned) (floating) LI id='menu'",
       "position": [31, 42],
-      "bounds": [7, 18],
-      "paintInvalidations": [
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [0, 0, 7, 18],
-          "reason": "geometry"
-        }
-      ]
+      "bounds": [7, 18]
     }
   ]
 }

@@ -1562,8 +1562,6 @@ if (!is_android) {
         "../browser/extensions/background_scripts_apitest.cc",
         "../browser/extensions/background_xhr_browsertest.cc",
         "../browser/extensions/bookmark_app_helper_browsertest.cc",
-        "../browser/extensions/bookmark_app_navigation_browsertest.cc",
-        "../browser/extensions/bookmark_app_navigation_browsertest.h",
         "../browser/extensions/chrome_app_api_browsertest.cc",
         "../browser/extensions/chrome_test_extension_loader_browsertest.cc",
         "../browser/extensions/chrome_theme_url_browsertest.cc",
@@ -1675,6 +1673,8 @@ if (!is_android) {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
         "../browser/ui/views/extensions/extension_dialog_browsertest.cc",
+        "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.cc",
+        "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h",
         "../browser/ui/webui/media_router/media_router_dialog_controller_webui_impl_browsertest.cc",
       ]
 
@@ -3043,6 +3043,7 @@ test("unit_tests") {
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/sharing/sharing_sync_preference_unittest.cc",
+    "../browser/sharing/vapid_key_manager_unittest.cc",
     "../browser/shell_integration_win_unittest.cc",
     "../browser/signin/account_consistency_mode_manager_unittest.cc",
     "../browser/signin/chrome_device_id_helper_unittest.cc",

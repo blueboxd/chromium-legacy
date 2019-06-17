@@ -153,7 +153,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
     &kProgressBarThrottleFeature,
-    &kPwaImprovedSplashScreen,
     &kPwaPersistentNotification,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
@@ -483,9 +482,6 @@ const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
 
 const base::Feature kProgressBarThrottleFeature{
     "ProgressBarThrottle", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPwaImprovedSplashScreen{"PwaImprovedSplashScreen",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPwaPersistentNotification{
     "PwaPersistentNotification", base::FEATURE_ENABLED_BY_DEFAULT};

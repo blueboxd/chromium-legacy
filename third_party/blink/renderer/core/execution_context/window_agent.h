@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_WINDOW_AGENT_H_
 
 #include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace v8 {
 class Isolate;
 }
 
 namespace blink {
+
+class MutationObserverNotifier;
 
 // This corresponds to similar-origin window agent, that is shared by a group
 // of Documents that are mutually reachable and have the same-site origins.
@@ -29,10 +30,16 @@ class WindowAgent final : public Agent {
 
   void Trace(blink::Visitor*) override;
 
+  MutationObserverNotifier& GetMutationObserverNotifier() {
+    return *mutation_observer_notifier_;
+  }
+
  private:
+  // For MutationObserver.
+  Member<MutationObserverNotifier> mutation_observer_notifier_;
+
   // TODO(tzik): Move per-agent data here with the correct granularity.
-  // E.g. ActiveMutationObservers and CustomElementReactionStack should move
-  // here.
+  // E.g. CustomElementReactionStack should move here.
 };
 
 }  // namespace blink

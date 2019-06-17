@@ -52,6 +52,22 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
   LayoutNGBlockFlow::StyleDidChange(diff, old_style);
 
   UpdateMarker();
+
+  if (old_style && old_style->ListStyleType() != StyleRef().ListStyleType())
+    ListStyleTypeChanged();
+}
+
+// If the value of ListStyleType changed, we need to the marker text has been
+// updated.
+void LayoutNGListItem::ListStyleTypeChanged() {
+  if (!is_marker_text_updated_)
+    return;
+
+  is_marker_text_updated_ = false;
+  if (marker_) {
+    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kListStyleTypeChange);
+  }
 }
 
 void LayoutNGListItem::OrdinalValueChanged() {

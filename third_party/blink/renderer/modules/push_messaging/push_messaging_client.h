@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -46,7 +47,7 @@ class PushMessagingClient final
  private:
   // Returns an initialized PushMessaging service. A connection will be
   // established after the first call to this method.
-  mojom::blink::PushMessaging* GetService();
+  mojom::blink::PushMessaging* GetPushMessagingRemote();
 
   void DidGetManifest(ServiceWorkerRegistration* service_worker_registration,
                       mojom::blink::PushSubscriptionOptionsPtr options,
@@ -68,7 +69,7 @@ class PushMessagingClient final
                     const base::Optional<WTF::Vector<uint8_t>>& p256dh,
                     const base::Optional<WTF::Vector<uint8_t>>& auth);
 
-  mojom::blink::PushMessagingPtr push_messaging_manager_;
+  mojo::Remote<mojom::blink::PushMessaging> push_messaging_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingClient);
 };

@@ -435,13 +435,12 @@ int URLRequest::GetResponseCode() const {
   return job_->GetResponseCode();
 }
 
-void URLRequest::set_not_sent_cookies(CookieStatusList excluded_cookies) {
-  not_sent_cookies_ = std::move(excluded_cookies);
+void URLRequest::set_maybe_sent_cookies(CookieStatusList cookies) {
+  maybe_sent_cookies_ = std::move(cookies);
 }
 
-void URLRequest::set_not_stored_cookies(
-    CookieAndLineStatusList excluded_cookies) {
-  not_stored_cookies_ = std::move(excluded_cookies);
+void URLRequest::set_maybe_stored_cookies(CookieAndLineStatusList cookies) {
+  maybe_stored_cookies_ = std::move(cookies);
 }
 
 void URLRequest::SetLoadFlags(int flags) {
@@ -685,8 +684,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   response_info_.was_cached = false;
 
-  not_sent_cookies_.clear();
-  not_stored_cookies_.clear();
+  maybe_sent_cookies_.clear();
+  maybe_stored_cookies_.clear();
 
   GURL referrer_url(referrer_);
   if (referrer_url != URLRequestJob::ComputeReferrerForPolicy(
@@ -902,8 +901,8 @@ void URLRequest::FollowDeferredRedirect(
   DCHECK(job_.get());
   DCHECK(status_.is_success());
 
-  not_sent_cookies_.clear();
-  not_stored_cookies_.clear();
+  maybe_sent_cookies_.clear();
+  maybe_stored_cookies_.clear();
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->FollowDeferredRedirect(removed_headers, modified_headers);
@@ -913,8 +912,8 @@ void URLRequest::SetAuth(const AuthCredentials& credentials) {
   DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
 
-  not_sent_cookies_.clear();
-  not_stored_cookies_.clear();
+  maybe_sent_cookies_.clear();
+  maybe_stored_cookies_.clear();
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->SetAuth(credentials);

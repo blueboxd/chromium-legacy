@@ -133,52 +133,52 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
           "rect": [447, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
           "rect": [447, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
           "rect": [447, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
           "rect": [447, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
+          "object": "NGPhysicalTextFragment 'NNNN'",
           "rect": [447, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
           "rect": [47, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
           "rect": [47, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
           "rect": [47, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
           "rect": [47, 8, 345, 565],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
+          "object": "NGPhysicalTextFragment 'NNNN'",
           "rect": [47, 8, 345, 565],
           "reason": "geometry"
         }

@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -24,7 +24,6 @@ class CrossThreadStyleValueTest : public testing::Test {
  public:
   void ShutDown(base::WaitableEvent* waitable_event) {
     DCHECK(!IsMainThread());
-    thread_->ShutdownOnThread();
     waitable_event->Signal();
   }
 
@@ -42,7 +41,6 @@ class CrossThreadStyleValueTest : public testing::Test {
       base::WaitableEvent* waitable_event,
       std::unique_ptr<CrossThreadUnsupportedValue> value) {
     DCHECK(!IsMainThread());
-    thread_->InitializeOnThread();
 
     EXPECT_EQ(value->value_, "Unsupported");
     waitable_event->Signal();
@@ -51,7 +49,6 @@ class CrossThreadStyleValueTest : public testing::Test {
   void CheckKeywordValue(base::WaitableEvent* waitable_event,
                          std::unique_ptr<CrossThreadKeywordValue> value) {
     DCHECK(!IsMainThread());
-    thread_->InitializeOnThread();
 
     EXPECT_EQ(value->keyword_value_, "Keyword");
     waitable_event->Signal();
@@ -60,7 +57,6 @@ class CrossThreadStyleValueTest : public testing::Test {
   void CheckUnitValue(base::WaitableEvent* waitable_event,
                       std::unique_ptr<CrossThreadUnitValue> value) {
     DCHECK(!IsMainThread());
-    thread_->InitializeOnThread();
 
     EXPECT_EQ(value->value_, 1);
     EXPECT_EQ(value->unit_, CSSPrimitiveValue::UnitType::kDegrees);
@@ -68,7 +64,7 @@ class CrossThreadStyleValueTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<WebThreadSupportingGC> thread_;
+  std::unique_ptr<blink::Thread> thread_;
 };
 
 // Ensure that a CrossThreadUnsupportedValue can be safely passed cross
@@ -78,9 +74,9 @@ TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
       std::make_unique<CrossThreadUnsupportedValue>("Unsupported");
   DCHECK(value);
 
-  // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = std::make_unique<WebThreadSupportingGC>(
-      ThreadCreationParams(WebThreadType::kTestThread));
+  // Use a Thread to emulate worklet thread.
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -109,9 +105,9 @@ TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
       std::make_unique<CrossThreadKeywordValue>("Keyword");
   DCHECK(value);
 
-  // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = std::make_unique<WebThreadSupportingGC>(
-      ThreadCreationParams(WebThreadType::kTestThread));
+  // Use a Thread to emulate worklet thread.
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -141,9 +137,9 @@ TEST_F(CrossThreadStyleValueTest, PassUnitValueCrossThread) {
           1, CSSPrimitiveValue::UnitType::kDegrees);
   DCHECK(value);
 
-  // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = std::make_unique<WebThreadSupportingGC>(
-      ThreadCreationParams(WebThreadType::kTestThread));
+  // Use a Thread to emulate worklet thread.
+  thread_ = blink::Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,

@@ -67,15 +67,26 @@
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
         'openFile', appId, [ENTRIES.image3.targetPath]));
 
-    // Wait a11y-msg to have some text.
-    await remoteCall.waitForElement(appId, '#a11y-msg:not(:empty)');
+    // Wait for the expected 3
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const a11yMessages =
+          await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+
+      if (a11yMessages.length === 3) {
+        return true;
+      }
+
+      return pending(
+          caller,
+          'Waiting for 3 a11y messages, got: ' + JSON.stringify(a11yMessages));
+    });
 
     // Fetch A11y messages.
     const a11yMessages =
         await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
 
     // Check that opening the file was announced to screen reader.
-    chrome.test.assertTrue(a11yMessages instanceof Array);
     chrome.test.assertEq(3, a11yMessages.length);
     chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[2]);
 

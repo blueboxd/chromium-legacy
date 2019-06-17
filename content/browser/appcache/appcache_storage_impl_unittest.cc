@@ -204,7 +204,7 @@ class AppCacheStorageImplTest : public testing::Test {
           notify_storage_accessed_count_(0),
           notify_storage_modified_count_(0),
           last_delta_(0),
-          mock_manager_(new MockQuotaManager) {
+          mock_manager_(base::MakeRefCounted<MockQuotaManager>()) {
       manager_ = mock_manager_.get();
     }
 
@@ -283,7 +283,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // We start the background thread as TYPE_IO because we also use the
     // db_thread for the disk_cache which needs to be of TYPE_IO.
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-    background_thread.reset(new base::Thread("AppCacheTest::BackgroundThread"));
+    background_thread =
+        std::make_unique<base::Thread>("AppCacheTest::BackgroundThread");
     ASSERT_TRUE(background_thread->StartWithOptions(options));
   }
 
@@ -321,11 +322,11 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(io_runner->BelongsToCurrentThread());
-    service_.reset(new AppCacheServiceImpl(nullptr));
+    service_ = std::make_unique<AppCacheServiceImpl>(nullptr);
     service_->Initialize(base::FilePath());
-    mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
+    mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
   }
 
   void TearDownTest() {
@@ -421,7 +422,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Make an 'unstored' cache for
     // us to load. The ctor should put it in the working set.
     int64_t cache_id = storage()->NewCacheId();
-    scoped_refptr<AppCache> cache(new AppCache(storage(), cache_id));
+    auto cache = base::MakeRefCounted<AppCache>(storage(), cache_id);
 
     // Conduct the test.
     storage()->LoadCache(cache_id, delegate());
@@ -540,9 +541,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored".
-    group_ =
-        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
+                                                 storage()->NewGroupId());
+    cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
     cache_->AddEntry(kEntryUrl,
                      AppCacheEntry(AppCacheEntry::MASTER, 1, kDefaultEntrySize,
                                    /*padding_size=*/0));
@@ -564,9 +565,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // Set up some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
     const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
-    group_ =
-        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
+                                                 storage()->NewGroupId());
+    cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
     cache_->AddEntry(kEntryUrl,
                      AppCacheEntry(AppCacheEntry::EXPLICIT,
                                    /*response_id=*/1,
@@ -620,7 +621,7 @@ class AppCacheStorageImplTest : public testing::Test {
               storage()->usage_map_[kOrigin]);
 
     // And a newest unstored complete cache.
-    cache2_ = new AppCache(storage(), 2);
+    cache2_ = base::MakeRefCounted<AppCache>(storage(), 2);
     cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
                                                kDefaultEntrySize + 100,
                                                kDefaultEntryPadding + 1000));
@@ -732,9 +733,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // Set up some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
     const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
-    group_ =
-        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
+                                                 storage()->NewGroupId());
+    cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
     cache_->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
                                                  /*response_id=*/1,
                                                  /*response_size=*/kTooBig,
@@ -755,9 +756,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // Set up some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
     const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
-    group_ =
-        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
+                                                 storage()->NewGroupId());
+    cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
                                               /*response_id=*/1,
                                               /*response_size=*/1,
@@ -1370,7 +1371,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
 
     // Conduct another test preferring kManifestUrl
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
     PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits2,
         base::Unretained(this)));
@@ -1388,7 +1389,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
 
     // Conduct the another test preferring kManifestUrl2
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
     PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits3,
         base::Unretained(this)));
@@ -1406,7 +1407,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
 
     // Conduct another test with no preferred manifest that hits the fallback.
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
     PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits4,
         base::Unretained(this)));
@@ -1426,7 +1427,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
 
     // Conduct another test preferring kManifestUrl2 that hits the fallback.
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
     PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits5,
         base::Unretained(this)));
@@ -1670,19 +1671,19 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Recreate the service to point at the db and corruption on disk.
-    service_.reset(new AppCacheServiceImpl(nullptr));
+    service_ = std::make_unique<AppCacheServiceImpl>(nullptr);
     auto loader_factory_getter = base::MakeRefCounted<URLLoaderFactoryGetter>();
     loader_factory_getter->SetNetworkFactoryForTesting(
         &mock_url_loader_factory_, /* is_corb_enabled = */ true);
     service_->set_url_loader_factory_getter(loader_factory_getter.get());
 
     service_->Initialize(temp_directory_.GetPath());
-    mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
+    mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
-    delegate_.reset(new MockStorageDelegate(this));
+    delegate_ = std::make_unique<MockStorageDelegate>(this);
 
     // Additional setup to observe reinitailize happens.
-    observer_.reset(new MockServiceObserver(this));
+    observer_ = std::make_unique<MockServiceObserver>(this);
     service_->AddObserver(observer_.get());
 
     // We continue after the init task is complete including the callback
@@ -1810,8 +1811,9 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheEntry default_entry(AppCacheEntry::EXPLICIT,
                                 cache_id + kDefaultEntryIdOffset,
                                 kDefaultEntrySize, kDefaultEntryPadding);
-    group_ = new AppCacheGroup(storage(), manifest_url, group_id);
-    cache_ = new AppCache(storage(), cache_id);
+    group_ =
+        base::MakeRefCounted<AppCacheGroup>(storage(), manifest_url, group_id);
+    cache_ = base::MakeRefCounted<AppCache>(storage(), cache_id);
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
     group_->AddCache(cache_.get());

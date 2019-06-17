@@ -33,6 +33,9 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Sets a client to handle calls from Ash.
   virtual void SetClient(AppListClient* client) = 0;
 
+  // Gets the client that handles calls from Ash.
+  virtual AppListClient* GetClient() = 0;
+
   // Adds an item to AppListModel.
   virtual void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) = 0;
 

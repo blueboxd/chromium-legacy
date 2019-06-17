@@ -56,7 +56,7 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
   // This should be eventually removed. It's needed for a very specific case
   // when we cannot wait until the underlying SimpleThreadImpl finishes, see
   // WorkerBackingThread::ShutdownOnBackingThread().
-  void ShutdownOnThread();
+  void ShutdownOnThread() override;
 
  protected:
   virtual std::unique_ptr<NonMainThreadSchedulerImpl>
@@ -115,7 +115,7 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
     // loop.
     scoped_refptr<base::SingleThreadTaskRunner> internal_task_runner_;
 
-    WorkerThread* thread_ ALLOW_UNUSED_TYPE;
+    WorkerThread* thread_;
 
     // The following variables are "owned" by the worker thread
     NonMainThreadSchedulerFactory scheduler_factory_;
@@ -125,7 +125,7 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
         non_main_thread_scheduler_;
     scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
     base::RunLoop* run_loop_;
-    bool supports_gc_ ALLOW_UNUSED_TYPE;
+    bool supports_gc_;
     std::unique_ptr<GCSupport> gc_support_;
   };
 

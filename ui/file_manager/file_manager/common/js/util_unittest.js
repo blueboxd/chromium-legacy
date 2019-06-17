@@ -172,9 +172,9 @@ function testEntryDebugString() {
       util.entryDebugString(file));
   // FilesAppEntry types:
   assertEquals(
-      '(FakeEntry) fake-entry://crostini', util.entryDebugString(fakeEntry));
+      '(FakeEntry) / fake-entry://crostini', util.entryDebugString(fakeEntry));
   assertEquals(
-      '(EntryList) entry-list://my_files', util.entryDebugString(entryList));
+      '(EntryList) / entry-list://my_files', util.entryDebugString(entryList));
   assertEquals(
       '(VolumeEntry) / filesystem:downloads/',
       util.entryDebugString(volumeEntry));

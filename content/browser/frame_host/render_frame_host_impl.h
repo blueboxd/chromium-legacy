@@ -1407,7 +1407,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetCredentialManager(
       blink::mojom::CredentialManagerRequest request) override;
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
-  void GetPushMessaging(blink::mojom::PushMessagingRequest request) override;
+  void GetPushMessaging(
+      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;
   void GetVirtualAuthenticatorManager(
       blink::test::mojom::VirtualAuthenticatorManagerRequest request) override;
   void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,

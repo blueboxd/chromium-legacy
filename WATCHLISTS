@@ -946,6 +946,9 @@
                   'google_apis/drive|' \
                   'ui/file_manager'
     },
+    'freetype_update': {
+      'filepath': 'third_party/freetype/README.chromium',
+    },
     'fsp': {
       'filepath': 'chrome/browser/chromeos/extensions/file_system_provider|' \
                   'chrome/browser/chromeos/file_system_provider|' \
@@ -2312,6 +2315,8 @@
     'filesapp': ['filesapp-reviews@chromium.org',
                  'fukino+watch@chromium.org',
                  'yamaguchi+watch@chromium.org'],
+    'freetype_update': ['drott+watch@chromium.org',
+                        'thestig@chromium.org'],
     'fsp': ['mtomasz+watch@chromium.org'],
     'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],

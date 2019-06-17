@@ -275,9 +275,16 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   shadow_page_->GetDocument()->SetAddressSpace(
       worker_start_data_.address_space);
 
-  DCHECK(worker_context_client_);
-  shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
-      worker_context_client_->CreateServiceWorkerNetworkProviderOnMainThread());
+  // When off-the-main-thread script fetch is enabled, we don't have to set
+  // network provider to the shadow page because we don't use shadow page's
+  // document loader for script fetch.
+  if (!base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    DCHECK(worker_context_client_);
+    shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
+        worker_context_client_
+            ->CreateServiceWorkerNetworkProviderOnMainThread());
+  }
 
   // If this is an installed service worker, we can start the worker thread
   // now. The script will be streamed in by the installed scripts manager in
@@ -376,10 +383,17 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));
 
-  // |web_worker_fetch_context| is null in some unit tests.
-  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      worker_context_client_->CreateServiceWorkerFetchContextOnMainThread(
-          shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
+  if (base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    web_worker_fetch_context =
+        worker_context_client_->CreateWorkerFetchContextOnMainThread();
+  } else {
+    // |web_worker_fetch_context| is null in some unit tests.
+    web_worker_fetch_context =
+        worker_context_client_->CreateWorkerFetchContextOnMainThreadLegacy(
+            shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
+  }
 
   // Create WorkerSettings. Currently we block all mixed-content requests from
   // a ServiceWorker.

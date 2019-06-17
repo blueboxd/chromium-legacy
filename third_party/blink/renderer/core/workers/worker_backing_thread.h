@@ -18,7 +18,6 @@
 
 namespace blink {
 
-class WebThreadSupportingGC;
 struct WorkerBackingThreadStartupData;
 
 // WorkerBackingThread represents a WebThread with Oilpan and V8. A client of
@@ -39,7 +38,7 @@ class CORE_EXPORT WorkerBackingThread final {
   void InitializeOnBackingThread(const WorkerBackingThreadStartupData&);
   void ShutdownOnBackingThread();
 
-  WebThreadSupportingGC& BackingThread() {
+  blink::Thread& BackingThread() {
     DCHECK(backing_thread_);
     return *backing_thread_;
   }
@@ -50,7 +49,7 @@ class CORE_EXPORT WorkerBackingThread final {
       v8::MemoryPressureLevel);
 
  private:
-  std::unique_ptr<WebThreadSupportingGC> backing_thread_;
+  std::unique_ptr<blink::Thread> backing_thread_;
   v8::Isolate* isolate_ = nullptr;
 };
 

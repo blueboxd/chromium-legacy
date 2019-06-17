@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -379,7 +378,7 @@ HashSet<WorkerThread*>& WorkerThread::WorkerThreads() {
 }
 
 PlatformThreadId WorkerThread::GetPlatformThreadId() {
-  return GetWorkerBackingThread().BackingThread().PlatformThread().ThreadId();
+  return GetWorkerBackingThread().BackingThread().ThreadId();
 }
 
 bool WorkerThread::IsForciblyTerminated() {
@@ -501,9 +500,8 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
     base::WaitableEvent* waitable_event) {
   DCHECK(IsCurrentThread());
   DCHECK(!worker_scheduler_);
-  scheduler::WorkerThread& worker_thread =
-      static_cast<scheduler::WorkerThread&>(
-          GetWorkerBackingThread().BackingThread().PlatformThread());
+  auto& worker_thread = static_cast<scheduler::WorkerThread&>(
+      GetWorkerBackingThread().BackingThread());
   worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
       static_cast<scheduler::WorkerThreadScheduler*>(
           worker_thread.GetNonMainThreadScheduler()),

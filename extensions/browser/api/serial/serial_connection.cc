@@ -215,9 +215,11 @@ void SerialConnection::SetPaused(bool paused) {
     // If |receive_pipe_| is closed and there is no pending ReceiveError event,
     // try to reconnect the data pipe.
     if (!receive_pipe_ && !read_error_) {
-      mojo::ScopedDataPipeProducerHandle receive_producer;
-      SetUpReceiveDataPipe(&receive_producer);
-      serial_port_->ClearReadError(std::move(receive_producer));
+      mojo::ScopedDataPipeProducerHandle producer;
+      mojo::ScopedDataPipeConsumerHandle consumer;
+      CreatePipe(&producer, &consumer);
+      SetUpReceiveDataPipe(std::move(consumer));
+      serial_port_->ClearReadError(std::move(producer));
     }
     receive_pipe_watcher_.ArmOrNotify();
     receive_timeout_task_.Cancel();
@@ -239,6 +241,8 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
                             OpenCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(serial_port_);
+  DCHECK(!send_pipe_);
+  DCHECK(!receive_pipe_);
 
   if (options.persistent.get())
     set_persistent(*options.persistent);
@@ -251,42 +255,42 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
 
-  mojo::ScopedDataPipeConsumerHandle consumer;
-  mojo::ScopedDataPipeProducerHandle producer;
-  if (!send_pipe_) {
-    SetUpSendDataPipe(&consumer);
-  }
-  DCHECK(send_pipe_);
-  // Make sure receive_pipe_ only be initialized once.
-  if (!receive_pipe_) {
-    SetUpReceiveDataPipe(&producer);
-  }
-  DCHECK(receive_pipe_);
-  // In case Open() being called more than once.
-  if (client_binding_) {
-    client_binding_.Close();
-  }
-  device::mojom::SerialPortClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
-  client_binding_.set_connection_error_handler(base::BindOnce(
-      &SerialConnection::OnClientBindingClosed, weak_factory_.GetWeakPtr()));
+  mojo::ScopedDataPipeProducerHandle receive_producer;
+  mojo::ScopedDataPipeConsumerHandle receive_consumer;
+  CreatePipe(&receive_producer, &receive_consumer);
+
+  mojo::ScopedDataPipeProducerHandle send_producer;
+  mojo::ScopedDataPipeConsumerHandle send_consumer;
+  CreatePipe(&send_producer, &send_consumer);
+
+  device::mojom::SerialPortClientPtr client;
+  auto client_request = mojo::MakeRequest(&client);
 
   serial_port_->Open(
       device::mojom::SerialConnectionOptions::From(options),
-      std::move(consumer), std::move(producer), std::move(client),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
+      std::move(send_consumer), std::move(receive_producer), std::move(client),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&SerialConnection::OnOpen, weak_factory_.GetWeakPtr(),
+                         std::move(receive_consumer), std::move(send_producer),
+                         std::move(client_request), std::move(callback)),
+          false));
 }
 
-void SerialConnection::SetUpReceiveDataPipe(
-    mojo::ScopedDataPipeProducerHandle* producer) {
+void SerialConnection::CreatePipe(
+    mojo::ScopedDataPipeProducerHandle* producer,
+    mojo::ScopedDataPipeConsumerHandle* consumer) {
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = buffer_size_;
 
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::CreateDataPipe(&options, producer, &receive_pipe_));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(&options, producer, consumer));
+}
+
+void SerialConnection::SetUpReceiveDataPipe(
+    mojo::ScopedDataPipeConsumerHandle consumer) {
+  receive_pipe_ = std::move(consumer);
   receive_pipe_watcher_.Watch(
       receive_pipe_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -296,15 +300,8 @@ void SerialConnection::SetUpReceiveDataPipe(
 }
 
 void SerialConnection::SetUpSendDataPipe(
-    mojo::ScopedDataPipeConsumerHandle* consumer) {
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = buffer_size_;
-
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::CreateDataPipe(&options, &send_pipe_, consumer));
+    mojo::ScopedDataPipeProducerHandle producer) {
+  send_pipe_ = std::move(producer);
   send_pipe_watcher_.Watch(
       send_pipe_.get(),
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -337,6 +334,25 @@ void SerialConnection::OnSendError(device::mojom::SerialSendError error) {
         .Run(bytes_written_, ConvertSendErrorFromMojo(error));
   }
   bytes_written_ = 0;
+}
+
+void SerialConnection::OnOpen(
+    mojo::ScopedDataPipeConsumerHandle consumer,
+    mojo::ScopedDataPipeProducerHandle producer,
+    device::mojom::SerialPortClientRequest client_request,
+    OpenCompleteCallback callback,
+    bool success) {
+  if (!success) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  SetUpReceiveDataPipe(std::move(consumer));
+  SetUpSendDataPipe(std::move(producer));
+  client_binding_.Bind(std::move(client_request));
+  client_binding_.set_connection_error_handler(base::BindOnce(
+      &SerialConnection::OnClientBindingClosed, weak_factory_.GetWeakPtr()));
+  std::move(callback).Run(true);
 }
 
 void SerialConnection::OnReadPipeClosed() {
@@ -414,8 +430,10 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
   data_to_send_.assign(data.begin(), data.end());
 
   if (!send_pipe_) {
+    mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    SetUpSendDataPipe(&consumer);
+    CreatePipe(&producer, &consumer);
+    SetUpSendDataPipe(std::move(producer));
     serial_port_->ClearSendError(std::move(consumer));
   }
   send_pipe_watcher_.ArmOrNotify();

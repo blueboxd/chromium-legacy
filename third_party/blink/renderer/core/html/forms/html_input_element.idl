@@ -19,11 +19,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/C/#the-input-element
+// https://html.spec.whatwg.org/multipage/input.html#htmlinputelement
 
 enum SelectionMode { "select", "start", "end", "preserve" };
 
 [
+    Exposed=Window,
     HTMLConstructor,
     ActiveScriptWrappable
 ] interface HTMLInputElement : HTMLElement {

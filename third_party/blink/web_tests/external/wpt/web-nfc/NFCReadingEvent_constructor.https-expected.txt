@@ -1,4 +1,6 @@
 This is a testharness.js-based test.
 FAIL NFCReadingEvent constructor without init dict NFCReadingEvent is not defined
+FAIL NFCReadingEvent constructor with invalid serialNumber NFCReadingEvent is not defined
+FAIL NFCReadingEvent constructor with valid parameters NFCReadingEvent is not defined
 Harness: the test ran to completion.
 

@@ -18,19 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'a'",
+          "object": "NGPhysicalTextFragment 'a'",
           "rect": [8, 88, 100, 100],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'p'",
-          "rect": [8, 88, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [8, 88, 100, 100],
-          "reason": "geometry"
+          "reason": "full"
         }
       ]
     }

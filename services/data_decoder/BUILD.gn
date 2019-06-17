@@ -6,6 +6,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("lib") {
   sources = [
+    "bundled_exchanges_parser.cc",
+    "bundled_exchanges_parser.h",
     "data_decoder_service.cc",
     "data_decoder_service.h",
     "image_decoder_impl.cc",

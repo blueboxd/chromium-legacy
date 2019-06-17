@@ -35,6 +35,25 @@ namespace scheduler {
 //    each other.
 //  - Workers and Worklets can have its own EventLoop, as no other browsing
 //    context can access it synchronously.
+//
+// The specification says an event loop has (non-micro) task queues. However,
+// we process regular tasks in a different granularity; in our implementation,
+// a frame has task queues. This is an intentional violation of the
+// specification.
+//
+// Therefore, currently, EventLoop is a unit that just manages a microtask
+// queue: <https://html.spec.whatwg.org/C#microtask-queue>
+//
+// Microtasks queued during a task are executed at the end of the task or
+// after a user script is executed (for the exact timings, refer to the
+// specification). Some web platform features require this functionality.
+//
+// Implementation notes: Originally, microtask queues were created in V8
+// for JavaScript promises. V8 allocates a default microtask queue per isolate,
+// and it still uses the default queue, not the one in this EventLoop class.
+// This is not correct in terms of the standards conformance, and we'll
+// eventually merge the queues so both Blink and V8 can use the microtask queue
+// allocated in the correct granularity.
 class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
   USING_FAST_MALLOC(EventLoop);
 

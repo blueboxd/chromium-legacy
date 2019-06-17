@@ -70,10 +70,72 @@ bool IsEvictableError(AppCacheUpdateJob::ResultType result,
 }
 
 bool CanUseExistingResource(const net::HttpResponseInfo* http_info) {
+  if (!http_info->headers)
+    return false;
+
+  base::Time request_time = http_info->request_time;
+  base::Time response_time = http_info->response_time;
+
+  // The logic below works around the following confluence of problems.
+  //
+  // 1) If a cached response contains a Last-Modified header,
+  // AppCacheUpdateJob::URLFetcher::AddConditionalHeaders() adds an
+  // If-Modified-Since header, so the server may return an HTTP 304 Not Modified
+  // response. AppCacheUpdateJob::HandleUrlFetchCompleted() reuses the existing
+  // cache entry when a 304 is received, even though the HTTP specification
+  // mandates updating the cached headers with the headers in the 304 response.
+  //
+  // This deviation from the HTTP specification is Web-observable when AppCache
+  // resources are served with Last-Modified and Cache-Control: max-age headers.
+  // Specifically, if a server returns a 304 with a Cache-Control: max-age
+  // header, the response stored in AppCache should be updated to reflect the
+  // new cache expiration time. Instead, Chrome ignores all the headers in the
+  // 304 response, so the Cache-Control: max-age directive is discarded.
+  //
+  // In other words, once a cached resource's lifetime expires, 304 responses
+  // won't refresh its lifetime. Chrome gets stuck in a cycle where it sends
+  // If-Modified-Since requests, the server responds with 304, and the response
+  // headers are discarded.
+  //
+  // 2) The implementation of
+  // AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse() introduced
+  // in https://crrev.com/c/599359 did not populate |request_time| and
+  // |response_time|. When the Network Service was enabled, caches got populated
+  // with the default value of base::Time, which is the Windows epoch. So,
+  // cached entries with max-age values below ~40 years will require
+  // re-validation. https://crrev.com/c/1636266 fixed the cache population bug,
+  // but did not address the incorrect times that have already been written to
+  // users' disks.
+  //
+  // The 1st problem, on its own, hasn't had a large impact. This is likely
+  // because we have been advising sites to set max-age=31536000 (~1 year) for
+  // immutable resources, and most AppCache caches have been getting evicted
+  // before the entries' max-age expired. However, the 2nd problem caused us to
+  // create a large number of expired cache entries, and the unnecessary
+  // If-Modified-Since requests are causing noticeable levels of traffic.
+  //
+  // The logic below is a workaround while a longer-term fix gets developed and
+  // deployed. We'll consider all cache entries with invalid times to have been
+  // created on Tue, Jan 29 2019. This is the day when M72 was released to
+  // Chrome's Stable channel, and was chosen because M72 had the first large
+  // Network Service deployment.
+  static constexpr base::Time::Exploded kInvalidTimePlaceholderExploded = {
+      2019, 1, 2, 29, 0, 0, 0, 0};
+  constexpr base::Time default_initialized_time;
+  if (request_time == default_initialized_time) {
+    bool conversion_succeeded = base::Time::FromUTCExploded(
+        kInvalidTimePlaceholderExploded, &request_time);
+    DCHECK(conversion_succeeded);
+  }
+  if (response_time == default_initialized_time) {
+    bool conversion_succeeded = base::Time::FromUTCExploded(
+        kInvalidTimePlaceholderExploded, &response_time);
+    DCHECK(conversion_succeeded);
+  }
+
   // Check HTTP caching semantics based on max-age and expiration headers.
-  if (!http_info->headers || http_info->headers->RequiresValidation(
-                                 http_info->request_time,
-                                 http_info->response_time, base::Time::Now())) {
+  if (http_info->headers->RequiresValidation(request_time, response_time,
+                                             base::Time::Now())) {
     return false;
   }
 

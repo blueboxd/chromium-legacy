@@ -133,53 +133,53 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [438, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [439, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [438, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [439, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [438, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [439, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [438, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [439, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [438, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [439, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [38, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [39, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [38, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [39, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [38, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [39, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [38, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [39, 7, 352, 554],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [38, 7, 353, 554],
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [39, 7, 352, 554],
           "reason": "geometry"
         }
       ]

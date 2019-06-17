@@ -578,23 +578,26 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // the request is redirected.
   PrivacyMode privacy_mode() { return privacy_mode_; }
 
-  void set_not_sent_cookies(CookieStatusList excluded_cookies);
-  void set_not_stored_cookies(CookieAndLineStatusList excluded_cookies);
+  void set_maybe_sent_cookies(CookieStatusList cookies);
+  void set_maybe_stored_cookies(CookieAndLineStatusList cookies);
 
   // These lists contain a list of cookies that are associated with the given
-  // request but are removed or flagged from the request before use, along with
-  // the reason they were removed or flagged. They are cleared on redirects and
-  // other request restarts that cause sent cookies to be recomputed / new
-  // cookies to potentially be received (such as calling SetAuth() to send HTTP
-  // auth credentials, but not calling ContinueWithCertification() to respond to
-  // client cert challenges), and only contain the cookies relevant to the most
-  // recent roundtrip.
+  // request, both those that were sent and accepted, and those that were
+  // removed or flagged from the request before use. The status indicates
+  // whether they were actually used (INCLUDE), or the reason they were removed
+  // or flagged. They are cleared on redirects and other request restarts that
+  // cause sent cookies to be recomputed / new cookies to potentially be
+  // received (such as calling SetAuth() to send HTTP auth credentials, but not
+  // calling ContinueWithCertification() to respond to client cert challenges),
+  // and only contain the cookies relevant to the most recent roundtrip.
 
   // Populated while the http request is being built.
-  const CookieStatusList& not_sent_cookies() const { return not_sent_cookies_; }
+  const CookieStatusList& maybe_sent_cookies() const {
+    return maybe_sent_cookies_;
+  }
   // Populated after the response headers are received.
-  const CookieAndLineStatusList& not_stored_cookies() const {
-    return not_stored_cookies_;
+  const CookieAndLineStatusList& maybe_stored_cookies() const {
+    return maybe_stored_cookies_;
   }
 
   // The new flags may change the IGNORE_LIMITS flag only when called
@@ -915,8 +918,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
                     // expected values are LOAD_* enums above.
   PrivacyMode privacy_mode_;
 
-  CookieStatusList not_sent_cookies_;
-  CookieAndLineStatusList not_stored_cookies_;
+  CookieStatusList maybe_sent_cookies_;
+  CookieAndLineStatusList maybe_stored_cookies_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   int reporting_upload_depth_;

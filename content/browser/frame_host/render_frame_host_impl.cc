@@ -6083,7 +6083,7 @@ void RenderFrameHostImpl::GetCredentialManager(
 }
 
 void RenderFrameHostImpl::GetPushMessaging(
-    blink::mojom::PushMessagingRequest request) {
+    mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) {
   if (!push_messaging_manager_) {
     push_messaging_manager_.reset(new PushMessagingManager(
         GetProcess()->GetID(), routing_id_,
@@ -6093,8 +6093,9 @@ void RenderFrameHostImpl::GetPushMessaging(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PushMessagingManager::BindRequest,
-                     push_messaging_manager_->AsWeakPtr(), std::move(request)));
+      base::BindOnce(&PushMessagingManager::AddPushMessagingReceiver,
+                     push_messaging_manager_->AsWeakPtr(),
+                     std::move(receiver)));
 }
 
 void RenderFrameHostImpl::GetVirtualAuthenticatorManager(

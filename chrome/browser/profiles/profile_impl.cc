@@ -862,6 +862,10 @@ bool ProfileImpl::IsOffTheRecord() const {
   return false;
 }
 
+bool ProfileImpl::IsIndependentOffTheRecordProfile() {
+  return false;
+}
+
 Profile* ProfileImpl::GetOffTheRecordProfile() {
   if (!off_the_record_profile_) {
     std::unique_ptr<Profile> p(CreateOffTheRecordProfile());

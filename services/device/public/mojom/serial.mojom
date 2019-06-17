@@ -106,7 +106,7 @@ interface SerialPort {
   Open(SerialConnectionOptions options,
        handle<data_pipe_consumer> in_stream,
        handle<data_pipe_producer> out_stream,
-       associated SerialPortClient client) => (bool success);
+       SerialPortClient client) => (bool success);
 
   // Try to clear existing send error and reconnect the data pipe for send.
   // This is supposed to be called after SerialPortClient#OnSendError is

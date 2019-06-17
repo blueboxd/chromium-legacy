@@ -19,8 +19,10 @@
  */
 
 // https://html.spec.whatwg.org/C/#htmlelement
-[HTMLConstructor]
-interface HTMLElement : Element {
+[
+    Exposed=Window,
+    HTMLConstructor
+] interface HTMLElement : Element {
     // metadata attributes
     [CEReactions, Reflect] attribute DOMString title;
     [CEReactions, Reflect] attribute DOMString lang;

@@ -1760,11 +1760,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
-#if !defined(OS_ANDROID)
-    {"enable-app-banners", flag_descriptions::kAppBannersName,
-     flag_descriptions::kAppBannersDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kAppBanners)},
-#endif  // !OS_ANDROID
     {"bypass-app-banner-engagement-checks",
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
@@ -1866,6 +1861,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWindowsMixedRealityDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kWindowsMixedReality)},
 #endif  // ENABLE_WINDOWS_MR
+#if BUILDFLAG(ENABLE_OPENXR)
+    {"openxr", flag_descriptions::kOpenXRName,
+     flag_descriptions::kOpenXRDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kOpenXR)},
+#endif  // ENABLE_OPENXR
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
     {"xr-sandbox", flag_descriptions::kXRSandboxName,
      flag_descriptions::kXRSandboxDescription, kOsWin,
@@ -2678,13 +2678,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReaderModeInCCT)},
 #endif  // !defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"pwa-improved-splash-screen",
-     flag_descriptions::kPwaImprovedSplashScreenName,
-     flag_descriptions::kPwaImprovedSplashScreenDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPwaImprovedSplashScreen)},
-#endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
     {"pwa-persistent-notification",

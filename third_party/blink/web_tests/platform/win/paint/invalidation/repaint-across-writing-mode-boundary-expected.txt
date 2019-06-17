@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\u7B2C\u4E00\u6BB5\u843D paragraph 1'",
+          "object": "NGPhysicalTextFragment '\u7B2C\u4E00\u6BB5\u843D paragraph 1'",
           "rect": [548, 191, 23, 35],
           "reason": "selection"
         }

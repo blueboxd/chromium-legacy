@@ -659,57 +659,6 @@ TEST(IncrementalMarkingTest, HeapVectorEagerTracingStopsAtMember) {
 }
 
 // =============================================================================
-// HeapDoublyLinkedList support. ===============================================
-// =============================================================================
-
-namespace {
-
-class ObjectNode : public GarbageCollected<ObjectNode>,
-                   public DoublyLinkedListNode<ObjectNode> {
- public:
-  explicit ObjectNode(Object* obj) : obj_(obj) {}
-
-  void Trace(Visitor* visitor) {
-    visitor->Trace(obj_);
-    visitor->Trace(prev_);
-    visitor->Trace(next_);
-  }
-
- private:
-  friend class WTF::DoublyLinkedListNode<ObjectNode>;
-
-  Member<Object> obj_;
-  Member<ObjectNode> prev_;
-  Member<ObjectNode> next_;
-};
-
-}  // namespace
-
-TEST(IncrementalMarkingTest, HeapDoublyLinkedListPush) {
-  auto* obj = MakeGarbageCollected<Object>();
-  ObjectNode* obj_node = MakeGarbageCollected<ObjectNode>(obj);
-  HeapDoublyLinkedList<ObjectNode> list;
-  {
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj_node});
-    list.Push(obj_node);
-    // |obj| will be marked once |obj_node| gets processed.
-    EXPECT_FALSE(obj->IsMarked());
-  }
-}
-
-TEST(IncrementalMarkingTest, HeapDoublyLinkedListAppend) {
-  auto* obj = MakeGarbageCollected<Object>();
-  ObjectNode* obj_node = MakeGarbageCollected<ObjectNode>(obj);
-  HeapDoublyLinkedList<ObjectNode> list;
-  {
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj_node});
-    list.Append(obj_node);
-    // |obj| will be marked once |obj_node| gets processed.
-    EXPECT_FALSE(obj->IsMarked());
-  }
-}
-
-// =============================================================================
 // HeapDeque support. ==========================================================
 // =============================================================================
 
@@ -1602,7 +1551,7 @@ TEST(IncrementalMarkingTest, DropBackingStore) {
   // Regression test: https://crbug.com/828537
   using WeakStore = HeapHashCountedSet<WeakMember<Object>>;
 
-  Persistent<WeakStore> persistent(new WeakStore);
+  Persistent<WeakStore> persistent(MakeGarbageCollected<WeakStore>());
   persistent->insert(MakeGarbageCollected<Object>());
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   driver.Start();
@@ -1619,7 +1568,7 @@ TEST(IncrementalMarkingTest, WeakCallbackDoesNotReviveDeletedValue) {
   // std::pair avoids treating the hashset backing as weak backing.
   using WeakStore = HeapHashCountedSet<std::pair<WeakMember<Object>, size_t>>;
 
-  Persistent<WeakStore> persistent(new WeakStore);
+  Persistent<WeakStore> persistent(MakeGarbageCollected<WeakStore>());
   // Create at least two entries to avoid completely emptying out the data
   // structure. The values for .second are chosen to be non-null as they
   // would otherwise count as empty and be skipped during iteration after the
@@ -1654,7 +1603,7 @@ TEST(IncrementalMarkingTest, NoBackingFreeDuringIncrementalMarking) {
   // Only reproduces in ASAN configurations.
   using WeakStore = HeapHashCountedSet<std::pair<WeakMember<Object>, size_t>>;
 
-  Persistent<WeakStore> persistent(new WeakStore);
+  Persistent<WeakStore> persistent(MakeGarbageCollected<WeakStore>());
   // Prefill the collection to grow backing store. A new backing store allocaton
   // would trigger the write barrier, mitigating the bug where a backing store
   // is promptly freed.
@@ -1674,7 +1623,7 @@ TEST(IncrementalMarkingTest, NoBackingFreeDuringIncrementalMarking) {
 TEST(IncrementalMarkingTest, DropReferenceWithHeapCompaction) {
   using Store = HeapHashCountedSet<Member<Object>>;
 
-  Persistent<Store> persistent(new Store());
+  Persistent<Store> persistent(MakeGarbageCollected<Store>());
   persistent->insert(MakeGarbageCollected<Object>());
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   ThreadState::Current()->EnableCompactionForNextGCForTesting();
@@ -1711,7 +1660,7 @@ TEST(IncrementalMarkingTest, HasInlineCapacityCollectionWithHeapCompaction) {
 TEST(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   using Store = HeapHashCountedSet<WeakMember<Object>>;
 
-  Persistent<Store> persistent(new Store());
+  Persistent<Store> persistent(MakeGarbageCollected<Store>());
 
   IncrementalMarkingTestDriver driver(ThreadState::Current());
   ThreadState::Current()->EnableCompactionForNextGCForTesting();

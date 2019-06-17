@@ -773,6 +773,11 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
+bool TestingProfile::IsIndependentOffTheRecordProfile() {
+  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
+         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+}
+
 bool TestingProfile::AllowsBrowserWindows() const {
   return allows_browser_windows_;
 }

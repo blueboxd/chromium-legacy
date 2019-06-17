@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='outer'",
+          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='outer'",
           "rect": [3, 83, 94, 30],
           "reason": "appeared"
         }

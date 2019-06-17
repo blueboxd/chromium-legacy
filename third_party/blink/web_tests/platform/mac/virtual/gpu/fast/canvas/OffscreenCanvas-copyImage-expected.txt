@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL CopyImageOnTransferredCanvas assert_array_equals: The copied image's top left is red property 0, expected 255 but got 0
+Harness: the test ran to completion.
+

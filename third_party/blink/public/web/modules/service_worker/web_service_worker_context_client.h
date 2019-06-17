@@ -192,17 +192,25 @@ class WebServiceWorkerContextClient {
   // timeout.
   virtual void RequestTermination(RequestTerminationCallback) {}
 
-  // Called on the main thread.
+  // On-main-thread start up:
+  // Creates a network provider for the main script fetch.
+  // This is called on the main thread.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProviderOnMainThread() = 0;
 
-  // Creates a WebWorkerFetchContext for a service worker. This is called on the
-  // main thread.
+  // On-main-thread start up:
+  // Creates a WebWorkerFetchContext for subresource fetches on a service
+  // worker. This is called on the main thread.
   virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateServiceWorkerFetchContextOnMainThread(
-      WebServiceWorkerNetworkProvider*) {
+  CreateWorkerFetchContextOnMainThreadLegacy(WebServiceWorkerNetworkProvider*) {
     return nullptr;
   }
+
+  // Off-main-thread start up:
+  // Creates a WebWorkerFetchContext for subresource fetches on a service
+  // worker. This is called on the main thread.
+  virtual scoped_refptr<blink::WebWorkerFetchContext>
+  CreateWorkerFetchContextOnMainThread() = 0;
 };
 
 }  // namespace blink

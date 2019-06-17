@@ -18,14 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'MIDDLE'",
+          "object": "NGPhysicalTextFragment 'MIDDLE'",
           "rect": [3, 281, 63, 18],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'MIDDLE'",
+          "object": "NGPhysicalTextFragment 'MIDDLE'",
           "rect": [3, 91, 63, 18],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

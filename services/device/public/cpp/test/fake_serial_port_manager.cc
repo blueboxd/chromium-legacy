@@ -32,7 +32,7 @@ class FakeSerialPort : public mojom::SerialPort {
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            mojom::SerialPortClientAssociatedPtrInfo client,
+            mojom::SerialPortClientPtr client,
             OpenCallback callback) override {
     in_stream_ = std::move(in_stream);
     out_stream_ = std::move(out_stream);
@@ -77,7 +77,7 @@ class FakeSerialPort : public mojom::SerialPort {
   // Mojo handles to keep open in order to simulate an active connection.
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::ScopedDataPipeProducerHandle out_stream_;
-  mojom::SerialPortClientAssociatedPtrInfo client_;
+  mojom::SerialPortClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
 };

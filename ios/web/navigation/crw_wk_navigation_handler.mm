@@ -99,6 +99,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
 }
 
+@property(nonatomic, weak) id<CRWWKNavigationHandlerDelegate> delegate;
+
 // Returns the WebStateImpl from self.delegate.
 @property(nonatomic, readonly, assign) web::WebStateImpl* webStateImpl;
 // Returns the NavigationManagerImpl from self.webStateImpl.
@@ -123,7 +125,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
 @implementation CRWWKNavigationHandler
 
-- (instancetype)init {
+- (instancetype)initWithDelegate:(id<CRWWKNavigationHandlerDelegate>)delegate {
   if (self = [super init]) {
     _navigationStates = [[CRWWKNavigationStates alloc] init];
     // Load phase when no WebView present is 'loaded' because this represents
@@ -133,6 +135,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     _certVerificationErrors =
         std::make_unique<web::CertVerificationErrorsCacheType>(
             kMaxCertErrorsCount);
+
+    _delegate = delegate;
   }
   return self;
 }

@@ -36,7 +36,8 @@ bool IsBookmarkBarLocation(BookmarkLaunchLocation location) {
 }  // namespace
 
 void RecordBookmarkLaunch(const BookmarkNode* node,
-                          BookmarkLaunchLocation location) {
+                          BookmarkLaunchLocation location,
+                          ProfileMetrics::BrowserProfileType profile_type) {
   if (IsBookmarkBarLocation(location)) {
     base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarURLButton"));
   } else if (location == BOOKMARK_LAUNCH_LOCATION_APP_MENU) {
@@ -49,6 +50,7 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location,
                             BOOKMARK_LAUNCH_LOCATION_LIMIT);
 
+  UMA_HISTOGRAM_ENUMERATION("Bookmarks.UsageCountPerProfileType", profile_type);
   RecordNodeDepth(node);
 }
 

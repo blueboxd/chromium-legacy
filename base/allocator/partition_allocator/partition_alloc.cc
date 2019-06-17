@@ -55,7 +55,6 @@ PartitionRoot::~PartitionRoot() = default;
 PartitionRootGeneric::PartitionRootGeneric() = default;
 PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
-PartitionAllocatorGeneric::~PartitionAllocatorGeneric() = default;
 
 subtle::SpinLock& GetLock() {
   static NoDestructor<subtle::SpinLock> s_initialized_lock;

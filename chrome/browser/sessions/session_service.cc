@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
@@ -67,18 +66,6 @@ using sessions::SerializedNavigationEntry;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
-
-namespace {
-
-SessionService::AppType AppTypeForAppName(const std::string& app_name) {
-  if (!web_app::GetAppIdFromApplicationName(app_name).empty())
-    return SessionService::TYPE_WEB_APP;
-  if (!app_name.empty())
-    return SessionService::TYPE_CHROME_APP;
-  return SessionService::TYPE_NORMAL;
-}
-
-}  // namespace
 
 // SessionService -------------------------------------------------------------
 
@@ -265,8 +252,9 @@ void SessionService::WindowOpened(Browser* browser) {
     return;
 
   RestoreIfNecessary(std::vector<GURL>(), browser);
-  SetWindowType(browser->session_id(), browser->type(),
-                AppTypeForAppName(browser->app_name()));
+  SetWindowType(browser->session_id(),
+                browser->type(),
+                browser->is_app() ? TYPE_APP : TYPE_NORMAL);
   SetWindowAppName(browser->session_id(), browser->app_name());
 }
 
@@ -585,17 +573,13 @@ void SessionService::Init() {
 bool SessionService::ShouldRestoreWindowOfType(
     sessions::SessionWindow::WindowType window_type,
     AppType app_type) const {
-  if (window_type == sessions::SessionWindow::TYPE_POPUP) {
 #if defined(OS_CHROMEOS)
-    // Chrome App popups are only restored on Chrome OS.
-    if (app_type == TYPE_CHROME_APP)
-      return true;
+  // Restore app popups for ChromeOS alone.
+  if (window_type == sessions::SessionWindow::TYPE_POPUP &&
+      app_type == TYPE_APP)
+    return true;
 #endif
 
-    // Web App popups are restored on all platforms.
-    if (app_type == TYPE_WEB_APP)
-      return true;
-  }
   return window_type == sessions::SessionWindow::TYPE_TABBED;
 }
 
@@ -605,7 +589,8 @@ void SessionService::RemoveUnusedRestoreWindows(
   while (i != window_list->end()) {
     sessions::SessionWindow* window = i->get();
     if (!ShouldRestoreWindowOfType(window->type,
-                                   AppTypeForAppName(window->app_name))) {
+                                   window->app_name.empty() ? TYPE_NORMAL :
+                                                              TYPE_APP)) {
       i = window_list->erase(i);
     } else {
       ++i;
@@ -920,7 +905,7 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
     return false;
   }
   return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()),
-                                   AppTypeForAppName(browser->app_name()));
+                                   browser->is_app() ? TYPE_APP : TYPE_NORMAL);
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {

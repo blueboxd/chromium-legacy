@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/data_decoder/bundled_exchanges_parser.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
@@ -32,6 +33,8 @@ DataDecoderService::DataDecoderService()
       &DataDecoderService::BindJsonParser, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(&DataDecoderService::BindXmlParser,
                                              base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &DataDecoderService::BindBundledExchangesParser, base::Unretained(this)));
 }
 
 DataDecoderService::DataDecoderService(
@@ -69,6 +72,13 @@ void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {
 void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
   mojo::MakeStrongBinding(std::make_unique<XmlParser>(keepalive_.CreateRef()),
                           std::move(request));
+}
+
+void DataDecoderService::BindBundledExchangesParser(
+    mojom::BundledExchangesParserRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<BundledExchangesParser>(keepalive_.CreateRef()),
+      std::move(request));
 }
 
 }  // namespace data_decoder

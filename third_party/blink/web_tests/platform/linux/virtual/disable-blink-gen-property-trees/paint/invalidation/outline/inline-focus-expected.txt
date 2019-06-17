@@ -1,0 +1,39 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalBoxFragment LayoutInline A id='link'",
+          "rect": [0, 0, 800, 233],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'crbug.com/424078: ensure inline elements get their outline painted'",
+          "rect": [0, 36, 418, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Home'",
+          "rect": [0, 0, 39, 19],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ]
+}
+

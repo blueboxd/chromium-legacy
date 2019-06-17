@@ -213,6 +213,26 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   return true;
 }
 
+ProfileMetrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
+    Profile* profile) {
+  if (profile->IsSystemProfile())
+    return BrowserProfileType::kSystem;
+  if (profile->IsGuestSession())
+    return BrowserProfileType::kGuest;
+  // A regular profile can be in a guest session or a system profile. Hence it
+  // should be checked after them.
+  if (profile->IsRegularProfile())
+    return BrowserProfileType::kRegular;
+  if (profile->IsIncognitoProfile()) {
+    return profile->IsIndependentOffTheRecordProfile()
+               ? BrowserProfileType::kIndependentIncognitoProfile
+               : BrowserProfileType::kIncognito;
+  }
+
+  NOTREACHED();
+  return BrowserProfileType::kMaxValue;
+}
+
 #if !defined(OS_ANDROID)
 void ProfileMetrics::LogNumberOfProfileSwitches() {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",

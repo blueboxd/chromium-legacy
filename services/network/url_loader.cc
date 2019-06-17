@@ -1355,7 +1355,7 @@ void URLLoader::SetRawRequestHeadersAndNotify(
     // samesite-by-default and samesite-none-must-be-secure features, so the
     // flagged cookies are being further filtered before sending.
     net::CookieStatusList flagged_cookies;
-    for (const auto& cookie_and_status : url_request_->not_sent_cookies()) {
+    for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
       if (cookie_and_status.status ==
               net::CanonicalCookie::CookieInclusionStatus::
                   EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
@@ -1541,7 +1541,7 @@ void URLLoader::ReportFlaggedResponseCookies() {
     // flagged cookies are being further filtered beofre sending.
     net::CookieAndLineStatusList flagged_cookies;
     for (const auto& cookie_line_and_status :
-         url_request_->not_stored_cookies()) {
+         url_request_->maybe_stored_cookies()) {
       if (cookie_line_and_status.status ==
               net::CanonicalCookie::CookieInclusionStatus::
                   EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||

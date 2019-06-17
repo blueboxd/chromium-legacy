@@ -23,9 +23,7 @@ namespace blink {
 const char PushProvider::kSupplementName[] = "PushProvider";
 
 PushProvider::PushProvider(ServiceWorkerRegistration& registration)
-    : Supplement<ServiceWorkerRegistration>(registration) {
-  GetInterface(mojo::MakeRequest(&push_messaging_manager_));
-}
+    : Supplement<ServiceWorkerRegistration>(registration) {}
 
 // static
 PushProvider* PushProvider::From(ServiceWorkerRegistration* registration) {
@@ -43,8 +41,13 @@ PushProvider* PushProvider::From(ServiceWorkerRegistration* registration) {
 }
 
 // static
-void PushProvider::GetInterface(mojom::blink::PushMessagingRequest request) {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(std::move(request));
+mojom::blink::PushMessaging* PushProvider::GetPushMessagingRemote() {
+  if (!push_messaging_manager_) {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        push_messaging_manager_.BindNewPipeAndPassReceiver());
+  }
+
+  return push_messaging_manager_.get();
 }
 
 void PushProvider::Subscribe(
@@ -56,7 +59,7 @@ void PushProvider::Subscribe(
   mojom::blink::PushSubscriptionOptionsPtr content_options_ptr =
       mojom::blink::PushSubscriptionOptions::From(options);
 
-  push_messaging_manager_->Subscribe(
+  GetPushMessagingRemote()->Subscribe(
       GetSupplementable()->RegistrationId(), std::move(content_options_ptr),
       user_gesture,
       WTF::Bind(&PushProvider::DidSubscribe, WrapPersistent(this),
@@ -97,7 +100,7 @@ void PushProvider::Unsubscribe(
     std::unique_ptr<PushUnsubscribeCallbacks> callbacks) {
   DCHECK(callbacks);
 
-  push_messaging_manager_->Unsubscribe(
+  GetPushMessagingRemote()->Unsubscribe(
       GetSupplementable()->RegistrationId(),
       WTF::Bind(&PushProvider::DidUnsubscribe, WrapPersistent(this),
                 WTF::Passed(std::move(callbacks))));
@@ -122,7 +125,7 @@ void PushProvider::GetSubscription(
     std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
-  push_messaging_manager_->GetSubscription(
+  GetPushMessagingRemote()->GetSubscription(
       GetSupplementable()->RegistrationId(),
       WTF::Bind(&PushProvider::DidGetSubscription, WrapPersistent(this),
                 WTF::Passed(std::move(callbacks))));

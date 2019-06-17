@@ -284,6 +284,7 @@ class EntryList {
     this.isDirectory = true;
     this.isFile = false;
     this.type_name = 'EntryList';
+    this.fullPath = '/';
   }
 
   /**
@@ -473,6 +474,9 @@ class VolumeEntry {
       });
     }
     this.type_name = 'VolumeEntry';
+
+    // TODO(lucmult): consider deriving this from volumeInfo.
+    this.rootType = null;
   }
 
   /**
@@ -749,6 +753,8 @@ class FakeEntry {
      * page can't be checked with "instanceof".
      */
     this.type_name = 'FakeEntry';
+
+    this.fullPath = '/';
   }
 
   /**

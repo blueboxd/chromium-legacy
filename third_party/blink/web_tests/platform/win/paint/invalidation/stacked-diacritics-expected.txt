@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
+          "object": "NGPhysicalTextFragment '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
           "rect": [18, 148, 126, 41],
           "reason": "disappeared"
         }

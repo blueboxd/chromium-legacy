@@ -2288,6 +2288,15 @@ void MainThreadSchedulerImpl::PostIdleTask(const base::Location& location,
       base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));
 }
 
+void MainThreadSchedulerImpl::PostDelayedIdleTask(
+    const base::Location& location,
+    base::TimeDelta delay,
+    Thread::IdleTask task) {
+  IdleTaskRunner()->PostDelayedIdleTask(
+      location, delay,
+      base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));
+}
+
 void MainThreadSchedulerImpl::PostNonNestableIdleTask(
     const base::Location& location,
     Thread::IdleTask task) {

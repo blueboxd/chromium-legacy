@@ -47,7 +47,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            mojom::SerialPortClientAssociatedPtrInfo client,
+            mojom::SerialPortClientPtr client,
             OpenCallback callback) override;
   void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
   void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
@@ -76,7 +76,7 @@ class SerialPortImpl : public mojom::SerialPort {
   scoped_refptr<SerialIoHandler> io_handler_;
 
   // Client interfaces.
-  mojom::SerialPortClientAssociatedPtr client_;
+  mojom::SerialPortClientPtr client_;
   mojom::SerialPortConnectionWatcherPtr watcher_;
 
   // Data pipes for input and output.

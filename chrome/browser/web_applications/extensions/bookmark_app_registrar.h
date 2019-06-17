@@ -32,6 +32,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   bool HasScopeUrl(const web_app::AppId& app_id) const override;
   GURL GetScopeUrlForApp(const web_app::AppId& app_id) const override;
   web_app::AppId FindAppIdForUrl(const GURL& url) const override;
+  int CountUserInstalledApps() const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionInstalled(content::BrowserContext* browser_context,

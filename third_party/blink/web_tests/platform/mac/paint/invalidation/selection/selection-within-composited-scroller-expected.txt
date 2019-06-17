@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
       "position": [8, 8],
       "bounds": [200, 200],
       "backgroundColor": "#D3D3D3"
@@ -37,7 +37,7 @@
       "backgroundColor": "#D3D3D3",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'test'",
+          "object": "NGPhysicalTextFragment 'test'",
           "rect": [0, 610, 23, 18],
           "reason": "selection"
         }

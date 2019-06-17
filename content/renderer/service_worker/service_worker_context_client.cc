@@ -33,7 +33,6 @@
 #include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/navigation_preload_request.h"
@@ -43,6 +42,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -124,32 +124,31 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       start_timing_(std::move(start_timing)) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(owner_);
+  DCHECK(subresource_loaders);
   instance_host_ =
       blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
           std::move(instance_host), main_thread_task_runner_);
 
-  if (subresource_loaders) {
-    if (IsOutOfProcessNetworkService()) {
-      // If the network service crashes, this worker self-terminates, so it can
-      // be restarted later with a connection to the restarted network
-      // service.
-      // Note that the default factory is the network service factory. It's set
-      // on the start worker sequence.
-      network_service_connection_error_handler_holder_.Bind(
-          std::move(subresource_loaders->default_factory_info()));
-      network_service_connection_error_handler_holder_->Clone(
-          mojo::MakeRequest(&subresource_loaders->default_factory_info()));
-      network_service_connection_error_handler_holder_
-          .set_connection_error_handler(base::BindOnce(
-              &ServiceWorkerContextClient::StopWorkerOnMainThread,
-              base::Unretained(this)));
-    }
-
-    loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
-        main_thread_task_runner_);
-    loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-        std::move(subresource_loaders)));
+  if (IsOutOfProcessNetworkService()) {
+    // If the network service crashes, this worker self-terminates, so it can
+    // be restarted later with a connection to the restarted network
+    // service.
+    // Note that the default factory is the network service factory. It's set
+    // on the start worker sequence.
+    network_service_connection_error_handler_holder_.Bind(
+        std::move(subresource_loaders->default_factory_info()));
+    network_service_connection_error_handler_holder_->Clone(
+        mojo::MakeRequest(&subresource_loaders->default_factory_info()));
+    network_service_connection_error_handler_holder_
+        .set_connection_error_handler(
+            base::BindOnce(&ServiceWorkerContextClient::StopWorkerOnMainThread,
+                           base::Unretained(this)));
   }
+
+  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+      main_thread_task_runner_);
+  loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+      std::move(subresource_loaders)));
 
   service_worker_provider_info_ = std::move(provider_info);
 
@@ -392,20 +391,10 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
-ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
+ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
     blink::WebServiceWorkerNetworkProvider* provider) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_request_.is_pending());
-
-  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle;
-  if (loader_factories_) {
-    url_loader_factory_bundle = loader_factories_;
-  } else {
-    url_loader_factory_bundle = RenderThreadImpl::current()
-                                    ->blink_platform_impl()
-                                    ->CreateDefaultURLLoaderFactoryBundle();
-  }
-  DCHECK(url_loader_factory_bundle);
 
   // TODO(crbug.com/796425): Temporarily wrap the raw
   // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
@@ -418,7 +407,29 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
               ->Clone();
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      *renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
+      *renderer_preferences_, script_url_, loader_factories_->Clone(),
+      std::move(script_loader_factory_info),
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider(),
+      std::move(preference_watcher_request_));
+}
+
+scoped_refptr<blink::WebWorkerFetchContext>
+ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThread() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(preference_watcher_request_.is_pending());
+
+  // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
+  // URLLoaderFactoryInfo.
+  auto script_loader_factory_info =
+      std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(std::move(
+          service_worker_provider_info_->script_loader_factory_ptr_info));
+
+  return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
+      *renderer_preferences_, script_url_, loader_factories_->Clone(),
       std::move(script_loader_factory_info),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),

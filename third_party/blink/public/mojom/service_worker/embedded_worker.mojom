@@ -96,7 +96,7 @@ struct EmbeddedWorkerStartParams {
   // Used to load subresources in the service worker.  This allows the service
   // worker to load chrome-extension:// URLs which the renderer's default
   // loader factory can't load.
-  URLLoaderFactoryBundle? subresource_loader_factories;
+  URLLoaderFactoryBundle subresource_loader_factories;
 };
 
 // Holds timing information about the start worker sequence for UMA.

@@ -18,14 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow A id='link'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow A id='link'",
           "rect": [43, 79, 754, 28],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [31, 84, 7, 18],
-          "reason": "style change"
         }
       ]
     }

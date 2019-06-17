@@ -59,4 +59,9 @@ AppId TestAppRegistrar::FindAppIdForUrl(const GURL& url) const {
   return AppId();
 }
 
+int TestAppRegistrar::CountUserInstalledApps() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace web_app

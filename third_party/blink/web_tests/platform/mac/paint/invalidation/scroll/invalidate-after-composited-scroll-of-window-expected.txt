@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Tests that invalidation of a div after scrolling invalidates just the div and no other area.'",
+          "object": "NGPhysicalTextFragment 'Tests that invalidation of a div after scrolling invalidates just the div and no other area.'",
           "rect": [8, 4908, 555, 18],
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutNGBlockFlow DIV id='target'",
           "rect": [8, 2408, 100, 100],
           "reason": "background"
         }

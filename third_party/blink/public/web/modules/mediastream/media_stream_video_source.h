@@ -273,7 +273,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   void StartFrameMonitoring();
   void UpdateTrackSettings(MediaStreamVideoTrack* track,
                            const VideoTrackAdapterSettings& adapter_settings);
-  void DidStopSource(base::OnceClosure callback, RestartResult result);
+  void DidStopSource(RestartResult result);
 
   State state_;
 
@@ -321,6 +321,11 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // This flag enables a heuristic to detect device rotation based on frame
   // size.
   bool enable_device_rotation_detection_ = false;
+
+  // Callback that needs to trigger after removing the track. If this object
+  // died before this callback is resolved, we still need to trigger the
+  // callback to notify the caller that the request is canceled.
+  base::OnceClosure remove_last_track_callback_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;

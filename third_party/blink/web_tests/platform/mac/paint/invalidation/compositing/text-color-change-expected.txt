@@ -18,132 +18,67 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox '\n'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
-          "rect": [8, 57, 47, 185],
-          "reason": "style change"
-        },
-        {
-          "object": "InlineTextBox '  Text'",
+          "object": "NGPhysicalTextFragment '  Text'",
           "rect": [8, 57, 47, 185],
           "reason": "style change"
         }

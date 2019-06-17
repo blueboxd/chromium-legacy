@@ -43,6 +43,7 @@ class WebAppRegistrar : public AppRegistrar {
   bool HasScopeUrl(const AppId& app_id) const override;
   GURL GetScopeUrlForApp(const AppId& app_id) const override;
   AppId FindAppIdForUrl(const GURL& url) const override;
+  int CountUserInstalledApps() const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

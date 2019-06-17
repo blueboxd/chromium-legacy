@@ -26,7 +26,8 @@ namespace blink {
 
 // Wrapper function defined in WebKit.h
 void DecommitFreeableMemory() {
-  WTF::Partitions::DecommitFreeableMemory();
+  CHECK(IsMainThread());
+  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
 }
 
 // static
@@ -95,16 +96,18 @@ void MemoryPressureListenerRegistry::UnregisterClient(
 void MemoryPressureListenerRegistry::OnMemoryPressure(
     WebMemoryPressureLevel level) {
   TRACE_EVENT0("blink", "MemoryPressureListenerRegistry::onMemoryPressure");
+  CHECK(IsMainThread());
   for (auto& client : clients_)
     client->OnMemoryPressure(level);
-  WTF::Partitions::DecommitFreeableMemory();
+  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
 }
 
 void MemoryPressureListenerRegistry::OnPurgeMemory() {
+  CHECK(IsMainThread());
   for (auto& client : clients_)
     client->OnPurgeMemory();
   ImageDecodingStore::Instance().Clear();
-  WTF::Partitions::DecommitFreeableMemory();
+  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
 
   // Thread-specific data never issues a layout, so we are safe here.
   MutexLocker lock(threads_mutex_);

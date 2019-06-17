@@ -386,8 +386,6 @@ int DarwinMajorVersionInternal() {
     DPLOG(ERROR) << "uname";
     return 0;
   }
-//  printf( "uname_info.release:%d\n", uname_info.release);
-  return 11;
 
   if (strcmp(uname_info.sysname, "Darwin") != 0) {
     DLOG(ERROR) << "unexpected uname sysname " << uname_info.sysname;

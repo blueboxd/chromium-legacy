@@ -1897,14 +1897,21 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         image.src = 'data:image/png;base64,%s';
         """ % png_data_in_base64.replace("'", "\\'"))
 
+  def takeScreenshotAndVerifyCorrect(self, element):
+      """ Takes screenshot of given element and returns
+      'PASS' if all pixels in screenshot are rgb(255, 0, 0)
+      and 'FAIL' otherwise
+      """
+      elementScreenshotPNGBase64 = element.TakeElementScreenshot()
+      self.assertIsNotNone(elementScreenshotPNGBase64)
+      return self._driver.ExecuteAsyncScript(
+          ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+
   def testTakeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector', '#box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#box')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeElementScreenshotInIframe(self):
@@ -1912,22 +1919,16 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       '/chromedriver/page_with_iframe_redbox.html'))
     frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector', '#box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#box')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeLargeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/large_element.html'))
     self._driver.SetWindowRect(500, 500, 0, 0)
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector','#A').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#A')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testGenerateTestReport(self):
@@ -1965,16 +1966,44 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
   def testSendKeysToElementAppend(self):
       self._driver.Load(self.GetHttpUrlForFile(
           '/chromedriver/empty.html'))
+      textControlTypes = ["text", "search", "tel", "url",  "password"]
+      for textType in textControlTypes:
+          element = self._driver.ExecuteScript(
+              'document.body.innerHTML = '
+              '\'<input type="{}" value="send_this_value">\';'
+              'var input = document.getElementsByTagName("input")[0];'
+              'input.focus();'
+              'input.setSelectionRange(0,0);'
+              'return input;'.format(textType))
+          element.SendKeys('hello')
+          value = self._driver.ExecuteScript('return arguments[0].value;',
+                                             element)
+          self.assertEquals('send_this_valuehello', value)
+
+  def testSendKeysToEditableElement(self):
+      self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
       element = self._driver.ExecuteScript(
           'document.body.innerHTML = '
-          '\'<input type="text" value="send_this_value">\';'
-          'var input = document.getElementsByTagName("input")[0];'
+          '\'<p contentEditable="true"> <i>hello-></i> '
+          '<b>send_this_value </b> </p>\';'
+          'var input = document.getElementsByTagName("i")[0];'
           'input.focus();'
-          'input.setSelectionRange(0,0);'
           'return input;')
       element.SendKeys('hello')
-      value = self._driver.ExecuteScript('return arguments[0].value;', element)
-      self.assertEquals('send_this_valuehello', value)
+      self.assertEquals(u'hello->hello', element.GetText())
+
+      self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
+      element = self._driver.ExecuteScript(
+          'document.body.innerHTML = '
+          '\'<p contentEditable="true"> <i>hello</i> '
+          '<b>-></b> </p>\';'
+          'var input = document.getElementsByTagName("p")[0];'
+          'input.focus();'
+          'return input;')
+      element.SendKeys('hello')
+      self.assertEquals(u'hello ->hello', element.GetText())
 
   def testUnexpectedAlertOpenExceptionMessage(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

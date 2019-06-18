@@ -34,7 +34,7 @@ class OverviewAnimationsTest
     tablet_mode_ = std::get<2>(GetParam());
 
     if (tablet_mode_)
-      ash::ShellTestApi().EnableTabletModeWindowManager(true);
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
     GURL ntp_url("chrome://newtab");
     // The default is blank page.

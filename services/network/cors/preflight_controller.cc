@@ -84,8 +84,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->referrer = request.referrer;
   preflight_request->referrer_policy = request.referrer_policy;
 
-  preflight_request->fetch_credentials_mode =
-      mojom::FetchCredentialsMode::kOmit;
+  preflight_request->credentials_mode = mojom::CredentialsMode::kOmit;
   preflight_request->allow_credentials = false;
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
   preflight_request->fetch_window_id = request.fetch_window_id;
@@ -133,7 +132,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       GetHeaderString(head.headers, header_names::kAccessControlAllowOrigin),
       GetHeaderString(head.headers,
                       header_names::kAccessControlAllowCredentials),
-      original_request.fetch_credentials_mode,
+      original_request.credentials_mode,
       tainted ? url::Origin() : *original_request.request_initiator);
   if (*detected_error_status)
     return nullptr;
@@ -153,7 +152,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
   }
 
   auto result = PreflightResult::Create(
-      original_request.fetch_credentials_mode,
+      original_request.credentials_mode,
       GetHeaderString(head.headers, header_names::kAccessControlAllowMethods),
       GetHeaderString(head.headers, header_names::kAccessControlAllowHeaders),
       GetHeaderString(head.headers, header_names::kAccessControlMaxAge),
@@ -340,7 +339,7 @@ void PreflightController::PerformPreflightCheck(
   if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator->Serialize(), request.url,
-          request.fetch_credentials_mode, request.method, request.headers,
+          request.credentials_mode, request.method, request.headers,
           request.is_revalidating)) {
     std::move(callback).Run(net::OK, base::nullopt, base::nullopt);
     return;

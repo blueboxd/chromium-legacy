@@ -1007,6 +1007,28 @@ UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
       state.UnzoomedLengthConversionData()));
 }
 
+float StyleBuilderConverter::ConvertZoom(const StyleResolverState& state,
+                                         const CSSValue& value) {
+  SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
+
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier_value->GetValueID() == CSSValueID::kNormal)
+      return ComputedStyleInitialValues::InitialZoom();
+  } else if (const auto* primitive_value =
+                 DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsPercentage()) {
+      float percent = primitive_value->GetFloatValue();
+      return percent ? (percent / 100.0f) : 1.0f;
+    } else if (primitive_value->IsNumber()) {
+      float number = primitive_value->GetFloatValue();
+      return number ? number : 1.0f;
+    }
+  }
+
+  NOTREACHED();
+  return 1.0f;
+}
+
 Length StyleBuilderConverter::ConvertLengthOrAuto(
     const StyleResolverState& state,
     const CSSValue& value) {

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_controller.h"
@@ -41,12 +40,6 @@ base::LazyInstance<RegisterInterfacesCallback>::Leaky
 void BindAccessibilityControllerRequestOnMainThread(
     mojom::AccessibilityControllerRequest request) {
   Shell::Get()->accessibility_controller()->BindRequest(std::move(request));
-}
-
-void BindAccessibilityFocusRingControllerRequestOnMainThread(
-    mojom::AccessibilityFocusRingControllerRequest request) {
-  Shell::Get()->accessibility_focus_ring_controller()->BindRequest(
-      std::move(request));
 }
 
 void BindAssistantAlarmTimerControllerRequestOnMainThread(
@@ -118,10 +111,6 @@ void RegisterInterfaces(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(
       base::BindRepeating(&BindAccessibilityControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(
-          &BindAccessibilityFocusRingControllerRequestOnMainThread),
       main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(

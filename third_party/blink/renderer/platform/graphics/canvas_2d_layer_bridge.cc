@@ -166,7 +166,7 @@ bool Canvas2DLayerBridge::IsAccelerated() const {
 }
 
 static void HibernateWrapper(base::WeakPtr<Canvas2DLayerBridge> bridge,
-                             TimeTicks /*idleDeadline*/) {
+                             base::TimeTicks /*idleDeadline*/) {
   if (bridge) {
     bridge->Hibernate();
   } else {
@@ -179,7 +179,7 @@ static void HibernateWrapper(base::WeakPtr<Canvas2DLayerBridge> bridge,
 
 static void HibernateWrapperForTesting(
     base::WeakPtr<Canvas2DLayerBridge> bridge) {
-  HibernateWrapper(std::move(bridge), TimeTicks());
+  HibernateWrapper(std::move(bridge), base::TimeTicks());
 }
 
 void Canvas2DLayerBridge::Hibernate() {

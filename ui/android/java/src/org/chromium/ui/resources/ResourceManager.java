@@ -122,14 +122,14 @@ public class ResourceManager implements ResourceLoaderCallback {
      * @param resId   The id of the Android resource.
      * @return The corresponding {@link LayoutResource}.
      */
-    public LayoutResource getResource(int resType, int resId) {
+    public LayoutResource getResource(@AndroidResourceType int resType, int resId) {
         SparseArray<LayoutResource> bucket = mLoadedResources.get(resType);
         return bucket != null ? bucket.get(resId) : null;
     }
 
     @SuppressWarnings("cast")
     @Override
-    public void onResourceLoaded(int resType, int resId, Resource resource) {
+    public void onResourceLoaded(@AndroidResourceType int resType, int resId, Resource resource) {
         if (resource == null) return;
         Bitmap bitmap = resource.getBitmap();
         if (bitmap == null) return;
@@ -144,9 +144,10 @@ public class ResourceManager implements ResourceLoaderCallback {
     }
 
     @Override
-    public void onResourceUnregistered(int resType, int resId) {
-        // Only remove dynamic bitmaps that were unregistered.
-        if (resType != AndroidResourceType.DYNAMIC_BITMAP) return;
+    public void onResourceUnregistered(@AndroidResourceType int resType, int resId) {
+        // Only remove dynamic resources that were unregistered.
+        if (resType != AndroidResourceType.DYNAMIC_BITMAP && resType != AndroidResourceType.DYNAMIC)
+            return;
 
         nativeRemoveResource(mNativeResourceManagerPtr, resType, resId);
     }
@@ -159,7 +160,8 @@ public class ResourceManager implements ResourceLoaderCallback {
         nativeClearTintedResourceCache(mNativeResourceManagerPtr);
     }
 
-    private void saveMetadataForLoadedResource(int resType, int resId, Resource resource) {
+    private void saveMetadataForLoadedResource(
+            @AndroidResourceType int resType, int resId, Resource resource) {
         SparseArray<LayoutResource> bucket = mLoadedResources.get(resType);
         if (bucket == null) {
             bucket = new SparseArray<LayoutResource>();

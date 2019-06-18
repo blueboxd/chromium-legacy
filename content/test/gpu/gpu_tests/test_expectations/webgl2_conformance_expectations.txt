@@ -248,7 +248,7 @@ crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dyna
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
 crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
-crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ RetryOnFailure ]
+crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]

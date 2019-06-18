@@ -19,10 +19,10 @@ import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.util.Collections;
 
@@ -32,16 +32,16 @@ import java.util.Collections;
  */
 class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Observer,
                                         SigninManager.SignInStateObserver,
-                                        AndroidSyncSettings.AndroidSyncSettingsObserver {
+                                        ProfileSyncService.SyncStateChangedListener {
     // Context is used for fetching resources and launching preferences page.
     private final Context mContext;
     // Toolbar manager exposes APIs for manipulating experimental button.
     private final ToolbarManager mToolbarManager;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
-    // SigninManager and AndroidSyncSettings allow observing sign-in and sync state.
+    // SigninManager and ProfileSyncService allow observing sign-in and sync state.
     private SigninManager mSigninManager;
-    private AndroidSyncSettings mAndroidSyncSettings;
+    private ProfileSyncService mProfileSyncService;
 
     // ProfileDataCache facilitates retrieving profile picture.
     private ProfileDataCache mProfileDataCache;
@@ -70,8 +70,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         mSigninManager = SigninManager.get();
         mSigninManager.addSignInStateObserver(this);
 
-        mAndroidSyncSettings = AndroidSyncSettings.get();
-        mAndroidSyncSettings.registerObserver(this);
+        mProfileSyncService = ProfileSyncService.get();
+        mProfileSyncService.addSyncStateChangedListener(this);
 
         mActivityLifecycleDispatcher.unregister(this);
         mActivityLifecycleDispatcher = null;
@@ -85,8 +85,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
         mIsNTPVisible = isNTPVisible;
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean shouldShowIdentityDisc =
-                isNTPVisible && accountName != null && AndroidSyncSettings.get().isSyncEnabled();
+        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null
+                && ProfileSyncService.get().canSyncFeatureStart();
 
         if (shouldShowIdentityDisc == mIsIdentityDiscVisible) return;
 
@@ -159,9 +159,9 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         updateButtonState(mIsNTPVisible);
     }
 
-    // AndroidSyncSettings.AndroidSyncSettingsObserver implementation.
+    // ProfileSyncService.SyncStateChangedListener implementation.
     @Override
-    public void androidSyncSettingsChanged() {
+    public void syncStateChanged() {
         updateButtonState(mIsNTPVisible);
     }
 
@@ -177,9 +177,9 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
             mSigninManager.removeSignInStateObserver(this);
             mSigninManager = null;
         }
-        if (mAndroidSyncSettings != null) {
-            mAndroidSyncSettings.unregisterObserver(this);
-            mAndroidSyncSettings = null;
+        if (mProfileSyncService != null) {
+            mProfileSyncService.removeSyncStateChangedListener(this);
+            mProfileSyncService = null;
         }
     }
 

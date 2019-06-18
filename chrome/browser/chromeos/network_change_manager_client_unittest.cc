@@ -113,7 +113,7 @@ TEST(NetworkChangeManagerClientTest,
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<net::NetworkChangeNotifierPosix> network_change_notifier(
       static_cast<net::NetworkChangeNotifierPosix*>(
-          net::NetworkChangeNotifier::Create()));
+          net::NetworkChangeNotifier::Create().release()));
   network_change_notifier->OnConnectionChanged(
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
@@ -150,7 +150,7 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   ~NetworkChangeManagerClientUpdateTest() override = default;
 
   void SetUp() override {
-    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+    network_change_notifier_ = net::NetworkChangeNotifier::Create();
     DBusThreadManager::Initialize();
     PowerManagerClient::InitializeFake();
     NetworkHandler::Initialize();

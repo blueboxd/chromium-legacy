@@ -99,7 +99,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
 CaptivePortalBlockingPage::~CaptivePortalBlockingPage() {
 }
 
-const void* CaptivePortalBlockingPage::GetTypeForTesting() const {
+const void* CaptivePortalBlockingPage::GetTypeForTesting() {
   return CaptivePortalBlockingPage::kTypeForTesting;
 }
 

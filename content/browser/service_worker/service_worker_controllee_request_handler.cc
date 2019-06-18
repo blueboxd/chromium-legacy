@@ -91,9 +91,9 @@ class ServiceWorkerControlleeRequestHandler::
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    network::mojom::FetchRedirectMode redirect_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
+    network::mojom::RedirectMode redirect_mode,
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
@@ -536,28 +536,16 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
 }
 
 ServiceWorkerVersion*
-ServiceWorkerControlleeRequestHandler::GetServiceWorkerVersion(
-    ServiceWorkerMetrics::URLRequestJobResult* result) {
-  if (!provider_host_) {
-    *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
+ServiceWorkerControlleeRequestHandler::GetServiceWorkerVersion() {
+  if (!provider_host_)
     return nullptr;
-  }
-  if (!provider_host_->controller()) {
-    *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_ACTIVE_VERSION;
-    return nullptr;
-  }
   return provider_host_->controller();
 }
 
-bool ServiceWorkerControlleeRequestHandler::RequestStillValid(
-    ServiceWorkerMetrics::URLRequestJobResult* result) {
+bool ServiceWorkerControlleeRequestHandler::RequestStillValid() {
   // A null |provider_host_| probably means the tab was closed. The null value
   // would cause problems down the line, so bail out.
-  if (!provider_host_) {
-    *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
-    return false;
-  }
-  return true;
+  return !!provider_host_;
 }
 
 void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {

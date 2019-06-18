@@ -606,8 +606,8 @@ static void* OpenFunc(const char* uri) {
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kXml;
     FetchParameters params(ResourceRequest(url), options);
-    params.MutableResourceRequest().SetFetchRequestMode(
-        network::mojom::FetchRequestMode::kSameOrigin);
+    params.MutableResourceRequest().SetMode(
+        network::mojom::RequestMode::kSameOrigin);
     Resource* resource =
         RawResource::FetchSynchronously(params, document->Fetcher());
     if (!resource->ErrorOccurred()) {

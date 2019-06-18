@@ -229,10 +229,10 @@ void PopulateSheetHeaderView(bool show_back_arrow,
         static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG));
     back_arrow->SetID(static_cast<int>(DialogViewID::BACK_BUTTON));
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_PAYMENTS_BACK));
-    layout->AddView(back_arrow.release());
+    layout->AddView(std::move(back_arrow));
   }
 
-  layout->AddView(header_content_view.release());
+  layout->AddView(std::move(header_content_view));
 }
 
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(

@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
   ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
   ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   // Enable the virtual keyboard.
   ash::ShellTestApi().EnableVirtualKeyboard();

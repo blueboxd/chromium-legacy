@@ -204,8 +204,8 @@ void SVGUseElement::UpdateTargetReference() {
   ResourceLoaderOptions options;
   options.initiator_info.name = localName();
   FetchParameters params(ResourceRequest(element_url_), options);
-  params.MutableResourceRequest().SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kSameOrigin);
+  params.MutableResourceRequest().SetMode(
+      network::mojom::RequestMode::kSameOrigin);
   DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher(), this);
 }
 

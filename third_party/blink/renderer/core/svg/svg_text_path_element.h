@@ -66,6 +66,10 @@ class SVGTextPathElement final : public SVGTextContentElement,
     return spacing_.Get();
   }
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
+    return SVGURIReference::GetCheckedAttributeTypes();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:

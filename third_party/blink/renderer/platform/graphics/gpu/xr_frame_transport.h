@@ -64,8 +64,8 @@ class PLATFORM_EXPORT XRFrameTransport final
 
  private:
   void WaitForPreviousTransfer();
-  WTF::TimeDelta WaitForPreviousRenderToFinish();
-  WTF::TimeDelta WaitForGpuFenceReceived();
+  base::TimeDelta WaitForPreviousRenderToFinish();
+  base::TimeDelta WaitForGpuFenceReceived();
   void CallPreviousFrameCallback();
 
   // XRPresentationClient
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT XRFrameTransport final
 
   bool waiting_for_previous_frame_transfer_ = false;
   bool last_transfer_succeeded_ = false;
-  WTF::TimeDelta frame_wait_time_;
+  base::TimeDelta frame_wait_time_;
   bool waiting_for_previous_frame_render_ = false;
   // If using GpuFence to separate frames, need to wait for the previous
   // frame's fence, but not if this is the first frame. Separately track

@@ -192,7 +192,7 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void requestNewAccountManagementStatus() {
-        SigninManager.get().isUserManaged(mNewAccountName, this::setIsNewAccountManaged);
+        SigninManager.get().isAccountManaged(mNewAccountName, this::setIsNewAccountManaged);
     }
 
     private void setIsNewAccountManaged(Boolean isManaged) {
@@ -279,4 +279,3 @@ public class ConfirmSyncDataStateMachine
         cancel(false);
     }
 }
-

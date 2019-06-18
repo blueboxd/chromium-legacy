@@ -67,14 +67,11 @@ class ReadableStreamNative : public ReadableStream {
 
   ReadableStreamNative();
 
-  // TODO(ricea): Remove |enable_blink_lock_notifications| once
-  // blink::ReadableStreamOperations has been updated to use
-  // CreateReadableStream.
   // https://streams.spec.whatwg.org/#rs-constructor
   ReadableStreamNative(ScriptState*,
                        ScriptValue raw_underlying_source,
                        ScriptValue raw_strategy,
-                       bool enable_blink_lock_notifications,
+                       bool created_by_ua,
                        ExceptionState&);
 
   ~ReadableStreamNative() override;

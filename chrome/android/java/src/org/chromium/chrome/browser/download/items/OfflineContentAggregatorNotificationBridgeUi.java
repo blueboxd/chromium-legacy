@@ -100,7 +100,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
         // Only cache the visuals if the update we are about to push is interesting and we think we
         // will need them in the future.
         if (shouldCacheVisuals(item)) mVisualsCache.put(id, visuals);
-        pushItemToUi(item, null, visuals);
+        pushItemToUi(item, visuals);
     }
 
     // DownloadServiceDelegate implementation.
@@ -123,6 +123,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     public void destroyServiceDelegate() {}
 
     private void getVisualsAndUpdateItem(OfflineItem item, UpdateDelta updateDelta) {
+        if (shouldIgnoreUpdate(item, updateDelta)) return;
         if (updateDelta != null && updateDelta.visualsChanged) mVisualsCache.remove(item.id);
         if (needsVisualsForUi(item)) {
             if (!mVisualsCache.containsKey(item.id)) {
@@ -141,13 +142,12 @@ public class OfflineContentAggregatorNotificationBridgeUi
             mVisualsCache.remove(item.id);
         }
 
-        pushItemToUi(item, updateDelta, mVisualsCache.get(item.id));
+        pushItemToUi(item, mVisualsCache.get(item.id));
         // We will no longer be needing the visuals for this item after this notification.
         if (!shouldCacheVisuals(item)) mVisualsCache.remove(item.id);
     }
 
-    private void pushItemToUi(
-            OfflineItem item, UpdateDelta updateDelta, OfflineItemVisuals visuals) {
+    private void pushItemToUi(OfflineItem item, OfflineItemVisuals visuals) {
         // TODO(http://crbug.com/855141): Find a cleaner way to hide unimportant UI updates.
         // If it's a suggested page, do not add it to the notification UI.
         if (LegacyHelpers.isLegacyOfflinePage(item.id) && item.isSuggested) return;
@@ -158,9 +158,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
                 mUi.notifyDownloadProgress(info, item.creationTimeMs, item.allowMetered);
                 break;
             case OfflineItemState.COMPLETE:
-                if (updateDelta == null || updateDelta.stateChanged) {
-                    mUi.notifyDownloadSuccessful(info, -1L, false, item.isOpenable);
-                }
+                mUi.notifyDownloadSuccessful(info, -1L, false, item.isOpenable);
                 break;
             case OfflineItemState.CANCELLED:
                 mUi.notifyDownloadCanceled(item.id);
@@ -211,5 +209,14 @@ public class OfflineContentAggregatorNotificationBridgeUi
             default:
                 return false;
         }
+    }
+
+    private boolean shouldIgnoreUpdate(OfflineItem item, UpdateDelta updateDelta) {
+        // We only ignore updates for completed items, if there is no significant state change
+        // update.
+        if (item.state != OfflineItemState.COMPLETE) return false;
+        if (updateDelta == null) return false;
+        if (updateDelta.stateChanged || updateDelta.visualsChanged) return false;
+        return true;
     }
 }

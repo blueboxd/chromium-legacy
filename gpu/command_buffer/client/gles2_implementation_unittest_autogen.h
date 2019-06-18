@@ -2724,6 +2724,17 @@ TEST_F(GLES2ImplementationTest, DispatchCompute) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DispatchComputeIndirect) {
+  struct Cmds {
+    cmds::DispatchComputeIndirect cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->DispatchComputeIndirect(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, GetProgramInterfaceiv) {
   struct Cmds {
     cmds::GetProgramInterfaceiv cmd;

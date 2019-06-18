@@ -266,7 +266,7 @@ Polymer({
         'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
     this.$['signin-back-button'].addEventListener(
-        'tap', this.onBackButtonClicked_.bind(this));
+        'click', this.onBackButtonClicked_.bind(this));
     this.$['offline-gaia'].addEventListener(
         'offline-gaia-cancel', this.cancel.bind(this));
 

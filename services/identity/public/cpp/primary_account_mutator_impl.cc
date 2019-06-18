@@ -4,7 +4,7 @@
 
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
-#include <utility>
+#include <string>
 
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -27,6 +27,7 @@ PrimaryAccountMutatorImpl::PrimaryAccountMutatorImpl(
 
 PrimaryAccountMutatorImpl::~PrimaryAccountMutatorImpl() {}
 
+#if !defined(OS_CHROMEOS)
 bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
     const std::string& account_id) {
   if (!pref_service_->GetBoolean(prefs::kSigninAllowed))
@@ -68,5 +69,14 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
 
   return true;
 }
+#else
+bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
+    const std::string& gaia_id,
+    const std::string& email) {
+  account_tracker_->SeedAccountInfo(gaia_id, email);
+  primary_account_manager_->SignIn(email);
+  return true;
+}
+#endif
 
 }  // namespace identity

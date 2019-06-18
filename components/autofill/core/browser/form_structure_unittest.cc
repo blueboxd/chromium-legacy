@@ -29,10 +29,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::ASCIIToUTF16;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
+using autofill::mojom::SubmissionIndicatorEvent;
+using base::ASCIIToUTF16;
 
 namespace autofill {
 
@@ -2439,6 +2440,44 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   AutofillQueryContents encoded_query5;
   EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
                                                  &encoded_query5));
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest_SubmissionIndicatorEvents_Match) {
+  // Statically assert that the mojo SubmissionIndicatorEvent enum matches the
+  // corresponding entries the in proto AutofillUploadContents
+  // SubmissionIndicatorEvent enum.
+  static_assert(AutofillUploadContents::NONE ==
+                    static_cast<int>(SubmissionIndicatorEvent::NONE),
+                "NONE enumerator does not match!");
+  static_assert(
+      AutofillUploadContents::HTML_FORM_SUBMISSION ==
+          static_cast<int>(SubmissionIndicatorEvent::HTML_FORM_SUBMISSION),
+      "HTML_FORM_SUBMISSION enumerator does not match!");
+  static_assert(
+      AutofillUploadContents::SAME_DOCUMENT_NAVIGATION ==
+          static_cast<int>(SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION),
+      "SAME_DOCUMENT_NAVIGATION enumerator does not match!");
+  static_assert(AutofillUploadContents::XHR_SUCCEEDED ==
+                    static_cast<int>(SubmissionIndicatorEvent::XHR_SUCCEEDED),
+                "XHR_SUCCEEDED enumerator does not match!");
+  static_assert(AutofillUploadContents::FRAME_DETACHED ==
+                    static_cast<int>(SubmissionIndicatorEvent::FRAME_DETACHED),
+                "FRAME_DETACHED enumerator does not match!");
+  static_assert(
+      AutofillUploadContents::DOM_MUTATION_AFTER_XHR ==
+          static_cast<int>(SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR),
+      "DOM_MUTATION_AFTER_XHR enumerator does not match!");
+  static_assert(AutofillUploadContents::
+                        PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD ==
+                    static_cast<int>(
+                        SubmissionIndicatorEvent::
+                            PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD),
+                "PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD enumerator "
+                "does not match!");
+  static_assert(
+      AutofillUploadContents::PROBABLE_FORM_SUBMISSION ==
+          static_cast<int>(SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION),
+      "PROBABLE_FORM_SUBMISSION enumerator does not match!");
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {

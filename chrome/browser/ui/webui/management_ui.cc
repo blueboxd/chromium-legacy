@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -173,7 +172,6 @@ ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource* source =
       CreateManagementUIHtmlSource(Profile::FromWebUI(web_ui));
   ManagementUIHandler::Initialize(web_ui, source);
-  DarkModeHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 

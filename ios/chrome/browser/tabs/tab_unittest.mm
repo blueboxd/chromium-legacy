@@ -294,6 +294,7 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const GURL& expectedUrl, NSString* expectedTitle) {
+    OCMStub([mock_web_view_ URL]).andReturn(net::NSURLWithGURL(expectedUrl));
     web::NavigationItem* item =
         web_state_impl_->GetNavigationManager()->GetVisibleItem();
     EXPECT_EQ(expectedUrl, item->GetURL());
@@ -301,6 +302,8 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const history::URLResult& historyResult) {
+    OCMStub([mock_web_view_ URL])
+        .andReturn(net::NSURLWithGURL(historyResult.url()));
     web::NavigationItem* item =
         web_state_impl_->GetNavigationManager()->GetVisibleItem();
     CheckHistoryResult(historyResult, item->GetURL(),

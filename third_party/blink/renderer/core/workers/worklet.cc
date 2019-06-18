@@ -122,7 +122,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
     return;
 
   // Step 6: "Let credentialOptions be the credentials member of options."
-  network::mojom::FetchCredentialsMode credentials_mode;
+  network::mojom::CredentialsMode credentials_mode;
   bool result = Request::ParseCredentialsMode(credentials, &credentials_mode);
   DCHECK(result);
 

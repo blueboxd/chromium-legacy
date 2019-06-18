@@ -2076,6 +2076,7 @@ interface WebGL2ComputeRenderingContext
     method disable
     method disableVertexAttribArray
     method dispatchCompute
+    method dispatchComputeIndirect
     method drawArrays
     method drawArraysInstanced
     method drawBuffers

@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -179,7 +178,6 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://bookmarks/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* source = CreateBookmarksUIHTMLSource(profile);
-  DarkModeHandler::Initialize(web_ui, source);
   ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
 

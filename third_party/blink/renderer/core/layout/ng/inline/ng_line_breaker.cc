@@ -131,22 +131,24 @@ scoped_refptr<const NGPhysicalTextFragment> CreateHyphenFragment(
   return builder.ToTextFragment();
 }
 
-bool IsStickyImage(const NGInlineItem& candidate,
-                   const NGInlineItemResults& item_results,
-                   NGLineBreaker::WhitespaceState trailing_whitespace,
-                   const String& text) {
-  if (!IsImage(candidate))
-    return false;
+void PreventBreakBeforeStickyImage(
+    NGLineBreaker::WhitespaceState trailing_whitespace,
+    const String& text,
+    NGLineInfo* line_info) {
   if (trailing_whitespace != NGLineBreaker::WhitespaceState::kNone &&
       trailing_whitespace != NGLineBreaker::WhitespaceState::kUnknown)
-    return false;
+    return;
 
-  if (item_results.size() >= 1) {
-    // If this image follows a <wbr> the image isn't sticky.
-    const auto& last = item_results[item_results.size() - 1];
-    return text[last.start_offset] != kZeroWidthSpaceCharacter;
-  }
-  return true;
+  NGInlineItemResults* results = line_info->MutableResults();
+  if (results->IsEmpty())
+    return;
+
+  // If this image follows a <wbr> the image isn't sticky.
+  NGInlineItemResult* last = &results->back();
+  if (text[last->start_offset] == kZeroWidthSpaceCharacter)
+    return;
+
+  last->can_break_after = false;
 }
 
 inline void ClearNeedsLayout(const NGInlineItem& item) {
@@ -405,6 +407,13 @@ void NGLineBreaker::BreakLine(
 #endif
       continue;
     }
+    if (item.Type() == NGInlineItem::kAtomicInline) {
+      if (HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
+                             line_info)) {
+        continue;
+      }
+      return;
+    }
     if (item.Type() == NGInlineItem::kCloseTag) {
       HandleCloseTag(item, line_info);
       continue;
@@ -426,24 +435,11 @@ void NGLineBreaker::BreakLine(
     // opportunity if we're trailing.
     if (state_ == LineBreakState::kTrailing &&
         CanBreakAfterLast(item_results)) {
-      // If the sticky images quirk is enabled, and this is an image that
-      // follows text that doesn't end with something breakable, we cannot break
-      // between the two items.
-      if (sticky_images_quirk_ &&
-          IsStickyImage(item, item_results, trailing_whitespace_, Text())) {
-        HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
-                           line_info);
-        continue;
-      }
-
       line_info->SetIsLastLine(false);
       return;
     }
 
-    if (item.Type() == NGInlineItem::kAtomicInline) {
-      HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
-                         line_info);
-    } else if (item.Type() == NGInlineItem::kOpenTag) {
+    if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item, line_info);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       AddItem(item, line_info);
@@ -1089,10 +1085,12 @@ void NGLineBreaker::HandleControlItem(const NGInlineItem& item,
       // Ignore carriage return and form feed.
       // https://drafts.csswg.org/css-text-3/#white-space-processing
       // https://github.com/w3c/csswg-drafts/issues/855
-      break;
+      HandleEmptyText(item, line_info);
+      return;
     default:
       NOTREACHED();
-      break;
+      HandleEmptyText(item, line_info);
+      return;
   }
   MoveToNextOf(item);
 }
@@ -1131,13 +1129,30 @@ void NGLineBreaker::HandleBidiControlItem(const NGInlineItem& item,
   MoveToNextOf(item);
 }
 
-void NGLineBreaker::HandleAtomicInline(
+bool NGLineBreaker::HandleAtomicInline(
     const NGInlineItem& item,
     LayoutUnit percentage_resolution_block_size_for_min_max,
     NGLineInfo* line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
+  const NGInlineItemResults& item_results = line_info->Results();
+
+  // If the sticky images quirk is enabled, and this is an image that
+  // follows text that doesn't end with something breakable, we cannot break
+  // between the two items.
+  bool is_sticky_image = sticky_images_quirk_ && IsImage(item);
+  if (UNLIKELY(is_sticky_image)) {
+    PreventBreakBeforeStickyImage(trailing_whitespace_, Text(), line_info);
+  }
+
+  // Atomic inline is handled as if it is trailable, because it can prevent
+  // break-before. Check if the line should break before this item, after the
+  // last item's |can_break_after| is finalized for the quirk above.
+  if (state_ == LineBreakState::kTrailing && CanBreakAfterLast(item_results)) {
+    line_info->SetIsLastLine(false);
+    return false;
+  }
 
   NGInlineItemResult* item_result = AddItem(item, line_info);
   item_result->should_create_line_box = true;
@@ -1187,7 +1202,7 @@ void NGLineBreaker::HandleAtomicInline(
   position_ += item_result->inline_size;
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
 
-  if (sticky_images_quirk_ && IsImage(item)) {
+  if (UNLIKELY(is_sticky_image)) {
     const auto& items = Items();
     if (item_index_ + 1 < items.size()) {
       DCHECK_EQ(&item, &items[item_index_]);
@@ -1200,6 +1215,7 @@ void NGLineBreaker::HandleAtomicInline(
     }
   }
   MoveToNextOf(item);
+  return true;
 }
 
 // Performs layout and positions a float.

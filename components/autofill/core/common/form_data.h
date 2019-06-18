@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/submission_indicator_event.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -86,7 +86,8 @@ struct FormData {
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.
-  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
+  mojom::SubmissionIndicatorEvent submission_event =
+      mojom::SubmissionIndicatorEvent::NONE;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
   // Contains unique renderer IDs of text elements which are predicted to be

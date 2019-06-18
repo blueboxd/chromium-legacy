@@ -54,11 +54,6 @@ and add:
     featureSplit="foo"
     package="{{manifest_package}}">
 
-    <!-- For Chrome Modern use android:minSdkVersion="21". -->
-    <uses-sdk
-        android:minSdkVersion="24"
-        android:targetSdkVersion="{{target_sdk_version}}" />
-
     <!-- dist:onDemand="true" makes this a separately installed module.
          dist:onDemand="false" would always install the module alongside the
          rest of Chrome. -->

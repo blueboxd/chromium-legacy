@@ -2868,6 +2868,20 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
 
+void InternalEffectiveZoom::ApplyInitial(StyleResolverState& state) const {
+  auto initial = ComputedStyleInitialValues::InitialInternalEffectiveZoom();
+  state.SetEffectiveZoom(initial);
+}
+
+void InternalEffectiveZoom::ApplyInherit(StyleResolverState& state) const {
+  state.SetEffectiveZoom(state.ParentStyle()->EffectiveZoom());
+}
+
+void InternalEffectiveZoom::ApplyValue(StyleResolverState& state,
+                                       const CSSValue& value) const {
+  state.SetEffectiveZoom(StyleBuilderConverter::ConvertZoom(state, value));
+}
+
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -8052,26 +8066,7 @@ void Zoom::ApplyInherit(StyleResolverState& state) const {
 }
 
 void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-  SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
-
-  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    if (identifier_value->GetValueID() == CSSValueID::kNormal) {
-      state.SetZoom(ComputedStyleInitialValues::InitialZoom());
-    }
-  } else if (const auto* primitive_value =
-                 DynamicTo<CSSPrimitiveValue>(value)) {
-    if (primitive_value->IsPercentage()) {
-      if (float percent = primitive_value->GetFloatValue())
-        state.SetZoom(percent / 100.0f);
-      else
-        state.SetZoom(1.0f);
-    } else if (primitive_value->IsNumber()) {
-      if (float number = primitive_value->GetFloatValue())
-        state.SetZoom(number);
-      else
-        state.SetZoom(1.0f);
-    }
-  }
+  state.SetZoom(StyleBuilderConverter::ConvertZoom(state, value));
 }
 
 }  // namespace css_longhand

@@ -126,14 +126,13 @@ class TabletModeWindowManagerTest : public AshTestBase {
   // Create the tablet mode window manager.
   TabletModeWindowManager* CreateTabletModeWindowManager() {
     EXPECT_FALSE(TabletModeControllerTestApi().tablet_mode_window_manager());
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     return TabletModeControllerTestApi().tablet_mode_window_manager();
   }
 
   // Destroy the tablet mode window manager.
   void DestroyTabletModeWindowManager() {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        false);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
     EXPECT_FALSE(TabletModeControllerTestApi().tablet_mode_window_manager());
   }
 
@@ -831,7 +830,7 @@ TEST_F(TabletModeWindowManagerTest, TestMinimize) {
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -846,7 +845,7 @@ TEST_F(TabletModeWindowManagerTest, TestMinimize) {
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
@@ -861,9 +860,9 @@ TEST_F(TabletModeWindowManagerTest, MinimizedEnterAndLeaveTabletMode) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Minimize();
   EXPECT_TRUE(window_state->IsMinimized());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(window_state->IsMinimized());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_TRUE(window_state->IsMinimized());
 
   window_state->Unminimize();
@@ -884,7 +883,7 @@ TEST_F(TabletModeWindowManagerTest, PersistPreMinimizedShowState) {
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
             window->GetProperty(aura::client::kPreMinimizedShowStateKey));
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   window_state->Unminimize();
   // Check that pre-minimized window show state is not cleared due to
   // unminimizing in tablet mode.
@@ -894,7 +893,7 @@ TEST_F(TabletModeWindowManagerTest, PersistPreMinimizedShowState) {
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
             window->GetProperty(aura::client::kPreMinimizedShowStateKey));
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   window_state->Unminimize();
   EXPECT_TRUE(window_state->IsMaximized());
 }
@@ -909,18 +908,18 @@ TEST_F(TabletModeWindowManagerTest, UnminimizeInTabletMode) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Maximize();
   window_state->Minimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   window_state->Unminimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_TRUE(window_state->IsMaximized());
 
   // Tests restoring to normal show state.
   window_state->Restore();
   EXPECT_EQ(gfx::Rect(10, 10, 100, 100), window->GetBoundsInScreen());
   window_state->Minimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   window_state->Unminimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(gfx::Rect(10, 10, 100, 100), window->GetBoundsInScreen());
 }
 
@@ -1278,7 +1277,7 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
 
   // 2. Check that turning on the manager will stop allowing the window from
   // dragging.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   gfx::Rect center_bounds(window->bounds());
   EXPECT_NE(rect.origin().ToString(), center_bounds.origin().ToString());
   generator.MoveMouseTo(
@@ -1289,7 +1288,7 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(center_bounds.x(), window->bounds().x());
   EXPECT_EQ(center_bounds.y(), window->bounds().y());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
   // 3. Releasing the mazimize manager again will restore the window to its
   // previous bounds and
@@ -1744,7 +1743,7 @@ TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
 // Test that the restore state will be kept at its original value for
 // session restoration purposes.
 TEST_F(TabletModeWindowManagerTest, SetPropertyOnUnmanagedWindow) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   InitParams params(aura::client::WINDOW_TYPE_NORMAL);
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.show_on_creation = false;

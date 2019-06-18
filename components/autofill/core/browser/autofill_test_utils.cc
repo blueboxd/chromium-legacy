@@ -120,7 +120,8 @@ void CreateTestAddressFormData(FormData* form,
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
   types->clear();
-  form->submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+  form->submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
   FormFieldData field;
   ServerFieldTypeSet type_set;

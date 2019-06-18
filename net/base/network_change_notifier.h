@@ -292,7 +292,7 @@ class NET_EXPORT NetworkChangeNotifier {
   // monitored), but if you do create it, you must do so before any other
   // threads try to access the API below, and it must outlive all other threads
   // which might try to use it.
-  static NetworkChangeNotifier* Create();
+  static std::unique_ptr<NetworkChangeNotifier> Create();
 
   // Returns whether the process-wide, platform-specific NetworkChangeNotifier
   // has been created.
@@ -401,7 +401,7 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Like Create(), but for use in tests.  The mock object doesn't monitor any
   // events, it merely rebroadcasts notifications when requested.
-  static NetworkChangeNotifier* CreateMock();
+  static std::unique_ptr<NetworkChangeNotifier> CreateMock();
 
   // Registers |observer| to receive notifications of network changes.  The
   // thread on which this is called is the thread on which |observer| will be

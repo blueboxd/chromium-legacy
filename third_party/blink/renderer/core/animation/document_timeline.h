@@ -87,7 +87,10 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   Animation* Play(AnimationEffect*);
   HeapVector<Member<Animation>> getAnimations();
 
-  void AnimationAttached(Animation&);
+  void AnimationAttached(Animation*) override;
+  // animations_ is a map of weak members so there is no need to explicitly
+  // clean it up.
+  void AnimationDetached(Animation*) override {}
 
   bool IsActive() const override;
   bool HasPendingUpdates() const {
@@ -118,9 +121,10 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     return compositor_timeline_.get();
   }
 
-  Document* GetDocument() { return document_.Get(); }
+  Document* GetDocument() override { return document_.Get(); }
   void Wake();
   void ResetForTesting();
+  void SetTimingForTesting(PlatformTiming* timing);
   bool HasAnimations() { return !animations_.IsEmpty(); }
 
   void Trace(blink::Visitor*) override;

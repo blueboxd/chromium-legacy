@@ -46,5 +46,10 @@ const base::Feature kSameSiteByDefaultCookies{
 const base::Feature kCookiesWithoutSameSiteMustBeSecure{
     "CookiesWithoutSameSiteMustBeSecure", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+const base::Feature kCertVerifierBuiltinFeature{
+    "CertVerifierBuiltin", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 }  // namespace net

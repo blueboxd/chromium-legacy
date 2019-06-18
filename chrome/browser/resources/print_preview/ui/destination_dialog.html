@@ -36,15 +36,17 @@
   <template>
     <style include="print-preview-shared action-link md-select cr-hidden-style
         throbber">
+      #dialog::part(dialog) {
+        height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+        max-width: 640px;
+        width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
+      }
+
+      #dialog::part(wrapper) {
+        height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+      }
+
       #dialog {
-        --cr-dialog-native: {
-          height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-          max-width: 640px;
-          width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
-        };
-        --cr-dialog-wrapper: {
-          height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-        };
         --cr-dialog-body-container: {
           flex: 1;
         };

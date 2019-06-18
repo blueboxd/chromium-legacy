@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -85,7 +86,6 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    indexed_db::LevelDBFactory* leveldb_factory,
     base::Clock* clock)
     : force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
@@ -95,7 +95,6 @@ IndexedDBContextImpl::IndexedDBContextImpl(
            base::TaskPriority::USER_VISIBLE,
            // BLOCK_SHUTDOWN to support clearing session-only storage.
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      leveldb_factory_(leveldb_factory),
       clock_(clock) {
   IDB_TRACE("init");
   if (!data_path.empty())
@@ -109,8 +108,11 @@ IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    indexeddb_factory_ =
-        std::make_unique<IndexedDBFactoryImpl>(this, leveldb_factory_, clock_);
+    indexeddb_factory_ = std::make_unique<IndexedDBFactoryImpl>(
+        this,
+        leveldb_factory_for_testing_ ? leveldb_factory_for_testing_
+                                     : indexed_db::LevelDBFactory::Get(),
+        IndexedDBClassFactory::Get(), clock_);
   }
   return indexeddb_factory_.get();
 }
@@ -494,6 +496,10 @@ void IndexedDBContextImpl::DatabaseDeleted(const Origin& origin) {
   QueryDiskAndUpdateQuotaUsage(origin);
 }
 
+void IndexedDBContextImpl::BlobFilesCleaned(const url::Origin& origin) {
+  QueryDiskAndUpdateQuotaUsage(origin);
+}
+
 void IndexedDBContextImpl::AddObserver(
     IndexedDBContextImpl::Observer* observer) {
   DCHECK(!observers_.HasObserver(observer));
@@ -520,8 +526,10 @@ void IndexedDBContextImpl::NotifyIndexedDBContentChanged(
   }
 }
 
-void IndexedDBContextImpl::BlobFilesCleaned(const url::Origin& origin) {
-  QueryDiskAndUpdateQuotaUsage(origin);
+void IndexedDBContextImpl::SetLevelDBFactoryForTesting(
+    indexed_db::LevelDBFactory* factory) {
+  DCHECK(factory);
+  leveldb_factory_for_testing_ = factory;
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {

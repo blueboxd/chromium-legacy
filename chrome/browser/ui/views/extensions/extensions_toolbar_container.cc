@@ -216,6 +216,8 @@ void ExtensionsToolbarContainer::CreateActionForId(
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
   icon->set_owned_by_client();
   icon->SetVisible(IsActionVisibleOnToolbar(actions_.back().get()));
+  icon->AddButtonObserver(this);
+  icon->AddObserver(this);
   AddChildView(icon.get());
 
   icons_[action_id] = std::move(icon);

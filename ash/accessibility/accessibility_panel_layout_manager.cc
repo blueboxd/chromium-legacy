@@ -104,12 +104,6 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
   RootWindowController* root_controller =
       RootWindowController::ForWindow(root_window);
 
-  aura::Window* current = panel_window_;
-  while (current->parent()) {
-    current->parent()->StackChildAtTop(current);
-    current = current->parent();
-  }
-
   gfx::Rect bounds = panel_bounds_;
 
   // The panel can make itself fill the screen (including covering the shelf).

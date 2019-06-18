@@ -28,20 +28,7 @@ class CryptAuthDevice {
 
   // |instance_id|: The Instance ID, used as a unique device identifier. Cannot
   //     be empty.
-  // |device_name|: The name known to the CryptAuth server or which was assigned
-  //     by the user to the device. Might contain personally identifiable
-  //     information. Cannot be empty.
-  // |device_better_together_public_key|: The device's
-  //     "DeviceSync:BetterTogether" public key that is enrolled with
-  //     CryptAuth--known as CryptAuthKeyBundle::kDeviceSyncBetterTogether on
-  //     Chrome OS. This is not to be confused with the shared, unenrolled group
-  //     public key. Cannot be empty.
-  // |last_update_time|: The last time the device updated its information with
-  //     the CryptAuth server. Cannot be null.
-  // |better_together_device_metadata|: Device metadata relevant to the suite of
-  //     multi-device ("Better Together") features.
-  // |feature_states|: A map from the multi-device feature type (example:
-  //     kBetterTogetherHost) to feature state (example: kEnabled).
+  explicit CryptAuthDevice(const std::string& instance_id);
   CryptAuthDevice(
       const std::string& instance_id,
       const std::string& device_name,
@@ -57,25 +44,6 @@ class CryptAuthDevice {
   ~CryptAuthDevice();
 
   const std::string& instance_id() const { return instance_id_; }
-
-  const std::string& device_name() const { return device_name_; }
-
-  const std::string& device_better_together_public_key() const {
-    return device_better_together_public_key_;
-  }
-
-  const base::Time& last_update_time() const { return last_update_time_; }
-
-  const cryptauthv2::BetterTogetherDeviceMetadata&
-  better_together_device_metadata() const {
-    return better_together_device_metadata_;
-  }
-
-  const std::map<multidevice::SoftwareFeature,
-                 multidevice::SoftwareFeatureState>&
-  feature_states() const {
-    return feature_states_;
-  }
 
   // Converts CryptAuthDevice to a dictionary-type Value of the form
   //   {
@@ -93,14 +61,30 @@ class CryptAuthDevice {
   bool operator==(const CryptAuthDevice& other) const;
   bool operator!=(const CryptAuthDevice& other) const;
 
+  // The name known to the CryptAuth server or which was assigned by the user to
+  // the device. Might contain personally identifiable information.
+  std::string device_name;
+
+  // The device's "DeviceSync:BetterTogether" public key that is enrolled with
+  // CryptAuth--known as CryptAuthKeyBundle::kDeviceSyncBetterTogether on Chrome
+  // OS. This is not to be confused with the shared, unenrolled group public
+  // key.
+  std::string device_better_together_public_key;
+
+  // The last time the device updated its information with the CryptAuth server.
+  base::Time last_update_time;
+
+  // Device metadata relevant to the suite of multi-device ("Better Together")
+  // features.
+  cryptauthv2::BetterTogetherDeviceMetadata better_together_device_metadata;
+
+  // A map from the multi-device feature type (example: kBetterTogetherHost) to
+  // feature state (example: kEnabled).
+  std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
+      feature_states;
+
  private:
   std::string instance_id_;
-  std::string device_name_;
-  std::string device_better_together_public_key_;
-  base::Time last_update_time_;
-  cryptauthv2::BetterTogetherDeviceMetadata better_together_device_metadata_;
-  std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
-      feature_states_;
 };
 
 }  // namespace device_sync

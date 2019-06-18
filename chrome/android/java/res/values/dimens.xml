@@ -603,8 +603,8 @@
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_border_width">1dp</dimen>
-    <dimen name="navigation_bubble_default_height">48dp</dimen>
-    <dimen name="navigation_bubble_bg_vertical_inset">8dp</dimen>
+    <dimen name="navigation_bubble_default_height">32dp</dimen>
+    <dimen name="navigation_bubble_bg_vertical_inset">0dp</dimen>
     <dimen name="navigation_bubble_vertical_padding">4dp</dimen>
     <dimen name="navigation_bubble_horizontal_padding">8dp</dimen>
     <dimen name="navigation_bubble_icon_size">20dp</dimen>

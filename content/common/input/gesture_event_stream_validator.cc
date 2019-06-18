@@ -23,7 +23,6 @@ GestureEventStreamValidator::~GestureEventStreamValidator() {
 
 bool GestureEventStreamValidator::Validate(
     const blink::WebGestureEvent& event,
-    const bool fling_cancellation_is_deferred,
     std::string* error_msg) {
   DCHECK(error_msg);
   error_msg->clear();
@@ -33,7 +32,7 @@ bool GestureEventStreamValidator::Validate(
   }
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
-      if (scrolling_ && !fling_cancellation_is_deferred)
+      if (scrolling_)
         error_msg->append("Scroll begin during scroll\n");
       if (pinching_)
         error_msg->append("Scroll begin during pinch\n");
@@ -112,12 +111,6 @@ bool GestureEventStreamValidator::Validate(
     error_msg->append("Gesture event source is uninitialized.\n");
 
   return error_msg->empty();
-}
-
-bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
-                                           std::string* error_msg) {
-  return Validate(event, /* fling_cancellation_is_deferred = */ false,
-                  error_msg);
 }
 
 }  // namespace content

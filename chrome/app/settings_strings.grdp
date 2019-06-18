@@ -1967,6 +1967,15 @@
     <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING" desc="Settings > Internet > Network details: Toggle label to allow mobile data roaming.">
       Allow mobile data roaming
     </message>
+    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_ENABLED_HOME" desc="Settings > Internet > Network details: Toggle sublabel when roaming is allowed and it's connected to the home network.">
+      On, not roaming
+    </message>
+    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_ENABLED_ROAMING" desc="Settings > Internet > Network details: Toggle sublabel when roaming is allowed and it's connected to a roaming network">
+      On, roaming
+    </message>
+    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_DISABLED" desc="Settings > Internet > Network details: Toggle sublabel when roaming is not allowed.">
+      Roaming off
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CHOOSE_MOBILE" desc="Settings > Internet > Network details: Label for control to choose a mobile data network.">
       Mobile data network
     </message>

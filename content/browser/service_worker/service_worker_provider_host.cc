@@ -617,9 +617,9 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
 
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerProviderHost::CreateLoaderInterceptor(
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    network::mojom::FetchRedirectMode redirect_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
+    network::mojom::RedirectMode redirect_mode,
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,

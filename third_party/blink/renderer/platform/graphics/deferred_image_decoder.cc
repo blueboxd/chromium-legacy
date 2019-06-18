@@ -124,7 +124,7 @@ struct DeferredFrameData {
       : orientation_(kDefaultImageOrientation), is_received_(false) {}
 
   ImageOrientation orientation_;
-  TimeDelta duration_;
+  base::TimeDelta duration_;
   bool is_received_;
 
  private:
@@ -339,8 +339,8 @@ bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return false;
 }
 
-TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
-  TimeDelta duration;
+base::TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
+  base::TimeDelta duration;
   if (metadata_decoder_)
     duration = metadata_decoder_->FrameDurationAtIndex(index);
   if (index < frame_data_.size())
@@ -350,8 +350,8 @@ TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
   // possible. We follow Firefox's behavior and use a duration of 100 ms for any
   // frames that specify a duration of <= 10 ms. See <rdar://problem/7689300>
   // and <http://webkit.org/b/36082> for more information.
-  if (duration <= TimeDelta::FromMilliseconds(10))
-    duration = TimeDelta::FromMilliseconds(100);
+  if (duration <= base::TimeDelta::FromMilliseconds(10))
+    duration = base::TimeDelta::FromMilliseconds(100);
 
   return duration;
 }

@@ -10,15 +10,12 @@
 
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
 
@@ -35,7 +32,10 @@ class TestURLLoaderFactory;
 class PrefRegistrySimple;
 class SigninManagerAndroid;
 
+class AccountFetcherService;
+class AccountTrackerService;
 class GaiaCookieManagerService;
+class ProfileOAuth2TokenService;
 
 namespace identity {
 
@@ -52,8 +52,7 @@ struct CookieParams;
 // ./README.md for detailed documentation.
 class IdentityManager : public PrimaryAccountManager::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
-                        public OAuth2TokenServiceObserver,
-                        public AccountTrackerService::Observer {
+                        public OAuth2TokenServiceObserver {
  public:
   class Observer {
    public:
@@ -156,7 +155,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -166,7 +165,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -178,7 +177,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const std::string& client_id,
       const std::string& client_secret,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -187,7 +186,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
   void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
-                                  const identity::ScopeSet& scopes,
+                                  const ScopeSet& scopes,
                                   const std::string& access_token);
 
   // Provides the information of all accounts that have refresh tokens.
@@ -298,7 +297,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
-                                        const identity::ScopeSet& scopes) {}
+                                        const ScopeSet& scopes) {}
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
@@ -392,13 +391,6 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
-
-#if defined(OS_CHROMEOS)
-  // Sets the primary account info with IdentityManager.
-  // TODO(https://crbug.com/814787): Eliminate this method.
-  void LegacySetPrimaryAccount(const std::string& gaia_id,
-                               const std::string& email_address);
-#endif
 
 #if defined(OS_IOS)
   // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
@@ -604,10 +596,9 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   void OnGaiaCookieDeletedByUserAction();
 
   // OAuth2TokenService::DiagnosticsObserver:
-  void OnAccessTokenRequested(
-      const CoreAccountId& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
+                              const std::string& consumer_id,
+                              const ScopeSet& scopes) override;
   void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
                                   const ScopeSet& scopes,
@@ -621,9 +612,9 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
                                        const std::string& source) override;
 
-  // AccountTrackerService::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemoved(const AccountInfo& info) override;
+  // AccountTrackerService callbacks:
+  void OnAccountUpdated(const AccountInfo& info);
+  void OnAccountRemoved(const AccountInfo& info);
 
   // Backing signin classes.
   std::unique_ptr<AccountTrackerService> account_tracker_service_;

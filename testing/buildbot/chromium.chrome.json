@@ -775,6 +775,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter"
+        ],
         "experiment_percentage": 100,
         "merge": {
           "args": [],
@@ -794,7 +797,8 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--enable-features=VizDisplayCompositor",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter"
         ],
         "experiment_percentage": 100,
         "merge": {

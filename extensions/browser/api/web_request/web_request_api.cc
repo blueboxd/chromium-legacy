@@ -1544,14 +1544,6 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if (listener->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       listener->blocked_requests.insert(request->id);
-      // If this is the first delegate blocking the request, go ahead and log
-      // it.
-      if (num_handlers_blocking == 0) {
-        std::string delegate_info = l10n_util::GetStringFUTF8(
-            IDS_LOAD_STATE_PARAMETER_EXTENSION,
-            base::UTF8ToUTF16(listener->extension_name));
-        request->logger->LogBlockedBy(delegate_info);
-      }
       ++num_handlers_blocking;
     }
   }
@@ -2329,21 +2321,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   }
 
   if (num_handlers_blocking == 0) {
-    blocked_request.request->logger->LogUnblocked();
     ExecuteDeltas(browser_context, blocked_request.request, true);
-  } else {
-    // Log that the request was blocked by an extension.
-    Listeners& listeners = listeners_[browser_context][event_name];
-
-    for (const auto& listener : listeners) {
-      if (!base::Contains(listener->blocked_requests, request_id))
-        continue;
-      std::string delegate_info = l10n_util::GetStringFUTF8(
-          IDS_LOAD_STATE_PARAMETER_EXTENSION,
-          base::UTF8ToUTF16(listener->extension_name));
-      blocked_request.request->logger->LogBlockedBy(delegate_info);
-      break;
-    }
   }
 }
 
@@ -2390,15 +2368,14 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
 
   bool canceled = false;
-  helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled,
-                                  request->logger.get());
+  helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled);
 
   extension_web_request_api_helpers::IgnoredActions ignored_actions;
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeRequestResponses(
         request->url, blocked_request.response_deltas, blocked_request.new_url,
-        &ignored_actions, request->logger.get());
+        &ignored_actions);
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.before_send_headers_callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
@@ -2424,7 +2401,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
     CHECK(!blocked_request.auth_callback.is_null());
     credentials_set = helpers::MergeOnAuthRequiredResponses(
         blocked_request.response_deltas, blocked_request.auth_credentials,
-        &ignored_actions, request->logger.get());
+        &ignored_actions);
   } else {
     NOTREACHED();
   }

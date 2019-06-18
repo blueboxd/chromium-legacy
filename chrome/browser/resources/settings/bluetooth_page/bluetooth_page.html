@@ -17,32 +17,38 @@
 <dom-module id="settings-bluetooth-page">
   <template>
     <style include="settings-shared">
+      .link-wrapper {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+      }
     </style>
     <settings-animated-pages id="pages" section="bluetooth"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <template is="dom-if" if="[[!isSecondaryUser_]]">
-          <div id="bluetoothDevices"
-              class="settings-box two-line" actionable on-click="onTap_">
-            <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
-            <div class="middle settings-box-text">
-              $i18n{bluetoothPageTitle}
-              <div class="secondary" id="bluetoothSecondary">
-                [[getOnOffString_(bluetoothToggleState_,
-                '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
+          <div id="bluetoothDevices" class="settings-box two-line">
+            <div class="link-wrapper" actionable on-click="onTap_">
+              <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
+              <div class="middle settings-box-text">
+                $i18n{bluetoothPageTitle}
+                <div class="secondary" id="bluetoothSecondary">
+                  [[getOnOffString_(bluetoothToggleState_,
+                  '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
+                </div>
               </div>
+              <cr-policy-pref-indicator
+                  icon-aria-label="$i18n{bluetoothPageTitle}"
+                  pref="[[prefs.cros.device.allow_bluetooth]]"
+                  hidden="[[prefs.cros.device.allow_bluetooth.value]]">
+              </cr-policy-pref-indicator>
+              <template is="dom-if" if="[[bluetoothToggleState_]]">
+                <cr-icon-button class="subpage-arrow"
+                    on-click="onSubpageArrowTap_"
+                    aria-label="$i18n{bluetoothPageTitle}"
+                    aria-describedby="bluetoothSecondary"></cr-icon-button>
+              </template>
             </div>
-            <cr-policy-pref-indicator
-                icon-aria-label="$i18n{bluetoothPageTitle}"
-                pref="[[prefs.cros.device.allow_bluetooth]]"
-                hidden="[[prefs.cros.device.allow_bluetooth.value]]">
-            </cr-policy-pref-indicator>
-            <template is="dom-if" if="[[bluetoothToggleState_]]">
-              <cr-icon-button class="subpage-arrow"
-                  on-click="onSubpageArrowTap_"
-                  aria-label="$i18n{bluetoothPageTitle}"
-                  aria-describedby="bluetoothSecondary"></cr-icon-button>
-            </template>
             <div class="separator"></div>
             <cr-toggle id="enableBluetooth"
                 checked="{{bluetoothToggleState_}}"

@@ -659,6 +659,7 @@ DriveIntegrationService::DriveIntegrationService(
                                 std::move(test_drivefs_mojo_listener_factory))
                           : nullptr),
       preference_watcher_(preference_watcher),
+      power_manager_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
@@ -683,6 +684,10 @@ DriveIntegrationService::DriveIntegrationService(
     delete test_file_system;
     if (migrated_to_drivefs) {
       state_ = INITIALIZED;
+    }
+    // PowerManagerClient is unset in unit tests.
+    if (chromeos::PowerManagerClient::Get()) {
+      power_manager_observer_.Add(chromeos::PowerManagerClient::Get());
     }
     SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
     return;
@@ -1267,6 +1272,21 @@ void DriveIntegrationService::PinFiles(
     GetDriveFsInterface()->SetPinned(path, true, base::DoNothing());
   }
   profile_->GetPrefs()->SetBoolean(prefs::kDriveFsPinnedMigrated, true);
+}
+
+void DriveIntegrationService::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  // This may a bit racy since it doesn't prevent suspend until the unmount is
+  // completed, instead relying on something else to defer suspending long
+  // enough.
+  RemoveDriveMountPoint();
+}
+
+void DriveIntegrationService::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
+  if (is_enabled()) {
+    AddDriveMountPoint();
+  }
 }
 
 //===================== DriveIntegrationServiceFactory =======================

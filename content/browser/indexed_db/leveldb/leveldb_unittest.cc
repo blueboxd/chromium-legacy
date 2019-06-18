@@ -64,7 +64,7 @@ class SimpleLDBComparator : public leveldb::Comparator {
 
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
 OpenLevelDB(base::FilePath file_name) {
-  return indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+  return indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
       file_name, SimpleComparator::Get(), SimpleLDBComparator::Get());
 }
 
@@ -82,8 +82,9 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<LevelDBDatabase> leveldb = std::make_unique<LevelDBDatabase>(
-      std::move(ldb_state), nullptr, kDefaultMaxOpenIteratorsPerDatabase);
+  std::unique_ptr<LevelDBDatabase> leveldb =
+      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
+                                        kDefaultMaxOpenIteratorsPerDatabase);
   EXPECT_TRUE(leveldb);
   put_value = value;
   status = leveldb->Put(key, &put_value);
@@ -94,8 +95,9 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb = std::make_unique<LevelDBDatabase>(
-      std::move(ldb_state), nullptr, kDefaultMaxOpenIteratorsPerDatabase);
+  leveldb =
+      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
+                                        kDefaultMaxOpenIteratorsPerDatabase);
   EXPECT_TRUE(leveldb);
   bool found = false;
   status = leveldb->Get(key, &got_value, &found);
@@ -113,15 +115,16 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   EXPECT_FALSE(status.ok());
   EXPECT_TRUE(status.IsCorruption());
 
-  status = indexed_db::GetDefaultLevelDBFactory()->DestroyLevelDB(
+  status = indexed_db::LevelDBFactory::Get()->DestroyLevelDB(
       temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb = std::make_unique<LevelDBDatabase>(
-      std::move(ldb_state), nullptr, kDefaultMaxOpenIteratorsPerDatabase);
+  leveldb =
+      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
+                                        kDefaultMaxOpenIteratorsPerDatabase);
   ASSERT_TRUE(leveldb);
   status = leveldb->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
@@ -166,8 +169,9 @@ TEST(LevelDBDatabaseTest, LastModified) {
   std::tie(ldb_state, status, std::ignore) = OpenLevelDB(base::FilePath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<LevelDBDatabase> leveldb = std::make_unique<LevelDBDatabase>(
-      std::move(ldb_state), nullptr, kDefaultMaxOpenIteratorsPerDatabase);
+  std::unique_ptr<LevelDBDatabase> leveldb =
+      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
+                                        kDefaultMaxOpenIteratorsPerDatabase);
   ASSERT_TRUE(leveldb);
   leveldb->SetClockForTesting(std::move(test_clock));
   // Calling |Put| sets time modified.

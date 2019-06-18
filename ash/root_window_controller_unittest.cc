@@ -699,7 +699,7 @@ TEST_F(RootWindowControllerTest, ContextMenuDisappearsInTabletMode) {
   EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on entering tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 
   // Open context menu.
@@ -708,7 +708,7 @@ TEST_F(RootWindowControllerTest, ContextMenuDisappearsInTabletMode) {
   EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on exiting tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 }
 

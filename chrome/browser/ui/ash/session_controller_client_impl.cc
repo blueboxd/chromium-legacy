@@ -39,6 +39,7 @@
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -103,9 +104,6 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.has_gaia_account = user.has_gaia_account();
   session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
-  const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
-  session->user_info.is_device_owner =
-      owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
     session->user_info.service_instance_group =
         content::BrowserContext::GetServiceInstanceGroupFor(profile);
@@ -174,7 +172,6 @@ SessionControllerClientImpl::SessionControllerClientImpl() {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
-  chromeos::LoginState::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -211,7 +208,6 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
         ->RemoveObserver(this);
   }
 
-  chromeos::LoginState::Get()->RemoveObserver(this);
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
@@ -343,6 +339,10 @@ PrefService* SessionControllerClientImpl::GetUserPrefService(
 bool SessionControllerClientImpl::IsMultiProfileAvailable() {
   if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
     return false;
+  if (chromeos::SessionTerminationManager::Get() &&
+      chromeos::SessionTerminationManager::Get()->IsLockedToSingleUser()) {
+    return false;
+  }
   size_t users_logged_in = UserManager::Get()->GetLoggedInUsers().size();
   // Does not include users that are logged in.
   size_t users_available_to_add =
@@ -402,6 +402,9 @@ bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
 // static
 ash::AddUserSessionPolicy
 SessionControllerClientImpl::GetAddUserSessionPolicy() {
+  if (chromeos::SessionTerminationManager::Get()->IsLockedToSingleUser())
+    return ash::AddUserSessionPolicy::ERROR_LOCKED_TO_SINGLE_USER;
+
   UserManager* const user_manager = UserManager::Get();
   if (user_manager->GetUsersAllowedForMultiProfile().empty())
     return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
@@ -412,8 +415,9 @@ SessionControllerClientImpl::GetAddUserSessionPolicy() {
   }
 
   if (UserManager::Get()->GetLoggedInUsers().size() >=
-      session_manager::kMaximumNumberOfUserSessions)
+      session_manager::kMaximumNumberOfUserSessions) {
     return ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED;
+  }
 
   return ash::AddUserSessionPolicy::ALLOWED;
 }
@@ -515,10 +519,6 @@ void SessionControllerClientImpl::OnCustodianInfoChanged() {
       supervised_user_profile_);
   if (user)
     SendUserSession(*user);
-}
-
-void SessionControllerClientImpl::LoggedInStateChanged() {
-  SendUserSession(*UserManager::Get()->GetActiveUser());
 }
 
 void SessionControllerClientImpl::Observe(

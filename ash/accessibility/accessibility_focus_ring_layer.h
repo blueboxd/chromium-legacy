@@ -8,7 +8,7 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 #include "ash/accessibility/focus_ring_layer.h"
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "base/macros.h"
 #include "ui/compositor/paint_recorder.h"
 
@@ -25,7 +25,7 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
   // Create the layer and update its bounds and position in the hierarchy.
   void Set(const AccessibilityFocusRing& ring);
 
-  void SetAppearance(mojom::FocusRingType type,
+  void SetAppearance(FocusRingType type,
                      SkColor color,
                      SkColor secondary_color);
 
@@ -42,7 +42,7 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
   // The outline of the current focus ring.
   AccessibilityFocusRing ring_;
   // The type of focus ring.
-  mojom::FocusRingType type_;
+  FocusRingType type_;
   // The secondary color.
   SkColor secondary_color_;
 

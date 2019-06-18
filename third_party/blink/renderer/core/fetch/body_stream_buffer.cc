@@ -295,9 +295,7 @@ void BodyStreamBuffer::OnStateChange() {
 }
 
 bool BodyStreamBuffer::HasPendingActivity() const {
-  if (loader_)
-    return true;
-  return UnderlyingSourceBase::HasPendingActivity();
+  return loader_;
 }
 
 void BodyStreamBuffer::ContextDestroyed(ExecutionContext* destroyed_context) {

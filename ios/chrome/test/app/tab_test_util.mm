@@ -98,6 +98,14 @@ Tab* GetNextTab() {
   return [tabModel tabAtIndex:nextTabIndex];
 }
 
+Tab* GetTabAtIndexInCurrentMode(NSUInteger index) {
+  TabModel* tabModel = GetCurrentTabModel();
+  NSUInteger tabCount = [tabModel count];
+  if (tabCount < index + 1)
+    return nil;
+  return [tabModel tabAtIndex:index];
+}
+
 void CloseCurrentTab() {
   TabModel* tab_model = GetCurrentTabModel();
   [tab_model closeTab:tab_model.currentTab];

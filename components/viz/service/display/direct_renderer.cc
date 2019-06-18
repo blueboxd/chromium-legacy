@@ -25,6 +25,7 @@
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -115,8 +116,12 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
+  // Create overlay validator and set it. This would initialize the strategies
+  // on the validator as well.
+  gpu::SurfaceHandle surface_handle = output_surface_->GetSurfaceHandle();
   overlay_processor_->SetOverlayCandidateValidator(
-      output_surface_->TakeOverlayCandidateValidator());
+      OverlayCandidateValidator::Create(
+          surface_handle, output_surface_->context_provider(), *settings_));
 
   auto* context_provider = output_surface_->context_provider();
 
@@ -364,6 +369,10 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   overlay_processor_->SetDisplayTransformHint(
       output_surface_->GetDisplayTransform());
 
+  // Only used for pre-OOP-D code path.
+  // TODO(weiliangc): Remove once reflector code is removed.
+  overlay_processor_->SetSoftwareMirrorMode(
+      output_surface_->IsSoftwareMirrorMode());
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.
   if (output_surface_->IsDisplayedAsOverlayPlane()) {

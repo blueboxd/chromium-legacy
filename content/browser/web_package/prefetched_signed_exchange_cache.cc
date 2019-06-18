@@ -151,7 +151,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     if (network::cors::ShouldCheckCors(request.url, request.request_initiator,
-                                       request.fetch_request_mode)) {
+                                       request.mode)) {
       const auto error_status = network::cors::CheckAccess(
           request.url, response_.headers->response_code(),
           GetHeaderString(
@@ -160,7 +160,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
           GetHeaderString(
               response_,
               network::cors::header_names::kAccessControlAllowCredentials),
-          request.fetch_credentials_mode, *request.request_initiator);
+          request.credentials_mode, *request.request_initiator);
       if (error_status) {
         client_->OnComplete(network::URLLoaderCompletionStatus(*error_status));
         return;

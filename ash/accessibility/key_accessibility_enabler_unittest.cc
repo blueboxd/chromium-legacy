@@ -36,7 +36,7 @@ class KeyAccessibilityEnablerTest : public AshTestBase,
   void SendKeyEvent(ui::KeyEvent* event) {
     // Tablet mode gets exited elsewhere, so we must force it enabled before
     // each key event.
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     key_accessibility_enabler_->OnKeyEvent(event);
   }
 

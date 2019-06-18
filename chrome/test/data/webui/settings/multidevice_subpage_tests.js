@@ -134,7 +134,7 @@ suite('Multidevice', function() {
       });
 
   test('clicking SmartLock item routes to SmartLock subpage', function() {
-    multideviceSubpage.$$('#smartLockItem').$.card.click();
+    multideviceSubpage.$$('#smartLockItem').$$('.link-wrapper').click();
     assertEquals(settings.getCurrentRoute(), settings.routes.SMART_LOCK);
   });
 

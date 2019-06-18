@@ -8,8 +8,6 @@
       xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.webview_ui_test.test">
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="23" />
-
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 
     <!-- We add an application tag here just so that we can indicate that this

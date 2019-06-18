@@ -15,11 +15,9 @@
 <dom-module id="settings-setup-fingerprint-dialog">
   <template>
     <style include="settings-shared">
-      #dialog {
-        --cr-dialog-native: {
-          min-width: 500px;
-          width: 500px;
-        };
+      #dialog::part(dialog) {
+        min-width: 500px;
+        width: 500px;
       }
 
       .fingerprint-scanner-tablet {

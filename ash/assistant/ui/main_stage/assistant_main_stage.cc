@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/base/stack_layout.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
@@ -100,95 +101,6 @@ constexpr base::TimeDelta kProgressAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(167);
 constexpr base::TimeDelta kProgressAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
-
-// StackLayout -----------------------------------------------------------------
-
-// A layout manager which lays out its views atop each other. This differs from
-// FillLayout in that we respect the preferred size of views during layout. It's
-// possible to explicitly specify which dimension to respect. In contrast,
-// FillLayout will cause its views to match the bounds of the host.
-class StackLayout : public views::LayoutManager {
- public:
-  enum class RespectDimension : uint32_t {
-    // Respect width. If enabled, child's preferred width will be used and will
-    // be horizontally center positioned. Otherwise, the child will be stretched
-    // to match parent width.
-    kWidth = 1,
-    // Repect height. If enabled, child's preferred height will be used.
-    // Otherwise, the child will be stretched to match parent height.
-    // Note that the child is always top-aligned.
-    kHeight = 1 << 1,
-    kAll = kWidth | kHeight,
-  };
-
-  StackLayout() = default;
-  ~StackLayout() override = default;
-
-  void Installed(views::View* host) override { host_ = host; }
-
-  void ViewRemoved(views::View* host, views::View* view) override {
-    DCHECK(view);
-    respect_dimension_map_.erase(view);
-  }
-
-  void SetRespectDimensionForView(views::View* view,
-                                  RespectDimension dimension) {
-    DCHECK(host_ && view->parent() == host_);
-    respect_dimension_map_[view] = dimension;
-  }
-
-  gfx::Size GetPreferredSize(const views::View* host) const override {
-    return std::accumulate(host->children().cbegin(), host->children().cend(),
-                           gfx::Size(), [](gfx::Size size, const auto* v) {
-                             size.SetToMax(v->GetPreferredSize());
-                             return size;
-                           });
-  }
-
-  int GetPreferredHeightForWidth(const views::View* host,
-                                 int width) const override {
-    const auto& children = host->children();
-    if (children.empty())
-      return 0;
-    std::vector<int> heights(children.size());
-    std::transform(
-        children.cbegin(), children.cend(), heights.begin(),
-        [width](const views::View* v) { return v->GetHeightForWidth(width); });
-    return *std::max_element(heights.cbegin(), heights.cend());
-  }
-
-  void Layout(views::View* host) override {
-    const int host_width = host->GetContentsBounds().width();
-    const int host_height = host->GetContentsBounds().height();
-
-    for (auto* child : host->children()) {
-      int child_width = host_width;
-      int child_height = host_height;
-
-      int child_x = 0;
-      uint32_t dimension = static_cast<uint32_t>(RespectDimension::kAll);
-
-      if (respect_dimension_map_.find(child) != respect_dimension_map_.end())
-        dimension = static_cast<uint32_t>(respect_dimension_map_[child]);
-
-      if (dimension & static_cast<uint32_t>(RespectDimension::kWidth)) {
-        child_width = std::min(child->GetPreferredSize().width(), host_width);
-        child_x = (host_width - child_width) / 2;
-      }
-
-      if (dimension & static_cast<uint32_t>(RespectDimension::kHeight))
-        child_height = child->GetHeightForWidth(child_width);
-
-      child->SetBounds(child_x, /*y=*/0, child_width, child_height);
-    }
-  }
-
- private:
-  views::View* host_ = nullptr;
-  std::map<views::View*, RespectDimension> respect_dimension_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackLayout);
-};
 
 }  // namespace
 

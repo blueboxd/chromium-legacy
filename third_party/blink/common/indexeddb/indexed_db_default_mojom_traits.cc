@@ -37,6 +37,7 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
     DCHECK_EQ(out->object_stores.count(key), 0UL);
     out->object_stores[key] = object_store;
   }
+  out->was_cold_open = data.was_cold_open();
   return true;
 }
 

@@ -36,6 +36,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_cache.h"
@@ -806,6 +807,12 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     MockClock::Get();
   }
   ~SignedExchangeSubresourcePrefetchBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrefetchBrowserTestBase::SetUpCommandLine(command_line);
+    // Needed to call internals.scheduleBlinkGC().
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  }
 
   void SetUp() override {
     const bool network_service_enabled = GetParam();
@@ -1948,6 +1955,106 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
       true /* cross_origin */, "<!DOCTYPE html>hello;", "text/html",
       true /* has_nosniff */, "original title",
       network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       ScriptSXGNotGCed) {
+  const char* prefetch_page_path = "/prefetch.html";
+  const char* page_sxg_path = "/target.sxg";
+  const char* page_inner_url_path = "/target.html";
+  const char* script_sxg_path = "/script.sxg";
+  const char* script_inner_url_path = "/script.js";
+
+  auto script_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_sxg_path);
+  auto script_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script_inner_url_path);
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL prefetch_page_url =
+      embedded_test_server()->GetURL(prefetch_page_path);
+  const GURL sxg_page_url = embedded_test_server()->GetURL(page_sxg_path);
+  const GURL inner_url_page_url =
+      embedded_test_server()->GetURL(page_inner_url_path);
+  const GURL sxg_script_url = embedded_test_server()->GetURL(script_sxg_path);
+  const GURL inner_url_script_url =
+      embedded_test_server()->GetURL(script_inner_url_path);
+
+  const net::SHA256HashValue page_header_integrity = {{0x01}};
+  const net::SHA256HashValue script_header_integrity = {{0x02}};
+
+  const std::string outer_link_header =
+      CreateAlternateLinkHeader(sxg_script_url, inner_url_script_url);
+  const std::string inner_link_headers =
+      std::string("Link: ") +
+      base::JoinString(
+          {CreateAllowedAltSxgLinkHeader(inner_url_script_url,
+                                         script_header_integrity),
+           CreatePreloadLinkHeader(inner_url_script_url, "script")},
+          ",");
+
+  RegisterResponse(prefetch_page_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><link rel='prefetch' href='%s'></body>",
+                       sxg_page_url.spec().c_str())));
+  RegisterResponse(
+      page_sxg_path,
+      CreateSignedExchangeResponseEntry(
+          "<head><title>Prefetch Target (SXG)</title>"
+          "<script src=\"./script.js\" async defer></script></head>",
+          {{"link", outer_link_header}}));
+  RegisterResponse(script_sxg_path, CreateSignedExchangeResponseEntry(
+                                        "document.title=\"done\";", {}));
+  MockSignedExchangeHandlerFactory factory(
+      {MockSignedExchangeHandlerParams(
+           sxg_page_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           inner_url_page_url, "text/html", {inner_link_headers},
+           page_header_integrity),
+       MockSignedExchangeHandlerParams(
+           sxg_script_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           inner_url_script_url, "text/javascript",
+           // Set "cache-control: public" to keep the script in the memory
+           // cache.
+           {"cache-control: public, max-age=600"}, script_header_integrity)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+  NavigateToURL(shell(), prefetch_page_url);
+
+  WaitUntilLoaded(sxg_page_url);
+  WaitUntilLoaded(sxg_script_url);
+
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script_request_counter->GetRequestCount());
+  EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
+
+  const auto cached_exchanges = GetCachedExchanges(shell());
+  EXPECT_EQ(2u, cached_exchanges.size());
+
+  NavigateToURLAndWaitTitle(sxg_page_url, "done");
+
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script_request_counter->GetRequestCount());
+
+  // Clears the title.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "document.title = '';"));
+
+  const char* next_page_path = "/next_page.html";
+  const GURL next_page_url = embedded_test_server()->GetURL(next_page_path);
+  RegisterResponse(
+      next_page_path,
+      ResponseEntry(
+          "<head><title>Next page</title>"
+          "<script src=\"./script.js\" async defer></script></head>"));
+  // Triggers GC.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "internals.scheduleBlinkGC();"));
+  // The script which was served via SXG must be kept in memory cache and must
+  // be reused.
+  NavigateToURLAndWaitTitle(next_page_url, "done");
+
+  EXPECT_EQ(0, script_request_counter->GetRequestCount());
 }
 
 INSTANTIATE_TEST_SUITE_P(SignedExchangeSubresourcePrefetchBrowserTest,

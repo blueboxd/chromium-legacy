@@ -144,6 +144,7 @@ enum PrintSettingsBuckets {
   FIT_TO_PAGE,
   DEFAULT_DPI,
   NON_DEFAULT_DPI,
+  PIN,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -401,6 +402,11 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
                                                          : NON_DEFAULT_DPI);
     }
   }
+
+#if defined(OS_CHROMEOS)
+  if (print_settings.FindStringKey(kSettingPinValue))
+    ReportPrintSettingHistogram(PIN);
+#endif  // defined(OS_CHROMEOS)
 }
 
 UserActionBuckets DetermineUserAction(const base::Value& settings) {

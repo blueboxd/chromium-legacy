@@ -45,9 +45,9 @@ class TestView : public views::View {
 std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
   EXPECT_TRUE(node->hasAttributes());
   Array<std::string>* attributes = node->getAttributes(nullptr);
-  for (size_t i = 0; i < attributes->length() - 1; i++) {
-    if (attributes->get(i) == attribute)
-      return attributes->get(i + 1);
+  for (size_t i = 0; i < attributes->size() - 1; i += 2) {
+    if ((*attributes)[i] == attribute)
+      return (*attributes)[i + 1];
   }
   return std::string();
 }
@@ -57,8 +57,8 @@ DOM::Node* FindNodeWithID(int id, DOM::Node* root) {
     return root;
   }
   Array<DOM::Node>* children = root->getChildren(nullptr);
-  for (size_t i = 0; i < children->length(); i++) {
-    if (DOM::Node* node = FindNodeWithID(id, children->get(i)))
+  for (size_t i = 0; i < children->size(); i++) {
+    if (DOM::Node* node = FindNodeWithID(id, (*children)[i].get()))
       return node;
   }
   return nullptr;
@@ -201,16 +201,16 @@ class DOMAgentTest : public views::ViewsTestBase {
     size_t child_index = 0;
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
     if (widget &&
-        !ElementTreeMatchesDOMTree(widget, children->get(child_index++))) {
+        !ElementTreeMatchesDOMTree(widget, (*children)[child_index++].get())) {
       return false;
     }
     for (aura::Window* child_window : window->children()) {
       if (!ElementTreeMatchesDOMTree(child_window,
-                                     children->get(child_index++)))
+                                     (*children)[child_index++].get()))
         return false;
     }
     // Make sure there are no stray children.
-    return child_index == children->length();
+    return child_index == children->size();
   }
 #endif
 
@@ -223,10 +223,9 @@ class DOMAgentTest : public views::ViewsTestBase {
 
     Array<DOM::Node>* children = root->getChildren(nullptr);
     views::View* root_view = widget->GetRootView();
-    if (!root_view)
-      return children->length() == 0;
-    else
-      return ElementTreeMatchesDOMTree(root_view, children->get(0));
+    return root_view
+               ? ElementTreeMatchesDOMTree(root_view, (*children)[0].get())
+               : children->empty();
   }
 
   bool ElementTreeMatchesDOMTree(views::View* view, DOM::Node* root) {
@@ -239,11 +238,11 @@ class DOMAgentTest : public views::ViewsTestBase {
     Array<DOM::Node>* children = root->getChildren(nullptr);
     std::vector<views::View*> child_views = view->GetChildrenInZOrder();
     const size_t child_count = child_views.size();
-    if (child_count != children->length())
+    if (child_count != children->size())
       return false;
 
     for (size_t i = 0; i < child_count; i++) {
-      if (!ElementTreeMatchesDOMTree(child_views[i], children->get(i)))
+      if (!ElementTreeMatchesDOMTree(child_views[i], (*children)[i].get()))
         return false;
     }
     return true;
@@ -576,7 +575,7 @@ TEST_F(DOMAgentTest, SimpleDomSearch) {
   dom_agent()->performSearch("child_a1", false, &search_id, &result_count);
   EXPECT_EQ(result_count, 1);
   dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
-  EXPECT_EQ(node_ids->length(), 1u);
+  EXPECT_EQ(node_ids->size(), 1u);
   dom_agent()->discardSearchResults(search_id);
   node_ids.reset();
 
@@ -603,7 +602,7 @@ TEST_F(DOMAgentTest, ExactDomSearch) {
   dom_agent()->performSearch("child_a", false, &search_id, &result_count);
   EXPECT_EQ(result_count, 2);
   dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
-  EXPECT_EQ(node_ids->length(), 2u);
+  EXPECT_EQ(node_ids->size(), 2u);
   dom_agent()->discardSearchResults(search_id);
   node_ids.reset();
 
@@ -611,7 +610,7 @@ TEST_F(DOMAgentTest, ExactDomSearch) {
   dom_agent()->performSearch("\"child_a\"", false, &search_id, &result_count);
   EXPECT_EQ(result_count, 1);
   dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
-  EXPECT_EQ(node_ids->length(), 1u);
+  EXPECT_EQ(node_ids->size(), 1u);
   dom_agent()->discardSearchResults(search_id);
   node_ids.reset();
 
@@ -641,7 +640,7 @@ TEST_F(DOMAgentTest, TagDomSearch) {
   dom_agent()->performSearch("widget", false, &search_id, &result_count);
   EXPECT_EQ(result_count, 4);
   dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
-  EXPECT_EQ(node_ids->length(), 4u);
+  EXPECT_EQ(node_ids->size(), 4u);
   dom_agent()->discardSearchResults(search_id);
   node_ids.reset();
 
@@ -649,7 +648,7 @@ TEST_F(DOMAgentTest, TagDomSearch) {
   dom_agent()->performSearch("<widget>", false, &search_id, &result_count);
   EXPECT_EQ(result_count, 3);
   dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
-  EXPECT_EQ(node_ids->length(), 3u);
+  EXPECT_EQ(node_ids->size(), 3u);
 }
 
 }  // namespace ui_devtools

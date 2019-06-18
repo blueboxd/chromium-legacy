@@ -18,6 +18,10 @@ class WebAppUiDelegate {
 
   virtual void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                            base::OnceClosure callback) = 0;
+
+  // Migrates an app's OS attributes (e.g pin position, app list
+  // folder/position, shortcuts).
+  virtual void MigrateOSAttributes(const AppId& from, const AppId& to) = 0;
 };
 
 }  // namespace web_app

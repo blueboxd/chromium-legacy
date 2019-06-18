@@ -11,6 +11,7 @@
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_hints_util.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -181,10 +182,6 @@ TEST_F(PreviewsTopHostProviderImplTest,
   size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 5;
   AddEngagedHosts(engaged_hosts);
-  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
-  // The expected behavior will be that all hosts in the engagement service will
-  // be blacklisted on initialization.
-  PopulateTopHostBlacklist(num_hosts_blacklisted);
 
   std::vector<std::string> hosts =
       top_host_provider()->GetTopHosts(max_top_hosts);
@@ -208,10 +205,6 @@ TEST_F(PreviewsTopHostProviderImplTest,
   size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 5;
   AddEngagedHosts(engaged_hosts);
-  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
-  // The expected behavior will be that all hosts in the engagement service will
-  // be blacklisted on initialization.
-  PopulateTopHostBlacklist(num_hosts_blacklisted);
 
   std::vector<std::string> hosts =
       top_host_provider()->GetTopHosts(max_top_hosts);
@@ -233,15 +226,10 @@ TEST_F(PreviewsTopHostProviderImplTest,
        MaybeUpdateTopHostBlacklistNavigationsOnBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
-  size_t num_hosts_blacklisted = 5;
   size_t num_top_hosts = 3;
   AddEngagedHosts(engaged_hosts);
-  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
-  // The expected behavior will be that all hosts in the engagement service will
-  // be blacklisted on initialization.
-  PopulateTopHostBlacklist(num_hosts_blacklisted);
 
-  // Verify that all engaged hosts are blacklisted.
+  // The blacklist should be populated on the first request.
   std::vector<std::string> hosts =
       top_host_provider()->GetTopHosts(max_top_hosts);
   EXPECT_EQ(hosts.size(), 0u);
@@ -258,13 +246,8 @@ TEST_F(PreviewsTopHostProviderImplTest,
        MaybeUpdateTopHostBlacklistEmptyBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
-  size_t num_hosts_blacklisted = 5;
   size_t num_top_hosts = 5;
   AddEngagedHosts(engaged_hosts);
-  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
-  // The expected behavior will be that all hosts in the engagement service will
-  // be blacklisted on initialization.
-  PopulateTopHostBlacklist(num_hosts_blacklisted);
 
   std::vector<std::string> hosts =
       top_host_provider()->GetTopHosts(max_top_hosts);
@@ -289,9 +272,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   GURL file_url = GURL("file://anyscheme.com");
   AddEngagedHosts(engaged_hosts);
   AddEngagedHost(http_url, 5);
-  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
-  // The expected behavior will be that all hosts in the engagement service will
-  // be blacklisted on initialization.
+
   PopulateTopHostBlacklist(num_hosts_blacklisted);
   AddHostToBlackList(http_url.host());
 
@@ -312,6 +293,37 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_EQ(hosts.size(), 0u);
 
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
+}
+
+TEST_F(PreviewsTopHostProviderImplTest,
+       IntializeTopHostBlacklistWithMaxTopSites) {
+  size_t engaged_hosts =
+      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+  size_t max_top_hosts =
+      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+  AddEngagedHosts(engaged_hosts);
+
+  // Blacklist should be populated on the first request.
+  std::vector<std::string> hosts =
+      top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(), 0u);
+
+  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(
+      hosts.size(),
+      engaged_hosts - previews::params::MaxHintsFetcherTopHostBlacklistSize());
+  EXPECT_EQ(GetCurrentTopHostBlacklistState(),
+            optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                kInitialized);
+
+  // The last host has the most engagement points so it will be blacklisted. The
+  // first host has the lowest engagement score and will not be blacklisted
+  // because it is not in the top MaxHintsFetcherTopHostBlacklistSize engaged
+  // hosts by engagement score.
+  EXPECT_TRUE(IsHostBlacklisted(base::StringPrintf(
+      "domain%zu.com",
+      previews::params::MaxHintsFetcherTopHostBlacklistSize())));
+  EXPECT_FALSE(IsHostBlacklisted(base::StringPrintf("domain%u.com", 1u)));
 }
 
 }  // namespace previews

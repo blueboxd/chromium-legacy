@@ -8,12 +8,12 @@ source_set("ui") {
   deps = [
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
-    ":favicon_util",
     "//base",
     "//ios/net",
     "//ios/web:core",
     "//ios/web/browsing_data",
     "//ios/web/common",
+    "//ios/web/favicon",
     "//ios/web/find_in_page",
     "//ios/web/js_messaging",
     "//ios/web/navigation",
@@ -88,6 +88,7 @@ source_set("crw_context_menu_controller") {
     "//ios/web/public/deprecated",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
+    "//ui/base",
   ]
 
   sources = [
@@ -114,22 +115,6 @@ source_set("wk_web_view_configuration_provider") {
     "wk_web_view_configuration_provider.h",
     "wk_web_view_configuration_provider.mm",
     "wk_web_view_configuration_provider_observer.h",
-  ]
-
-  libs = [ "WebKit.framework" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("favicon_util") {
-  deps = [
-    "//base",
-    "//ios/web/public",
-  ]
-
-  sources = [
-    "favicon_util.h",
-    "favicon_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]

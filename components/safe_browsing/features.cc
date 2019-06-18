@@ -23,6 +23,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCaptureInlineJavascriptForGoogleAds{
+    "CaptureInlineJavascriptForGoogleAds", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -75,6 +78,7 @@ constexpr struct {
   bool show_state;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},

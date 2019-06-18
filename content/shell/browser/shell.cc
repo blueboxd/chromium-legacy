@@ -497,7 +497,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
   }
 }
 
-bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
+bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) {
 #if defined(OS_ANDROID)
   return PlatformIsFullscreenForTabOrPending(web_contents);
 #else
@@ -505,8 +505,7 @@ bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
 #endif
 }
 
-blink::WebDisplayMode Shell::GetDisplayMode(
-    const WebContents* web_contents) const {
+blink::WebDisplayMode Shell::GetDisplayMode(const WebContents* web_contents) {
   // TODO: should return blink::WebDisplayModeFullscreen wherever user puts
   // a browser window into fullscreen (not only in case of renderer-initiated
   // fullscreen mode): crbug.com/476874.
@@ -525,7 +524,7 @@ void Shell::CloseContents(WebContents* source) {
   Close();
 }
 
-bool Shell::CanOverscrollContent() const {
+bool Shell::CanOverscrollContent() {
 #if defined(USE_AURA)
   return true;
 #else

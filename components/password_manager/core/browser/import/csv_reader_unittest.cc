@@ -185,12 +185,6 @@ TEST(CSVReaderTest, Positive) {
               {{"bar", "f"}, {"foo", "e"}},
           },
       },
-      {
-          "JustEnoughColumns",
-          std::string(CSVTable::kMaxColumns - 1, ','),
-          std::vector<const char*>{CSVTable::kMaxColumns, ""},
-          {},
-      },
   };
 
   for (const TestCase& test_case : kCases) {
@@ -237,10 +231,6 @@ TEST(CSVReaderTest, Negative) {
       {
           "FailureWhenJustOneQuoteAndComma",
           "\",",
-      },
-      {
-          "TooManyColumns",
-          std::string(CSVTable::kMaxColumns, ','),
       },
   };
 

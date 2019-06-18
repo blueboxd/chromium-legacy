@@ -21,7 +21,7 @@ void StaleRevalidationResourceClient::NotifyFinished(Resource* resource) {
     GetMemoryCache()->Remove(stale_resource_);
   ClearResource();
 
-  TimeTicks response_end = resource->LoadResponseEnd();
+  base::TimeTicks response_end = resource->LoadResponseEnd();
   if (!response_end.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES(
         "Blink.ResourceFetcher.StaleWhileRevalidateDuration",

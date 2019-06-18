@@ -81,8 +81,7 @@ int GetShadowElevation(aura::Window* window) {
 }
 
 void EnableTabletMode(bool enable) {
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      enable);
+  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
 }
 
 // A canvas that just logs when a text blob is drawn.
@@ -632,7 +631,7 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   ash::Shell* shell = ash::Shell::Get();
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  shell->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Start in maximized.
   shell_surface->SetMaximized();
@@ -994,7 +993,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShellSurfaceInSystemModalHitTest) {
 TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   UpdateDisplay("807x607");
   ash::Shell* shell = ash::Shell::Get();
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  shell->tablet_mode_controller()->SetEnabledForTest(true);
 
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer1(
@@ -1200,7 +1199,7 @@ class ClientControlledShellSurfaceDragTest : public test::ExoTestBase {
 TEST_F(ClientControlledShellSurfaceDragTest, DragWindowFromTopInTabletMode) {
   UpdateDisplay("800x600");
   ash::Shell* shell = ash::Shell::Get();
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  shell->tablet_mode_controller()->SetEnabledForTest(true);
   std::unique_ptr<Surface> surface(new Surface());
   const gfx::Size window_size(800, 552);
   std::unique_ptr<Buffer> buffer(

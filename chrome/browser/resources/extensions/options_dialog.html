@@ -26,6 +26,24 @@
         overflow: hidden;
       }
 
+      cr-dialog::part(dialog) {
+        /* CSS variables are set by the JS. */
+        height: var(--dialog-height);
+        opacity: var(--dialog-opacity, 0);
+        /* When loading, it's possible for an size update to follow after the
+           initial size update. The debounce time on size updates is 50ms.
+           A 100ms delay for the opacity transition will allow two updates to
+           occur without showing the dialog resizing to the user. */
+        transition: opacity 100ms ease 100ms;
+        width: var(--dialog-width);
+      }
+
+      cr-dialog::part(wrapper) {
+        height: 100%;
+        max-height: initial;
+        overflow: hidden;
+      }
+
       cr-dialog {
         --cr-dialog-body: {
           height: 100%;
@@ -39,19 +57,6 @@
         --cr-dialog-body-container: {
           height: 100%;
           min-height: initial;
-        }
-        --cr-dialog-native: {
-          opacity: 0;
-          /* When loading, it's possible for an size update to follow after the
-             initial size update. The debounce time on size updates is 50ms.
-             A 100ms delay for the opacity transition will allow two updates to
-             occur without showing the dialog resizing to the user. */
-          transition: opacity 100ms ease 100ms;
-        }
-        --cr-dialog-wrapper: {
-          height: 100%;
-          max-height: initial;
-          overflow: hidden;
         }
         --scroll-border: none;
       }

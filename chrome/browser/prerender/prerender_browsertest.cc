@@ -153,9 +153,6 @@ using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
-using prerender::test_utils::RequestCounter;
-using prerender::test_utils::CreateCountingInterceptorOnIO;
-using prerender::test_utils::CreateMockInterceptorOnIO;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
@@ -2061,16 +2058,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // is partially controlled by the renderer, namely
   // ChromeContentRendererClient. This test instead relies on the Web
   // Store triggering such navigations.
-  GURL webstore_url = extension_urls::GetWebstoreLaunchURL();
-
-  // Mock out requests to the Web Store.
-  base::FilePath file(GetTestPath("prerender_page.html"));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateMockInterceptorOnIO, webstore_url, file));
-
-  PrerenderTestURL(CreateClientRedirect(webstore_url.spec()),
-                   FINAL_STATUS_OPEN_URL, 1);
+  PrerenderTestURL(
+      CreateClientRedirect(extension_urls::GetWebstoreLaunchURL().spec()),
+      FINAL_STATUS_OPEN_URL, 1);
 }
 
 // Checks that deferred redirects in a synchronous XHR abort the prerender.
@@ -2216,20 +2206,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   // Intercept the successful landing page where a signed in user ends up.
   // It should never load as the API is suppressed.
   GURL done_url = embedded_test_server()->GetURL("/password/done.html");
-  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
-      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
-  RequestCounter done_counter;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateCountingInterceptorOnIO, done_url, empty_file,
-                     done_counter.AsWeakPtr()));
+  auto interceptor = std::make_unique<content::URLLoaderInterceptor>(
+      base::BindLambdaForTesting(
+          [&](content::URLLoaderInterceptor::RequestParams* params) {
+            EXPECT_NE(params->url_request.url, done_url);
+            return false;
+          }));
   // Loading may finish or be interrupted. The final result is important only.
   DisableLoadEventCheck();
   // TestPrenderContents is always created before the Autosignin JS can run, so
   // waiting for PrerenderContents to stop should be reliable.
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
-  EXPECT_EQ(0, done_counter.count());
 }
 
 // When instantiated, mocks out the global text-to-speech engine with something

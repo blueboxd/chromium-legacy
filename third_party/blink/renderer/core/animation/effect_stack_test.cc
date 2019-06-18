@@ -24,7 +24,7 @@ class AnimationEffectStackTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
     GetDocument().GetAnimationClock().ResetTimeForTesting();
-    timeline = DocumentTimeline::Create(&GetDocument());
+    timeline = GetDocument().Timeline();
     element = GetDocument().CreateElementForBinding("foo");
   }
 

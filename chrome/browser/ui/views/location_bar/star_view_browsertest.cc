@@ -52,13 +52,13 @@ class StarViewTest : public InProcessBrowserTest {
 #define MAYBE_HideOnSecondClick HideOnSecondClick
 #endif
 IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
-  BrowserView* browser_view = reinterpret_cast<BrowserView*>(
-      browser()->window());
+  BrowserView* browser_view =
+      reinterpret_cast<BrowserView*>(browser()->window());
   views::View* star_view = browser_view->toolbar()->location_bar()->star_view();
 
-  ui::MouseEvent pressed_event(
-      ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent released_event(
       ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);

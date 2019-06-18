@@ -218,11 +218,19 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   visual_properties.is_fullscreen_granted = false;
 
   WidgetMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
-  frame_widget()->OnMessageReceived(resize_message);
 
-  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // The main frame's widget will receive the resize message before the
+  // subframe's widget, and it will set the size for the WebView.
+  RenderWidget* main_frame_widget =
+      GetMainRenderFrame()->GetLocalRootRenderWidget();
+  main_frame_widget->OnMessageReceived(resize_message);
   EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
             blink::WebSize(size));
+  EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+
+  // The subframe sets the size only for itself.
+  frame_widget()->OnMessageReceived(resize_message);
+  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.

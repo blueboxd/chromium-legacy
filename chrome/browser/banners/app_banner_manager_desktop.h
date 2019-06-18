@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace extensions {
@@ -25,7 +27,8 @@ namespace banners {
 // Manages web app banners for desktop platforms.
 class AppBannerManagerDesktop
     : public AppBannerManager,
-      public content::WebContentsUserData<AppBannerManagerDesktop> {
+      public content::WebContentsUserData<AppBannerManagerDesktop>,
+      public web_app::AppRegistrarObserver {
  public:
   ~AppBannerManagerDesktop() override;
 
@@ -70,9 +73,17 @@ class AppBannerManagerDesktop
                          double score,
                          SiteEngagementService::EngagementType type) override;
 
+  // web_app::AppRegistrarObserver:
+  void OnWebAppInstalled(const web_app::AppId& app_id) override;
+  void OnAppRegistrarDestroyed() override;
+
   void CreateWebApp(WebappInstallSource install_source);
 
   extensions::ExtensionRegistry* extension_registry_;
+
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      registrar_observer_;
+
   base::WeakPtrFactory<AppBannerManagerDesktop> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

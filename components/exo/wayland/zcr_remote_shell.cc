@@ -639,7 +639,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     helper->AddActivationObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
 
-    layout_mode_ = helper->IsTabletModeWindowManagerEnabled()
+    layout_mode_ = helper->InTabletMode()
                        ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 

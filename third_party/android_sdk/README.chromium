@@ -2,14 +2,11 @@ Name: Android SDK
 URL: http://developer.android.com/sdk/index.html
 Version: 28
   Android SDK Build-tools 27.0.3
-  Android SDK Emulator 28.0.23
-  Android SDK Platform-tools 28.0.2
+  Android SDK Emulator 29.0.9
+  Android SDK Platform-tools 28.0.3
   Android SDK Platform API 28
   Android SDK Sources 28
   Android SDK Tools 26.1.1
-  Android Support Repository 47.0.0
-  Android Support Library 23.2.1
-  Android Instant Apps 1.6.0
   Android Lint 26.4.0-alpha04
   Google Cloud Messaging 3
   SDK Patch Applier v4
@@ -23,7 +20,6 @@ build, test and debug for Android.
 Local Modifications:
 
 - public/
-  - Added tools/lib/emma_device.jar and tools/lib/emma.jar.
   - Included the Android support library and required extras packages.
   - Added extras/chromium/.
   - Added build-tools/25.0.2/lib/dx.jar for //third_party/byte_buddy
@@ -38,4 +34,15 @@ Local Modifications:
   - Unzip and rename tools to tools-lint and move to the right spot in our repo.
   - Create CL and carbon copy tnorbye@google.com
 
-No other modifications has been made to the public Android SDK/NDK.
+No other modifications has been made to the public Android SDK.
+
+Update Instructions:
+
+public/tools/bin/sdkmanager --list  # Look for"Installed packages:"
+public/tools/bin/sdkmanager --update "name from --list's output"
+cipd create --pkg-def cipd_emulator.yaml  # For each package updated
+
+Then,
+* Update //DEPS with InstanceIds printed by "cipd create".
+* Update versions in this README.chromium.
+  * The overall Version field should corresponde to the Platform API version.

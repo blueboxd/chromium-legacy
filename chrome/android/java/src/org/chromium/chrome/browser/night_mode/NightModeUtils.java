@@ -8,21 +8,26 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.view.ContextThemeWrapper;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 
 /**
  * Helper methods for supporting night mode.
  */
 public class NightModeUtils {
+    private static Boolean sNightModeSupportedForTest;
+
     /**
      * Due to Lemon issues on resources access, night mode is disabled on Kitkat until the issue is
      * resolved. See https://crbug.com/957286 for details.
      * @return Whether night mode is supported.
      */
     public static boolean isNightModeSupported() {
+        if (sNightModeSupportedForTest != null) return sNightModeSupportedForTest;
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT;
     }
 
@@ -101,5 +106,10 @@ public class NightModeUtils {
         config.uiMode = nightModeFlag | (config.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
         wrapper.applyOverrideConfiguration(config);
         return wrapper;
+    }
+
+    @VisibleForTesting
+    public static void setNightModeSupportedForTesting(@Nullable Boolean nightModeSupported) {
+        sNightModeSupportedForTest = nightModeSupported;
     }
 }

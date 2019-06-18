@@ -30,7 +30,6 @@
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
@@ -479,9 +478,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(CreatePrintPreviewHandlers(web_ui)) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* source = CreatePrintPreviewUISource(profile);
-  DarkModeHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));

@@ -31,4 +31,6 @@ void CastWebView::RemoveObserver(CastWebView::Observer* observer) {
 
 CastWebView::CreateParams::CreateParams() {}
 
+CastWebView::CreateParams::CreateParams(const CreateParams& other) = default;
+
 }  // namespace chromecast

@@ -13,6 +13,11 @@ namespace features {
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables more aggressive filtering out of Bluetooth devices with
+// "appearances" that are less likely to be pairable or useful.
+const base::Feature kBluetoothAggressiveAppearanceFilter{
+    "BluetoothAggressiveAppearanceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
     "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};

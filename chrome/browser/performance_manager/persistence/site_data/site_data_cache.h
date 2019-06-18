@@ -19,7 +19,7 @@ namespace performance_manager {
 class SiteDataCache {
  public:
   SiteDataCache() = default;
-  ~SiteDataCache() = default;
+  virtual ~SiteDataCache() = default;
 
   // Returns a SiteDataReader for the given origin.
   virtual std::unique_ptr<SiteDataReader> GetReaderForOrigin(

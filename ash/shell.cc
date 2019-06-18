@@ -17,7 +17,7 @@
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/key_accessibility_enabler.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
@@ -898,7 +898,7 @@ void Shell::Init(
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   accessibility_focus_ring_controller_ =
-      std::make_unique<AccessibilityFocusRingController>();
+      std::make_unique<AccessibilityFocusRingControllerImpl>();
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityController>();
   toast_manager_ = std::make_unique<ToastManagerImpl>();

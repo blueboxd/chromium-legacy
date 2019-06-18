@@ -63,18 +63,12 @@ namespace {
 enum CorbExpectations {
   kShouldBeBlocked = 1 << 0,
   kShouldBeSniffed = 1 << 1,
-  kShouldLogContentLengthUma = 1 << 2,
 
   kShouldBeAllowedWithoutSniffing = 0,
   kShouldBeBlockedWithoutSniffing = kShouldBeBlocked,
   kShouldBeSniffedAndAllowed = kShouldBeSniffed,
   kShouldBeSniffedAndBlocked = kShouldBeSniffed | kShouldBeBlocked,
 };
-
-CorbExpectations operator|(CorbExpectations a, CorbExpectations b) {
-  return static_cast<CorbExpectations>(static_cast<int>(a) |
-                                       static_cast<int>(b));
-}
 
 std::ostream& operator<<(std::ostream& os, const CorbExpectations& value) {
   if (value == 0) {
@@ -87,8 +81,6 @@ std::ostream& operator<<(std::ostream& os, const CorbExpectations& value) {
     os << "kShouldBeBlocked ";
   if (0 != (value & kShouldBeSniffed))
     os << "kShouldBeSniffed ";
-  if (0 != (value & kShouldLogContentLengthUma))
-    os << "kShouldLogContentLengthUma ";
   os << ")";
   return os;
 }
@@ -154,8 +146,6 @@ void InspectHistograms(
       (0 != (expectations & kShouldBeBlocked)) && !is_restricted_uma_expected) {
     expected_counts[base + ".BlockedForParserBreaker"] = 1;
   }
-  if (0 != (expectations & kShouldBeSniffed))
-    expected_counts[base + ".BytesReadForSniffing"] = 1;
   if (0 != (expectations & kShouldBeBlocked && !is_restricted_uma_expected)) {
     expected_counts[base + ".Blocked"] = 1;
     if (!bucket.empty())
@@ -163,14 +153,6 @@ void InspectHistograms(
   }
   if (0 != (expectations & kShouldBeBlocked)) {
     expected_counts[base + ".Blocked.CanonicalMimeType"] = 1;
-    expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
-    bool should_have_content_length =
-        0 != (expectations & kShouldLogContentLengthUma);
-    histograms.ExpectBucketCount(base + ".Blocked.ContentLength.WasAvailable",
-                                 should_have_content_length, 1);
-
-    if (should_have_content_length)
-      expected_counts[base + ".Blocked.ContentLength.ValueIfAvailable"] = 1;
   }
 
   // Make sure that the expected metrics, and only those metrics, were
@@ -311,8 +293,8 @@ class RequestInterceptor {
     request_initiator_to_inject_ = request_initiator;
   }
 
-  void InjectFetchMode(network::mojom::FetchRequestMode fetch_mode) {
-    fetch_mode_to_inject_ = fetch_mode;
+  void InjectFetchMode(network::mojom::RequestMode request_mode) {
+    request_mode_to_inject_ = request_mode;
   }
 
  private:
@@ -371,8 +353,8 @@ class RequestInterceptor {
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
       params->url_request.request_initiator = request_initiator_to_inject_;
-    if (fetch_mode_to_inject_.has_value())
-      params->url_request.fetch_request_mode = fetch_mode_to_inject_.value();
+    if (request_mode_to_inject_.has_value())
+      params->url_request.mode = request_mode_to_inject_.value();
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -439,7 +421,7 @@ class RequestInterceptor {
   URLLoaderInterceptor interceptor_;
 
   base::Optional<url::Origin> request_initiator_to_inject_;
-  base::Optional<network::mojom::FetchRequestMode> fetch_mode_to_inject_;
+  base::Optional<network::mojom::RequestMode> request_mode_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -585,8 +567,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                      "nosniff.json-prefixed.js"};
   for (const char* resource : blocked_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
-    VerifyImgRequest(resource,
-                     kShouldBeSniffedAndBlocked | kShouldLogContentLengthUma);
+    VerifyImgRequest(resource, kShouldBeSniffedAndBlocked);
   }
 
   // These files should be disallowed without sniffing.
@@ -834,8 +815,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that the response completed successfully, was blocked and was logged
   // as having initially a non-empty body.
-  interceptor.Verify(kShouldBeBlockedWithoutSniffing |
-                     kShouldLogContentLengthUma);
+  interceptor.Verify(kShouldBeBlockedWithoutSniffing);
 
   // Verify that most response headers have been removed by CORB.
   const std::string& headers =
@@ -925,8 +905,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   // only possible when NetworkService is enabled).
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     interceptor.WaitForRequestCompletion();
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing |
-                       kShouldLogContentLengthUma);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing);
   }
 
   // Wait for fetch result (really needed only without NetworkService, if no
@@ -1110,7 +1089,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 }
 
 // Tests that renderer will be terminated if it asks AppCache to initiate a
-// cross-origin request with network::mojom::FetchRequestMode::kNavigate.
+// cross-origin request with network::mojom::RequestMode::kNavigate.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_NoNavigationsEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
@@ -1134,7 +1113,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // RenderFrameHostImpl is created.
   GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
   RequestInterceptor interceptor(cross_site_url);
-  interceptor.InjectFetchMode(network::mojom::FetchRequestMode::kNavigate);
+  interceptor.InjectFetchMode(network::mojom::RequestMode::kNavigate);
 
   // Load the main page twice. The second navigation should have AppCache
   // initialized for the page.

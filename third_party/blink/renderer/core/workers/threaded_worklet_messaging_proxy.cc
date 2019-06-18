@@ -88,7 +88,7 @@ void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {
 
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,

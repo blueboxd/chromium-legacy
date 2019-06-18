@@ -152,22 +152,13 @@
 @implementation AutomationAction
 
 + (instancetype)actionWithValueDictionary:
-                    (const base::DictionaryValue&)actionDictionary
-                                    error:(NSError**)error {
+    (const base::DictionaryValue&)actionDictionary {
   const base::Value* typeValue =
       actionDictionary.FindKeyOfType("type", base::Value::Type::STRING);
-  if (!typeValue) {
-    *error =
-        testing::NSErrorWithLocalizedDescription(@"Type is missing in action.");
-    return nil;
-  }
+  GREYAssert(typeValue, @"Type is missing in action.");
 
   const std::string type(typeValue->GetString());
-  if (type.empty()) {
-    *error =
-        testing::NSErrorWithLocalizedDescription(@"Type is an empty value.");
-    return nil;
-  }
+  GREYAssert(!type.empty(), @"Type is an empty value.");
 
   return [[[self classForType:base::SysUTF8ToNSString(type)] alloc]
       initWithValueDictionary:actionDictionary];
@@ -199,9 +190,8 @@
   return self;
 }
 
-- (NSError*)execute {
-  return testing::NSErrorWithLocalizedDescription(
-      @"Default AutomationAction::execute should not be called!");
+- (void)execute {
+  GREYAssert(NO, @"Should not be called!");
 }
 
 - (const std::unique_ptr<const base::DictionaryValue>&)actionDictionary {
@@ -235,12 +225,8 @@
 }
 
 // Creates a selector targeting the element specified in the action.
-- (ElementSelector*)selectorForTarget:(NSError**)error {
-  const std::string xpath = [self getStringFromDictionaryWithKey:"selector"
-                                                           error:error];
-  if (*error) {
-    return nil;
-  }
+- (ElementSelector*)selectorForTarget {
+  const std::string xpath = [self getStringFromDictionaryWithKey:"selector"];
 
   // Creates a selector from the action dictionary.
   ElementSelector* selector = [ElementSelector selectorWithXPathQuery:xpath];
@@ -250,22 +236,13 @@
 // Returns a std::string corrensponding to the given key in the action
 // dictionary. Will raise a test failure if the key is missing or the value is
 // empty.
-- (std::string)getStringFromDictionaryWithKey:(std::string)key
-                                        error:(NSError**)error {
+- (std::string)getStringFromDictionaryWithKey:(std::string)key {
   const base::Value* expectedTypeValue(
       self.actionDictionary->FindKeyOfType(key, base::Value::Type::STRING));
-  if (!expectedTypeValue) {
-    *error = testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"%s is missing in action.", key.c_str()]);
-    return "";
-  }
+  GREYAssert(expectedTypeValue, @"%s is missing in action.", key.c_str());
 
   const std::string expectedType(expectedTypeValue->GetString());
-  if (expectedType.empty()) {
-    *error = testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"%s is an empty value", key.c_str()]);
-    return "";
-  }
+  GREYAssert(!expectedType.empty(), @"%s is an empty value", key.c_str());
 
   return expectedType;
 }
@@ -273,14 +250,10 @@
 // Returns an int corrensponding to the given key in the action
 // dictionary. Will raise a test failure if the key is missing or the value is
 // empty.
-- (int)getIntFromDictionaryWithKey:(std::string)key error:(NSError**)error {
+- (int)getIntFromDictionaryWithKey:(std::string)key {
   const base::Value* expectedTypeValue(
       self.actionDictionary->FindKeyOfType(key, base::Value::Type::INTEGER));
-  if (!expectedTypeValue) {
-    *error = testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"%s is missing in action.", key.c_str()]);
-    return 0;
-  }
+  GREYAssert(expectedTypeValue, @"%s is missing in action.", key.c_str());
 
   return expectedTypeValue->GetInt();
 }
@@ -290,8 +263,9 @@
 // by the name "target", so example JS code is like:
 // return target.value
 - (id)executeJavascript:(std::string)function
-               onTarget:(ElementSelector*)selector
-                  error:(NSError**)error {
+               onTarget:(ElementSelector*)selector {
+  NSError* error;
+
   id result = chrome_test_util::ExecuteJavaScript(
       [NSString
           stringWithFormat:@"    (function() {"
@@ -303,8 +277,12 @@
                             "    })();",
                            base::SysUTF8ToNSString(function),
                            selector.selectorScript],
-      error);
+      &error);
 
+  if (error) {
+    GREYAssert(NO, @"Javascript execution error: %@", result);
+    return nil;
+  }
   return result;
 }
 
@@ -312,66 +290,46 @@
 
 @implementation AutomationActionClick
 
-- (NSError*)execute {
-  NSError* error;
-
-  ElementSelector* selector = [self selectorForTarget:&error];
-  if (error) {
-    return error;
-  }
-
+- (void)execute {
+  ElementSelector* selector = [self selectorForTarget];
   [self tapOnTarget:selector];
-  return nil;
 }
 
 @end
 
 @implementation AutomationActionLoadPage
 
-- (NSError*)execute {
+- (void)execute {
   // loadPage is a no-op action - perform nothing
-  return nil;
 }
 
 @end
 
 @implementation AutomationActionWaitFor
 
-- (NSError*)execute {
+- (void)execute {
   const base::Value* assertionsValue(self.actionDictionary->FindKeyOfType(
       "assertions", base::Value::Type::LIST));
-  if (!assertionsValue) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Assertions key is missing in WaitFor action.");
-  }
+  GREYAssert(assertionsValue, @"Assertions key is missing in action.");
 
   const base::Value::ListStorage& assertionsValues(assertionsValue->GetList());
-  if (!assertionsValues.size()) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Assertions list is empty in WaitFor action.");
-  }
+  GREYAssert(assertionsValues.size(), @"Assertions list is empty.");
 
   std::vector<std::string> state_assertions;
 
   for (auto const& assertionValue : assertionsValues) {
     const std::string assertionString(assertionValue.GetString());
-    if (assertionString.empty()) {
-      return testing::NSErrorWithLocalizedDescription(
-          @"assertionsString is empty in WaitFor action.");
-    }
+    GREYAssert(!assertionString.empty(), @"assertionString is an empty value.");
     state_assertions.push_back(assertionString);
   }
 
-  bool success = base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^{
-        return [self CheckForJsAssertionFailures:state_assertions] == nil;
-      });
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"waitFor State change hasn't completed within timeout.");
-  }
-
-  return nil;
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^{
+                   return [self CheckForJsAssertionFailures:state_assertions] ==
+                          nil;
+                 }),
+             @"waitFor State change hasn't completed within timeout.");
 }
 
 // Executes a vector of Javascript assertions on the webpage, returning the
@@ -405,16 +363,11 @@
 
 @implementation AutomationActionAutofill
 
-- (NSError*)execute {
+- (void)execute {
   // The autofill profile is configured in
   // automation_egtest::prepareAutofillProfileWithValues.
-  NSError* error = nil;
 
-  ElementSelector* selector = [self selectorForTarget:&error];
-  if (error) {
-    return error;
-  }
-
+  ElementSelector* selector = [self selectorForTarget];
   [self tapOnTarget:selector];
 
   // Tap on the autofill suggestion to perform the actual autofill.
@@ -422,148 +375,93 @@
       selectElementWithMatcher:grey_accessibilityID(
                                    kFormSuggestionLabelAccessibilityIdentifier)]
       performAction:grey_tap()];
-  return nil;
 }
 
 @end
 
 @implementation AutomationActionValidateField
 
-- (NSError*)execute {
-  NSError* error = nil;
-
-  ElementSelector* selector = [self selectorForTarget:&error];
-  if (error) {
-    return error;
-  }
+- (void)execute {
+  ElementSelector* selector = [self selectorForTarget];
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebStateContainingElement:selector];
 
-  NSString* expectedType = base::SysUTF8ToNSString([self
-      getStringFromDictionaryWithKey:"expectedAutofillType"
-                               error:&error]);
-  if (error) {
-    return error;
-  }
-
+  NSString* expectedType = base::SysUTF8ToNSString(
+      [self getStringFromDictionaryWithKey:"expectedAutofillType"]);
   NSString* expectedValue = base::SysUTF8ToNSString(
-      [self getStringFromDictionaryWithKey:"expectedValue" error:&error]);
-  if (error) {
-    return error;
-  }
+      [self getStringFromDictionaryWithKey:"expectedValue"]);
 
   NSString* predictionType = base::mac::ObjCCastStrict<NSString>([self
       executeJavascript:"return target.placeholder;"
-               onTarget:selector
-                  error:&error]);
-  if (error) {
-    return error;
-  }
+               onTarget:[self selectorForTarget]]);
 
-  NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>([self
-      executeJavascript:"return target.value;"
-               onTarget:selector
-                  error:&error]);
-  if (error) {
-    return error;
-  }
+  NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>(
+      [self executeJavascript:"return target.value;" onTarget:selector]);
 
-  if (![predictionType isEqualToString:expectedType]) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Expected prediction type %@ but got %@",
-                                   expectedType, predictionType]);
-  }
-  if (![autofilledValue isEqualToString:expectedValue]) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Expected autofilled value %@ but got %@",
-                                   autofilledValue, expectedValue]);
-  }
-  return nil;
+  GREYAssertEqualObjects(predictionType, expectedType,
+                         @"Expected prediction type %@ but got %@",
+                         expectedType, predictionType);
+  GREYAssertEqualObjects(autofilledValue, expectedValue,
+                         @"Expected autofilled value %@ but got %@",
+                         expectedValue, autofilledValue);
 }
 
 @end
 
 @implementation AutomationActionSelectDropdown
 
-- (NSError*)execute {
-  NSError* error = nil;
-
-  ElementSelector* selector = [self selectorForTarget:&error];
-  if (error) {
-    return error;
-  }
+- (void)execute {
+  ElementSelector* selector = [self selectorForTarget];
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebStateContainingElement:selector];
 
-  int selectedIndex = [self getIntFromDictionaryWithKey:"index" error:&error];
-  if (error) {
-    return error;
-  }
-
+  int selectedIndex = [self getIntFromDictionaryWithKey:"index"];
   [self executeJavascript:
             base::SysNSStringToUTF8([NSString
                 stringWithFormat:@"target.options.selectedIndex = %d; "
                                  @"triggerOnChangeEventOnElement(target);",
                                  selectedIndex])
-                 onTarget:selector
-                    error:&error];
-
-  return error;
+                 onTarget:selector];
 }
 
 @end
 
 @implementation AutomationActionUnrecognized
 
-- (NSError*)execute {
+- (void)execute {
   const base::Value* typeValue =
       self.actionDictionary->FindKeyOfType("type", base::Value::Type::STRING);
   const std::string type(typeValue->GetString());
 
-  return testing::NSErrorWithLocalizedDescription(
-      [NSString stringWithFormat:@"Unknown action of type %s", type.c_str()]);
+  GREYAssert(NO, @"Unknown action of type %s", type.c_str());
 }
 
 @end
 
 @implementation AutomationActionType
 
-- (NSError*)execute {
-  NSError* error = nil;
-
-  ElementSelector* selector = [self selectorForTarget:&error];
-  if (error) {
-    return error;
-  }
-
-  std::string value = [self getStringFromDictionaryWithKey:"value"
-                                                     error:&error];
-  if (error) {
-    return error;
-  }
-
+- (void)execute {
+  ElementSelector* selector = [self selectorForTarget];
+  std::string value = [self getStringFromDictionaryWithKey:"value"];
   [self executeJavascript:
             base::SysNSStringToUTF8([NSString
                 stringWithFormat:
                     @"__gCrWeb.fill.setInputElementValue(\"%s\", target);",
                     value.c_str()])
-                 onTarget:selector
-                    error:&error];
-  return error;
+                 onTarget:selector];
 }
 
 @end
 
 @implementation AutomationActionConfirmInfobar
 
-- (NSError*)execute {
+- (void)execute {
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kConfirmInfobarButton1AccessibilityIdentifier)]
       performAction:grey_tap()];
-  return nil;
 }
 
 @end

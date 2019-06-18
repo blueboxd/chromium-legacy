@@ -29,7 +29,7 @@ using autofill::NEW_PASSWORD;
 using autofill::PASSWORD;
 using autofill::PasswordForm;
 using autofill::ServerFieldTypeSet;
-using autofill::SubmissionIndicatorEvent;
+using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using testing::_;
 using testing::AllOf;

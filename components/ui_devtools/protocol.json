@@ -423,6 +423,82 @@
                     ]
                 },
                 {
+                    "id": "RuleMatch",
+                    "description": "Match data for a CSS rule.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "rule",
+                            "$ref": "CSSRule",
+                            "description": "CSS rule in the match."
+                        },
+                        {
+                            "name": "matchingSelectors",
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "description": "Matching selector indices in the rule's selectorList selectors (0-based)."
+                        }
+                    ]
+                },
+                {
+                    "id": "Value",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "text",
+                            "type": "string",
+                            "description": "Value text."
+                        },
+                        {
+                            "name": "range",
+                            "$ref": "SourceRange",
+                            "optional": true,
+                            "description": "Value range in the underlying resource (if available)."
+                        }
+                    ],
+                    "description": "Data for a simple selector (these are delimited by commas in a selector list)."
+                },
+                {
+                    "id": "SelectorList",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "selectors",
+                            "type": "array",
+                            "items": {
+                                "$ref": "Value"
+                            },
+                            "description": "Selectors in the list."
+                        }
+                    ],
+                    "description": "Selector list data."
+                },
+                {
+                    "id": "CSSRule",
+                    "description": "CSS rule representation.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId",
+                            "optional": true,
+                            "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from."
+                        },
+                        {
+                            "name": "selectorList",
+                            "$ref": "SelectorList",
+                            "description": "Rule selector data."
+                        },
+                        {
+                            "name": "style",
+                            "$ref": "CSSStyle",
+                            "description": "Associated style declaration."
+                        }
+                    ]
+                },
+                {
                     "id": "StyleDeclarationEdit",
                     "description": "A descriptor of operation to mutate style declaration text.",
                     "type": "object",

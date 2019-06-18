@@ -394,7 +394,7 @@ TEST_F(AppListAppLaunchedMetricTest, ClosedLaunchFromShelf) {
 // Test that the histogram records an app launch from the shelf while the
 // homecher all apps state is showing.
 TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromShelf) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::HistogramTester histogram_tester;
 
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
@@ -413,7 +413,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromGrid) {
   base::HistogramTester histogram_tester;
 
   // Enable tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 
   PopulateAndLaunchAppInGrid();
@@ -431,7 +431,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromChip) {
 
   GetAppListTestHelper()->WaitUntilIdle();
   // Enable tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 
   PopulateAndLaunchSuggestionChip();
@@ -449,7 +449,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromShelf) {
 
   // Enable tablet mode.
   GetAppListTestHelper()->WaitUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Press a letter key, the AppListView should transition to kFullscreenSearch.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_H, 0);
@@ -471,7 +471,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromSearchBox) {
 
   // Enable tablet mode.
   GetAppListTestHelper()->WaitUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Press a letter key, the AppListView should transition to kFullscreenSearch.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_H, 0);

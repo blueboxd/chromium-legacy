@@ -136,8 +136,16 @@ class ASH_EXPORT FeaturePodButton : public views::View,
 
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state. In the collapsed state, the labels
-  // are not shown.
-  void SetExpandedAmount(double expanded_amount);
+  // are not shown, so the label buttons always fade out as expanded_amount
+  // decreases. We also need to fade out the icon button when it's not part of
+  // the buttons visible in the collapsed state. fade_icon_button will be passed
+  // as true for these cases.
+  void SetExpandedAmount(double expanded_amount, bool fade_icon_button);
+
+  // Get opacity for a given expanded_amount value. Used to fade out
+  // all label buttons and icon buttons that are hidden in collapsed state
+  // while collapsing.
+  double GetOpacityForExpandedAmount(double expanded_amount);
 
   // Only called by the container. Same as SetVisible but doesn't change
   // |visible_preferred_| flag.

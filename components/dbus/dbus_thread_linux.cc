@@ -17,7 +17,9 @@ namespace {
 // single thread for all tasks.
 base::LazySingleThreadTaskRunner g_dbus_thread_task_runner =
     LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_BLOCKING),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
+                         base::TaskPriority::USER_BLOCKING),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 
 }  // namespace

@@ -11,7 +11,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_service_factory.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#endif
 
 namespace web_app {
 
@@ -30,7 +36,8 @@ WebAppUiService::WebAppUiService(Profile* profile) : profile_(profile) {
   }
 
   BrowserList::AddObserver(this);
-  WebAppProvider::Get(profile_)->set_ui_delegate(this);
+  auto* provider = WebAppProvider::Get(profile_);
+  provider->set_ui_delegate(this);
 }
 
 WebAppUiService::~WebAppUiService() = default;
@@ -58,6 +65,13 @@ void WebAppUiService::NotifyOnAllAppWindowsClosed(const AppId& app_id,
   }
 
   windows_closed_requests_map_[app_id].push_back(std::move(callback));
+}
+
+void WebAppUiService::MigrateOSAttributes(const AppId& from, const AppId& to) {
+#if defined(OS_CHROMEOS)
+  app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
+      ->TransferItemAttributes(from, to);
+#endif
 }
 
 void WebAppUiService::OnBrowserAdded(Browser* browser) {

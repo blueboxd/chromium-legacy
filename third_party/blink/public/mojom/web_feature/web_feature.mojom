@@ -1260,10 +1260,8 @@ enum WebFeature {
   kV8PromiseConstructorReturnedUndefined = 1766,
   kFormSubmittedWithUnclosedFormControl = 1767,
   kScrollbarUseVerticalScrollbarButton = 1777,
-  kScrollbarUseVerticalScrollbarThumb = 1778,
   kScrollbarUseVerticalScrollbarTrack = 1779,
   kScrollbarUseHorizontalScrollbarButton = 1780,
-  kScrollbarUseHorizontalScrollbarThumb = 1781,
   kScrollbarUseHorizontalScrollbarTrack = 1782,
   kHTMLTableCellElementColspan = 1783,
   kHTMLTableCellElementColspanGreaterThan1000 = 1784,
@@ -2312,6 +2310,8 @@ enum WebFeature {
   kBuiltInModuleSwitchImported = 2921,
   kFeaturePolicyCommaSeparatedDeclarations = 2922,
   kFeaturePolicySemicolonSeparatedDeclarations = 2923,
+  kV8CallSiteAPIGetFunctionSloppyCall = 2924,
+  kV8CallSiteAPIGetThisSloppyCall = 2925,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

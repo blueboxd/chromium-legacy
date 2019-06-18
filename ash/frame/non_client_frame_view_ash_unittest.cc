@@ -284,8 +284,8 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
   widget->Minimize();
 
   // Enter and exit tablet mode while the window is minimized.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
   // When unminimizing in non-tablet mode, size button should match with
   // maximized window state, which is restore icon.
@@ -303,7 +303,7 @@ TEST_F(NonClientFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -314,7 +314,7 @@ TEST_F(NonClientFrameViewAshTest,
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(views::GetCaptionButtonLayoutSize(
                 views::CaptionButtonLayoutSize::kNonBrowserCaption)
                 .height(),
@@ -331,9 +331,9 @@ TEST_F(NonClientFrameViewAshTest,
 
   widget->SetFullscreen(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -342,7 +342,7 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
   // Verify that after minimizing and showing the widget, the height of the
@@ -359,7 +359,7 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   wm::GetWindowState(widget->GetNativeWindow())->OnWMEvent(&event);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(views::GetCaptionButtonLayoutSize(
                 views::CaptionButtonLayoutSize::kNonBrowserCaption)
                 .height(),
@@ -369,7 +369,7 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
 // Test if creating a new window in tablet mode uses maximzied state
 // and immersive mode.
 TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   auto* delegate = new TestWidgetConstraintsDelegate;
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
@@ -397,7 +397,7 @@ TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
       aura::client::kResizeBehaviorCanMaximize);
   widget->Maximize();
   widget->Minimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   widget->Show();
   EXPECT_EQ(widget->non_client_view()->bounds(),
@@ -435,7 +435,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
   auto* delegate2 = new NonClientFrameViewAshTestWidgetDelegate();
   auto widget2 = create_widget(delegate2);
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Verify that when one window is snapped, the header is drawn for the snapped
   // window, but not drawn for the window still in overview.

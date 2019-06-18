@@ -1316,40 +1316,39 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponseWithoutOORCors) {
       CreateSubresourceLoaderFactory();
 
   struct TestCase {
-    network::mojom::FetchRequestMode fetch_request_mode;
+    network::mojom::RequestMode request_mode;
     base::Optional<url::Origin> request_initiator;
     bool expected_was_fallback_required_by_service_worker;
   };
   const TestCase kTests[] = {
-      {network::mojom::FetchRequestMode::kSameOrigin,
-       base::Optional<url::Origin>(), false},
-      {network::mojom::FetchRequestMode::kNoCors, base::Optional<url::Origin>(),
+      {network::mojom::RequestMode::kSameOrigin, base::Optional<url::Origin>(),
        false},
-      {network::mojom::FetchRequestMode::kCors, base::Optional<url::Origin>(),
-       true},
-      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
+      {network::mojom::RequestMode::kNoCors, base::Optional<url::Origin>(),
+       false},
+      {network::mojom::RequestMode::kCors, base::Optional<url::Origin>(), true},
+      {network::mojom::RequestMode::kCorsWithForcedPreflight,
        base::Optional<url::Origin>(), true},
-      {network::mojom::FetchRequestMode::kNavigate,
-       base::Optional<url::Origin>(), false},
-      {network::mojom::FetchRequestMode::kSameOrigin,
+      {network::mojom::RequestMode::kNavigate, base::Optional<url::Origin>(),
+       false},
+      {network::mojom::RequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kNoCors,
+      {network::mojom::RequestMode::kNoCors,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCors,
+      {network::mojom::RequestMode::kCors,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
+      {network::mojom::RequestMode::kCorsWithForcedPreflight,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kNavigate,
+      {network::mojom::RequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {network::mojom::FetchRequestMode::kSameOrigin,
+      {network::mojom::RequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {network::mojom::FetchRequestMode::kNoCors,
+      {network::mojom::RequestMode::kNoCors,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCors,
+      {network::mojom::RequestMode::kCors,
        url::Origin::Create(GURL("https://other.example.com/")), true},
-      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
+      {network::mojom::RequestMode::kCorsWithForcedPreflight,
        url::Origin::Create(GURL("https://other.example.com/")), true},
-      {network::mojom::FetchRequestMode::kNavigate,
+      {network::mojom::RequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false}};
 
   for (const auto& test : kTests) {
@@ -1357,14 +1356,14 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponseWithoutOORCors) {
 
     SCOPED_TRACE(
         ::testing::Message()
-        << "fetch_request_mode: " << static_cast<int>(test.fetch_request_mode)
+        << "fetch_request_mode: " << static_cast<int>(test.request_mode)
         << " request_initiator: "
         << (test.request_initiator ? test.request_initiator->Serialize()
                                    : std::string("null")));
     // Perform the request.
     network::ResourceRequest request =
         CreateRequest(GURL("https://www.example.com/foo.png"));
-    request.fetch_request_mode = test.fetch_request_mode;
+    request.mode = test.request_mode;
     request.request_initiator = test.request_initiator;
     network::mojom::URLLoaderPtr loader;
     std::unique_ptr<network::TestURLLoaderClient> client;

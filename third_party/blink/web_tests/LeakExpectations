@@ -94,9 +94,6 @@ crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-fl
 #Sheriff 2019-04-10
 crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Leak ]
 
-#Sheriff 2019-05-16
-crbug.com/963749 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
-
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #

@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -38,8 +39,13 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "net/net_buildflags.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#include "net/cert/cert_verify_proc_builtin.h"
+#endif
 
 #if defined(USE_NSS_CERTS)
 #include "net/cert/cert_verify_proc_nss.h"
@@ -454,6 +460,10 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
+    return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
+#endif
 #if defined(USE_NSS_CERTS)
   return new CertVerifyProcNSS();
 #elif defined(OS_ANDROID)

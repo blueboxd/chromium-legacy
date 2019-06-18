@@ -42,6 +42,7 @@ Polymer({
     disabled: {
       type: Boolean,
       value: false,
+      reflectToAttribute: true,
     }
   },
 

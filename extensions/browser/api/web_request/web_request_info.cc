@@ -23,7 +23,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
-#include "net/log/net_log_with_source.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/url_loader.h"
@@ -73,23 +72,6 @@ class FileUploadDataSource : public UploadDataSource {
   base::FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(FileUploadDataSource);
-};
-
-// TODO(https://crbug.com/721414): Need a real implementation here to support
-// the Network Service case. For now this is only to prevent crashing.
-class NetworkServiceLogger : public WebRequestInfoLogger {
- public:
-  NetworkServiceLogger() = default;
-  ~NetworkServiceLogger() override = default;
-
-  // WebRequestInfo::Logger:
-  void LogEvent(net::NetLogEventType event_type,
-                const std::string& extension_id) override {}
-  void LogBlockedBy(const std::string& blocker_info) override {}
-  void LogUnblocked() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceLogger);
 };
 
 bool CreateUploadDataSourcesFromResourceRequest(
@@ -193,7 +175,6 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
       type(static_cast<content::ResourceType>(request.resource_type)),
       is_async(is_async),
       extra_request_headers(request.headers),
-      logger(std::make_unique<NetworkServiceLogger>()),
       resource_context(resource_context) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
@@ -267,7 +248,6 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       web_view_instance_id(params.web_view_instance_id),
       web_view_rules_registry_id(params.web_view_rules_registry_id),
       web_view_embedder_process_id(params.web_view_embedder_process_id),
-      logger(std::move(params.logger)),
       resource_context(params.resource_context) {}
 
 WebRequestInfo::~WebRequestInfo() = default;

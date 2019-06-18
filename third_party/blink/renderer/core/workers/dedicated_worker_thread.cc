@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 

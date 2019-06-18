@@ -146,6 +146,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -153,6 +154,8 @@ source_set("eg_test_support") {
     "signin_earl_grey_ui.mm",
     "signin_earlgrey_utils.h",
     "signin_earlgrey_utils.mm",
+    "signin_earlgrey_utils_app_interface.h",
+    "signin_earlgrey_utils_app_interface.mm",
   ]
   deps = [
     ":authentication",
@@ -171,6 +174,7 @@ source_set("eg_test_support") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//services/identity/public/cpp",
   ]

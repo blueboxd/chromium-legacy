@@ -78,11 +78,13 @@ constexpr const base::TimeDelta
 IndexedDBOriginState::IndexedDBOriginState(
     bool persist_for_incognito,
     base::Clock* clock,
+    indexed_db::LevelDBFactory* leveldb_factory,
     base::Time* earliest_global_sweep_time,
     base::OnceClosure destruct_myself,
     std::unique_ptr<IndexedDBBackingStore> backing_store)
     : persist_for_incognito_(persist_for_incognito),
       clock_(clock),
+      leveldb_factory_(leveldb_factory),
       earliest_global_sweep_time_(earliest_global_sweep_time),
       lock_manager_(kIndexedDBLockLevelCount),
       backing_store_(std::move(backing_store)),
@@ -297,8 +299,7 @@ void IndexedDBOriginState::StartPreCloseTasks() {
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
   scoped_refptr<LevelDBTransaction> txn =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-          backing_store_->db());
+      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db());
   indexed_db::SetEarliestSweepTime(txn.get(), GenerateNextOriginSweepTime(now));
   s = txn->Commit();
 

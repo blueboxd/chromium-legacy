@@ -1291,6 +1291,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdatePageVisualProperties,
+                        OnUpdatePageVisualProperties)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
@@ -2036,6 +2038,45 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
   // TODO(danakj): Move this message to RenderWidget?
   if (!main_render_frame_)
     GetWidget()->set_screen_info(screen_info);
+}
+
+void RenderViewImpl::OnUpdatePageVisualProperties(
+    const gfx::Size& viewport_size) {
+  // Using this pathway to update the visual viewport should only happen for
+  // remote main frames. Local main frames will update the viewport size by
+  // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
+  if (!main_render_frame_) {
+    // Since the viewport size comes directly from the browser, we may
+    // need to adjust it for device scale factor.
+    // TODO(wjmaclean): we should look into having the browser apply this scale
+    // before sending the viewport size.
+    gfx::Size device_scale_factor_scaled_visual_viewport_size = viewport_size;
+    if (RenderThreadImpl::current()->IsUseZoomForDSFEnabled()) {
+      device_scale_factor_scaled_visual_viewport_size = gfx::ScaleToCeiledSize(
+          viewport_size, GetScreenInfo().device_scale_factor);
+    }
+    // TODO(wjmaclean): At present this makes use of the WebWidget part of
+    // WebViewImpl in order to be able to re-size the view
+    // without having to plumb through the browser-controls state. When
+    // WebViewImpl is no longer a WebWidget, then we'll need to plumb these
+    // values as well. At that time, presumably WebViewImpl::Resize() will
+    // also have migrated to the WebView API. https://crbug.com/419087
+    // Note: If WebViewImpl stops having any widget association when the
+    // main frame is remote, then this should be replaced with a direct call to
+    // webview()->ResizeVisualViewport().
+    webview()->MainFrameWidget()->Resize(
+        device_scale_factor_scaled_visual_viewport_size);
+  }
+}
+
+void RenderViewImpl::ResizeVisualViewportForWidget(
+    const gfx::Size& scaled_viewport_size) {
+  // This function is currently only called for local main frames. Once remote
+  // main frames no longer have a RenderWidget, they may also route through
+  // here via RenderViewImpl::OnUpdatePageVisualProperties(). In that case,
+  // WebViewImpl will need to implement its Size() function based on something
+  // other than the widget size.
+  webview()->ResizeVisualViewport(scaled_viewport_size);
 }
 
 void RenderViewImpl::SetPageFrozen(bool frozen) {

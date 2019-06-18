@@ -140,7 +140,7 @@ void ThreadHeapStatsCollector::NotifySweepingCompleted() {
   static_assert(!std::is_polymorphic<Event>::value,
                 "Event should not be polymorphic");
   memset(&current_, 0, sizeof(current_));
-  gc_nested_in_v8_ = TimeDelta();
+  gc_nested_in_v8_ = base::TimeDelta();
 }
 
 void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
@@ -166,8 +166,8 @@ double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
                             : kInitialMarkingTimeInSeconds;
 }
 
-TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
-  return TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
+base::TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
+  return base::TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
@@ -183,7 +183,7 @@ double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
   return marked_bytes ? marking_time_in_ms() / 1000 / marked_bytes : 0.0;
 }
 
-TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
+base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
   return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }

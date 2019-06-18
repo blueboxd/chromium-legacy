@@ -50,6 +50,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
   bool IsScrollTimeline() const override { return true; }
+  Document* GetDocument() override { return &scroll_source_->GetDocument(); }
   // ScrollTimeline is not active if scrollSource is null, does not currently
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
@@ -82,8 +83,8 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
 
   // Must be called when this ScrollTimeline is attached/detached from an
   // animation.
-  void AttachAnimation();
-  void DetachAnimation();
+  void AnimationAttached(Animation*) override;
+  void AnimationDetached(Animation*) override;
 
   void Trace(blink::Visitor*) override;
 

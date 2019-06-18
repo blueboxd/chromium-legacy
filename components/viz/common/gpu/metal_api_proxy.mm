@@ -4,7 +4,15 @@
 
 #include "components/viz/common/gpu/metal_api_proxy.h"
 
+#include "base/debug/crash_logging.h"
+#include "base/strings/sys_string_conversions.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/gl/progress_reporter.h"
+
+namespace {
+// Maximum length of a shader to be uploaded with a crash report.
+constexpr uint32_t kShaderCrashDumpLength = 8128;
+}
 
 @implementation MTLDeviceProxy
 - (id)initWithDevice:(id<MTLDevice>)device {
@@ -160,13 +168,46 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
                    dispatch_data_t,
                    error,
                    __autoreleasing NSError**)
-PROXY_METHOD3_SLOW(nullable id<MTLLibrary>,
-                   newLibraryWithSource,
-                   NSString*,
-                   options,
-                   nullable MTLCompileOptions*,
-                   error,
-                   __autoreleasing NSError**)
+- (nullable id<MTLLibrary>)
+    newLibraryWithSource:(NSString*)source
+                 options:(nullable MTLCompileOptions*)options
+                   error:(__autoreleasing NSError**)error {
+  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
+
+  // Capture the shader's source in a crash key in case newLibraryWithSource
+  // hangs.
+  // https://crbug.com/974219
+  static crash_reporter::CrashKeyString<kShaderCrashDumpLength> shaderKey(
+      "MTLShaderSource");
+  std::string sourceAsSysString = base::SysNSStringToUTF8(source);
+  if (sourceAsSysString.size() > kShaderCrashDumpLength)
+    DLOG(WARNING) << "Truncating shader in crash log.";
+
+  shaderKey.Set(sourceAsSysString);
+  id<MTLLibrary> library = [device_ newLibraryWithSource:source
+                                                 options:options
+                                                   error:error];
+  shaderKey.Clear();
+
+  // Shaders from Skia will have either a vertexMain or fragmentMain function.
+  // Save the source and a weak pointer to the function, so we can capture
+  // the shader source in -newRenderPipelineStateWithDescriptor (see further
+  // remarks in that function).
+  base::scoped_nsprotocol<id<MTLFunction>> vertexFunction(
+      [library newFunctionWithName:@"vertexMain"]);
+  if (vertexFunction) {
+    vertexSourceFunction_ = vertexFunction;
+    vertexSource_ = sourceAsSysString;
+  }
+  base::scoped_nsprotocol<id<MTLFunction>> fragmentFunction(
+      [library newFunctionWithName:@"fragmentMain"]);
+  if (fragmentFunction) {
+    fragmentSourceFunction_ = fragmentFunction;
+    fragmentSource_ = sourceAsSysString;
+  }
+
+  return library;
+}
 PROXY_METHOD3_SLOW(void,
                    newLibraryWithSource,
                    NSString*,
@@ -174,11 +215,37 @@ PROXY_METHOD3_SLOW(void,
                    nullable MTLCompileOptions*,
                    completionHandler,
                    MTLNewLibraryCompletionHandler)
-PROXY_METHOD2_SLOW(nullable id<MTLRenderPipelineState>,
-                   newRenderPipelineStateWithDescriptor,
-                   MTLRenderPipelineDescriptor*,
-                   error,
-                   __autoreleasing NSError**)
+- (nullable id<MTLRenderPipelineState>)
+    newRenderPipelineStateWithDescriptor:
+        (MTLRenderPipelineDescriptor*)descriptor
+                                   error:(__autoreleasing NSError**)error {
+  // Capture the vertex and shader source being used. Skia's use pattern is to
+  // compile two MTLLibraries before creating a MTLRenderPipelineState -- one
+  // with vertexMain and the other with fragmentMain. The two immediately
+  // previous -newLibraryWithSource calls should have saved the sources for
+  // these two functions.
+  // https://crbug.com/974219
+  static crash_reporter::CrashKeyString<kShaderCrashDumpLength> vertexShaderKey(
+      "MTLVertexSource");
+  if (vertexSourceFunction_ == [descriptor vertexFunction])
+    vertexShaderKey.Set(vertexSource_);
+  else
+    DLOG(WARNING) << "Failed to capture vertex shader.";
+  static crash_reporter::CrashKeyString<kShaderCrashDumpLength>
+      fragmentShaderKey("MTLFragmentSource");
+  if (fragmentSourceFunction_ == [descriptor fragmentFunction])
+    fragmentShaderKey.Set(fragmentSource_);
+  else
+    DLOG(WARNING) << "Failed to capture fragment shader.";
+
+  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
+  id<MTLRenderPipelineState> pipelineState =
+      [device_ newRenderPipelineStateWithDescriptor:descriptor error:error];
+
+  vertexShaderKey.Clear();
+  fragmentShaderKey.Clear();
+  return pipelineState;
+}
 PROXY_METHOD4_SLOW(nullable id<MTLRenderPipelineState>,
                    newRenderPipelineStateWithDescriptor,
                    MTLRenderPipelineDescriptor*,

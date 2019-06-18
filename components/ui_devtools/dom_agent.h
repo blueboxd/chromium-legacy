@@ -71,7 +71,7 @@ class UI_DEVTOOLS_EXPORT DOMAgent
  protected:
   std::unique_ptr<protocol::DOM::Node> BuildNode(
       const std::string& name,
-      std::unique_ptr<protocol::Array<std::string>> attributes,
+      std::unique_ptr<std::vector<std::string>> attributes,
       std::unique_ptr<protocol::Array<protocol::DOM::Node>> children,
       int node_ids);
   std::unique_ptr<protocol::DOM::Node> BuildDomNodeFromUIElement(

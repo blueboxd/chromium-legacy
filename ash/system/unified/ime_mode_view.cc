@@ -78,9 +78,7 @@ void ImeModeView::Update() {
 
   // Do not show IME mode icon in tablet mode as it's less useful and screen
   // space is limited.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     SetVisible(false);
     return;
   }

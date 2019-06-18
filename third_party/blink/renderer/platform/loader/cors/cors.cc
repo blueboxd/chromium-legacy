@@ -160,7 +160,7 @@ base::Optional<network::CorsErrorStatus> CheckAccess(
     const KURL& response_url,
     const int response_status_code,
     const HTTPHeaderMap& response_header,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     const SecurityOrigin& origin) {
   return network::cors::CheckAccess(
       response_url, response_status_code,
@@ -174,7 +174,7 @@ base::Optional<network::CorsErrorStatus> CheckPreflightAccess(
     const KURL& response_url,
     const int response_status_code,
     const HTTPHeaderMap& response_header,
-    network::mojom::FetchCredentialsMode actual_credentials_mode,
+    network::mojom::CredentialsMode actual_credentials_mode,
     const SecurityOrigin& origin) {
   return network::cors::CheckPreflightAccess(
       response_url, response_status_code,
@@ -186,7 +186,7 @@ base::Optional<network::CorsErrorStatus> CheckPreflightAccess(
 
 base::Optional<network::CorsErrorStatus> CheckRedirectLocation(
     const KURL& url,
-    network::mojom::FetchRequestMode request_mode,
+    network::mojom::RequestMode request_mode,
     const SecurityOrigin* origin,
     CorsFlag cors_flag) {
   base::Optional<url::Origin> origin_to_pass;
@@ -210,7 +210,7 @@ base::Optional<network::CorsErrorStatus> CheckExternalPreflight(
       GetHeaderValue(response_header, http_names::kAccessControlAllowExternal));
 }
 
-bool IsCorsEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
+bool IsCorsEnabledRequestMode(network::mojom::RequestMode request_mode) {
   return network::cors::IsCorsEnabledRequestMode(request_mode);
 }
 
@@ -220,7 +220,7 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
     const KURL& request_url,
     const String& request_method,
     const HTTPHeaderMap& request_header_map,
-    network::mojom::FetchCredentialsMode request_credentials_mode) {
+    network::mojom::CredentialsMode request_credentials_mode) {
   DCHECK(!origin.IsNull());
   DCHECK(!request_method.IsNull());
 
@@ -259,7 +259,7 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
 bool CheckIfRequestCanSkipPreflight(
     const String& origin,
     const KURL& url,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     const String& method,
     const HTTPHeaderMap& request_header_map) {
   DCHECK(!origin.IsNull());
@@ -284,7 +284,7 @@ bool CheckIfRequestCanSkipPreflight(
 // mutate the origin instead of using such a flag.
 network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
-    network::mojom::FetchRequestMode request_mode,
+    network::mojom::RequestMode request_mode,
     const SecurityOrigin* origin,
     CorsFlag cors_flag) {
   if (url.ProtocolIsData())
@@ -301,7 +301,7 @@ network::mojom::FetchResponseType CalculateResponseTainting(
     return network::mojom::FetchResponseType::kBasic;
   }
 
-  if (request_mode == network::mojom::FetchRequestMode::kNoCors &&
+  if (request_mode == network::mojom::RequestMode::kNoCors &&
       !origin->CanRequest(url)) {
     return network::mojom::FetchResponseType::kOpaque;
   }
@@ -309,7 +309,7 @@ network::mojom::FetchResponseType CalculateResponseTainting(
 }
 
 bool CalculateCredentialsFlag(
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     network::mojom::FetchResponseType response_tainting) {
   return network::cors::CalculateCredentialsFlag(credentials_mode,
                                                  response_tainting);
@@ -384,9 +384,9 @@ bool IsOkStatus(int status) {
 
 bool CalculateCorsFlag(const KURL& url,
                        const SecurityOrigin* origin,
-                       network::mojom::FetchRequestMode request_mode) {
-  if (request_mode == network::mojom::FetchRequestMode::kNavigate ||
-      request_mode == network::mojom::FetchRequestMode::kNoCors) {
+                       network::mojom::RequestMode request_mode) {
+  if (request_mode == network::mojom::RequestMode::kNavigate ||
+      request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
   // CORS needs a proper origin (including a unique opaque origin). If the
@@ -396,7 +396,7 @@ bool CalculateCorsFlag(const KURL& url,
 }
 
 WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     const ResourceResponse& response) {
   // If a response was fetched via a service worker, it will always have
   // CorsExposedHeaderNames set from the Access-Control-Expose-Headers header.
@@ -414,7 +414,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
       response.HttpHeaderField(http_names::kAccessControlExposeHeaders));
   parser.Parse(header_set);
 
-  if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&
+  if (credentials_mode != network::mojom::CredentialsMode::kInclude &&
       header_set.find("*") != header_set.end()) {
     header_set.clear();
     for (const auto& header : response.HttpHeaderFields())

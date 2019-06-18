@@ -168,15 +168,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                                 base::span<const uint8_t> credential_id,
                                 DeleteCredentialCallback callback);
 
-  // bio enrollment
+  // Biometric enrollment commands.
   virtual void GetModality(BioEnrollmentCallback callback);
   virtual void GetSensorInfo(BioEnrollmentCallback callback);
-  virtual void BioEnrollFingerprint(pin::TokenResponse, BioEnrollmentCallback);
+  virtual void BioEnrollFingerprint(const pin::TokenResponse&,
+                                    BioEnrollmentCallback);
   virtual void BioEnrollCancel(BioEnrollmentCallback);
-  virtual void BioEnrollEnumerate(pin::TokenResponse, BioEnrollmentCallback);
-  virtual void BioEnrollRename(pin::TokenResponse,
-                               std::vector<uint8_t>,
-                               std::string,
+  virtual void BioEnrollEnumerate(const pin::TokenResponse&,
+                                  BioEnrollmentCallback);
+  virtual void BioEnrollRename(const pin::TokenResponse&,
+                               std::vector<uint8_t> template_id,
+                               std::string name,
+                               BioEnrollmentCallback);
+  virtual void BioEnrollDelete(const pin::TokenResponse&,
+                               std::vector<uint8_t> template_id,
                                BioEnrollmentCallback);
 
   // Reset triggers a reset operation on the authenticator. This erases all

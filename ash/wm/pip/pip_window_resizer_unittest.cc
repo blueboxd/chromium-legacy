@@ -236,7 +236,7 @@ TEST_P(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
 }
 
 TEST_P(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
@@ -247,7 +247,7 @@ TEST_P(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
 }
 
 TEST_P(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));

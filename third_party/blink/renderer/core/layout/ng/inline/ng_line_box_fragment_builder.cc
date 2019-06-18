@@ -19,6 +19,7 @@ void NGLineBoxFragmentBuilder::Reset() {
   child_break_tokens_.Shrink(0);
   inline_break_tokens_.Shrink(0);
   oof_positioned_candidates_.Shrink(0);
+  unpositioned_list_marker_ = NGUnpositionedListMarker();
 
   size_.inline_size = LayoutUnit();
   metrics_ = NGLineHeightMetrics();

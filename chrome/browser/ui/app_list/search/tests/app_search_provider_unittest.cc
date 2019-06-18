@@ -105,7 +105,10 @@ bool MoreRelevant(const ChromeSearchResult* result1,
 
 class AppSearchProviderTest : public AppListTestBase {
  public:
-  AppSearchProviderTest() {}
+  AppSearchProviderTest() {
+    // Disable System Web Apps so the Settings Internal App is still installed.
+    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+  }
   ~AppSearchProviderTest() override {}
 
   // AppListTestBase overrides:
@@ -227,6 +230,7 @@ class AppSearchProviderTest : public AppListTestBase {
  private:
   base::SimpleTestClock clock_;
   base::ScopedTempDir temp_dir_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;

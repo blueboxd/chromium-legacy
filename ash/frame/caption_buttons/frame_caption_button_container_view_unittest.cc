@@ -175,7 +175,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
             initial_size_button_bounds.right());
 
   // Button positions should be the same when entering tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   container.UpdateCaptionButtonState(false /*=animate*/);
   test.EndAnimations();
   // Parent needs to layout in response to size change.
@@ -197,7 +197,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
             initial_container_bounds.width());
 
   // Button positions should be the same when leaving tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   container.UpdateCaptionButtonState(false /*=animate*/);
   // Calling code needs to layout in response to size change.
   container.Layout();

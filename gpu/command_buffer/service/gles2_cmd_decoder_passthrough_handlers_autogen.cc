@@ -4020,6 +4020,22 @@ error::Error GLES2DecoderPassthroughImpl::HandleDispatchCompute(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleDispatchComputeIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::DispatchComputeIndirect& c =
+      *static_cast<const volatile gles2::cmds::DispatchComputeIndirect*>(
+          cmd_data);
+  GLintptr offset = static_cast<GLintptr>(c.offset);
+  error::Error error = DoDispatchComputeIndirect(offset);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleGetProgramInterfaceiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

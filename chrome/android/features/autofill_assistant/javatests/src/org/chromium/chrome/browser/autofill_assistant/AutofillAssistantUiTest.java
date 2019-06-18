@@ -109,13 +109,12 @@ public class AutofillAssistantUiTest {
     // Copied from {@link ChromeActivity#initializeBottomSheet}.
     protected BottomSheetController initializeBottomSheet() {
         CustomTabActivity activity = getActivity();
-        ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
-        LayoutInflater.from(activity).inflate(
-                org.chromium.chrome.R.layout.bottom_sheet, coordinator);
-        BottomSheet bottomSheet = coordinator.findViewById(org.chromium.chrome.R.id.bottom_sheet);
+        ViewGroup coordinator = activity.findViewById(R.id.coordinator);
+        LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
+        BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
         bottomSheet.init(coordinator, activity);
 
-        ((BottomContainer) activity.findViewById(org.chromium.chrome.R.id.bottom_container))
+        ((BottomContainer) activity.findViewById(R.id.bottom_container))
                 .setBottomSheet(bottomSheet);
 
         return new BottomSheetController(activity, activity.getLifecycleDispatcher(),

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -59,7 +60,7 @@ class IndexedDBTransactionTest : public testing::Test {
     // "peculiarity of C++". More info at
     // https://github.com/google/googletest/blob/master/googletest/docs/FAQ.md#my-compiler-complains-that-a-constructor-or-destructor-cannot-return-a-value-whats-going-on
     leveldb::Status s;
-    std::tie(db_, s) = IndexedDBDatabase::Create(
+    std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
         GetErrorCallback(), base::BindLambdaForTesting([&]() { db_.reset(); }),
         std::make_unique<FakeIndexedDBMetadataCoding>(),
@@ -87,8 +88,9 @@ class IndexedDBTransactionTest : public testing::Test {
   std::unique_ptr<IndexedDBConnection> CreateConnection(int process_id) {
     return std::unique_ptr<IndexedDBConnection>(
         std::make_unique<IndexedDBConnection>(
-            kFakeProcessId, IndexedDBOriginStateHandle(), db_->AsWeakPtr(),
-            base::DoNothing(), base::DoNothing(), GetErrorCallback(),
+            kFakeProcessId, IndexedDBOriginStateHandle(),
+            IndexedDBClassFactory::Get(), db_->AsWeakPtr(), base::DoNothing(),
+            base::DoNothing(), GetErrorCallback(),
             new MockIndexedDBDatabaseCallbacks()));
   }
 

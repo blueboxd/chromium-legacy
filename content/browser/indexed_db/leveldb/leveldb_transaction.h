@@ -21,6 +21,10 @@
 namespace content {
 class LevelDBWriteBatch;
 
+namespace indexed_db {
+class DefaultLevelDBFactory;
+}  // namespace indexed_db
+
 class CONTENT_EXPORT LevelDBTransaction
     : public base::RefCounted<LevelDBTransaction> {
  public:
@@ -45,7 +49,7 @@ class CONTENT_EXPORT LevelDBTransaction
  protected:
   virtual ~LevelDBTransaction();
   explicit LevelDBTransaction(LevelDBDatabase* db);
-  friend class IndexedDBClassFactory;
+  friend class indexed_db::DefaultLevelDBFactory;
 
  private:
   friend class base::RefCounted<LevelDBTransaction>;

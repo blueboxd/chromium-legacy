@@ -27,8 +27,8 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) override;
 

@@ -112,7 +112,6 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
     video_frame_mapper_ =
         VideoFrameMapperFactory::CreateMapper(video_frame->format());
     LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
-    return;
   }
 
   switch (output_format_) {

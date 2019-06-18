@@ -237,8 +237,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_STORE_CLIENT"
                  file="html/cr/ui/store_client.html"
                  type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_DARK_MODE"
-                 file="html/dark_mode.html" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_EVENT_TRACKER"
                  file="html/event_tracker.html" type="chrome_html"
                  compress="gzip" />
@@ -369,9 +367,6 @@ without changes to the corresponding grd file. -->
                  file="js/cr/ui/tree.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TOUCH_HANDLER"
                  file="js/cr/ui/touch_handler.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_DARK_MODE"
-                 file="js/dark_mode.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_EVENT_TRACKER"
                  file="js/event_tracker.js" type="chrome_html"

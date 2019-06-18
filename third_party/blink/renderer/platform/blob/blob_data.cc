@@ -120,7 +120,7 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
   std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
-      WebStringToFilePath(path), 0, BlobData::kToEndOfFile, WTF::Time())));
+      WebStringToFilePath(path), 0, BlobData::kToEndOfFile, base::Time())));
   return data;
 }
 
@@ -131,7 +131,7 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
       WebStringToFilePath(path), 0, BlobData::kToEndOfFile,
-      WTF::Time::FromDoubleT(expected_modification_time))));
+      base::Time::FromDoubleT(expected_modification_time))));
   return data;
 }
 
@@ -143,7 +143,7 @@ std::unique_ptr<BlobData> BlobData::CreateForFileSystemURLWithUnknownSize(
   data->elements_.push_back(
       DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
           file_system_url, 0, BlobData::kToEndOfFile,
-          WTF::Time::FromDoubleT(expected_modification_time))));
+          base::Time::FromDoubleT(expected_modification_time))));
   return data;
 }
 
@@ -184,7 +184,7 @@ void BlobData::AppendFile(const String& path,
     return;
   elements_.push_back(DataElement::NewFile(DataElementFile::New(
       WebStringToFilePath(path), offset, length,
-      WTF::Time::FromDoubleT(expected_modification_time))));
+      base::Time::FromDoubleT(expected_modification_time))));
 }
 
 void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
@@ -213,7 +213,7 @@ void BlobData::AppendFileSystemURL(const KURL& url,
   elements_.push_back(
       DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
           url, offset, length,
-          WTF::Time::FromDoubleT(expected_modification_time))));
+          base::Time::FromDoubleT(expected_modification_time))));
 }
 
 void BlobData::AppendText(const String& text,

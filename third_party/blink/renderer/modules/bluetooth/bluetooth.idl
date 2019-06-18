@@ -5,6 +5,7 @@
 // https://webbluetoothcg.github.io/web-bluetooth/#bluetooth
 
 [
+    Exposed=Window,
     RuntimeEnabled=WebBluetooth,
     SecureContext
 ] interface Bluetooth : EventTarget {
@@ -15,4 +16,4 @@
     Promise<BluetoothLEScan> requestLEScan (optional BluetoothLEScanOptions options);
 
     [RuntimeEnabled=WebBluetoothScanning] attribute EventHandler onadvertisementreceived;
-}; 
+};

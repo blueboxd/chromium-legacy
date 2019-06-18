@@ -86,10 +86,8 @@ class CORE_EXPORT PrePaintTreeWalk {
   static bool ContextRequiresTreeBuilderContext(const PrePaintTreeWalkContext&,
                                                 const LayoutObject&);
 
-#if DCHECK_IS_ON()
   void CheckTreeBuilderContextState(const LayoutObject&,
                                     const PrePaintTreeWalkContext&);
-#endif
 
   const PrePaintTreeWalkContext& ContextAt(wtf_size_t index) {
     DCHECK_LT(index, context_storage_.size());

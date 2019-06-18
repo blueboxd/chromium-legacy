@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -66,13 +67,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             InternalAppName::kKeyboardShortcutViewer,
             IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
-           {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
-            IDR_SETTINGS_LOGO_192,
-            /*recommendable=*/true,
-            /*searchable=*/true,
-            /*show_in_launcher=*/true, InternalAppName::kSettings,
-            /*searchable_string_resource_id=*/0},
-
            {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
             IDR_PRODUCT_LOGO_256,
             /*recommendable=*/true,
@@ -107,6 +101,16 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          /*searchable=*/true,
          /*show_in_launcher=*/true, InternalAppName::kDiscover,
          /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
+  }
+
+  if (!web_app::SystemWebAppManager::IsEnabled()) {
+    internal_app_list->push_back(
+        {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
+         IDR_SETTINGS_LOGO_192,
+         /*recommendable=*/true,
+         /*searchable=*/true,
+         /*show_in_launcher=*/true, InternalAppName::kSettings,
+         /*searchable_string_resource_id=*/0});
   }
 
   if (get_all || plugin_vm::IsPluginVmAllowedForProfile(profile)) {

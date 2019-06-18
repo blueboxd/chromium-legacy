@@ -47,22 +47,6 @@ ScriptValue UnderlyingSourceBase::type(ScriptState* script_state) const {
   return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
 }
 
-void UnderlyingSourceBase::notifyLockAcquired() {
-  is_stream_locked_ = true;
-}
-
-void UnderlyingSourceBase::notifyLockReleased() {
-  is_stream_locked_ = false;
-}
-
-bool UnderlyingSourceBase::HasPendingActivity() const {
-  // This will return false within a finite time period _assuming_ that
-  // consumers use the controller to close or error the stream.
-  // Browser-created readable streams should always close or error within a
-  // finite time period, due to timeouts etc.
-  return controller_ && controller_->IsActive() && is_stream_locked_;
-}
-
 void UnderlyingSourceBase::ContextDestroyed(ExecutionContext*) {
   if (controller_) {
     controller_->NoteHasBeenCanceled();

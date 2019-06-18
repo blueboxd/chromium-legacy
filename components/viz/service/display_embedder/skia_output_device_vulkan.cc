@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -32,8 +33,11 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   scoped_write_.reset();
-  if (vulkan_surface_)
-    vulkan_surface_->Destroy();
+  if (vulkan_surface_) {
+    auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(vulkan_surface_));
+  }
 }
 
 void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,

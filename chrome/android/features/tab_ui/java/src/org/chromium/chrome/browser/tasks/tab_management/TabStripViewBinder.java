@@ -45,13 +45,13 @@ class TabStripViewBinder {
                     item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
                 });
                 holder.button.setContentDescription(holder.itemView.getContext().getString(
-                        org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+                        R.string.accessibility_tabstrip_btn_close_tab, title));
             } else {
                 holder.button.setOnClickListener(view -> {
                     item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
                 });
                 holder.button.setContentDescription(holder.itemView.getContext().getString(
-                        org.chromium.chrome.R.string.accessibility_tabstrip_tab, title));
+                        R.string.accessibility_tabstrip_tab, title));
             }
         } else if (TabProperties.FAVICON == propertyKey) {
             Drawable faviconDrawable = item.get(TabProperties.FAVICON);

@@ -39,7 +39,7 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
 
   v8::Local<v8::Primitive> credentials_mode_value =
       host_defined_options->Get(isolate, kCredentialsMode);
-  auto credentials_mode = static_cast<network::mojom::FetchCredentialsMode>(
+  auto credentials_mode = static_cast<network::mojom::CredentialsMode>(
       credentials_mode_value->IntegerValue(context).ToChecked());
 
   v8::Local<v8::Primitive> nonce_value =

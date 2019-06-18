@@ -300,31 +300,28 @@ void WebURLRequest::SetShouldResetAppCache(bool set_should_reset_app_cache) {
   resource_request_->SetShouldResetAppCache(set_should_reset_app_cache);
 }
 
-network::mojom::FetchRequestMode WebURLRequest::GetFetchRequestMode() const {
-  return resource_request_->GetFetchRequestMode();
+network::mojom::RequestMode WebURLRequest::GetMode() const {
+  return resource_request_->GetMode();
 }
 
-void WebURLRequest::SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
-  return resource_request_->SetFetchRequestMode(mode);
+void WebURLRequest::SetMode(network::mojom::RequestMode mode) {
+  return resource_request_->SetMode(mode);
 }
 
-network::mojom::FetchCredentialsMode WebURLRequest::GetFetchCredentialsMode()
-    const {
-  return resource_request_->GetFetchCredentialsMode();
+network::mojom::CredentialsMode WebURLRequest::GetCredentialsMode() const {
+  return resource_request_->GetCredentialsMode();
 }
 
-void WebURLRequest::SetFetchCredentialsMode(
-    network::mojom::FetchCredentialsMode mode) {
-  return resource_request_->SetFetchCredentialsMode(mode);
+void WebURLRequest::SetCredentialsMode(network::mojom::CredentialsMode mode) {
+  return resource_request_->SetCredentialsMode(mode);
 }
 
-network::mojom::FetchRedirectMode WebURLRequest::GetFetchRedirectMode() const {
-  return resource_request_->GetFetchRedirectMode();
+network::mojom::RedirectMode WebURLRequest::GetRedirectMode() const {
+  return resource_request_->GetRedirectMode();
 }
 
-void WebURLRequest::SetFetchRedirectMode(
-    network::mojom::FetchRedirectMode redirect) {
-  return resource_request_->SetFetchRedirectMode(redirect);
+void WebURLRequest::SetRedirectMode(network::mojom::RedirectMode redirect) {
+  return resource_request_->SetRedirectMode(redirect);
 }
 
 WebString WebURLRequest::GetFetchIntegrity() const {

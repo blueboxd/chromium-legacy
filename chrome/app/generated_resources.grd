@@ -3360,11 +3360,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME" desc="The name of the utility process which does nothing, used for experimentation.">
         No-op Service
       </message>
-      <if expr="chromeos">
-        <message name="IDS_UTILITY_PROCESS_BLE_SCAN_PARSER_NAME" desc="The name of the utility process used for parsing BLE scans.">
-          BLE Scan Parser Service
-        </message>
-      </if>
       <!-- Theme preview infobar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
         Installed theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>"
@@ -7811,6 +7806,22 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_EDIT_CHECK_GRAMMAR_MAC" desc="The Mac menu item for check grammar with spelling in the edit menu.">
           Check Grammar With Spelling
+        </message>
+        <!-- Edit::Substitutions submenu -->
+        <message name="IDS_EDIT_SUBSTITUTIONS_MAC" desc="The Mac menu item for the substitutions submenu in the edit menu.">
+          Substitutions
+        </message>
+        <message name="IDS_EDIT_SHOW_SUBSTITUTIONS_MAC" desc="The Mac menu item for showing the substitutions panel in the edit menu.">
+          Show Substitutions
+        </message>
+        <message name="IDS_EDIT_SMART_QUOTES_MAC" desc="The Mac menu item for toggling smart quotes in the edit menu.">
+          Smart Quotes
+        </message>
+        <message name="IDS_EDIT_SMART_DASHES_MAC" desc="The Mac menu item for toggling smart dashes in the edit menu.">
+          Smart Dashes
+        </message>
+        <message name="IDS_EDIT_TEXT_REPLACEMENT_MAC" desc="The Mac menu item for toggling text replacement in the edit menu.">
+          Text Replacement
         </message>
         <!-- View menu -->
         <message name="IDS_BOOKMARK_BAR_ALWAYS_SHOW_MAC" desc="The Mac menu item for having bookmark bar always visible in the view menu.">

@@ -113,6 +113,10 @@ UserContext::AuthFlow UserContext::GetAuthFlow() const {
   return auth_flow_;
 }
 
+bool UserContext::IsUsingSamlPrincipalsApi() const {
+  return is_using_saml_principals_api_;
+}
+
 user_manager::UserType UserContext::GetUserType() const {
   return user_type_;
 }
@@ -194,6 +198,11 @@ void UserContext::SetIsForcingDircrypto(bool is_forcing_dircrypto) {
 
 void UserContext::SetAuthFlow(AuthFlow auth_flow) {
   auth_flow_ = auth_flow;
+}
+
+void UserContext::SetIsUsingSamlPrincipalsApi(
+    bool is_using_saml_principals_api) {
+  is_using_saml_principals_api_ = is_using_saml_principals_api;
 }
 
 void UserContext::SetPublicSessionLocale(const std::string& locale) {

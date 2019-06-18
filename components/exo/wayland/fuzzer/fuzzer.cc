@@ -18,7 +18,7 @@ class FuzzerEnvironment {
   exo::wayland_fuzzer::ServerEnvironment server_environment_;
 };
 
-DEFINE_TEXT_PROTO_FUZZER(const exo::wayland_fuzzer::actions& acts) {
+DEFINE_TEXT_PROTO_FUZZER(const exo::wayland_fuzzer::actions::actions& acts) {
   static base::AtExitManager exit_manager;
   static FuzzerEnvironment environment;
 

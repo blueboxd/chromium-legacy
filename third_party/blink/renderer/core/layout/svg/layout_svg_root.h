@@ -38,7 +38,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool IsEmbeddedThroughSVGImage() const;
   bool IsEmbeddedThroughFrameContainingSVGDocument() const;
 
-  void IntrinsicSizingInfoChanged() const;
+  void IntrinsicSizingInfoChanged();
   void UnscaledIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
   // If you have a LayoutSVGRoot, use firstChild or lastChild instead.

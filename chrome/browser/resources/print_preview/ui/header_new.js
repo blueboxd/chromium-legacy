@@ -36,12 +36,6 @@ Polymer({
       type: String,
       value: null,
     },
-
-    /** @private {?string} */
-    summaryLabel_: {
-      type: String,
-      value: null,
-    },
   },
 
   observers: [
@@ -102,20 +96,16 @@ Polymer({
       case (print_preview.State.PRINTING):
         this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
-        this.summaryLabel_ = this.summary_;
         break;
       case (print_preview.State.READY):
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
-        this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
         break;
       case (print_preview.State.FATAL_ERROR):
         this.summary_ = this.getErrorMessage_();
-        this.summaryLabel_ = this.getErrorMessage_();
         break;
       default:
         this.summary_ = null;
-        this.summaryLabel_ = null;
         break;
     }
   },
@@ -141,19 +131,10 @@ Polymer({
    * @private
    */
   getSummary_: function(labelInfo) {
-    return loadTimeData.getStringF(
-        'printPreviewNewSummaryFormatShort',
-        labelInfo.numSheets.toLocaleString(), labelInfo.summaryLabel);
-  },
-
-  /**
-   * @param {!print_preview.HeaderNew.LabelInfo} labelInfo
-   * @return {string}
-   * @private
-   */
-  getSummaryLabel_: function(labelInfo) {
-    return loadTimeData.getStringF(
-        'printPreviewNewSummaryFormatShort',
-        labelInfo.numSheets.toLocaleString(), labelInfo.summaryLabel);
+    return labelInfo.numSheets === 0 ?
+        '' :
+        loadTimeData.getStringF(
+            'printPreviewNewSummaryFormatShort',
+            labelInfo.numSheets.toLocaleString(), labelInfo.summaryLabel);
   },
 });

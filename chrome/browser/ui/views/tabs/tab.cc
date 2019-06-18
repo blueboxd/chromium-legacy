@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -112,6 +113,42 @@ int Center(int size, int item_size) {
 
 }  // namespace
 
+// Helper class that observes the tab's close button.
+class Tab::TabCloseButtonObserver : public views::ViewObserver {
+ public:
+  explicit TabCloseButtonObserver(Tab* tab,
+                                  views::View* close_button,
+                                  TabController* controller)
+      : tab_(tab), close_button_(close_button), controller_(controller) {
+    DCHECK(close_button_);
+    tab_close_button_observer_.Add(close_button_);
+  }
+
+  ~TabCloseButtonObserver() override {
+    tab_close_button_observer_.Remove(close_button_);
+  }
+
+ private:
+  void OnViewFocused(views::View* observed_view) override {
+    controller_->UpdateHoverCard(tab_, /* should_show */ true);
+  }
+
+  void OnViewBlurred(views::View* observed_view) override {
+    // Only hide hover card if not keyboard navigating.
+    if (!controller_->IsFocusInTabs())
+      controller_->UpdateHoverCard(nullptr, /* should_show */ false);
+  }
+
+  ScopedObserver<views::View, views::ViewObserver> tab_close_button_observer_{
+      this};
+
+  Tab* tab_;
+  views::View* close_button_;
+  TabController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabCloseButtonObserver);
+};
+
 // Tab -------------------------------------------------------------------------
 
 // static
@@ -156,7 +193,9 @@ Tab::Tab(TabController* controller)
       this, base::BindRepeating(&TabController::OnMouseEventInTab,
                                 base::Unretained(controller_)));
   AddChildView(close_button_);
-  close_button_->AddObserver(this);
+
+  tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
+      this, close_button_, controller_);
 
   set_context_menu_controller(this);
 
@@ -168,7 +207,8 @@ Tab::Tab(TabController* controller)
 }
 
 Tab::~Tab() {
-  close_button_->RemoveObserver(this);
+  // Observer must be unregistered before child views are destroyed.
+  tab_close_button_observer_.reset();
   controller_->UpdateHoverCard(this, /* should_show */ false);
 }
 
@@ -597,16 +637,17 @@ void Tab::AddedToWidget() {
 }
 
 void Tab::OnFocus() {
-  controller_->UpdateHoverCard(this, /* should_show */ true);
   View::OnFocus();
+  controller_->UpdateHoverCard(this, /* should_show */ true);
+}
+
+void Tab::OnBlur() {
+  View::OnBlur();
+  controller_->UpdateHoverCard(nullptr, /* should_show */ false);
 }
 
 void Tab::OnThemeChanged() {
   UpdateForegroundColors();
-}
-
-void Tab::OnViewFocused(views::View* observed_view) {
-  controller_->UpdateHoverCard(this, /* should_show */ true);
 }
 
 void Tab::SetClosing(bool closing) {

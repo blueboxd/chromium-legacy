@@ -11,7 +11,7 @@
 namespace chromeos {
 namespace ime {
 
-class DownloaderImpl : public Downloader {
+class DownloaderImpl : public ImeCrosDownloader {
  public:
   explicit DownloaderImpl();
   ~DownloaderImpl() override;
@@ -19,7 +19,7 @@ class DownloaderImpl : public Downloader {
   int DownloadToFile(const char* url,
                      const DownloadOptions& options,
                      const char* file_path,
-                     DownloadCallback callback) override;
+                     ImeCrosDownloadCallback callback) override;
 
   void Cancel(int request_id) override;
 

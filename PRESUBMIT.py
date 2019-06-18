@@ -716,21 +716,107 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      r'/\bstd::stoi\b',
+      (
+        'std::stoi uses exceptions to communicate results. ',
+        'Use base::StringToInt() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stol\b',
+      (
+        'std::stol uses exceptions to communicate results. ',
+        'Use base::StringToInt() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stoul\b',
+      (
+        'std::stoul uses exceptions to communicate results. ',
+        'Use base::StringToUint() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stoll\b',
+      (
+        'std::stoll uses exceptions to communicate results. ',
+        'Use base::StringToInt64() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stoull\b',
+      (
+        'std::stoull uses exceptions to communicate results. ',
+        'Use base::StringToUint64() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stof\b',
+      (
+        'std::stof uses exceptions to communicate results. ',
+        'For locale-independent values, e.g. reading numbers from disk',
+        'profiles, use base::StringToDouble().',
+        'For user-visible values, parse using ICU.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stod\b',
+      (
+        'std::stod uses exceptions to communicate results. ',
+        'For locale-independent values, e.g. reading numbers from disk',
+        'profiles, use base::StringToDouble().',
+        'For user-visible values, parse using ICU.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::stold\b',
+      (
+        'std::stold uses exceptions to communicate results. ',
+        'For locale-independent values, e.g. reading numbers from disk',
+        'profiles, use base::StringToDouble().',
+        'For user-visible values, parse using ICU.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
       r'/\bstd::to_string\b',
       (
         'std::to_string is locale dependent and slower than alternatives.',
-        'For locale-independent strings, e.g. writing numbers to and from',
-        'disk profiles, use base::NumberToString().',
+        'For locale-independent strings, e.g. writing numbers to disk',
+        'profiles, use base::NumberToString().',
         'For user-visible strings, use base::FormatNumber() and',
         'the related functions in base/i18n/number_formatting.h.',
       ),
-      False,  # Only a warning for now since it is already used,
+      False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     (
       r'/\bstd::shared_ptr\b',
       (
         'std::shared_ptr should not be used. Use scoped_refptr instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\bstd::weak_ptr\b',
+      (
+        'std::weak_ptr should not be used. Use base::WeakPtr instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -775,7 +861,7 @@ _BANNED_CPP_FUNCTIONS = (
         'std::function is banned. Instead use base::Callback which directly',
         'supports Chromium\'s weak pointers, ref counting and more.',
       ),
-      False,  # Only a warning since there are dozens of uses already.
+      False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Do not warn in third_party folders.
     ),
     (

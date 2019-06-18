@@ -24,11 +24,9 @@ const char kBatteryServiceUUIDString[] = "0000180f-0000-1000-8000-00805f9b34fb";
 
 class FakeBluetoothScanningPrompt : public BluetoothScanningPrompt {
  public:
-  FakeBluetoothScanningPrompt(const EventHandler& event_handler, bool allow) {
-    if (allow)
-      event_handler.Run(content::BluetoothScanningPrompt::Event::kAllow);
-    else
-      event_handler.Run(content::BluetoothScanningPrompt::Event::kBlock);
+  FakeBluetoothScanningPrompt(const EventHandler& event_handler,
+                              content::BluetoothScanningPrompt::Event event) {
+    event_handler.Run(event);
   }
 
   ~FakeBluetoothScanningPrompt() override = default;
@@ -65,13 +63,16 @@ class FakeWebContentsDelegate : public content::WebContentsDelegate {
   std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
       RenderFrameHost* frame,
       const BluetoothScanningPrompt::EventHandler& event_handler) override {
-    return std::make_unique<FakeBluetoothScanningPrompt>(event_handler, allow_);
+    return std::make_unique<FakeBluetoothScanningPrompt>(event_handler, event_);
   }
 
-  void set_allow(bool allow) { allow_ = allow; }
+  void set_event(content::BluetoothScanningPrompt::Event event) {
+    event_ = event;
+  }
 
  private:
-  bool allow_ = true;
+  content::BluetoothScanningPrompt::Event event_ =
+      content::BluetoothScanningPrompt::Event::kAllow;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebContentsDelegate);
 };
@@ -169,6 +170,37 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothServiceImplTest);
 };
 
+TEST_F(WebBluetoothServiceImplTest, PermissionAllowed) {
+  blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
+  base::Optional<WebBluetoothServiceImpl::ScanFilters> filters;
+  filters.emplace();
+  filters->push_back(filter.Clone());
+  EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
+
+  FakeWebBluetoothScanClientImpl client_impl;
+  RequestScanningStart(*filter, &client_impl);
+  // |filters| should be allowed.
+  EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
+}
+
+TEST_F(WebBluetoothServiceImplTest, PermissionPromptCanceled) {
+  blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
+  base::Optional<WebBluetoothServiceImpl::ScanFilters> filters;
+  filters.emplace();
+  filters->push_back(filter.Clone());
+  EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
+
+  // Set |event_| to kCanceled in the FakeWebContentsDelegate so that the call
+  // to WebBluetoothServiceImpl::RequestScanningStart() will not grant the
+  // permission.
+  delegate_.set_event(content::BluetoothScanningPrompt::Event::kCanceled);
+
+  FakeWebBluetoothScanClientImpl client_impl;
+  RequestScanningStart(*filter, &client_impl);
+  // |filters| should still not be allowed.
+  EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
+}
+
 TEST_F(WebBluetoothServiceImplTest,
        BluetoothScanningPermissionRevokedWhenTabHidden) {
   blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
@@ -223,10 +255,10 @@ TEST_F(WebBluetoothServiceImplTest,
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters_2));
   EXPECT_FALSE(client_impl_2.on_connection_error_called());
 
-  // Set |allow_| to false in the FakeWebContentsDelegate so that the next call
+  // Set |event_| to kBlock in the FakeWebContentsDelegate so that the next call
   // to WebBluetoothServiceImpl::RequestScanningStart() will block the
   // permission.
-  delegate_.set_allow(false);
+  delegate_.set_event(content::BluetoothScanningPrompt::Event::kBlock);
 
   blink::mojom::WebBluetoothLeScanFilterPtr filter_3 =
       CreateScanFilter("e", "f");

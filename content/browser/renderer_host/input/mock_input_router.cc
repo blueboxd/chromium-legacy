@@ -45,10 +45,6 @@ base::Optional<cc::TouchAction> MockInputRouter::ActiveTouchAction() {
   return cc::kTouchActionAuto;
 }
 
-bool MockInputRouter::FlingCancellationIsDeferred() {
-  return false;
-}
-
 void MockInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
   has_handlers_ = has_handlers;
 }

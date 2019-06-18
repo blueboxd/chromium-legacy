@@ -49,7 +49,10 @@ source_set("web_applications") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos/constants" ]
+    deps += [
+      "//ash/public/cpp:cpp",
+      "//chromeos/constants",
+    ]
   }
 
   public_deps = [

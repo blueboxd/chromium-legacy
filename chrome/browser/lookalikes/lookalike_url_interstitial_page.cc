@@ -71,7 +71,7 @@ void LookalikeUrlInterstitialPage::RecordUkmEvent(
 }
 
 content::InterstitialPageDelegate::TypeID
-LookalikeUrlInterstitialPage::GetTypeForTesting() const {
+LookalikeUrlInterstitialPage::GetTypeForTesting() {
   return LookalikeUrlInterstitialPage::kTypeForTesting;
 }
 

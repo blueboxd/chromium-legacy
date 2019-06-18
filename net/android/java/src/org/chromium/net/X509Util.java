@@ -18,7 +18,6 @@ import android.util.Pair;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -244,13 +243,6 @@ public class X509Util {
             } catch (KeyStoreException e) {
                 // Could not load AndroidCAStore. Continue anyway; isKnownRoot will always
                 // return false.
-            }
-            if (!sDisableNativeCodeForTest
-                    && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                // Only record the histogram for 4.2 and up. Before 4.2, the platform doesn't
-                // return the certificate chain anyway.
-                RecordHistogram.recordBooleanHistogram(
-                        "Net.FoundSystemTrustRootsAndroid", sSystemKeyStore != null);
             }
             sLoadedSystemKeyStore = true;
         }

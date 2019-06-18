@@ -22,7 +22,8 @@ namespace {
 
 base::LazySequencedTaskRunner g_collect_stats_consent_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 

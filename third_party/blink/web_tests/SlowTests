@@ -331,7 +331,6 @@ crbug.com/869662 [ Mac10.13 ] virtual/threaded/fast/scrolling/overflow-scrollabi
 # Tests with slowest_run >= 10s on flakiness dashboard for site_per_process_webkit_layout_tests
 crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sources/sourcemap-hot-reload.js [ Slow ]
-crbug.com/874695 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Slow ]
 
 # Tests where |3s <= slowest_run < 10s| on flakiness dashboard for site_per_process_webkit_layout_tests
 crbug.com/874695 accessibility/is-ignored-change-sends-notification.html [ Slow ]

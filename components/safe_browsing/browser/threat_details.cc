@@ -488,6 +488,7 @@ void ThreatDetails::AddDomElement(
     const std::string& tagname,
     const int parent_element_node_id,
     const std::vector<mojom::AttributeNameValuePtr> attributes,
+    const std::string& inner_html,
     const ClientSafeBrowsingReportRequest::Resource* resource) {
   // Create the element. It should not exist already since this function should
   // only be called once for each element.
@@ -510,6 +511,10 @@ void ThreatDetails::AddDomElement(
     if (trim_to_ad_tags_ && attribute_pb->name() == "data-google-query-id") {
       trimmed_dom_element_ids_.insert(cur_element->id());
     }
+  }
+
+  if (!inner_html.empty()) {
+    cur_element->set_inner_html(inner_html);
   }
 
   if (resource) {
@@ -718,7 +723,8 @@ void ThreatDetails::AddDOMDetails(
     // Check for a tag_name to avoid adding the summary node to the DOM.
     if (!node.tag_name.empty()) {
       AddDomElement(frame_tree_node_id, node.node_id, node.tag_name,
-                    node.parent_node_id, std::move(node.attributes), resource);
+                    node.parent_node_id, std::move(node.attributes),
+                    node.inner_html, resource);
     }
   }
 }

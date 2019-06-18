@@ -10,8 +10,9 @@ option optimize_for = LITE_RUNTIME; // TODO(crbug/800281): Remove this after pro
 option java_package = "org.chromium.android_webview.proto";
 
 // WebView uses AwVariationsSeed to serialize a downloaded seed, along with the
-// required HTTP header metadata, to a file. WebView must save seeds this way
-// because it doesn't persist preferences.
+// required HTTP header metadata, to a file. While Chrome stores the seed in
+// prefs, WebView stores it in a separate file so the WebView service can write
+// new seeds directly to each app's seed file.
 //
 // Next tag: 6
 message AwVariationsSeed {

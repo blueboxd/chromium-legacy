@@ -21,7 +21,11 @@ WebComponent::WebComponent(
         controller_request)
     : runner_(runner),
       startup_context_(std::move(context)),
-      controller_binding_(this) {
+      controller_binding_(this),
+      module_context_(
+          startup_context()
+              ->incoming_services()
+              ->ConnectToService<fuchsia::modular::ModuleContext>()) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it
@@ -61,6 +65,10 @@ WebComponent::WebComponent(
 }
 
 WebComponent::~WebComponent() {
+  // If Modular is available, request to be removed from the Story.
+  if (module_context_)
+    module_context_->RemoveSelfFromStory();
+
   // Send process termination details to the client.
   controller_binding_.events().OnTerminated(termination_exit_code_,
                                             termination_reason_);

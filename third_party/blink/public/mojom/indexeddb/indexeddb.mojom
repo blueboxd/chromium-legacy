@@ -146,6 +146,7 @@ struct IDBDatabaseMetadata {
   int64 version;
   int64 max_object_store_id;
   map<int64, IDBObjectStoreMetadata> object_stores;
+  bool was_cold_open;
 };
 
 struct IDBNameAndVersion {

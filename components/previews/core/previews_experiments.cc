@@ -115,6 +115,15 @@ size_t MaxInMemoryHostsInBlackList() {
                               "max_hosts_in_blacklist", 100);
 }
 
+size_t MaxHintsFetcherTopHostBlacklistSize() {
+  // The blacklist will be limited to the most engaged hosts and will hold twice
+  // (2*N) as many hosts that the HintsFetcher request hints for. The extra N
+  // hosts on the blacklist are meant to cover the case that the engagement
+  // scores on some of the top N host engagement scores decay and they fall out
+  // of the top N.
+  return 2 * MaxHostsForOptimizationGuideServiceHintsFetch();
+}
+
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
       features::kOptimizationHintsFetching,
@@ -266,6 +275,17 @@ GURL GetOptimizationGuideServiceURL() {
 bool IsInLitePageRedirectControl() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "control_group", false);
+}
+
+bool LitePageRedirectPreviewShouldPresolve() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "preresolve_on_slow_connections",
+      true);
+}
+
+base::TimeDelta LitePageRedirectPreviewPresolveInterval() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "preresolve_interval_in_seconds", 60));
 }
 
 net::EffectiveConnectionType GetECTThresholdForPreview(

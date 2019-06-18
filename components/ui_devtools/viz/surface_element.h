@@ -31,7 +31,7 @@ class SurfaceElement : public VizElement {
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
-  std::unique_ptr<protocol::Array<std::string>> GetAttributes() const override;
+  std::vector<std::string> GetAttributes() const override;
   std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const override;
 

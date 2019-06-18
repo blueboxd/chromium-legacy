@@ -141,16 +141,18 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     const NGPhysicalContainerFragment& fragment = result->PhysicalFragment();
     AddChildFragment(*it, fragment);
 
-    const ComputedStyle& child_style = child.Style();
-
-    // Calculate the static block-offset for any OOF-positioned children.
-    NGMarginStrut margin_strut = result->EndMarginStrut();
-    NGBoxStrut child_margins = ComputeMarginsFor(
-        child_style, child_available_inline_size_, writing_mode_, direction_);
-    margin_strut.Append(child_margins.block_end,
-                        child_style.HasMarginBeforeQuirk());
-
-    static_block_offset_ += margin_strut.Sum();
+    // Update the static block-offset for any OOF-positioned children.
+    // Only consider inflow children (floats don't contribute to the intrinsic
+    // block-size).
+    if (!child.IsFloating()) {
+      const ComputedStyle& child_style = child.Style();
+      NGMarginStrut margin_strut = result->EndMarginStrut();
+      NGBoxStrut child_margins = ComputeMarginsFor(
+          child_style, child_available_inline_size_, writing_mode_, direction_);
+      margin_strut.Append(child_margins.block_end,
+                          child_style.HasMarginBeforeQuirk());
+      static_block_offset_ += margin_strut.Sum();
+    }
 
     // Only take exclusion spaces from children which don't establish their own
     // formatting context.
@@ -207,7 +209,10 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
   container_builder_.AddChild(new_fragment, child_offset);
 
   // Update the static block-offset for any OOF-positioned children.
-  static_block_offset_ = child_offset.block_offset + child_size.block_size;
+  // Only consider inflow children (floats don't contribute to the intrinsic
+  // block-size).
+  if (!new_fragment.IsFloating())
+    static_block_offset_ = child_offset.block_offset + child_size.block_size;
 }
 
 }  // namespace blink

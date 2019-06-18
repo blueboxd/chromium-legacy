@@ -228,6 +228,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kStringNormalize:
       blink_feature = WebFeature::kV8StringNormalize;
       break;
+    case v8::Isolate::kCallSiteAPIGetFunctionSloppyCall:
+      blink_feature = WebFeature::kV8CallSiteAPIGetFunctionSloppyCall;
+      break;
+    case v8::Isolate::kCallSiteAPIGetThisSloppyCall:
+      blink_feature = WebFeature::kV8CallSiteAPIGetThisSloppyCall;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

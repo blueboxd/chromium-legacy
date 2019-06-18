@@ -939,10 +939,8 @@ void TracingHandler::OnBufferUsage(float percent_full,
 void TracingHandler::OnCategoriesReceived(
     std::unique_ptr<GetCategoriesCallback> callback,
     const std::set<std::string>& category_set) {
-  std::unique_ptr<protocol::Array<std::string>> categories =
-      protocol::Array<std::string>::create();
-  for (const std::string& category : category_set)
-    categories->addItem(category);
+  auto categories = std::make_unique<protocol::Array<std::string>>(
+      category_set.begin(), category_set.end());
   callback->sendSuccess(std::move(categories));
 }
 

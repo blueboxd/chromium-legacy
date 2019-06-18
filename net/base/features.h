@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "net/base/net_export.h"
+#include "net/net_buildflags.h"
 
 namespace net {
 namespace features {
@@ -67,6 +68,11 @@ NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
 // as secure if set from a secure context. This ONLY has an effect if
 // SameSiteByDefaultCookies is also enabled.
 NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+// When enabled, use the builtin cert verifier instead of the platform verifier.
+NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
+#endif
 
 }  // namespace features
 }  // namespace net

@@ -376,8 +376,7 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
   // Since the page is trying to fetch cross-origin resources (which would
   // be protected by CORB in no-cors mode), we need to ask for CORS.  See also
   // https://crbug.com/932542.
-  resource_request->fetch_request_mode =
-      network::mojom::FetchRequestMode::kCors;
+  resource_request->mode = network::mojom::RequestMode::kCors;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kOrigin,
                                       origin.ToString().Ascii());
   return resource_request;

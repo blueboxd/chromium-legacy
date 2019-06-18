@@ -140,8 +140,8 @@ static void FillSliceParameters(
 // whether a given parsed JPEG result is supported or not.
 static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
   // Make sure the JPEG's chroma subsampling format is supported.
-  if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
-          VaSurfaceFormatForJpeg(jpeg.frame_header))) {
+  if (!VaapiWrapper::IsDecodingSupportedForInternalFormat(
+          VAProfileJPEGBaseline, VaSurfaceFormatForJpeg(jpeg.frame_header))) {
     DLOG(ERROR) << "The JPEG's subsampling format is unsupported";
     return false;
   }
@@ -158,12 +158,14 @@ static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
 
   // Validate the coded size.
   gfx::Size min_jpeg_resolution;
-  if (!VaapiWrapper::GetJpegDecodeMinResolution(&min_jpeg_resolution)) {
+  if (!VaapiWrapper::GetDecodeMinResolution(VAProfileJPEGBaseline,
+                                            &min_jpeg_resolution)) {
     DLOG(ERROR) << "Could not get the minimum resolution";
     return false;
   }
   gfx::Size max_jpeg_resolution;
-  if (!VaapiWrapper::GetJpegDecodeMaxResolution(&max_jpeg_resolution)) {
+  if (!VaapiWrapper::GetDecodeMaxResolution(VAProfileJPEGBaseline,
+                                            &max_jpeg_resolution)) {
     DLOG(ERROR) << "Could not get the maximum resolution";
     return false;
   }
@@ -209,6 +211,9 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
     return VA_RT_FORMAT_YUV444;
   return kInvalidVaRtFormat;
 }
+
+VaapiJpegDecoder::VaapiJpegDecoder()
+    : VaapiImageDecoder(VAProfileJPEGBaseline) {}
 
 VaapiJpegDecoder::~VaapiJpegDecoder() {
   if (vaapi_wrapper_) {
@@ -330,10 +335,6 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   return base::MakeRefCounted<VASurface>(va_surface_id_, coded_size_,
                                          va_rt_format_,
                                          base::DoNothing() /* release_cb */);
-}
-
-VaapiImageDecoder::Type VaapiJpegDecoder::GetType() const {
-  return VaapiImageDecoder::Type::kJpeg;
 }
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(

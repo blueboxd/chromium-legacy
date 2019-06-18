@@ -7,9 +7,9 @@
 #include "build/build_config.h"
 #include "media/gpu/buildflags.h"
 
-#if defined(OS_LINUX)
-#include "media/gpu/linux/generic_dmabuf_video_frame_mapper.h"
-#endif  // defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/generic_dmabuf_video_frame_mapper.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
 #include "media/gpu/vaapi/vaapi_dmabuf_video_frame_mapper.h"
@@ -31,7 +31,7 @@ std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
 std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
     VideoPixelFormat format,
     bool linear_buffer_mapper) {
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   if (linear_buffer_mapper)
     return GenericDmaBufVideoFrameMapper::Create(format);
 #endif  // defined(OS_LINUX)

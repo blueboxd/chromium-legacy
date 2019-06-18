@@ -276,9 +276,7 @@ SplitViewController::SplitViewController() {
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   if (IsClamshellSplitViewModeEnabled()) {
-    split_view_type_ = Shell::Get()
-                               ->tablet_mode_controller()
-                               ->IsTabletModeWindowManagerEnabled()
+    split_view_type_ = Shell::Get()->tablet_mode_controller()->InTabletMode()
                            ? SplitViewType::kTabletType
                            : SplitViewType::kClamshellType;
   }

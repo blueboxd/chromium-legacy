@@ -11866,6 +11866,69 @@ should be able to be added at any place in this file.
   <description>User pressed 'Voice Search' in the app menu.</description>
 </action>
 
+<action name="MobileMessagesBadgeAcceptedTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User tapped on an accepted Infobar Message badge which displayed the Modal.
+  </description>
+</action>
+
+<action name="MobileMessagesBadgeNonAcceptedTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User tapped on a non-accepted Infobar Message badge which displayed the
+    Modal.
+  </description>
+</action>
+
+<action name="MobileMessagesBannerDraggedDown">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User dragged down the Infobar Message Banner which expanded it into a Modal.
+  </description>
+</action>
+
+<action name="MobileMessagesBannerTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User tapped the Infobar Message Banner which expanded it into a Modal.
+  </description>
+</action>
+
+<action name="MobileMessagesModalAcceptedTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>User accepted the Infobar Modal main action.</description>
+</action>
+
+<action name="MobileMessagesModalCancelledTapped">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User dismissed the Infobar Modal without any action.
+  </description>
+</action>
+
+<action name="MobileMessagesModalNever">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User dismissed both the Infobar Modal and the InfobarBadge.
+  </description>
+</action>
+
+<action name="MobileMessagesModalSettings">
+  <owner>sczs@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <description>
+    User dismissed the Infobar Modal by opening the Infobar Settings.
+  </description>
+</action>
+
 <action name="MobileMWSession">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

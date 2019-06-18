@@ -132,14 +132,6 @@ class CORE_EXPORT NGLayoutInputNode {
            (box_->IsBody() || box_->IsTableCell());
   }
 
-  // In quirks mode, in-flow positioned BODY and root elements must completely
-  // fill the viewport. Return true if this is such a node.
-  bool IsQuirkyAndFillsViewport() const {
-    if (!GetDocument().InQuirksMode())
-      return false;
-    return (IsDocumentElement() || IsBody()) && !Style().HasOutOfFlowPosition();
-  }
-
   bool CreatesNewFormattingContext() const {
     return IsBlock() && box_->CreatesNewFormattingContext();
   }

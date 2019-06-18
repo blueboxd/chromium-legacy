@@ -39,6 +39,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 
 namespace viz {
 
@@ -599,7 +600,7 @@ bool Display::DrawAndSwap() {
   return true;
 }
 
-void Display::DidReceiveSwapBuffersAck() {
+void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
     if (no_pending_swaps_callback_ && scheduler_->pending_swaps() == 0)
@@ -608,6 +609,19 @@ void Display::DidReceiveSwapBuffersAck() {
 
   if (renderer_)
     renderer_->SwapBuffersComplete();
+
+  // Adding to pending_presented_callbacks_ must have been done in DrawAndSwap,
+  // and should not be popped until DidReceivePresentationFeedback. Therefore
+  // we must not have an empty list when getting the SwapBuffers ACK (this is
+  // required to happen between those two events).
+  DCHECK(!pending_presented_callbacks_.empty());
+
+  // Check that the swap timings correspond with the timestamp from when
+  // the swap was triggered. Note that not all output surfaces provide timing
+  // information, hence the check for a valid swap_start.
+  const auto swap_time = pending_presented_callbacks_.front().first;
+  if (!timings.swap_start.is_null())
+    DCHECK_LE(swap_time, timings.swap_start);
 }
 
 void Display::DidReceiveTextureInUseResponses(

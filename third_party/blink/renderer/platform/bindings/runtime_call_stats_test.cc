@@ -24,8 +24,9 @@ class RuntimeCallStatsTest : public testing::Test {
  public:
   void SetUp() override {
     // Add one millisecond because RuntimeCallTimer uses |start_ticks_| =
-    // TimeTicks() to represent that the timer is not running.
-    clock_.SetNowTicks(base::TimeTicks() + TimeDelta::FromMilliseconds(1));
+    // base::TimeTicks() to represent that the timer is not running.
+    clock_.SetNowTicks(base::TimeTicks() +
+                       base::TimeDelta::FromMilliseconds(1));
   }
 
   void TearDown() override {
@@ -33,7 +34,7 @@ class RuntimeCallStatsTest : public testing::Test {
   }
 
   void AdvanceClock(int milliseconds) {
-    clock_.Advance(TimeDelta::FromMilliseconds(milliseconds));
+    clock_.Advance(base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
   const base::TickClock* clock() { return &clock_; }

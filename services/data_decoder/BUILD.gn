@@ -18,6 +18,13 @@ source_set("lib") {
     "xml_parser.h",
   ]
 
+  if (is_chromeos) {
+    sources += [
+      "ble_scan_parser_impl.cc",
+      "ble_scan_parser_impl.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
@@ -46,6 +53,10 @@ source_set("tests") {
     "public/cpp/testing_json_parser_unittest.cc",
     "xml_parser_unittest.cc",
   ]
+
+  if (is_chromeos) {
+    sources += [ "ble_scan_parser_impl_unittest.cc" ]
+  }
 
   deps = [
     ":lib",
@@ -82,4 +93,15 @@ fuzzer_test("xml_parser_fuzzer") {
   ]
   dict = "//third_party/libxml/fuzz/xml.dict"
   seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
+}
+
+if (is_chromeos) {
+  fuzzer_test("ble_scan_parser_fuzzer") {
+    sources = [
+      "ble_scan_parser_impl_fuzzer.cc",
+    ]
+    deps = [
+      ":lib",
+    ]
+  }
 }

@@ -271,7 +271,6 @@ void ReadableStreamDefaultController::Trace(Visitor* visitor) {
   visitor->Trace(pull_algorithm_);
   visitor->Trace(queue_);
   visitor->Trace(strategy_size_algorithm_);
-  visitor->Trace(lock_notify_target_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -494,7 +493,6 @@ void ReadableStreamDefaultController::SetUp(
     StreamAlgorithm* cancel_algorithm,
     double high_water_mark,
     StrategySizeAlgorithm* size_algorithm,
-    bool enable_blink_lock_notifications,
     ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#set-up-readable-stream-default-controller
   // 1. Assert: stream.[[readableStreamController]] is undefined.
@@ -509,10 +507,6 @@ void ReadableStreamDefaultController::SetUp(
   // interfered.
   DCHECK(controller->queue_->IsEmpty());
   DCHECK_EQ(controller->queue_->TotalSize(), 0);
-
-  // Not part of the standard.
-  controller->enable_blink_lock_notifications_ =
-      enable_blink_lock_notifications;
 
   // 5. Set controller.[[strategySizeAlgorithm]] to sizeAlgorithm and
   //    controller.[[strategyHWM]] to highWaterMark.
@@ -610,7 +604,6 @@ void ReadableStreamDefaultController::SetUpFromUnderlyingSource(
     v8::Local<v8::Object> underlying_source,
     double high_water_mark,
     StrategySizeAlgorithm* size_algorithm,
-    bool enable_blink_lock_notifications,
     ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#set-up-readable-stream-default-controller-from-underlying-source
   // 2. Let controller be ObjectCreate(the original value of
@@ -646,18 +639,11 @@ void ReadableStreamDefaultController::SetUpFromUnderlyingSource(
     return;
   }
 
-  // TODO(ricea): Remove this once C++ API has been updated.
-  if (enable_blink_lock_notifications) {
-    controller->lock_notify_target_.Set(script_state->GetIsolate(),
-                                        underlying_source);
-  }
-
   // 6. Perform ? SetUpReadableStreamDefaultController(stream, controller,
   //    startAlgorithm, pullAlgorithm, cancelAlgorithm, highWaterMark,
   //    sizeAlgorithm).
   SetUp(script_state, stream, controller, start_algorithm, pull_algorithm,
-        cancel_algorithm, high_water_mark, size_algorithm,
-        enable_blink_lock_notifications, exception_state);
+        cancel_algorithm, high_water_mark, size_algorithm, exception_state);
 }
 
 }  // namespace blink

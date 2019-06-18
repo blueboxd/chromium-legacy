@@ -392,9 +392,7 @@ void OverviewGrid::Shutdown() {
   }
   bool single_animation_in_clamshell =
       (animate_count == 1 && !has_non_cover_animating) &&
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled();
+      !Shell::Get()->tablet_mode_controller()->InTabletMode();
 
   // OverviewGrid in splitscreen does not include the window to be activated.
   if (!window_list_.empty() ||
@@ -417,9 +415,7 @@ void OverviewGrid::PrepareForOverview() {
   for (const auto& window : window_list_)
     window->PrepareForOverview();
   prepared_for_overview_ = true;
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
   }
 }
@@ -484,9 +480,7 @@ void OverviewGrid::PositionWindows(
       !window_list_.empty()) {
     bool single_animation_in_clamshell =
         animate_count == 1 && !has_non_cover_animating &&
-        !Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled();
+        !Shell::Get()->tablet_mode_controller()->InTabletMode();
     fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         single_animation_in_clamshell);
@@ -520,6 +514,10 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
     SelectedWindow()->set_selected(false);
   }
 
+  // TODO(dantonvu|sammiequon): Refactor this so OverviewSession controls and
+  // owns |selection_widget_|. Also rename selection related names to
+  // highlighted as selection can also mean something else in overview.
+
   // [up] key is equivalent to [left] key and [down] key is equivalent to
   // [right] key.
   if (!selection_widget_) {
@@ -535,19 +533,30 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
     }
     changed_selection_index = true;
   }
+
+  // Checks number of windows present during a session. If there's only one
+  // window being used across all displays, allow the user to highlight the
+  // window but unable to move it.
+  // TODO(sammiequon): Investigate if we can remove this call.
+  if (overview_session()->NumWindowsTotal() == 1u) {
+    MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
+                        animate);
+    return true;
+  }
+
   while (!changed_selection_index) {
     switch (direction) {
       case OverviewSession::UP:
       case OverviewSession::LEFT:
         if (selected_index_ == 0)
           out_of_bounds = true;
-        selected_index_--;
+        --selected_index_;
         break;
       case OverviewSession::DOWN:
       case OverviewSession::RIGHT:
         if (selected_index_ >= window_list_.size() - 1)
           out_of_bounds = true;
-        selected_index_++;
+        ++selected_index_;
         break;
     }
     if (!out_of_bounds && SelectedWindow()) {
@@ -1079,9 +1088,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
                   : items[i]->GetWindow()->GetBoundsInRootWindow();
     if (!src_bounds_temp.IsEmpty()) {
       if (transition == OverviewTransition::kEnter &&
-          Shell::Get()
-              ->tablet_mode_controller()
-              ->IsTabletModeWindowManagerEnabled()) {
+          Shell::Get()->tablet_mode_controller()->InTabletMode()) {
         BackdropController* backdrop_controller =
             GetActiveWorkspaceController(root_window_)
                 ->layout_manager()

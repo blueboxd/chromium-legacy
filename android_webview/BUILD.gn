@@ -950,6 +950,7 @@ android_library("android_webview_java") {
   ]
 
   android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
 }
 
 android_library("android_webview_variations_utils_java") {
@@ -1088,6 +1089,7 @@ android_library("android_webview_services_java") {
     ":aw_variations_seed_server_aidl",
   ]
   android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
 }
 
 android_aidl("crash_receiver_aidl") {
@@ -1110,6 +1112,8 @@ if (public_android_sdk) {
     android_manifest_dep = ":system_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
+    min_sdk_version = 21
+    target_sdk_version = 28
   }
 
   android_resource_sizes_test("resource_sizes_system_webview_apk") {

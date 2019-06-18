@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/webui/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
+#include "chrome/browser/ui/webui/notifications_internals/notifications_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
@@ -393,6 +394,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NetExportUI>;
   if (url.host_piece() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUINotificationsInternalsHost)
+    return &NewWebUI<NotificationsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINTPTilesInternalsHost)
     return &NewWebUI<NTPTilesInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIOmniboxHost)

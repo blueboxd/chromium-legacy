@@ -15,6 +15,7 @@ import shutil
 import sys
 
 from util import build_utils
+from util import manifest_utils
 from util import resource_utils
 
 _AAPT_IGNORE_PATTERN = ':'.join([
@@ -131,14 +132,16 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
   """
   # NOTE: This uses aapt rather than aapt2 because 'aapt2 compile' does not
   # support the --output-text-symbols option yet (https://crbug.com/820460).
-  package_command = [options.aapt_path,
-                     'package',
-                     '-m',
-                     '-M', resource_utils.EMPTY_ANDROID_MANIFEST_PATH,
-                     '--no-crunch',
-                     '--auto-add-overlay',
-                     '--no-version-vectors',
-                    ]
+  package_command = [
+      options.aapt_path,
+      'package',
+      '-m',
+      '-M',
+      manifest_utils.EMPTY_ANDROID_MANIFEST_PATH,
+      '--no-crunch',
+      '--auto-add-overlay',
+      '--no-version-vectors',
+  ]
   for j in options.include_resources:
     package_command += ['-I', j]
 
@@ -209,8 +212,9 @@ def _OnStaleMd5(options):
     if options.srcjar_out:
       package = options.custom_package
       if not package and options.android_manifest:
-        package = resource_utils.ExtractPackageFromManifest(
+        _, manifest_node, _ = manifest_utils.ParseManifest(
             options.android_manifest)
+        package = manifest_utils.GetPackage(manifest_node)
 
       # Don't create a .java file for the current resource target when no
       # package name was provided (either by manifest or build rules).

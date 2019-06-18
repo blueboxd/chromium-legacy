@@ -139,7 +139,7 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
   gfx::ExtensionSet extensions;
   for (uint32_t i = 0; i < params->enabled_device_extension_names_length; ++i)
     extensions.insert(params->enabled_device_extension_names[i]);
-  device_queue_->InitializeForWevbView(
+  device_queue_->InitializeForWebView(
       params->physical_device, params->device, params->queue,
       params->graphics_queue_index, std::move(extensions));
 

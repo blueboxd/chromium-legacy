@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_CHANGE_NOTIFIER_FACTORY_H_
 
+#include <memory>
+
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/network_change_notifier_factory.h"
 
@@ -27,7 +29,7 @@ class AwNetworkChangeNotifierFactory :
   ~AwNetworkChangeNotifierFactory() override;
 
   // NetworkChangeNotifierFactory:
-  net::NetworkChangeNotifier* CreateInstance() override;
+  std::unique_ptr<net::NetworkChangeNotifier> CreateInstance() override;
 
  private:
   // Delegate passed to the instances created by this class.

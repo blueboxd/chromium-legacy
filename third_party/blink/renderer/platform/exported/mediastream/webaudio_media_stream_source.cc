@@ -86,8 +86,8 @@ void WebAudioMediaStreamSource::ConsumeAudio(
     const WebVector<const float*>& audio_data,
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
-  // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  https://crbug.com/335335
+  // of the audio, instead of just snapshotting base::TimeTicks::Now(), for
+  // proper audio/video sync.  https://crbug.com/335335
   current_reference_time_ = base::TimeTicks::Now();
 
   wrapper_bus_->set_frames(number_of_frames);

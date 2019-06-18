@@ -255,6 +255,35 @@ class HeapCompact::MovableObjectFixups final {
   }
 #endif
 
+  void VerifySlots() {
+    // TODO(918064): Remove this after investigation.
+    constexpr size_t kMaxNameLen = 256;
+    char slot_container_name[kMaxNameLen];
+    base::debug::Alias(slot_container_name);
+
+    for (auto it : fixups_) {
+      MovableReference object = it.first;
+      MovableReference* slot = it.second;
+      // Record name on stack.
+      const char* name = fixup_names_.find(slot)->second;
+      size_t len = strlen(name);
+      if (len > kMaxNameLen)
+        len = kMaxNameLen;
+      strncpy(slot_container_name, name, len);
+      slot_container_name[len - 1] = 0;
+      // Verify that slot either
+      // - points to the original object
+      // - points to null
+      // - points to a cleared hashtable entry
+      // - or points to a newly allocated object that will not be compacted.
+      MovableReference object_in_slot = *slot;
+      CHECK(object_in_slot == object || !object_in_slot ||
+            object_in_slot == reinterpret_cast<MovableReference>(-1) ||
+            !relocatable_pages_.Contains(heap_->LookupPageForAddress(
+                reinterpret_cast<Address>(object_in_slot))));
+    }
+  }
+
  private:
   void VerifyUpdatedSlot(MovableReference* slot);
 
@@ -447,6 +476,13 @@ void HeapCompact::FinishedArenaCompaction(NormalPageArena* arena,
 
 void HeapCompact::Relocate(Address from, Address to) {
   Fixups().Relocate(from, to);
+}
+
+void HeapCompact::VerifySlots() {
+  if (!do_compact_)
+    return;
+
+  Fixups().VerifySlots();
 }
 
 void HeapCompact::FilterNonLiveSlots() {

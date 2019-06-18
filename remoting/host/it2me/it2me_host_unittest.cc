@@ -215,7 +215,7 @@ void It2MeHostTest::SetUp() {
 #endif
   run_loop_.reset(new base::RunLoop());
 
-  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  network_change_notifier_ = net::NetworkChangeNotifier::Create();
 
   host_context_ = ChromotingHostContext::Create(new AutoThreadTaskRunner(
       base::ThreadTaskRunnerHandle::Get(), run_loop_->QuitClosure()));

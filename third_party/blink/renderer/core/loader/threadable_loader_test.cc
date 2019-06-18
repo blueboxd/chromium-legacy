@@ -210,13 +210,12 @@ class ThreadableLoaderTest : public testing::Test {
       : helper_(std::make_unique<ThreadableLoaderTestHelper>()) {}
 
   void StartLoader(const KURL& url,
-                   network::mojom::FetchRequestMode fetch_request_mode =
-                       network::mojom::FetchRequestMode::kNoCors) {
+                   network::mojom::RequestMode request_mode =
+                       network::mojom::RequestMode::kNoCors) {
     ResourceRequest request(url);
     request.SetRequestContext(mojom::RequestContextType::OBJECT);
-    request.SetFetchRequestMode(fetch_request_mode);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
+    request.SetMode(request_mode);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
     helper_->StartLoader(request);
   }
 
@@ -466,7 +465,7 @@ TEST_F(ThreadableLoaderTest, DidFailInStart) {
                           network::mojom::CorsError::kDisallowedByMode))));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::RequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -481,7 +480,7 @@ TEST_F(ThreadableLoaderTest, CancelInDidFailInStart) {
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::RequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -496,7 +495,7 @@ TEST_F(ThreadableLoaderTest, ClearInDidFailInStart) {
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
+  StartLoader(ErrorURL(), network::mojom::RequestMode::kSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -514,7 +513,7 @@ TEST_F(ThreadableLoaderTest, DidFailAccessControlCheck) {
                   network::CorsErrorStatus(
                       network::mojom::CorsError::kMissingAllowOriginHeader))));
 
-  StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCors);
+  StartLoader(SuccessURL(), network::mojom::RequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -581,7 +580,7 @@ TEST_F(ThreadableLoaderTest, DidFailRedirectCheck) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck());
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
+  StartLoader(RedirectLoopURL(), network::mojom::RequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -596,7 +595,7 @@ TEST_F(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
+  StartLoader(RedirectLoopURL(), network::mojom::RequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -611,7 +610,7 @@ TEST_F(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
+  StartLoader(RedirectLoopURL(), network::mojom::RequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -631,7 +630,7 @@ TEST_F(ThreadableLoaderTest, GetResponseSynchronously) {
   // test is not saying that didFailAccessControlCheck should be dispatched
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
-  StartLoader(KURL("about:blank"), network::mojom::FetchRequestMode::kCors);
+  StartLoader(KURL("about:blank"), network::mojom::RequestMode::kCors);
   CallCheckpoint(2);
 }
 

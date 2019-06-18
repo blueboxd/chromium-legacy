@@ -180,10 +180,10 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
   return Shell::IsSystemModalWindowOpen();
 }
 
-void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
+void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
   AccelerometerReader::GetInstance()->DisableForTest();
   TabletModeController::SetForceNoScreenshotForTest();
-  shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+  shell_->tablet_mode_controller()->SetEnabledForTest(enable);
 }
 
 void ShellTestApi::EnableVirtualKeyboard() {

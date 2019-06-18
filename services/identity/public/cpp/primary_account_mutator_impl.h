@@ -7,6 +7,8 @@
 
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
+#include <string>
+
 class AccountTrackerService;
 class PrefService;
 class PrimaryAccountManager;
@@ -14,7 +16,7 @@ class PrimaryAccountManager;
 namespace identity {
 
 // Concrete implementation of PrimaryAccountMutator that is based on the
-// PrimaryAccountManager API. It is supported on all platform except Chrome OS.
+// PrimaryAccountManager API.
 class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
  public:
   PrimaryAccountMutatorImpl(AccountTrackerService* account_tracker,
@@ -23,11 +25,16 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   ~PrimaryAccountMutatorImpl() override;
 
   // PrimaryAccountMutator implementation.
+#if !defined(OS_CHROMEOS)
   bool SetPrimaryAccount(const std::string& account_id) override;
   bool ClearPrimaryAccount(
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) override;
+#else
+  bool SetPrimaryAccountAndUpdateAccountInfo(const std::string& gaia_id,
+                                             const std::string& email) override;
+#endif
 
  private:
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They

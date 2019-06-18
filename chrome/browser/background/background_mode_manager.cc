@@ -617,11 +617,6 @@ void BackgroundModeManager::StartBackgroundMode() {
   in_background_mode_ = true;
 
   UpdateKeepAliveAndTrayIcon();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
-      content::Source<BackgroundModeManager>(this),
-      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::EndBackgroundMode() {
@@ -630,11 +625,6 @@ void BackgroundModeManager::EndBackgroundMode() {
   in_background_mode_ = false;
 
   UpdateKeepAliveAndTrayIcon();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
-      content::Source<BackgroundModeManager>(this),
-      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::EnableBackgroundMode() {

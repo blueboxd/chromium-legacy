@@ -105,7 +105,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
-void AccessibilityFocusRingLayer::SetAppearance(mojom::FocusRingType type,
+void AccessibilityFocusRingLayer::SetAppearance(FocusRingType type,
                                                 SkColor color,
                                                 SkColor secondary_color) {
   SetColor(color);
@@ -122,13 +122,13 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   flags.setStyle(cc::PaintFlags::kStroke_Style);
 
   switch (type_) {
-    case mojom::FocusRingType::GLOW:
+    case FocusRingType::GLOW:
       DrawGlowFocusRing(recorder, flags);
       break;
-    case mojom::FocusRingType::SOLID:
+    case FocusRingType::SOLID:
       DrawSolidFocusRing(recorder, flags);
       break;
-    case mojom::FocusRingType::DASHED:
+    case FocusRingType::DASHED:
       DrawDashedFocusRing(recorder, flags);
       break;
   }

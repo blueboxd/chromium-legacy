@@ -99,7 +99,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateGraphicsLayerGeometry(
       const PaintLayer* compositing_container,
       const PaintLayer* compositing_stacking_context,
-      Vector<PaintLayer*>& layers_needing_paint_invalidation);
+      Vector<PaintLayer*>& layers_needing_paint_invalidation,
+      GraphicsLayerUpdater::UpdateContext& update_context);
 
   // Update whether background paints onto scrolling contents layer.
   // Returns (through the reference params) what invalidations are needed.
@@ -359,7 +360,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateMainGraphicsLayerGeometry(
       const IntRect& relative_compositing_bounds,
       const IntRect& local_compositing_bounds,
-      const IntPoint& graphics_layer_parent_location);
+      const IntPoint& graphics_layer_parent_location,
+      GraphicsLayerUpdater::UpdateContext& update_context);
   void UpdateAncestorClippingLayerGeometry(
       const PaintLayer* compositing_container,
       const IntPoint& snapped_offset_from_composited_ancestor,

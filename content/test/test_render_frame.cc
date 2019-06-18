@@ -89,6 +89,11 @@ class MockFrameHost : public mojom::FrameHost {
 
   void TransferUserActivationFrom(int32_t source_routing_id) override {}
 
+  void ShowCreatedWindow(int32_t pending_widget_routing_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override {}
+
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,

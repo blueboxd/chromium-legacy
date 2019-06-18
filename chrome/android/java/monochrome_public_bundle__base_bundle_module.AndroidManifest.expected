@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <manifest
     package="org.chromium.chrome"
+    platformBuildVersionCode="28"
+    platformBuildVersionName="9"
     tools:ignore="MissingVersion"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">

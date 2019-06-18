@@ -15,7 +15,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/base/scopedfd_helper.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
 #endif

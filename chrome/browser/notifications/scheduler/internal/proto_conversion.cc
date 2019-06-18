@@ -49,6 +49,8 @@ proto::SchedulerClientType ToSchedulerClientType(SchedulerClientType type) {
       return proto::SchedulerClientType::TEST_3;
     case SchedulerClientType::kUnknown:
       return proto::SchedulerClientType::UNKNOWN;
+    case SchedulerClientType::kWebUI:
+      return proto::SchedulerClientType::WEBUI;
   }
   NOTREACHED();
 }
@@ -65,6 +67,8 @@ SchedulerClientType FromSchedulerClientType(
       return SchedulerClientType::kTest3;
     case proto::SchedulerClientType::UNKNOWN:
       return SchedulerClientType::kUnknown;
+    case proto::SchedulerClientType::WEBUI:
+      return SchedulerClientType::kWebUI;
   }
   NOTREACHED();
 }

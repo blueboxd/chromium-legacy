@@ -69,10 +69,20 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   // Stores the scores produced by |results_list_group_ranker_|.
   base::flat_map<std::string, float> group_ranks_;
 
+  // Stores the scores produced by |query_based_mixed_types_ranker|.
+  base::flat_map<std::string, float> query_mixed_ranks_;
+
+  // The |results_list_group_ranker_| and |query_based_mixed_types_ranker_| are
+  // models for two different experiments. Only one will be constructed.
+
   // A model that ranks groups (eg. 'file' and 'omnibox'), which is used to
   // tweak the results shown in the search results list only. This does not
   // affect apps.
   std::unique_ptr<RecurrenceRanker> results_list_group_ranker_;
+
+  // Ranks items shown in the results list after a search query. Currently
+  // these are local files and omnibox results.
+  std::unique_ptr<RecurrenceRanker> query_based_mixed_types_ranker_;
 
   // Ranks files and previous queries for launcher zero-state.
   std::unique_ptr<RecurrenceRanker> zero_state_mixed_types_ranker_;

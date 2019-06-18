@@ -4,8 +4,9 @@
 
 mojom = "//ui/base/mojo/cursor.mojom"
 public_headers = [
-  "//ui/base/cursor/cursor_type.h",
+  "//ui/base/cursor/cursor_size.h",
   "//ui/base/cursor/cursor.h",
+  "//ui/base/cursor/types/cursor_types.h",
 ]
 traits_headers = [ "//ui/base/mojo/cursor_struct_traits.h" ]
 sources = [

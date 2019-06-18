@@ -909,8 +909,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   cached_is_descendant_of_disabled_node_ = !!DisabledAncestor();
   cached_has_inherited_presentational_role_ =
       !!InheritsPresentationalRoleFrom();
-  IgnoredReasons ignored_reasons;
-  cached_is_ignored_ = ComputeAccessibilityIsIgnored(&ignored_reasons);
+  cached_is_ignored_ = ComputeAccessibilityIsIgnored();
   cached_is_editable_root_ = ComputeIsEditableRoot();
   // Compute live region root, which can be from any ARIA live value, including
   // "off", or from an automatic ARIA live value, e.g. from role="status".

@@ -46,6 +46,7 @@ namespace gfx {
 class Rect;
 }
 
+class BackgroundContentsServiceObserver;
 struct BackgroundContentsOpenedDetails;
 
 // BackgroundContentsService is owned by the profile, and is responsible for
@@ -83,6 +84,9 @@ class BackgroundContentsService : private content::NotificationObserver,
   static void DisableCloseBalloonForTesting(
       bool disable_close_balloon_for_testing);
 
+  void AddObserver(BackgroundContentsServiceObserver* observer);
+  void RemoveObserver(BackgroundContentsServiceObserver* observer);
+
   // Returns the BackgroundContents associated with the passed application id,
   // or NULL if none.
   BackgroundContents* GetAppBackgroundContents(const std::string& appid);
@@ -101,6 +105,10 @@ class BackgroundContentsService : private content::NotificationObserver,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool* was_blocked) override;
+  void OnBackgroundContentsNavigated(BackgroundContents* contents) override;
+  void OnBackgroundContentsTerminated(BackgroundContents* contents) override;
+  void OnBackgroundContentsClosed(BackgroundContents* contents) override;
+  void OnBackgroundContentsDeleted(BackgroundContents* contents) override;
 
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed
@@ -142,7 +150,7 @@ class BackgroundContentsService : private content::NotificationObserver,
                            TestApplicationIDLinkage);
 
   // Registers for various notifications.
-  void StartObserving(Profile* profile);
+  void StartObserving();
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -150,7 +158,7 @@ class BackgroundContentsService : private content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // Called when ExtensionSystem is ready.
-  void OnExtensionSystemReady(Profile* profile);
+  void OnExtensionSystemReady();
 
   // extensions::ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -193,9 +201,6 @@ class BackgroundContentsService : private content::NotificationObserver,
   void BackgroundContentsOpened(BackgroundContentsOpenedDetails* details,
                                 Profile* profile);
 
-  // Invoked when a BackgroundContents object is destroyed.
-  void BackgroundContentsShutdown(BackgroundContents* contents);
-
   // Registers the |contents->GetURL()| to be run at startup. Only happens for
   // the first navigation after window.open() (future calls to
   // RegisterBackgroundContents() for the same BackgroundContents will do
@@ -215,19 +220,25 @@ class BackgroundContentsService : private content::NotificationObserver,
   // Sends out a notification when our association of background contents with
   // apps may have changed (used by BackgroundApplicationListModel to update the
   // set of background apps as new background contents are opened/closed).
-  void SendChangeNotification(Profile* profile);
+  void SendChangeNotification();
 
   // Checks whether there has been additional |extension_id| failures. If not,
   // delete the BackoffEntry corresponding to |extension_id|, if exists.
   void MaybeClearBackoffEntry(const std::string extension_id,
                               int expected_failure_count);
 
+  void HandleExtensionCrashed(const extensions::Extension* extension);
+
   // Delay (in ms) before restarting a force-installed extension that crashed.
   static int restart_delay_in_ms_;
 
+  Profile* profile_;
+
+  base::ObserverList<BackgroundContentsServiceObserver> observers_;
+
   // PrefService used to store list of background pages (or NULL if this is
   // running under an incognito profile).
-  PrefService* prefs_;
+  PrefService* prefs_ = nullptr;
   content::NotificationRegistrar registrar_;
 
   // Information we track about each BackgroundContents.
@@ -253,9 +264,9 @@ class BackgroundContentsService : private content::NotificationObserver,
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
-  base::WeakPtrFactory<BackgroundContentsService> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundContentsService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);
 };

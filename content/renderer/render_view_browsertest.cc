@@ -711,10 +711,9 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kInclude);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetCredentialsMode(network::mojom::CredentialsMode::kInclude);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -901,8 +900,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
 
   // Empty url should never fork.
   blink::WebURLRequest request(empty_url);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -925,8 +924,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
 
   // about:blank should never fork.
   blink::WebURLRequest request(blank_url);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();

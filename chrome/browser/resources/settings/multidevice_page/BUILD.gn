@@ -108,6 +108,7 @@ if (is_chromeos) {
     deps = [
       ":multidevice_feature_behavior",
       "..:route",
+      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
       "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     ]
     externs_list = [ "$externs_path/networking_private.js" ]

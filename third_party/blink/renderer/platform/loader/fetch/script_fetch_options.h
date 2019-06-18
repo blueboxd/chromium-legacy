@@ -37,7 +37,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   // https://github.com/whatwg/html/pull/3656.
   ScriptFetchOptions()
       : parser_state_(ParserDisposition::kNotParserInserted),
-        credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
+        credentials_mode_(network::mojom::CredentialsMode::kOmit),
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         importance_(mojom::FetchImportanceMode::kImportanceAuto) {}
 
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
                      const IntegrityMetadataSet& integrity_metadata,
                      const String& integrity_attribute,
                      ParserDisposition parser_state,
-                     network::mojom::FetchCredentialsMode credentials_mode,
+                     network::mojom::CredentialsMode credentials_mode,
                      network::mojom::ReferrerPolicy referrer_policy,
                      mojom::FetchImportanceMode importance)
       : nonce_(nonce),
@@ -65,7 +65,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
     return integrity_attribute_;
   }
   const ParserDisposition& ParserState() const { return parser_state_; }
-  network::mojom::FetchCredentialsMode CredentialsMode() const {
+  network::mojom::CredentialsMode CredentialsMode() const {
     return credentials_mode_;
   }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
@@ -93,7 +93,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   const ParserDisposition parser_state_;
 
   // https://html.spec.whatwg.org/C/#concept-script-fetch-options-credentials
-  const network::mojom::FetchCredentialsMode credentials_mode_;
+  const network::mojom::CredentialsMode credentials_mode_;
 
   // https://html.spec.whatwg.org/C/#concept-script-fetch-options-referrer-policy
   const network::mojom::ReferrerPolicy referrer_policy_;

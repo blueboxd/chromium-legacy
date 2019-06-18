@@ -46,8 +46,8 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);
         // TODO(yuezhanggg): Remove this when the strip is properly tinted. (crbug/939915)
-        title.setTextColor(ContextCompat.getColor(
-                itemView.getContext(), org.chromium.chrome.R.color.default_text_color_dark));
+        title.setTextColor(
+                ContextCompat.getColor(itemView.getContext(), R.color.default_text_color_dark));
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.actionButton = itemView.findViewById(R.id.action_button);
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);

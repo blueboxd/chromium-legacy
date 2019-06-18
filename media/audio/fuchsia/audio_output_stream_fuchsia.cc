@@ -71,7 +71,9 @@ void AudioOutputStreamFuchsia::Start(AudioSourceCallback* callback) {
   DCHECK(!timer_.IsRunning());
   callback_ = callback;
 
-  PumpSamples();
+  // Start playback only after OnMinLeadTimeChanged is received.
+  if (min_lead_time_.has_value())
+    PumpSamples();
 }
 
 void AudioOutputStreamFuchsia::Stop() {
@@ -117,7 +119,7 @@ size_t AudioOutputStreamFuchsia::GetMinBufferSize() {
   // Ensure that |payload_buffer_| fits enough packets to cover min_lead_time_
   // plus one extra packet.
   int min_packets = (AudioTimestampHelper::TimeToFrames(
-                         min_lead_time_, parameters_.sample_rate()) +
+                         min_lead_time_.value(), parameters_.sample_rate()) +
                      parameters_.frames_per_buffer() - 1) /
                         parameters_.frames_per_buffer() +
                     1;
@@ -144,6 +146,8 @@ bool AudioOutputStreamFuchsia::InitializePayloadBuffer() {
 }
 
 void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
+  bool min_lead_time_was_unknown = !min_lead_time_.has_value();
+
   min_lead_time_ = base::TimeDelta::FromNanoseconds(min_lead_time);
 
   // When min_lead_time_ increases we may need to reallocate |payload_buffer_|.
@@ -158,6 +162,13 @@ void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
     // Discard all packets currently in flight. This is required because
     // AddPayloadBuffer() will fail if there are any packets in flight.
     audio_renderer_->DiscardAllPacketsNoReply();
+  }
+
+  // If playback was started but we were waiting for MinLeadTime, then start
+  // pumping samples now.
+  if (callback_ && min_lead_time_was_unknown) {
+    DCHECK(!timer_.IsRunning());
+    PumpSamples();
   }
 }
 
@@ -186,25 +197,19 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   base::TimeDelta delay;
   if (reference_time_.is_null()) {
-    delay = min_lead_time_;
+    delay = min_lead_time_.value() + parameters_.GetBufferDuration() / 2;
+    stream_position_samples_ = 0;
   } else {
     auto stream_time = GetCurrentStreamTime();
 
     // Adjust stream position if we missed timer deadline.
-    if (now + min_lead_time_ > stream_time) {
+    if (now + min_lead_time_.value() > stream_time) {
       stream_position_samples_ += AudioTimestampHelper::TimeToFrames(
-          now + min_lead_time_ - stream_time, parameters_.sample_rate());
+          now + min_lead_time_.value() - stream_time,
+          parameters_.sample_rate());
     }
 
     delay = stream_time - now;
-  }
-
-  // Start playback if the stream was previously stopped.
-  if (reference_time_.is_null()) {
-    stream_position_samples_ = 0;
-    reference_time_ = now + min_lead_time_;
-    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
-                                 stream_position_samples_);
   }
 
   // Request more samples from |callback_|.
@@ -230,6 +235,13 @@ void AudioOutputStreamFuchsia::PumpSamples() {
   packet.flags = 0;
   audio_renderer_->SendPacketNoReply(std::move(packet));
 
+  // Start playback if the stream was previously stopped.
+  if (reference_time_.is_null()) {
+    reference_time_ = now + delay;
+    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
+                                 stream_position_samples_);
+  }
+
   stream_position_samples_ += frames_filled;
   payload_buffer_pos_ =
       (payload_buffer_pos_ + packet_size) % payload_buffer_.size();
@@ -238,7 +250,8 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 }
 
 void AudioOutputStreamFuchsia::SchedulePumpSamples(base::TimeTicks now) {
-  base::TimeTicks next_pump_time = GetCurrentStreamTime() - min_lead_time_ -
+  base::TimeTicks next_pump_time = GetCurrentStreamTime() -
+                                   min_lead_time_.value() -
                                    parameters_.GetBufferDuration() / 2;
   timer_.Start(FROM_HERE, next_pump_time - now,
                base::Bind(&AudioOutputStreamFuchsia::PumpSamples,

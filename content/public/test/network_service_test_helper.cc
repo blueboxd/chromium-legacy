@@ -208,6 +208,15 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run(latest_memory_pressure_level_);
   }
 
+  void GetPeerToPeerConnectionsCountChange(
+      GetPeerToPeerConnectionsCountChangeCallback callback) override {
+    uint32_t count = network::NetworkService::GetNetworkServiceForTesting()
+                         ->network_quality_estimator()
+                         ->GetPeerToPeerConnectionsCountChange();
+
+    std::move(callback).Run(count);
+  }
+
   void GetEnvironmentVariableValue(
       const std::string& name,
       GetEnvironmentVariableValueCallback callback) override {

@@ -120,9 +120,7 @@ constexpr int kDragFastScrollDeltaDips = 6;
 // Helper to check if tablet mode is enabled.
 bool IsTabletModeEnabled() {
   return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled();
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 // A class to temporarily disable a given bounds animator.

@@ -41,7 +41,6 @@ class SessionControllerClientImpl
       public user_manager::UserManager::Observer,
       public session_manager::SessionManagerObserver,
       public SupervisedUserServiceObserver,
-      public chromeos::LoginState::Observer,
       public content::NotificationObserver,
       public policy::off_hours::DeviceOffHoursController::Observer {
  public:
@@ -99,9 +98,6 @@ class SessionControllerClientImpl
 
   // SupervisedUserServiceObserver:
   void OnCustodianInfoChanged() override;
-
-  // chromeos::LoginState::Observer:
-  void LoggedInStateChanged() override;
 
   // content::NotificationObserver:
   void Observe(int type,

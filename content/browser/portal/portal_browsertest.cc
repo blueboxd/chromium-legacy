@@ -184,6 +184,50 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
   Portal* portal_ = nullptr;
 };
 
+// The PortalAdoptionObserver observes calls to AdoptPortal on
+// RenderFrameHostImpl. This observer should be used to wait for a single
+// call to AdoptPortal.
+class PortalAdoptionObserver : public mojom::FrameHostInterceptorForTesting {
+ public:
+  explicit PortalAdoptionObserver(RenderFrameHostImpl* render_frame_host_impl)
+      : render_frame_host_impl_(render_frame_host_impl) {
+    render_frame_host_impl_->frame_host_binding_for_testing()
+        .SwapImplForTesting(this);
+  }
+
+  ~PortalAdoptionObserver() override {}
+
+  FrameHost* GetForwardingInterface() override {
+    return render_frame_host_impl_;
+  }
+
+  void AdoptPortal(const base::UnguessableToken& portal_token,
+                   AdoptPortalCallback callback) override {
+    Portal* portal = Portal::FromToken(portal_token);
+    DCHECK(portal);
+    RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
+    std::move(callback).Run(proxy_host->GetRoutingID(),
+                            portal->GetDevToolsFrameToken());
+    portal_adopted_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void WaitUntilPortalAdopted() {
+    if (portal_adopted_)
+      return;
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    run_loop.Run();
+    run_loop_ = nullptr;
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_impl_;
+  base::RunLoop* run_loop_ = nullptr;
+  bool portal_adopted_ = false;
+};
+
 class PortalBrowserTest : public ContentBrowserTest {
  protected:
   PortalBrowserTest() {}
@@ -283,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigatePortal) {
   }
 }
 
-// Tests that a portal can be activated in content_shell.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortalInShell) {
+// Tests that a portal can be activated.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortal) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
@@ -318,6 +362,63 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortalInShell) {
   // After activation, the shell's WebContents should be the previous portal's
   // WebContents.
   EXPECT_EQ(portal_contents, shell()->web_contents());
+}
+
+// Tests if a portal can be activated and the predecessor can be adopted.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ReactivatePredecessor) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+
+  // Ensure that the portal WebContents exists and is different from the tab's
+  // WebContents.
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  EXPECT_NE(nullptr, portal_contents);
+  EXPECT_NE(portal_contents, shell()->web_contents());
+
+  // The portal should not have navigated yet, so we can observe the Portal's
+  // first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => { "
+                     "  var portal = e.adoptPredecessor(); "
+                     "  document.body.appendChild(portal); "
+                     "});"));
+
+  {
+    PortalAdoptionObserver adoption_observer(portal_frame);
+    EXPECT_TRUE(ExecJs(main_frame,
+                       "portal.activate().then(() => { "
+                       "  document.body.removeChild(portal); "
+                       "});"));
+    portal_interceptor->WaitForActivate();
+    adoption_observer.WaitUntilPortalAdopted();
+  }
+  // After activation, the shell's WebContents should be the previous portal's
+  // WebContents.
+  EXPECT_EQ(portal_contents, shell()->web_contents());
+  // The original predecessor WebContents should be adopted as a portal.
+  EXPECT_TRUE(web_contents_impl->IsPortal());
+  EXPECT_EQ(web_contents_impl->GetOuterWebContents(), portal_contents);
 }
 
 // Tests that the RenderFrameProxyHost is created and initialized when the

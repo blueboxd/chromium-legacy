@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -1355,6 +1356,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
+    {"bluetooth-aggressive-appearance-filter",
+     flag_descriptions::kBluetoothAggressiveAppearanceFilterName,
+     flag_descriptions::kBluetoothAggressiveAppearanceFilterDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kBluetoothAggressiveAppearanceFilter)},
     {"cryptauth-v2-enrollment", flag_descriptions::kCryptAuthV2EnrollmentName,
      flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2Enrollment)},
@@ -1404,9 +1411,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUnfilteredBluetoothDevicesName,
      flag_descriptions::kUnfilteredBluetoothDevicesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(device::kUnfilteredBluetoothDevices)},
+    {"shelf-dense-clamshell", flag_descriptions::kShelfDenseClamshellName,
+     flag_descriptions::kShelfDenseClamshellDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kShelfDenseClamshell)},
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
+    {"shelf-new-ui", flag_descriptions::kShelfNewUiName,
+     flag_descriptions::kShelfNewUiDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kShelfNewUi)},
+    {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
+     flag_descriptions::kShelfScrollableDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
     {"show-bluetooth-device-battery",
      flag_descriptions::kShowBluetoothDeviceBatteryName,
      flag_descriptions::kShowBluetoothDeviceBatteryDescription, kOsCrOS,
@@ -2679,13 +2695,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kReaderModeInCCT)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-    {"pwa-persistent-notification",
-     flag_descriptions::kPwaPersistentNotificationName,
-     flag_descriptions::kPwaPersistentNotificationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
-#endif  // OS_ANDROID
-
     {"click-to-open-pdf", flag_descriptions::kClickToOpenPDFName,
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
@@ -2729,11 +2738,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDcheckIsFatalDescription, kOsWin,
      FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-    {"enable-improved-geolanguage-data",
-     flag_descriptions::kImprovedGeoLanguageDataName,
-     flag_descriptions::kImprovedGeoLanguageDataDescription, kOsAll,
-     FEATURE_VALUE_TYPE(language::kImprovedGeoLanguageData)},
 
     {"enable-pixel-canvas-recording",
      flag_descriptions::kEnablePixelCanvasRecordingName,
@@ -3179,12 +3183,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-    {"enable-drive-fs", flag_descriptions::kEnableDriveFsName,
-     flag_descriptions::kEnableDriveFsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDriveFs)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
     {"enable-myfiles-volume", flag_descriptions::kEnableMyFilesVolumeName,
      flag_descriptions::kEnableMyFilesVolumeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},
@@ -3445,6 +3443,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(data_reduction_proxy::features::
                             kDataReductionProxyEnabledWithNetworkService)},
+
+    {"enable-sharing-device-registration",
+     flag_descriptions::kSharingDeviceRegistrationName,
+     flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
+
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
@@ -3934,6 +3938,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"periodic-background-sync", flag_descriptions::kPeriodicBackgroundSyncName,
      flag_descriptions::kPeriodicBackgroundSyncDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPeriodicBackgroundSync)},
+
+    {"font-src-local-matching", flag_descriptions::kFontSrcLocalMatchingName,
+     flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

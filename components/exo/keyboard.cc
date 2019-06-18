@@ -14,6 +14,7 @@
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/seat.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -235,6 +236,14 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // Ignore synthetic key repeat events.
   if (event->is_repeat())
     return;
+
+  // If the event target is not an exo::Surface, let another handler process the
+  // event. This check may not be necessary once https://crbug.com/624168 is
+  // resolved.
+  if (!GetShellMainSurface(static_cast<aura::Window*>(event->target())) &&
+      !Surface::AsSurface(static_cast<aura::Window*>(event->target()))) {
+    return;
+  }
 
   TRACE_EXO_INPUT_EVENT(event);
 

@@ -58,21 +58,26 @@ def GetDevice():
 def clear_android_dumps(options, device):
   try:
     print '# Deleting stale crash dumps'
-    pending = ANDROID_CRASH_DIR + '/pending/'
+    pending = os.path.join(ANDROID_CRASH_DIR, 'pending')
     files = device.RunShellCommand(['ls', pending], as_root=True)
     for f in files:
       if f.endswith('.dmp'):
-        if options.verbose:
-          print ' deleting %s' % f
-        device.RunShellCommand(['rm', f], check_return=True, as_root=True)
+        dump = os.path.join(pending, f)
+        try:
+          if options.verbose:
+            print ' deleting %s' % dump
+          device.RunShellCommand(['rm', dump], check_return=True, as_root=True)
+        except:
+          print 'Failed to delete %s' % dump
+
   except:
-    print 'Failed to delete android crash dir %s' % ANDROID_CRASH_DIR
+    print 'Failed to list dumps in android crash dir %s' % pending
 
 
 def get_android_dump(crash_dir):
   global failure
 
-  pending = ANDROID_CRASH_DIR + '/pending/'
+  pending = os.path.join(ANDROID_CRASH_DIR, 'pending')
   device = GetDevice()
 
   for attempts in range(5):
@@ -89,9 +94,9 @@ def get_android_dump(crash_dir):
     print dumps
     raise Exception(failure)
 
-  device.PullFile(pending + dumps[0], crash_dir, as_root=True)
-  device.RunShellCommand(['rm', pending + dumps[0]], check_return=True,
-                          as_root=True)
+  device.PullFile(os.path.join(pending, dumps[0]), crash_dir, as_root=True)
+  device.RunShellCommand(['rm', os.path.join(pending, dumps[0])],
+                         check_return=True, as_root=True)
 
   return os.path.join(crash_dir, os.path.basename(dumps[0]))
 

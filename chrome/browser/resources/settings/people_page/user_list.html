@@ -36,6 +36,10 @@
       .user-info {
         padding-inline-start: 20px;
       }
+
+      :host([disabled]) .user-list {
+        opacity: var(--cr-disabled-opacity);
+      }
     </style>
     <div class="user-list" scrollable>
       <template is="dom-repeat" items="[[users_]]">

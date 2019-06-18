@@ -134,7 +134,7 @@ scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
           base::TaskTraits(content::BrowserThread::UI));
   static base::LazySequencedTaskRunner g_distinct_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-          base::TaskTraits(base::TaskPriority::BEST_EFFORT,
+          base::TaskTraits(base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
   return base::FeatureList::IsEnabled(kDistinctModuleDatabaseSequence)

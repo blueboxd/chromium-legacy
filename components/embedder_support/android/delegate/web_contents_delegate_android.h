@@ -109,13 +109,13 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
-  int GetTopControlsHeight() const override;
-  int GetBottomControlsHeight() const override;
+  int GetTopControlsHeight() override;
+  int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* contents) const override;
+      const content::WebContents* contents) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

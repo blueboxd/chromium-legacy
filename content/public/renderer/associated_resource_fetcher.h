@@ -58,12 +58,11 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
   //
   // |fetch_credentials_mode| is the credentials mode to use. See
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
-  virtual void Start(
-      blink::WebLocalFrame* frame,
-      blink::mojom::RequestContextType request_context,
-      network::mojom::FetchRequestMode fetch_request_mode,
-      network::mojom::FetchCredentialsMode fetch_credentials_mode,
-      StartCallback callback) = 0;
+  virtual void Start(blink::WebLocalFrame* frame,
+                     blink::mojom::RequestContextType request_context,
+                     network::mojom::RequestMode request_mode,
+                     network::mojom::CredentialsMode credentials_mode,
+                     StartCallback callback) = 0;
 
   // Manually cancel the request.
   virtual void Cancel() = 0;

@@ -38,11 +38,11 @@ WebEngineContentBrowserClient::GetDevToolsManagerDelegate() {
   return new WebEngineDevToolsManagerDelegate(main_parts_->browser_context());
 }
 
-std::string WebEngineContentBrowserClient::GetProduct() const {
+std::string WebEngineContentBrowserClient::GetProduct() {
   return version_info::GetProductNameAndVersionForUserAgent();
 }
 
-std::string WebEngineContentBrowserClient::GetUserAgent() const {
+std::string WebEngineContentBrowserClient::GetUserAgent() {
   return content::BuildUserAgentFromProduct(
       version_info::GetProductNameAndVersionForUserAgent());
 }

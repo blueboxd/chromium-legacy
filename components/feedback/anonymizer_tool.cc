@@ -57,6 +57,10 @@ constexpr const char* kCustomPatternsWithContext[] = {
 
     // Serial numbers
     "(?i-s)(serial\\s*(?:number)?\\s*[:=]\\s*)([0-9a-zA-Z\\-\"]+)()",
+
+    // GAIA IDs
+    R"xxx((\"?\bgaia_id\"?[=:]['\"])(\d+)(\b['\"]))xxx",
+    R"xxx((\{id: )(\d+)(, email:))xxx",
 };
 
 bool MaybeUnmapAddress(net::IPAddress* addr) {

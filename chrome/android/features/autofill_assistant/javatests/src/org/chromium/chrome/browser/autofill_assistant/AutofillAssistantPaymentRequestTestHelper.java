@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator.DIVIDER_TAG;
+
+import android.view.View;
+import android.view.ViewGroup;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -13,6 +18,8 @@ import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalE
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpanderAccordion;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -28,6 +35,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
         final AssistantVerticalExpander mContactSection;
         final AssistantVerticalExpander mPaymentSection;
         final AssistantVerticalExpander mShippingSection;
+        final List<View> mDividers;
 
         ViewHolder(AssistantPaymentRequestCoordinator coordinator) {
             mAccordion = coordinator.getView().findViewWithTag(
@@ -38,6 +46,21 @@ public class AutofillAssistantPaymentRequestTestHelper {
                     AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG);
             mShippingSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG);
+            mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
+        }
+
+        /** Returns all views with a matching tag. */
+        private List<View> findViewsWithTag(View view, Object tag) {
+            List<View> viewsWithTag = new ArrayList<>();
+            if (view instanceof ViewGroup) {
+                for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                    viewsWithTag.addAll(findViewsWithTag(((ViewGroup) view).getChildAt(i), tag));
+                }
+            }
+            if (view.getTag() != null && view.getTag().equals(tag)) {
+                viewsWithTag.add(view);
+            }
+            return viewsWithTag;
         }
     }
 

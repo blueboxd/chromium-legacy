@@ -171,6 +171,8 @@ String GetStringFromSpecificTrustedType(
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
   switch (specific_trusted_type) {
+    case SpecificTrustedType::kNone:
+      return GetStringFromTrustedTypeWithoutCheck(string_or_trusted_type);
     case SpecificTrustedType::kTrustedHTML: {
       StringOrTrustedHTML string_or_trusted_html =
           string_or_trusted_type.IsTrustedHTML()

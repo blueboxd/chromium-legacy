@@ -30,7 +30,9 @@ enum class SchedulerClientType {
 
   // Default value of client type.
   kUnknown = 0,
-  kMaxValue = kUnknown
+  // Client used in chrome://notifications-internals for debugging.
+  kWebUI = 1,
+  kMaxValue = kWebUI
 };
 
 // The type of user feedback from a displayed notification.

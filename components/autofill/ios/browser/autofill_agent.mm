@@ -400,6 +400,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (suggestion.identifier > 0) {
     pendingAutocompleteField_ = base::SysNSStringToUTF16(fieldIdentifier);
     if (popupDelegate_) {
+      // TODO(966411): Replace 0 with the index of the selected suggestion.
       popupDelegate_->DidAcceptSuggestion(
           base::SysNSStringToUTF16(suggestion.value), suggestion.identifier, 0);
     }

@@ -21,7 +21,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "net/base/network_change_notifier.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -62,14 +61,6 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void SetUp() override {
-    // Avoid the leaky NetworkChangeNotifier created during the initialization
-    // of the global leaky singleton NetworkService which affects subsequent
-    // unit tests.
-    // See https://bugs.chromium.org/p/chromium/issues/detail?id=867414
-    // and
-    // https://groups.google.com/a/chromium.org/forum/#!msg/network-service-dev/IgNFrq1zFHI/FNCAplsCCQAJ
-    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
     profile_manager()->SetLoggedIn(true);
@@ -102,7 +93,6 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorTest);
 };
 

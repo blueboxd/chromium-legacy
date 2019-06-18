@@ -25,7 +25,6 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_client.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -334,7 +333,8 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey waitForWebStateContainingText:"Link"];
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     // Using partial match for Omnibox text because the displayed URL is now
     // "http://origin/#" due to the link click. This is consistent with all
     // other browsers.

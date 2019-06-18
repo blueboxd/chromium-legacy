@@ -33,7 +33,6 @@ class CORE_EXPORT ReadableStreamDefaultControllerInterface
   // (Close/DesiredSize/Enqueue/Error will become no-ops afterward.)
   virtual void NoteHasBeenCanceled() = 0;
 
-  virtual bool IsActive() const = 0;
   virtual void Close() = 0;
   virtual double DesiredSize() const = 0;
   virtual void Enqueue(v8::Local<v8::Value> js_chunk) const = 0;

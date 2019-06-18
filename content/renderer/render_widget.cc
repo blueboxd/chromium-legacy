@@ -1643,7 +1643,12 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
       visual_viewport_size = gfx::ScaleToCeiledSize(
           visual_viewport_size, GetOriginalScreenInfo().device_scale_factor);
     }
-    GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
+    // When this function is invoked for a main frame widget, it is only if
+    // (i) we are initializing the widget, or (ii) the widget supports a local
+    // mainframe. For widgets supporting a remote main frame, the visual
+    // viewport is updated through the RenderView.
+    if (delegate())
+      delegate()->ResizeVisualViewportForWidget(visual_viewport_size);
 
     // NOTE: We may have entered fullscreen mode without changing our size.
     SetIsFullscreen(params.is_fullscreen_granted);
@@ -3698,7 +3703,10 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
     visible_viewport_size =
         gfx::ScaleToCeiledSize(visible_viewport_size, factor);
   }
-  GetWebWidget()->ResizeVisualViewport(visible_viewport_size);
+
+  DCHECK(delegate()) << "Resizing the viewport for a cross-process subframe "
+                        "must be done via the RenderView.";
+  delegate()->ResizeVisualViewportForWidget(visible_viewport_size);
 
   // Make sure the DSF override stays for future VisualProperties updates, and
   // that includes overriding the VisualProperties'

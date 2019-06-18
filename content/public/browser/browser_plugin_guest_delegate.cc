@@ -12,7 +12,7 @@ WebContents* BrowserPluginGuestDelegate::CreateNewGuestWindow(
   return nullptr;
 }
 
-WebContents* BrowserPluginGuestDelegate::GetOwnerWebContents() const {
+WebContents* BrowserPluginGuestDelegate::GetOwnerWebContents() {
   return nullptr;
 }
 
@@ -32,7 +32,7 @@ SiteInstance* BrowserPluginGuestDelegate::GetOwnerSiteInstance() {
   return nullptr;
 }
 
-RenderFrameHost* BrowserPluginGuestDelegate::GetEmbedderFrame() const {
+RenderFrameHost* BrowserPluginGuestDelegate::GetEmbedderFrame() {
   NOTREACHED();
   return nullptr;
 }

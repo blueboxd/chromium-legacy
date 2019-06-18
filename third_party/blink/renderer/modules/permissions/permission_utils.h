@@ -27,6 +27,9 @@ mojom::blink::PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
     mojom::blink::PermissionName,
     bool allow_without_gesture);
 
+mojom::blink::PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
+    mojom::blink::WakeLockType type);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_PERMISSION_UTILS_H_

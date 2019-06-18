@@ -25,8 +25,7 @@ class WebContents;
 
 IntentPickerView::IntentPickerView(Browser* browser,
                                    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {
-}
+    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {}
 
 IntentPickerView::~IntentPickerView() = default;
 

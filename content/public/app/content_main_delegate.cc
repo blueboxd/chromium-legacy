@@ -55,6 +55,10 @@ int ContentMainDelegate::TerminateForFatalInitializationError() {
   return 0;
 }
 
+bool ContentMainDelegate::ShouldLockSchemeRegistry() {
+  return true;
+}
+
 service_manager::ProcessType ContentMainDelegate::OverrideProcessType() {
   return service_manager::ProcessType::kDefault;
 }

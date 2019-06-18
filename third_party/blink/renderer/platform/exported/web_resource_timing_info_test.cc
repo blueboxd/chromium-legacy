@@ -114,7 +114,7 @@ TEST(WebResourceTimingInfoTest, CrossThreadCopy) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  base::TimeTicks pseudo_time = TimeTicks::Now();
+  base::TimeTicks pseudo_time = base::TimeTicks::Now();
   WebResourceTimingInfo info = CreateWebResourceTimingInfo(pseudo_time);
 
   std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(

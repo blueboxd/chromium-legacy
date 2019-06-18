@@ -217,15 +217,16 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
 
 void WebRequestProxyingWebSocket::OnAddChannelResponse(
     const std::string& selected_protocol,
-    const std::string& extensions) {
+    const std::string& extensions,
+    uint64_t receive_quota_threshold) {
   DCHECK(forwarding_handshake_client_);
   DCHECK(!is_done_);
   is_done_ = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
       browser_context_, info_map_, &info_.value(), net::ERR_WS_UPGRADE);
 
-  forwarding_handshake_client_->OnAddChannelResponse(selected_protocol,
-                                                     extensions);
+  forwarding_handshake_client_->OnAddChannelResponse(
+      selected_protocol, extensions, receive_quota_threshold);
 }
 
 void WebRequestProxyingWebSocket::OnAuthRequired(

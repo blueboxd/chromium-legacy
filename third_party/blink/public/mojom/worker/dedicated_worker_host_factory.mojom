@@ -83,7 +83,7 @@ interface DedicatedWorkerHostFactory {
   CreateWorkerHostAndStartScriptLoad(
       url.mojom.Url script_url,
       url.mojom.Origin origin,
-      network.mojom.FetchCredentialsMode credentials_mode,
+      network.mojom.CredentialsMode credentials_mode,
       blink.mojom.BlobURLToken? blob_url_token,
       DedicatedWorkerHostFactoryClient client);
 };

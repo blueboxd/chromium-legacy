@@ -54,7 +54,7 @@ class StarView;
 namespace autofill {
 class LocalCardMigrationIconView;
 class SaveCardIconView;
-}
+}  // namespace autofill
 
 namespace send_tab_to_self {
 class SendTabToSelfIconView;
@@ -63,7 +63,7 @@ class SendTabToSelfIconView;
 namespace views {
 class ImageButton;
 class Label;
-}
+}  // namespace views
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,7 +96,7 @@ class LocationBarView : public LocationBar,
 
     // Returns ContentSettingBubbleModelDelegate.
     virtual ContentSettingBubbleModelDelegate*
-        GetContentSettingBubbleModelDelegate() = 0;
+    GetContentSettingBubbleModelDelegate() = 0;
 
    protected:
     virtual ~Delegate() {}

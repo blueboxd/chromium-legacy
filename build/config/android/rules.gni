@@ -1352,6 +1352,8 @@ if (enable_java_templates) {
         android_manifest = "//build/android/AndroidManifest.xml"
       }
       arsc_output = _resource_arsc_output
+      min_sdk_version = 19
+      target_sdk_version = 23
     }
 
     _jni_srcjar_target = "${target_name}__final_jni"
@@ -1830,6 +1832,9 @@ if (enable_java_templates) {
 
       supports_android = true
       requires_android = true
+      if (!defined(invoker.min_sdk_version)) {
+        min_sdk_version = 19
+      }
 
       if (!defined(jar_excluded_patterns)) {
         jar_excluded_patterns = []
@@ -1948,7 +1953,9 @@ if (enable_java_templates) {
   # Android APK or an Android app bundle module.
   #
   # Supports all variables of android_library(), plus:
-  #   android_manifest: Path to AndroidManifest.xml.
+  #   android_manifest: Path to AndroidManifest.xml. NOTE: This manifest must
+  #     not contain a <uses-sdk> element. Use [min|target|max]_sdk_version
+  #     instead.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   png_to_webp: If true, pngs (with the exception of 9-patch) are
   #     converted to webp during resource packaging.
@@ -2030,6 +2037,12 @@ if (enable_java_templates) {
   #     use as a static library APK. When proguard is enabled, the
   #     static_library_provider target will provide the dex file(s) for this
   #     target.
+  #   min_sdk_version: The minimum Android SDK version this target supports.
+  #     Optional, default 19.
+  #   target_sdk_version: The target Android SDK version for this target.
+  #     Optional, default 23.
+  #   max_sdk_version: The maximum Android SDK version this target supports.
+  #     Optional, default not set.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
@@ -2039,8 +2052,14 @@ if (enable_java_templates) {
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "$target_name$build_config_target_suffix"
 
-    # Mark as used
-    assert(!defined(invoker.min_sdk_version) || invoker.min_sdk_version != 0)
+    _min_sdk_version = 19
+    _target_sdk_version = 23
+    if (defined(invoker.min_sdk_version)) {
+      _min_sdk_version = invoker.min_sdk_version
+    }
+    if (defined(invoker.target_sdk_version)) {
+      _target_sdk_version = invoker.target_sdk_version
+    }
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
@@ -2294,15 +2313,12 @@ if (enable_java_templates) {
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
     _merge_manifest_target = "${_template_name}__merge_manifests"
     merge_manifests(_merge_manifest_target) {
+      forward_variables_from(invoker, [ "chromium_code" ])
       input_manifest = _android_root_manifest
       output_manifest = _android_manifest
       build_config = _build_config
-      if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
-          !is_java_debug) {
-        _target_src_dir = get_label_info(":$target_name", "dir")
-        expected_manifest =
-            "$_target_src_dir/java/$_template_name.AndroidManifest.expected"
-      }
+      min_sdk_version = _min_sdk_version
+      target_sdk_version = _target_sdk_version
       deps = _android_root_manifest_deps + [ ":$_build_config_target" ]
     }
 
@@ -2356,6 +2372,7 @@ if (enable_java_templates) {
                              [
                                "aapt_locale_whitelist",
                                "app_as_shared_lib",
+                               "max_sdk_version",
                                "no_xml_namespaces",
                                "package_name",
                                "package_name_to_id_mapping",
@@ -2364,14 +2381,22 @@ if (enable_java_templates) {
                                "resource_blacklist_regex",
                                "resources_config_path",
                                "shared_resources",
+                               "shared_resources_whitelist_locales",
                                "short_resource_paths",
                                "strip_resource_names",
-                               "shared_resources_whitelist_locales",
                                "support_zh_hk",
                              ])
       android_manifest = _android_manifest
       version_code = _version_code
       version_name = _version_name
+      min_sdk_version = _min_sdk_version
+      target_sdk_version = _target_sdk_version
+      if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
+          !is_java_debug) {
+        _target_src_dir = get_label_info(":$target_name", "dir")
+        expected_manifest =
+            "$_target_src_dir/java/$_template_name.AndroidManifest.expected"
+      }
 
       if (defined(_resource_ids_provider_dep)) {
         resource_ids_provider_dep = _resource_ids_provider_dep
@@ -2688,6 +2713,7 @@ if (enable_java_templates) {
       main_target_name = _template_name
       supports_android = true
       requires_android = true
+      min_sdk_version = _min_sdk_version
       deps = _deps
 
       srcjar_deps = _srcjar_deps
@@ -3253,13 +3279,13 @@ if (enable_java_templates) {
                                "dexlayout_profile",
                                "dist_ijar_path",
                                "dont_load_shared_libraries",
-                               "jacoco_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
                                "final_apk_path",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
+                               "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
                                "jni_registration_header",
@@ -3269,6 +3295,7 @@ if (enable_java_templates) {
                                "keystore_path",
                                "load_library_from_apk",
                                "loadable_modules",
+                               "max_sdk_version",
                                "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",
@@ -3277,15 +3304,14 @@ if (enable_java_templates) {
                                "never_incremental",
                                "no_build_hooks",
                                "no_xml_namespaces",
-                               "strip_resource_names",
                                "png_to_webp",
                                "post_process_package_resources_script",
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
-                               "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resource_blacklist_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_loadable_modules",
@@ -3299,10 +3325,12 @@ if (enable_java_templates) {
                                "srcjar_deps",
                                "static_library_dependent_targets",
                                "static_library_provider",
+                               "strip_resource_names",
                                "support_zh_hk",
+                               "target_sdk_version",
                                "testonly",
-                               "uncompress_shared_libraries",
                                "uncompress_dex",
+                               "uncompress_shared_libraries",
                                "use_chromium_linker",
                                "version_code",
                                "version_name",
@@ -3372,19 +3400,20 @@ if (enable_java_templates) {
                                "data",
                                "data_deps",
                                "deps",
-                               "jacoco_never_instrument",
                                "enable_chromium_linker_tests",
+                               "enable_class_deps_output",
                                "enable_multidex",
                                "generate_buildconfig_java",
                                "generate_final_jni",
-                               "enable_class_deps_output",
                                "input_jars_paths",
                                "is_base_module",
+                               "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
                                "jni_registration_header",
                                "jni_sources_blacklist",
                                "load_library_from_apk",
+                               "max_sdk_version",
                                "min_sdk_version",
                                "native_lib_version_arg",
                                "native_lib_version_rule",
@@ -3406,11 +3435,12 @@ if (enable_java_templates) {
                                "shared_resources",
                                "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
-                               "strip_resource_names",
                                "short_resource_paths",
                                "srcjar_deps",
                                "static_library_provider",
+                               "strip_resource_names",
                                "support_zh_hk",
+                               "target_sdk_version",
                                "testonly",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",

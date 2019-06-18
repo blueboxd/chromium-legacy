@@ -53,8 +53,7 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
         // add this space above and below each chip, and remove the vertical inset added to all
         // ButtonView's.
         mView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                context.getResources().getDimensionPixelSize(
-                        org.chromium.chrome.R.dimen.min_touch_target_size)
+                context.getResources().getDimensionPixelSize(R.dimen.min_touch_target_size)
                         + 2
                                 * context.getResources().getDimensionPixelSize(
                                         R.dimen.autofill_assistant_bottombar_vertical_spacing)

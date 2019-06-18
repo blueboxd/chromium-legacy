@@ -89,7 +89,7 @@ void ServiceWorkerThread::RunInstalledClassicScript(
 void ServiceWorkerThread::RunInstalledModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBindOnce(
@@ -110,7 +110,7 @@ void ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread(
     const KURL& module_url_record,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsCurrentThread());
   To<ServiceWorkerGlobalScope>(GlobalScope())
       ->RunInstalledModuleScript(

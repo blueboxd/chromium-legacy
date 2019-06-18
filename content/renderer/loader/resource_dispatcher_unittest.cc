@@ -119,7 +119,7 @@ class ResourceDispatcherTest : public testing::Test,
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
     request->resource_type = static_cast<int>(ResourceType::kSubResource);
     request->priority = net::LOW;
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
+    request->mode = network::mojom::RequestMode::kNoCors;
 
     const RequestExtraData extra_data;
     extra_data.CopyToResourceRequest(request.get());

@@ -24,8 +24,6 @@ class GURL;
 
 namespace content {
 
-enum class EmbeddedWorkerStatus;
-
 class ServiceWorkerMetrics {
  public:
   // Used for UMA. Append-only.
@@ -50,76 +48,6 @@ class ServiceWorkerMetrics {
     DELETE_DATABASE_ERROR,
     DELETE_DISK_CACHE_ERROR,
     NUM_DELETE_AND_START_OVER_RESULT_TYPES,
-  };
-
-  // Used for UMA. Append-only.
-  enum URLRequestJobResult {
-    // The service worker fell back to network.
-    REQUEST_JOB_FALLBACK_RESPONSE = 0,
-
-    // The service worker fell back to network and CORS check is needed.
-    REQUEST_JOB_FALLBACK_FOR_CORS = 1,
-
-    // The service worker responded with headers only (no body).
-    REQUEST_JOB_HEADERS_ONLY_RESPONSE = 2,
-
-    // The service worker responded with a stream body.
-    REQUEST_JOB_STREAM_RESPONSE = 3,
-
-    // The service worker responded with a blob body.
-    REQUEST_JOB_BLOB_RESPONSE = 4,
-
-    // The renderer responded with network error (see
-    // RecordStatusZeroResponseError() for error reasons).
-    REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO = 5,
-
-    // The renderer returned a response blob that could not be read.
-    REQUEST_JOB_ERROR_BAD_BLOB = 6,
-
-    // The provider host for the request was destroyed before the request
-    // could start.
-    REQUEST_JOB_ERROR_NO_PROVIDER_HOST = 7,
-
-    // The service worker assigned to the request could not be found, when
-    // the request tried to start.
-    REQUEST_JOB_ERROR_NO_ACTIVE_VERSION = 8,
-
-    // Obsolete.
-    // REQUEST_JOB_ERROR_NO_REQUEST = 9,
-
-    // An error occurred attempting to dispatch the event to the service worker.
-    REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH = 10,
-
-    // An error occurred while reading the blob response.
-    REQUEST_JOB_ERROR_BLOB_READ = 11,
-
-    // The connection to the stream response was destroyed before all the data
-    // was read.
-    REQUEST_JOB_ERROR_STREAM_ABORTED = 12,
-
-    // The request job destructed before it finished.
-    REQUEST_JOB_ERROR_KILLED = 13,
-
-    // The request job destructed before it finished. It was reading
-    // a blob response.
-    REQUEST_JOB_ERROR_KILLED_WITH_BLOB = 14,
-
-    // The request job was destructed before it finished. It was reading
-    // a stream response.
-    REQUEST_JOB_ERROR_KILLED_WITH_STREAM = 15,
-
-    // Obsolete.
-    // REQUEST_JOB_ERROR_DESTROYED = 16,
-    // REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB = 17,
-    // REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM = 18,
-
-    // The request job delegate behaved incorrectly.
-    REQUEST_JOB_ERROR_BAD_DELEGATE = 19,
-
-    // The browser failed to construct the request body.
-    REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED = 20,
-
-    NUM_REQUEST_JOB_RESULT_TYPES,
   };
 
   // Used for UMA. Append-only.
@@ -210,37 +138,6 @@ class ServiceWorkerMetrics {
   };
 
   // Used for UMA. Append only.
-  // This enum describes how an activated worker was found and prepared (i.e.,
-  // reached the RUNNING status) in order to dispatch a fetch event to.
-  enum class WorkerPreparationType {
-    UNKNOWN = 0,
-    // The worker was already starting up. We waited for it to finish.
-    STARTING = 1,
-    // The worker was already running.
-    RUNNING = 2,
-    // The worker was stopping. We waited for it to stop, and then started it
-    // up.
-    STOPPING = 3,
-    // The worker was in the stopped state. We started it up, and startup
-    // required a new process to be created.
-    START_IN_NEW_PROCESS = 4,
-    // Deprecated 07/2017; replaced by START_IN_EXISTING_UNREADY_PROCESS and
-    // START_IN_EXISTING_READY_PROCESS.
-    //   START_IN_EXISTING_PROCESS = 5,
-    // The worker was in the stopped state. We started it up, and this occurred
-    // during browser startup.
-    START_DURING_STARTUP = 6,
-    // The worker was in the stopped state. We started it up, and it used an
-    // existing unready process.
-    START_IN_EXISTING_UNREADY_PROCESS = 7,
-    // The worker was in the stopped state. We started it up, and it used an
-    // existing ready process.
-    START_IN_EXISTING_READY_PROCESS = 8,
-    // Add new types here.
-    kMaxValue = START_IN_EXISTING_READY_PROCESS,
-  };
-
-  // Used for UMA. Append only.
   // Describes the outcome of a time measurement taken between processes.
   enum class CrossProcessTimeDelta {
     NORMAL,
@@ -324,11 +221,10 @@ class ServiceWorkerMetrics {
                                       const GURL& url,
                                       bool is_main_frame_load);
 
-  // Records the result of trying to start a worker. |is_installed| indicates
-  // whether the version has been installed.
-  static void RecordStartWorkerStatus(blink::ServiceWorkerStatusCode status,
-                                      EventType purpose,
-                                      bool is_installed);
+  // Records the result of trying to start an installed worker.
+  static void RecordStartInstalledWorkerStatus(
+      blink::ServiceWorkerStatusCode status,
+      EventType purpose);
 
   // Records the result of sending installed scripts to the renderer.
   static void RecordInstalledScriptsSenderStatus(
@@ -342,15 +238,6 @@ class ServiceWorkerMetrics {
                                     bool is_installed,
                                     StartSituation start_situation,
                                     EventType purpose);
-
-  // Records metrics for the preparation of an activated Service Worker for a
-  // main frame navigation.
-  CONTENT_EXPORT static void RecordActivatedWorkerPreparationForMainFrame(
-      base::TimeDelta time,
-      EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation,
-      bool did_navigation_preload,
-      const GURL& url);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);
@@ -374,21 +261,6 @@ class ServiceWorkerMetrics {
   static void RecordFetchEventStatus(bool is_main_resource,
                                      blink::ServiceWorkerStatusCode status);
 
-  // Records result of a ServiceWorkerURLRequestJob that was forwarded to
-  // the service worker.
-  static void RecordURLRequestJobResult(bool is_main_resource,
-                                        URLRequestJobResult result);
-
-  // Records the error code provided when the renderer returns a response with
-  // status zero to a fetch request.
-  static void RecordStatusZeroResponseError(
-      bool is_main_resource,
-      blink::mojom::ServiceWorkerResponseError error);
-
-  // Records the mode of request that was fallbacked to the network.
-  static void RecordFallbackedRequestMode(
-      network::mojom::FetchRequestMode mode);
-
   static void RecordProcessCreated(bool is_new_process);
 
   CONTENT_EXPORT static void RecordStartWorkerTiming(const StartTimes& times,
@@ -405,22 +277,6 @@ class ServiceWorkerMetrics {
   // Records the size of Service-Worker-Navigation-Preload header when the
   // navigation preload request is to be sent.
   static void RecordNavigationPreloadRequestHeaderSize(size_t size);
-
-  // Records timings for the navigation preload response and how
-  // it compares to starting the worker.
-  // |worker_start| is the time it took to prepare an activated and running
-  // worker to receive the fetch event. |initial_worker_status| and
-  // |start_situation| describe the preparation needed.
-  // |response_start| is the time it took until the navigation preload response
-  // started.
-  // |resource_type| must be ResourceType::kMainFrame or
-  // ResourceType::kSubFrame.
-  CONTENT_EXPORT static void RecordNavigationPreloadResponse(
-      base::TimeDelta worker_start,
-      base::TimeDelta response_start,
-      EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation,
-      ResourceType resource_type);
 
   static void RecordRuntime(base::TimeDelta time);
 

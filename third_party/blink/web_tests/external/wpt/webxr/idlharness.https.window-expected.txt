@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 217 tests; 209 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 202 tests; 198 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -27,6 +27,7 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRSession interface: attribute environmentBlendMode
+FAIL XRSession interface: attribute visibilityState assert_true: The prototype object must have a property "visibilityState" expected true got false
 PASS XRSession interface: attribute renderState
 PASS XRSession interface: attribute inputSources
 PASS XRSession interface: operation updateRenderState(XRRenderStateInit)
@@ -34,13 +35,12 @@ PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceType)
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
 PASS XRSession interface: operation cancelAnimationFrame(long)
 PASS XRSession interface: operation end()
-PASS XRSession interface: attribute onblur
-PASS XRSession interface: attribute onfocus
 PASS XRSession interface: attribute onend
 PASS XRSession interface: attribute onselect
 PASS XRSession interface: attribute oninputsourceschange
 PASS XRSession interface: attribute onselectstart
 PASS XRSession interface: attribute onselectend
+FAIL XRSession interface: attribute onvisibilitychange assert_true: The prototype object must have a property "onvisibilitychange" expected true got false
 PASS XRRenderState interface: existence and properties of interface object
 PASS XRRenderState interface object length
 PASS XRRenderState interface object name
@@ -51,7 +51,6 @@ PASS XRRenderState interface: attribute depthNear
 PASS XRRenderState interface: attribute depthFar
 PASS XRRenderState interface: attribute inlineVerticalFieldOfView
 PASS XRRenderState interface: attribute baseLayer
-FAIL XRRenderState interface: attribute outputContext assert_true: The prototype object must have a property "outputContext" expected true got false
 PASS XRFrame interface: existence and properties of interface object
 PASS XRFrame interface object length
 PASS XRFrame interface object name
@@ -154,19 +153,12 @@ PASS XRInputSourceArray interface: existence and properties of interface prototy
 PASS XRInputSourceArray interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRInputSourceArray interface: iterable<XRInputSource>
 PASS XRInputSourceArray interface: attribute length
-PASS XRLayer interface: existence and properties of interface object
-PASS XRLayer interface object length
-PASS XRLayer interface object name
-PASS XRLayer interface: existence and properties of interface prototype object
-PASS XRLayer interface: existence and properties of interface prototype object's "constructor" property
-PASS XRLayer interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRWebGLLayer interface: existence and properties of interface object
+FAIL XRWebGLLayer interface: existence and properties of interface object assert_equals: prototype of self's property "XRWebGLLayer" is not Function.prototype expected function "function () { [native code] }" but got function "function XRLayer() { [native code] }"
 PASS XRWebGLLayer interface object length
 PASS XRWebGLLayer interface object name
-PASS XRWebGLLayer interface: existence and properties of interface prototype object
+FAIL XRWebGLLayer interface: existence and properties of interface prototype object assert_equals: prototype of XRWebGLLayer.prototype is not Object.prototype expected object "[object Object]" but got object "[object XRLayer]"
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's "constructor" property
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRWebGLLayer interface: attribute context
 PASS XRWebGLLayer interface: attribute antialias
 PASS XRWebGLLayer interface: attribute ignoreDepthValues
 PASS XRWebGLLayer interface: attribute framebuffer
@@ -174,13 +166,6 @@ PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
 PASS XRWebGLLayer interface: operation getViewport(XRView)
 PASS XRWebGLLayer interface: operation getNativeFramebufferScaleFactor(XRSession)
-FAIL XRPresentationContext interface: existence and properties of interface object assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface object length assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface object name assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
-FAIL XRPresentationContext interface: attribute canvas assert_own_property: self does not have own property "XRPresentationContext" expected property "XRPresentationContext" missing
 PASS XRSessionEvent interface: existence and properties of interface object
 PASS XRSessionEvent interface object length
 PASS XRSessionEvent interface object name

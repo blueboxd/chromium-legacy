@@ -357,7 +357,7 @@ static jlong JNI_SigninManager_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(signin_manager_android);
 }
 
-void SigninManagerAndroid::IsUserManaged(
+void SigninManagerAndroid::IsAccountManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,

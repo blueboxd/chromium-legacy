@@ -140,12 +140,12 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
     scoped_refptr<LevelDBState> level_db_state;
     leveldb::Status s;
     std::tie(level_db_state, s, std::ignore) =
-        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+        indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
             base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
             indexed_db::GetDefaultLevelDBComparator());
     ASSERT_TRUE(s.ok());
     in_memory_db_ = std::make_unique<LevelDBDatabase>(
-        std::move(level_db_state), nullptr,
+        std::move(level_db_state), indexed_db::LevelDBFactory::Get(), nullptr,
         LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         GetParam(), kRoundIterations, kMaxIterations, in_memory_db_->db());

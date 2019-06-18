@@ -180,6 +180,12 @@ message DeviceRegisterRequest {
   // The date the device was manufactured in yyyy-mm-dd format.
   // This field might be set only if register type == DEVICE.
   optional string manufacture_date = 16;
+
+  // Currently using in token enrollment to ensure domain in request matches
+  // domain from token.
+  optional string expected_enrollment_domain = 17;
+
+  // Next id: 18.
 }
 
 // Response from server to device register request.

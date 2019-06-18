@@ -92,6 +92,7 @@ interface mixin WebGL2ComputeRenderingContextBase {
     const GLenum UNSIGNED_INT_ATOMIC_COUNTER            = 0x92DB;
 
     void dispatchCompute(GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ);
+    void dispatchComputeIndirect(GLintptr offset);
 
     /* Program interface query */
     [CallWith=ScriptState] any getProgramInterfaceParameter(WebGLProgram program, GLenum programInterface, GLenum pname);

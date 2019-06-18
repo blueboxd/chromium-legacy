@@ -32,8 +32,8 @@
 #include "third_party/webdriver/atoms.h"
 
 const int kFlickTouchEventsPerSecond = 30;
-const std::set<std::string> textControlTypes = {"text", "search", "tel",
-                                                "url",  "email",  "password"};
+const std::set<std::string> textControlTypes = {"text", "search", "tel", "url",
+                                                "password"};
 
 namespace {
 
@@ -92,8 +92,8 @@ Status SendKeysToElement(Session* session,
   Status status = FocusToElement(session, web_view, element_id);
   if (status.IsError())
         return Status(kElementNotInteractable);
-  // Move cursor/caret to append the input keys if element's type is
-  // text-related
+  // Move cursor/caret to append the input
+  // keys if element's type is text-related
   if (is_text) {
     base::ListValue args;
     args.Append(CreateElement(element_id));
@@ -441,6 +441,46 @@ Status ExecuteSendKeysToElement(Session* session,
     return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
                                        paths, multiple);
   } else {
+    std::unique_ptr<base::Value> get_content_editable;
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                    "element => element.isContentEditable",
+                                    args, &get_content_editable);
+    if (status.IsError())
+      return status;
+    bool is_content_editable;
+    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
+        is_content_editable) {
+      // If element is contentEditable, will move caret
+      // at end of element text. W3C mandates that the
+      // caret be moved "after any child content"
+      std::unique_ptr<base::Value> result;
+      status = web_view->CallFunction(
+          session->GetCurrentFrameId(),
+          "function(element) {"
+          "var range = document.createRange();"
+          "range.selectNodeContents(element);"
+          "range.collapse();"
+          "var sel = window.getSelection();"
+          "sel.removeAllRanges();"
+          "sel.addRange(range);"
+          "while (element.parentElement.isContentEditable) {"
+          "    element = element.parentElement;"
+          "  }"
+          "return element;"
+          "}",
+          args, &result);
+      if (status.IsError())
+        return status;
+      const base::DictionaryValue* element_dict;
+      std::string target_element_id;
+      if (!result->GetAsDictionary(&element_dict) ||
+          !element_dict->GetString(GetElementKey(), &target_element_id))
+        return Status(kUnknownError, "no element reference returned by script");
+      return SendKeysToElement(session, web_view, target_element_id, false,
+                               key_list);
+    }
     // If element_type is in textControlTypes, sendKeys should append
     bool is_text = is_input && textControlTypes.find(element_type) !=
                                    textControlTypes.end();

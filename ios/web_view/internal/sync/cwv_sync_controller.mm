@@ -198,7 +198,9 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)reloadCredentials {
-  _identityManager->LegacyReloadAccountsFromSystem();
+  if (_currentIdentity != nil) {
+    _identityManager->LegacyReloadAccountsFromSystem();
+  }
 }
 
 #pragma mark - Internal Methods

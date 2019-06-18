@@ -9,8 +9,6 @@ found in the LICENSE file. -->
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28" />
-
     <application
         android:label="WebView Log Verbosifier"
         android:icon="@mipmap/ic_launcher"

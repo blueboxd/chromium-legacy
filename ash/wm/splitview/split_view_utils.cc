@@ -234,9 +234,7 @@ bool IsClamshellSplitViewModeEnabled() {
 }
 
 bool ShouldAllowSplitView() {
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled() &&
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !IsClamshellSplitViewModeEnabled()) {
     return false;
   }

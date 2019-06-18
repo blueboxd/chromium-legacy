@@ -309,7 +309,8 @@ TEST_P(RunLoopTest, RunWithTimeout) {
   EXPECT_FALSE(task3_run);
 }
 
-TEST_P(RunLoopTest, NestedRunWithTimeout) {
+// TODO(https://crbug.com/970187): This test is inherently flaky.
+TEST_P(RunLoopTest, DISABLED_NestedRunWithTimeout) {
   // SimpleSingleThreadTaskRunner doesn't support delayed tasks.
   if (GetParam() == RunLoopTestType::kTestDelegate)
     return;

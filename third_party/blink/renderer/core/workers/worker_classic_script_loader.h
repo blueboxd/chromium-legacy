@@ -76,8 +76,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
       ResourceFetcher* fetch_client_settings_object_fetcher,
       const KURL&,
       mojom::RequestContextType,
-      network::mojom::FetchRequestMode,
-      network::mojom::FetchCredentialsMode,
+      network::mojom::RequestMode,
+      network::mojom::CredentialsMode,
       base::OnceClosure response_callback,
       base::OnceClosure finished_callback);
 

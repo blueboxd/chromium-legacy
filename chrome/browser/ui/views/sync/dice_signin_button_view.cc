@@ -63,26 +63,26 @@ DiceSigninButtonView::DiceSigninButtonView(
       use_account_name_as_title
           ? base::UTF8ToUTF16(account.full_name)
           : l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE);
-  HoverButton* account_card =
-      new HoverButton(button_listener, std::move(account_icon_view), card_title,
-                      base::ASCIIToUTF16(account_->email));
+  auto account_card = std::make_unique<HoverButton>(
+      button_listener, std::move(account_icon_view), card_title,
+      base::ASCIIToUTF16(account_->email));
   account_card->SetBorder(nullptr);
   account_card->SetEnabled(false);
-  grid_layout->AddView(account_card);
+  grid_layout->AddView(std::move(account_card));
 
   if (show_drop_down_arrow) {
     // Add a non-stretching column for the the drop down arrow.
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                        views::GridLayout::kFixedSize,
                        views::GridLayout::USE_PREF, 0, 0);
-    arrow_ = new HoverButton(
+    auto arrow = std::make_unique<HoverButton>(
         button_listener,
         gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,
                               kDropDownArrowIconSize, SK_ColorBLACK),
         base::string16());
-    arrow_->SetTooltipText(l10n_util::GetStringUTF16(
+    arrow->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON));
-    grid_layout->AddView(arrow_);
+    arrow_ = grid_layout->AddView(std::move(arrow));
   }
 
   grid_layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
@@ -92,12 +92,10 @@ DiceSigninButtonView::DiceSigninButtonView(
   // Add a stretching column for the sign in button.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::TRAILING, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
-  auto button = views::MdTextButton::Create(
-      button_listener,
-      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
-  button->SetProminent(true);
-  grid_layout->AddView(button.get());
-  signin_button_ = button.release();
+  signin_button_ =
+      grid_layout->AddView(views::MdTextButton::CreateSecondaryUiBlueButton(
+          button_listener,
+          l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON)));
 }
 
 DiceSigninButtonView::~DiceSigninButtonView() = default;

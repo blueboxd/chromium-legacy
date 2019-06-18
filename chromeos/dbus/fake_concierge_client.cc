@@ -164,8 +164,10 @@ void FakeConciergeClient::GetVmInfo(
 
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+  wait_for_service_to_be_available_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                wait_for_service_to_be_available_response_));
 }
 
 void FakeConciergeClient::GetContainerSshKeys(

@@ -21,7 +21,6 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_request_headers.h"
-#include "net/log/net_log_event_type.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -37,20 +36,6 @@ struct ResourceResponseHead;
 namespace extensions {
 
 class ExtensionNavigationUIData;
-
-// Helper interface used to delegate event logging operations relevant to an
-// in-process web request. This is a transitional interface to move WebRequest
-// code away from direct coupling to NetLog and will be removed once event
-// logging is done through the tracing subsystem instead of through net.
-class WebRequestInfoLogger {
- public:
-  virtual ~WebRequestInfoLogger() {}
-
-  virtual void LogEvent(net::NetLogEventType event_type,
-                        const std::string& extension_id) = 0;
-  virtual void LogBlockedBy(const std::string& blocker_info) = 0;
-  virtual void LogUnblocked() = 0;
-};
 
 // Helper struct to initialize WebRequestInfo.
 struct WebRequestInfoInitParams {
@@ -91,7 +76,6 @@ struct WebRequestInfoInitParams {
   int web_view_instance_id = -1;
   int web_view_rules_registry_id = -1;
   int web_view_embedder_process_id = -1;
-  std::unique_ptr<WebRequestInfoLogger> logger;
   content::ResourceContext* resource_context = nullptr;
   base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
 
@@ -188,10 +172,6 @@ struct WebRequestInfo {
   const int web_view_instance_id;
   const int web_view_rules_registry_id;
   const int web_view_embedder_process_id;
-
-  // Helper used to log events relevant to WebRequest processing. This is always
-  // non-null.
-  const std::unique_ptr<WebRequestInfoLogger> logger;
 
   // The ResourceContext associated with this request. May be null.
   content::ResourceContext* const resource_context;

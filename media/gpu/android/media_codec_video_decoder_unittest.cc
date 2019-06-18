@@ -802,6 +802,20 @@ TEST_P(MediaCodecVideoDecoderTest, TeardownInvalidatesCodecCreationWeakPtr) {
   ASSERT_TRUE(codec_allocator_->ProvideMockCodecAsync());
 }
 
+TEST_P(MediaCodecVideoDecoderTest,
+       TeardownInvalidatesCodecCreationWeakPtrButDoesNotCallReleaseMediaCodec) {
+  InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
+  destruction_observer_->DoNotAllowDestruction();
+  mcvd_.reset();
+  // DeleteSoon() is now pending. Ensure it's safe if the codec creation
+  // completes before it runs.
+  destruction_observer_->ExpectDestruction();
+
+  // A null codec should not be released via ReleaseMediaCodec().
+  EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(_)).Times(0);
+  codec_allocator_->ProvideNullCodecAsync();
+}
+
 TEST_P(MediaCodecVideoDecoderTest, TeardownDoesNotDrainFlushedCodecs) {
   InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
   // Since we assert that MCVD is destructed by default, this test verifies that

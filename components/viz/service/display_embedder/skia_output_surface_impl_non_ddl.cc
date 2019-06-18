@@ -252,11 +252,14 @@ void SkiaOutputSurfaceImplNonDDL::ReleaseCachedResources(
 
 void SkiaOutputSurfaceImplNonDDL::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  gfx::SwapTimings swap_timings;
+  swap_timings.swap_start = base::TimeTicks::Now();
   gl_surface_->SwapBuffers(
       base::BindOnce(&SkiaOutputSurfaceImplNonDDL::BufferPresented,
                      weak_ptr_factory_.GetWeakPtr()));
+  swap_timings.swap_end = base::TimeTicks::Now();
   if (need_swapbuffers_ack_)
-    client_->DidReceiveSwapBuffersAck();
+    client_->DidReceiveSwapBuffersAck(swap_timings);
 }
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(

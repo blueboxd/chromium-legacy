@@ -26,8 +26,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceBase : public SkiaOutputSurface {
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;

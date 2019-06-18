@@ -19,7 +19,24 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Adapter for providing data and views to the omnibox results list.
+ * Adapter for providing data and views to a ListView.
+ *
+ * To use, register a {@link PropertyModelChangeProcessor.ViewBinder} and {@link ViewBuilder}
+ * for each view type in the list using
+ * {@link #registerType(int, ViewBuilder, PropertyModelChangeProcessor.ViewBinder)}.
+ * Then call {@link #updateModels(List)} to provide a list of items (represented by PropertyModels)
+ * to display in the list. If the items in the list change (e.g. items are added, removed, or
+ * change order), call #updateModels again with the new list of items. NOTE: There are plans to
+ * change the API surface to work with a PropertyObservable instead.
+ *
+ * When creating a new view, ModelListAdapter will bind all set properties. When reusing/rebinding
+ * a view, in addition to binding all properties set on the new model, properties that were
+ * previously set on the old model but are not set on the new model will be bound to "reset" the
+ * view. ViewBinders registered for this adapter may therefore need to handle bind calls for
+ * properties that are not set on the model being bound.
+ *
+ * Additionally, ModelListAdapter will hook up a {@link PropertyModelChangeProcessor} when binding
+ * views to ensure that changes to the PropertyModel for that list item are bound to the view.
  */
 public class ModelListAdapter extends BaseAdapter {
     /**
@@ -39,6 +56,9 @@ public class ModelListAdapter extends BaseAdapter {
 
     /**
      * Update the visible models (list items).
+     * @param models A list of {@link PropertyModel}s to display. The Integer property in the pair
+     *         indicates the view type, while the PropertyModel contains the properties for the item
+     *         to display.
      */
     public void updateModels(List<Pair<Integer, PropertyModel>> models) {
         mModelList.clear();

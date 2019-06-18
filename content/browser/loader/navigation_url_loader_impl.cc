@@ -228,10 +228,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_user_gesture = request_info->common_params.has_user_gesture;
   new_request->enable_load_timing = true;
 
-  new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  new_request->fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kInclude;
-  new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  new_request->mode = network::mojom::RequestMode::kNavigate;
+  new_request->credentials_mode = network::mojom::CredentialsMode::kInclude;
+  new_request->redirect_mode = network::mojom::RedirectMode::kManual;
   new_request->fetch_request_context_type =
       static_cast<int>(request_info->begin_params->request_context_type);
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
@@ -1584,9 +1583,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),
           partition->browser_context()->GetSharedCorsOriginAccessList(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+          // USER_VISIBLE because loaded file resources may affect the UI.
+          base::TaskPriority::USER_VISIBLE);
 
   if (frame_tree_node) {  // May be nullptr in some unit tests.
     devtools_instrumentation::WillCreateURLLoaderFactory(

@@ -233,10 +233,12 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   // The hidden form element should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<input type=3D\"hidden\""));
 
+  // The style element should be converted to link element.
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("<style"));
+
   // All other hidden elements should not be removed.
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<html"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<head"));
-  EXPECT_NE(WTF::kNotFound, mhtml.Find("<style"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<title"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<h1"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<h2"));
@@ -244,10 +246,9 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<option"));
   // One for meta in head and another for meta in body.
   EXPECT_EQ(2, MatchSubstring(mhtml, "<meta", 5));
-  // One for style in head and another for style in body.
-  EXPECT_EQ(2, MatchSubstring(mhtml, "<style", 6));
-  // One for link in head and another for link in body.
-  EXPECT_EQ(2, MatchSubstring(mhtml, "<link", 5));
+  // Two for original link elements: one in head and another in body.
+  // Two for original style elemtns: one in head and another in body.
+  EXPECT_EQ(4, MatchSubstring(mhtml, "<link", 5));
 
   // These visible elements should remain intact.
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<p id=3D\"visible_id\""));
@@ -400,6 +401,36 @@ TEST_F(WebFrameSerializerSanitizationTest, ShadowDOM) {
   // The special attribute present in the original page should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("shadowmode=3D\"foo\">"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("shadowdelegatesfocus=3D\"bar\">"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, StyleElementsWithDynamicCSS) {
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com",
+                                       "style_element_with_dynamic_css.html");
+
+  // The dynamically updated CSS rules should be preserved.
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("div { color: blue; }"));
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("p { color: red; }"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("h1 { color: green; }"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, PictureElement) {
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/1x.png"),
+                            "frameserialization/1x.png");
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/2x.png"),
+                            "frameserialization/2x.png");
+
+  WebView()->MainFrameWidget()->Resize(WebSize(500, 500));
+
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "picture.html");
+
+  // srcset attribute should be kept.
+  EXPECT_EQ(2, MatchSubstring(mhtml, "srcset=", 7));
+
+  // 2x.png resource should be added.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/2x.png"));
+  EXPECT_EQ(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/1x.png"));
 }
 
 }  // namespace blink

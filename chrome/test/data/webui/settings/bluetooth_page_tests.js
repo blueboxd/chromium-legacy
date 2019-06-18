@@ -136,7 +136,7 @@ suite('Bluetooth', function() {
     assertTrue(bluetoothPage.isToggleEnabled_());
 
     // Test that tapping the single settings-box div enables bluetooth.
-    const div = bluetoothPage.$$('div.settings-box');
+    const div = bluetoothPage.$$('.link-wrapper');
     assertTrue(!!div);
     div.click();
 
@@ -200,7 +200,7 @@ suite('Bluetooth', function() {
       });
 
       Polymer.dom.flush();
-      const div = bluetoothPage.$$('div.settings-box');
+      const div = bluetoothPage.$$('.link-wrapper');
       div.click();
 
       await flushAsync();

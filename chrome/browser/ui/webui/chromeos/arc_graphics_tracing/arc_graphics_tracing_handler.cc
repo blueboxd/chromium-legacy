@@ -373,7 +373,7 @@ void ArcGraphicsTracingHandler::StartTracing() {
 
   base::trace_event::TraceConfig config(
       "-*,exo,viz,toplevel,gpu,cc,blink,disabled-by-default-android "
-      "gfx,disabled-by-default-android hal",
+      "gfx,disabled-by-default-android hal,disabled-by-default-android view",
       base::trace_event::RECORD_CONTINUOUSLY);
   config.EnableSystrace();
   tracing_active_ = true;

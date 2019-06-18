@@ -1151,7 +1151,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
   // since it's the one that has a window in it.
   // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet mode.
   base::RunLoop().RunUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   auto* desk_1_backdrop_controller =
       GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
   auto* desk_2_backdrop_controller =
@@ -1208,7 +1208,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
   EXPECT_TRUE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
 
   // No backdrops after exiting tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
 }
@@ -1221,7 +1221,7 @@ TEST_F(DesksTest, TabletModeDesksCreationRemovalCycle) {
   // Enter tablet mode. Avoid TabletModeController::OnGetSwitchStates() from
   // disabling tablet mode.
   base::RunLoop().RunUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();

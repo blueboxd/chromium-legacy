@@ -153,6 +153,10 @@
       <include name="IDR_DOWNLOAD_INTERNALS_JS" file="resources\download_internals\download_internals.js" type="BINDATA" compress="gzip" />
       <include name="IDR_DOWNLOAD_INTERNALS_BROWSER_PROXY_JS" file="resources\download_internals\download_internals_browser_proxy.js" type="BINDATA" compress="gzip" />
       <include name="IDR_DOWNLOAD_INTERNALS_VISUALS_JS" file="resources\download_internals\download_internals_visuals.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_NOTIFICATIONS_INTERNALS_HTML" file="resources\notifications_internals\notifications_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_NOTIFICATIONS_INTERNALS_CSS" file="resources\notifications_internals\notifications_internals.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_NOTIFICATIONS_INTERNALS_JS" file="resources\notifications_internals\notifications_internals.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_NOTIFICATIONS_INTERNALS_BROWSER_PROXY_JS" file="resources\notifications_internals\notifications_internals_browser_proxy.js" type="BINDATA" compress="gzip" />
       <include name="IDR_UKM_INTERNALS_HTML" file="../../components/ukm/debug/ukm_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_JS" file="../../components/ukm/debug/ukm_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_CSS" file="../../components/ukm/debug/ukm_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />

@@ -9,7 +9,7 @@
     ConstructorCallWith=Document,
     MeasureAs=ScrollTimelineConstructor,
     RaisesException=Constructor,
-    RuntimeEnabled=AnimationWorklet,
+    RuntimeEnabled=ScrollTimeline,
     Exposed=Window
 ] interface ScrollTimeline : AnimationTimeline {
     readonly attribute Element? scrollSource;

@@ -183,9 +183,11 @@ void RenderWidgetHostNSViewBridge::CancelComposition() {
   [cocoa_view_ cancelComposition];
 }
 
-void RenderWidgetHostNSViewBridge::SetTextInputType(
-    ui::TextInputType text_input_type) {
+void RenderWidgetHostNSViewBridge::SetTextInputState(
+    ui::TextInputType text_input_type,
+    uint32_t flags) {
   [cocoa_view_ setTextInputType:text_input_type];
+  [cocoa_view_ setTextInputFlags:flags];
 }
 
 void RenderWidgetHostNSViewBridge::SetTextSelection(const base::string16& text,

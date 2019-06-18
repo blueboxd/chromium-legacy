@@ -35,7 +35,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "ios/web/common/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -674,7 +673,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertIsShowingDistillablePage(false, distillableURL);
 
   // TODO(crbug.com/954248) This DCHECK's (but works) with slimnav disabled.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager)) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [ChromeEarlGrey goBack];
     [ChromeEarlGrey goForward];
     AssertIsShowingDistillablePage(false, distillableURL);

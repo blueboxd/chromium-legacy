@@ -167,9 +167,9 @@ class OverviewSessionTest : public AshTestBase {
   // Enters tablet mode. Needed by tests that test dragging and or splitview,
   // which are tablet mode only.
   void EnterTabletMode() {
-    // Ensure calls to EnableTabletModeWindowManager complete.
+    // Ensure calls to SetEnabledForTest complete.
     base::RunLoop().RunUntilIdle();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -3718,7 +3718,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   DragWindowTo(overview_item1, gfx::PointF());
   EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 
@@ -4512,8 +4512,7 @@ class SplitViewOverviewSessionInClamshellTest
     scoped_feature_list_.InitAndEnableFeature(
         ash::features::kDragToSnapInClamshellMode);
     OverviewSessionTest::SetUp();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        false);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
     DCHECK(ShouldAllowSplitView());
   }
 
@@ -4545,9 +4544,7 @@ class SplitViewOverviewSessionInClamshellTest
 // Test some basic functionalities in clamshell splitview mode.
 TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   UpdateDisplay("600x400");
-  EXPECT_FALSE(Shell::Get()
-                   ->tablet_mode_controller()
-                   ->IsTabletModeWindowManagerEnabled());
+  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   // 1. Test the 1 window scenario.
   const gfx::Rect bounds(400, 400);

@@ -75,6 +75,22 @@ def get_parts(config):
                 '{}.helper'.format(uncustomized_bundle_id),
                 options=CodeSignOptions.RESTRICT,
                 verify_options=VerifyOptions.DEEP),
+        'helper-renderer-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (Renderer).app'
+                .format(config),
+                '{}.helper.renderer'.format(uncustomized_bundle_id),
+                options=CodeSignOptions.RESTRICT,
+                entitlements='helper-renderer-entitlements.plist',
+                verify_options=VerifyOptions.DEEP),
+        'helper-plugin-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'
+                .format(config),
+                '{}.helper.plugin'.format(uncustomized_bundle_id),
+                options=CodeSignOptions.RESTRICT,
+                entitlements='helper-plugin-entitlements.plist',
+                verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),

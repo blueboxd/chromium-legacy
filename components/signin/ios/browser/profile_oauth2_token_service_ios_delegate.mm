@@ -186,27 +186,14 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     return;
   }
 
-  ReloadCredentials(primary_account_id);
+  ReloadCredentials();
 
   set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 
-void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials(
-    const CoreAccountId& primary_account_id) {
-  DCHECK(!primary_account_id.empty());
-  DCHECK(primary_account_id_.empty() ||
-         primary_account_id_ == primary_account_id);
-  primary_account_id_ = primary_account_id;
-  ReloadCredentials();
-}
-
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (primary_account_id_.empty()) {
-    // Avoid loading the credentials if there is no primary account id.
-    return;
-  }
 
   // Get the list of new account ids.
   std::set<std::string> new_account_ids;
@@ -266,7 +253,6 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
     RemoveAccount(accountStatus.first);
 
   DCHECK_EQ(0u, accounts_.size());
-  primary_account_id_ = CoreAccountId();
   ClearExcludedSecondaryAccounts();
 }
 
@@ -277,10 +263,8 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddAccountFromSystem(
 
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
     const CoreAccountId& primary_account_id) {
-  if (primary_account_id.empty())
-    return;
-
-  ReloadCredentials(primary_account_id);
+  DCHECK(!primary_account_id.empty());
+  ReloadCredentials();
 }
 
 OAuth2AccessTokenFetcher*

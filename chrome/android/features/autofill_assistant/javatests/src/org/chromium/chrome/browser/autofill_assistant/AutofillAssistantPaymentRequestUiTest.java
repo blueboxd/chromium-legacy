@@ -4,12 +4,23 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
@@ -17,7 +28,6 @@ import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,8 +49,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the Autofill Assistant payment request UI.
@@ -87,38 +95,48 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
-    public void testInitialState() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-            AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
+    public void testInitialState() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
 
-            assertFalse(model.get(AssistantPaymentRequestModel.VISIBLE));
-            assertFalse("PR is initially invisible", coordinator.getView().isShown());
-            assertNull("Initially, the model should not contain any profiles",
-                    model.get(AssistantPaymentRequestModel.AVAILABLE_PROFILES));
-            assertNull("Initially, the model should not contain any payment methods",
-                    model.get(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS));
-            assertNull("Initially, no payment method is supported",
-                    model.get(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS));
-            assertNull("Initially, no basic card network filter is set",
-                    model.get(AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS));
-            assertNull("Initially, no section is expanded",
-                    model.get(AssistantPaymentRequestModel.EXPANDED_SECTION));
-            assertNull(model.get(AssistantPaymentRequestModel.DELEGATE));
-            assertNull(model.get(AssistantPaymentRequestModel.WEB_CONTENTS));
-            assertNull(model.get(AssistantPaymentRequestModel.SHIPPING_ADDRESS));
-            assertNull(model.get(AssistantPaymentRequestModel.PAYMENT_METHOD));
-            assertNull(model.get(AssistantPaymentRequestModel.CONTACT_DETAILS));
-            assertEquals(AssistantTermsAndConditionsState.NOT_SELECTED,
-                    model.get(AssistantPaymentRequestModel.TERMS_STATUS));
+        /* Test initial model state. */
+        assertThat(model.get(AssistantPaymentRequestModel.VISIBLE), is(false));
+        assertThat(model.get(AssistantPaymentRequestModel.AVAILABLE_PROFILES), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS),
+                nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS), nullValue());
+        assertThat(
+                model.get(AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.EXPANDED_SECTION), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.DELEGATE), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.WEB_CONTENTS), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.SHIPPING_ADDRESS), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.PAYMENT_METHOD), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.CONTACT_DETAILS), nullValue());
+        assertThat(model.get(AssistantPaymentRequestModel.TERMS_STATUS),
+                is(AssistantTermsAndConditionsState.NOT_SELECTED));
 
-            /** Test initial UI state. */
-            AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
-                    new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator);
-            assertFalse(viewHolder.mContactSection.isExpanded());
-            assertFalse(viewHolder.mPaymentSection.isExpanded());
-            assertFalse(viewHolder.mShippingSection.isExpanded());
-        });
+        /* Test initial UI state. */
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(not(isDisplayed())));
+
+        /* No section divider is visible. */
+        for (View divider : viewHolder.mDividers) {
+            onView(is(divider)).check(matches(not(isDisplayed())));
+        }
     }
 
     /**
@@ -126,57 +144,66 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
-    public void testSectionVisibility() {
+    public void testSectionVisibility() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        /* Initially, everything is invisible. */
+        onView(is(coordinator.getView())).check(matches(not(isDisplayed())));
+
+        /* PR is visible, but no section was requested: all sections should be invisible. */
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantPaymentRequestModel.VISIBLE, true));
+        onView(is(coordinator.getView())).check(matches(isDisplayed()));
+        onView(is(viewHolder.mContactSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
+
+        /* Contact details should be visible if either name, phone, or email is requested. */
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantPaymentRequestModel.REQUEST_NAME, true));
+        onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-            AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
-
-            AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
-                    new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator);
-
-            /** Initially, everything is invisible. */
-            assertFalse(coordinator.getView().isShown());
-
-            /** PR is visible, but no section was requested: all sections should be invisible. */
-            model.set(AssistantPaymentRequestModel.VISIBLE, true);
-            assertTrue(coordinator.getView().isShown());
-            assertFalse(viewHolder.mContactSection.isShown());
-            assertFalse(viewHolder.mPaymentSection.isShown());
-            assertFalse(viewHolder.mShippingSection.isShown());
-
-            /** Contact details should be visible if either name, phone, or email is requested. */
-            model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
-            assertTrue(viewHolder.mContactSection.isShown());
-            assertFalse(viewHolder.mPaymentSection.isShown());
-            assertFalse(viewHolder.mShippingSection.isShown());
-
             model.set(AssistantPaymentRequestModel.REQUEST_NAME, false);
             model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
-            assertTrue(viewHolder.mContactSection.isShown());
-            assertFalse(viewHolder.mPaymentSection.isShown());
-            assertFalse(viewHolder.mShippingSection.isShown());
+        });
+        onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
 
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantPaymentRequestModel.REQUEST_PHONE, false);
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            assertTrue(viewHolder.mContactSection.isShown());
-            assertFalse(viewHolder.mPaymentSection.isShown());
-            assertFalse(viewHolder.mShippingSection.isShown());
+        });
+        onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
 
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
-            assertTrue(viewHolder.mContactSection.isShown());
-            assertFalse(viewHolder.mPaymentSection.isShown());
-            assertFalse(viewHolder.mShippingSection.isShown());
-
-            /** Payment method section visibility test. */
-            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
-            assertTrue(viewHolder.mPaymentSection.isShown());
-
-            /** Shipping address visibility test. */
-            model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
-            assertTrue(viewHolder.mShippingSection.isShown());
         });
+        onView(is(viewHolder.mContactSection)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
+
+        /* Payment method section visibility test. */
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true));
+        onView(is(viewHolder.mPaymentSection)).check(matches(isDisplayed()));
+
+        /* Shipping address visibility test. */
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true));
+        onView(is(viewHolder.mShippingSection)).check(matches(isDisplayed()));
     }
 
     /**
@@ -185,50 +212,68 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
-    public void testEmptyPaymentRequest() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-            AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
+    public void testEmptyPaymentRequest() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
 
-            /** Request all PR sections. */
+        /* Request all PR sections. */
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
             model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
 
-            AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
-                    new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator);
+        /* Empty sections should display the 'add' button in their title. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(isDisplayed()));
 
-            /** Empty sections should display the 'add' button in their title. */
-            assertTrue(viewHolder.mContactSection.findViewById(R.id.section_title_add_button)
-                               .isShown());
-            assertTrue(viewHolder.mPaymentSection.findViewById(R.id.section_title_add_button)
-                               .isShown());
-            assertTrue(viewHolder.mShippingSection.findViewById(R.id.section_title_add_button)
-                               .isShown());
+        /* Empty sections should be 'fixed', i.e., they can not be expanded. */
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(not(isDisplayed())));
 
-            /** Empty sections should be 'fixed', i.e., they can not be expanded. */
-            assertTrue(viewHolder.mContactSection.isFixed());
-            assertTrue(viewHolder.mPaymentSection.isFixed());
-            assertTrue(viewHolder.mShippingSection.isFixed());
+        /* Empty sections are collapsed. */
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_choice_list),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(not(isDisplayed())));
 
-            /** Empty sections are collapsed. */
-            assertFalse(viewHolder.mContactSection.isExpanded());
-            assertFalse(viewHolder.mPaymentSection.isExpanded());
-            assertFalse(viewHolder.mShippingSection.isExpanded());
-
-            /** Empty sections should be empty. */
+        /* Empty sections should be empty. */
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             AssistantChoiceList contactsList =
                     viewHolder.mContactSection.findViewById(R.id.section_choice_list);
             AssistantChoiceList paymentsList =
                     viewHolder.mPaymentSection.findViewById(R.id.section_choice_list);
             AssistantChoiceList shippingList =
                     viewHolder.mShippingSection.findViewById(R.id.section_choice_list);
-            assertEquals(0, contactsList.getItemCount());
-            assertEquals(0, paymentsList.getItemCount());
-            assertEquals(0, shippingList.getItemCount());
+            assertThat(contactsList.getItemCount(), is(0));
+            assertThat(paymentsList.getItemCount(), is(0));
+            assertThat(shippingList.getItemCount(), is(0));
         });
     }
 
@@ -238,117 +283,132 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
-    public void testNonEmptyPaymentRequest() throws TimeoutException, InterruptedException {
-        /**
-         * Add complete profile and credit card to the personal data manager. Must be done outside
-         * UI thread!
-         */
+    public void testNonEmptyPaymentRequest() throws Exception {
+        /* Add complete profile and credit card to the personal data manager. */
         PersonalDataManager.AutofillProfile profile = new PersonalDataManager.AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */, "Maggie Simpson",
                 "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "Uzbekistan",
                 "555 123-4567", "maggie@simpson.com", "");
         String billingAddressId = mHelper.setProfile(profile);
-        PersonalDataManager.CreditCard creditCard = new PersonalDataManager.CreditCard("",
-                "https://example.com", true, true, "Jon Doe", "4111111111111111", "1111", "12",
-                "2050", "visa", org.chromium.chrome.R.drawable.visa_card, CardType.UNKNOWN,
-                billingAddressId, "" /* serverId */);
+        PersonalDataManager.CreditCard creditCard =
+                new PersonalDataManager.CreditCard("", "https://example.com", true, true, "Jon Doe",
+                        "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                        CardType.UNKNOWN, billingAddressId, "" /* serverId */);
         mHelper.setCreditCard(creditCard);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
-            AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator =
+                TestThreadUtils.runOnUiThreadBlocking(() -> createPaymentRequestCoordinator(model));
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
 
-            /** Request all PR sections. */
+        /* Request all PR sections. */
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantPaymentRequestModel.REQUEST_NAME, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PHONE, true);
             model.set(AssistantPaymentRequestModel.REQUEST_EMAIL, true);
             model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
             model.set(AssistantPaymentRequestModel.REQUEST_SHIPPING_ADDRESS, true);
             model.set(AssistantPaymentRequestModel.VISIBLE, true);
-
-            AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
-                    new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator);
-
-            /** Non-empty sections should not display the 'add' button in their title. */
-            assertFalse(viewHolder.mContactSection.findViewById(R.id.section_title_add_button)
-                                .isShown());
-            assertFalse(viewHolder.mPaymentSection.findViewById(R.id.section_title_add_button)
-                                .isShown());
-            assertFalse(viewHolder.mShippingSection.findViewById(R.id.section_title_add_button)
-                                .isShown());
-
-            /** Non-empty sections should not be 'fixed', i.e., they can be expanded. */
-            assertFalse(viewHolder.mContactSection.isFixed());
-            assertFalse(viewHolder.mPaymentSection.isFixed());
-            assertFalse(viewHolder.mShippingSection.isFixed());
-
-            /** Check contents of sections. */
-            AssistantChoiceList contactsList =
-                    viewHolder.mContactSection.findViewById(R.id.section_choice_list);
-            AssistantChoiceList paymentsList =
-                    viewHolder.mPaymentSection.findViewById(R.id.section_choice_list);
-            AssistantChoiceList shippingList =
-                    viewHolder.mShippingSection.findViewById(R.id.section_choice_list);
-            assertEquals(1, contactsList.getItemCount());
-            assertEquals(1, paymentsList.getItemCount());
-            assertEquals(1, shippingList.getItemCount());
-            testContact("maggie@simpson.com", "Maggie Simpson\nmaggie@simpson.com",
-                    viewHolder.mContactSection.getCollapsedView(), contactsList.getItem(0));
-            testPaymentMethod("1111", "Jon Doe", "12/2050",
-                    viewHolder.mPaymentSection.getCollapsedView(), paymentsList.getItem(0));
-            testShippingAddress("Maggie Simpson",
-                    "Acme Inc., 123 Main, 90210 Los Angeles, California",
-                    "Acme Inc., 123 Main, 90210 Los Angeles, California, Uzbekistan",
-                    viewHolder.mShippingSection.getCollapsedView(), shippingList.getItem(0));
         });
+
+        /* Non-empty sections should not display the 'add' button in their title. */
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(not(isDisplayed())));
+
+        /* Non-empty sections should not be 'fixed', i.e., they can be expanded. */
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(isDisplayed()));
+
+        /* All section dividers are visible. */
+        for (View divider : viewHolder.mDividers) {
+            onView(is(divider)).check(matches(isDisplayed()));
+        }
+
+        /* Check contents of sections. */
+        AssistantChoiceList contactsList = TestThreadUtils.runOnUiThreadBlocking(
+                () -> viewHolder.mContactSection.findViewById(R.id.section_choice_list));
+        AssistantChoiceList paymentsList = TestThreadUtils.runOnUiThreadBlocking(
+                () -> viewHolder.mPaymentSection.findViewById(R.id.section_choice_list));
+        AssistantChoiceList shippingList = TestThreadUtils.runOnUiThreadBlocking(
+                () -> viewHolder.mShippingSection.findViewById(R.id.section_choice_list));
+
+        assertThat(contactsList.getItemCount(), is(1));
+        assertThat(paymentsList.getItemCount(), is(1));
+        assertThat(shippingList.getItemCount(), is(1));
+
+        testContact("maggie@simpson.com", "Maggie Simpson\nmaggie@simpson.com",
+                viewHolder.mContactSection.getCollapsedView(), contactsList.getItem(0));
+        testPaymentMethod("1111", "Jon Doe", "12/2050",
+                viewHolder.mPaymentSection.getCollapsedView(), paymentsList.getItem(0));
+        testShippingAddress("Maggie Simpson", "Acme Inc., 123 Main, 90210 Los Angeles, California",
+                "Acme Inc., 123 Main, 90210 Los Angeles, California, Uzbekistan",
+                viewHolder.mShippingSection.getCollapsedView(), shippingList.getItem(0));
     }
 
     private void testContact(String expectedContactSummary, String expectedContactFullDescription,
             View summaryView, View fullView) {
-        TextView contactSummary = summaryView.findViewById(R.id.contact_summary);
-        assertEquals(expectedContactSummary, contactSummary.getText());
-        assertFalse(summaryView.findViewById(R.id.incomplete_error).isShown());
+        onView(allOf(withId(R.id.contact_summary), isDescendantOfA(is(summaryView))))
+                .check(matches(withText(expectedContactSummary)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(summaryView))))
+                .check(matches(not(isDisplayed())));
 
-        TextView contactFull = fullView.findViewById(R.id.contact_full);
-        assertEquals(expectedContactFullDescription, contactFull.getText());
-        assertFalse(fullView.findViewById(R.id.incomplete_error).isShown());
+        onView(allOf(withId(R.id.contact_full), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedContactFullDescription)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(fullView))))
+                .check(matches(not(isDisplayed())));
     }
 
     private void testPaymentMethod(String expectedObfuscatedCardNumber, String expectedCardName,
             String expectedCardExpiration, View summaryView, View fullView) {
-        TextView paymentMethodNumber = summaryView.findViewById(R.id.credit_card_number);
-        testCreditCardNumber(expectedObfuscatedCardNumber, paymentMethodNumber);
-        TextView paymentMethodExpirationDate =
-                summaryView.findViewById(R.id.credit_card_expiration);
-        assertEquals(expectedCardExpiration, paymentMethodExpirationDate.getText());
-        assertNull(summaryView.findViewById(R.id.credit_card_name));
-        assertFalse(summaryView.findViewById(R.id.incomplete_error).isShown());
+        onView(allOf(withId(R.id.credit_card_number), isDescendantOfA(is(summaryView))))
+                .check(matches(withText(containsString(expectedObfuscatedCardNumber))));
+        onView(allOf(withId(R.id.credit_card_expiration), isDescendantOfA(is(summaryView))))
+                .check(matches(withText(expectedCardExpiration)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(summaryView))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.credit_card_name), isDescendantOfA(is(summaryView))))
+                .check(doesNotExist());
 
-        paymentMethodNumber = fullView.findViewById(R.id.credit_card_number);
-        testCreditCardNumber(expectedObfuscatedCardNumber, paymentMethodNumber);
-        paymentMethodExpirationDate = fullView.findViewById(R.id.credit_card_expiration);
-        assertEquals(expectedCardExpiration, paymentMethodExpirationDate.getText());
-        TextView paymentMethodCardName = fullView.findViewById(R.id.credit_card_name);
-        assertEquals(expectedCardName, paymentMethodCardName.getText());
-        assertFalse(fullView.findViewById(R.id.incomplete_error).isShown());
-    }
-
-    private void testCreditCardNumber(String expectedObfuscatedNumber, TextView actual) {
-        assertThat(actual.getText().toString(), containsString(expectedObfuscatedNumber));
+        onView(allOf(withId(R.id.credit_card_number), isDescendantOfA(is(fullView))))
+                .check(matches(withText(containsString(expectedObfuscatedCardNumber))));
+        onView(allOf(withId(R.id.credit_card_expiration), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedCardExpiration)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(fullView))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.credit_card_name), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedCardName)));
     }
 
     private void testShippingAddress(String expectedFullName, String expectedShortAddress,
             String expectedFullAddress, View summaryView, View fullView) {
-        TextView addressName = summaryView.findViewById(R.id.full_name);
-        assertEquals(expectedFullName, addressName.getText());
-        TextView addressShort = summaryView.findViewById(R.id.short_address);
-        assertEquals(expectedShortAddress, addressShort.getText());
-        assertFalse(summaryView.findViewById(R.id.incomplete_error).isShown());
+        onView(allOf(withId(R.id.full_name), isDescendantOfA(is(summaryView))))
+                .check(matches(withText(expectedFullName)));
+        onView(allOf(withId(R.id.short_address), isDescendantOfA(is(summaryView))))
+                .check(matches(withText(expectedShortAddress)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(summaryView))))
+                .check(matches(not(isDisplayed())));
 
-        addressName = fullView.findViewById(R.id.full_name);
-        assertEquals(expectedFullName, addressName.getText());
-        TextView addressFull = fullView.findViewById(R.id.full_address);
-        assertEquals(expectedFullAddress, addressFull.getText());
-        assertFalse(fullView.findViewById(R.id.incomplete_error).isShown());
+        onView(allOf(withId(R.id.full_name), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedFullName)));
+        onView(allOf(withId(R.id.full_address), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedFullAddress)));
+        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(fullView))))
+                .check(matches(not(isDisplayed())));
     }
 }

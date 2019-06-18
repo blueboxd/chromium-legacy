@@ -731,9 +731,9 @@ Response TargetHandler::GetTargets(
     std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
     return Response::Error(kNotAllowedError);
-  *target_infos = protocol::Array<Target::TargetInfo>::create();
+  *target_infos = std::make_unique<protocol::Array<Target::TargetInfo>>();
   for (const auto& host : DevToolsAgentHost::GetOrCreateAll())
-    (*target_infos)->addItem(CreateInfo(host.get()));
+    (*target_infos)->emplace_back(CreateInfo(host.get()));
   return Response::OK();
 }
 
@@ -816,7 +816,7 @@ protocol::Response TargetHandler::GetBrowserContexts(
       delegate->GetBrowserContexts();
   *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
   for (auto* context : contexts)
-    (*browser_context_ids)->addItem(context->UniqueId());
+    (*browser_context_ids)->emplace_back(context->UniqueId());
   return Response::OK();
 }
 

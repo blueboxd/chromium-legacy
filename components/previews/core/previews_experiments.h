@@ -85,6 +85,13 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
+// The maximum number of hosts that can be stored in the
+// |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
+// hosts will also be returned in order of most engaged. This prevents the most
+// engaged hosts in a user's history before DataSaver being enabled from being
+// requested until the user navigates to the host again.
+size_t MaxHintsFetcherTopHostBlacklistSize();
+
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
@@ -146,6 +153,12 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 // The maximum number of times that a Lite Page Redirect preview should restart
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();
+
+// Whether we should preresolve the lite page redirect server.
+bool LitePageRedirectPreviewShouldPresolve();
+
+// The duration in between preresolving the lite page redirect server.
+base::TimeDelta LitePageRedirectPreviewPresolveInterval();
 
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();

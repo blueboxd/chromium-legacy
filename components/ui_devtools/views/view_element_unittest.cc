@@ -150,12 +150,9 @@ TEST_F(ViewElementTest, GetBounds) {
 }
 
 TEST_F(ViewElementTest, GetAttributes) {
-  std::unique_ptr<protocol::Array<std::string>> attrs =
-      element()->GetAttributes();
-  DCHECK_EQ(attrs->length(), 2U);
-
-  EXPECT_EQ(attrs->get(0), "name");
-  EXPECT_EQ(attrs->get(1), NamedTestView::kViewClassName);
+  std::vector<std::string> attrs = element()->GetAttributes();
+  EXPECT_THAT(attrs,
+              testing::ElementsAre("name", NamedTestView::kViewClassName));
 }
 
 TEST_F(ViewElementTest, GetCustomProperties) {

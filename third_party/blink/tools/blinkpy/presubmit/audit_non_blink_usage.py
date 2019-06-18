@@ -604,6 +604,7 @@ _CONFIG = [
         ],
         'allowed': [
             'media::.+',
+            'base::AutoLock',
         ]
     },
     {

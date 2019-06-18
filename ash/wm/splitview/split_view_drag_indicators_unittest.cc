@@ -31,9 +31,9 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    // Ensure calls to EnableTabletModeWindowManager complete.
+    // Ensure calls to SetEnabledForTest complete.
     base::RunLoop().RunUntilIdle();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     base::RunLoop().RunUntilIdle();
     ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         true);

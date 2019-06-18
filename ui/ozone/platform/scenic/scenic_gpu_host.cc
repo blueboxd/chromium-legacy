@@ -57,16 +57,15 @@ mojom::ScenicGpuHostPtr ScenicGpuHost::CreateHostProcessSelfBinding() {
 
 void ScenicGpuHost::AttachSurfaceToWindow(
     int32_t window_id,
-    mojo::ScopedHandle surface_view_holder_token_mojo) {
+    mojo::ScopedHandle export_token_mojo) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
   ScenicWindow* scenic_window = scenic_window_manager_->GetWindow(window_id);
   if (!scenic_window)
     return;
-  fuchsia::ui::views::ViewHolderToken surface_view_holder_token;
-  surface_view_holder_token.value = zx::eventpair(
-      mojo::UnwrapPlatformHandle(std::move(surface_view_holder_token_mojo))
-          .TakeHandle());
-  scenic_window->AttachSurfaceView(std::move(surface_view_holder_token));
+  fuchsia::ui::gfx::ExportToken export_token;
+  export_token.value = zx::eventpair(
+      mojo::UnwrapPlatformHandle(std::move(export_token_mojo)).TakeHandle());
+  scenic_window->AttachSurface(std::move(export_token));
 }
 
 void ScenicGpuHost::OnGpuProcessLaunched(

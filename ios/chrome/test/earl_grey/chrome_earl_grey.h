@@ -318,6 +318,26 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // A GREYAssert is induced if cookies can not be returned.
 - (NSDictionary*)cookies;
 
+#pragma mark - Feature enables checkers
+
+// Returns YES if SlimNavigationManager feature is enabled.
+- (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if BlockNewTabPagePendingLoad feature is enabled.
+- (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if NewOmniboxPopupLayout feature is enabled.
+- (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UmaCellular feature is enabled.
+- (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UKM feature is enabled.
+- (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if WebPaymentsModifiers feature is enabled.
+- (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

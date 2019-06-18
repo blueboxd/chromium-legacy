@@ -150,7 +150,7 @@ void PNGImageDecoder::InitializeNewFrame(size_t index) {
   DCHECK(IntRect(IntPoint(), Size()).Contains(frame_info.frame_rect));
   buffer.SetOriginalFrameRect(frame_info.frame_rect);
 
-  buffer.SetDuration(TimeDelta::FromMilliseconds(frame_info.duration));
+  buffer.SetDuration(base::TimeDelta::FromMilliseconds(frame_info.duration));
   buffer.SetDisposalMethod(frame_info.disposal_method);
   buffer.SetAlphaBlendSource(frame_info.alpha_blend);
 
@@ -787,10 +787,10 @@ bool PNGImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return reader_->FrameIsReceivedAtIndex(index);
 }
 
-TimeDelta PNGImageDecoder::FrameDurationAtIndex(size_t index) const {
+base::TimeDelta PNGImageDecoder::FrameDurationAtIndex(size_t index) const {
   if (index < frame_buffer_cache_.size())
     return frame_buffer_cache_[index].Duration();
-  return TimeDelta();
+  return base::TimeDelta();
 }
 
 }  // namespace blink

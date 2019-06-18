@@ -20,6 +20,7 @@ class FilePath;
 }
 
 namespace profile_metrics {
+enum class BrowserProfileType;
 struct Counts;
 }
 
@@ -111,17 +112,6 @@ class ProfileMetrics {
     NUM_PROFILE_AUTH_METRICS
   };
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class BrowserProfileType {
-    kRegular = 0,
-    kIncognito = 1,
-    kGuest = 2,
-    kSystem = 3,
-    kIndependentIncognitoProfile = 4,
-    kMaxValue = kIndependentIncognitoProfile,
-  };
-
   // Enum for tracking user interactions with the user menu and user manager.
   // Interactions initiated from the content area are logged into a different
   // histogram from those that were initiated from the avatar button.
@@ -187,7 +177,8 @@ class ProfileMetrics {
 #endif
 
   // Returns profile type for logging.
-  static BrowserProfileType GetBrowserProfileType(Profile* profile);
+  static profile_metrics::BrowserProfileType GetBrowserProfileType(
+      Profile* profile);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);

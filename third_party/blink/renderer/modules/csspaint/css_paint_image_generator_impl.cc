@@ -59,7 +59,7 @@ scoped_refptr<Image> CSSPaintImageGeneratorImpl::Paint(
 }
 
 bool CSSPaintImageGeneratorImpl::HasDocumentDefinition() const {
-  return paint_worklet_->GetDocumentDefinitionMap().Contains(name_);
+  return paint_worklet_->GetDocumentDefinitionMap().at(name_);
 }
 
 bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
@@ -77,8 +77,8 @@ bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
     DCHECK(definition);
     return true;
   }
-  if (definition && definition->GetRegisteredDefinitionCount() !=
-                        PaintWorklet::kNumGlobalScopesPerThread) {
+  if (definition->GetRegisteredDefinitionCount() !=
+      PaintWorklet::kNumGlobalScopesPerThread) {
     definition = nullptr;
     return false;
   }
@@ -91,8 +91,6 @@ unsigned CSSPaintImageGeneratorImpl::GetRegisteredDefinitionCountForTesting()
     return 0;
   DocumentPaintDefinition* definition =
       paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  if (!definition)
-    return 0;
   return definition->GetRegisteredDefinitionCount();
 }
 

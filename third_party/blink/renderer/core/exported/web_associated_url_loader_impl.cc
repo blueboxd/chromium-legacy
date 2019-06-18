@@ -102,8 +102,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
                 const WebAssociatedURLLoaderOptions&,
-                network::mojom::FetchRequestMode,
-                network::mojom::FetchCredentialsMode,
+                network::mojom::RequestMode,
+                network::mojom::CredentialsMode,
                 scoped_refptr<base::SingleThreadTaskRunner>);
 
   // ThreadableLoaderClient
@@ -145,8 +145,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderImpl* loader_;
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
-  network::mojom::FetchRequestMode fetch_request_mode_;
-  network::mojom::FetchCredentialsMode credentials_mode_;
+  network::mojom::RequestMode request_mode_;
+  network::mojom::CredentialsMode credentials_mode_;
   base::Optional<WebURLError> error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
@@ -160,13 +160,13 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
-    network::mojom::FetchRequestMode fetch_request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : loader_(loader),
       client_(client),
       options_(options),
-      fetch_request_mode_(fetch_request_mode),
+      request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       error_timer_(std::move(task_runner), this, &ClientAdapter::NotifyError),
       enable_error_notifications_(false),
@@ -203,9 +203,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
 
   if (options_.expose_all_response_headers ||
-      (fetch_request_mode_ != network::mojom::FetchRequestMode::kCors &&
-       fetch_request_mode_ !=
-           network::mojom::FetchRequestMode::kCorsWithForcedPreflight)) {
+      (request_mode_ != network::mojom::RequestMode::kCors &&
+       request_mode_ !=
+           network::mojom::RequestMode::kCorsWithForcedPreflight)) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
@@ -383,17 +383,17 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
   client_ = client;
   client_adapter_ = MakeGarbageCollected<ClientAdapter>(
-      this, client, options_, request.GetFetchRequestMode(),
-      request.GetFetchCredentialsMode(), std::move(task_runner));
+      this, client, options_, request.GetMode(), request.GetCredentialsMode(),
+      std::move(task_runner));
 
   if (allow_load) {
     ResourceLoaderOptions resource_loader_options;
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
     if (options_.grant_universal_access) {
-      const auto mode = new_request.GetFetchRequestMode();
-      DCHECK(mode == network::mojom::FetchRequestMode::kNoCors ||
-             mode == network::mojom::FetchRequestMode::kNavigate);
+      const auto request_mode = new_request.GetMode();
+      DCHECK(request_mode == network::mojom::RequestMode::kNoCors ||
+             request_mode == network::mojom::RequestMode::kNavigate);
       // Some callers, notablly flash, with |grant_universal_access| want to
       // have an origin matching with referrer.
       KURL referrer(request.HttpHeaderField(http_names::kReferer));

@@ -24,6 +24,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::SENSORS:
     case PermissionType::ACCESSIBILITY_EVENTS:
     case PermissionType::PAYMENT_HANDLER:
+    case PermissionType::WAKE_LOCK_SCREEN:
 
     // Background Sync and Background Fetch browser tests require
     // permission to be granted by default.
@@ -43,6 +44,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::CLIPBOARD_READ:
     case PermissionType::CLIPBOARD_WRITE:
     case PermissionType::NUM:
+    case PermissionType::WAKE_LOCK_SYSTEM:
       return false;
   }
 

@@ -98,9 +98,6 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
   ScopedJavaLocalRef<jstring> java_best_primary_icon_url =
       base::android::ConvertUTF8ToJavaString(env,
                                              info.best_primary_icon_url.spec());
-  ScopedJavaLocalRef<jstring> java_splash_screen_url =
-      base::android::ConvertUTF8ToJavaString(env,
-                                             info.splash_screen_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (!icon_bitmap.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
@@ -117,8 +114,7 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
       java_short_name, java_best_primary_icon_url, java_bitmap,
       is_icon_maskable, info.display, info.orientation, info.source,
       OptionalSkColorToJavaColor(info.theme_color),
-      OptionalSkColorToJavaColor(info.background_color), java_splash_screen_url,
-      callback_pointer);
+      OptionalSkColorToJavaColor(info.background_color), callback_pointer);
 }
 
 // Adds a shortcut which opens in a browser tab to the launcher.

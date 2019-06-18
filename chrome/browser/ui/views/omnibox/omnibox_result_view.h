@@ -88,8 +88,9 @@ class OmniboxResultView : public views::View,
   // Removes the shown |match_| from history, if possible.
   void RemoveSuggestion() const;
 
-  // Call when updating |match_| to possibly fire Accessiblity events.
+  // Helper to emit accessibility events (may only emit if conditions are met).
   void EmitTextChangedAccessiblityEvent();
+  void EmitSelectedChildrenChangedAccessibilityEvent();
 
   // views::View:
   void Layout() override;

@@ -181,7 +181,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // performed manually without passing the download to the system AV function.
   //
   // This GUID is only used on Windows.
-  virtual std::string ApplicationClientIdForFileScanning() const;
+  virtual std::string ApplicationClientIdForFileScanning();
 
   // Checks whether download is allowed to continue. |check_download_allowed_cb|
   // is called with the decision on completion.

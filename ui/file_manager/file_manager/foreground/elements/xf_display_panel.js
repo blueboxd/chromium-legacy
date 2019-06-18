@@ -3,17 +3,20 @@
 // found in the LICENSE file.
 
 /**
- * A panel to display a collection (or list) of PanelItem.
+ * A panel to display a collection of PanelItem.
  */
 class DisplayPanel extends HTMLElement {
   constructor() {
-    super();
-    const host = document.createElement('template');
-    host.innerHTML = this.constructor.template_;
-    this.attachShadow({mode: 'open'}).appendChild(host.content.cloneNode(true));
+    DisplayPanel.createElement_.call(super());
 
-    /** @private {Element} */
-    this.container_ = this.shadowRoot.querySelector('#container');
+    /** @private {!HTMLElement} */
+    this.summary_ = this.shadowRoot.querySelector('#summary');
+
+    /** @private {!HTMLElement} */
+    this.separator_ = this.shadowRoot.querySelector('#separator');
+
+    /** @private {!HTMLElement} */
+    this.panels_ = this.shadowRoot.querySelector('#panels');
 
     /**
      * True if the panel is not visible.
@@ -23,25 +26,36 @@ class DisplayPanel extends HTMLElement {
     this.hidden_ = true;
 
     /**
-     * True if the panel been collapsed into summary view.
+     * True if the panel is collapsed to summary view.
      * @type {boolean}
      * @private
      */
     this.collapsed_ = false;
 
     /**
-     * PanelItems that are being hosted in the UI.
-     * @type {Array<PanelItem>}
+     * Collection of PanelItems hosted in this DisplayPanel.
+     * @type {!Array<PanelItem>}
      * @private
      */
     this.items_ = [];
   }
 
   /**
-   * Static getter for the custom element template.
+   * Creates an instance of DisplayPanel, attaching the template clone.
    * @private
    */
-  static get template_() {
+  static createElement_() {
+    const template = document.createElement('template');
+    template.innerHTML = DisplayPanel.html_();
+    const fragment = template.content.cloneNode(true);
+    this.attachShadow({mode: 'open'}).appendChild(fragment);
+  }
+
+  /**
+   * Get the custom element template string.
+   * @private
+   */
+  static html_() {
     return `<style>
               #container {
                   align-items: stretch;
@@ -55,21 +69,126 @@ class DisplayPanel extends HTMLElement {
                   max-width: min-content;
                   z-index: 100;
               }
+              #separator {
+                background-color: rgba(60, 64, 67, 0.15);
+                height: 1px;
+              }
+              #panels {
+                  max-height: 204px;
+                  overflow-y: auto;
+              }
             </style>
-            <div id="container"></div>`;
+            <div id="container">
+              <div id="summary"></div>
+              <div id="separator" hidden></div>
+              <div id="panels"></div>
+            </div>`;
+  }
+
+  /**
+   * Event handler to toggle the visible state of panel items.
+   * @private
+   */
+  toggleSummary(event) {
+    const panel = event.target.parent;
+    const summaryPanel = panel.summary_.querySelector('xf-panel-item');
+    const expandButton =
+        summaryPanel.shadowRoot.querySelector('#primary-action');
+    if (panel.collapsed_) {
+      panel.collapsed_ = false;
+      expandButton.setAttribute('data-category', 'collapse');
+      panel.panels_.hidden = false;
+      panel.separator_.hidden = false;
+    } else {
+      panel.collapsed_ = true;
+      expandButton.setAttribute('data-category', 'expand');
+      panel.panels_.hidden = true;
+      panel.separator_.hidden = true;
+    }
+  }
+
+  /**
+   * Update the summary panel item progress indicator.
+   * @private
+   */
+  updateProgress() {
+    let total = 0;
+
+    if (this.items_.length == 0) {
+      return;
+    }
+    for (let i = 0; i < this.items_.length; ++i) {
+      total += Number(this.items_[i].progress);
+    }
+    total /= this.items_.length;
+    const summaryPanel = this.summary_.querySelector('xf-panel-item');
+    if (summaryPanel) {
+      // TODO(crbug.com/947388) i18n this string (add setter).
+      summaryPanel.primaryText = total.toFixed(0) + '% complete';
+      summaryPanel.progress = total;
+    }
+  }
+
+  /**
+   * Update the summary panel.
+   * @private
+   */
+  updateSummaryPanel() {
+    let summaryHost = this.shadowRoot.querySelector('#summary');
+    let summaryPanel = summaryHost.querySelector('#summary-panel');
+
+    // If there's only one panel item active, no need for summary.
+    if (this.items_.length <= 1 && summaryPanel) {
+      const button = summaryPanel.primaryButton;
+      if (button) {
+        button.removeEventListener('click', this.toggleSummary);
+      }
+      summaryPanel.remove();
+      return;
+    }
+    // Show summary panel if there are more than 1 progress panels.
+    let count = 0;
+    for (let i = 0; i < this.items_.length; ++i) {
+      if (this.items_[i].panelType == this.items_[i].panelTypeProgress) {
+        count++;
+      }
+    }
+    if (count > 1 && !summaryPanel) {
+      summaryPanel = document.createElement('xf-panel-item');
+      summaryPanel.setAttribute('panel-type', 1);
+      summaryPanel.id = 'summary-panel';
+      const button = summaryPanel.primaryButton;
+      if (button) {
+        button.parent = this;
+        button.addEventListener('click', this.toggleSummary);
+      }
+      summaryHost.appendChild(summaryPanel);
+      this.panels_.hidden = true;
+      this.collapsed_ = true;
+    }
+    if (summaryPanel) {
+      summaryPanel.setAttribute('count', count);
+      this.updateProgress();
+    }
   }
 
   /**
    * Add a panel entry element inside our display panel.
+   * @param {string} id The identifier attached to this panel.
    * @return {PanelItem}
    * @public
    */
-  addPanelItem() {
+  addPanelItem(id) {
     const panel = document.createElement('xf-panel-item');
+    panel.id = id;
+    // Set the containing parent so the child panel can
+    // trigger updates in the parent (e.g. progress summary %).
+    panel.parent = this;
     panel.setAttribute('indicator', 'progress');
-    this.container_.appendChild(panel);
-    this.items_.push(panel);
-    return panel;
+    this.panels_.appendChild(panel);
+    this.items_.push(/** @type {!PanelItem} */ (panel));
+    this.updateSummaryPanel();
+    return /** @type {!PanelItem} */ (panel);
   }
 
   /**
@@ -78,12 +197,22 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   removePanelItem(item) {
-    const pos = this.items_.indexOf(item);
-    if (pos === -1) {
+    const index = this.items_.indexOf(item);
+    if (index === -1) {
       return;
     }
     item.remove();
-    this.items_.splice(pos, 1);
+    this.items_.splice(index, 1);
+    this.updateSummaryPanel();
+  }
+
+  /**
+   * Find a panel with given 'id'.
+   * @private
+   */
+  findPanelItemById(id) {
+    const panel = this.shadowRoot.querySelector('xf-panel-item[id=' + id + ']');
+    return panel || null;
   }
 }
 

@@ -25,7 +25,6 @@ ASH_PUBLIC_EXPORT bool operator==(const UserInfo& a, const UserInfo& b) {
          a.display_email == b.display_email && a.avatar == b.avatar &&
          a.is_new_profile == b.is_new_profile &&
          a.is_ephemeral == b.is_ephemeral &&
-         a.is_device_owner == b.is_device_owner &&
          a.has_gaia_account == b.has_gaia_account &&
          a.should_display_managed_ui == b.should_display_managed_ui;
 }

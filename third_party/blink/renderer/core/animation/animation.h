@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
+#include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -94,8 +95,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                            AnimationTimeline*,
                            ExceptionState&);
 
-  Animation(ExecutionContext*, DocumentTimeline*, AnimationEffect*);
-
+  Animation(ExecutionContext*, AnimationTimeline*, AnimationEffect*);
   ~Animation() override;
   void Dispose();
 
@@ -137,7 +137,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void play(ExceptionState& = ASSERT_NO_EXCEPTION);
   void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
   void finish(ExceptionState& = ASSERT_NO_EXCEPTION);
-  void updatePlaybackRate(double playback_rate);
+  void updatePlaybackRate(double playback_rate,
+                          ExceptionState& = ASSERT_NO_EXCEPTION);
 
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
@@ -158,20 +159,16 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void ContextDestroyed(ExecutionContext*) override;
 
   double playbackRate() const;
-  void setPlaybackRate(double);
-  AnimationTimeline* timeline() {
-    return static_cast<AnimationTimeline*>(timeline_);
-  }
-  const DocumentTimeline* TimelineInternal() const { return timeline_; }
-  DocumentTimeline* TimelineInternal() { return timeline_; }
-  double TimelineTime() const {
-    return timeline_ ? timeline_->currentTime() : NullValue();
-  }
+  void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
+  AnimationTimeline* timeline() { return timeline_; }
+  Document* GetDocument();
 
   double startTime(bool& is_null) const;
   base::Optional<double> startTime() const;
   base::Optional<double> StartTimeInternal() const { return start_time_; }
-  void setStartTime(double, bool is_null);
+  void setStartTime(double,
+                    bool is_null,
+                    ExceptionState& = ASSERT_NO_EXCEPTION);
 
   const AnimationEffect* effect() const { return content_.Get(); }
   AnimationEffect* effect() { return content_.Get(); }
@@ -299,6 +296,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void QueueFinishedEvent();
 
   void ResetPendingTasks();
+  double TimelineTime() const;
+  DocumentTimeline& TickingTimeline();
 
   String id_;
 
@@ -328,7 +327,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   // Document refers to the timeline's document if there is a timeline.
   // Otherwise it refers to the document for the execution context.
   Member<Document> document_;
-  Member<DocumentTimeline> timeline_;
+  Member<AnimationTimeline> timeline_;
 
   // Reflects all pausing, including via pauseForTesting().
   bool paused_;

@@ -134,9 +134,7 @@ bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
 }
 
 bool AssistantViewDelegateImpl::IsTabletMode() const {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 void AssistantViewDelegateImpl::OnDialogPlateButtonPressed(

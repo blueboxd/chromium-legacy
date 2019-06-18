@@ -97,10 +97,10 @@ bool DocumentTimeline::IsActive() const {
   return document_->GetPage();
 }
 
-void DocumentTimeline::AnimationAttached(Animation& animation) {
-  DCHECK_EQ(animation.TimelineInternal(), this);
-  DCHECK(!animations_.Contains(&animation));
-  animations_.insert(&animation);
+void DocumentTimeline::AnimationAttached(Animation* animation) {
+  DCHECK_EQ(&animation->GetDocument()->Timeline(), this);
+  DCHECK(!animations_.Contains(animation));
+  animations_.insert(animation);
 }
 
 Animation* DocumentTimeline::Play(AnimationEffect* child) {
@@ -216,6 +216,10 @@ void DocumentTimeline::ResetForTesting() {
   zero_time_initialized_ = true;
   playback_rate_ = 1;
   last_current_time_internal_ = 0;
+}
+
+void DocumentTimeline::SetTimingForTesting(PlatformTiming* timing) {
+  timing_ = timing;
 }
 
 double DocumentTimeline::currentTime(bool& is_null) {

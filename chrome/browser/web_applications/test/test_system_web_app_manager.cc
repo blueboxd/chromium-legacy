@@ -13,14 +13,14 @@ TestSystemWebAppManager::TestSystemWebAppManager(
     Profile* profile,
     PendingAppManager* pending_app_manager)
     : SystemWebAppManager(profile, pending_app_manager) {
-  SetSystemApps(base::flat_map<SystemAppType, GURL>());
+  SetSystemApps(base::flat_map<SystemAppType, SystemAppInfo>());
 }
 
 TestSystemWebAppManager::~TestSystemWebAppManager() = default;
 
 void TestSystemWebAppManager::SetSystemApps(
-    base::flat_map<SystemAppType, GURL> system_app_urls) {
-  SetSystemAppsForTesting(std::move(system_app_urls));
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps) {
+  SetSystemAppsForTesting(std::move(system_apps));
 }
 
 void TestSystemWebAppManager::SetUpdatePolicy(

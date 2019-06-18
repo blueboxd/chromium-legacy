@@ -53,7 +53,7 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
   PlatformNotificationContextTriggerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
         notification_browser_client_(&browser_context_),

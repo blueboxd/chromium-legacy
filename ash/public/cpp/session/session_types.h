@@ -29,6 +29,8 @@ enum class AddUserSessionPolicy {
   ERROR_NO_ELIGIBLE_USERS,
   // Disallowed due to reaching maximum supported user.
   ERROR_MAXIMUM_USERS_REACHED,
+  // Disallowed multi-profile because device is locked to single user.
+  ERROR_LOCKED_TO_SINGLE_USER,
 };
 
 // Defines the cycle direction for |CycleActiveUser|.

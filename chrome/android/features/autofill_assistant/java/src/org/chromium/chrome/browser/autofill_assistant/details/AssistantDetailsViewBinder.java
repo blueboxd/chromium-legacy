@@ -16,7 +16,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
-import android.os.Build;
 import android.support.annotation.StyleRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -31,8 +30,6 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -77,7 +74,7 @@ class AssistantDetailsViewBinder
         final TextView mTotalPriceLabelView;
         final TextView mTotalPriceView;
 
-        public ViewHolder(Context context, View detailsView) {
+        ViewHolder(Context context, View detailsView) {
             mDefaultImage = (GradientDrawable) context.getResources().getDrawable(
                     R.drawable.autofill_assistant_default_details);
             mImageView = detailsView.findViewById(R.id.details_image);
@@ -93,6 +90,7 @@ class AssistantDetailsViewBinder
     }
 
     private final Context mContext;
+    private final Locale mLocale;
 
     private final int mImageWidth;
     private final int mImageHeight;
@@ -102,17 +100,16 @@ class AssistantDetailsViewBinder
     private ValueAnimator mPulseAnimation;
     private ImageFetcher mImageFetcher;
 
-    AssistantDetailsViewBinder(Context context) {
+    AssistantDetailsViewBinder(Context context, Locale locale, ImageFetcher imageFetcher) {
         mContext = context;
+        mLocale = locale;
         mImageWidth = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
         mImageHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
-        mPulseAnimationStartColor =
-                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_300);
-        mPulseAnimationEndColor =
-                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_200);
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+        mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_300);
+        mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_200);
+        mImageFetcher = imageFetcher;
     }
 
     /**
@@ -226,22 +223,16 @@ class AssistantDetailsViewBinder
         return TextUtils.join(" • ", parts);
     }
 
-    private Locale getLocale() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                ? mContext.getResources().getConfiguration().getLocales().get(0)
-                : mContext.getResources().getConfiguration().locale;
-    }
-
     private String formatDetailsTime(Date date) {
-        DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, mLocale);
         String timeFormatPattern = (df instanceof SimpleDateFormat)
                 ? ((SimpleDateFormat) df).toPattern()
                 : DETAILS_TIME_FORMAT;
-        return new SimpleDateFormat(timeFormatPattern, getLocale()).format(date);
+        return new SimpleDateFormat(timeFormatPattern, mLocale).format(date);
     }
 
     private String formatDetailsDate(Date date) {
-        return new SimpleDateFormat(DETAILS_DATE_FORMAT, getLocale()).format(date);
+        return new SimpleDateFormat(DETAILS_DATE_FORMAT, mLocale).format(date);
     }
 
     private void hideIfEmpty(TextView view) {
@@ -252,15 +243,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
+                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
+                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
                 details.getHighlightLine2(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
                 details.getHighlightLine3(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, org.chromium.chrome.R.style.TextAppearance_BlackButtonText);
+                /* highlight= */ false, R.style.TextAppearance_BlackButtonText);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 
@@ -291,7 +282,7 @@ class AssistantDetailsViewBinder
         } else if (approvalRequired) {
             // De-emphasized style.
             view.setTextColor(ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), org.chromium.chrome.R.color.modern_grey_300));
+                    mContext.getResources(), R.color.modern_grey_300));
         }
     }
 

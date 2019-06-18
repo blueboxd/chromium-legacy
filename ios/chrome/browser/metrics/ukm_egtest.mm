@@ -30,7 +30,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -204,7 +203,7 @@ void SignOut() {
 
 + (void)setUp {
   [super setUp];
-  if (!base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
+  if (![ChromeEarlGrey isUKMEnabled]) {
     // ukm::kUkmFeature feature is not enabled. You need to pass
     // --enable-features=Ukm command line argument in order to run this test.
     DCHECK(false);

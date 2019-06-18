@@ -5,6 +5,7 @@ piman@chromium.org
 vmiura@chromium.org
 zmo@chromium.org
 sunnyps@chromium.org
+penghuang@chromium.org
 
 # GPU memory buffer implementations.
 per-file *gpu_memory_buffer*=reveman@chromium.org

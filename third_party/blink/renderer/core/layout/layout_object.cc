@@ -3948,7 +3948,7 @@ void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
   // If we're locked, mark our descendants as needing this change. This is used
   // a signal to ensure we mark the element as needing effective allowed
   // touch action recalculation when the element becomes unlocked.
-  if (PrePaintBlockedByDisplayLock()) {
+  if (PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
     bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
     return;
   }
@@ -3956,7 +3956,7 @@ void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
   LayoutObject* obj = ParentCrossingFrames();
   while (obj && !obj->DescendantEffectiveAllowedTouchActionChanged()) {
     obj->bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
-    if (obj->PrePaintBlockedByDisplayLock())
+    if (obj->PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren))
       break;
 
     obj = obj->ParentCrossingFrames();

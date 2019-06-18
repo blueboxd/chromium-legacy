@@ -746,7 +746,7 @@ PDFViewer.prototype = {
   sendBackgroundColorForPrintPreview_: function() {
     this.pluginController_.postMessage({
       type: 'backgroundColorChanged',
-      backgroundColor: document.documentElement.hasAttribute('dark') ?
+      backgroundColor: this.dark_ ?
           PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
           PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR,
     });
@@ -1014,7 +1014,7 @@ PDFViewer.prototype = {
         this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
         return true;
       case 'darkModeChanged':
-        document.documentElement.toggleAttribute('dark', message.data.darkMode);
+        this.dark_ = message.data.darkMode;
         if (this.isPrintPreview_) {
           this.sendBackgroundColorForPrintPreview_();
         }

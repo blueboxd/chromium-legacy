@@ -25,6 +25,7 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   ~VulkanCommandBuffer();
 
   bool Initialize();
+  // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
 
   // Submit primary command buffer to the queue.

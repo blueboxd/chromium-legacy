@@ -52,6 +52,10 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif  // defined(OS_ANDROID)
+
 namespace content {
 
 namespace {
@@ -2389,6 +2393,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // Test deduplication of SameSite cookie deprecation messages.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        SameSiteCookieDeprecationMessages) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/974701): This test is broken on Android that is
+  // Marshmallow or older.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    return;
+  }
+#endif  // defined(OS_ANDROID)
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kCookieDeprecationMessages);
 

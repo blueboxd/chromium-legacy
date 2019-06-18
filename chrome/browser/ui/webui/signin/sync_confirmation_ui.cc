@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -105,7 +104,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
       g_browser_process->GetApplicationLocale(), &strings);
   source->AddLocalizedStrings(strings);
 
-  DarkModeHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
 }
 

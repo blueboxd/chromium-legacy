@@ -96,20 +96,22 @@ void OneClickSigninDialogView::Init() {
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
+  auto label = std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW, email_));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SizeToFit(kMinimumDialogLabelWidth);
-  layout->AddView(label);
+  layout->AddView(std::move(label));
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-  learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more_link_->set_listener(this);
-  learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(learn_more_link_, 1, 1, views::GridLayout::TRAILING,
-                  views::GridLayout::CENTER);
+  auto learn_more_link =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link->set_listener(this);
+  learn_more_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  learn_more_link_ =
+      layout->AddView(std::move(learn_more_link), 1, 1,
+                      views::GridLayout::TRAILING, views::GridLayout::CENTER);
 }
 
 base::string16 OneClickSigninDialogView::GetWindowTitle() const {

@@ -52,7 +52,7 @@ class SESSIONS_EXPORT IOSLiveTab : public LiveTab,
   web::WebState* web_state_;
 
   // Needed to return an empty string in GetUserAgentOverride().
-  static std::string user_agent_override_;
+  std::string user_agent_override_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSLiveTab);
 };

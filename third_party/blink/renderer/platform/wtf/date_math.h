@@ -62,7 +62,7 @@ WTF_EXPORT double ParseDateFromNullTerminatedCharacters(
     const char* date_string);
 
 // utcOffset: [-720,720].
-WTF_EXPORT String MakeRFC2822DateString(const Time date, int utc_offset);
+WTF_EXPORT String MakeRFC2822DateString(const base::Time date, int utc_offset);
 
 const char kWeekdayName[7][4] = {"Sun", "Mon", "Tue", "Wed",
                                  "Thu", "Fri", "Sat"};

@@ -106,7 +106,7 @@ class WebRemoteFrame : public WebFrame {
   // process.
   virtual void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
   virtual void SetReplicatedInsecureNavigationsSet(
-      const std::vector<unsigned>&) = 0;
+      const WebVector<unsigned>&) = 0;
 
   // Reports resource timing info for a navigation in this frame.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;

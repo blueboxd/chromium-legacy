@@ -9,6 +9,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/base/stack_layout.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
@@ -68,118 +69,6 @@ constexpr base::TimeDelta kDividerAnimationFadeOutDuration =
 // Greeting animation.
 constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
-
-// StackLayout -----------------------------------------------------------------
-// TODO(wutao): Move an implementation of StackLayout to ash/assistant/ui/base
-// so that it can be reused across standalone and embedded Assistant
-// implementations.
-
-// A layout manager which lays out its views atop each other. This differs from
-// FillLayout in that we respect the preferred size of views during layout. It's
-// possible to explicitly specify which dimension to respect. In contrast,
-// FillLayout will cause its views to match the bounds of the host.
-class StackLayout : public views::LayoutManager {
- public:
-  enum class RespectDimension : uint32_t {
-    // Respect width. If enabled, child's preferred width will be used and will
-    // be horizontally center positioned. Otherwise, the child will be stretched
-    // to match parent width.
-    kWidth = 1,
-    // Respect height. If enabled, child's preferred height will be used.
-    // Otherwise, the child will be stretched to match parent height.
-    // Note that the child is always top-aligned.
-    kHeight = 1 << 1,
-    kAll = kWidth | kHeight,
-  };
-
-  enum class VerticalAlignment {
-    kCenter = 1,
-  };
-
-  StackLayout() = default;
-  ~StackLayout() override = default;
-
-  void Installed(views::View* host) override { host_ = host; }
-
-  void ViewRemoved(views::View* host, views::View* view) override {
-    DCHECK(view);
-    respect_dimension_map_.erase(view);
-    vertical_alignment_map_.erase(view);
-  }
-
-  void SetRespectDimensionForView(views::View* view,
-                                  RespectDimension dimension) {
-    DCHECK(host_ && view->parent() == host_);
-    respect_dimension_map_[view] = dimension;
-  }
-
-  void SetVerticalAlignmentForView(views::View* view,
-                                   VerticalAlignment alignment) {
-    DCHECK(host_ && view->parent() == host_);
-    vertical_alignment_map_[view] = alignment;
-  }
-
-  gfx::Size GetPreferredSize(const views::View* host) const override {
-    return std::accumulate(host->children().cbegin(), host->children().cend(),
-                           gfx::Size(), [](gfx::Size size, const auto* v) {
-                             size.SetToMax(v->GetPreferredSize());
-                             return size;
-                           });
-  }
-
-  int GetPreferredHeightForWidth(const views::View* host,
-                                 int width) const override {
-    const auto& children = host->children();
-    if (children.empty())
-      return 0;
-    std::vector<int> heights(children.size());
-    std::transform(
-        children.cbegin(), children.cend(), heights.begin(),
-        [width](const views::View* v) { return v->GetHeightForWidth(width); });
-    return *std::max_element(heights.cbegin(), heights.cend());
-  }
-
-  void Layout(views::View* host) override {
-    const int host_width = host->GetContentsBounds().width();
-    const int host_height = host->GetContentsBounds().height();
-
-    for (auto* child : host->children()) {
-      int child_width = host_width;
-      int child_height = host_height;
-
-      int child_x = 0;
-      uint32_t dimension = static_cast<uint32_t>(RespectDimension::kAll);
-
-      if (respect_dimension_map_.find(child) != respect_dimension_map_.end())
-        dimension = static_cast<uint32_t>(respect_dimension_map_[child]);
-
-      if (dimension & static_cast<uint32_t>(RespectDimension::kWidth)) {
-        child_width = std::min(child->GetPreferredSize().width(), host_width);
-        child_x = (host_width - child_width) / 2;
-      }
-
-      if (dimension & static_cast<uint32_t>(RespectDimension::kHeight))
-        child_height = child->GetHeightForWidth(child_width);
-
-      int child_y = 0;
-      auto iter = vertical_alignment_map_.find(child);
-      if (iter != vertical_alignment_map_.end()) {
-        VerticalAlignment vertical_alignment = iter->second;
-        if (vertical_alignment == VerticalAlignment::kCenter)
-          child_y = std::max(0, (host_height - child_height) / 2);
-      }
-
-      child->SetBounds(child_x, child_y, child_width, child_height);
-    }
-  }
-
- private:
-  views::View* host_ = nullptr;
-  std::map<views::View*, RespectDimension> respect_dimension_map_;
-  std::map<views::View*, VerticalAlignment> vertical_alignment_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackLayout);
-};
 
 // HorizontalSeparator ---------------------------------------------------------
 
@@ -292,15 +181,15 @@ views::View* AssistantMainStage::CreateContentLayoutContainer() {
   InitGreetingLabel();
   content_layout_container->AddChildView(greeting_label_);
   auto* stack_layout = content_layout_container->SetLayoutManager(
-      std::make_unique<StackLayout>());
+      std::make_unique<ash::StackLayout>());
 
   // We need to stretch |greeting_label_| to match its parent so that it
   // won't use heuristics in Label to infer line breaking, which seems to cause
   // text clipping with DPI adjustment. See b/112843496.
   stack_layout->SetRespectDimensionForView(
-      greeting_label_, StackLayout::RespectDimension::kHeight);
+      greeting_label_, ash::StackLayout::RespectDimension::kHeight);
   stack_layout->SetVerticalAlignmentForView(
-      greeting_label_, StackLayout::VerticalAlignment::kCenter);
+      greeting_label_, ash::StackLayout::VerticalAlignment::kCenter);
 
   auto* main_content_layout_container = CreateMainContentLayoutContainer();
   content_layout_container->AddChildView(main_content_layout_container);
@@ -308,7 +197,8 @@ views::View* AssistantMainStage::CreateContentLayoutContainer() {
   // Do not respect height, otherwise bounds will not be set correctly for
   // scrolling.
   stack_layout->SetRespectDimensionForView(
-      main_content_layout_container, StackLayout::RespectDimension::kWidth);
+      main_content_layout_container,
+      ash::StackLayout::RespectDimension::kWidth);
 
   return content_layout_container;
 }
@@ -363,7 +253,7 @@ views::View* AssistantMainStage::CreateDividerLayoutContainer() {
   // Dividers: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively.
   views::View* divider_container = new views::View();
-  divider_container->SetLayoutManager(std::make_unique<StackLayout>());
+  divider_container->SetLayoutManager(std::make_unique<ash::StackLayout>());
 
   // Progress indicator, which will be animated on its own layer.
   progress_indicator_ = new ash::AssistantProgressIndicator();

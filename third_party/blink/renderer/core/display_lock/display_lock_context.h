@@ -110,8 +110,8 @@ class CORE_EXPORT DisplayLockContext final
   void DidStyle(LifecycleTarget);
   bool ShouldLayout(LifecycleTarget) const;
   void DidLayout(LifecycleTarget);
-  bool ShouldPrePaint() const;
-  void DidPrePaint();
+  bool ShouldPrePaint(LifecycleTarget) const;
+  void DidPrePaint(LifecycleTarget);
   bool ShouldPaint() const;
   void DidPaint();
 

@@ -3116,6 +3116,18 @@ void GLES2Implementation::DispatchCompute(GLuint num_groups_x,
   CheckGLError();
 }
 
+void GLES2Implementation::DispatchComputeIndirect(GLintptr offset) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDispatchComputeIndirect("
+                     << offset << ")");
+  if (offset < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDispatchComputeIndirect", "offset < 0");
+    return;
+  }
+  helper_->DispatchComputeIndirect(offset);
+  CheckGLError();
+}
+
 void GLES2Implementation::GetProgramInterfaceiv(GLuint program,
                                                 GLenum program_interface,
                                                 GLenum pname,

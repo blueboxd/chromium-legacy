@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_FORMAT_UTILS_H_
 #define MEDIA_GPU_FORMAT_UTILS_H_
 
+#include "base/optional.h"
 #include "media/base/video_types.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
@@ -14,8 +15,8 @@ namespace media {
 MEDIA_GPU_EXPORT VideoPixelFormat
 GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format);
 
-MEDIA_GPU_EXPORT gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
-    VideoPixelFormat pixel_format);
+MEDIA_GPU_EXPORT base::Optional<gfx::BufferFormat>
+VideoPixelFormatToGfxBufferFormat(VideoPixelFormat pixel_format);
 
 }  // namespace media
 

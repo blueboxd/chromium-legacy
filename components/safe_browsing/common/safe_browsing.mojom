@@ -95,6 +95,8 @@ struct ThreatDOMDetailsNode {
   // routing ID of the local or remote frame in this renderer process that is
   // responsible for rendering the contents of this frame (to handle OOPIFs).
   int32 child_frame_routing_id;
+  // This field holds inline JavaScript content and remotely hosted scripts.
+  string inner_html;
 };
 
 interface ThreatReporter {

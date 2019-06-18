@@ -340,11 +340,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnDisplayChanged(const display::Display& display) override;
   void BeginKeyboardEvent() override;
   void EndKeyboardEvent() override;
-
-  void ForwardKeyboardEvent(std::unique_ptr<InputEvent> event,
-                            bool skip_in_browser) override;
   void ForwardKeyboardEventWithCommands(
       std::unique_ptr<InputEvent> event,
+      const std::vector<uint8_t>& native_event_data,
       bool skip_in_browser,
       const std::vector<EditCommand>& commands) override;
   void RouteOrProcessMouseEvent(std::unique_ptr<InputEvent> event) override;

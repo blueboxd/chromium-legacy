@@ -206,6 +206,10 @@ void WebTestMessageFilter::OnSetPermission(
     type = PermissionType::BACKGROUND_FETCH;
   } else if (name == "periodic-background-sync") {
     type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (name == "wake-lock-screen") {
+    type = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (name == "wake-lock-system") {
+    type = PermissionType::WAKE_LOCK_SYSTEM;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;

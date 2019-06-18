@@ -59,6 +59,7 @@ class VULKAN_EXPORT VulkanSwapChain {
                   const VkSurfaceCapabilitiesKHR& surface_caps,
                   const VkSurfaceFormatKHR& surface_format,
                   std::unique_ptr<VulkanSwapChain> old_swap_chain);
+  // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
   gfx::SwapResult SwapBuffers();
 

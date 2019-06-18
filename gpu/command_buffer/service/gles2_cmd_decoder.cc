@@ -12001,6 +12001,21 @@ void GLES2DecoderImpl::DoGetShaderiv(GLuint shader_id,
     return;
   }
 
+  if (pname == GL_COMPILE_STATUS) {
+    if (shader->HasCompiled()) {
+      *params = compile_shader_always_succeeds_ ? true : shader->valid();
+      return;
+    }
+    // Lookup if there is compiled shader cache
+    if (program_manager()->HasCachedCompileStatus(shader)) {
+      // Only successful compile is cached
+      // Fail-to-compile shader is not cached as needs compiling
+      // to get log info
+      *params = true;
+      return;
+    }
+  }
+
   // Compile now for statuses that require it.
   switch (pname) {
     case GL_COMPILE_STATUS:

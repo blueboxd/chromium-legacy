@@ -908,13 +908,16 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     // Crop the source image to the backdrop_filter_bounds.
     gfx::Rect filter_clip = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
         backdrop_filter_bounds_transform, backdrop_filter_bounds->rect()));
-    filter_clip.Intersect(gfx::Rect(src_image->width(), src_image->height()));
+    gfx::Rect src_rect(src_image->width(), src_image->height());
+    filter_clip.Intersect(src_rect);
     if (filter_clip.IsEmpty())
       return FinalizeImage(surface);
-    src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
-    src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
-    dest_rect = RectToSkRect(
-        ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+    if (filter_clip != src_rect) {
+      src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
+      src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
+      dest_rect = RectToSkRect(
+          ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+    }
   }
 
   SkIPoint offset;

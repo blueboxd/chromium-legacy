@@ -155,15 +155,14 @@ class Shell : public WebContentsDelegate,
       const GURL& origin,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
-  bool IsFullscreenForTabOrPending(
-      const WebContents* web_contents) const override;
+  bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
   blink::WebDisplayMode GetDisplayMode(
-     const WebContents* web_contents) const override;
+      const WebContents* web_contents) override;
   void RequestToLockMouse(WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target) override;
   void CloseContents(WebContents* source) override;
-  bool CanOverscrollContent() const override;
+  bool CanOverscrollContent() override;
   void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;

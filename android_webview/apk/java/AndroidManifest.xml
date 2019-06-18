@@ -9,12 +9,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="{{manifest_package|default('com.android.webview')}}"
     tools:ignore="MissingLeanbackLauncher">
-    <uses-sdk android:minSdkVersion="{{min_sdk_version|default(21)}}"
-              android:targetSdkVersion="{{target_sdk_version|default(28)}}"
-              {% if max_sdk_version is defined %}
-                android:maxSdkVersion="{{max_sdk_version}}"
-              {% endif %}>
-    </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"
                   android:required="false" />

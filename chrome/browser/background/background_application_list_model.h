@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/background/background_contents_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -35,7 +37,8 @@ class ExtensionRegistry;
 // BackgroundContents).
 class BackgroundApplicationListModel
     : public content::NotificationObserver,
-      public extensions::ExtensionRegistryObserver {
+      public extensions::ExtensionRegistryObserver,
+      public BackgroundContentsServiceObserver {
  public:
   // Observer is informed of changes to the model.  Users of the
   // BackgroundApplicationListModel should anticipate that associated data,
@@ -120,18 +123,22 @@ class BackgroundApplicationListModel
   // Returns the Application associated with |extension| or NULL.
   Application* FindApplication(const extensions::Extension* extension);
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // extensions::ExtensionRegistryObserver implementation.
+  // extensions::ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
+
+  // BackgroundContentsServiceObserver:
+  void OnBackgroundContentsServiceChanged() override;
+  void OnBackgroundContentsServiceDestroying() override;
 
   // Intended to be called when extension system is ready.
   void OnExtensionSystemReady();
@@ -160,14 +167,17 @@ class BackgroundApplicationListModel
   base::ObserverList<Observer, true>::Unchecked observers_;
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
-  bool ready_;
+  bool ready_{false};
 
   // Listens to extension load, unload notifications.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
-  base::WeakPtrFactory<BackgroundApplicationListModel> weak_ptr_factory_;
+  ScopedObserver<BackgroundContentsService, BackgroundContentsServiceObserver>
+      background_contents_service_observer_{this};
+
+  base::WeakPtrFactory<BackgroundApplicationListModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationListModel);
 };

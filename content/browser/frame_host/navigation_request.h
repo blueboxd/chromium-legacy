@@ -226,7 +226,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return navigation_handle_.get();
   }
 
-  int net_error() { return net_error_; }
+  net::Error net_error() { return net_error_; }
+  void set_net_error(net::Error net_error) { net_error_ = net_error; }
 
   const std::string& GetMimeType() {
     return response_ ? response_->head.mime_type : base::EmptyString();
@@ -794,7 +795,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Holds information for the navigation while the WillFailRequest
   // checks are performed by the NavigationHandle.
   bool has_stale_copy_in_cache_;
-  int net_error_;
+  net::Error net_error_ = net::OK;
 
   // Identifies in which RenderProcessHost this navigation is expected to
   // commit.

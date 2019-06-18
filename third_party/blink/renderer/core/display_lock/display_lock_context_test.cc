@@ -1201,7 +1201,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(descendant_object->InsideBlockingTouchEventHandler());
-  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(locked_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
 
   {
@@ -1226,7 +1226,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   EXPECT_FALSE(ancestor_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(handler_object->InsideBlockingTouchEventHandler());
   EXPECT_TRUE(descendant_object->InsideBlockingTouchEventHandler());
-  EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
+  EXPECT_TRUE(locked_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
 
   UpdateAllLifecyclePhasesForTest();
@@ -1433,4 +1433,115 @@ TEST_F(DisplayLockContextTest,
       GraphicsLayerNeedsCollection(container->GetDisplayLockContext()));
 }
 
+TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #locked {
+      width: 100px;
+      height: 100px;
+      contain: style layout paint;
+    }
+    </style>
+    <div id="ancestor">
+      <div id="descendant">
+        <div id="locked">
+          <div id="handler"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor_element = GetDocument().getElementById("ancestor");
+  auto* descendant_element = GetDocument().getElementById("descendant");
+  auto* locked_element = GetDocument().getElementById("locked");
+  auto* handler_element = GetDocument().getElementById("handler");
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(locked_element->GetDisplayLockContext()->IsLocked());
+
+  auto* ancestor_object = ancestor_element->GetLayoutObject();
+  auto* descendant_object = descendant_element->GetLayoutObject();
+  auto* locked_object = locked_element->GetLayoutObject();
+  auto* handler_object = handler_element->GetLayoutObject();
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_FALSE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+
+  handler_object->SetNeedsPaintPropertyUpdate();
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_TRUE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_FALSE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+
+  locked_object->SetShouldCheckForPaintInvalidationWithoutGeometryChange();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_FALSE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+
+  {
+    ScriptState::Scope scope(script_state);
+    locked_element->GetDisplayLockContext()->commit(script_state);
+  }
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_TRUE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->NeedsPaintPropertyUpdate());
+
+  EXPECT_FALSE(ancestor_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(descendant_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(locked_object->DescendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
+}
 }  // namespace blink

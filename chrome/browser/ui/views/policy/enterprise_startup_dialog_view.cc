@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/policy/enterprise_startup_dialog_view.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -53,8 +52,8 @@ gfx::Insets GetDialogInsets() {
       views::CONTROL, views::TEXT);
 }
 
-views::Label* CreateText(const base::string16& message) {
-  views::Label* text = new views::Label(message);
+std::unique_ptr<views::Label> CreateText(const base::string16& message) {
+  auto text = std::make_unique<views::Label>(message);
   text->SetFontList(gfx::FontList().Derive(kFontSizeDelta, gfx::Font::NORMAL,
                                            gfx::Font::Weight::MEDIUM));
   text->SetEnabledColor(gfx::kGoogleGrey700);
@@ -67,7 +66,6 @@ views::Label* CreateText(const base::string16& message) {
 EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
     : callback_(std::move(callback)),
-      can_show_browser_window_(false),
       weak_factory_(this) {
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
@@ -84,27 +82,27 @@ void EnterpriseStartupDialogView::DisplayLaunchingInformationWithThrobber(
     const base::string16& information) {
   ResetDialog(false);
 
-  views::Label* text = CreateText(information);
-  views::Throbber* throbber = new views::Throbber();
+  std::unique_ptr<views::Label> text = CreateText(information);
+  auto throbber = std::make_unique<views::Throbber>();
   gfx::Size throbber_size = gfx::Size(kIconSize, kIconSize);
   throbber->SetPreferredSize(throbber_size);
   throbber->Start();
 
-  SetupLayout(throbber, text);
+  SetupLayout(std::move(throbber), std::move(text));
 }
 
 void EnterpriseStartupDialogView::DisplayErrorMessage(
     const base::string16& error_message,
     const base::Optional<base::string16>& accept_button) {
   ResetDialog(accept_button.has_value());
-  views::Label* text = CreateText(error_message);
-  views::ImageView* error_icon = new views::ImageView();
+  std::unique_ptr<views::Label> text = CreateText(error_message);
+  auto error_icon = std::make_unique<views::ImageView>();
   error_icon->SetImage(gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kIconSize,
                                              gfx::kGoogleRed700));
 
   if (accept_button)
     GetDialogClientView()->ok_button()->SetText(*accept_button);
-  SetupLayout(error_icon, text);
+  SetupLayout(std::move(error_icon), std::move(text));
 }
 
 void EnterpriseStartupDialogView::CloseDialog() {
@@ -204,8 +202,9 @@ void EnterpriseStartupDialogView::ResetDialog(bool show_accept_button) {
   RemoveAllChildViews(true);
 }
 
-void EnterpriseStartupDialogView::SetupLayout(views::View* icon,
-                                              views::View* text) {
+void EnterpriseStartupDialogView::SetupLayout(
+    std::unique_ptr<views::View> icon,
+    std::unique_ptr<views::View> text) {
   // Padding between icon and text
   int text_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING);
@@ -226,8 +225,8 @@ void EnterpriseStartupDialogView::SetupLayout(views::View* icon,
 
   layout->AddPaddingRow(1.0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(icon);
-  layout->AddView(text);
+  layout->AddView(std::move(icon));
+  layout->AddView(std::move(text));
   layout->AddPaddingRow(1.0, 0);
 
   GetDialogClientView()->Layout();

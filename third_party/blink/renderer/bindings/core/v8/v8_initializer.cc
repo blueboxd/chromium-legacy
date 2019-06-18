@@ -469,13 +469,36 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::ScriptOrModule> v8_referrer,
     v8::Local<v8::String> v8_specifier) {
   ScriptState* script_state = ScriptState::From(context);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
 
   Modulator* modulator = Modulator::From(script_state);
   if (!modulator) {
-    resolver->Reject();
-    return v8::Local<v8::Promise>::Cast(promise.V8Value());
+    // Inactive browsing context (detached frames) doesn't have a modulator.
+    // We chose to return a rejected promise (which may never get to catch(),
+    // since MicrotaskQueue for a detached frame is never consumed).
+    //
+    // This is a hack to satisfy V8 API expectation, which are:
+    // - return non-empty v8::Promise value
+    //   (can either be fulfilled/rejected), or
+    // - throw exception && return Empty value
+    // See crbug.com/972960 .
+    //
+    // We use the v8 promise API directly here.
+    // We can't use ScriptPromiseResolver here since it assumes a valid
+    // ScriptState.
+    v8::Local<v8::Promise::Resolver> resolver;
+    if (!v8::Promise::Resolver::New(script_state->GetContext())
+             .ToLocal(&resolver)) {
+      // Note: V8 should have thrown an exception in this case,
+      //       so we return Empty.
+      return v8::MaybeLocal<v8::Promise>();
+    }
+
+    v8::Local<v8::Promise> promise = resolver->GetPromise();
+    v8::Local<v8::Value> error = V8ThrowException::CreateError(
+        script_state->GetIsolate(),
+        "Cannot import module from an inactive browsing context.");
+    resolver->Reject(script_state->GetContext(), error).ToChecked();
+    return promise;
   }
 
   String specifier = ToCoreStringWithNullCheck(v8_specifier);
@@ -488,9 +511,13 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     if (!referrer_resource_url_str.IsEmpty())
       referrer_resource_url = KURL(NullURL(), referrer_resource_url_str);
   }
+
   ReferrerScriptInfo referrer_info =
       ReferrerScriptInfo::FromV8HostDefinedOptions(
           context, v8_referrer->GetHostDefinedOptions());
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
   modulator->ResolveDynamically(specifier, referrer_resource_url, referrer_info,
                                 resolver);
   return v8::Local<v8::Promise>::Cast(promise.V8Value());

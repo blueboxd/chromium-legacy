@@ -230,14 +230,10 @@ static const int kRecipeRetryLimit = 5;
   for (auto const& actionValue : actionsValues) {
     GREYAssert(actionValue.is_dict(),
                @"Expecting each action to be a dictionary in the JSON file.");
-
-    NSError* actionCreationError = nil;
-    AutomationAction* action = [AutomationAction
-        actionWithValueDictionary:static_cast<const base::DictionaryValue&>(
-                                      actionValue)
-                            error:&actionCreationError];
-    CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
-    [actions_ addObject:action];
+    [actions_ addObject:[AutomationAction
+                            actionWithValueDictionary:
+                                static_cast<const base::DictionaryValue&>(
+                                    actionValue)]];
   }
 }
 
@@ -286,7 +282,7 @@ static const int kRecipeRetryLimit = 5;
     [ChromeEarlGrey loadURL:startUrl];
 
     for (AutomationAction* action in actions_) {
-      CHROME_EG_ASSERT_NO_ERROR([action execute]);
+      [action execute];
     }
   } @catch (NSException* e) {
     return false;

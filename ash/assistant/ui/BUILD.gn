@@ -56,6 +56,8 @@ component("ui") {
     "base/assistant_button.h",
     "base/assistant_scroll_view.cc",
     "base/assistant_scroll_view.h",
+    "base/stack_layout.cc",
+    "base/stack_layout.h",
     "caption_bar.cc",
     "caption_bar.h",
     "dialog_plate/dialog_plate.cc",

@@ -43,7 +43,7 @@ class MockImageDecoderClient {
   virtual ImageFrame::Status GetStatus(size_t index) = 0;
   virtual size_t FrameCount() = 0;
   virtual int RepetitionCount() const = 0;
-  virtual TimeDelta FrameDuration() const = 0;
+  virtual base::TimeDelta FrameDuration() const = 0;
   virtual void ClearCacheExceptFrameRequested(size_t) {}
   virtual void MemoryAllocatorSet() {}
 
@@ -88,7 +88,7 @@ class MockImageDecoder : public ImageDecoder {
     return client_->GetStatus(index) == ImageFrame::kFrameComplete;
   }
 
-  TimeDelta FrameDurationAtIndex(size_t) const override {
+  base::TimeDelta FrameDurationAtIndex(size_t) const override {
     return client_->FrameDuration();
   }
 

@@ -184,7 +184,7 @@ void SafeBrowsingBlockingPage::HandleSubresourcesAfterProceed() {
 }
 
 content::InterstitialPageDelegate::TypeID
-SafeBrowsingBlockingPage::GetTypeForTesting() const {
+SafeBrowsingBlockingPage::GetTypeForTesting() {
   return SafeBrowsingBlockingPage::kTypeForTesting;
 }
 

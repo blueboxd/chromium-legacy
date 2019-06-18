@@ -165,9 +165,9 @@ bool StructTraits<
       !data.ReadCorsExemptHeaders(&out->cors_exempt_headers) ||
       !data.ReadPriority(&out->priority) ||
       !data.ReadCorsPreflightPolicy(&out->cors_preflight_policy) ||
-      !data.ReadFetchRequestMode(&out->fetch_request_mode) ||
-      !data.ReadFetchCredentialsMode(&out->fetch_credentials_mode) ||
-      !data.ReadFetchRedirectMode(&out->fetch_redirect_mode) ||
+      !data.ReadMode(&out->mode) ||
+      !data.ReadCredentialsMode(&out->credentials_mode) ||
+      !data.ReadRedirectMode(&out->redirect_mode) ||
       !data.ReadFetchIntegrity(&out->fetch_integrity) ||
       !data.ReadRequestBody(&out->request_body) ||
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||

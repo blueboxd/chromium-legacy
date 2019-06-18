@@ -783,9 +783,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();
   resource_request->skip_service_worker = request.GetSkipServiceWorker();
-  resource_request->fetch_request_mode = request.GetFetchRequestMode();
-  resource_request->fetch_credentials_mode = request.GetFetchCredentialsMode();
-  resource_request->fetch_redirect_mode = request.GetFetchRedirectMode();
+  resource_request->mode = request.GetMode();
+  resource_request->credentials_mode = request.GetCredentialsMode();
+  resource_request->redirect_mode = request.GetRedirectMode();
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =

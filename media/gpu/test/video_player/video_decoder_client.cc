@@ -19,11 +19,11 @@
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
 #include "media/gpu/test/video_player/video.h"
 
-#if defined(OS_LINUX)
-#include "media/gpu/linux/linux_video_decoder_factory.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/video_frame_converter.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 namespace media {
 namespace test {
@@ -177,10 +177,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
       base::BindRepeating([](WaitingReason) { NOTIMPLEMENTED(); });
 
   if (decoder_client_config_.use_vd) {
-#if defined(OS_LINUX)
-    decoder_ = LinuxVideoDecoderFactory::CreateForTesting(
+#if defined(OS_CHROMEOS)
+    decoder_ = ChromeosVideoDecoderFactory::CreateForTesting(
         base::ThreadTaskRunnerHandle::Get());
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
     LOG_ASSERT(decoder_) << "Failed to create decoder.";
   } else {
     // The video decoder client expects decoders to use the VD interface. We can

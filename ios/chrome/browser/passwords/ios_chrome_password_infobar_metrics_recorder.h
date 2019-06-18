@@ -21,13 +21,15 @@ enum class PasswordInfobarType {
 // values should never be reused.
 enum class MobileMessagesPasswordsModalEvent {
   // PasswordInfobar username was edited.
-  EditedUserName = 1,
+  EditedUserName = 0,
   // PasswordInfobar password was edited.
-  EditedPassword = 2,
+  EditedPassword = 1,
   // PasswordInfobar password was unmasked.
-  UnmaskedPassword = 3,
+  UnmaskedPassword = 2,
+  // PasswordInfobar password was masked.
+  MaskedPassword = 3,
   // Highest enumerator. Recommended by Histogram metrics best practices.
-  kMaxValue = UnmaskedPassword,
+  kMaxValue = MaskedPassword,
 };
 
 // Values for the UMA Mobile.Messages.Passwords.Modal.Dismiss histogram. These

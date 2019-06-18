@@ -450,7 +450,7 @@ android_library("content_javatests") {
 
   srcjar_deps = [
     "//content/shell/android:content_javatests_aidl",
-    "//third_party/blink/public:blink_cursor_type_java_enums_srcjar",
+    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
   ]
 
   deps = [

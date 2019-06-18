@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/notifier_metadata.h"
+#include "ash/public/cpp/notifier_settings_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -55,7 +57,6 @@
 namespace ash {
 
 using message_center::MessageCenter;
-using mojom::NotifierUiData;
 using message_center::NotifierId;
 
 namespace {
@@ -101,7 +102,7 @@ const int kLabelFontSizeDelta = 1;
 // |kNotifierButtonWrapperHeight|. The button is placed in the middle of
 // the wrapper view by giving padding to the top and the bottom.
 // The view is focusable and provides focus painter. When the button is disabled
-// (NotifierUiData.enforced), it also applies filter to make the color of the
+// (NotifierMetadata.enforced), it also applies filter to make the color of the
 // button dim.
 class NotifierButtonWrapperView : public views::View {
  public:
@@ -299,11 +300,11 @@ class EmptyNotifierView : public views::View {
 // We do not use views::Checkbox class directly because it doesn't support
 // showing 'icon'.
 NotifierSettingsView::NotifierButton::NotifierButton(
-    const mojom::NotifierUiData& notifier_ui_data,
+    const NotifierMetadata& notifier,
     views::ButtonListener* listener)
-    : views::Button(listener), notifier_id_(notifier_ui_data.notifier_id) {
+    : views::Button(listener), notifier_id_(notifier.notifier_id) {
   auto icon_view = std::make_unique<views::ImageView>();
-  auto name_view = std::make_unique<views::Label>(notifier_ui_data.name);
+  auto name_view = std::make_unique<views::Label>(notifier.name);
   auto checkbox =
       std::make_unique<views::Checkbox>(base::string16(), this /* listener */);
   name_view->SetAutoColorReadabilityEnabled(false);
@@ -313,11 +314,11 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   name_view->SetFontList(
       gfx::FontList().DeriveWithSizeDelta(kLabelFontSizeDelta));
 
-  checkbox->SetChecked(notifier_ui_data.enabled);
+  checkbox->SetChecked(notifier.enabled);
   checkbox->SetFocusBehavior(FocusBehavior::NEVER);
-  checkbox->SetAccessibleName(notifier_ui_data.name);
+  checkbox->SetAccessibleName(notifier.name);
 
-  if (notifier_ui_data.enforced) {
+  if (notifier.enforced) {
     Button::SetEnabled(false);
     checkbox->SetEnabled(false);
   }
@@ -328,7 +329,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   icon_view_ = AddChildView(std::move(icon_view));
   name_view_ = AddChildView(std::move(name_view));
 
-  UpdateIconImage(notifier_ui_data.icon);
+  UpdateIconImage(notifier.icon);
 }
 
 NotifierSettingsView::NotifierButton::~NotifierButton() = default;
@@ -494,14 +495,13 @@ NotifierSettingsView::NotifierSettingsView()
 
   no_notifiers_view_ = AddChildView(std::make_unique<EmptyNotifierView>());
 
-  OnNotifierListUpdated({});
-  Shell::Get()->message_center_controller()->AddNotifierSettingsListener(this);
-  Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();
+  OnNotifiersUpdated({});
+  NotifierSettingsController::Get()->AddNotifierSettingsObserver(this);
+  NotifierSettingsController::Get()->GetNotifiers();
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
-  Shell::Get()->message_center_controller()->RemoveNotifierSettingsListener(
-      this);
+  NotifierSettingsController::Get()->RemoveNotifierSettingsObserver(this);
 }
 
 bool NotifierSettingsView::IsScrollable() {
@@ -531,8 +531,8 @@ const char* NotifierSettingsView::GetClassName() const {
   return "NotifierSettingsView";
 }
 
-void NotifierSettingsView::OnNotifierListUpdated(
-    const std::vector<mojom::NotifierUiDataPtr>& ui_data) {
+void NotifierSettingsView::OnNotifiersUpdated(
+    const std::vector<NotifierMetadata>& notifiers) {
   // TODO(tetsui): currently notifier settings list doesn't update after once
   // it's loaded, in order to retain scroll position.
   if (scroller_->contents() && buttons_.size() > 0)
@@ -544,9 +544,8 @@ void NotifierSettingsView::OnNotifierListUpdated(
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
 
-  size_t notifier_count = ui_data.size();
-  for (size_t i = 0; i < notifier_count; ++i) {
-    NotifierButton* button = new NotifierButton(*ui_data[i], this);
+  for (const auto& notifier : notifiers) {
+    NotifierButton* button = new NotifierButton(notifier, this);
     NotifierButtonWrapperView* wrapper = new NotifierButtonWrapperView(button);
 
     wrapper->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -554,8 +553,8 @@ void NotifierSettingsView::OnNotifierListUpdated(
     buttons_.insert(button);
   }
 
-  top_label_->SetVisible(notifier_count > 0);
-  no_notifiers_view_->SetVisible(notifier_count == 0);
+  top_label_->SetVisible(!buttons_.empty());
+  no_notifiers_view_->SetVisible(buttons_.empty());
   top_label_->InvalidateLayout();
 
   auto* contents_view_ptr = scroller_->SetContents(std::move(contents_view));
@@ -565,8 +564,8 @@ void NotifierSettingsView::OnNotifierListUpdated(
   Layout();
 }
 
-void NotifierSettingsView::UpdateNotifierIcon(const NotifierId& notifier_id,
-                                              const gfx::ImageSkia& icon) {
+void NotifierSettingsView::OnNotifierIconUpdated(const NotifierId& notifier_id,
+                                                 const gfx::ImageSkia& icon) {
   for (auto* button : buttons_) {
     if (button->notifier_id() == notifier_id) {
       button->UpdateIconImage(icon);
@@ -639,9 +638,9 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
 
   NotifierButton* button = *iter;
   button->SetChecked(!button->GetChecked());
-  Shell::Get()->message_center_controller()->SetNotifierEnabled(
-      button->notifier_id(), button->GetChecked());
-  Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();
+  NotifierSettingsController::Get()->SetNotifierEnabled(button->notifier_id(),
+                                                        button->GetChecked());
+  NotifierSettingsController::Get()->GetNotifiers();
 }
 
 }  // namespace ash

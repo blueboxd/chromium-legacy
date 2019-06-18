@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
@@ -64,6 +66,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -236,6 +240,12 @@ void ToolbarView::Init() {
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast = media_router::CastToolbarButton::Create(browser_);
 
+  std::unique_ptr<MediaToolbarButtonView> media_button;
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
+    media_button = std::make_unique<MediaToolbarButtonView>(
+        content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  }
+
   std::unique_ptr<ToolbarPageActionIconContainerView>
       toolbar_page_action_container;
   bool show_avatar_toolbar_button = true;
@@ -280,6 +290,9 @@ void ToolbarView::Init() {
 
   if (cast)
     cast_ = AddChildView(std::move(cast));
+
+  if (media_button)
+    media_button_ = AddChildView(std::move(media_button));
 
   if (toolbar_page_action_container)
     toolbar_page_action_container_ =
@@ -855,6 +868,9 @@ void ToolbarView::LoadImages() {
 
   if (cast_)
     cast_->UpdateIcon();
+
+  if (media_button_)
+    media_button_->UpdateIcon();
 
   if (avatar_)
     avatar_->UpdateIcon();

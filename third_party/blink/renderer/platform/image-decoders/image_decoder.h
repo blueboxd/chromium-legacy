@@ -278,7 +278,9 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // Duration for displaying a frame. This method is only used by animated
   // images.
-  virtual TimeDelta FrameDurationAtIndex(size_t) const { return TimeDelta(); }
+  virtual base::TimeDelta FrameDurationAtIndex(size_t) const {
+    return base::TimeDelta();
+  }
 
   // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
   // have this frame cached (either because it hasn't been decoded, or because

@@ -144,9 +144,9 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal" hidden="[[loading]]">
-        <oobe-back-button id="backToUnlockButton" on-tap="onBackToUnlock_"
+        <oobe-back-button id="backToUnlockButton" on-click="onBackToUnlock_"
             disabled="[[disabled]]" hidden></oobe-back-button>
-        <oobe-back-button id="backButton" on-tap="onBackButton_"
+        <oobe-back-button id="backButton" on-click="onBackButton_"
             hidden="[[isDomainJoin]]"></oobe-back-button>
         <div class="flex"></div>
         <oobe-next-button id="nextButton" on-tap="onSubmit_"

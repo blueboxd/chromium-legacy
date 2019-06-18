@@ -75,7 +75,8 @@ class WebRequestProxyingWebSocket
   void OnFinishOpeningHandshake(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
   void OnAddChannelResponse(const std::string& selected_protocol,
-                            const std::string& extensions) override;
+                            const std::string& extensions,
+                            uint64_t receive_quota_threshold) override;
 
   // mojom::AuthenticationHandler method:
   void OnAuthRequired(const net::AuthChallengeInfo& auth_info,

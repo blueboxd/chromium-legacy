@@ -91,7 +91,7 @@ class ScopedUsHistogramTimerBase {
 
  private:
   const base::TickClock& clock_;
-  TimeTicks start_time_;
+  base::TimeTicks start_time_;
   CustomCountHistogram& counter_;
 };
 
@@ -106,7 +106,7 @@ class ScopedHighResUsHistogramTimer
     : public ScopedUsHistogramTimerBase<ScopedHighResUsHistogramTimer> {
  public:
   using ScopedUsHistogramTimerBase::ScopedUsHistogramTimerBase;
-  static bool ShouldRecord() { return TimeTicks::IsHighResolution(); }
+  static bool ShouldRecord() { return base::TimeTicks::IsHighResolution(); }
 };
 
 #define SCOPED_BLINK_UMA_HISTOGRAM_TIMER_IMPL(name, allow_cross_thread)  \

@@ -131,7 +131,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void DidFinishLoading(
-      TimeTicks response_end,
+      base::TimeTicks response_end,
       int64_t encoded_data_length,
       int64_t encoded_body_length,
       int64_t decoded_body_length,
@@ -238,7 +238,7 @@ class PLATFORM_EXPORT ResourceLoader final
   // struct is used to store the information needed to refire DidFinishLoading
   // when the blob is finished too.
   struct DeferredFinishLoadingInfo {
-    TimeTicks response_end;
+    base::TimeTicks response_end;
     bool should_report_corb_blocking;
     std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };

@@ -714,9 +714,7 @@ bool WallpaperControllerImpl::ShouldApplyDimming() const {
   // wallpaper preview.
   const bool should_dim =
       Shell::Get()->session_controller()->IsUserSessionBlocked() ||
-      (Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled() &&
+      (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
        !confirm_preview_wallpaper_callback_);
   return should_dim && !IsOneShotWallpaper();
 }

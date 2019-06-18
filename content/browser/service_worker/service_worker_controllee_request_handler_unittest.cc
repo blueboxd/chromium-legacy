@@ -45,8 +45,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         ServiceWorkerControlleeRequestHandlerTest* test,
         const GURL& url,
         ResourceType type,
-        network::mojom::FetchRequestMode fetch_type =
-            network::mojom::FetchRequestMode::kNoCors)
+        network::mojom::RequestMode request_mode =
+            network::mojom::RequestMode::kNoCors)
         : resource_type_(type),
           request_(test->url_request_context_.CreateRequest(
               url,
@@ -56,9 +56,9 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
           handler_(new ServiceWorkerControlleeRequestHandler(
               test->context()->AsWeakPtr(),
               test->provider_host_,
-              fetch_type,
-              network::mojom::FetchCredentialsMode::kOmit,
-              network::mojom::FetchRedirectMode::kFollow,
+              request_mode,
+              network::mojom::CredentialsMode::kOmit,
+              network::mojom::RedirectMode::kFollow,
               std::string() /* integrity */,
               false /* keepalive */,
               type,

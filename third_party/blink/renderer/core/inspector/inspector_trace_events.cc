@@ -717,19 +717,6 @@ std::unique_ptr<TracedValue> inspector_layout_invalidation_tracking_event::Data(
   return value;
 }
 
-std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
-    const LayoutObject& layout_object) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("frame",
-                   IdentifiersFactory::FrameId(layout_object.GetFrame()));
-  const auto* paint_container =
-      layout_object.IsRooted() ? &layout_object.ContainerForPaintInvalidation()
-                               : nullptr;
-  SetGeneratingNodeInfo(value.get(), paint_container, "paintId");
-  SetGeneratingNodeInfo(value.get(), &layout_object, "nodeId", "nodeName");
-  return value;
-}
-
 std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
     DocumentLoader* loader,
     uint64_t identifier,
@@ -1007,35 +994,6 @@ static void LocalToPageQuad(const LayoutObject& layout_object,
   quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
   quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
   quad->SetP4(LocalCoordToFloatPoint(view, absolute.P4()));
-}
-
-const char inspector_layer_invalidation_tracking_event::
-    kSquashingLayerGeometryWasUpdated[] =
-        "Squashing layer geometry was updated";
-const char
-    inspector_layer_invalidation_tracking_event::kAddedToSquashingLayer[] =
-        "The layer may have been added to an already-existing squashing layer";
-const char
-    inspector_layer_invalidation_tracking_event::kRemovedFromSquashingLayer[] =
-        "Removed the layer from a squashing layer";
-const char
-    inspector_layer_invalidation_tracking_event::kReflectionLayerChanged[] =
-        "Reflection layer change";
-const char inspector_layer_invalidation_tracking_event::kNewCompositedLayer[] =
-    "Assigned a new composited layer";
-
-std::unique_ptr<TracedValue> inspector_layer_invalidation_tracking_event::Data(
-    const PaintLayer* layer,
-    const char* reason) {
-  const LayoutObject& paint_invalidation_container =
-      layer->GetLayoutObject().ContainerForPaintInvalidation();
-
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("frame", IdentifiersFactory::FrameId(
-                                paint_invalidation_container.GetFrame()));
-  SetGeneratingNodeInfo(value.get(), &paint_invalidation_container, "paintId");
-  value->SetString("reason", reason);
-  return value;
 }
 
 std::unique_ptr<TracedValue> inspector_paint_event::Data(

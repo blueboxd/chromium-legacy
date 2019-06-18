@@ -60,14 +60,14 @@ Response ToInterceptionPatterns(
     std::vector<DevToolsNetworkInterceptor::Pattern>* result) {
   result->clear();
   if (!maybe_patterns.isJust()) {
-    result->push_back(DevToolsNetworkInterceptor::Pattern(
-        "*", {}, DevToolsNetworkInterceptor::REQUEST));
+    result->emplace_back("*", base::flat_set<ResourceType>(),
+                         DevToolsNetworkInterceptor::REQUEST);
     return Response::OK();
   }
   Array<Fetch::RequestPattern>& patterns = *maybe_patterns.fromJust();
-  for (size_t i = 0; i < patterns.length(); ++i) {
+  for (const std::unique_ptr<Fetch::RequestPattern>& pattern : patterns) {
     base::flat_set<ResourceType> resource_types;
-    std::string resource_type = patterns.get(i)->GetResourceType("");
+    std::string resource_type = pattern->GetResourceType("");
     if (!resource_type.empty()) {
       if (!NetworkHandler::AddInterceptedResourceType(resource_type,
                                                       &resource_types)) {
@@ -76,10 +76,10 @@ Response ToInterceptionPatterns(
                                resource_type.c_str()));
       }
     }
-    result->push_back(DevToolsNetworkInterceptor::Pattern(
-        patterns.get(i)->GetUrlPattern("*"), std::move(resource_types),
-        RequestStageToInterceptorStage(patterns.get(i)->GetRequestStage(
-            Fetch::RequestStageEnum::Request))));
+    result->emplace_back(
+        pattern->GetUrlPattern("*"), std::move(resource_types),
+        RequestStageToInterceptorStage(
+            pattern->GetRequestStage(Fetch::RequestStageEnum::Request)));
   }
   return Response::OK();
 }
@@ -222,9 +222,8 @@ void FetchHandler::FulfillRequest(
       base::StringPrintf("HTTP/1.1 %d %s", responseCode, status_phrase.c_str());
   headers.append(1, '\0');
   if (responseHeaders) {
-    for (size_t i = 0; i < responseHeaders->length(); ++i) {
-      auto* entry = responseHeaders->get(i);
-      if (!ValidateHeaders(entry, callback.get()))
+    for (const std::unique_ptr<Fetch::HeaderEntry>& entry : *responseHeaders) {
+      if (!ValidateHeaders(entry.get(), callback.get()))
         return;
       headers.append(entry->GetName());
       headers.append(":");
@@ -257,9 +256,9 @@ void FetchHandler::ContinueRequest(
   if (headers.isJust()) {
     request_headers = std::make_unique<
         DevToolsNetworkInterceptor::Modifications::HeadersVector>();
-    for (size_t i = 0; i < headers.fromJust()->length(); ++i) {
-      auto* entry = headers.fromJust()->get(i);
-      if (!ValidateHeaders(entry, callback.get()))
+    for (const std::unique_ptr<Fetch::HeaderEntry>& entry :
+         *headers.fromJust()) {
+      if (!ValidateHeaders(entry.get(), callback.get()))
         return;
       request_headers->emplace_back(entry->GetName(), entry->GetValue());
     }
@@ -353,7 +352,7 @@ std::unique_ptr<Array<Fetch::HeaderEntry>> ToHeaderEntryArray(
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
-    result->addItem(
+    result->emplace_back(
         Fetch::HeaderEntry::Create().SetName(name).SetValue(value).Build());
   }
   return result;

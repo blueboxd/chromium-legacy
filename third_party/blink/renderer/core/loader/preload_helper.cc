@@ -387,7 +387,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
 
   // Step 6. "Let credentials mode be the module script credentials mode for the
   // crossorigin attribute." [spec text]
-  network::mojom::FetchCredentialsMode credentials_mode =
+  network::mojom::CredentialsMode credentials_mode =
       ScriptLoader::ModuleScriptCredentialsMode(params.cross_origin);
 
   // Step 7. "Let cryptographic nonce be the value of the nonce attribute, if it

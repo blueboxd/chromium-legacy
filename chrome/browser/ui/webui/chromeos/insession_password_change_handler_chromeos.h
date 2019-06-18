@@ -7,14 +7,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/cryptohome_authenticator.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
 
-class InSessionPasswordChangeHandler : public content::WebUIMessageHandler,
-                                       AuthStatusConsumer {
+class InSessionPasswordChangeHandler : public content::WebUIMessageHandler {
  public:
   explicit InSessionPasswordChangeHandler(
       const std::string& password_change_url);
@@ -25,10 +23,6 @@ class InSessionPasswordChangeHandler : public content::WebUIMessageHandler,
 
   void HandleInitialize(const base::ListValue*);
   void HandleChangePassword(const base::ListValue* passwords);
-
-  // AuthStatusConsumer:
-  void OnAuthFailure(const AuthFailure& error) override;
-  void OnAuthSuccess(const UserContext& user_context) override;
 
  private:
   const std::string password_change_url_;

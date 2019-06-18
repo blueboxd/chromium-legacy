@@ -70,9 +70,6 @@ class CastWebView {
     // Identifies the activity that is hosted by this CastWebView.
     std::string activity_id = "";
 
-    // Whether this CastWebView has a transparent background.
-    bool transparent = false;
-
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
 
@@ -87,6 +84,7 @@ class CastWebView {
     std::string log_prefix = "";
 
     CreateParams();
+    CreateParams(const CreateParams& other);
   };
 
   CastWebView();

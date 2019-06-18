@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_IME_IME_SERVICE_H_
 
 #include "chromeos/services/ime/input_engine.h"
+#include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -19,7 +20,8 @@ namespace chromeos {
 namespace ime {
 
 class ImeService : public service_manager::Service,
-                   public mojom::InputEngineManager {
+                   public mojom::InputEngineManager,
+                   public ImeCrosPlatform {
  public:
   explicit ImeService(
       mojo::PendingReceiver<service_manager::mojom::Service> receiver);
@@ -39,6 +41,15 @@ class ImeService : public service_manager::Service,
       mojo::PendingRemote<mojom::InputChannel> from_engine,
       const std::vector<uint8_t>& extra,
       ConnectToImeEngineCallback callback) override;
+
+  // ImeCrosPlatform overrides:
+  const char* GetImeBundleDir() override;
+  const char* GetImeGlobalDir() override;
+  const char* GetImeUserHomeDir() override;
+  int SimpleDownloadToFile(const char* url,
+                           const char* file_path,
+                           SimpleDownloadCallback callback) override;
+  ImeCrosDownloader* GetDownloader() override;
 
   // Adds a mojom::InputEngineManager receiver to this object.
   void AddInputEngineManagerReceiver(

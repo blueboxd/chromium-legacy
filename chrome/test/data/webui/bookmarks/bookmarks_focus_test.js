@@ -245,6 +245,45 @@ TEST_F('BookmarksFocusTest', 'All', function() {
       MockInteractions.keyDownOn(item, '', modifiers, key);
     }
 
+    /**
+     * @param {string} id
+     * @return {!HTMLElement}
+     */
+    function getItem(id) {
+      return assert(
+          Array.from(items).find(({itemId}) => itemId == id),
+          `Item ${id} does not exist in items.`);
+    }
+
+    /** @param {string} id */
+    function selectAndFocus(id) {
+      getItem(id).focus();
+      store.data.selection.items = new Set([id]);
+      store.notifyObservers();
+    }
+
+    /** @param {!Array<string>} ids */
+    function updateIds(ids) {
+      store.data.nodes[store.data.selectedFolder].children = ids;
+      store.notifyObservers();
+    }
+
+    /**
+     * @param {!function} fn
+     * @return {!Promise}
+     */
+    async function doAndWait(fn) {
+      fn();
+      await PolymerTest.flushTasks();
+      // Focus is done asynchronously.
+      await PolymerTest.flushTasks();
+    }
+
+    /** @param {string} id */
+    function checkMenuButtonFocus(id) {
+      assertEquals(getItem(id).$.menuButton, getDeepActiveElement());
+    }
+
     setup(function() {
       const nodes = testTree(createFolder('1', [
         createItem('2'),
@@ -443,6 +482,38 @@ TEST_F('BookmarksFocusTest', 'All', function() {
       keydown(button, 'Enter');
       commandManager.closeCommandMenu();
       assertEquals(button, items[0].root.activeElement);
+    });
+
+    test('remove first item, focus on first item', async () => {
+      await doAndWait(() => {
+        selectAndFocus('2');
+        updateIds(['3', '4', '5', '6', '7']);
+      });
+      checkMenuButtonFocus('3');
+    });
+
+    test('remove last item, focus on last item', async () => {
+      await doAndWait(() => {
+        selectAndFocus('7');
+        updateIds(['2', '3', '4', '5', '6']);
+      });
+      checkMenuButtonFocus('6');
+    });
+
+    test('remove middle item, focus on item with same index', async () => {
+      await doAndWait(() => {
+        selectAndFocus('3');
+        updateIds(['2', '4', '5', '6', '7']);
+      });
+      checkMenuButtonFocus('4');
+    });
+
+    test('reorder items, focus does not change', async () => {
+      await doAndWait(() => {
+        selectAndFocus('3');
+        updateIds(['2', '4', '5', '6', '3', '7']);
+      });
+      assertEquals(document.body, getDeepActiveElement());
     });
   });
 

@@ -339,12 +339,17 @@ void MediaNotificationBackground::UpdateArtworkMaxWidthPct(
 }
 
 SkColor MediaNotificationBackground::GetBackgroundColor() const {
-  return background_color_.value_or(kMediaNotificationDefaultBackgroundColor);
+  if (background_color_.has_value())
+    return *background_color_;
+  return kMediaNotificationDefaultBackgroundColor;
 }
 
 SkColor MediaNotificationBackground::GetForegroundColor() const {
-  const SkColor foreground = foreground_color_.value_or(views::style::GetColor(
-      *owner_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
+  const SkColor foreground =
+      foreground_color_.has_value()
+          ? *foreground_color_
+          : views::style::GetColor(*owner_, views::style::CONTEXT_LABEL,
+                                   views::style::STYLE_PRIMARY);
   return color_utils::BlendForMinContrast(foreground, GetBackgroundColor())
       .color;
 }

@@ -41,9 +41,7 @@ using ::app_list::kAppListTileLaunchIndexAndQueryLength;
 using ::app_list::SearchResultLaunchLocation;
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 app_list::AppListView* GetAppListView() {
@@ -111,7 +109,7 @@ class AppListControllerImplTest : public AshTestBase {
 // (see https://crbug.com/923089).
 TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // No activatable windows. So hide the expand arrow view.
@@ -270,7 +268,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   // Turn on the tablet mode. The virtual keyboard should still show.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
@@ -454,7 +452,7 @@ TEST_F(AppListControllerImplMetricsTest,
   base::RunLoop().RunUntilIdle();
 
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // Create a window then press the home launcher button. Expect that |w| is
@@ -527,7 +525,7 @@ TEST_F(AppListControllerImplMetricsTest,
   base::RunLoop().RunUntilIdle();
 
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // Create a window then press the home launcher button. Expect that |w| is
@@ -554,7 +552,7 @@ TEST_F(AppListControllerImplMetricsTest,
   GetAppListView()->OnGestureEvent(&start_event);
 
   // Turn off the tablet mode before scrolling is finished.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());

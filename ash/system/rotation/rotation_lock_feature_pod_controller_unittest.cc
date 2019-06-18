@@ -67,10 +67,10 @@ TEST_F(RotationLockFeaturePodControllerTest, CreateButton) {
 // Tests that when the button is created, while TabletMode is active,
 // that it is visible.
 TEST_F(RotationLockFeaturePodControllerTest, CreateButtonDuringTabletMode) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   SetUpController();
   EXPECT_TRUE(button_view()->GetVisible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(button_view()->GetVisible());
 }
 
@@ -79,9 +79,9 @@ TEST_F(RotationLockFeaturePodControllerTest, CreateButtonDuringTabletMode) {
 TEST_F(RotationLockFeaturePodControllerTest,
        ButtonVisibilityChangesDuringTabletMode) {
   SetUpController();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(button_view()->GetVisible());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(button_view()->GetVisible());
 }
 
@@ -92,7 +92,7 @@ TEST_F(RotationLockFeaturePodControllerTest, OnIconPressed) {
   ScreenOrientationController* screen_orientation_controller =
       Shell::Get()->screen_orientation_controller();
   ASSERT_FALSE(screen_orientation_controller->rotation_locked());
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->SetEnabledForTest(true);
   ASSERT_TRUE(button_view()->GetVisible());
   EXPECT_FALSE(button_view()->IsToggled());
 
@@ -106,7 +106,7 @@ TEST_F(RotationLockFeaturePodControllerTest, OnIconPressed) {
   EXPECT_TRUE(button_view()->GetVisible());
   EXPECT_FALSE(button_view()->IsToggled());
 
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->SetEnabledForTest(false);
 }
 
 }  // namespace ash

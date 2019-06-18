@@ -44,11 +44,13 @@ template("trichrome_library_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker,
                            [
-                             "apk_name",
                              "android_manifest",
                              "android_manifest_dep",
+                             "apk_name",
+                             "min_sdk_version",
                              "proguard_jar_path",
                              "static_library_dependent_targets",
+                             "target_sdk_version",
                            ])
 
     # TODO(torne): since there's no real java code in the library right now,

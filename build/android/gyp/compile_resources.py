@@ -27,6 +27,8 @@ import zipfile
 from xml.etree import ElementTree
 
 from util import build_utils
+from util import diff_utils
+from util import manifest_utils
 from util import resource_utils
 
 # Name of environment variable that can be used to force this script to
@@ -67,6 +69,17 @@ def _ParseArgs(args):
       '--aapt2-path', required=True, help='Path to the Android aapt2 tool.')
   input_opts.add_argument(
       '--android-manifest', required=True, help='AndroidManifest.xml path.')
+  input_opts.add_argument(
+      '--android-manifest-expected',
+      help='Expected contents for the final manifest.')
+  input_opts.add_argument(
+      '--android-manifest-normalized', help='Normalized manifest.')
+  input_opts.add_argument(
+      '--fail-if-unexpected-android-manifest',
+      action='store_true',
+      help=
+      'Fail if expected manifest contents do not match final manifest contents.'
+  )
   group = input_opts.add_mutually_exclusive_group()
   group.add_argument(
       '--shared-resources',
@@ -132,6 +145,14 @@ def _ParseArgs(args):
 
   input_opts.add_argument('--version-code', help='Version code for apk.')
   input_opts.add_argument('--version-name', help='Version name for apk.')
+  input_opts.add_argument(
+      '--min-sdk-version', required=True, help='android:minSdkVersion for APK.')
+  input_opts.add_argument(
+      '--target-sdk-version',
+      required=True,
+      help="android:targetSdkVersion for APK.")
+  input_opts.add_argument(
+      '--max-sdk-version', help="android:maxSdkVersion for APK.")
 
   input_opts.add_argument(
       '--locale-whitelist',
@@ -435,8 +456,19 @@ def _FixManifest(options, temp_dir):
   version_code, version_name = successful_extractions.pop()[:2]
 
   debug_manifest_path = os.path.join(temp_dir, 'AndroidManifest.xml')
-  doc, manifest_node, app_node = resource_utils.ParseAndroidManifest(
+  doc, manifest_node, app_node = manifest_utils.ParseManifest(
       options.android_manifest)
+
+  manifest_utils.AssertNoUsesSdk(manifest_node)
+
+  uses_sdk_attributes = [
+      ('android:minSdkVersion', options.min_sdk_version),
+      ('android:targetSdkVersion', options.target_sdk_version),
+  ]
+  if options.max_sdk_version:
+    uses_sdk_attributes += [('android:maxSdkVersion', options.max_sdk_version)]
+  uses_sdk_node = manifest_utils.MakeElement('uses-sdk', uses_sdk_attributes)
+  manifest_node.insert(0, uses_sdk_node)
 
   manifest_node.set('platformBuildVersionCode', version_code)
   manifest_node.set('platformBuildVersionName', version_name)
@@ -446,13 +478,26 @@ def _FixManifest(options, temp_dir):
     manifest_node.set('package', options.arsc_package_name)
 
   if options.debuggable:
-    app_node.set('{%s}%s' % (resource_utils.ANDROID_NAMESPACE, 'debuggable'),
+    app_node.set('{%s}%s' % (manifest_utils.ANDROID_NAMESPACE, 'debuggable'),
                  'true')
 
-  with open(debug_manifest_path, 'w') as debug_manifest:
-    debug_manifest.write(ElementTree.tostring(doc.getroot(), encoding='UTF-8'))
-
+  manifest_utils.SaveManifest(doc, debug_manifest_path)
   return debug_manifest_path, orig_package
+
+
+def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
+                    fail_if_unexpected_manifest):
+  with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
+    normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
+  msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
+  if msg:
+    sys.stderr.write("""\
+AndroidManifest.xml expectations file needs updating. For details see:
+https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+""")
+    sys.stderr.write(msg)
+    if fail_if_unexpected_manifest:
+      sys.exit(1)
 
 
 def _ResourceNameFromPath(path):
@@ -682,6 +727,10 @@ def _PackageApk(options, build):
       'link',
       '--auto-add-overlay',
       '--no-version-vectors',
+      '--min-sdk-version',
+      options.min_sdk_version,
+      '--target-sdk-version',
+      options.target_sdk_version,
   ]
 
   for j in options.include_resources:
@@ -717,6 +766,11 @@ def _PackageApk(options, build):
       options, build.temp_dir)
   if options.rename_manifest_package:
     desired_manifest_package_name = options.rename_manifest_package
+  if options.android_manifest_expected:
+    _VerifyManifest(fixed_manifest, options.android_manifest_expected,
+                    options.android_manifest_normalized,
+                    options.fail_if_unexpected_android_manifest)
+
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',
       desired_manifest_package_name

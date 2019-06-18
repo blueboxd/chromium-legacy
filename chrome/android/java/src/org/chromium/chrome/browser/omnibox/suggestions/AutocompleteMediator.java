@@ -392,7 +392,7 @@ class AutocompleteMediator
                 });
             }
         } else {
-            recordSuggestionsShown();
+            if (mNativeInitialized) recordSuggestionsShown();
 
             mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;

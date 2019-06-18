@@ -1325,6 +1325,8 @@ message HTMLElement {
     optional string value = 2;
   }
   repeated Attribute attribute = 6;
+
+  optional bytes inner_html = 7;
 }
 
 // Protobuf for Chrome extension webstore install request.

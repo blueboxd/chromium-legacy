@@ -61,7 +61,7 @@ class LauncherPageSwitchesTest : public UIPerformanceTest,
 
     // switch to tablet-mode if necessary.
     if (is_tablet_mode_)
-      shell_test_api.EnableTabletModeWindowManager(true);
+      shell_test_api.SetTabletModeEnabledForTest(true);
 
     // Open the fullscreen app; required for page switching.
     BrowserView* browser_view =

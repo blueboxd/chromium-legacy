@@ -60,7 +60,7 @@ class DistillerPageWebContents : public DistillerPage,
 
   // content::WebContentsDelegate implementation.
   gfx::Size GetSizeForNewRenderView(
-      content::WebContents* web_contents) const override;
+      content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation.
   void DocumentLoadedInFrame(

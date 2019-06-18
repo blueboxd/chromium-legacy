@@ -42,7 +42,8 @@ const int kHeartbeatMissedCheckMs = 1000 * 60 * 5;  // 5 minutes.
 }  // namespace
 
 HeartbeatManager::HeartbeatManager(
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> maybe_power_wrapped_io_task_runner)
     : waiting_for_ack_(false),
       heartbeat_interval_ms_(0),
       server_interval_ms_(0),
@@ -52,7 +53,11 @@ HeartbeatManager::HeartbeatManager(
       weak_ptr_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  heartbeat_timer_->SetTaskRunner(io_task_runner_);
+  // Set the heartbeat timer task runner to |maybe_power_wrapped_io_task_runner|
+  // so that a delayed task posted to it can wake the system up from sleep to
+  // perform the task.
+  heartbeat_timer_->SetTaskRunner(
+      std::move(maybe_power_wrapped_io_task_runner));
 }
 
 HeartbeatManager::~HeartbeatManager() {

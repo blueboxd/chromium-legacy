@@ -58,8 +58,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     double max_bandwidth_mbps = kInvalidMaxBandwidth;
     WebEffectiveConnectionType effective_type =
         WebEffectiveConnectionType::kTypeUnknown;
-    base::Optional<TimeDelta> http_rtt;
-    base::Optional<TimeDelta> transport_rtt;
+    base::Optional<base::TimeDelta> http_rtt;
+    base::Optional<base::TimeDelta> transport_rtt;
     base::Optional<double> downlink_throughput_mbps;
     bool save_data = false;
 
@@ -77,8 +77,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
         WebConnectionType,
         double max_bandwidth_mbps,
         WebEffectiveConnectionType,
-        const base::Optional<TimeDelta>& http_rtt,
-        const base::Optional<TimeDelta>& transport_rtt,
+        const base::Optional<base::TimeDelta>& http_rtt,
+        const base::Optional<base::TimeDelta>& transport_rtt,
         const base::Optional<double>& downlink_throughput_mbps,
         bool save_data) {}
     virtual void OnLineStateChange(bool on_line) {}
@@ -136,7 +136,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns the current HTTP RTT estimate. If the estimate is unavailable, the
   // returned optional value is null.
-  base::Optional<TimeDelta> HttpRtt() const {
+  base::Optional<base::TimeDelta> HttpRtt() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
     // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
@@ -146,7 +146,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns the current transport RTT estimate. If the estimate is unavailable,
   // the returned optional value is null.
-  base::Optional<TimeDelta> TransportRtt() const {
+  base::Optional<base::TimeDelta> TransportRtt() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
     DCHECK(state.on_line_initialized);
@@ -214,8 +214,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   void SetWebConnection(WebConnectionType, double max_bandwidth_mbps);
   void SetNetworkQuality(WebEffectiveConnectionType,
-                         TimeDelta http_rtt,
-                         TimeDelta transport_rtt,
+                         base::TimeDelta http_rtt,
+                         base::TimeDelta transport_rtt,
                          int downlink_throughput_kbps);
   void SetNetworkQualityWebHoldback(WebEffectiveConnectionType);
   void SetSaveDataEnabled(bool enabled);
@@ -256,7 +256,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // Returns |rtt| after adding host-specific random noise, and rounding it as
   // per the NetInfo spec to improve privacy.
   uint32_t RoundRtt(const String& host,
-                    const base::Optional<TimeDelta>& rtt) const;
+                    const base::Optional<base::TimeDelta>& rtt) const;
 
   // Returns |downlink_mbps| after adding host-specific random noise, and
   // rounding it as per the NetInfo spec and to improve privacy.
@@ -280,7 +280,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // the web consumers. If the returned value is null, then the actual network
   // quality value should be returned to the web consumers.
   // Consumers within Blink should not call this API.
-  base::Optional<TimeDelta> GetWebHoldbackHttpRtt() const;
+  base::Optional<base::TimeDelta> GetWebHoldbackHttpRtt() const;
 
   // Returns the overriding HTTP RTT estimate that should be returned to
   // the web consumers. If the returned value is null, then the actual network
@@ -294,7 +294,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   void GetMetricsWithWebHoldback(WebConnectionType* type,
                                  double* downlink_max_mbps,
                                  WebEffectiveConnectionType* effective_type,
-                                 base::Optional<TimeDelta>* http_rtt,
+                                 base::Optional<base::TimeDelta>* http_rtt,
                                  base::Optional<double>* downlink_mbps,
                                  bool* save_data) const;
 

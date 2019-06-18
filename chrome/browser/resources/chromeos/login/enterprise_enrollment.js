@@ -237,8 +237,8 @@ Polymer({
     this.navigation_.addEventListener('close', this.cancel.bind(this));
     this.navigation_.addEventListener('refresh', this.cancel.bind(this));
 
-    this.$['oobe-signin-back-button']
-        .addEventListener('tap', this.onBackButtonClicked_.bind(this));
+    this.$['oobe-signin-back-button'].addEventListener(
+        'click', this.onBackButtonClicked_.bind(this));
 
 
     this.$['oauth-enroll-learn-more-link']

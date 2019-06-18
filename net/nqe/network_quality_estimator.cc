@@ -60,7 +60,8 @@ namespace {
 // id concurrently.
 base::LazySequencedTaskRunner g_get_network_id_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::BEST_EFFORT,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 #endif
@@ -1673,6 +1674,17 @@ void NetworkQualityEstimator::RecordSpdyPingLatency(
                           current_network_id_.signal_strength,
                           NETWORK_QUALITY_OBSERVATION_SOURCE_H2_PINGS);
   AddAndNotifyObserversOfRTT(observation);
+}
+
+void NetworkQualityEstimator::OnPeerToPeerConnectionsCountChange(
+    uint32_t count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  webrtc_active_connections_count_ = count;
+}
+
+uint32_t NetworkQualityEstimator::GetPeerToPeerConnectionsCountChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return webrtc_active_connections_count_;
 }
 
 }  // namespace net

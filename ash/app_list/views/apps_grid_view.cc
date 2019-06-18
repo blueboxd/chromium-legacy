@@ -189,17 +189,27 @@ class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
 // "zoom out" case when releasing an item being dragged.
 class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
-  explicit ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
+  explicit ItemMoveAnimationDelegate(AppListItemView* view,
+                                     bool is_released_drag_view)
+      : view_(view), is_released_drag_view_(is_released_drag_view) {
+    if (is_released_drag_view_)
+      view_->title()->SetVisible(false);
+  }
 
   void AnimationEnded(const gfx::Animation* animation) override {
+    if (is_released_drag_view_)
+      view_->title()->SetVisible(true);
     view_->SchedulePaint();
   }
   void AnimationCanceled(const gfx::Animation* animation) override {
+    if (is_released_drag_view_)
+      view_->title()->SetVisible(true);
     view_->SchedulePaint();
   }
 
  private:
-  views::View* view_;
+  AppListItemView* view_;
+  bool is_released_drag_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemMoveAnimationDelegate);
 };
@@ -724,6 +734,11 @@ void AppsGridView::EndDrag(bool cancel) {
   }
 
   SetAsFolderDroppingTarget(drop_target_, false);
+
+  // Keep track of the |drag_view| after it is released to ensure that it does
+  // not have a visible title until its animation to ideal bounds is complete.
+  AppListItemView* released_drag_view = drag_view_;
+
   ClearDragState();
   UpdatePaging();
   if (GetWidget()) {
@@ -735,7 +750,7 @@ void AppsGridView::EndDrag(bool cancel) {
     base::AutoReset<bool> auto_reset(&ignore_layout_, true);
     GetWidget()->LayoutRootViewIfNecessary();
   }
-  AnimateToIdealBounds();
+  AnimateToIdealBounds(released_drag_view);
   if (!cancel && !folder_delegate_)
     view_structure_.SaveToMetadata();
 
@@ -1375,7 +1390,7 @@ void AppsGridView::CalculateIdealBoundsForFolder() {
   }
 }
 
-void AppsGridView::AnimateToIdealBounds() {
+void AppsGridView::AnimateToIdealBounds(AppListItemView* released_drag_view) {
   const gfx::Rect visible_bounds(GetVisibleBounds());
 
   CalculateIdealBoundsForFolder();
@@ -1400,8 +1415,9 @@ void AppsGridView::AnimateToIdealBounds() {
     } else if (visible || bounds_animator_.IsAnimating(view)) {
       bounds_animator_.AnimateViewTo(view, target);
       bounds_animator_.SetAnimationDelegate(
-          view, std::unique_ptr<gfx::AnimationDelegate>(
-                    new ItemMoveAnimationDelegate(view)));
+          view,
+          std::make_unique<ItemMoveAnimationDelegate>(
+              view, view == released_drag_view /* is_released_drag_view */));
     } else {
       view->SetBoundsRect(target);
     }
@@ -1620,7 +1636,7 @@ bool AppsGridView::DragIsCloseToItem() {
 void AppsGridView::OnReorderTimer() {
   reorder_placeholder_ = drop_target_;
   MaybeCreateDragReorderAccessibilityEvent();
-  AnimateToIdealBounds();
+  AnimateToIdealBounds(nullptr /* released_drag_view */);
   CreateGhostImageView();
 }
 
@@ -1894,7 +1910,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     drag_view_ = nullptr;
   }
   ClearDragState();
-  AnimateToIdealBounds();
+  AnimateToIdealBounds(nullptr /* released_drag_view */);
   if (!folder_delegate_)
     view_structure_.SaveToMetadata();
 
@@ -2592,7 +2608,7 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
-  AnimateToIdealBounds();
+  AnimateToIdealBounds(nullptr /* released_drag_view */);
 }
 
 void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {

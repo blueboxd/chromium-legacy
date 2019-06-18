@@ -53,6 +53,7 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
+      IndexedDBClassFactory* class_factory,
       ErrorCallback error_callback,
       base::OnceClosure destroy_me,
       std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
@@ -61,6 +62,7 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
       : IndexedDBDatabase(name,
                           backing_store,
                           factory,
+                          class_factory,
                           std::move(error_callback),
                           std::move(destroy_me),
                           std::move(metadata_coding),
@@ -272,7 +274,7 @@ MockBrowserTestIndexedDBClassFactory::MockBrowserTestIndexedDBClassFactory()
 MockBrowserTestIndexedDBClassFactory::~MockBrowserTestIndexedDBClassFactory() {
 }
 
-std::unique_ptr<IndexedDBDatabase>
+std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
@@ -282,10 +284,15 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
-  return std::make_unique<IndexedDBTestDatabase>(
-      name, backing_store, factory, std::move(error_callback),
-      std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-      transaction_lock_manager);
+  std::unique_ptr<IndexedDBTestDatabase> database =
+      std::make_unique<IndexedDBTestDatabase>(
+          name, backing_store, factory, this, std::move(error_callback),
+          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
+          transaction_lock_manager);
+  leveldb::Status s = database->OpenInternal();
+  if (!s.ok())
+    database.reset();
+  return {std::move(database), s};
 }
 
 std::unique_ptr<IndexedDBTransaction>
@@ -318,7 +325,7 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
           failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_TRANSACTION]);
     } else {
-      return IndexedDBClassFactory::CreateLevelDBTransaction(db);
+      return DefaultLevelDBFactory::CreateLevelDBTransaction(db);
     }
   }
 }
@@ -342,8 +349,8 @@ MockBrowserTestIndexedDBClassFactory::CreateIteratorImpl(
           std::move(iterator), db, snapshot, failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
     } else {
-      return base::WrapUnique(
-          new LevelDBIteratorImpl(std::move(iterator), db, snapshot));
+      return DefaultLevelDBFactory::CreateIteratorImpl(std::move(iterator), db,
+                                                       snapshot);
     }
   }
 }

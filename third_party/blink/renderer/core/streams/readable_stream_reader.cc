@@ -170,16 +170,6 @@ void ReadableStreamReader::GenericRelease(ScriptState* script_state,
   DCHECK_EQ(reader->owner_readable_stream_->reader_, reader);
 
   auto* isolate = script_state->GetIsolate();
-  // TODO(yhirano): Remove this when we don"t need hasPendingActivity in
-  // blink::UnderlyingSourceBase.
-  ReadableStreamDefaultController* controller =
-      reader->owner_readable_stream_->readable_stream_controller_;
-  if (controller->enable_blink_lock_notifications_) {
-    // The stream is created with an external controller (i.e. made in
-    // Blink).
-    auto lock_notify_target = controller->lock_notify_target_.NewLocal(isolate);
-    CallNullaryMethod(script_state, lock_notify_target, "notifyLockReleased");
-  }
 
   // 3. If reader.[[ownerReadableStream]].[[state]] is "readable", reject
   //    reader.[[closedPromise]] with a TypeError exception.
@@ -237,17 +227,6 @@ void ReadableStreamReader::GenericInitialize(ScriptState* script_state,
                                              ReadableStreamReader* reader,
                                              ReadableStreamNative* stream) {
   auto* isolate = script_state->GetIsolate();
-  // TODO(yhirano): Remove this when we don't need hasPendingActivity in
-  // blink::UnderlyingSourceBase.
-  ReadableStreamDefaultController* controller =
-      stream->readable_stream_controller_;
-  if (controller->enable_blink_lock_notifications_) {
-    // The stream is created with an external controller (i.e. made in
-    // Blink).
-    v8::Local<v8::Object> lock_notify_target =
-        controller->lock_notify_target_.NewLocal(isolate);
-    CallNullaryMethod(script_state, lock_notify_target, "notifyLockAcquired");
-  }
 
   // https://streams.spec.whatwg.org/#readable-stream-reader-generic-initialize
   // 1. Set reader.[[forAuthorCode]] to true.
@@ -287,34 +266,6 @@ void ReadableStreamReader::GenericInitialize(ScriptState* script_state,
       // c. Set reader.[[closedPromise]].[[PromiseIsHandled]] to true.
       reader->closed_promise_->MarkAsHandled(isolate);
       break;
-  }
-}
-
-void ReadableStreamReader::CallNullaryMethod(ScriptState* script_state,
-                                             v8::Local<v8::Object> object,
-                                             const char* method_name) {
-  auto* isolate = script_state->GetIsolate();
-  auto context = script_state->GetContext();
-  v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> method;
-  if (!object->Get(context, V8AtomicString(isolate, method_name))
-           .ToLocal(&method)) {
-    DLOG(WARNING) << "Ignored failed lookup of '" << method_name
-                  << "' in CallNullaryMethod";
-    return;
-  }
-
-  if (!method->IsFunction()) {
-    DLOG(WARNING) << "Didn't call '" << method_name
-                  << "' in CallNullaryMethod because it was the wrong type";
-    return;
-  }
-
-  v8::MaybeLocal<v8::Value> result =
-      method.As<v8::Function>()->Call(context, object, 0, nullptr);
-  if (result.IsEmpty()) {
-    DLOG(WARNING) << "Ignored failure of '" << method_name
-                  << "' in CallNullaryMethod";
   }
 }
 

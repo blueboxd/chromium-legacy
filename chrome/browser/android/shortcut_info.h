@@ -119,7 +119,6 @@ struct ShortcutInfo {
   Source source;
   base::Optional<SkColor> theme_color;
   base::Optional<SkColor> background_color;
-  GURL splash_screen_url;
   int ideal_splash_image_size_in_px;
   int minimum_splash_image_size_in_px;
   GURL splash_image_url;

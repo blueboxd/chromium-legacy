@@ -41,7 +41,7 @@ TEST_F(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   std::unique_ptr<aura::Window> w2(CreatePopupTestWindow());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   std::unique_ptr<ui::Event> test_event = std::make_unique<ui::KeyEvent>(
       ui::EventType::ET_MOUSE_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   home_screen_controller()->GoHome(GetPrimaryDisplay().id());

@@ -770,7 +770,7 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
 }
 
 std::string
-ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() {
   return std::string(chrome::kApplicationClientIDStringForAVScanning);
 }
 

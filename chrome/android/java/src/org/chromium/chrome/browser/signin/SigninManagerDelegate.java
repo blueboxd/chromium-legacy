@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.JCaller;
 
 /**
@@ -25,9 +26,27 @@ public interface SigninManagerDelegate {
     public void handleGooglePlayServicesUnavailability(Activity activity, boolean cancelable);
 
     /**
+     * @return the management domain if the signed in account is managed, otherwise null.
+     */
+    public String getManagementDomain(@JCaller SigninManager self, long nativeSigninManagerAndroid);
+
+    /**
      * @return Whether the device has Google Play Services.
      */
     public boolean isGooglePlayServicesPresent(Context context);
+
+    /**
+     * Verifies if the account is managed. Callback may be called either synchronously or
+     * asynchronously depending on the availability of the result.
+     * @param signinManager a reference on SigninManager used for the native calls
+     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
+     *                                   calls
+     * @param email An email of the account.
+     * @param callback The callback that will receive true if the account is managed, false
+     *                 otherwise.
+     */
+    public void isAccountManaged(@JCaller SigninManager signinManager,
+            long nativeSigninManagerAndroid, String email, final Callback<Boolean> callback);
 
     /**
      * Interact with the UserPolicySigninService to retrieve the user policy.

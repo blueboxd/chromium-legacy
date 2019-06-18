@@ -34,6 +34,9 @@
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
+#elif defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#include "content/common/mac_helpers.h"
 #endif  // OS_LINUX
 
 namespace {
@@ -69,6 +72,32 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   // executable.
   if (child_path.empty())
     base::PathService::Get(CHILD_PROCESS_EXE, &child_path);
+
+#if defined(OS_MACOSX)
+  std::string child_base_name = child_path.BaseName().value();
+
+  if (flags != CHILD_NORMAL && base::mac::AmIBundled()) {
+    // This is a specialized helper, with the |child_path| at
+    // ../Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/
+    // MacOS/Chromium Helper. Go back up to the "Helpers" directory to select
+    // a different variant.
+    child_path = child_path.DirName().DirName().DirName().DirName();
+
+    if (flags == CHILD_RENDERER) {
+      child_base_name += kMacHelperSuffix_renderer;
+    } else if (flags == CHILD_PLUGIN) {
+      child_base_name += kMacHelperSuffix_plugin;
+    } else {
+      NOTREACHED();
+    }
+
+    child_path = child_path.Append(child_base_name + ".app")
+                     .Append("Contents")
+                     .Append("MacOS")
+                     .Append(child_base_name);
+  }
+#endif
+
   return child_path;
 }
 

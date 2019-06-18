@@ -243,10 +243,6 @@ class MODULES_EXPORT ManifestParser {
   // Returns the parsed background color if any, or a null optional otherwise.
   base::Optional<RGBA32> ParseBackgroundColor(const JSONObject* object);
 
-  // Parses the 'splash_screen_url' field of the manifest.
-  // Returns the parsed KURL if any, an empty KURL if the parsing failed.
-  KURL ParseSplashScreenURL(const JSONObject* object);
-
   // Parses the 'gcm_sender_id' field of the manifest.
   // This is a proprietary extension of the Web Manifest specification.
   // Returns the parsed string if any, a null string if the parsing failed.

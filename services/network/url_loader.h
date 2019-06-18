@@ -325,7 +325,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // CORB-excluded requests must be blocked if the CORS check fails.
   bool is_nocors_corb_excluded_request_ = false;
 
-  mojom::FetchRequestMode fetch_request_mode_;
+  mojom::RequestMode request_mode_;
 
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 

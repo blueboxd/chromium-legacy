@@ -195,7 +195,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   CloseNotification();
 
   // Start tablet mode and wait until display mode is updated.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::RunLoop().RunUntilIdle();
 
   // Exit mirror mode manually. Now display mode should be extending mode.
@@ -221,7 +221,7 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   // updated.
   display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .ResetMaximumDisplay();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   base::RunLoop().RunUntilIdle();
 
   // Turn on mirror mode.
@@ -556,7 +556,7 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
             GetDisplayNotificationAdditionalText());
 
   // Switch to Tablet
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // The accelerometer source.
   display_manager()->SetDisplayRotation(

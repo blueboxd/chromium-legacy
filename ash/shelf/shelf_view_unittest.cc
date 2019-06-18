@@ -962,7 +962,7 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
   // is no longer visible on the main shelf but is now visible on the overflow
   // shelf, due to the back button taking up space on the main shelf. The shelf
   // model and corresponding view should be updated to reflect this.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
   overflow_test_api.RunMessageLoopUntilAnimationsDone();
   ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
@@ -971,7 +971,7 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
 
   // Verify that the item at |last_visible_index| is once again shown on the
   // main shelf after exiting tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
   overflow_test_api.RunMessageLoopUntilAnimationsDone();
   ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
@@ -2101,12 +2101,12 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_BOTTOM);
   observer.Reset();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
 
   observer.Reset();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
 
@@ -2115,12 +2115,12 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_LEFT);
   observer.Reset();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1, observer.icon_positions_animation_duration());
 
   observer.Reset();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1, observer.icon_positions_animation_duration());
 }
@@ -2165,7 +2165,7 @@ TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
   // Enable tablet mode to show the back button. Wait for tablet mode animations
   // to finish in order for the BackButton to move out from under the
   // AppListButton.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
 
   views::View* back_button = shelf_view_->GetBackButton();
@@ -2375,12 +2375,12 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
   EXPECT_EQ(1, shelf_view_->first_visible_index());
   EXPECT_EQ(2, shelf_view_->last_visible_index());
   // By enabling tablet mode, the back button (index 0) should become visible.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, shelf_view_->first_visible_index());
   EXPECT_EQ(2, shelf_view_->last_visible_index());
   // And things should return back to the previous state once tablet mode is off
   // again.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(1, shelf_view_->first_visible_index());
   EXPECT_EQ(2, shelf_view_->last_visible_index());
   // Now let's add some apps until the overflow button shows up, each time

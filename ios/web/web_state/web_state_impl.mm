@@ -742,6 +742,9 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
                        << " Last committed: " << lastCommittedURL.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && !equalOrigins) {
+    *trust_level = web::URLVerificationTrustLevel::kMixed;
+  }
   return result;
 }
 

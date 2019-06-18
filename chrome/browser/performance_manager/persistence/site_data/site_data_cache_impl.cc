@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/performance_manager/persistence/site_data/leveldb_site_data_store.h"
+#include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_reader.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_writer.h"
-#include "content/public/browser/browser_context.h"
 
 namespace performance_manager {
 
@@ -22,21 +22,27 @@ constexpr char kDataStoreDBName[] = "Site Characteristics Database";
 
 }  // namespace
 
-SiteDataCacheImpl::SiteDataCacheImpl(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+SiteDataCacheImpl::SiteDataCacheImpl(const std::string& browser_context_id,
+                                     const base::FilePath& browser_context_path)
+    : browser_context_id_(browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_store_ = std::make_unique<LevelDBSiteDataStore>(
-      browser_context->GetPath().AppendASCII(kDataStoreDBName));
+      browser_context_path.AppendASCII(kDataStoreDBName));
 
   // Register the debug interface against the browser context.
-  SiteDataCacheInspector::SetForBrowserContext(this, browser_context);
+  SiteDataCacheFactory::GetInstance()->SetDataCacheInspectorForBrowserContext(
+      this, browser_context_id_);
 }
 
 SiteDataCacheImpl::~SiteDataCacheImpl() {
-  SiteDataCacheInspector::SetForBrowserContext(nullptr, browser_context_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SiteDataCacheFactory::GetInstance()->SetDataCacheInspectorForBrowserContext(
+      nullptr, browser_context_id_);
 }
 
 std::unique_ptr<SiteDataReader> SiteDataCacheImpl::GetReaderForOrigin(
     const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   internal::SiteDataImpl* impl = GetOrCreateFeatureImpl(origin);
   DCHECK(impl);
   SiteDataReader* data_reader = new SiteDataReader(impl);
@@ -46,6 +52,7 @@ std::unique_ptr<SiteDataReader> SiteDataCacheImpl::GetReaderForOrigin(
 std::unique_ptr<SiteDataWriter> SiteDataCacheImpl::GetWriterForOrigin(
     const url::Origin& origin,
     performance_manager::TabVisibility tab_visibility) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   internal::SiteDataImpl* impl = GetOrCreateFeatureImpl(origin);
   DCHECK(impl);
   SiteDataWriter* data_writer = new SiteDataWriter(impl, tab_visibility);
@@ -53,6 +60,7 @@ std::unique_ptr<SiteDataWriter> SiteDataCacheImpl::GetWriterForOrigin(
 }
 
 bool SiteDataCacheImpl::IsRecordingForTesting() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
 }
 
@@ -61,6 +69,7 @@ const char* SiteDataCacheImpl::GetDataCacheName() {
 }
 
 std::vector<url::Origin> SiteDataCacheImpl::GetAllInMemoryOrigins() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<url::Origin> ret;
 
   ret.reserve(origin_data_map_.size());
@@ -71,12 +80,14 @@ std::vector<url::Origin> SiteDataCacheImpl::GetAllInMemoryOrigins() {
 }
 
 void SiteDataCacheImpl::GetDataStoreSize(DataStoreSizeCallback on_have_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_store_->GetStoreSize(std::move(on_have_data));
 }
 
 bool SiteDataCacheImpl::GetDataForOrigin(const url::Origin& origin,
                                          bool* is_dirty,
                                          std::unique_ptr<SiteDataProto>* data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(nullptr, data);
   const auto it = origin_data_map_.find(origin);
   if (it == origin_data_map_.end())
@@ -90,11 +101,13 @@ bool SiteDataCacheImpl::GetDataForOrigin(const url::Origin& origin,
 }
 
 SiteDataCacheImpl* SiteDataCacheImpl::GetDataCache() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
 }
 
 internal::SiteDataImpl* SiteDataCacheImpl::GetOrCreateFeatureImpl(
     const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Start by checking if there's already an entry for this origin.
   auto iter = origin_data_map_.find(origin);
   if (iter != origin_data_map_.end())
@@ -112,6 +125,7 @@ internal::SiteDataImpl* SiteDataCacheImpl::GetOrCreateFeatureImpl(
 }
 
 void SiteDataCacheImpl::OnSiteDataImplDestroyed(internal::SiteDataImpl* impl) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(impl);
   DCHECK(base::Contains(origin_data_map_, impl->origin()));
   // Remove the entry for this origin as this is about to get destroyed.
@@ -121,6 +135,7 @@ void SiteDataCacheImpl::OnSiteDataImplDestroyed(internal::SiteDataImpl* impl) {
 
 void SiteDataCacheImpl::ClearSiteDataForOrigins(
     const std::vector<url::Origin>& origins_to_remove) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // It's not necessary to invalidate the pending DB write operations as they
   // run on a sequenced task and so it's guaranteed that the remove operations
   // posted here will run after any other pending operation.
@@ -134,6 +149,7 @@ void SiteDataCacheImpl::ClearSiteDataForOrigins(
 }
 
 void SiteDataCacheImpl::ClearAllSiteData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // It's not necessary to invalidate the pending DB write operations as they
   // run on a sequenced task and so it's guaranteed that the remove operations
   // posted here will run after any other pending operation.

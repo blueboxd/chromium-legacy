@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
@@ -28,7 +27,6 @@
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class AppIconLoader;
-class AppSyncUIState;
 class AppWindowLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
@@ -66,7 +64,6 @@ class ChromeLauncherController
     : public LauncherAppUpdater::Delegate,
       public AppIconLoaderDelegate,
       private ash::ShelfModelObserver,
-      private AppSyncUIStateObserver,
       private app_list::AppListSyncableService::Observer,
       private sync_preferences::PrefServiceSyncableObserver {
  public:
@@ -340,9 +337,6 @@ class ChromeLauncherController
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
 
-  // AppSyncUIStateObserver:
-  void OnAppSyncUIStatusChanged() override;
-
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override;
 
@@ -408,8 +402,6 @@ class ChromeLauncherController
   std::vector<std::unique_ptr<LauncherAppUpdater>> app_updaters_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  AppSyncUIState* app_sync_ui_state_ = nullptr;
 
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;

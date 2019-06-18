@@ -47,18 +47,18 @@ class CanvasInterceptor<ProfilingCanvas>
   ~CanvasInterceptor();
 
  private:
-  TimeTicks start_time_;
+  base::TimeTicks start_time_;
 };
 
 class ProfilingCanvas : public InterceptingCanvas<ProfilingCanvas> {
  public:
   explicit ProfilingCanvas(SkBitmap);
-  void SetTimings(Vector<TimeDelta>*);
+  void SetTimings(Vector<base::TimeDelta>*);
 
  private:
   friend class CanvasInterceptor<ProfilingCanvas>;
 
-  Vector<TimeDelta>* timings_;
+  Vector<base::TimeDelta>* timings_;
 };
 
 }  // namespace blink

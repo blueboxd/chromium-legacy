@@ -39,12 +39,12 @@ class ResourceLoaderTest : public testing::Test {
       : foo_url_("https://foo.test"), bar_url_("https://bar.test") {}
 
  protected:
-  using FetchRequestMode = network::mojom::FetchRequestMode;
+  using RequestMode = network::mojom::RequestMode;
   using FetchResponseType = network::mojom::FetchResponseType;
 
   struct TestCase {
     const KURL url;
-    const FetchRequestMode request_mode;
+    const RequestMode request_mode;
     const From from;
     const scoped_refptr<const SecurityOrigin> allowed_origin;
     const FetchResponseType original_response_type;
@@ -128,41 +128,40 @@ TEST_F(ResourceLoaderTest, ResponseType) {
 
   TestCase cases[] = {
       // Same origin response:
-      {same_origin_url, FetchRequestMode::kNoCors, From::kNetwork, no_origin,
+      {same_origin_url, RequestMode::kNoCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kCors, From::kNetwork, no_origin,
+      {same_origin_url, RequestMode::kCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kBasic},
 
       // Cross origin, no-cors:
-      {cross_origin_url, FetchRequestMode::kNoCors, From::kNetwork, no_origin,
+      {cross_origin_url, RequestMode::kNoCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kOpaque},
 
       // Cross origin, cors:
-      {cross_origin_url, FetchRequestMode::kCors, From::kNetwork, origin,
+      {cross_origin_url, RequestMode::kCors, From::kNetwork, origin,
        FetchResponseType::kDefault, FetchResponseType::kCors},
-      {cross_origin_url, FetchRequestMode::kCors, From::kNetwork, no_origin,
+      {cross_origin_url, RequestMode::kCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kError},
 
       // From service worker, no-cors:
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kBasic, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kCors, FetchResponseType::kCors},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kDefault, FetchResponseType::kDefault},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kOpaque, FetchResponseType::kOpaque},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kOpaqueRedirect,
-       FetchResponseType::kOpaqueRedirect},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kBasic, FetchResponseType::kBasic},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kCors, FetchResponseType::kCors},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kDefault, FetchResponseType::kDefault},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kOpaque, FetchResponseType::kOpaque},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kOpaqueRedirect, FetchResponseType::kOpaqueRedirect},
 
       // From service worker, cors:
-      {same_origin_url, FetchRequestMode::kCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kBasic, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kCors, FetchResponseType::kCors},
-      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
-       no_origin, FetchResponseType::kDefault, FetchResponseType::kDefault},
+      {same_origin_url, RequestMode::kCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kBasic, FetchResponseType::kBasic},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kCors, FetchResponseType::kCors},
+      {same_origin_url, RequestMode::kNoCors, From::kServiceWorker, no_origin,
+       FetchResponseType::kDefault, FetchResponseType::kDefault},
   };
 
   for (const auto& test : cases) {
@@ -183,13 +182,13 @@ TEST_F(ResourceLoaderTest, ResponseType) {
         MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
     request.SetUrl(test.url);
-    request.SetFetchRequestMode(test.request_mode);
+    request.SetMode(test.request_mode);
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
     FetchParameters fetch_parameters(request);
-    if (test.request_mode == network::mojom::FetchRequestMode::kCors) {
+    if (test.request_mode == network::mojom::RequestMode::kCors) {
       fetch_parameters.SetCrossOriginAccessControl(
-          origin.get(), network::mojom::FetchCredentialsMode::kOmit);
+          origin.get(), network::mojom::CredentialsMode::kOmit);
     }
     Resource* resource = RawResource::Fetch(fetch_parameters, fetcher, nullptr);
     ResourceLoader* loader = resource->Loader();

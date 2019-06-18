@@ -19,8 +19,15 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
+
 // Owned by ChromeBrowserMainChromeOS:
 AssistantClient* g_instance = nullptr;
+
+bool IsAssistantAllowed(Profile* profile) {
+  return assistant::IsAssistantAllowedForProfile(profile) ==
+         ash::mojom::AssistantAllowedState::ALLOWED;
+}
+
 }  // namespace
 
 // static
@@ -43,10 +50,8 @@ AssistantClient::~AssistantClient() {
 }
 
 void AssistantClient::MaybeInit(Profile* profile) {
-  if (assistant::IsAssistantAllowedForProfile(profile) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+  if (!IsAssistantAllowed(profile))
     return;
-  }
 
   if (!profile_) {
     profile_ = profile;
@@ -77,14 +82,18 @@ void AssistantClient::MaybeInit(Profile* profile) {
 }
 
 void AssistantClient::MaybeStartAssistantOptInFlow() {
-  if (!initialized_)
+  // We need to check if the Assistant is allowed here again, since the result
+  // might have changed from the last time we checked. This usually happens if
+  // any post-OOBE screen changes any property that determines Assistant
+  // availability.
+  if (!initialized_ || !IsAssistantAllowed(profile_))
     return;
 
   assistant_setup_->MaybeStartAssistantOptInFlow();
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
-  // |running| means assistent mojom service is running. This maps to
+  // |running| means assistant mojom service is running. This maps to
   // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
   // session is running.
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(

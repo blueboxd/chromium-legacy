@@ -26,6 +26,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
+#include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
@@ -155,6 +156,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   session_controller_client_.reset(new TestSessionControllerClient(
       shell->session_controller(), prefs_provider_.get()));
   session_controller_client_->InitializeAndSetClient();
+
+  notifier_settings_controller_ =
+      std::make_unique<TestNotifierSettingsController>();
 
   assistant_service_ = std::make_unique<TestAssistantService>();
   shell->assistant_controller()->SetAssistant(

@@ -12,7 +12,6 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
-#include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace viz {
 

@@ -44,7 +44,7 @@ class DedicatedWorkerHostFactoryClient final
       const blink::WebSecurityOrigin& script_origin) override;
   void CreateWorkerHost(const blink::WebURL& script_url,
                         const blink::WebSecurityOrigin& script_origin,
-                        network::mojom::FetchCredentialsMode credentials_mode,
+                        network::mojom::CredentialsMode credentials_mode,
                         mojo::ScopedMessagePipeHandle blob_url_token) override;
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,

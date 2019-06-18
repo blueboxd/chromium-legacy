@@ -405,6 +405,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
+  void ResizeVisualViewportForWidget(
+      const gfx::Size& scaled_viewport_size) override;
 
   // Old WebLocalFrameClient implementations
   // ----------------------------------------
@@ -458,6 +460,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnPageWasHidden();
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
+  void OnUpdatePageVisualProperties(const gfx::Size& visible_viewport_size);
   void SetPageFrozen(bool frozen);
   void OnTextAutosizerPageInfoChanged(
       const blink::WebTextAutosizerPageInfo& page_info);

@@ -407,8 +407,26 @@ void StreamMixer::Start() {
   // Initialize filters.
   mixer_pipeline_->Initialize(output_samples_per_second_, frames_per_write_);
 
+  // Determine the appropriate sample rate for the redirector. If a product
+  // needs to have these be different and support redirecting, then we will
+  // need to add/update the per-input resamplers before redirecting.
+  redirector_samples_per_second_ = GetSampleRateForDeviceId(
+      ::media::AudioDeviceDescription::kDefaultDeviceId);
+
+  const std::vector<const char*> redirectable_device_ids = {
+      kPlatformAudioDeviceId, kAlarmAudioDeviceId, kTtsAudioDeviceId,
+      ::media::AudioDeviceDescription::kDefaultDeviceId,
+      ::media::AudioDeviceDescription::kCommunicationsDeviceId};
+
+  for (const char* device_id : redirectable_device_ids) {
+    DCHECK_EQ(redirector_samples_per_second_,
+              GetSampleRateForDeviceId(device_id));
+  }
+
+  redirector_frames_per_write_ = redirector_samples_per_second_ *
+                                 frames_per_write_ / output_samples_per_second_;
   for (auto& redirector : audio_output_redirectors_) {
-    redirector.second->Start(output_samples_per_second_);
+    redirector.second->Start(redirector_samples_per_second_);
   }
 
   state_ = kStateRunning;
@@ -620,7 +638,7 @@ void StreamMixer::PlaybackLoop() {
 
 void StreamMixer::WriteOneBuffer() {
   for (auto& redirector : audio_output_redirectors_) {
-    redirector.second->PrepareNextBuffer(frames_per_write_);
+    redirector.second->PrepareNextBuffer(redirector_frames_per_write_);
   }
 
   // Recursively mix and filter each group.
@@ -745,11 +763,12 @@ void StreamMixer::AddAudioOutputRedirector(
   AudioOutputRedirector* key = redirector.get();
   audio_output_redirectors_[key] = std::move(redirector);
 
+  if (state_ == kStateRunning) {
+    key->Start(redirector_samples_per_second_);
+  }
+
   for (const auto& input : inputs_) {
     key->AddInput(input.second.get());
-  }
-  if (state_ == kStateRunning) {
-    key->Start(output_samples_per_second_);
   }
 }
 
@@ -914,6 +933,11 @@ bool StreamMixer::PostProcessorsHaveCorrectNumOutputs() {
     return false;
   }
   return true;
+}
+
+int StreamMixer::GetSampleRateForDeviceId(const std::string& device) {
+  DCHECK(mixer_pipeline_);
+  return mixer_pipeline_->GetInputGroup(device)->GetInputSampleRate();
 }
 
 }  // namespace media

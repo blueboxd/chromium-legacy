@@ -1272,6 +1272,9 @@ void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
   gles2::GetGLContext()->DispatchCompute(num_groups_x, num_groups_y,
                                          num_groups_z);
 }
+void GL_APIENTRY GLES2DispatchComputeIndirect(GLintptr offset) {
+  gles2::GetGLContext()->DispatchComputeIndirect(offset);
+}
 void GL_APIENTRY GLES2GetProgramInterfaceiv(GLuint program,
                                             GLenum program_interface,
                                             GLenum pname,
@@ -2965,6 +2968,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDispatchCompute",
         reinterpret_cast<GLES2FunctionPointer>(glDispatchCompute),
+    },
+    {
+        "glDispatchComputeIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDispatchComputeIndirect),
     },
     {
         "glGetProgramInterfaceiv",

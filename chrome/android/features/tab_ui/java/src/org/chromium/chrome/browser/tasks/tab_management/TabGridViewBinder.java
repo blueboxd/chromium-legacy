@@ -108,7 +108,7 @@ class TabGridViewBinder {
         } else if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
             holder.actionButton.setContentDescription(holder.itemView.getResources().getString(
-                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+                    R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IPH_PROVIDER == propertyKey) {
             TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(holder.thumbnail);
@@ -141,8 +141,7 @@ class TabGridViewBinder {
             String title = item.get(TabProperties.TITLE);
             selectionHolder.actionButton.setContentDescription(
                     holder.itemView.getResources().getString(
-                            org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab,
-                            title));
+                            R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             assert item.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
 

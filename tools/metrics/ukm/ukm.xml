@@ -2729,6 +2729,15 @@ be describing additional metrics about the same event.
       a given scroll gesture event sequence. If no swap was induced by the
       event, no recording is made.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -2796,6 +2805,15 @@ be describing additional metrics about the same event.
       the event, no recording is made. The first GSU of every scrolling sequence
       is excluded from this metric.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -5533,7 +5551,8 @@ be describing additional metrics about the same event.
     <summary>
       Records the event that led the password manager to believe the submission
       was successful. Metrics is recorded only when the password is saved.
-      Recorded values correspond to the enum autofill::SubmissionIndicatorEvent.
+      Recorded values correspond to the enum
+      autofill::mojom::SubmissionIndicatorEvent.
     </summary>
   </metric>
   <metric name="Submission.Observed">

@@ -335,9 +335,7 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       continue;
     }
     // c) if the device is in tablet mode, and source is not user.
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled() &&
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         iter.second.active_rotation_source() !=
             display::Display::RotationSource::USER) {
       continue;

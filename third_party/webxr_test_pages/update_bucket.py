@@ -137,6 +137,15 @@ def write_to_bucket(cr_position):
   # misconfigured. Sanity check and fix if needed.
   check_and_fix_content_types(destination)
 
+def direct_publish_samples(source, dest_subfolder):
+  destination = 'gs://chromium-webxr-samples' + '/' + dest_subfolder
+  run_modify('gsutil.py', '-m', 'rsync', '-x', 'media', '-r', './' + source,
+          destination)
+
+  # The copy used mime types based on system-local mappings which may be
+  # misconfigured. Sanity check and fix if needed.
+  check_and_fix_content_types(destination)
+
 def check_and_fix_content_types(destination):
   mimetypes.init()
   for suffix, content_type in SUFFIX_TYPES.iteritems():
@@ -269,6 +278,12 @@ content from failed uploads using the cloud console before retrying.
   parser.add_argument('--bucket', default=BUCKET,
                       help=("Destination Cloud Storage location, including "
                             "'gs://' prefix"))
+  parser.add_argument('--direct-publish-samples-source', default=None,
+                      help=("Publish samples from this folder directly to a "
+                            "bucket."))
+  parser.add_argument('--direct-publish-samples-dest', default=None,
+                      help=("Publish samples directly to this subfolder in the "
+                            "chromium-webxr-samples bucket."))
 
   global g_flags
   g_flags = parser.parse_args()
@@ -282,6 +297,12 @@ content from failed uploads using the cloud console before retrying.
   node_modules = os.path.join(TEST_SUBDIR, 'js', 'cottontail', 'node_modules')
   if os.path.isdir(node_modules):
     raise Exception('Please delete the obsolete directory "%s"' % node_modules)
+
+  if g_flags.direct_publish_samples_source and g_flags.direct_publish_samples_dest:
+    direct_publish_samples(
+      g_flags.direct_publish_samples_source,
+      g_flags.direct_publish_samples_dest)
+    return
 
   need_index_update = False
   if g_flags.update_index_only:

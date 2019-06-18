@@ -1180,11 +1180,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // create one if needed.  Either way, it will send it to the frame.
   void OnRequestOverlayRoutingToken();
 
-  void OnShowCreatedWindow(int pending_widget_routing_id,
-                           WindowOpenDisposition disposition,
-                           const gfx::Rect& initial_rect,
-                           bool user_gesture);
-
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
@@ -1251,6 +1246,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             int error_code,
                             const base::string16& error_description) override;
   void TransferUserActivationFrom(int32_t source_routing_id) override;
+  void ShowCreatedWindow(int32_t pending_widget_routing_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

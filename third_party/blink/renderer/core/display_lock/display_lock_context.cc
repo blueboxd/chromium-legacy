@@ -453,12 +453,15 @@ void DisplayLockContext::DidLayout(LifecycleTarget target) {
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kLayout);
 }
 
-bool DisplayLockContext::ShouldPrePaint() const {
-  return update_forced_ || state_ > kUpdating ||
+bool DisplayLockContext::ShouldPrePaint(LifecycleTarget target) const {
+  return target == kSelf || update_forced_ || state_ > kUpdating ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kPrePaint);
 }
 
-void DisplayLockContext::DidPrePaint() {
+void DisplayLockContext::DidPrePaint(LifecycleTarget target) {
+  if (target == kSelf)
+    return;
+
   if (state_ == kUpdating)
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
 
@@ -665,6 +668,9 @@ bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
     if (needs_effective_allowed_touch_action_update_ ||
         layout_object->EffectiveAllowedTouchActionChanged() ||
         layout_object->DescendantEffectiveAllowedTouchActionChanged()) {
+      // Note that although the object itself should have up to date value, in
+      // order to force recalc of the whole subtree, we mark it as needing an
+      // update.
       layout_object->MarkEffectiveAllowedTouchActionChanged();
     }
     return true;

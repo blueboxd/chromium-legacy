@@ -346,7 +346,7 @@ void NavigationControllerAndroid::ClearSslPreferences(
 bool NavigationControllerAndroid::GetUseDesktopUserAgent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller_->GetLastCommittedEntry();
   return entry && entry->GetIsOverridingUserAgent();
 }
 
@@ -359,7 +359,7 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
     return;
 
   // Make sure the navigation entry actually exists.
-  NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller_->GetLastCommittedEntry();
   if (!entry)
     return;
 

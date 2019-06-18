@@ -34,11 +34,6 @@ char kTSanDefaultSuppressions[] =
     // [test-only]. http://crbug.com/927330.
     "race:content/browser/net_info_browsertest.cc\n"
 
-    // http://crbug.com/84094.
-    "race:sqlite3StatusSet\n"
-    "race:pcache1EnforceMaxPage\n"
-    "race:pcache1AllocPage\n"
-
     // http://crbug.com/120808
     "race:base/threading/watchdog.cc\n"
 
@@ -56,9 +51,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/239359
     "race:media::TestInputCallback::OnData\n"
-
-    // http://crbug.com/244385
-    "race:unixTempFileDir\n"
 
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"

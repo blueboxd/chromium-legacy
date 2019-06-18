@@ -311,9 +311,7 @@ gfx::Rect PowerButtonMenuScreenView::GetMenuBounds() {
   gfx::Rect menu_bounds;
 
   if (power_button_position_ == PowerButtonPosition::NONE ||
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     menu_bounds = GetContentsBounds();
     menu_bounds.ClampToCenteredSize(
         power_button_menu_view_->GetPreferredSize());

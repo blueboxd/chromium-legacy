@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

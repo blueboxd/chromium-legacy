@@ -93,6 +93,13 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     https_url_ = https_server_->GetURL("/resource_loading_hints.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
+    https_url_preload_ =
+        https_server_->GetURL("/resource_loading_hints_preload.html");
+
+    https_second_url_ =
+        https_server_->GetURL("/resource_loading_hints_second.html");
+    ASSERT_TRUE(https_second_url_.SchemeIs(url::kHttpsScheme));
+
     https_no_transform_url_ = https_server_->GetURL(
         "/resource_loading_hints_with_no_transform_header.html");
     ASSERT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
@@ -193,6 +200,12 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
   void SetDefaultOnlyResourceLoadingHints(const GURL& hint_setup_url) {
+    SetDefaultOnlyResourceLoadingHintsWithPagePattern(hint_setup_url, "*");
+  }
+
+  void SetDefaultOnlyResourceLoadingHintsWithPagePattern(
+      const GURL& hint_setup_url,
+      const std::string& page_pattern) {
     std::vector<std::string> resource_patterns;
     resource_patterns.push_back("foo.jpg");
     resource_patterns.push_back("png");
@@ -201,7 +214,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     ProcessHintsComponent(
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING,
-            {hint_setup_url.host()}, resource_patterns));
+            {hint_setup_url.host()}, page_pattern, resource_patterns));
     LoadHintsForUrl(hint_setup_url);
   }
 
@@ -241,7 +254,9 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     LoadHintsForUrl(hint_setup_url);
   }
 
-  const GURL& https_url() const { return https_url_; }
+  virtual const GURL& https_url() const { return https_url_; }
+  const GURL& https_url_preload() const { return https_url_preload_; }
+  const GURL& https_second_url() const { return https_second_url_; }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& https_hint_setup_url() const { return https_hint_setup_url_; }
   const GURL& http_url() const { return http_url_; }
@@ -326,6 +341,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
+  GURL https_url_preload_;
+  GURL https_second_url_;
   GURL https_no_transform_url_;
   GURL https_hint_setup_url_;
   GURL http_url_;
@@ -344,8 +361,11 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 };
 
 // This test class enables ResourceLoadingHints with OptimizationHints.
+// Parameter is true if the test should be run with a webpage that preloads
+// resources in the HTML head using link-rel preload.
 class ResourceLoadingHintsBrowserTest
-    : public ResourceLoadingNoFeaturesBrowserTest {
+    : public ::testing::WithParamInterface<bool>,
+      public ResourceLoadingNoFeaturesBrowserTest {
  public:
   ResourceLoadingHintsBrowserTest() = default;
 
@@ -364,9 +384,21 @@ class ResourceLoadingHintsBrowserTest
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
 
+  const GURL& https_url() const override {
+    if (GetParam())
+      return ResourceLoadingNoFeaturesBrowserTest::https_url_preload();
+    return ResourceLoadingNoFeaturesBrowserTest::https_url();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
+
+// Parameter is true if the test should be run with a webpage that preloads
+// resources in the HTML head using link-rel preload.
+INSTANTIATE_TEST_SUITE_P(,
+                         ResourceLoadingHintsBrowserTest,
+                         ::testing::Values(false, true));
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
@@ -377,9 +409,14 @@ class ResourceLoadingHintsBrowserTest
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
+
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -439,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(
 // Sets only the experimental hints, but does not enable the matching
 // experiment. Verifies that the hints are not used, and the resource loading is
 // not blocked.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsNotEnabled)) {
   GURL url = https_url();
@@ -467,9 +504,14 @@ IN_PROC_BROWSER_TEST_F(
 
 // Sets only the experimental hints, and enables the matching experiment.
 // Verifies that the hints are used, and the resource loading is blocked.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsEnabled)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
+
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -510,9 +552,13 @@ IN_PROC_BROWSER_TEST_F(
 // Sets both the experimental and default hints, and enables the matching
 // experiment. Verifies that the hints are used, and the resource loading is
 // blocked.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsEnabled)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -551,12 +597,121 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
+// Sets the default hints with a non-wildcard page pattern. Loads a webpage from
+// an origin for which the hints are present, but the page pattern does not
+// match. Verifies that the hints are not used on that webpage.
+IN_PROC_BROWSER_TEST_P(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(MatchingOrigin_NonMatchingPagePattern)) {
+  const GURL url = https_url();
+
+  // Whitelist resource loading hints for https_hint_setup_url()'s' host.
+  // Set pattern to a string that does not matches https_url() path.
+  ASSERT_EQ(std::string::npos, https_url().path().find("mismatched_pattern"));
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+                                                    "mismatched_pattern");
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+  InitializeOptimizationHints();
+
+  base::HistogramTester histogram_tester;
+
+  // The URL is not whitelisted. Verify that the hints are not used.
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets the default hints with a non-wildcard page pattern. First loads a
+// webpage from a host for which the hints are present (page pattern matches).
+// Next, loads a webpage from the same host but the webpage's URL does not match
+// the page patterns. Verifies that the hints are not used on that webpage.
+IN_PROC_BROWSER_TEST_P(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(SameOriginDifferentPattern)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
+  // Whitelist resource loading hints for https_url()'s' host and pattern.
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+                                                    https_url().path());
+
+  // Hints should be used when loading https_url().
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+
+  base::HistogramTester histogram_tester_1;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester_1,
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1);
+  histogram_tester_1.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester_1.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
+  histogram_tester_1.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester_1.ExpectBucketCount(
+      "Previews.PreviewShown.ResourceLoadingHints", true, 1);
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
+  histogram_tester_1.ExpectBucketCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+
+  // Load a different webpage on the same origin to ensure that the resource
+  // loading hints are not reused.
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+  base::HistogramTester histogram_tester_2;
+
+  // https_second_url() is hosted on the same host as https_url(), but the path
+  // for https_second_url() is not whitelisted.
+  ASSERT_EQ(https_url().host(), https_second_url().host());
+  ASSERT_NE(https_url().path(), https_second_url().path());
+
+  ui_test_utils::NavigateToURL(browser(), https_second_url());
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester_2.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+  histogram_tester_2.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester_2.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+}
+
 // Sets both the experimental and default hints, but does not enable the
 // matching experiment. Verifies that the hints from the experiment are not
 // used.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsNotEnabled)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -589,10 +744,14 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
+  // TODO(https://crbug.com/891328): The test does not pass when resources are
+  // loaded using link-rel preload.
+  if (GetParam())
+    return;
   GURL url = redirect_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -625,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsNotWhitelisted)) {
   GURL url = https_url();
@@ -653,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttp)) {
   GURL url = http_url();
 
@@ -679,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(
                            ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
   GURL url = https_no_transform_url();
@@ -706,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(
         ResourceLoadingHintsHttpsWhitelistedButShouldNotApplyBecauseCoinFlipHoldback)) {

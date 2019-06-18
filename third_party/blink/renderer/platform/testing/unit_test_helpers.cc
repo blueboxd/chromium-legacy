@@ -71,7 +71,7 @@ void RunPendingTasks() {
   ThreadState::Current()->LeaveGCForbiddenScope();
 }
 
-void RunDelayedTasks(TimeDelta delay) {
+void RunDelayedTasks(base::TimeDelta delay) {
   Thread::Current()->GetTaskRunner()->PostDelayedTask(
       FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();

@@ -21,12 +21,12 @@
 // |matrix| - Float32Array representing 4x4 matrix (column major)
 // |point| - DOMPointReadOnly
 const transformByMatrix = function(matrix, point){
-  return new DOMPointReadOnly({
-    x : matrix[0] * point.x + matrix[4] * point.y + matrix[8] * point.z + matrix[12] * point.w,
-    y : matrix[1] * point.x + matrix[5] * point.y + matrix[9] * point.z + matrix[13] * point.w,
-    z : matrix[2] * point.x + matrix[6] * point.y + matrix[10] * point.z + matrix[14] * point.w,
-    w : matrix[3] * point.x + matrix[7] * point.y + matrix[11] * point.z + matrix[15] * point.w,
-  });
+  return new DOMPointReadOnly(
+    matrix[0] * point.x + matrix[4] * point.y + matrix[8] * point.z + matrix[12] * point.w,
+    matrix[1] * point.x + matrix[5] * point.y + matrix[9] * point.z + matrix[13] * point.w,
+    matrix[2] * point.x + matrix[6] * point.y + matrix[10] * point.z + matrix[14] * point.w,
+    matrix[3] * point.x + matrix[7] * point.y + matrix[11] * point.z + matrix[15] * point.w,
+  );
 };
 
 // |lhs|, |rhs| - Float32Arrays representing 4x4 matrices (column major)

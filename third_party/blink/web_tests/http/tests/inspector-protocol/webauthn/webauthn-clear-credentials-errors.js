@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  var {page, session, dp} =
+  const {page, session, dp} =
       await testRunner.startBlank(
           "Check that the WebAuthn command clearCredentials validates parameters");
 

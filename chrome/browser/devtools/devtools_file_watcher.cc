@@ -225,7 +225,7 @@ void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
 namespace {
 base::SequencedTaskRunner* impl_task_runner() {
   constexpr base::TaskTraits kImplTaskTraits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT};
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT};
   static base::LazySequencedTaskRunner s_file_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kImplTaskTraits);
   return s_file_task_runner.Get().get();

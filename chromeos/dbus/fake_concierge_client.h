@@ -137,6 +137,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
       override;
 
+  // Indicates whether WaitForServiceToBeAvailable has been called.
+  bool wait_for_service_to_be_available_called() const {
+    return wait_for_service_to_be_available_called_;
+  }
   // Indicates whether CreateDiskImage has been called
   bool create_disk_image_called() const { return create_disk_image_called_; }
   // Indicates whether DestroyDiskImage has been called
@@ -169,6 +173,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
     is_disk_image_progress_signal_connected_ = connected;
   }
 
+  void set_wait_for_service_to_be_available_response(
+      bool wait_for_service_to_be_available_response) {
+    wait_for_service_to_be_available_response_ =
+        wait_for_service_to_be_available_response;
+  }
   void set_create_disk_image_response(
       const vm_tools::concierge::CreateDiskImageResponse&
           create_disk_image_response) {
@@ -254,6 +263,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void OnDiskImageProgress(
       const vm_tools::concierge::DiskImageStatusResponse& signal);
 
+  bool wait_for_service_to_be_available_called_ = false;
   bool create_disk_image_called_ = false;
   bool destroy_disk_image_called_ = false;
   bool import_disk_image_called_ = false;
@@ -269,6 +279,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool is_container_startup_failed_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
 
+  bool wait_for_service_to_be_available_response_ = true;
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
   vm_tools::concierge::DestroyDiskImageResponse destroy_disk_image_response_;
   vm_tools::concierge::ImportDiskImageResponse import_disk_image_response_;

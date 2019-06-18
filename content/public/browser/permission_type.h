@@ -32,6 +32,8 @@ enum class PermissionType {
   BACKGROUND_FETCH = 17,
   IDLE_DETECTION = 18,
   PERIODIC_BACKGROUND_SYNC = 19,
+  WAKE_LOCK_SCREEN = 20,
+  WAKE_LOCK_SYSTEM = 21,
 
   // Always keep this at the end.
   NUM,

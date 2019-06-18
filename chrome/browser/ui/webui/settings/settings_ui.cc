@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -119,7 +118,7 @@
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -340,7 +339,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddLocalizedStrings(html_source, profile);
 
-  DarkModeHandler::Initialize(web_ui, html_source);
   ManagedUIHandler::Initialize(web_ui, html_source);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

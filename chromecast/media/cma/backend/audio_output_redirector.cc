@@ -117,6 +117,8 @@ AudioOutputRedirector::~AudioOutputRedirector() = default;
 
 void AudioOutputRedirector::AddInput(MixerInput* mixer_input) {
   if (ApplyToInput(mixer_input)) {
+    DCHECK_EQ(mixer_input->output_samples_per_second(),
+              output_samples_per_second_);
     inputs_[mixer_input] = std::make_unique<InputImpl>(this, mixer_input);
   } else {
     non_redirected_inputs_.insert(mixer_input);
@@ -171,6 +173,7 @@ void AudioOutputRedirector::UpdatePatterns(
 }
 
 void AudioOutputRedirector::Start(int output_samples_per_second) {
+  output_samples_per_second_ = output_samples_per_second;
   output_->Start(output_samples_per_second);
 }
 

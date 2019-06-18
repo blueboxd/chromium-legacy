@@ -134,16 +134,6 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
 }
 
-scoped_refptr<base::RefCountedMemory> RecentTabsGetSyncedFaviconForPageURL(
-    sync_sessions::SessionSyncService* session_sync_service,
-    const GURL& page_url) {
-  DCHECK(session_sync_service);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
-  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
-                   : nullptr;
-}
-
 // Check if user settings allow querying a Google server using history
 // information.
 bool CanSendHistoryDataToServer(bool is_local_tab, Browser* browser) {
@@ -608,8 +598,6 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
                      base::Unretained(this), command_id),
       favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
       open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
-      base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
-                     base::Unretained(session_sync_service_)),
       CanSendHistoryDataToServer(is_local_tab, browser_),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);

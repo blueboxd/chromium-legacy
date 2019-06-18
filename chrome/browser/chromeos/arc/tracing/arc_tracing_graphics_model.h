@@ -81,6 +81,12 @@ class ArcTracingGraphicsModel {
 
     // Custom event.
     kCustomEvent = 600,
+
+    // Input events
+    kInputEventCreated = 700,      // 700
+    kInputEventWaylandDispatched,  // 701
+    kInputEventDeliverStart,       // 702
+    kInputEventDeliverEnd,         // 703
   };
 
   struct BufferEvent {
@@ -170,8 +176,14 @@ class ArcTracingGraphicsModel {
 
   const EventsContainer& chrome_top_level() const { return chrome_top_level_; }
 
+  const EventsContainer& input() const { return input_; }
+
   ArcSystemModel& system_model() { return system_model_; }
   const ArcSystemModel& system_model() const { return system_model_; }
+
+  void set_skip_structure_validation_for_testing() {
+    skip_structure_validation_for_testing_ = true;
+  }
 
  private:
   // Normalizes timestamp for all events by subtracting the timestamp of the
@@ -194,12 +206,15 @@ class ArcTracingGraphicsModel {
   // To avoid overlapping events are stored interlaced.
   EventsContainer chrome_top_level_;
   EventsContainer android_top_level_;
+  EventsContainer input_;
   // Total duration of this model.
   uint32_t duration_ = 0;
   // Map Chrome buffer id to task id.
   std::map<std::string, int> chrome_buffer_id_to_task_id_;
   // CPU event model.
   ArcSystemModel system_model_;
+  // Allows to have model incomplete for testing.
+  bool skip_structure_validation_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingGraphicsModel);
 };

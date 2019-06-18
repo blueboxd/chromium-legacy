@@ -13,9 +13,11 @@
 
 #if defined(OS_LINUX)
 #include <libdrm/drm_fourcc.h>
+#endif  // defined(OS_LINUX)
 
-#include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace media {
 namespace test {

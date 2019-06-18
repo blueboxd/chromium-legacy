@@ -8,6 +8,7 @@
 #include "ash/system/message_center/notifier_settings_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/tray_detailed_view.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/views/layout/box_layout.h"
 

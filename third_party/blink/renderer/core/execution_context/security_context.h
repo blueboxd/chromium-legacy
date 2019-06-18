@@ -31,6 +31,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -72,7 +73,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void Trace(blink::Visitor*) override;
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
-  static std::vector<unsigned> SerializeInsecureNavigationSet(
+  static WebVector<unsigned> SerializeInsecureNavigationSet(
       const InsecureNavigationsSet&);
 
   const SecurityOrigin* GetSecurityOrigin() const {
@@ -103,7 +104,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-insecure-navigations-set
-  void SetInsecureNavigationsSet(const std::vector<unsigned>& set) {
+  void SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
     insecure_navigations_to_upgrade_.clear();
     for (unsigned hash : set)
       insecure_navigations_to_upgrade_.insert(hash);

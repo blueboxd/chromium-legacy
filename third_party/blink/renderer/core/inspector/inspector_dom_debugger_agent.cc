@@ -423,9 +423,8 @@ InspectorDOMDebuggerAgent::BuildObjectsForEventListeners(
     const V8EventListenerInfoList& event_information,
     v8::Local<v8::Context> context,
     const v8_inspector::StringView& object_group_id) {
-  std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>
-      listeners_array =
-          protocol::Array<protocol::DOMDebugger::EventListener>::create();
+  auto listeners_array =
+      std::make_unique<protocol::Array<protocol::DOMDebugger::EventListener>>();
   // Make sure listeners with |use_capture| true come first because they have
   // precedence.
   for (const auto& info : event_information) {
@@ -434,7 +433,7 @@ InspectorDOMDebuggerAgent::BuildObjectsForEventListeners(
     std::unique_ptr<protocol::DOMDebugger::EventListener> listener_object =
         BuildObjectForEventListener(context, info, object_group_id);
     if (listener_object)
-      listeners_array->addItem(std::move(listener_object));
+      listeners_array->emplace_back(std::move(listener_object));
   }
   for (const auto& info : event_information) {
     if (info.use_capture)
@@ -442,7 +441,7 @@ InspectorDOMDebuggerAgent::BuildObjectsForEventListeners(
     std::unique_ptr<protocol::DOMDebugger::EventListener> listener_object =
         BuildObjectForEventListener(context, info, object_group_id);
     if (listener_object)
-      listeners_array->addItem(std::move(listener_object));
+      listeners_array->emplace_back(std::move(listener_object));
   }
   return listeners_array;
 }

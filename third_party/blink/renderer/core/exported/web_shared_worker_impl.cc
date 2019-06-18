@@ -147,8 +147,8 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
       script_request_url_, mojom::RequestContextType::SHARED_WORKER,
-      network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
+      network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
       Bind(&WebSharedWorkerImpl::OnScriptLoaderFinished,

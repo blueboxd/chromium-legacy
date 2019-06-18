@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -50,14 +51,8 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
 // Retrieves and caches GAIA information about Google Accounts.
 class AccountTrackerService {
  public:
-  // Clients of AccountTrackerService can implement this interface and register
-  // with AddObserver() to learn about account information changes.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-    virtual void OnAccountUpdated(const AccountInfo& info) {}
-    virtual void OnAccountRemoved(const AccountInfo& info) {}
-  };
+  typedef base::RepeatingCallback<void(const AccountInfo& info)>
+      AccountInfoCallback;
 
   // Possible values for the kAccountIdMigrationState preference.
   // Keep in sync with OAuth2LoginAccountRevokedMigrationState histogram enum.
@@ -77,9 +72,6 @@ class AccountTrackerService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   void Shutdown();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Initializes the list of accounts from |pref_service| and load images from
   // |user_data_dir|. If |user_data_dir| is empty, images will not be saved to
@@ -133,6 +125,14 @@ class AccountTrackerService {
   // Returns a reference to the corresponding Java AccountTrackerService object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 #endif
+
+  // If set, this callback will be invoked whenever the details of a tracked
+  // account changes (e.g. account's info, image, |is_child_account|...).
+  void SetOnAccountUpdatedCallback(AccountInfoCallback callback);
+
+  // If set, this callback will be invoked whenever an existing account with a
+  // valid GaiaId gets removed from |accounts_| (i.e. stops being tracked).
+  void SetOnAccountRemovedCallback(AccountInfoCallback callback);
 
  protected:
   // Available to be called in tests.
@@ -198,9 +198,10 @@ class AccountTrackerService {
 
   PrefService* pref_service_ = nullptr;  // Not owned.
   std::map<CoreAccountId, AccountInfo> accounts_;
-  base::ObserverList<Observer>::Unchecked observer_list_;
-
   base::FilePath user_data_dir_;
+
+  AccountInfoCallback on_account_updated_callback_;
+  AccountInfoCallback on_account_removed_callback_;
 
   // Task runner used for file operations on avatar images.
   scoped_refptr<base::SequencedTaskRunner> image_storage_task_runner_;

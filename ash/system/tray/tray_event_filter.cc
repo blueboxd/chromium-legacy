@@ -91,9 +91,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
     // treated as outside of the bubble.
     int bubble_container_id =
         wm::GetContainerForWindow(bubble_widget->GetNativeWindow())->id();
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled() &&
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         bubble_container_id == kShellWindowId_SettingBubbleContainer) {
       bounds.Intersect(bubble_widget->GetWorkAreaBoundsInScreen());
     }

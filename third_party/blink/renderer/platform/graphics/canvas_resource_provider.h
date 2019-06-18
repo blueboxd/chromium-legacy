@@ -130,7 +130,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // queue, thus reducing latency, but with the possible side effects of tearing
   // (in cases where the resource is scanned out directly) and irregular frame
   // rate.
-  bool IsSingleBuffered() { return !resource_recycling_enabled_; }
+  bool IsSingleBuffered() { return is_single_buffered_; }
 
   // Attempt to enable single buffering mode on this resource provider.  May
   // fail if the CanvasResourcePRovider subclass does not support this mode of
@@ -225,6 +225,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // will only hold one CanvasResource at most.
   WTF::Vector<scoped_refptr<CanvasResource>> canvas_resources_;
   bool resource_recycling_enabled_ = true;
+  bool is_single_buffered_ = false;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
 

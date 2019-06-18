@@ -570,8 +570,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
 }
 
 // TODO(jam): http://crbug.com/350550
-#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+// TODO(crbug/974787): Flaky on Win7 debug builds.
+#if (defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_WIN) && !(defined(NDEBUG)))
+#define MAYBE_Crash DISABLED_Crash
+#else
+#define MAYBE_Crash Crash
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -599,7 +605,5 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-#endif
 
 }  // namespace extensions

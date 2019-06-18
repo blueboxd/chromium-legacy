@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.touchless.dialog;
 
 import android.app.Dialog;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.util.Pair;
@@ -162,7 +160,6 @@ public class TouchlessDialogPresenter extends Presenter {
             PropertyModel[] models = model.get(TouchlessDialogProperties.LIST_MODELS);
             ArrayList<Pair<Integer, PropertyModel>> modelPairs = new ArrayList<>();
             for (int i = 0; i < models.length; i++) {
-                models[i].set(DialogListItemProperties.FOCUS_LISTENER_SET, true);
                 modelPairs.add(Pair.create(0, models[i]));
             }
             optionsAdapter.updateModels(modelPairs);
@@ -198,29 +195,14 @@ public class TouchlessDialogPresenter extends Presenter {
                 listener.setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
                 model.set(DialogListItemProperties.CLICK_LISTENER, listener);
                 view.setOnClickListener(listener);
+            } else {
+                view.setOnClickListener(model.get(DialogListItemProperties.CLICK_LISTENER));
             }
         } else if (DialogListItemProperties.MULTI_CLICKABLE == propertyKey) {
             View.OnClickListener listener = model.get(DialogListItemProperties.CLICK_LISTENER);
             if (listener instanceof ClickThrottlingListener) {
                 ((ClickThrottlingListener) listener)
                         .setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
-            }
-        } else if (DialogListItemProperties.FOCUS_LISTENER_SET == propertyKey) {
-            if (model.get(DialogListItemProperties.FOCUS_LISTENER_SET)) {
-                view.setOnFocusChangeListener((v, hasFocus) -> {
-                    textView.setTextColor(hasFocus
-                            ? view.getResources().getColor(R.color.modern_blue_800)
-                            : view.getResources().getColor(android.R.color.black));
-                    if (imageView.getDrawable() != null) {
-                        if (hasFocus) {
-                            imageView.getDrawable().setColorFilter(new PorterDuffColorFilter(
-                                    view.getResources().getColor(R.color.modern_blue_800),
-                                    PorterDuff.Mode.SRC_ATOP));
-                        } else {
-                            imageView.getDrawable().clearColorFilter();
-                        }
-                    }
-                });
             }
         }
     }

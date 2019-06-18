@@ -633,6 +633,7 @@ void BindImageTexture(GLuint unit,
 void DispatchCompute(GLuint num_groups_x,
                      GLuint num_groups_y,
                      GLuint num_groups_z) override;
+void DispatchComputeIndirect(GLintptr offset) override;
 void GetProgramInterfaceiv(GLuint program,
                            GLenum program_interface,
                            GLenum pname,

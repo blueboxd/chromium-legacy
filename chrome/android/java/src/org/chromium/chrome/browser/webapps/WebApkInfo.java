@@ -412,8 +412,8 @@ public class WebApkInfo extends WebappInfo {
             String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
-                themeColor, backgroundColor, null /* splash_screen_url */,
-                false /* isIconGenerated */, false /* isIconAdaptive */, forceNavigation);
+                themeColor, backgroundColor, false /* isIconGenerated */,
+                false /* isIconAdaptive */, forceNavigation);
         mBadgeIcon = badgeIcon;
         mSplashIcon = splashIcon;
         mApkPackageName = webApkPackageName;

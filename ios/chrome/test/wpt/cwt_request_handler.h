@@ -56,6 +56,23 @@ class CWTRequestHandler {
   // complete.
   base::Value NavigateToUrl(const base::Value* url);
 
+  // Sets timeouts used when performing browser operations.
+  base::Value SetTimeouts(const base::Value& timeouts);
+
+  // Gets the id of the current tab. Returns an error value if no tab is open.
+  base::Value GetCurrentTabId();
+
+  // Gets the ids of all open tabs.
+  base::Value GetAllTabIds();
+
+  // Switches to the tab with the given id. Returns an error value if no such
+  // tab exists.
+  base::Value SwitchToTabWithId(const base::Value* id);
+
+  // Closes the current tab. Returns an error value if no tab is open.
+  // Otherwise, returns the ids of the remaining tabs.
+  base::Value CloseCurrentTab();
+
   // Processes the given command, HTTP method, and request content. Returns the
   // result of processing the command, or nullopt_t if the command is unknown.
   base::Optional<base::Value> ProcessCommand(

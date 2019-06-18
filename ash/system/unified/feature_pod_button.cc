@@ -262,6 +262,11 @@ FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
 
 FeaturePodButton::~FeaturePodButton() = default;
 
+double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
+  // TODO(amehfooz): Confirm the animation curve with UX.
+  return std::max(0., 5. * expanded_amount - 4.);
+}
+
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   icon_button_->SetImage(views::Button::STATE_NORMAL,
                          gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
@@ -309,10 +314,16 @@ void FeaturePodButton::SetToggled(bool toggled) {
   icon_button_->SetToggled(toggled);
 }
 
-void FeaturePodButton::SetExpandedAmount(double expanded_amount) {
-  // TODO(tetsui): Confirm the animation curve with UX.
-  label_button_->layer()->SetOpacity(std::max(0., 5. * expanded_amount - 4.));
+void FeaturePodButton::SetExpandedAmount(double expanded_amount,
+                                         bool fade_icon_button) {
   label_button_->SetVisible(expanded_amount > 0.0);
+  label_button_->layer()->SetOpacity(
+      GetOpacityForExpandedAmount(expanded_amount));
+
+  if (fade_icon_button)
+    layer()->SetOpacity(GetOpacityForExpandedAmount(expanded_amount));
+  else
+    layer()->SetOpacity(1.0);
 }
 
 void FeaturePodButton::SetVisibleByContainer(bool visible) {

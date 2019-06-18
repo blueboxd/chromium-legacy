@@ -91,9 +91,7 @@ void SetShelfBehaviorsFromPrefs() {
 
   // The shelf should always be bottom-aligned in tablet mode; alignment is
   // assigned from prefs when tablet mode is exited.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
   }
 

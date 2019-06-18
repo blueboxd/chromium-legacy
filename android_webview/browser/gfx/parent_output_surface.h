@@ -40,8 +40,6 @@ class ParentOutputSurface : public viz::OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  std::unique_ptr<viz::OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;

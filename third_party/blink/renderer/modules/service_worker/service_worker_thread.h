@@ -64,7 +64,7 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   void RunInstalledModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
@@ -81,7 +81,7 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
       const KURL& module_url_record,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   Persistent<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;

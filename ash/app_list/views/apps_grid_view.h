@@ -350,7 +350,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Calculates the item views' bounds for folder.
   void CalculateIdealBoundsForFolder();
-  void AnimateToIdealBounds();
+  void AnimateToIdealBounds(AppListItemView* released_drag_view);
 
   // Invoked when the given |view|'s current bounds and target bounds are on
   // different rows. To avoid moving diagonally, |view| would be put into a

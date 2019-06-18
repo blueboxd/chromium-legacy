@@ -43,6 +43,10 @@ class MODULES_EXPORT DocumentPaintDefinition {
   bool alpha() const { return alpha_; }
 
   bool RegisterAdditionalPaintDefinition(const CSSPaintDefinition&);
+  bool RegisterAdditionalPaintDefinition(const Vector<CSSPropertyID>&,
+                                         const Vector<String>&,
+                                         const Vector<CSSSyntaxDescriptor>&,
+                                         bool alpha);
 
   unsigned GetRegisteredDefinitionCount() const {
     return registered_definitions_count_;

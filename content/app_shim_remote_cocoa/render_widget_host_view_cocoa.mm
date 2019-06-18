@@ -22,6 +22,7 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
@@ -159,7 +160,16 @@ void ExtractUnderlines(NSAttributedString* string,
   API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<NSCandidateListTouchBarItem> candidateListTouchBarItem_;
   NSInteger textSuggestionsSequenceNumber_;
+  BOOL shouldRequestTextSubstitutions_;
+  BOOL substitutionWasApplied_;
+
+  NSTextCheckingTypes userEnabledTextCheckingTypes_;
+  NSTextCheckingTypes userDisabledTextCheckingTypes_;
 }
+@property(readonly) NSTextCheckingType enabledTextCheckingTypes;
+@property(readonly) BOOL inputAllowsTextSubstitution;
+@property(readonly) NSSpellChecker* spellChecker;
+
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
@@ -168,6 +178,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (void)sendViewBoundsInWindowToHost;
+- (void)requestTextSubstitutions;
 - (void)requestTextSuggestions API_AVAILABLE(macos(10.12.2));
 - (void)sendWindowFrameInScreenToHost;
 - (bool)hostIsDisconnected;
@@ -185,6 +196,7 @@ void ExtractUnderlines(NSAttributedString* string,
 @implementation RenderWidgetHostViewCocoa
 @synthesize markedRange = markedRange_;
 @synthesize textInputType = textInputType_;
+@synthesize textInputFlags = textInputFlags_;
 @synthesize spellCheckerForTesting = spellCheckerForTesting_;
 
 - (id)initWithHost:(RenderWidgetHostNSViewHost*)host
@@ -242,6 +254,128 @@ void ExtractUnderlines(NSAttributedString* string,
   host_->OnBoundsInWindowChanged(gfxViewBoundsInWindow, true);
 }
 
+- (BOOL)inputAllowsTextSubstitution {
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_NONE)
+    return NO;
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    return NO;
+  if (textInputFlags_ & blink::kWebTextInputFlagSpellcheckOff)
+    return NO;
+  return YES;
+}
+
+- (NSSpellChecker*)spellChecker {
+  if (spellCheckerForTesting_)
+    return spellCheckerForTesting_;
+  return NSSpellChecker.sharedSpellChecker;
+}
+
+- (void)requestTextSubstitutions {
+  if (!self.inputAllowsTextSubstitution)
+    return;
+
+  NSTextCheckingType enabledTextCheckingTypes = self.enabledTextCheckingTypes;
+  if (!enabledTextCheckingTypes)
+    return;
+
+  NSString* availableText = base::SysUTF16ToNSString(textSelectionText_);
+
+  if (!availableText)
+    return;
+
+  auto* textCheckingResults =
+      [self.spellChecker checkString:availableText
+                               range:NSMakeRange(0, availableText.length)
+                               types:enabledTextCheckingTypes
+                             options:nil
+              inSpellDocumentWithTag:0
+                         orthography:nullptr
+                           wordCount:nullptr];
+
+  NSUInteger cursorLocation = textSelectionRange_.start();
+  base::scoped_nsobject<NSTextCheckingResult> scopedCandidateResult;
+  for (NSTextCheckingResult* result in textCheckingResults) {
+    NSTextCheckingResult* adjustedResult =
+        [result resultByAdjustingRangesWithOffset:textSelectionOffset_];
+    if (!NSLocationInRange(cursorLocation,
+                           NSMakeRange(adjustedResult.range.location,
+                                       adjustedResult.range.length + 1)))
+      continue;
+    constexpr NSTextCheckingType textCheckingTypesToReplaceImmediately =
+        NSTextCheckingTypeQuote | NSTextCheckingTypeDash;
+    if (adjustedResult.resultType & textCheckingTypesToReplaceImmediately) {
+      [self insertText:adjustedResult.replacementString
+          replacementRange:adjustedResult.range];
+      continue;
+    }
+    scopedCandidateResult.reset([adjustedResult retain]);
+  }
+  NSTextCheckingResult* candidateResult = scopedCandidateResult.get();
+  if (!candidateResult)
+    return;
+
+  NSRect textRectInScreenCoordinates =
+      [self firstRectForCharacterRange:candidateResult.range
+                           actualRange:nullptr];
+  NSRect textRectInWindowCoordinates =
+      [self.window convertRectFromScreen:textRectInScreenCoordinates];
+  NSRect textRectInViewCoordinates =
+      [self convertRect:textRectInWindowCoordinates fromView:nil];
+
+  [self.spellChecker
+      showCorrectionIndicatorOfType:NSCorrectionIndicatorTypeDefault
+                      primaryString:candidateResult.replacementString
+                 alternativeStrings:candidateResult.alternativeStrings
+                    forStringInRect:textRectInViewCoordinates
+                               view:self
+                  completionHandler:^(NSString* acceptedString) {
+                    [self didAcceptReplacementString:acceptedString
+                               forTextCheckingResult:candidateResult];
+                  }];
+}
+
+- (void)didAcceptReplacementString:(NSString*)acceptedString
+             forTextCheckingResult:(NSTextCheckingResult*)correction {
+  // TODO: Keep NSSpellChecker up to date on the user's response via
+  // -recordResponse:toCorrection:forWord:language:inSpellDocumentWithTag:.
+  // Call it to report whether they initially accepted or rejected the
+  // suggestion, but also if they edit, revert, etc. later.
+
+  if (acceptedString == nil)
+    return;
+
+  NSRange availableTextRange =
+      NSMakeRange(textSelectionOffset_, textSelectionText_.length());
+
+  if (NSMaxRange(correction.range) > NSMaxRange(availableTextRange))
+    return;
+
+  NSAttributedString* attString = [[[NSAttributedString alloc]
+      initWithString:base::SysUTF16ToNSString(textSelectionText_)] autorelease];
+  NSRange trailingRange = NSMakeRange(
+      NSMaxRange(correction.range),
+      NSMaxRange(availableTextRange) - NSMaxRange(correction.range));
+
+  if (trailingRange.length > 0 &&
+      trailingRange.location < NSMaxRange(availableTextRange)) {
+    NSRange trailingRangeInAvailableText = NSMakeRange(
+        trailingRange.location - textSelectionOffset_, trailingRange.length);
+    if (@available(macOS 10.12, *)) {
+      NSString* trailingString =
+          [attString.string substringWithRange:trailingRangeInAvailableText];
+      if ([self.spellChecker preventsAutocorrectionBeforeString:trailingString
+                                                       language:nil])
+        return;
+    }
+    if ([attString doubleClickAtIndex:trailingRangeInAvailableText.location]
+            .location < trailingRangeInAvailableText.location)
+      return;
+  }
+
+  substitutionWasApplied_ = YES;
+  [self insertText:acceptedString replacementRange:correction.range];
+}
+
 - (void)requestTextSuggestions {
   auto* touchBarItem = candidateListTouchBarItem_.get();
   if (!touchBarItem)
@@ -259,10 +393,9 @@ void ExtractUnderlines(NSAttributedString* string,
   selectionRange.location -= textSelectionOffset_;
   if (NSMaxRange(selectionRange) > selectionText.length)
     return;
-  NSSpellChecker* spell_checker = spellCheckerForTesting_
-                                      ? spellCheckerForTesting_
-                                      : [NSSpellChecker sharedSpellChecker];
-  textSuggestionsSequenceNumber_ = [spell_checker
+
+  // TODO: Fetch the spell document tag from the renderer (or equivalent).
+  textSuggestionsSequenceNumber_ = [self.spellChecker
       requestCandidatesForSelectedRange:selectionRange
                                inString:selectionText
                                   types:NSTextCheckingAllSystemTypes
@@ -281,12 +414,36 @@ void ExtractUnderlines(NSAttributedString* string,
                       }];
 }
 
+- (NSTextCheckingType)enabledTextCheckingTypes {
+  NSTextCheckingType checkingTypes = 0;
+  if (NSSpellChecker.automaticQuoteSubstitutionEnabled)
+    checkingTypes |= NSTextCheckingTypeQuote;
+  if (NSSpellChecker.automaticDashSubstitutionEnabled)
+    checkingTypes |= NSTextCheckingTypeDash;
+  if (NSSpellChecker.automaticTextReplacementEnabled)
+    checkingTypes |= NSTextCheckingTypeReplacement;
+  checkingTypes |= userEnabledTextCheckingTypes_;
+  checkingTypes &= ~userDisabledTextCheckingTypes_;
+  return checkingTypes;
+}
+
+- (void)orderFrontSubstitutionsPanel:(id)sender {
+  [NSSpellChecker.sharedSpellChecker.substitutionsPanel orderFront:sender];
+}
+
 - (void)setTextSelectionText:(base::string16)text
                       offset:(size_t)offset
                        range:(gfx::Range)range {
   textSelectionText_ = text;
   textSelectionOffset_ = offset;
   textSelectionRange_ = range;
+  substitutionWasApplied_ = NO;
+  [NSSpellChecker.sharedSpellChecker dismissCorrectionIndicatorForView:self];
+  if (shouldRequestTextSubstitutions_ && !substitutionWasApplied_ &&
+      textSelectionRange_.is_empty()) {
+    shouldRequestTextSubstitutions_ = NO;
+    [self requestTextSubstitutions];
+  }
   if (@available(macOS 10.12.2, *))
     [self requestTextSuggestions];
 }
@@ -1366,7 +1523,49 @@ void ExtractUnderlines(NSAttributedString* string,
   return YES;
 }
 
+- (void)toggleTextCheckingType:(NSTextCheckingType)type {
+  if (self.enabledTextCheckingTypes & type) {
+    userEnabledTextCheckingTypes_ &= ~type;
+    userDisabledTextCheckingTypes_ |= type;
+  } else {
+    userEnabledTextCheckingTypes_ |= type;
+    userDisabledTextCheckingTypes_ &= ~type;
+  }
+}
+
+- (void)toggleAutomaticQuoteSubstitution:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeQuote];
+}
+
+- (void)toggleAutomaticDashSubstitution:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeDash];
+}
+
+- (void)toggleAutomaticTextReplacement:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeReplacement];
+}
+
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
+    NSTextCheckingType representedTextCheckingType = 0;
+    if (item.action == @selector(orderFrontSubstitutionsPanel:)) {
+      return YES;
+    } else if (item.action == @selector(toggleAutomaticQuoteSubstitution:)) {
+      representedTextCheckingType = NSTextCheckingTypeQuote;
+    } else if (item.action == @selector(toggleAutomaticDashSubstitution:)) {
+      representedTextCheckingType = NSTextCheckingTypeDash;
+    } else if (item.action == @selector(toggleAutomaticTextReplacement:)) {
+      representedTextCheckingType = NSTextCheckingTypeReplacement;
+    }
+    if (representedTextCheckingType) {
+      menuItem.state =
+          (self.enabledTextCheckingTypes & representedTextCheckingType)
+              ? NSControlStateValueOn
+              : NSControlStateValueOff;
+      return self.inputAllowsTextSubstitution;
+    }
+  }
+
   if (responderDelegate_ &&
       [responderDelegate_ respondsToSelector:@selector
                           (validateUserInterfaceItem:isValidItem:)]) {
@@ -1768,6 +1967,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   NSString* im_text = isAttributedString ? [string string] : string;
   if (handlingKeyDown_) {
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
+    shouldRequestTextSubstitutions_ = YES;
   } else {
     gfx::Range replacement_range(replacementRange);
     host_->ImeCommitText(base::SysNSStringToUTF16(im_text), replacement_range);
@@ -1849,6 +2049,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)cancelComposition {
+  [NSSpellChecker.sharedSpellChecker dismissCorrectionIndicatorForView:self];
+
   if (!hasMarkedText_)
     return;
 

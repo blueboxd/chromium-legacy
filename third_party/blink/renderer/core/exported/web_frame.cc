@@ -169,7 +169,7 @@ WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
   return ToCoreFrame(*this)->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
-std::vector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
+WebVector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
   const SecurityContext::InsecureNavigationsSet& set =
       ToCoreFrame(*this)->GetSecurityContext()->InsecureNavigationsToUpgrade();
   return SecurityContext::SerializeInsecureNavigationSet(set);

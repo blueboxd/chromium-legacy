@@ -217,7 +217,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // in the dangling pointer situation.
   void RunTerminationGC();
 
-  void PerformIdleLazySweep(TimeTicks deadline);
+  void PerformIdleLazySweep(base::TimeTicks deadline);
 
   void ScheduleIdleLazySweep();
   void SchedulePreciseGC();
@@ -472,7 +472,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   void MarkPhaseVisitNotFullyConstructedObjects();
-  bool MarkPhaseAdvanceMarking(TimeTicks deadline);
+  bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
 
   bool ShouldVerifyMarking() const;
@@ -544,8 +544,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   size_t no_allocation_count_ = 0;
   size_t gc_forbidden_count_ = 0;
 
-  TimeDelta next_incremental_marking_step_duration_;
-  TimeDelta previous_incremental_marking_time_left_;
+  base::TimeDelta next_incremental_marking_step_duration_;
+  base::TimeDelta previous_incremental_marking_time_left_;
 
   GCState gc_state_;
   GCPhase gc_phase_;

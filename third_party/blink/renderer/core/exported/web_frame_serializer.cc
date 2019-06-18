@@ -235,8 +235,10 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // images, as only the value of src is pulled into the archive. Discarding
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
-  if (attribute.LocalName() == html_names::kSrcsetAttr)
+  if (IsHTMLImageElement(element) &&
+      attribute.LocalName() == html_names::kSrcsetAttr) {
     return true;
+  }
 
   // Do not save ping attribute since anyway the ping will be blocked from
   // MHTML.

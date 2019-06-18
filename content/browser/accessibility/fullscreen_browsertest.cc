@@ -61,7 +61,7 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
     is_fullscreen_ = false;
   }
 
-  bool IsFullscreenForTabOrPending(const WebContents*) const override {
+  bool IsFullscreenForTabOrPending(const WebContents*) override {
     return is_fullscreen_;
   }
 

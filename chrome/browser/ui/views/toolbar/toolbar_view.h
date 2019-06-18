@@ -44,6 +44,7 @@ class Browser;
 class ExtensionsToolbarButton;
 class ExtensionsToolbarContainer;
 class HomeButton;
+class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
 class ToolbarPageActionIconContainerView;
@@ -140,6 +141,7 @@ class ToolbarView : public views::AccessiblePaneView,
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
+  MediaToolbarButtonView* media_button() const { return media_button_; }
   ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
     return toolbar_page_action_container_;
   }
@@ -267,6 +269,7 @@ class ToolbarView : public views::AccessiblePaneView,
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
+  MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;

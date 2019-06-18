@@ -22,7 +22,7 @@ namespace ash {
 
 namespace {
 // Autoclick scroll menu constants.
-int kAutoclickScrollMenuSizeDips = 250;
+constexpr int kAutoclickScrollMenuSizeDips = 192;
 }  // namespace
 
 AutoclickScrollBubbleController::AutoclickScrollBubbleController() {}
@@ -55,8 +55,12 @@ void AutoclickScrollBubbleController::ShowBubble(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = anchor_rect;
-  init_params.insets = gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
-                                   kUnifiedMenuPadding, kUnifiedMenuPadding);
+  // The widget's shadow is drawn below and on the sides of the scroll view.
+  // Do not inset the top, so that when the scroll bubble is shown below the
+  // menu bubble it lays out directly below the menu bubble's shadow, at a
+  // height of kUnifiedMenuPadding.
+  init_params.insets = gfx::Insets(0, kUnifiedMenuPadding, kUnifiedMenuPadding,
+                                   kUnifiedMenuPadding);
   init_params.min_width = kAutoclickScrollMenuSizeDips;
   init_params.max_width = kAutoclickScrollMenuSizeDips;
   init_params.max_height = kAutoclickScrollMenuSizeDips;

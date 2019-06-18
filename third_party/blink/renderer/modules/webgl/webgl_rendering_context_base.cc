@@ -1644,7 +1644,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   // is a separate path for the accelerated case is that we assume texture
   // copying is faster than drawImage.
   scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
-  if (!image)
+  if (!image || !image->PaintImageForCurrentFrame())
     return false;
   cc::PaintFlags paint_flags;
   paint_flags.setBlendMode(SkBlendMode::kSrc);

@@ -82,6 +82,7 @@ remoting_localize("remoting_test_apk_manifest") {
 instrumentation_test_apk("remoting_test_apk") {
   android_manifest = "$root_gen_dir/remoting/android_test/AndroidManifest.xml"
   android_manifest_dep = ":remoting_test_apk_manifest"
+  target_sdk_version = 28
   apk_name = "ChromotingTest"
   apk_under_test = ":remoting_apk"
   java_files = [

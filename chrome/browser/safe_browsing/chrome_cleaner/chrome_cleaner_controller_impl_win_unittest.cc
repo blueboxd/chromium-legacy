@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -40,7 +41,6 @@
 namespace safe_browsing {
 namespace {
 
-using ::chrome_cleaner::mojom::PromptAcceptance;
 using ::testing::_;
 using ::testing::Bool;
 using ::testing::Combine;
@@ -56,6 +56,7 @@ using ExtensionCleaningFeatureStatus =
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
 using IdleReason = ChromeCleanerController::IdleReason;
 using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
+using PromptAcceptance = ChromePromptActions::PromptAcceptance;
 using State = ChromeCleanerController::State;
 using UserResponse = ChromeCleanerController::UserResponse;
 using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;

@@ -1099,10 +1099,6 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   }
 
   if (!opened || !db_->QuickIntegrityCheck() || !EnsureDatabaseVersion()) {
-    LOG(ERROR) << "Failed to open the appcache database.";
-    AppCacheHistograms::CountInitResult(
-        AppCacheHistograms::SQL_DATABASE_ERROR);
-
     // We're unable to open the database. This is a fatal error
     // which we can't recover from. We try to handle it by deleting
     // the existing appcache data and starting with a clean slate in
@@ -1114,7 +1110,6 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  AppCacheHistograms::CountInitResult(AppCacheHistograms::INIT_OK);
   was_corruption_detected_ = false;
   db_->set_error_callback(base::BindRepeating(
       &AppCacheDatabase::OnDatabaseError, base::Unretained(this)));

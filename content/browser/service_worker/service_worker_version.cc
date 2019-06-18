@@ -1823,8 +1823,9 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
     ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
         installed_scripts_sender_->last_finished_reason());
   }
-  ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,
-                                                IsInstalled(prestart_status));
+
+  if (IsInstalled(prestart_status))
+    ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(status, purpose);
 
   if (status == blink::ServiceWorkerStatusCode::kOk && !start_time.is_null() &&
       !skip_recording_startup_time_) {

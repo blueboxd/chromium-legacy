@@ -118,8 +118,6 @@ class CONTENT_EXPORT GestureEventQueue {
   // Calls |fling_controller_.StopFling| to halt an active fling if such exists.
   void StopFling();
 
-  bool FlingCancellationIsDeferred() const;
-
   gfx::Vector2dF CurrentFlingVelocity() const;
 
   void set_debounce_interval_time_ms_for_testing(int interval_ms) {

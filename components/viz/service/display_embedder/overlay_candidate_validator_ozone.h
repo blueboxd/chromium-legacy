@@ -13,10 +13,7 @@
 #include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace ui {
-class OverlayCandidatesOzone;
-}
+#include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace viz {
 

@@ -8,6 +8,7 @@ cr.define('advanced_dialog_test', function() {
     AdvancedSettings1Option: 'advanced settings 1 option',
     AdvancedSettings2Options: 'advanced settings 2 options',
     AdvancedSettingsApply: 'advanced settings apply',
+    AdvancedSettingsApplyWithEnter: 'advanced settings apply with enter',
     AdvancedSettingsClose: 'advanced settings close',
     AdvancedSettingsFilter: 'advanced settings filter',
   };
@@ -126,6 +127,34 @@ cr.define('advanced_dialog_test', function() {
         assertEquals(1, setting.paperType);
         assertEquals('XYZ', setting.watermark);
         assertTrue(dialog.getSetting('vendorItems').setFromUi);
+      });
+    });
+
+    // Tests that the advanced settings dialog updates the settings value for
+    // vendor items if Enter is pressed on a cr-input.
+    test(assert(TestNames.AdvancedSettingsApplyWithEnter), function() {
+      setupDialog(3);
+      setItemValues();
+
+      const items = dialog.shadowRoot.querySelectorAll(
+          'print-preview-advanced-settings-item');
+      const typedItemInput = items[2].$$('cr-input');  // Watermark
+
+      // Simulate typing a value and then pressing enter.
+      typedItemInput.value = 'Hello World';
+      typedItemInput.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
+
+      const whenDialogClose = test_util.eventToPromise('close', dialog);
+      MockInteractions.keyEventOn(
+          typedItemInput, 'keydown', 'Enter', [], 'Enter');
+
+      return whenDialogClose.then(() => {
+        // Check that the setting has been set.
+        const setting = dialog.getSettingValue('vendorItems');
+        assertEquals(6, setting.printArea);
+        assertEquals(1, setting.paperType);
+        assertEquals('Hello World', setting.watermark);
       });
     });
 

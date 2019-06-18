@@ -315,7 +315,7 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != mojom::PdfCompositor::Status::SUCCESS) {
+  if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
@@ -386,7 +386,7 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != mojom::PdfCompositor::Status::SUCCESS) {
+  if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }

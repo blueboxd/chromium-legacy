@@ -91,9 +91,6 @@ class InputRouter {
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;
 
-  // Used to check if a fling cancellation is deferred due to boosting or not.
-  virtual bool FlingCancellationIsDeferred() = 0;
-
   // Called when a set-touch-action message is received from the renderer
   // for a touch start event that is currently in flight.
   virtual void OnSetTouchAction(cc::TouchAction touch_action) = 0;

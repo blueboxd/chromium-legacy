@@ -2486,6 +2486,14 @@ void DispatchCompute(GLuint num_groups_x,
   }
 }
 
+void DispatchComputeIndirect(GLintptr offset) {
+  gles2::cmds::DispatchComputeIndirect* c =
+      GetCmdSpace<gles2::cmds::DispatchComputeIndirect>();
+  if (c) {
+    c->Init(offset);
+  }
+}
+
 void GetProgramInterfaceiv(GLuint program,
                            GLenum program_interface,
                            GLenum pname,

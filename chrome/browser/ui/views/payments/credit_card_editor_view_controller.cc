@@ -313,10 +313,9 @@ CreditCardEditorViewController::CreateCustomFieldView(
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> month_combobox =
         CreateComboboxForField(tmp_month, error_message);
-    *focusable_field = month_combobox.get();
-    combobox_layout->AddView(month_combobox.release(), 1, 1,
-                             views::GridLayout::FILL, views::GridLayout::FILL,
-                             0, kInputFieldHeight);
+    *focusable_field = combobox_layout->AddView(
+        std::move(month_combobox), 1, 1, views::GridLayout::FILL,
+        views::GridLayout::FILL, 0, kInputFieldHeight);
 
     EditorField tmp_year{
         autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
@@ -325,7 +324,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> year_combobox =
         CreateComboboxForField(tmp_year, error_message);
-    combobox_layout->AddView(year_combobox.release(), 1, 1,
+    combobox_layout->AddView(std::move(year_combobox), 1, 1,
                              views::GridLayout::FILL, views::GridLayout::FILL,
                              0, kInputFieldHeight);
   }

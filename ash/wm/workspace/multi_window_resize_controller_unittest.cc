@@ -436,7 +436,7 @@ TEST_F(MultiWindowResizeControllerTest, WindowStateChange) {
 
   // When entering tablet mode, the windows will be maximized, thus the resizer
   // widget should be dismissed.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(IsShowing());
 }
 

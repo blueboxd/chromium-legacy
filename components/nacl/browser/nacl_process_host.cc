@@ -492,6 +492,8 @@ bool NaClProcessHost::LaunchSelLdr() {
 
 #if defined(OS_LINUX)
   int flags = ChildProcessHost::CHILD_ALLOW_SELF;
+#elif defined(OS_MACOSX)
+  int flags = ChildProcessHost::CHILD_PLUGIN;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif

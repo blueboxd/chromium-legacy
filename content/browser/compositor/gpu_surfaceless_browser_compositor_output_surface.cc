@@ -22,18 +22,16 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         scoped_refptr<viz::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        std::unique_ptr<viz::OverlayCandidateValidator>
-            overlay_candidate_validator,
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        std::move(overlay_candidate_validator)),
+    : GpuBrowserCompositorOutputSurface(std::move(context)),
       use_gpu_fence_(
           context_provider_->ContextCapabilities().chromium_gpu_fence &&
           context_provider_->ContextCapabilities()
               .use_gpu_fences_for_overlay_planes),
       gpu_fence_id_(0),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_handle_(surface_handle) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
@@ -149,4 +147,8 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
   buffer_queue_->CopyDamageForCurrentSurface(damage);
 }
 
+gpu::SurfaceHandle
+GpuSurfacelessBrowserCompositorOutputSurface::GetSurfaceHandle() const {
+  return surface_handle_;
+}
 }  // namespace content

@@ -300,7 +300,7 @@ bool OffscreenTab::ShouldCreateWebContents(
   return false;
 }
 
-bool OffscreenTab::EmbedsFullscreenWidget() const {
+bool OffscreenTab::EmbedsFullscreenWidget() {
   // OffscreenTab will manage fullscreen widgets.
   return true;
 }
@@ -330,14 +330,13 @@ void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
   non_fullscreen_size_ = gfx::Size();
 }
 
-bool OffscreenTab::IsFullscreenForTabOrPending(
-    const WebContents* contents) const {
+bool OffscreenTab::IsFullscreenForTabOrPending(const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode();
 }
 
 blink::WebDisplayMode OffscreenTab::GetDisplayMode(
-    const WebContents* contents) const {
+    const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode() ? blink::kWebDisplayModeFullscreen
                               : blink::kWebDisplayModeBrowser;

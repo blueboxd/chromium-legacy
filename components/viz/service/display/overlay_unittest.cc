@@ -229,12 +229,6 @@ class OverlayOutputSurface : public OutputSurface {
   }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override {
-    // TODO(weiliangc): Use the validator passed in on Setter directly, don't go
-    // through output surface. Delete this soon.
-    return nullptr;
-  }
   bool IsDisplayedAsOverlayPlane() const override {
     return is_displayed_as_overlay_plane_;
   }

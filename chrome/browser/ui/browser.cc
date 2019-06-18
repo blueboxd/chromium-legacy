@@ -508,6 +508,9 @@ Browser::Browser(const CreateParams& params)
   // It will be reset after the drag ends.
   if (params.in_tab_dragging)
     SetIsInTabDragging(true);
+
+  if (is_focus_mode_)
+    focus_mode_start_time_ = base::TimeTicks::Now();
 }
 
 Browser::~Browser() {
@@ -572,8 +575,7 @@ Browser::~Browser() {
   // destroyed directly by Browser (e.g. for offscreen tabs,
   // https://crbug.com/664351).
   if (profile_->IsOffTheRecord() &&
-      profile_->GetOriginalProfile()->HasOffTheRecordProfile() &&
-      profile_->GetOriginalProfile()->GetOffTheRecordProfile() == profile_ &&
+      !profile_->IsIndependentOffTheRecordProfile() &&
       !BrowserList::IsIncognitoSessionInUse(profile_) &&
       !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {
@@ -604,6 +606,13 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+
+  if (is_focus_mode_) {
+    auto duration = base::TimeTicks::Now() - focus_mode_start_time_;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Session.TimeSpentInFocusMode",
+                                duration.InSeconds(), 1,
+                                base::TimeDelta::FromHours(24).InSeconds(), 50);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1082,12 +1091,12 @@ void Browser::SetTopControlsShownRatio(content::WebContents* web_contents,
   window_->SetTopControlsShownRatio(web_contents, ratio);
 }
 
-int Browser::GetTopControlsHeight() const {
+int Browser::GetTopControlsHeight() {
   return window_->GetTopControlsHeight();
 }
 
 bool Browser::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* contents) const {
+    const content::WebContents* contents) {
   return window_->DoBrowserControlsShrinkRendererSize(contents);
 }
 
@@ -1095,9 +1104,9 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
   window_->SetTopControlsGestureScrollInProgress(in_progress);
 }
 
-bool Browser::CanOverscrollContent() const {
+bool Browser::CanOverscrollContent() {
 #if defined(USE_AURA)
-  return !is_app() && is_type_tabbed() &&
+  return !is_devtools() &&
          base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation);
 #else
   return false;
@@ -1652,7 +1661,7 @@ void Browser::EnumerateDirectory(
   FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
 }
 
-bool Browser::EmbedsFullscreenWidget() const {
+bool Browser::EmbedsFullscreenWidget() {
   return true;
 }
 
@@ -1669,14 +1678,12 @@ void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
       web_contents);
 }
 
-bool Browser::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents) {
   return exclusive_access_manager_->fullscreen_controller()
       ->IsFullscreenForTabOrPending(web_contents);
 }
 
-blink::WebDisplayMode Browser::GetDisplayMode(
-    const WebContents* web_contents) const {
+blink::WebDisplayMode Browser::GetDisplayMode(const WebContents* web_contents) {
   if (window_->IsFullscreen())
     return blink::kWebDisplayModeFullscreen;
 

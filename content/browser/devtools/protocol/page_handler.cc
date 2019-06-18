@@ -398,6 +398,13 @@ void PageHandler::Reload(Maybe<bool> bypassCache,
     callback->sendFailure(Response::InternalError());
     return;
   }
+
+  // In the case of inspecting a GuestView (e.g. a PDF), we should reload
+  // the outer web contents (embedder), since otherwise reloading the guest by
+  // itself will fail.
+  if (web_contents->GetOuterWebContents())
+    web_contents = web_contents->GetOuterWebContents();
+
   // It is important to fallback before triggering reload, so that
   // renderer could prepare beforehand.
   callback->fallThrough();
@@ -559,10 +566,10 @@ Response PageHandler::GetNavigationHistory(
 
   NavigationController& controller = web_contents->GetController();
   *current_index = controller.GetCurrentEntryIndex();
-  *entries = NavigationEntries::create();
+  *entries = std::make_unique<NavigationEntries>();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
     auto* entry = controller.GetEntryAtIndex(i);
-    (*entries)->addItem(
+    (*entries)->emplace_back(
         Page::NavigationEntry::Create()
             .SetId(entry->GetUniqueID())
             .SetUrl(entry->GetURL().spec())
@@ -1106,18 +1113,17 @@ void PageHandler::ScreenshotCaptured(
 void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                               const GURL& manifest_url,
                               blink::mojom::ManifestDebugInfoPtr debug_info) {
-  std::unique_ptr<Array<Page::AppManifestError>> errors =
-      Array<Page::AppManifestError>::create();
+  auto errors = std::make_unique<protocol::Array<Page::AppManifestError>>();
   bool failed = true;
   if (debug_info) {
     failed = false;
     for (const auto& error : debug_info->errors) {
-      errors->addItem(Page::AppManifestError::Create()
-                          .SetMessage(error->message)
-                          .SetCritical(error->critical)
-                          .SetLine(error->line)
-                          .SetColumn(error->column)
-                          .Build());
+      errors->emplace_back(Page::AppManifestError::Create()
+                               .SetMessage(error->message)
+                               .SetCritical(error->critical)
+                               .SetLine(error->line)
+                               .SetColumn(error->column)
+                               .Build());
       if (error->critical)
         failed = true;
     }
@@ -1155,7 +1161,7 @@ Response PageHandler::SetWebLifecycleState(const std::string& state) {
 
 void PageHandler::GetInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback) {
-  auto errors = protocol::Array<std::string>::create();
+  auto errors = std::make_unique<protocol::Array<std::string>>();
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return empty array in the tests.
   callback->sendSuccess(std::move(errors));

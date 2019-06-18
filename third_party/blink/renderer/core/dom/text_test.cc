@@ -47,17 +47,18 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_CannotHaveChildren) {
   Element* img = GetDocument().getElementById("image");
   ASSERT_TRUE(img);
 
-  const LayoutObject* img_layout = img->GetLayoutObject();
+  LayoutObject* img_layout = img->GetLayoutObject();
   ASSERT_TRUE(img_layout);
   const ComputedStyle& style = img_layout->StyleRef();
 
   Text* text = Text::Create(GetDocument(), "dummy");
 
   Node::AttachContext context;
-  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style, *img_layout));
+  context.parent = img_layout;
+  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style));
 
   context.use_previous_in_flow = true;
-  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style, *img_layout));
+  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style));
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_EditingText) {
@@ -67,7 +68,7 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_EditingText) {
   Element* parent = GetDocument().getElementById("parent");
   ASSERT_TRUE(parent);
 
-  const LayoutObject* parent_layout = parent->GetLayoutObject();
+  LayoutObject* parent_layout = parent->GetLayoutObject();
   ASSERT_TRUE(parent_layout);
   const ComputedStyle& style = parent_layout->StyleRef();
 
@@ -76,18 +77,15 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_EditingText) {
   Text* text = Text::CreateEditingText(GetDocument(), "dummy");
 
   Node::AttachContext context;
-  EXPECT_TRUE(
-      text_empty->TextLayoutObjectIsNeeded(context, style, *parent_layout));
-  EXPECT_TRUE(text_whitespace->TextLayoutObjectIsNeeded(context, style,
-                                                        *parent_layout));
-  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, style, *parent_layout));
+  context.parent = parent_layout;
+  EXPECT_TRUE(text_empty->TextLayoutObjectIsNeeded(context, style));
+  EXPECT_TRUE(text_whitespace->TextLayoutObjectIsNeeded(context, style));
+  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, style));
 
   context.use_previous_in_flow = true;
-  EXPECT_TRUE(
-      text_empty->TextLayoutObjectIsNeeded(context, style, *parent_layout));
-  EXPECT_TRUE(text_whitespace->TextLayoutObjectIsNeeded(context, style,
-                                                        *parent_layout));
-  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, style, *parent_layout));
+  EXPECT_TRUE(text_empty->TextLayoutObjectIsNeeded(context, style));
+  EXPECT_TRUE(text_whitespace->TextLayoutObjectIsNeeded(context, style));
+  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, style));
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_Empty) {
@@ -97,16 +95,17 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_Empty) {
   Element* parent = GetDocument().getElementById("parent");
   ASSERT_TRUE(parent);
 
-  const LayoutObject* parent_layout = parent->GetLayoutObject();
+  LayoutObject* parent_layout = parent->GetLayoutObject();
   ASSERT_TRUE(parent_layout);
   const ComputedStyle& style = parent_layout->StyleRef();
 
   Text* text = Text::Create(GetDocument(), "");
 
   Node::AttachContext context;
-  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style, *parent_layout));
+  context.parent = parent_layout;
+  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style));
   context.use_previous_in_flow = true;
-  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style, *parent_layout));
+  EXPECT_FALSE(text->TextLayoutObjectIsNeeded(context, style));
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_Whitespace) {
@@ -132,47 +131,58 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_Whitespace) {
 
   Text* whitespace = Text::Create(GetDocument(), "   ");
   Node::AttachContext context;
-
+  context.parent = block;
   EXPECT_FALSE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_FALSE(whitespace->TextLayoutObjectIsNeeded(
-      context, in_line->StyleRef(), *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
+  EXPECT_FALSE(
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.use_previous_in_flow = true;
+  context.parent = block;
   EXPECT_FALSE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_TRUE(whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef(),
-                                                   *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
+  EXPECT_TRUE(
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.previous_in_flow = in_line;
+  context.parent = block;
+  EXPECT_TRUE(whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
   EXPECT_TRUE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_TRUE(whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef(),
-                                                   *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.previous_in_flow = space_at_end;
+  context.parent = block;
   EXPECT_FALSE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_FALSE(whitespace->TextLayoutObjectIsNeeded(
-      context, in_line->StyleRef(), *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
+  EXPECT_FALSE(
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.previous_in_flow = no_space;
+  context.parent = block;
+  EXPECT_TRUE(whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
   EXPECT_TRUE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_TRUE(whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef(),
-                                                   *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.previous_in_flow = block;
+  context.parent = block;
   EXPECT_FALSE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_FALSE(whitespace->TextLayoutObjectIsNeeded(
-      context, in_line->StyleRef(), *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
+  EXPECT_FALSE(
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 
   context.previous_in_flow = br;
+  context.parent = block;
   EXPECT_FALSE(
-      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef(), *block));
-  EXPECT_FALSE(whitespace->TextLayoutObjectIsNeeded(
-      context, in_line->StyleRef(), *in_line));
+      whitespace->TextLayoutObjectIsNeeded(context, block->StyleRef()));
+  context.parent = in_line;
+  EXPECT_FALSE(
+      whitespace->TextLayoutObjectIsNeeded(context, in_line->StyleRef()));
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_PreserveNewLine) {
@@ -184,30 +194,28 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_PreserveNewLine) {
   UpdateAllLifecyclePhasesForTest();
 
   Text* text = Text::Create(GetDocument(), " ");
+  Node::AttachContext context;
 
   Element* pre = GetDocument().getElementById("pre");
   ASSERT_TRUE(pre);
-  const LayoutObject* pre_layout = pre->GetLayoutObject();
-  ASSERT_TRUE(pre_layout);
-  const ComputedStyle& pre_style = pre_layout->StyleRef();
-  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(Node::AttachContext(), pre_style,
-                                             *pre_layout));
+  context.parent = pre->GetLayoutObject();
+  ASSERT_TRUE(context.parent);
+  const ComputedStyle& pre_style = context.parent->StyleRef();
+  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, pre_style));
 
   Element* pre_line = GetDocument().getElementById("pre-line");
   ASSERT_TRUE(pre_line);
-  const LayoutObject* pre_line_layout = pre_line->GetLayoutObject();
-  ASSERT_TRUE(pre_line_layout);
-  const ComputedStyle& pre_line_style = pre_line_layout->StyleRef();
-  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(Node::AttachContext(),
-                                             pre_line_style, *pre_line_layout));
+  context.parent = pre_line->GetLayoutObject();
+  ASSERT_TRUE(context.parent);
+  const ComputedStyle& pre_line_style = context.parent->StyleRef();
+  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, pre_line_style));
 
   Element* pre_wrap = GetDocument().getElementById("pre-wrap");
   ASSERT_TRUE(pre_wrap);
-  const LayoutObject* pre_wrap_layout = pre_wrap->GetLayoutObject();
-  ASSERT_TRUE(pre_wrap_layout);
-  const ComputedStyle& pre_wrap_style = pre_wrap_layout->StyleRef();
-  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(Node::AttachContext(),
-                                             pre_wrap_style, *pre_wrap_layout));
+  context.parent = pre_wrap->GetLayoutObject();
+  ASSERT_TRUE(context.parent);
+  const ComputedStyle& pre_wrap_style = context.parent->StyleRef();
+  EXPECT_TRUE(text->TextLayoutObjectIsNeeded(context, pre_wrap_style));
 }
 
 }  // namespace blink

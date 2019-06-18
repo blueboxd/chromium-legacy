@@ -96,10 +96,9 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetKeepalive(true);
-  resource_request.SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kNoCors);
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kInclude);
+  resource_request.SetMode(network::mojom::RequestMode::kNoCors);
+  resource_request.SetCredentialsMode(
+      network::mojom::CredentialsMode::kInclude);
   resource_request.SetSkipServiceWorker(true);
 
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(

@@ -69,7 +69,7 @@
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
   if (!requestURL.is_empty() && !requestURL.is_valid()) {
     DLOG(WARNING) << "Unable to open a window with invalid URL: "
-                  << requestURL.spec();
+                  << requestURL.possibly_invalid_spec();
     return nil;
   }
 

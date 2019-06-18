@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // https://fetch.spec.whatwg.org/#main-fetch.
   static network::mojom::FetchResponseType CalculateResponseTainting(
       const GURL& url,
-      mojom::FetchRequestMode request_mode,
+      mojom::RequestMode request_mode,
       const base::Optional<url::Origin>& origin,
       bool cors_flag,
       bool tainted_origin,

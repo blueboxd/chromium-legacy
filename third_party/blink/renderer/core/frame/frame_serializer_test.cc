@@ -369,7 +369,9 @@ TEST_F(FrameSerializerTest, CSS) {
 
   Serialize("css_test_page.html");
 
-  EXPECT_EQ(16U, GetResources().size());
+  // 16 resoucres added by RegisterURL + 3 resources added due to converting
+  // style elements to link elements.
+  EXPECT_EQ(19U, GetResources().size());
 
   EXPECT_FALSE(IsSerialized("do_not_serialize.png", "image/png"));
   EXPECT_FALSE(IsSerialized("included_in_another_frame.css", "text/css"));

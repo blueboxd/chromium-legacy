@@ -207,7 +207,7 @@ class RenderViewSizeDelegate : public WebContentsDelegate {
   }
 
   // WebContentsDelegate:
-  gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const override {
+  gfx::Size GetSizeForNewRenderView(WebContents* web_contents) override {
     gfx::Size size(web_contents->GetContainerBounds().size());
     size.Enlarge(size_insets_.width(), size_insets_.height());
     return size;
@@ -1565,8 +1565,9 @@ class WebDisplayModeDelegate : public WebContentsDelegate {
   explicit WebDisplayModeDelegate(blink::WebDisplayMode mode) : mode_(mode) { }
   ~WebDisplayModeDelegate() override { }
 
-  blink::WebDisplayMode GetDisplayMode(
-      const WebContents* source) const override { return mode_; }
+  blink::WebDisplayMode GetDisplayMode(const WebContents* source) override {
+    return mode_;
+  }
   void set_mode(blink::WebDisplayMode mode) { mode_ = mode; }
  private:
   blink::WebDisplayMode mode_;
@@ -1964,8 +1965,7 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
     }
   }
 
-  bool IsFullscreenForTabOrPending(
-      const WebContents* web_contents) const override {
+  bool IsFullscreenForTabOrPending(const WebContents* web_contents) override {
     return is_fullscreen_;
   }
 

@@ -1039,11 +1039,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
         constraint_space.PercentageResolutionSize() !=
             old_space.PercentageResolutionSize();
     if (needs_cached_result_update) {
-      scoped_refptr<const NGLayoutResult> new_result =
-          base::AdoptRef(new NGLayoutResult(*layout_result, constraint_space,
-                                            layout_result->BfcLineOffset(),
-                                            layout_result->BfcBlockOffset()));
-      box_->SetCachedLayoutResult(*new_result, /* break_token */ nullptr);
+      layout_result = base::AdoptRef(new NGLayoutResult(
+          *layout_result, constraint_space, layout_result->BfcLineOffset(),
+          layout_result->BfcBlockOffset()));
+      box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
     }
   }
 

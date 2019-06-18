@@ -189,7 +189,8 @@ void PageIndicatorView::SetExpandedAmount(double expanded_amount) {
   SetVisible(expanded_amount > 0.0);
   expanded_amount_ = expanded_amount;
   InvalidateLayout();
-  layer()->SetOpacity(expanded_amount_);
+  // TODO(amehfooz): Confirm animation curve with UX.
+  layer()->SetOpacity(std::max(0., 6 * expanded_amount_ - 5.));
 }
 
 void PageIndicatorView::TotalPagesChanged() {

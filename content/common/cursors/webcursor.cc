@@ -43,7 +43,7 @@ bool WebCursor::SetInfo(const CursorInfo& info) {
   info_ = info;
 
   // Clamp the hotspot to the custom image's dimensions.
-  if (info_.type == blink::WebCursorInfo::kTypeCustom) {
+  if (info_.type == ui::CursorType::kCustom) {
     info_.hotspot.set_x(std::max(
         0, std::min(info_.custom_image.width() - 1, info_.hotspot.x())));
     info_.hotspot.set_y(std::max(

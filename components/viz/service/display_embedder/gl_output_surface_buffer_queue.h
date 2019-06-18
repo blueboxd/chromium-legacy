@@ -62,7 +62,7 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   void SetDrawRectangle(const gfx::Rect& damage) override;
 
   // GLOutputSurface:
-  void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
+  void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response) override;
 
   std::unique_ptr<BufferQueue> buffer_queue_;
 

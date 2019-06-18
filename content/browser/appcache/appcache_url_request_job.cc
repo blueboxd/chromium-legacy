@@ -19,6 +19,7 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -200,8 +201,6 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
       // from the appcache.
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
-      AppCacheHistograms::CountResponseRetrieval(
-          false, is_main_resource_, url::Origin::Create(manifest_url_));
     }
     cache_entry_not_found_ = true;
 
@@ -224,16 +223,11 @@ const net::HttpResponseInfo* AppCacheURLRequestJob::http_info() const {
 
 void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(IsDeliveringAppCacheResponse());
-  if (result == 0) {
-    AppCacheHistograms::CountResponseRetrieval(
-        true, is_main_resource_, url::Origin::Create(manifest_url_));
-  } else if (result < 0) {
+  if (result < 0) {
     if (storage_->service()->storage() == storage_) {
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
     }
-    AppCacheHistograms::CountResponseRetrieval(
-        false, is_main_resource_, url::Origin::Create(manifest_url_));
   }
   ReadRawDataComplete(result);
 }

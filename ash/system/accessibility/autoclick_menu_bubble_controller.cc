@@ -145,13 +145,21 @@ void AutoclickMenuBubbleController::SetPosition(
                     width, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopLeft:
-      // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_bounds = gfx::Rect(work_area.x(), 1, width, kAutoclickMenuHeight);
+      // Because there is no inset at the top of the widget, add
+      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
+      // to ensure correct padding.
+      new_bounds = gfx::Rect(
+          work_area.x(), work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp,
+          width, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopRight:
-      // Setting the top to 1 instead of 0 so that the view is drawn on screen.
+      // Because there is no inset at the top of the widget, add
+      // 2 * kCollisionWindowWorkAreaInsetsDp to the top of the work area.
+      // to ensure correct padding.
       new_bounds =
-          gfx::Rect(work_area.right() - width, 1, width, kAutoclickMenuHeight);
+          gfx::Rect(work_area.right() - width,
+                    work_area.y() + 2 * kCollisionWindowWorkAreaInsetsDp, width,
+                    kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kSystemDefault:
       return;
@@ -200,7 +208,14 @@ void AutoclickMenuBubbleController::ShowBubble(
   init_params.parent_window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.insets = gfx::Insets(kCollisionWindowWorkAreaInsetsDp);
+  // The widget's shadow is drawn below and on the sides of the view, with a
+  // width of kCollisionWindowWorkAreaInsetsDp. Set the top inset to 0 to ensure
+  // the scroll view is drawn at kCollisionWindowWorkAreaInsetsDp above the
+  // bubble menu when the position is at the bottom of the screen. The space
+  // between the bubbles belongs to the scroll view bubble's shadow.
+  init_params.insets = gfx::Insets(0, kCollisionWindowWorkAreaInsetsDp,
+                                   kCollisionWindowWorkAreaInsetsDp,
+                                   kCollisionWindowWorkAreaInsetsDp);
   int width = base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kEnableExperimentalAccessibilityAutoclick)
                   ? kAutoclickMenuWidthWithScroll

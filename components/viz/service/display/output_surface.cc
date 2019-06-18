@@ -39,6 +39,10 @@ SkiaOutputSurface* OutputSurface::AsSkiaOutputSurface() {
   return nullptr;
 }
 
+gpu::SurfaceHandle OutputSurface::GetSurfaceHandle() const {
+  return gpu::kNullSurfaceHandle;
+}
+
 void OutputSurface::UpdateLatencyInfoOnSwap(
     const gfx::SwapResponse& response,
     std::vector<ui::LatencyInfo>* latency_info) {
@@ -69,4 +73,8 @@ void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
   NOTREACHED();
 }
 
+// Only needs implementation for BrowserCompositorOutputSurface.
+bool OutputSurface::IsSoftwareMirrorMode() const {
+  return false;
+}
 }  // namespace viz

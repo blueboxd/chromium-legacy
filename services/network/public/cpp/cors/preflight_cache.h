@@ -42,13 +42,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
 
   // Consults with cached results, and decides if we can skip CORS-preflight or
   // not.
-  bool CheckIfRequestCanSkipPreflight(
-      const std::string& origin,
-      const GURL& url,
-      mojom::FetchCredentialsMode credentials_mode,
-      const std::string& method,
-      const net::HttpRequestHeaders& headers,
-      bool is_revalidating);
+  bool CheckIfRequestCanSkipPreflight(const std::string& origin,
+                                      const GURL& url,
+                                      mojom::CredentialsMode credentials_mode,
+                                      const std::string& method,
+                                      const net::HttpRequestHeaders& headers,
+                                      bool is_revalidating);
 
   // Reports and gather CORS preflight cache size metric.
   Metrics ReportAndGatherSizeMetric();

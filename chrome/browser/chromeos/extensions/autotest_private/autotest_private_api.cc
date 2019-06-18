@@ -13,7 +13,6 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/base64.h"

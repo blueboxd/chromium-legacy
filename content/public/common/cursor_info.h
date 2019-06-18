@@ -16,7 +16,7 @@ namespace content {
 // This structure is highly similar to blink::WebCursorInfo.
 struct CONTENT_EXPORT CursorInfo {
   CursorInfo() = default;
-  explicit CursorInfo(blink::WebCursorInfo::Type cursor);
+  explicit CursorInfo(ui::CursorType cursor);
   explicit CursorInfo(const blink::WebCursorInfo& info);
 
   // Equality operator; performs bitmap content comparison as needed.
@@ -26,7 +26,7 @@ struct CONTENT_EXPORT CursorInfo {
   blink::WebCursorInfo GetWebCursorInfo() const;
 
   // One of the predefined cursors.
-  blink::WebCursorInfo::Type type = blink::WebCursorInfo::kTypePointer;
+  ui::CursorType type = ui::CursorType::kPointer;
 
   // Custom cursor image.
   SkBitmap custom_image;

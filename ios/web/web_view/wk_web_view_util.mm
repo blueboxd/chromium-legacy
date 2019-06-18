@@ -43,4 +43,9 @@ bool RequiresContentFilterBlockingWorkaround() {
   return false;
 }
 
+bool RequiresProvisionalNavigationFailureWorkaround() {
+  if (@available(iOS 12.2, *))
+    return true;
+  return false;
+}
 }  // namespace web

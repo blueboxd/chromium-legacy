@@ -1221,6 +1221,9 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetDocument()->Lifecycle().LifecyclePostponed())
     return;
 
+  if (frame_->IsMainFrame())
+    jank_tracker_->NotifyViewportSizeChanged();
+
   auto* layout_view = GetLayoutView();
   if (layout_view) {
     // If this is the main frame, we might have got here by hiding/showing the
@@ -1910,6 +1913,9 @@ void LocalFrameView::DidAttachDocument() {
 
     page->GlobalRootScrollerController().InitializeViewportScrollCallback(
         *root_frame_viewport, *frame_->GetDocument());
+
+    // Allow for commits to be deferred because this is a new document.
+    have_deferred_commits_ = false;
   }
 }
 
@@ -3318,6 +3324,10 @@ void LocalFrameView::SetTracksPaintInvalidations(
 void LocalFrameView::TrackObjectPaintInvalidation(
     const DisplayItemClient& client,
     PaintInvalidationReason reason) {
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
+                       "InvalidateDisplayItemClient", TRACE_EVENT_SCOPE_GLOBAL,
+                       "client", client.DebugName().Utf8(), "reason",
+                       PaintInvalidationReasonToString(reason));
   if (!tracked_object_paint_invalidations_)
     return;
 
@@ -4143,8 +4153,17 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (document && base::FeatureList::IsEnabled(
                       blink::features::kAvoidFlashBetweenNavigation)) {
     if (document->DeferredCompositorCommitIsAllowed()) {
-      chrome_client.StartDeferringCommits(
-          GetCommitDelayForAvoidFlashBetweenNavigation());
+      // Only defer commits once. This method gets called multiple times,
+      // and we do not want to defer a second time if we have already done
+      // so once and resumed commits already.
+      if (!have_deferred_commits_) {
+        chrome_client.StartDeferringCommits(
+            GetCommitDelayForAvoidFlashBetweenNavigation());
+        have_deferred_commits_ = true;
+      }
+      // We do not StopDeferringCommits in cases where we have already started.
+      // A previously started deferral may not have completed yet, and we do
+      // not want to stop it prematurely.
     } else {
       chrome_client.StopDeferringCommits(
           cc::PaintHoldingCommitTrigger::kDisallowed);

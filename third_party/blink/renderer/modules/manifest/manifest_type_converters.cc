@@ -66,9 +66,6 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
   if (input->has_background_color)
     output.background_color = input->background_color;
 
-  if (!input->splash_screen_url.IsEmpty())
-    output.splash_screen_url = input->splash_screen_url;
-
   if (!input->gcm_sender_id.IsEmpty()) {
     output.gcm_sender_id =
         base::NullableString16(blink::WebString(input->gcm_sender_id).Utf16());

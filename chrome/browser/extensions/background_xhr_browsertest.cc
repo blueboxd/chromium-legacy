@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -159,19 +160,20 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy,
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  bool CanFetch(const Extension* extension, const GURL& url) {
+  std::string ExecuteFetch(const Extension* extension, const GURL& url) {
     content::DOMMessageQueue message_queue;
     browsertest_util::ExecuteScriptInBackgroundPageNoWait(
         profile(), extension->id(),
-        base::StringPrintf("canFetch('%s');", url.spec().c_str()));
+        content::JsReplace("executeFetch($1);", url));
     std::string json;
     EXPECT_TRUE(message_queue.WaitForMessage(&json));
     base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
     std::unique_ptr<base::Value> value = reader.ReadToValueDeprecated(json);
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
-    EXPECT_TRUE(result == "true" || result == "false") << result;
-    return result == "true";
+    std::string trimmed_result;
+    base::TrimWhitespaceASCII(result, base::TRIM_ALL, &trimmed_result);
+    return trimmed_result;
   }
 
   const Extension* LoadXhrExtension(const std::string& host) {
@@ -186,18 +188,12 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy,
       "permissions": [")" + host + R"("]
     })");
     constexpr char kBackgroundScriptFile[] = R"(
-    function canFetch(url) {
+    function executeFetch(url) {
       console.warn('Fetching: ' + url);
-      fetch(url).then((response) => {
-        domAutomationController.send('true');
-      }).catch((e) => {
-        let message;
-        if (e.message == 'Failed to fetch')
-          message = 'false'
-        else
-          message = 'Unexpected Error: ' + e.message;
-        domAutomationController.send(message);
-      });
+      fetch(url)
+          .then(response => response.text())
+          .then(text => domAutomationController.send(text))
+          .catch(err => domAutomationController.send('ERROR: ' + err));
     }
     chrome.test.sendMessage('ready');)";
 
@@ -222,12 +218,14 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRToWebstore) {
   GURL webstore_url_to_fetch = embedded_test_server()->GetURL(
       webstore_launch_url.host(), "/simple.html");
 
-  EXPECT_FALSE(CanFetch(extension, webstore_url_to_fetch));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, webstore_url_to_fetch));
 
   // Sanity check: the extension should be able to fetch google.com.
   GURL google_url =
       embedded_test_server()->GetURL("google.com", "/simple.html");
-  EXPECT_TRUE(CanFetch(extension, google_url));
+  EXPECT_THAT(ExecuteFetch(extension, google_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 }
 
 // Extensions should not be able to XHR to the webstore regardless of policy.
@@ -244,12 +242,14 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRToWebstorePolicy) {
   GURL webstore_url_to_fetch = embedded_test_server()->GetURL(
       webstore_launch_url.host(), "/simple.html");
 
-  EXPECT_FALSE(CanFetch(extension, webstore_url_to_fetch));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, webstore_url_to_fetch));
 
   // Sanity check: the extension should be able to fetch google.com.
   GURL google_url =
       embedded_test_server()->GetURL("google.com", "/simple.html");
-  EXPECT_TRUE(CanFetch(extension, google_url));
+  EXPECT_THAT(ExecuteFetch(extension, google_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 }
 
 // Extensions should not be able to bypass same-origin despite declaring
@@ -266,12 +266,14 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyBlockedXHR) {
   // Should block due to "runtime_blocked_hosts" section of policy.
   GURL protected_url_to_fetch =
       embedded_test_server()->GetURL("example.com", "/simple.html");
-  EXPECT_FALSE(CanFetch(extension, protected_url_to_fetch));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, protected_url_to_fetch));
 
   // Should allow due to "runtime_allowed_hosts" section of policy.
   GURL exempted_url_to_fetch =
       embedded_test_server()->GetURL("public.example.com", "/simple.html");
-  EXPECT_TRUE(CanFetch(extension, exempted_url_to_fetch));
+  EXPECT_THAT(ExecuteFetch(extension, exempted_url_to_fetch),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 }
 
 // Verify that policy blocklists apply to XHRs done from injected scripts.
@@ -287,12 +289,12 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
     })");
 
   constexpr char kBackgroundScript[] =
-      R"(function canFetch(url) {
+      R"(function executeFetch(url) {
            chrome.tabs.executeScript({code: `
              fetch("${url}")
              .then(response => response.text())
-             .then(text => domAutomationController.send('true'))
-             .catch(err => domAutomationController.send('false'));
+             .then(text => domAutomationController.send(text))
+             .catch(err => domAutomationController.send('ERROR: ' + err));
            `});
          }
       )";
@@ -308,14 +310,20 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
   ui_test_utils::NavigateToURL(browser(), page_url);
   EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
 
+  // Using "/non-corb.octet-stream" resource (instead of "/simple.html" as in
+  // most other tests here) because XHRs/fetches from content scripts are
+  // subject to CORB (which is already covered by
+  // CrossOriginReadBlockingExtensionTest) and we want to focus the test below
+  // on policy behavior (which should be independent from whether or not CORB
+  // blocks the response).
   GURL example_url =
-      embedded_test_server()->GetURL("example.com", "/simple.html");
-  GURL public_example_url =
-      embedded_test_server()->GetURL("public.example.com", "/simple.html");
+      embedded_test_server()->GetURL("example.com", "/non-corb.octet-stream");
+  GURL public_example_url = embedded_test_server()->GetURL(
+      "public.example.com", "/non-corb.octet-stream");
 
   // Sanity Check: Should be able to fetch cross origin.
-  EXPECT_TRUE(CanFetch(extension, example_url));
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
+  EXPECT_EQ("octet-stream-body", ExecuteFetch(extension, example_url));
+  EXPECT_EQ("octet-stream-body", ExecuteFetch(extension, public_example_url));
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
@@ -324,8 +332,9 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
   }
 
   // Policies apply to XHR from a content script.
-  EXPECT_FALSE(CanFetch(extension, example_url));
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
+  EXPECT_EQ("octet-stream-body", ExecuteFetch(extension, public_example_url));
 }
 
 // Make sure the blocklist and allowlist update for both Default and Individual
@@ -339,8 +348,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
       embedded_test_server()->GetURL("public.example.com", "/simple.html");
 
   // Sanity check: Without restrictions all fetches should work.
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
-  EXPECT_TRUE(CanFetch(extension, example_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_THAT(ExecuteFetch(extension, example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
@@ -349,8 +360,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
   }
 
   // Default policies propagate.
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
-  EXPECT_FALSE(CanFetch(extension, example_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddPolicyBlockedHost(extension->id(), "*://*.example2.com");
@@ -358,8 +371,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
   }
 
   // Default policies overridden when individual scope policies applied.
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
-  EXPECT_TRUE(CanFetch(extension, example_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_THAT(ExecuteFetch(extension, example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 
   GURL example2_url =
       embedded_test_server()->GetURL("example2.com", "/simple.html");
@@ -367,8 +382,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
       embedded_test_server()->GetURL("public.example2.com", "/simple.html");
 
   // Individual scope policies propagate.
-  EXPECT_TRUE(CanFetch(extension, public_example2_url));
-  EXPECT_FALSE(CanFetch(extension, example2_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example2_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example2_url));
 }
 
 // Make sure the allowlist entries added due to host permissions are removed
@@ -383,8 +400,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateDefaultXHR) {
       embedded_test_server()->GetURL("public.example.com", "/simple.html");
 
   // Sanity check: Without restrictions only public.example.com should work.
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
-  EXPECT_FALSE(CanFetch(extension, example_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
@@ -392,8 +411,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateDefaultXHR) {
   }
 
   // The blocklist of example.com overrides allowlist of public.example.com.
-  EXPECT_FALSE(CanFetch(extension, example_url));
-  EXPECT_FALSE(CanFetch(extension, public_example_url));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, public_example_url));
 }
 
 // Make sure the allowlist entries added due to host permissions are removed
@@ -408,8 +429,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
       embedded_test_server()->GetURL("public.example.com", "/simple.html");
 
   // Sanity check: Without restrictions only public.example.com should work.
-  EXPECT_TRUE(CanFetch(extension, public_example_url));
-  EXPECT_FALSE(CanFetch(extension, example_url));
+  EXPECT_THAT(ExecuteFetch(extension, public_example_url),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
@@ -417,8 +440,10 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
   }
 
   // The blocklist of example.com overrides allowlist of public.example.com.
-  EXPECT_FALSE(CanFetch(extension, example_url));
-  EXPECT_FALSE(CanFetch(extension, public_example_url));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, example_url));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, public_example_url));
 }
 
 IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRAnyPortPermission) {
@@ -427,7 +452,8 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRAnyPortPermission) {
   GURL permitted_url_to_fetch =
       embedded_test_server()->GetURL("example.com", "/simple.html");
 
-  EXPECT_TRUE(CanFetch(extension, permitted_url_to_fetch));
+  EXPECT_THAT(ExecuteFetch(extension, permitted_url_to_fetch),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 }
 
 IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
@@ -439,7 +465,8 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
   GURL permitted_url_to_fetch =
       embedded_test_server()->GetURL("example.com", "/simple.html");
 
-  EXPECT_TRUE(CanFetch(extension, permitted_url_to_fetch));
+  EXPECT_THAT(ExecuteFetch(extension, permitted_url_to_fetch),
+              ::testing::HasSubstr("<head><title>OK</title></head>"));
 }
 
 IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
@@ -451,7 +478,8 @@ IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest,
   GURL not_permitted_url_to_fetch =
       embedded_test_server()->GetURL("example.com", "/simple.html");
 
-  EXPECT_FALSE(CanFetch(extension, not_permitted_url_to_fetch));
+  EXPECT_EQ("ERROR: TypeError: Failed to fetch",
+            ExecuteFetch(extension, not_permitted_url_to_fetch));
 }
 
 INSTANTIATE_TEST_SUITE_P(WithoutAny,

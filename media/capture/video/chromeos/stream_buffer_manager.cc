@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/posix/safe_strerror.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
@@ -102,7 +103,7 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
               kCrosHalV3BufferManagerHalRequestedTooManyBuffers,
           FROM_HERE,
           std::string("Camera HAL requested ") +
-              std::to_string(stream->max_buffers) +
+              base::NumberToString(stream->max_buffers) +
               std::string(" buffers which exceeds the allowed maximum "
                           "number of buffers"));
       return;

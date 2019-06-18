@@ -43,6 +43,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace component_updater {
+class ComponentUpdateService;
+}
+
 class TemplateURLService;
 
 class AutocompleteProviderClient {
@@ -94,6 +98,11 @@ class AutocompleteProviderClient {
   // The timestamp for the last visit of the page being displayed in the current
   // tab.
   virtual base::Time GetCurrentVisitTimestamp() const = 0;
+
+  // The component update service instance which will be used by on device
+  // suggestion provider to observe the model update event.
+  virtual component_updater::ComponentUpdateService*
+  GetComponentUpdateService() = 0;
 
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;

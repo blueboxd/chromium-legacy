@@ -546,5 +546,8 @@ TEST_F(MainThreadMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
 // TODO(crbug.com/754656): Add tests for non-TaskDuration
 // histograms.
 
+// TODO(crbug.com/754656): Add tests for
+// RendererScheduler.TasksWithSafepoints histograms.
+
 }  // namespace scheduler
 }  // namespace blink

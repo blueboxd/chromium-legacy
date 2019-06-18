@@ -69,4 +69,15 @@ PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
   return descriptor;
 }
 
+PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
+    mojom::blink::WakeLockType type) {
+  auto descriptor =
+      CreatePermissionDescriptor(mojom::blink::PermissionName::WAKE_LOCK);
+  auto wake_lock_extension =
+      mojom::blink::WakeLockPermissionDescriptor::New(type);
+  descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
+  descriptor->extension->set_wake_lock(std::move(wake_lock_extension));
+  return descriptor;
+}
+
 }  // namespace blink

@@ -4,10 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
-#include "base/metrics/field_trial_params.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -28,10 +26,10 @@
 namespace blink {
 
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromMilliseconds(500);
+static const float kRegionGranularitySteps = 60.0;
+// TODO: Vary by Finch experiment parameter.
+static const float kSweepLineRegionGranularity = 1.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
-
-// Level of granularity snapping for impact region (see RegionGranularityScale).
-enum GranularitySnapping { kPixel = 1, kLow = 2, kMedium = 3, kHigh = 4 };
 
 static FloatPoint LogicalStart(const FloatRect& rect,
                                const LayoutObject& object) {
@@ -52,29 +50,11 @@ static float GetMoveDistance(const FloatRect& old_rect,
 }
 
 static float RegionGranularityScale(const IntRect& viewport) {
-  static const base::FeatureParam<int> kSweepLineRegionGranularity{
-      &blink::features::kJankTrackingSweepLine, "sweep_line_region_granularity",
-      kHigh};
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    return kSweepLineRegionGranularity;
 
-  GranularitySnapping snapping_type =
-      RuntimeEnabledFeatures::JankTrackingSweepLineEnabled()
-          ? (GranularitySnapping)kSweepLineRegionGranularity.Get()
-          : kHigh;
-  switch (snapping_type) {
-    case kPixel:
-      // Snap to multiples of 1px.
-      return 1.0;
-    case kLow:
-      // Snap to multiples of 2px.
-      return 1 / 2.0;
-    case kMedium:
-      // Snap to multiples of 5px.
-      return 1 / 5.0;
-    case kHigh:
-      // Snap to multiples of 1/60th of min(viewport width, viewport height).
-      return 60.0 / std::min(viewport.Height(), viewport.Width());
-  }
-  NOTREACHED();
+  return kRegionGranularitySteps /
+         std::min(viewport.Height(), viewport.Width());
 }
 
 static bool EqualWithinMovementThreshold(const FloatPoint& a,
@@ -251,12 +231,6 @@ void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
-  // Convert to the local transform space, whose origin is the layer's previous
-  // location because the property trees haven't been updated yet.
-  FloatPoint transform_parent_offset = -old_layer_rect.Location();
-  old_layer_rect.MoveBy(transform_parent_offset);
-  new_layer_rect.MoveBy(transform_parent_offset);
-
   AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
                  old_layer_rect, new_layer_rect);
 }
@@ -407,6 +381,11 @@ void JankTracker::NotifyScroll(ScrollType scroll_type) {
     return;
 
   observed_input_or_scroll_ = true;
+}
+
+void JankTracker::NotifyViewportSizeChanged() {
+  // This cancels any previously scheduled task from the same timer.
+  timer_.StartOneShot(kTimerDelay, FROM_HERE);
 }
 
 bool JankTracker::IsActive() {

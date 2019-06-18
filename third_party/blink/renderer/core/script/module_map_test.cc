@@ -117,7 +117,7 @@ class ModuleMapTestModulator final : public DummyModulator {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
           ModuleScriptCreationParams(
               request.Url(), ParkableString(String("").ReleaseImpl()), nullptr,
-              request.GetResourceRequest().GetFetchCredentialsMode()),
+              request.GetResourceRequest().GetCredentialsMode()),
           client);
       modulator_->test_requests_.push_back(test_request);
     }

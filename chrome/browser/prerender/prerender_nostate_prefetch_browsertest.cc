@@ -56,7 +56,6 @@
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 using prerender::test_utils::DestructionWaiter;
-using prerender::test_utils::RequestCounter;
 using prerender::test_utils::TestPrerender;
 
 namespace {

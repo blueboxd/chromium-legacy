@@ -48,7 +48,7 @@ class BadClockBlockingPage : public SSLBlockingPageBase {
   ~BadClockBlockingPage() override;
 
   // InterstitialPageDelegate method:
-  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
  protected:
   // InterstitialPageDelegate implementation:

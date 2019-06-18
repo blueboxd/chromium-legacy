@@ -37,14 +37,15 @@ class LevelDBTransactionTest : public testing::Test {
     scoped_refptr<LevelDBState> ldb_state;
     leveldb::Status status;
     std::tie(ldb_state, status, std::ignore) =
-        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+        indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
             temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
             leveldb::BytewiseComparator());
     EXPECT_TRUE(status.ok());
     ASSERT_TRUE(ldb_state);
     ASSERT_TRUE(ldb_state->db());
-    leveldb_ = std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr,
-                                                 kTestingMaxOpenCursors);
+    leveldb_ = std::make_unique<LevelDBDatabase>(
+        std::move(ldb_state), indexed_db::LevelDBFactory::Get(), nullptr,
+        kTestingMaxOpenCursors);
     ASSERT_TRUE(leveldb_);
   }
   void TearDown() override {}

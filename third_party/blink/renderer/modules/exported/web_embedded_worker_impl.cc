@@ -319,8 +319,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
       worker_start_data_.script_url, mojom::RequestContextType::SERVICE_WORKER,
-      network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin, base::OnceClosure(),
+      network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin, base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since OnScriptLoaderFinished() might have been already
@@ -502,7 +502,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       case mojom::ScriptType::kModule:
         worker_thread_->RunInstalledModuleScript(
             worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
-            network::mojom::FetchCredentialsMode::kOmit);
+            network::mojom::CredentialsMode::kOmit);
         return;
     }
     NOTREACHED();
@@ -551,8 +551,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
           worker_start_data_.script_url, *fetch_client_setting_object,
-          *resource_timing_notifier,
-          network::mojom::FetchCredentialsMode::kOmit);
+          *resource_timing_notifier, network::mojom::CredentialsMode::kOmit);
       return;
   }
   NOTREACHED();

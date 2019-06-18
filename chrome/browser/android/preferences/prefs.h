@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 
 // A preference exposed to Java.
 // A Java counterpart will be generated for this enum.
@@ -36,6 +37,7 @@ enum Pref {
   AUTOFILL_CREDIT_CARD_ENABLED,
   USAGE_STATS_ENABLED,
   OFFLINE_PREFETCH_USER_SETTING_ENABLED,
+  SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -63,6 +65,7 @@ const char* const kPrefsExposedToJava[] = {
     autofill::prefs::kAutofillCreditCardEnabled,
     prefs::kUsageStatsEnabled,
     offline_pages::prefetch_prefs::kUserSettingEnabled,
+    prefs::kSafeBrowsingExtendedReportingOptInAllowed,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

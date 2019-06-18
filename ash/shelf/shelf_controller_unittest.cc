@@ -316,7 +316,7 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsInTabletMode) {
 
   // Verify after entering tablet mode, the shelf alignment is bottom and the
   // auto hide behavior has not changed.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 
@@ -329,7 +329,7 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsInTabletMode) {
 
   // Verify after exiting tablet mode, the shelf alignment and auto hide
   // behavior get their stored pref values.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 }
@@ -343,7 +343,7 @@ TEST_F(ShelfControllerAppModeTest, AutoHideBehavior) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
   display_manager()->SetDisplayRotation(
@@ -351,7 +351,7 @@ TEST_F(ShelfControllerAppModeTest, AutoHideBehavior) {
       display::Display::ROTATE_90, display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 }
 

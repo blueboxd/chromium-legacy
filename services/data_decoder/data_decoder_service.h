@@ -18,6 +18,10 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
+#ifdef OS_CHROMEOS
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
+#endif  // OS_CHROMEOS
+
 namespace data_decoder {
 
 class DataDecoderService : public service_manager::Service {
@@ -40,6 +44,10 @@ class DataDecoderService : public service_manager::Service {
   void BindImageDecoder(mojom::ImageDecoderRequest request);
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);
+
+#ifdef OS_CHROMEOS
+  void BindBleScanParser(mojom::BleScanParserRequest request);
+#endif  // OS_CHROMEOS
 
   service_manager::ServiceBinding binding_{this};
   service_manager::ServiceKeepalive keepalive_;

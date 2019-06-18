@@ -47,7 +47,6 @@ class MockInputRouter : public InputRouter {
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
   void StopFling() override {}
-  bool FlingCancellationIsDeferred() override;
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}
   void OnHasTouchEventHandlers(bool has_handlers) override;

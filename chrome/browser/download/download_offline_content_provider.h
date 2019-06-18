@@ -23,6 +23,7 @@ using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
+using UpdateDelta = offline_items_collection::UpdateDelta;
 using LaunchLocation = offline_items_collection::LaunchLocation;
 
 class SkBitmap;
@@ -89,11 +90,18 @@ class DownloadOfflineContentProvider
   void AddCompletedDownloadDone(DownloadItem* item,
                                 int64_t system_download_id,
                                 bool can_resolve);
+  void OnRenameDownloadCallbackDone(RenameCallback callback,
+                                    DownloadItem* item,
+                                    DownloadItem::DownloadRenameResult result);
+  void UpdateObservers(const OfflineItem& item,
+                       const base::Optional<UpdateDelta>& update_delta);
 
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
   SimpleDownloadManagerCoordinator* manager_;
+
+  // Tracks the completed downloads in the current session.
   std::set<std::string> completed_downloads_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;

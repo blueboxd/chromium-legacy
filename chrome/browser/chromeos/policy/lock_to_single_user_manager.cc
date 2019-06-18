@@ -105,7 +105,6 @@ void LockToSingleUserManager::LockToSingleUser() {
 
 void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
     base::Optional<cryptohome::BaseReply> reply) {
-  // TODO(igorcov): Remove multi user sign in option from UI.
   if (!reply || !reply->HasExtension(RebootOnSignOutReply::reply)) {
     LOG(ERROR) << "Signing out user: no reply from "
                   "LockToSingleUserMountUntilReboot D-Bus call.";

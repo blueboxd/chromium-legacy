@@ -37,8 +37,7 @@ public class AssistantPaymentRequestTermsSection {
         mTermsList = mView.findViewById(R.id.third_party_terms_list);
 
         mTermsAgree = new TextView(context);
-        ApiCompatibilityUtils.setTextAppearance(
-                mTermsAgree, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+        ApiCompatibilityUtils.setTextAppearance(mTermsAgree, R.style.TextAppearance_BlackCaption);
         mTermsList.addItem(mTermsAgree, /*hasEditButton=*/false, selected -> {
             if (selected && mListener != null) {
                 mListener.onResult(AssistantTermsAndConditionsState.ACCEPTED);
@@ -47,7 +46,7 @@ public class AssistantPaymentRequestTermsSection {
 
         mTermsRequiresReview = new TextView(context);
         ApiCompatibilityUtils.setTextAppearance(
-                mTermsRequiresReview, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+                mTermsRequiresReview, R.style.TextAppearance_BlackCaption);
         mTermsList.addItem(mTermsRequiresReview, /*hasEditButton=*/false, selected -> {
             if (selected && mListener != null) {
                 mListener.onResult(AssistantTermsAndConditionsState.REQUIRES_REVIEW);

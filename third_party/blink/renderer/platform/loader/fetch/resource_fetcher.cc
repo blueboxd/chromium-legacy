@@ -292,18 +292,18 @@ void SetReferrer(
   }
 }
 
-// This maps the network::mojom::FetchRequestMode to a string that can be used
+// This maps the network::mojom::RequestMode to a string that can be used
 // in a `Sec-Fetch-Mode` header.
-const char* FetchRequestModeToString(network::mojom::FetchRequestMode mode) {
+const char* RequestModeToString(network::mojom::RequestMode mode) {
   switch (mode) {
-    case network::mojom::FetchRequestMode::kSameOrigin:
+    case network::mojom::RequestMode::kSameOrigin:
       return "same-origin";
-    case network::mojom::FetchRequestMode::kNoCors:
+    case network::mojom::RequestMode::kNoCors:
       return "no-cors";
-    case network::mojom::FetchRequestMode::kCors:
-    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+    case network::mojom::RequestMode::kCors:
+    case network::mojom::RequestMode::kCorsWithForcedPreflight:
       return "cors";
-    case network::mojom::FetchRequestMode::kNavigate:
+    case network::mojom::RequestMode::kNavigate:
       return "navigate";
   }
   NOTREACHED();
@@ -332,9 +332,8 @@ void SetSecFetchHeaders(
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
 
-      request.SetHttpHeaderField(
-          "Sec-Fetch-Mode",
-          FetchRequestModeToString(request.GetFetchRequestMode()));
+      request.SetHttpHeaderField("Sec-Fetch-Mode",
+                                 RequestModeToString(request.GetMode()));
 
       // Note that the `Sec-Fetch-User` header is always false (and therefore
       // omitted) for subresource requests. Likewise, note that we rely on
@@ -619,8 +618,9 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   }
 
   resource_load_observer_->DidFinishLoading(
-      identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
-      false, ResourceLoadObserver::ResponseSource::kFromMemoryCache);
+      identifier, base::TimeTicks(), 0,
+      resource->GetResponse().DecodedBodyLength(), false,
+      ResourceLoadObserver::ResponseSource::kFromMemoryCache);
 
   if (!is_static_data) {
     // Resources loaded from memory cache should be reported the first time
@@ -639,7 +639,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     info->SetLoadResponseEnd(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
-      resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+      resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 
@@ -700,7 +700,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   if (data->size())
     resource->SetResourceBuffer(data);
   resource->SetCacheIdentifier(cache_identifier);
-  resource->Finish(TimeTicks(), task_runner_.get());
+  resource->Finish(base::TimeTicks(), task_runner_.get());
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -885,20 +885,20 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
     params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
-        params.Url(), origin.get(), resource_request.GetFetchRequestMode());
+        params.Url(), origin.get(), resource_request.GetMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
     resource_request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
-        resource_request.GetFetchCredentialsMode(),
+        resource_request.GetCredentialsMode(),
         cors::CalculateResponseTainting(
-            params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
+            params.Url(), resource_request.GetMode(), origin.get(),
             params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 
   if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
-      resource_request.GetFetchCredentialsMode() ==
-          network::mojom::FetchCredentialsMode::kOmit) {
-    // See comments at network::ResourceRequest::fetch_credentials_mode.
+      resource_request.GetCredentialsMode() ==
+          network::mojom::CredentialsMode::kOmit) {
+    // See comments at network::ResourceRequest::credentials_mode.
     resource_request.SetAllowStoredCredentials(false);
   }
 
@@ -1028,8 +1028,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
         ScheduleStaleRevalidate(resource);
       }
 
-      if (resource->IsLinkPreload() && !params.IsLinkPreload())
-        resource->SetLinkPreload(false);
       break;
   }
   DCHECK(resource);
@@ -1720,7 +1718,7 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
 
 void ResourceFetcher::HandleLoaderFinish(
     Resource* resource,
-    TimeTicks response_end,
+    base::TimeTicks response_end,
     LoaderFinishType type,
     uint32_t inflight_keepalive_bytes,
     bool should_report_corb_blocking,
@@ -1910,10 +1908,17 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     loader =
         MakeGarbageCollected<ResourceLoader>(this, scheduler_, resource, size);
-    if (resource->ShouldBlockLoadEvent())
+    // Preload requests should not block the load event. IsLinkPreload()
+    // actually continues to return true for Resources matched from the preload
+    // cache that must block the load event, but that is OK because this method
+    // is not responsible for promoting matched preloads to load-blocking. This
+    // is handled by MakePreloadedResourceBlockOnloadIfNeeded().
+    if (!resource->IsLinkPreload() &&
+        resource->IsLoadEventBlockingResourceType()) {
       loaders_.insert(loader);
-    else
+    } else {
       non_blocking_loaders_.insert(loader);
+    }
 
     StorePerformanceTimingInitiatorInformation(resource);
   }

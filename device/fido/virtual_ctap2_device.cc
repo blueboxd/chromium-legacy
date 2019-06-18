@@ -93,6 +93,7 @@ base::Optional<CtapDeviceResponseCode> CheckUserVerification(
     base::span<const uint8_t> client_data_hash,
     UserVerificationRequirement user_verification,
     base::RepeatingCallback<bool(void)> simulate_press_callback,
+    bool internal_user_verification_succeeds,
     bool* out_user_verified) {
   // The following quotes are from the CTAP2 spec:
 
@@ -148,10 +149,14 @@ base::Optional<CtapDeviceResponseCode> CheckUserVerification(
       if (options.user_verification_availability ==
           AuthenticatorSupportedOptions::UserVerificationAvailability::
               kSupportedAndConfigured) {
-        // Internal UV is assumed to always succeed.
         if (simulate_press_callback && !simulate_press_callback.Run())
           return base::nullopt;
 
+        if (!internal_user_verification_succeeds) {
+          if (is_make_credential)
+            return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
+          return CtapDeviceResponseCode::kCtap2ErrOperationDenied;
+        }
         uv = true;
       } else {
         // UV was requested, but either not supported or not configured.
@@ -636,7 +641,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
           ? base::BindRepeating(mutable_state()->simulate_press_callback,
                                 base::Unretained(this))
           : base::RepeatingCallback<bool(void)>(),
-      &user_verified);
+      config_.user_verification_succeeds, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -813,7 +818,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
           ? base::BindRepeating(mutable_state()->simulate_press_callback,
                                 base::Unretained(this))
           : base::RepeatingCallback<bool(void)>(),
-      &user_verified);
+      config_.user_verification_succeeds, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -1449,6 +1454,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
           enumerated_ids);
       break;
     case static_cast<int>(SubCmd::kSetFriendlyName):
+    case static_cast<int>(SubCmd::kRemoveEnrollment):
       if (template_id && *template_id == std::vector<uint8_t>{0, 0, 0, 2}) {
         return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
       }

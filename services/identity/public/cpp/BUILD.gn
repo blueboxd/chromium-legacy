@@ -22,14 +22,9 @@ source_set("cpp") {
     "primary_account_access_token_fetcher.cc",
     "primary_account_access_token_fetcher.h",
     "primary_account_mutator.h",
+    "primary_account_mutator_impl.cc",
+    "primary_account_mutator_impl.h",
   ]
-
-  if (!is_chromeos) {
-    sources += [
-      "primary_account_mutator_impl.cc",
-      "primary_account_mutator_impl.h",
-    ]
-  }
 
   if (!is_android && !is_ios) {
     sources += [
@@ -101,7 +96,6 @@ source_set("tests") {
     "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",
     "diagnostics_provider_unittest.cc",
-    "primary_account_mutator_unittest.cc",
   ]
 
   deps = [
@@ -115,6 +109,10 @@ source_set("tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (!is_chromeos) {
+    sources += [ "primary_account_mutator_unittest.cc" ]
+  }
 }
 
 source_set("manifest") {

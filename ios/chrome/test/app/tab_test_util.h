@@ -28,6 +28,10 @@ Tab* GetCurrentTab();
 // Gets next tab and returns nil if less than two tabs are open.
 Tab* GetNextTab();
 
+// Gets the tab with the given index in the current mode (incognito or normal).
+// Returns nil if less than |index| + 1 tabs are open.
+Tab* GetTabAtIndexInCurrentMode(NSUInteger index);
+
 // Closes current tab.
 void CloseCurrentTab();
 

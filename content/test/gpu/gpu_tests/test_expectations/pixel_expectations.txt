@@ -182,3 +182,7 @@ crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [
 # Failing on Linux, both Intel HD 630 and NVIDIA Quadro P400
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
+
+# Producing blank images on Macmini and Macbook Pro
+crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
+crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]

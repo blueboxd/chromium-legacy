@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
@@ -20,7 +21,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -188,11 +189,18 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
         mContainerViewModel.set(
                 BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
+
+        int toolbarHeight =
+                ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                        R.dimen.toolbar_height_no_shadow);
         int topPadding = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                ? ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                        R.dimen.toolbar_height_no_shadow)
+                ? toolbarHeight
                 : DEFAULT_TOP_PADDING;
         mContainerViewModel.set(TOP_PADDING, topPadding);
+        int shadowTopMargin = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                ? toolbarHeight * 2
+                : toolbarHeight;
+        mContainerViewModel.set(SHADOW_TOP_MARGIN, shadowTopMargin);
 
         mCompositorViewHolder = compositorViewHolder;
         mTabGridDialogResetHandler = tabGridDialogResetHandler;

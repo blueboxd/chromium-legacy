@@ -63,6 +63,13 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
              'to use whatever version is already installed on the device '
              'instead of installing whatever is in the test APKs directory.')
     parser.add_option(
+        '--remove-system-vrcore',
+        action='store_true',
+        default=False,
+        help='Removes the system version of VrCore if it is installed. This '
+             'is required if the system version is not already removed and '
+             '--disable-vrcore-install is not passed.')
+    parser.add_option(
         '--recording-wpr',
         action='store_true',
         default=False,

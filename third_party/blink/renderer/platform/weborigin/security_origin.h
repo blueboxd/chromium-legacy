@@ -160,7 +160,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // the given URL.
   // Note: This function may return false when |url| has data scheme, which
   // is not aligned with CORS. If you want a CORS-aligned check, just use
-  // CORS mode (e.g., network::mojom::FetchRequestMode::kSameOrigin), or
+  // CORS mode (e.g., network::mojom::RequestMode::kSameOrigin), or
   // use CanReadContent.
   // See
   // https://docs.google.com/document/d/1_BD15unoPJVwKyf5yOUDu5kie492TTaBxzhJ58j1rD4/edit.
@@ -305,6 +305,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // its precursor).
   scoped_refptr<SecurityOrigin> DeriveNewOpaqueOrigin() const;
 
+  // If this is an opaque origin that was derived from a tuple origin, return
+  // the origin from which this was derived. Otherwise returns |this|. This
+  // method may be used for things like CSP 'self' computation which require
+  // the origin before sandbox flags are applied. It should NOT be used for
+  // any security checks (such as bindings).
+  const SecurityOrigin* GetOriginOrPrecursorOriginIfOpaque() const;
+
   // Only used for document.domain setting. The method should probably be moved
   // if we need it for something more general.
   static String CanonicalizeHost(const String& host, bool* success);
@@ -340,10 +347,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Get the nonce associated with this origin, if it is unique. This should be
   // used only when trying to send an Origin across an IPC pipe.
   base::Optional<base::UnguessableToken> GetNonceForSerialization() const;
-
-  // If this is an opaque origin that was derived from a tuple origin, return
-  // the origin from which this was derived. Otherwise returns |this|.
-  const SecurityOrigin* GetOriginOrPrecursorOriginIfOpaque() const;
 
   const String protocol_ = g_empty_string;
   const String host_ = g_empty_string;

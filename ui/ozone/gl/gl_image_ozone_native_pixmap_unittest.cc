@@ -40,7 +40,7 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
     if (usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE ||
         usage == gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE) {
       auto client_pixmap = client_native_pixmap_factory_->ImportFromHandle(
-          pixmap->ExportHandle(), size, usage);
+          pixmap->ExportHandle(), size, format, usage);
       bool mapped = client_pixmap->Map();
       EXPECT_TRUE(mapped);
 

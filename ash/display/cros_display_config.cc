@@ -259,10 +259,8 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
   bool has_accelerometer_support =
       display.accelerometer_support() ==
       display::Display::AccelerometerSupport::AVAILABLE;
-  info->is_tablet_mode =
-      has_accelerometer_support && Shell::Get()
-                                       ->tablet_mode_controller()
-                                       ->IsTabletModeWindowManagerEnabled();
+  info->is_tablet_mode = has_accelerometer_support &&
+                         Shell::Get()->tablet_mode_controller()->InTabletMode();
   info->has_touch_support =
       display.touch_support() == display::Display::TouchSupport::AVAILABLE;
   info->has_accelerometer_support = has_accelerometer_support;
@@ -662,9 +660,7 @@ void CrosDisplayConfig::SetDisplayProperties(
   if (properties->rotation) {
     display::Display::Rotation rotation =
         display::Display::Rotation(properties->rotation->rotation);
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled() &&
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         display.id() == display::Display::InternalDisplayId()) {
       Shell::Get()->screen_orientation_controller()->SetLockToRotation(
           rotation);

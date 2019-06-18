@@ -247,13 +247,13 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetLoader(ResourceLoader*);
   ResourceLoader* Loader() const { return loader_.Get(); }
 
-  bool ShouldBlockLoadEvent() const;
   bool IsLoadEventBlockingResourceType() const;
 
   // Computes the status of an object after loading. Updates the expire date on
   // the cache entry file
-  virtual void Finish(TimeTicks finish_time, base::SingleThreadTaskRunner*);
-  void FinishForTest() { Finish(TimeTicks(), nullptr); }
+  virtual void Finish(base::TimeTicks finish_time,
+                      base::SingleThreadTaskRunner*);
+  void FinishForTest() { Finish(base::TimeTicks(), nullptr); }
 
   virtual scoped_refptr<const SharedBuffer> ResourceBuffer() const {
     return data_;
@@ -350,7 +350,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void DidDownloadData(uint64_t) {}
   virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
-  TimeTicks LoadResponseEnd() const { return load_response_end_; }
+  base::TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
   void SetEncodedDataLength(int64_t value) {
     response_.SetEncodedDataLength(value);
@@ -537,7 +537,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   base::Optional<ResourceError> error_;
 
-  TimeTicks load_response_end_;
+  base::TimeTicks load_response_end_;
 
   size_t encoded_size_;
   size_t encoded_size_memory_usage_;

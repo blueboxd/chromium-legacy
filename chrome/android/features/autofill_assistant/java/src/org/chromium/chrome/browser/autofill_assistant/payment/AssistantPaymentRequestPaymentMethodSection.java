@@ -34,9 +34,9 @@ public class AssistantPaymentRequestPaymentMethodSection
                 R.layout.autofill_assistant_payment_method_full,
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_payment_method_title_padding),
-                context.getString(org.chromium.chrome.R.string.payments_method_of_payment_label),
-                context.getString(org.chromium.chrome.R.string.payments_add_card),
-                context.getString(org.chromium.chrome.R.string.payments_add_card));
+                context.getString(R.string.payments_method_of_payment_label),
+                context.getString(R.string.payments_add_card),
+                context.getString(R.string.payments_add_card));
     }
 
     public void setEditor(CardEditor editor) {

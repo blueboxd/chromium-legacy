@@ -51,9 +51,7 @@ namespace wm {
 namespace {
 
 bool IsTabletModeEnabled() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 bool IsToplevelContainer(aura::Window* window) {

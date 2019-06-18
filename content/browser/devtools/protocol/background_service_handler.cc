@@ -52,15 +52,15 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
 std::unique_ptr<protocol::Array<protocol::BackgroundService::EventMetadata>>
 ProtoMapToArray(
     const google::protobuf::Map<std::string, std::string>& event_metadata_map) {
-  auto metadata_array =
-      protocol::Array<protocol::BackgroundService::EventMetadata>::create();
+  auto metadata_array = std::make_unique<
+      protocol::Array<protocol::BackgroundService::EventMetadata>>();
 
   for (const auto& entry : event_metadata_map) {
     auto event_metadata = protocol::BackgroundService::EventMetadata::Create()
                               .SetKey(entry.first)
                               .SetValue(entry.second)
                               .Build();
-    metadata_array->addItem(std::move(event_metadata));
+    metadata_array->emplace_back(std::move(event_metadata));
   }
 
   return metadata_array;

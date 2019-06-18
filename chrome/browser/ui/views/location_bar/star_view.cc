@@ -86,8 +86,7 @@ void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
       entry_point = BOOKMARK_ENTRY_POINT_STAR_GESTURE;
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
-                            entry_point,
+  UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint", entry_point,
                             BOOKMARK_ENTRY_POINT_LIMIT);
 }
 

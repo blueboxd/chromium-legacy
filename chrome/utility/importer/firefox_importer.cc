@@ -118,9 +118,6 @@ FirefoxImporter::~FirefoxImporter() {
 void FirefoxImporter::StartImport(const importer::SourceProfile& source_profile,
                                   uint16_t items,
                                   ImporterBridge* bridge) {
-  UMA_HISTOGRAM_BOOLEAN("Import.IncludesPasswords.Firefox",
-                        !!(items & importer::PASSWORDS));
-
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
   app_path_ = source_profile.app_path;

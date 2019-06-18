@@ -526,6 +526,32 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return result;
 }
 
+#pragma mark - Check features
+
+- (BOOL)isSlimNavigationManagerEnabled {
+  return [ChromeEarlGreyAppInterface isSlimNavigationManagerEnabled];
+}
+
+- (BOOL)isBlockNewTabPagePendingLoadEnabled {
+  return [ChromeEarlGreyAppInterface isBlockNewTabPagePendingLoadEnabled];
+}
+
+- (BOOL)isNewOmniboxPopupLayoutEnabled {
+  return [ChromeEarlGreyAppInterface isNewOmniboxPopupLayoutEnabled];
+}
+
+- (BOOL)isUMACellularEnabled {
+  return [ChromeEarlGreyAppInterface isUMACellularEnabled];
+}
+
+- (BOOL)isUKMEnabled {
+  return [ChromeEarlGreyAppInterface isUKMEnabled];
+}
+
+- (BOOL)isWebPaymentsModifiersEnabled {
+  return [ChromeEarlGreyAppInterface isWebPaymentsModifiersEnabled];
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

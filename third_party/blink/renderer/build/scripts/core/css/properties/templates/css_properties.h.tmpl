@@ -36,9 +36,9 @@ namespace {{namespace}} {
   (property.is_descriptor and 'kDescriptor' or ''),
   (property.compositable and 'kCompositableProperty' or ''),
   (property.is_property and 'kProperty' or ''),
-  (property.valid_for_visited_link and 'kValidForVisitedLink' or ''),
   (property.inherited and 'kInherited' or ''),
-  (property.visited and 'kVisited' or '')
+  (property.visited and 'kVisited' or ''),
+  (property.is_internal and 'kInternal' or '')
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}

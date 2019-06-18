@@ -76,8 +76,8 @@ Polymer({
   onClick_: function(e) {
     e.preventDefault();
 
-    const toggle = /** @type {AppManagementPermissionToggleElement} */
-        assert(this.$$('#permission-toggle'));
+    const toggle = /** @type {AppManagementPermissionToggleElement} */ (
+        assert(this.$$('#permission-toggle')));
     toggle.togglePermission_();
   },
 });

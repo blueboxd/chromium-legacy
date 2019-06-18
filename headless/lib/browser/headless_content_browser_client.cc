@@ -322,11 +322,11 @@ HeadlessContentBrowserClient::CreateNetworkContext(
       in_memory, relative_partition_path);
 }
 
-std::string HeadlessContentBrowserClient::GetProduct() const {
+std::string HeadlessContentBrowserClient::GetProduct() {
   return browser_->options()->product_name_and_version;
 }
 
-std::string HeadlessContentBrowserClient::GetUserAgent() const {
+std::string HeadlessContentBrowserClient::GetUserAgent() {
   return browser_->options()->user_agent;
 }
 

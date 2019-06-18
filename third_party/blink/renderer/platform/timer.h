@@ -48,16 +48,17 @@ class PLATFORM_EXPORT TimerBase {
   explicit TimerBase(scoped_refptr<base::SingleThreadTaskRunner>);
   virtual ~TimerBase();
 
-  void Start(TimeDelta next_fire_interval,
-             TimeDelta repeat_interval,
+  void Start(base::TimeDelta next_fire_interval,
+             base::TimeDelta repeat_interval,
              const base::Location&);
 
-  void StartRepeating(TimeDelta repeat_interval, const base::Location& caller) {
+  void StartRepeating(base::TimeDelta repeat_interval,
+                      const base::Location& caller) {
     Start(repeat_interval, repeat_interval, caller);
   }
 
-  void StartOneShot(TimeDelta interval, const base::Location& caller) {
-    Start(interval, TimeDelta(), caller);
+  void StartOneShot(base::TimeDelta interval, const base::Location& caller) {
+    Start(interval, base::TimeDelta(), caller);
   }
 
   // Timer cancellation is fast enough that you shouldn't have to worry
@@ -66,12 +67,13 @@ class PLATFORM_EXPORT TimerBase {
   bool IsActive() const;
   const base::Location& GetLocation() const { return location_; }
 
-  TimeDelta NextFireInterval() const;
-  TimeDelta RepeatInterval() const { return repeat_interval_; }
+  base::TimeDelta NextFireInterval() const;
+  base::TimeDelta RepeatInterval() const { return repeat_interval_; }
 
-  void AugmentRepeatInterval(TimeDelta delta) {
-    TimeTicks now = TimerCurrentTimeTicks();
-    SetNextFireTime(now, std::max(next_fire_time_ - now + delta, TimeDelta()));
+  void AugmentRepeatInterval(base::TimeDelta delta) {
+    base::TimeTicks now = TimerCurrentTimeTicks();
+    SetNextFireTime(now,
+                    std::max(next_fire_time_ - now + delta, base::TimeDelta()));
     repeat_interval_ += delta;
   }
 
@@ -89,14 +91,14 @@ class PLATFORM_EXPORT TimerBase {
   NO_SANITIZE_ADDRESS
   virtual bool CanFire() const { return true; }
 
-  TimeTicks TimerCurrentTimeTicks() const;
+  base::TimeTicks TimerCurrentTimeTicks() const;
 
-  void SetNextFireTime(TimeTicks now, TimeDelta delay);
+  void SetNextFireTime(base::TimeTicks now, base::TimeDelta delay);
 
   void RunInternal();
 
-  TimeTicks next_fire_time_;   // 0 if inactive
-  TimeDelta repeat_interval_;  // 0 if not repeating
+  base::TimeTicks next_fire_time_;   // 0 if inactive
+  base::TimeDelta repeat_interval_;  // 0 if not repeating
   base::Location location_;
   scoped_refptr<base::SingleThreadTaskRunner> web_task_runner_;
 

@@ -90,7 +90,7 @@ namespace ash {
 class AcceleratorControllerImpl;
 class AccessibilityController;
 class AccessibilityDelegate;
-class AccessibilityFocusRingController;
+class AccessibilityFocusRingControllerImpl;
 class AshDBusHelper;
 class AshDBusServices;
 class AshFocusRules;
@@ -302,7 +302,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
   }
-  AccessibilityFocusRingController* accessibility_focus_ring_controller() {
+  AccessibilityFocusRingControllerImpl* accessibility_focus_ring_controller() {
     return accessibility_focus_ring_controller_.get();
   }
   ::wm::ActivationClient* activation_client();
@@ -639,7 +639,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AcceleratorControllerImpl> accelerator_controller_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
-  std::unique_ptr<AccessibilityFocusRingController>
+  std::unique_ptr<AccessibilityFocusRingControllerImpl>
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<AshDBusHelper> ash_dbus_helper_;

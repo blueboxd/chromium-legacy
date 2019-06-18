@@ -33,6 +33,7 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   IndexedDBConnection(int child_process_id,
                       IndexedDBOriginStateHandle origin_state_handle,
+                      IndexedDBClassFactory* indexed_db_class_factory,
                       base::WeakPtr<IndexedDBDatabase> database,
                       base::RepeatingClosure on_version_change_ignored,
                       base::OnceCallback<void(IndexedDBConnection*)> on_close,
@@ -107,6 +108,7 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   // Keeps the factory for this origin alive.
   IndexedDBOriginStateHandle origin_state_handle_;
+  IndexedDBClassFactory* const indexed_db_class_factory_;
 
   base::WeakPtr<IndexedDBDatabase> database_;
   base::RepeatingClosure on_version_change_ignored_;

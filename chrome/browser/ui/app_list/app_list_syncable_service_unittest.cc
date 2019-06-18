@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -426,7 +428,20 @@ TEST_F(AppListSyncableServiceTest, InitialMerge) {
   EXPECT_FALSE(GetSyncItem(app_list::kDefaultPageBreak1));
 }
 
-TEST_F(AppListSyncableServiceTest, ExistingDefaultPageBreak) {
+class AppListInternalAppSyncableServiceTest
+    : public AppListSyncableServiceTest {
+ public:
+  AppListInternalAppSyncableServiceTest() {
+    // Disable System Web Apps so the Settings Internal App is still installed.
+    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+  }
+  ~AppListInternalAppSyncableServiceTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AppListInternalAppSyncableServiceTest, ExistingDefaultPageBreak) {
   // Non-first time users have items in their remote sync data.
   syncer::SyncDataList sync_list;
   sync_list.push_back(CreateAppRemoteData(
@@ -452,7 +467,7 @@ TEST_F(AppListSyncableServiceTest, ExistingDefaultPageBreak) {
             page_break_sync_item->item_pin_ordinal.ToDebugString());
 }
 
-TEST_F(AppListSyncableServiceTest, DefaultPageBreakFirstTimeUser) {
+TEST_F(AppListInternalAppSyncableServiceTest, DefaultPageBreakFirstTimeUser) {
   // Empty sync list simulates a first time user.
   syncer::SyncDataList sync_list;
 

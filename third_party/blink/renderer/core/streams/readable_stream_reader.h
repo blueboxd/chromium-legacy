@@ -82,12 +82,6 @@ class CORE_EXPORT ReadableStreamReader : public ScriptWrappable {
                                 ReadableStreamReader*,
                                 ReadableStreamNative*);
 
-  // Calls method |method_name| on |object|, passing no arguments, and ignoring
-  // errors. Used for Blink lock notifications.
-  static void CallNullaryMethod(ScriptState*,
-                                v8::Local<v8::Object> object,
-                                const char* method_name);
-
   Member<StreamPromiseResolver> closed_promise_;
   bool for_author_code_ = true;
   Member<ReadableStreamNative> owner_readable_stream_;

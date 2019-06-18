@@ -245,5 +245,31 @@ TEST_F(BioEnrollmentHandlerTest, Rename) {
   EXPECT_EQ(cb1.value(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
 }
 
+// Tests deleting an enrollment (success and failure).
+TEST_F(BioEnrollmentHandlerTest, Delete) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.bio_enrollment_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
+
+  // Delete existing enrollment.
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb0;
+  handler->DeleteTemplate({0, 0, 0, 1}, cb0.callback());
+
+  cb0.WaitForCallback();
+  EXPECT_EQ(cb0.value(), CtapDeviceResponseCode::kSuccess);
+
+  // Delete non-existent enrollment.
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb1;
+  handler->DeleteTemplate({0, 0, 0, 2}, cb1.callback());
+
+  cb1.WaitForCallback();
+  EXPECT_EQ(cb1.value(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
+}
+
 }  // namespace
 }  // namespace device

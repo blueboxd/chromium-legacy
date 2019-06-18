@@ -91,10 +91,11 @@ void BuildColumnSet(views::GridLayout* layout,
 // |password_view_button| is an optional field. If it is a nullptr, a
 // DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
 // TRIPLE_VIEW_COLUMN_SET.
-void BuildCredentialRows(views::GridLayout* layout,
-                         views::View* username_field,
-                         views::View* password_field,
-                         views::ToggleImageButton* password_view_button) {
+void BuildCredentialRows(
+    views::GridLayout* layout,
+    std::unique_ptr<views::View> username_field,
+    std::unique_ptr<views::View> password_field,
+    std::unique_ptr<views::ToggleImageButton> password_view_button) {
   // Username row.
   BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
   layout->StartRow(views::GridLayout::kFixedSize,
@@ -112,9 +113,9 @@ void BuildCredentialRows(views::GridLayout* layout,
   int fields_height = std::max(username_field->GetPreferredSize().height(),
                                password_field->GetPreferredSize().height());
 
-  layout->AddView(username_label.release(), 1, 1, views::GridLayout::LEADING,
+  layout->AddView(std::move(username_label), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(username_field, 1, 1, views::GridLayout::FILL,
+  layout->AddView(std::move(username_field), 1, 1, views::GridLayout::FILL,
                   views::GridLayout::FILL, 0, fields_height);
 
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
@@ -127,13 +128,13 @@ void BuildCredentialRows(views::GridLayout* layout,
                                               : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
   BuildColumnSet(layout, type);
   layout->StartRow(views::GridLayout::kFixedSize, type);
-  layout->AddView(password_label.release(), 1, 1, views::GridLayout::LEADING,
+  layout->AddView(std::move(password_label), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(password_field, 1, 1, views::GridLayout::FILL,
+  layout->AddView(std::move(password_field), 1, 1, views::GridLayout::FILL,
                   views::GridLayout::FILL, 0, fields_height);
   // The eye icon is also added to the layout if it was passed.
   if (password_view_button) {
-    layout->AddView(password_view_button);
+    layout->AddView(std::move(password_view_button));
   }
 }
 
@@ -230,22 +231,25 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     credential_view->SetEnabled(false);
     AddChildView(credential_view);
   } else {
-    username_dropdown_ =
-        CreateUsernameEditableCombobox(password_form).release();
-    username_dropdown_->set_listener(this);
-    password_dropdown_ =
-        CreatePasswordEditableCombobox(password_form, are_passwords_revealed_)
-            .release();
-    password_dropdown_->set_listener(this);
+    std::unique_ptr<views::EditableCombobox> username_dropdown =
+        CreateUsernameEditableCombobox(password_form);
+    username_dropdown->set_listener(this);
+    std::unique_ptr<views::EditableCombobox> password_dropdown =
+        CreatePasswordEditableCombobox(password_form, are_passwords_revealed_);
+    password_dropdown->set_listener(this);
 
-    password_view_button_ =
-        CreatePasswordViewButton(this, are_passwords_revealed_).release();
+    std::unique_ptr<views::ToggleImageButton> password_view_button =
+        CreatePasswordViewButton(this, are_passwords_revealed_);
 
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
 
-    BuildCredentialRows(layout, username_dropdown_, password_dropdown_,
-                        password_view_button_);
+    username_dropdown_ = username_dropdown.get();
+    password_dropdown_ = password_dropdown.get();
+    password_view_button_ = password_view_button.get();
+    BuildCredentialRows(layout, std::move(username_dropdown),
+                        std::move(password_dropdown),
+                        std::move(password_view_button));
   }
 }
 

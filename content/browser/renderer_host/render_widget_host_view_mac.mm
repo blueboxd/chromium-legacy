@@ -57,6 +57,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
@@ -559,7 +560,11 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
-  ns_view_->SetTextInputType(GetTextInputType());
+  const TextInputState* state = text_input_manager->GetTextInputState();
+  if (state)
+    ns_view_->SetTextInputState(state->type, state->flags);
+  else
+    ns_view_->SetTextInputState(ui::TEXT_INPUT_TYPE_NONE, 0);
 
   // |updated_view| is the last view to change its TextInputState which can be
   // used to start/stop monitoring composition info when it has a focused
@@ -575,7 +580,6 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 
   // Set the monitor state based on the text input focus state.
   const bool has_focus = HasFocus();
-  const TextInputState* state = text_input_manager->GetTextInputState();
   bool need_monitor_composition =
       has_focus && state && state->type != ui::TEXT_INPUT_TYPE_NONE;
 
@@ -1927,24 +1931,9 @@ void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
 // mojom::RenderWidgetHostNSViewHost functions that translate events and
 // forward them to the RenderWidgetHostNSViewHostHelper implementation:
 
-void RenderWidgetHostViewMac::ForwardKeyboardEvent(
-    std::unique_ptr<InputEvent> input_event,
-    bool skip_in_browser) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsKeyboardEventType(
-          input_event->web_event->GetType())) {
-    DLOG(ERROR) << "Absent or non-KeyboardEventType event.";
-    return;
-  }
-  const blink::WebKeyboardEvent& keyboard_event =
-      static_cast<const blink::WebKeyboardEvent&>(*input_event->web_event);
-  NativeWebKeyboardEvent native_event(keyboard_event, nil);
-  native_event.skip_in_browser = skip_in_browser;
-  ForwardKeyboardEvent(native_event, input_event->latency_info);
-}
-
 void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     std::unique_ptr<InputEvent> input_event,
+    const std::vector<uint8_t>& native_event_data,
     bool skip_in_browser,
     const std::vector<EditCommand>& commands) {
   if (!input_event || !input_event->web_event ||
@@ -1957,6 +1946,12 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
       static_cast<const blink::WebKeyboardEvent&>(*input_event->web_event);
   NativeWebKeyboardEvent native_event(keyboard_event, nil);
   native_event.skip_in_browser = skip_in_browser;
+  // The NSEvent constructed from the InputEvent sent over mojo is not even
+  // close to the original NSEvent, resulting in all sorts of bugs. Use the
+  // native event serialization to reconstruct the NSEvent.
+  // https://crbug.com/919167,943197,964052
+  [native_event.os_event release];
+  native_event.os_event = [ui::EventFromData(native_event_data) retain];
   ForwardKeyboardEventWithCommands(native_event, input_event->latency_info,
                                    commands);
 }

@@ -5,62 +5,11 @@
 module ash.mojom;
 
 import "components/arc/common/notifications.mojom";
-import "ui/gfx/image/mojo/image.mojom";
-import "ui/message_center/public/mojo/notification.mojom";
-import "ui/message_center/public/mojo/notifier_id.mojom";
-import "mojo/public/mojom/base/string16.mojom";
-import "mojo/public/mojom/base/unguessable_token.mojom";
 
-// A struct that contains information for presenting a notifier in a settings
-// panel.
-struct NotifierUiData {
-  // The notifier (e.g. an extension).
-  message_center.mojom.NotifierId notifier_id;
-
-  // The user-visible name of the notifier (e.g. an extension's name).
-  mojo_base.mojom.String16 name;
-
-  // True if notifications from the notifier are presently enabled.
-  bool enabled;
-
-  // True if the setting is enforced by administrator and the user can't change.
-  bool enforced;
-
-  // An icon displayed next to the name.
-  gfx.mojom.ImageSkia? icon;
-};
-
-// The message center controller funnels notification requests from the client
-// to the MessageCenter.
 interface AshMessageCenterController {
-  SetClient(associated AshMessageCenterClient client);
-
   // Sets the ARC notification instance.
   SetArcNotificationsInstance(arc.mojom.NotificationsInstance instance);
 
-  UpdateNotifierIcon(message_center.mojom.NotifierId notifier_id,
-                     gfx.mojom.ImageSkia icon);
-
-  NotifierEnabledChanged(message_center.mojom.NotifierId notifier_id,
-                         bool enabled);
-
   // Changes the quiet mode state in the message center.
   SetQuietMode(bool enabled);
-};
-
-// The message center client interface mimics
-// message_center::NotificationDelegate. The ID strings match the id passed in
-// |notification| in ShowClientNotification and the format of the ID is up to
-// the client.
-interface AshMessageCenterClient {
-  // Called when a user enables or disables notifications from the given
-  // notifier.
-  SetNotifierEnabled(message_center.mojom.NotifierId notifier_id, bool enabled);
-
-  // Asks the client for a list of notifiers and associated UI information to be
-  // displayed in a settings panel.
-  GetNotifierList() => (array<NotifierUiData> notifiers);
-
-  // Gets ARC app id from a given package name.
-  GetArcAppIdByPackageName(string package_name) => (string app_id);
 };

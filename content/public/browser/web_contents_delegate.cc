@@ -36,7 +36,9 @@ bool WebContentsDelegate::ShouldTransferNavigation(
   return true;
 }
 
-bool WebContentsDelegate::CanOverscrollContent() const { return false; }
+bool WebContentsDelegate::CanOverscrollContent() {
+  return false;
+}
 
 bool WebContentsDelegate::ShouldSuppressDialogs(WebContents* source) {
   return false;
@@ -151,17 +153,17 @@ WebContentsDelegate::ShowBluetoothScanningPrompt(
   return nullptr;
 }
 
-bool WebContentsDelegate::EmbedsFullscreenWidget() const {
+bool WebContentsDelegate::EmbedsFullscreenWidget() {
   return false;
 }
 
 bool WebContentsDelegate::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return false;
 }
 
 blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return blink::kWebDisplayModeBrowser;
 }
 
@@ -245,7 +247,7 @@ void WebContentsDelegate::Detach(WebContents* web_contents) {
 }
 
 gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
-    WebContents* web_contents) const {
+    WebContents* web_contents) {
   return gfx::Size();
 }
 
@@ -275,16 +277,16 @@ bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs;
 }
 
-int WebContentsDelegate::GetTopControlsHeight() const {
+int WebContentsDelegate::GetTopControlsHeight() {
   return 0;
 }
 
-int WebContentsDelegate::GetBottomControlsHeight() const {
+int WebContentsDelegate::GetBottomControlsHeight() {
   return 0;
 }
 
 bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return false;
 }
 

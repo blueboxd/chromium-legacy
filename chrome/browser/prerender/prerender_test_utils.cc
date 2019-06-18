@@ -36,7 +36,6 @@
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-#include "net/url_request/url_request_filter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,116 +48,6 @@ namespace prerender {
 namespace test_utils {
 
 namespace {
-
-// Wrapper over URLRequestMockHTTPJob that exposes extra callbacks.
-class MockHTTPJob : public net::URLRequestMockHTTPJob {
- public:
-  MockHTTPJob(net::URLRequest* request,
-              net::NetworkDelegate* delegate,
-              const base::FilePath& file)
-      : net::URLRequestMockHTTPJob(request, delegate, file) {}
-
-  void set_start_callback(const base::Closure& start_callback) {
-    start_callback_ = start_callback;
-  }
-
-  void Start() override {
-    if (!start_callback_.is_null())
-      start_callback_.Run();
-    net::URLRequestMockHTTPJob::Start();
-  }
-
- private:
-  ~MockHTTPJob() override {}
-
-  base::Closure start_callback_;
-};
-
-// URLRequestInterceptor which counts the number of requests that start.
-class CountingInterceptor : public net::URLRequestInterceptor {
- public:
-  CountingInterceptor(const base::FilePath& file,
-                      const base::WeakPtr<RequestCounter>& counter)
-      : file_(file), counter_(counter), weak_factory_(this) {}
-  ~CountingInterceptor() override {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    MockHTTPJob* job = new MockHTTPJob(request, network_delegate, file_);
-    job->set_start_callback(base::Bind(&CountingInterceptor::RequestStarted,
-                                       weak_factory_.GetWeakPtr()));
-    return job;
-  }
-
-  void RequestStarted() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&RequestCounter::RequestStarted, counter_));
-  }
-
- private:
-  base::FilePath file_;
-  base::WeakPtr<RequestCounter> counter_;
-  mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
-};
-
-class CountingInterceptorWithCallback : public net::URLRequestInterceptor {
- public:
-  // Inserts the interceptor object to intercept requests to |url|.  Can be
-  // called on any thread. Assumes that |counter| (if non-null) lives on the UI
-  // thread.  The |callback_io| will be called on IO thread with the
-  // net::URLrequest provided.
-  static void Initialize(const GURL& url,
-                         RequestCounter* counter,
-                         base::Callback<void(net::URLRequest*)> callback_io) {
-    base::WeakPtr<RequestCounter> weakptr;
-    if (counter)
-      weakptr = counter->AsWeakPtr();
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&CountingInterceptorWithCallback::CreateAndAddOnIO, url,
-                       weakptr, callback_io));
-  }
-
-  // net::URLRequestInterceptor:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    // Run the callback.
-    callback_.Run(request);
-
-    // Ping the request counter.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&RequestCounter::RequestStarted, counter_));
-    return nullptr;
-  }
-
- private:
-  CountingInterceptorWithCallback(
-      const base::WeakPtr<RequestCounter>& counter,
-      base::Callback<void(net::URLRequest*)> callback)
-      : callback_(callback), counter_(counter) {}
-
-  static void CreateAndAddOnIO(
-      const GURL& url,
-      const base::WeakPtr<RequestCounter>& counter,
-      base::Callback<void(net::URLRequest*)> callback_io) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    // Create the object with base::WrapUnique to restrict access to the
-    // constructor.
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, base::WrapUnique(
-                 new CountingInterceptorWithCallback(counter, callback_io)));
-  }
-
-  base::Callback<void(net::URLRequest*)> callback_;
-  base::WeakPtr<RequestCounter> counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(CountingInterceptorWithCallback);
-};
-
 
 // An ExternalProtocolHandler that blocks everything and asserts it never is
 // called.
@@ -201,30 +90,6 @@ class NeverRunsExternalProtocolHandlerDelegate
 };
 
 }  // namespace
-
-RequestCounter::RequestCounter() : count_(0), expected_count_(-1) {}
-
-RequestCounter::~RequestCounter() {}
-
-void RequestCounter::RequestStarted() {
-  count_++;
-  if (loop_ && count_ == expected_count_)
-    loop_->Quit();
-}
-
-void RequestCounter::WaitForCount(int expected_count) {
-  ASSERT_TRUE(!loop_);
-  ASSERT_EQ(-1, expected_count_);
-  if (count_ < expected_count) {
-    expected_count_ = expected_count;
-    loop_.reset(new base::RunLoop);
-    loop_->Run();
-    expected_count_ = -1;
-    loop_.reset();
-  }
-
-  EXPECT_EQ(expected_count, count_);
-}
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager() {}
 
@@ -792,21 +657,6 @@ void PrerenderInProcessBrowserTest::WaitForRequestCount(
     waiting_count_ = 0;
     waiting_closure_.Reset();
   }
-}
-
-void CreateCountingInterceptorOnIO(
-    const GURL& url,
-    const base::FilePath& file,
-    const base::WeakPtr<RequestCounter>& counter) {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::make_unique<CountingInterceptor>(file, counter));
-}
-
-void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(file));
 }
 
 }  // namespace test_utils

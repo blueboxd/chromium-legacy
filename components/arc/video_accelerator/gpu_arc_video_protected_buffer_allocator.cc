@@ -92,10 +92,15 @@ void GpuArcVideoProtectedBufferAllocator::AllocateProtectedNativePixmap(
   }
   VLOGF(2) << "format=" << media::VideoPixelFormatToString(pixel_format)
            << ", picture_size=" << picture_size.ToString();
+
+  auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
+  if (!buffer_format) {
+    std::move(callback).Run(false);
+    return;
+  }
   std::move(callback).Run(
       protected_buffer_allocator_->AllocateProtectedNativePixmap(
-          std::move(fd), media::VideoPixelFormatToGfxBufferFormat(pixel_format),
-          picture_size));
+          std::move(fd), *buffer_format, picture_size));
   return;
 }
 

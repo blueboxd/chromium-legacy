@@ -51,9 +51,6 @@ source_set("public") {
     "web_state/web_state_policy_decider.h",
     "web_state/web_state_policy_decider_bridge.h",
     "web_state/web_state_user_data.h",
-    "web_task_traits.h",
-    "web_thread.h",
-    "web_thread_delegate.h",
     "web_view_creation_util.h",
   ]
 

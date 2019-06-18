@@ -19,6 +19,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/widget/widget_utils.h"
 
 namespace {
@@ -42,6 +44,28 @@ const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_USERNAME_ENTRY, 1},
     {autofill::POPUP_ITEM_ID_CREATE_HINT, 1},
     {autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 1},
+};
+
+class TestAXEventObserver : public views::AXEventObserver {
+ public:
+  TestAXEventObserver() : selection_event_count_(0) {
+    views::AXEventManager::Get()->AddObserver(this);
+  }
+  ~TestAXEventObserver() override {
+    views::AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  void OnViewEvent(views::View*, ax::mojom::Event event_type) override {
+    if (event_type == ax::mojom::Event::kSelection)
+      ++selection_event_count_;
+  }
+
+  size_t GetSelectionEventCount() { return selection_event_count_; }
+  void ResetSelectionEventCount() { selection_event_count_ = 0; }
+
+ private:
+  size_t selection_event_count_;
+  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
@@ -103,6 +127,36 @@ TEST_F(AutofillPopupViewNativeViewsTest, ShowHideTest) {
   EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion(testing::_))
       .Times(0);
   view()->Hide();
+}
+
+TEST_F(AutofillPopupViewNativeViewsTest, AccessibilitySelectedEvent) {
+  TestAXEventObserver observer;
+  CreateAndShowView({autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
+                     autofill::POPUP_ITEM_ID_SEPARATOR,
+                     autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS});
+
+  // Checks that a selection event is not sent when the view's |is_selected_|
+  // member does not change.
+  view()->GetRowsForTesting()[0]->SetSelected(false);
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
+  observer.ResetSelectionEventCount();
+
+  // Checks that a selection event is sent when an unselected view becomes
+  // selected.
+  view()->GetRowsForTesting()[0]->SetSelected(true);
+  EXPECT_EQ(1U, observer.GetSelectionEventCount());
+  observer.ResetSelectionEventCount();
+
+  // Checks that a selection event is not sent when the view's |is_selected_|
+  // member does not change.
+  view()->GetRowsForTesting()[0]->SetSelected(true);
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
+  observer.ResetSelectionEventCount();
+
+  // Checks that a selection event is not sent when a selected view becomes
+  // unselected.
+  view()->GetRowsForTesting()[0]->SetSelected(false);
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
 }
 
 TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {

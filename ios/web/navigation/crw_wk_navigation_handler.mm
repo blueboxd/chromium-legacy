@@ -273,6 +273,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       loadParams.referrer = self.currentReferrer;
 
       self.webStateImpl->GetNavigationManager()->LoadURLWithParams(loadParams);
+      return;
     }
   }
 
@@ -1859,7 +1860,18 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         handleCancelledErrorForContext:navigationContext];
 
     if (provisionalLoad) {
-      self.webStateImpl->OnNavigationFinished(navigationContext);
+      if (!navigationContext &&
+          web::RequiresProvisionalNavigationFailureWorkaround()) {
+        // It is likely that |navigationContext| is null because
+        // didStartProvisionalNavigation: was not called with this WKNavigation
+        // object. Log UMA to know when this workaround can be removed and
+        // do not call OnNavigationFinished() to avoid crash on null pointer
+        // dereferencing. See crbug.com/973653 for details.
+        UMA_HISTOGRAM_BOOLEAN(
+            "Navigation.IOSNullContextInDidFailProvisionalNavigation", true);
+      } else {
+        self.webStateImpl->OnNavigationFinished(navigationContext);
+      }
     }
   } else if (!provisionalLoad) {
     web::NavigationItemImpl* item =

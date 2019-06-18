@@ -4,6 +4,16 @@
      found in the LICENSE file. -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="TextAppearance.BlackBodyDefault.Touchless">
+        <item name="android:textColor">@color/touchless_default_text_color_list</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
+    <style name="TextAppearance.BlackCaption.Touchless">
+        <item name="android:textColor">@color/touchless_default_text_color_secondary_list</item>
+        <item name="android:duplicateParentState">true</item>
+    </style>
+
     <style name="TextAppearance.NoTouchProgressBar">
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/notouch_progress_bar_text</item>

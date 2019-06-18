@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/frame.h"
 
-#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -185,35 +184,6 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
   EXPECT_FALSE(
       LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame()));
-}
-
-TEST_F(FrameTest, UserActivationHistograms) {
-  ScopedUserActivationV2ForTest scoped_feature(true);
-  base::HistogramTester histograms;
-
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.AvailabilityCheck.FrameResult",
-                               0, 1);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 0, 1);
-
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.AvailabilityCheck.FrameResult",
-                               3, 2);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 3, 1);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 0, 2);
-
-  histograms.ExpectTotalCount("UserActivation.AvailabilityCheck.FrameResult",
-                              3);
-  histograms.ExpectTotalCount("UserActivation.Consumption.FrameResult", 3);
 }
 
 TEST_F(FrameTest, TestDocumentInterfaceBrokerOverride) {

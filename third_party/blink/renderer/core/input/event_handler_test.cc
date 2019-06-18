@@ -575,7 +575,7 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
                 .SelectCursor(location, result)
                 .GetCursor()
                 .GetType(),
-            Cursor::Type::kHand);  // A hand signals ability to navigate.
+            ui::CursorType::kHand);  // A hand signals ability to navigate.
 }
 
 TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
@@ -598,7 +598,7 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
                 .SelectCursor(location, result)
                 .GetCursor()
                 .GetType(),
-            Cursor::Type::kIBeam);  // An I-beam signals editability.
+            ui::CursorType::kIBeam);  // An I-beam signals editability.
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
@@ -1386,11 +1386,11 @@ TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
   mouse_move_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-  EXPECT_EQ(Cursor::Type::kHelp, GetDocument()
-                                     .GetFrame()
-                                     ->GetChromeClient()
-                                     .LastSetCursorForTesting()
-                                     .GetType());
+  EXPECT_EQ(ui::CursorType::kHelp, GetDocument()
+                                       .GetFrame()
+                                       ->GetChromeClient()
+                                       .LastSetCursorForTesting()
+                                       .GetType());
 }
 
 // Ensure that tap on element in iframe should apply active state.
@@ -1755,7 +1755,7 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::CursorType::kCustom, cursor.GetType());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -1771,7 +1771,7 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(Cursor::Type::kPointer, cursor.GetType());
+    EXPECT_EQ(ui::CursorType::kPointer, cursor.GetType());
   }
 }
 
@@ -1814,7 +1814,7 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::CursorType::kCustom, cursor.GetType());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -1831,7 +1831,7 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::CursorType::kCustom, cursor.GetType());
   }
 }
 

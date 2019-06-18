@@ -786,8 +786,19 @@ ACTION_P5(VerifyRestorationFinishedContext,
 // WebStatePolicyDecider::RequestInfo. This is needed because
 // WebStatePolicyDecider::RequestInfo doesn't support operator==.
 MATCHER_P(RequestInfoMatch, expected_request_info, /*description=*/"") {
-  return ui::PageTransitionTypeIncludingQualifiersIs(
-             arg.transition_type, expected_request_info.transition_type) &&
+  bool transition_type_match = ui::PageTransitionTypeIncludingQualifiersIs(
+      arg.transition_type, expected_request_info.transition_type);
+  EXPECT_TRUE(transition_type_match)
+      << "expected transition type: "
+      << PageTransitionGetCoreTransitionString(
+             expected_request_info.transition_type)
+      << " actual transition type: "
+      << PageTransitionGetCoreTransitionString(arg.transition_type);
+  EXPECT_EQ(expected_request_info.target_frame_is_main,
+            arg.target_frame_is_main);
+  EXPECT_EQ(expected_request_info.has_user_gesture, arg.has_user_gesture);
+
+  return transition_type_match &&
          arg.target_frame_is_main ==
              expected_request_info.target_frame_is_main &&
          arg.has_user_gesture == expected_request_info.has_user_gesture;
@@ -1076,42 +1087,76 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
 }
 
-// Tests failed navigation because of invalid URL.
-TEST_P(WebStateObserverTest, InvalidUrlNavigation) {
+// Tests navigation to a URL with /..; suffix. On iOS 12 and earlier this
+// navigation fails becasue WebKit rewrites valid URL to invalid during the
+// navigation. On iOS 13+ this navigation sucessfully completes.
+TEST_P(WebStateObserverTest, UrlWithSpecialSuffixNavigation) {
   const std::string kBadSuffix = "/..;";
   GURL url = test_server_->GetURL(kBadSuffix);
 
-  // WebKit rewrites invalid URLs.
-  std::string webkit_rewritten_url_spec = url.spec();
-  webkit_rewritten_url_spec.replace(url.spec().size() - kBadSuffix.size(),
-                                    kBadSuffix.size(), ";/");
-
-  // Perform a navigation to an ivalid url, which will fail.
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  WebStatePolicyDecider::RequestInfo expected_request_info(
-      // Can't match NavigationContext and determine navigation type
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-      /*target_main_frame=*/true, /*has_user_gesture=*/false);
-  EXPECT_CALL(*decider_,
-              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
-      .WillOnce(Return(true));
-  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPageStartedContext(
-          web_state(), GURL(webkit_rewritten_url_spec),
-          ui::PageTransition::PAGE_TRANSITION_TYPED, &context, &nav_id));
 
-  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyErrorFinishedContext(
-          web_state(), GURL(webkit_rewritten_url_spec), &context, &nav_id,
-          /*committed=*/false, kWebKitErrorCannotShowUrl));
-  EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  EXPECT_CALL(observer_,
-              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
-  test::LoadUrl(web_state(), url);
-  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
-  EXPECT_EQ("", web_state()->GetVisibleURL());
+  if (@available(iOS 13, *)) {
+    // Starting from iOS 13 WebKit, does not rewrite URL.
+    WebStatePolicyDecider::RequestInfo expected_request_info(
+        ui::PageTransition::PAGE_TRANSITION_TYPED,
+        /*target_main_frame=*/true, /*has_user_gesture=*/false);
+    EXPECT_CALL(*decider_,
+                ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+        .WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+        .WillOnce(VerifyPageStartedContext(
+            web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED,
+            &context, &nav_id));
+    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+        .WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+        .WillOnce(VerifyNewPageFinishedContext(
+            web_state(), url, /*mime_type*/ std::string(),
+            /*content_is_html=*/false, &context, &nav_id));
+    EXPECT_CALL(observer_, TitleWasSet(web_state()))
+        .WillOnce(VerifyTitle(url.GetContent()));
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+    EXPECT_CALL(observer_,
+                PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+    test::LoadUrl(web_state(), url);
+    ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+    EXPECT_EQ(url, web_state()->GetVisibleURL());
+  } else {
+    // Perform a navigation to a url, which will be rewritten by WebKit to
+    // invalid and will fail.
+    std::string webkit_rewritten_url_spec = url.spec();
+    // Prior to iOS 13, WebKit rewrites "http://127.0.0.1:80/..;" (valid) to
+    // "http://127.0.0.1:80;/" (invalid).
+    webkit_rewritten_url_spec.replace(url.spec().size() - kBadSuffix.size(),
+                                      kBadSuffix.size(), ";/");
+
+    WebStatePolicyDecider::RequestInfo expected_request_info(
+        // Can't match NavigationContext and determine navigation type prior to
+        // iOS 13, because context is matched by URL, which is rewritten by
+        // WebKit.
+        ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+        /*target_main_frame=*/true, /*has_user_gesture=*/false);
+    EXPECT_CALL(*decider_,
+                ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+        .WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+        .WillOnce(VerifyPageStartedContext(
+            web_state(), GURL(webkit_rewritten_url_spec),
+            ui::PageTransition::PAGE_TRANSITION_TYPED, &context, &nav_id));
+    EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+        .WillOnce(VerifyErrorFinishedContext(
+            web_state(), GURL(webkit_rewritten_url_spec), &context, &nav_id,
+            /*committed=*/false, kWebKitErrorCannotShowUrl));
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+    EXPECT_CALL(observer_,
+                PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+    test::LoadUrl(web_state(), url);
+    ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+    EXPECT_EQ("", web_state()->GetVisibleURL());
+  }
 }
 
 // Tests failed navigation because URL scheme is not supported by WKWebView.

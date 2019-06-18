@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/previews/content/previews_hints_util.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -44,10 +45,45 @@ void PreviewsTopHostProviderImpl::InitializeHintsFetcherTopHostBlacklist() {
   DCHECK(browser_context_);
   DCHECK_EQ(GetCurrentBlacklistState(),
             HintsFetcherTopHostBlacklistState::kNotInitialized);
+  DCHECK(pref_service_
+             ->GetDictionary(
+                 optimization_guide::prefs::kHintsFetcherTopHostBlacklist)
+             ->empty());
 
-  // TODO(mcrouse): When the blacklist state is kNotInitialized, the
-  // |kHintsFetcherTopHostBlacklist| dictionary should be populated with the
-  // hosts currently in the Site Engagement Service.
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  SiteEngagementService* engagement_service =
+      SiteEngagementService::Get(profile);
+
+  std::unique_ptr<base::DictionaryValue> top_host_blacklist =
+      std::make_unique<base::DictionaryValue>();
+
+  std::vector<mojom::SiteEngagementDetails> engagement_details =
+      engagement_service->GetAllDetails();
+
+  std::sort(engagement_details.begin(), engagement_details.end(),
+            [](const mojom::SiteEngagementDetails& lhs,
+               const mojom::SiteEngagementDetails& rhs) {
+              return lhs.total_score > rhs.total_score;
+            });
+
+  for (const auto& detail : engagement_details) {
+    if (top_host_blacklist->size() >=
+        previews::params::MaxHintsFetcherTopHostBlacklistSize()) {
+      break;
+    }
+    if (detail.origin.SchemeIsHTTPOrHTTPS()) {
+      top_host_blacklist->SetBoolKey(
+          HashHostForDictionary(detail.origin.host()), true);
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Previews.HintsFetcher.TopHostProvider.BlacklistSize.OnInitialize",
+      top_host_blacklist->size());
+
+  pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
+                     *top_host_blacklist);
+
   UpdateCurrentBlacklistState(HintsFetcherTopHostBlacklistState::kInitialized);
 }
 
@@ -137,14 +173,15 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
   if (GetCurrentBlacklistState() != HintsFetcherTopHostBlacklistState::kEmpty) {
     top_host_blacklist =
         pref_service_->GetDictionary(kHintsFetcherTopHostBlacklist);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Previews.HintsFetcher.TopHostProvider.BlacklistSize.OnRequest",
+        top_host_blacklist->size());
     // This check likely should not be needed as the process of removing hosts
     // from the blacklist should check and update the pref state.
     if (top_host_blacklist->size() == 0) {
       UpdateCurrentBlacklistState(HintsFetcherTopHostBlacklistState::kEmpty);
       top_host_blacklist = nullptr;
     }
-    // TODO(mcrouse): Add histogram to record the size of the blacklist on
-    // request for top hosts.
   }
 
   std::vector<std::string> top_hosts;
@@ -156,6 +193,13 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
   // populated when DataSaver is first enabled.
   std::vector<mojom::SiteEngagementDetails> engagement_details =
       engagement_service->GetAllDetails();
+
+  std::sort(engagement_details.begin(), engagement_details.end(),
+            [](const mojom::SiteEngagementDetails& lhs,
+               const mojom::SiteEngagementDetails& rhs) {
+              return lhs.total_score > rhs.total_score;
+            });
+
   for (const auto& detail : engagement_details) {
     if (top_hosts.size() >= max_sites)
       return top_hosts;

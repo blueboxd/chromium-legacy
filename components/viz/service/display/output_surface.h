@@ -20,6 +20,7 @@
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/color_space.h"
 #include "ui/latency/latency_info.h"
 
@@ -86,6 +87,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   }
   const SkMatrix44& color_matrix() const { return color_matrix_; }
 
+  // Only useful for GPU backend.
+  virtual gpu::SurfaceHandle GetSurfaceHandle() const;
+
   virtual void BindToClient(OutputSurfaceClient* client) = 0;
 
   virtual void EnsureBackbuffer() = 0;
@@ -98,10 +102,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Marks that the given rectangle will be drawn to on the default, bound
   // framebuffer.
   virtual void SetDrawRectangle(const gfx::Rect& rect) = 0;
-
-  // Get the class capable of informing cc of hardware overlay capability.
-  virtual std::unique_ptr<OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() = 0;
 
   // Returns true if a main image overlay plane should be scheduled.
   virtual bool IsDisplayedAsOverlayPlane() const = 0;
@@ -169,6 +169,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual gfx::OverlayTransform GetDisplayTransform() = 0;
 
   virtual base::ScopedClosureRunner GetCacheBackBufferCb();
+
+  // Only used for pre-OOP-D code path of BrowserCompositorOutputSurface.
+  // TODO(weiliangc): Remove it when reflector code is removed.
+  virtual bool IsSoftwareMirrorMode() const;
 
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.

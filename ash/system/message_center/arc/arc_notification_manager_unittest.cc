@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/arc_app_id_provider.h"
 #include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "base/message_loop/message_loop.h"
@@ -26,6 +27,20 @@ namespace ash {
 namespace {
 
 const char kDummyNotificationKey[] = "DUMMY_NOTIFICATION_KEY";
+
+class TestArcAppIdProvider : public ArcAppIdProvider {
+ public:
+  TestArcAppIdProvider() = default;
+  ~TestArcAppIdProvider() override = default;
+
+  // ArcAppIdProvider:
+  std::string GetAppIdByPackageName(const std::string& package_name) override {
+    return {};
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestArcAppIdProvider);
+};
 
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
@@ -80,10 +95,6 @@ class FakeArcNotificationManagerDelegate
 
   // ArcNotificationManagerDelegate:
   bool IsPublicSessionOrKiosk() const override { return false; }
-  void GetAppIdByPackageName(const std::string& package_name,
-                             GetAppIdByPackageNameCallback callback) override {
-    std::move(callback).Run(std::string());
-  }
   void ShowMessageCenter() override {}
   void HideMessageCenter() override {}
 
@@ -157,6 +168,7 @@ class ArcNotificationManagerTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
+  TestArcAppIdProvider app_id_provider_;
   std::unique_ptr<arc::FakeNotificationsInstance> arc_notifications_instance_;
   std::unique_ptr<mojo::Binding<arc::mojom::NotificationsInstance>> binding_;
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;

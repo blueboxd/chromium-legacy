@@ -37,8 +37,9 @@ class MemoryPurgeManagerTest : public testing::Test {
             &MemoryPurgeManagerTest::OnMemoryPressure, base::Unretained(this)));
     base::MemoryPressureListener::SetNotificationsSuppressed(false);
 
-    // Set an initial delay to ensure that the first call to TimeTicks::Now()
-    // before incrementing the counter does not return a null value.
+    // Set an initial delay to ensure that the first call to
+    // base::TimeTicks::Now() before incrementing the counter does not return a
+    // null value.
     FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 

@@ -272,7 +272,7 @@ ServiceWorkerUtils::DeserializeFetchRequestFromString(
 
   auto request_ptr = blink::mojom::FetchAPIRequest::New();
   request_ptr->mode =
-      static_cast<network::mojom::FetchRequestMode>(request_proto.mode());
+      static_cast<network::mojom::RequestMode>(request_proto.mode());
   request_ptr->is_main_resource_load = request_proto.is_main_resource_load();
   request_ptr->request_context_type =
       static_cast<blink::mojom::RequestContextType>(
@@ -287,13 +287,12 @@ ServiceWorkerUtils::DeserializeFetchRequestFromString(
                                   static_cast<network::mojom::ReferrerPolicy>(
                                       request_proto.referrer().policy()));
   request_ptr->is_reload = request_proto.is_reload();
-  request_ptr->credentials_mode =
-      static_cast<network::mojom::FetchCredentialsMode>(
-          request_proto.credentials_mode());
+  request_ptr->credentials_mode = static_cast<network::mojom::CredentialsMode>(
+      request_proto.credentials_mode());
   request_ptr->cache_mode =
       static_cast<blink::mojom::FetchCacheMode>(request_proto.cache_mode());
-  request_ptr->redirect_mode = static_cast<network::mojom::FetchRedirectMode>(
-      request_proto.redirect_mode());
+  request_ptr->redirect_mode =
+      static_cast<network::mojom::RedirectMode>(request_proto.redirect_mode());
   if (request_proto.has_integrity())
     request_ptr->integrity = request_proto.integrity();
   request_ptr->keepalive = request_proto.keepalive();

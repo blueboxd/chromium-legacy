@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
@@ -21,12 +22,15 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/favicon_url.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -63,6 +67,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       enabled_for_dev_(init_params.enabled_for_dev),
       use_cma_renderer_(init_params.use_cma_renderer),
       handle_inner_contents_(init_params.handle_inner_contents),
+      view_background_color_(init_params.background_color),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
       media_blocker_(init_params.use_media_blocker
@@ -142,7 +147,7 @@ void CastWebContentsImpl::LoadUrl(const GURL& url) {
                                          ui::PAGE_TRANSITION_TYPED, "");
   UpdatePageState();
   DCHECK_EQ(PageState::LOADING, page_state_);
-  NotifyObservers();
+  NotifyPageState();
 }
 
 void CastWebContentsImpl::ClosePage() {
@@ -166,7 +171,7 @@ void CastWebContentsImpl::Stop(int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (stopped_) {
     UpdatePageState();
-    NotifyObservers();
+    NotifyPageState();
     return;
   }
   last_error_ = error_code;
@@ -176,7 +181,7 @@ void CastWebContentsImpl::Stop(int error_code) {
   DCHECK_NE(PageState::IDLE, page_state_);
   DCHECK_NE(PageState::LOADING, page_state_);
   DCHECK_NE(PageState::LOADED, page_state_);
-  NotifyObservers();
+  NotifyPageState();
 }
 
 void CastWebContentsImpl::BlockMediaLoading(bool blocked) {
@@ -254,15 +259,15 @@ void CastWebContentsImpl::RenderFrameCreated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(render_frame_host);
 
-  // New render frame has been created, we need to add it to the app
-  // whitelisting session so URL requests are handled correctly. This must be
-  // done before URL requests are executed within render frame.
   auto* process = render_frame_host->GetProcess();
   const int render_process_id = process->GetID();
   const int render_frame_id = render_frame_host->GetRoutingID();
 
+  // Allow observers to use remote interfaces which are hosted by the new
+  // RenderFrame.
   for (Observer& observer : observer_list_) {
-    observer.RenderFrameCreated(render_process_id, render_frame_id);
+    observer.RenderFrameCreated(render_process_id, render_frame_id,
+                                render_frame_host->GetRemoteInterfaces());
   }
 
   chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
@@ -283,6 +288,12 @@ void CastWebContentsImpl::RenderFrameCreated(
     // base::Value is not copyable.
     queryable_data_store_ptr->Set(value.first, value.second.Clone());
   }
+}
+
+void CastWebContentsImpl::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  RenderFrameCreated(new_host);
 }
 
 std::vector<chromecast::shell::mojom::FeaturePtr>
@@ -316,6 +327,24 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
   }
 }
 
+void CastWebContentsImpl::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  content::RenderWidgetHostView* view =
+      render_view_host->GetWidget()->GetView();
+  if (!view)
+    return;
+  if (view_background_color_ == BackgroundColor::WHITE) {
+    view->SetBackgroundColor(SK_ColorWHITE);
+  } else if (view_background_color_ == BackgroundColor::BLACK) {
+    view->SetBackgroundColor(SK_ColorBLACK);
+  } else if (view_background_color_ == BackgroundColor::TRANSPARENT) {
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  } else {
+    view->SetBackgroundColor(chromecast::GetSwitchValueColor(
+        switches::kCastAppBackgroundColor, SK_ColorBLACK));
+  }
+}
+
 void CastWebContentsImpl::RenderProcessGone(base::TerminationStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LOG(INFO) << "Render process for main frame exited unexpectedly.";
@@ -342,18 +371,33 @@ void CastWebContentsImpl::DidStartNavigation(
   TracePageLoadBegin(loading_url);
   UpdatePageState();
   DCHECK_EQ(page_state_, PageState::LOADING);
-  NotifyObservers();
+  NotifyPageState();
 }
 
 void CastWebContentsImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const net::Error error_code = navigation_handle->GetNetErrorCode();
+
   // If the navigation was not committed, it means either the page was a
   // download or error 204/205, or the navigation never left the previous
   // URL. Ignore these navigations.
   if (!navigation_handle->HasCommitted()) {
     LOG(WARNING) << "Navigation did not commit: url="
                  << navigation_handle->GetURL();
+
+    // Detect if there was a blocked navigation. Some pages may disallow
+    // navigation, such as with a web-based window manager. In this case, the
+    // page can handle the navigation by opening a new tab or simply ignoring
+    // the request.
+    if (navigation_handle->HasUserGesture() &&
+        (error_code == net::ERR_ABORTED)) {
+      for (Observer& observer : observer_list_) {
+        observer.DidFinishBlockedNavigation(navigation_handle->GetURL());
+      }
+    }
+
     return;
   }
 
@@ -363,8 +407,6 @@ void CastWebContentsImpl::DidFinishNavigation(
   // an error with the content itself.
   if (!navigation_handle->IsErrorPage())
     return;
-
-  net::Error error_code = navigation_handle->GetNetErrorCode();
 
   // If we abort errors in an iframe, it can create a really confusing
   // and fragile user experience.  Rather than create a list of errors
@@ -463,7 +505,7 @@ void CastWebContentsImpl::OnPageLoaded() {
   main_frame_loaded_ = true;
   UpdatePageState();
   DCHECK(page_state_ == PageState::LOADED);
-  NotifyObservers();
+  NotifyPageState();
 }
 
 void CastWebContentsImpl::UpdatePageState() {
@@ -487,23 +529,35 @@ void CastWebContentsImpl::UpdatePageState() {
   }
 }
 
-void CastWebContentsImpl::NotifyObservers() {
+void CastWebContentsImpl::NotifyPageState() {
   if (!delegate_)
     return;
   // Don't notify if the page state didn't change.
   if (last_state_ == page_state_)
     return;
-  // Don't recursively notify the delegate.
+  // Don't recursively notify the observers.
   if (notifying_)
     return;
   notifying_ = true;
   if (stopped_ && !stop_notified_) {
     stop_notified_ = true;
-    delegate_->OnPageStopped(this, last_error_);
+    for (auto& observer : observer_list_) {
+      observer.OnPageStopped(this, last_error_);
+    }
   } else {
-    delegate_->OnPageStateChanged(this);
+    for (auto& observer : observer_list_) {
+      observer.OnPageStateChanged(this);
+    }
   }
   notifying_ = false;
+}
+
+void CastWebContentsImpl::MainFrameWasResized(bool width_changed) {
+  if (!web_contents_)
+    return;
+  for (auto& observer : observer_list_) {
+    observer.MainFrameResized(web_contents_->GetContainerBounds());
+  }
 }
 
 void CastWebContentsImpl::ResourceLoadComplete(
@@ -531,8 +585,27 @@ void CastWebContentsImpl::InnerWebContentsCreated(
       inner_web_contents,
       InitParams{nullptr, enabled_for_dev_, false /* use_cma_renderer */,
                  false /* is_root_window */, false /* handle_inner_contents */,
-                 false /* use_media_blocker */}));
+                 false /* use_media_blocker */, view_background_color_}));
   delegate_->InnerContentsCreated(result.first->get(), this);
+}
+
+void CastWebContentsImpl::TitleWasSet(content::NavigationEntry* entry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!entry)
+    return;
+  for (Observer& observer : observer_list_) {
+    observer.UpdateTitle(entry->GetTitle());
+  }
+}
+
+void CastWebContentsImpl::DidFirstVisuallyNonEmptyPaint() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
+
+  for (Observer& observer : observer_list_) {
+    observer.DidFirstVisuallyNonEmptyPaint();
+  }
 }
 
 void CastWebContentsImpl::WebContentsDestroyed() {
@@ -545,6 +618,53 @@ void CastWebContentsImpl::WebContentsDestroyed() {
   Stop(net::OK);
   RemoveCastWebContents(this);
   DCHECK_EQ(PageState::DESTROYED, page_state_);
+}
+
+void CastWebContentsImpl::DidUpdateFaviconURL(
+    const std::vector<content::FaviconURL>& candidates) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (candidates.empty())
+    return;
+  GURL icon_url;
+  bool found_touch_icon = false;
+  // icon search order:
+  //  1) apple-touch-icon-precomposed
+  //  2) apple-touch-icon
+  //  3) icon
+  for (auto& favicon : candidates) {
+    if (favicon.icon_type ==
+        content::FaviconURL::IconType::kTouchPrecomposedIcon) {
+      icon_url = favicon.icon_url;
+      break;
+    } else if ((favicon.icon_type ==
+                content::FaviconURL::IconType::kTouchIcon) &&
+               !found_touch_icon) {
+      found_touch_icon = true;
+      icon_url = favicon.icon_url;
+    } else if (!found_touch_icon) {
+      icon_url = favicon.icon_url;
+    }
+  }
+
+  for (Observer& observer : observer_list_) {
+    observer.UpdateFaviconURL(icon_url);
+  }
+}
+
+void CastWebContentsImpl::MediaStartedPlaying(
+    const MediaPlayerInfo& video_type,
+    const content::MediaPlayerId& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
+}
+
+void CastWebContentsImpl::MediaStoppedPlaying(
+    const MediaPlayerInfo& video_type,
+    const content::MediaPlayerId& id,
+    content::WebContentsObserver::MediaStoppedReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
 
 void CastWebContentsImpl::TracePageLoadBegin(const GURL& url) {

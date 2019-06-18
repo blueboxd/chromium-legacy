@@ -11,14 +11,20 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewParent;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -69,12 +75,43 @@ class TabListRecyclerView extends RecyclerView {
         void finishedHiding();
     }
 
+    private class TabListOnScrollListener extends RecyclerView.OnScrollListener {
+        // TODO(mattsimmons): Remove state from this class. This is here to prevent scroll signals
+        //  from showing the toolbar shadow after the show/hide of the GTS has already triggered the
+        //  shadow being hidden. Due to this view's visibility being updated asynchronously after
+        //  animating off-screen, checking View.getVisibility() can't be used as the guard condition
+        //  here. Removing/Adding the listener from the view also happens asynchronously and has
+        //  similar undesirable effects.
+        private boolean mIsActive;
+
+        public void pause() {
+            mIsActive = false;
+        }
+
+        public void resume() {
+            mIsActive = true;
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            if (!mIsActive) return;
+
+            final int yOffset = recyclerView.computeVerticalScrollOffset();
+            setShadowVisibility(yOffset > 0);
+        }
+    }
+
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
     private VisibilityListener mListener;
+    private DynamicResourceLoader mLoader;
     private ViewResourceAdapter mDynamicView;
+    private boolean mIsDynamicViewRegistered;
     private long mLastDirtyTime;
     private RecyclerView.ItemAnimator mOriginalAnimator;
+    private ImageView mShadowImageView;
+    private int mShadowTopMargin;
+    private TabListOnScrollListener mScrollListener;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -93,6 +130,8 @@ class TabListRecyclerView extends RecyclerView {
 
     void prepareOverview() {
         endAllAnimations();
+
+        registerDynamicView();
 
         // Stop all the animations to make all the items show up and scroll to position immediately.
         mOriginalAnimator = getItemAnimator();
@@ -124,12 +163,45 @@ class TabListRecyclerView extends RecyclerView {
                 mListener.finishedShowing();
                 // Restore the original value.
                 setItemAnimator(mOriginalAnimator);
-
-                if (mDynamicView != null)
+                mScrollListener.resume();
+                setShadowVisibility(computeVerticalScrollOffset() > 0);
+                if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();
+                    unregisterDynamicView();
+                }
             }
         });
         if (!animate) mFadeInAnimator.end();
+    }
+
+    void setShadowVisibility(boolean shouldShowShadow) {
+        if (!(getParent() instanceof FrameLayout)) return;
+
+        if (mShadowImageView == null) {
+            Context context = getContext();
+            mShadowImageView = new ImageView(context);
+            mShadowImageView.setImageDrawable(
+                    AppCompatResources.getDrawable(context, R.drawable.modern_toolbar_shadow));
+            Resources res = context.getResources();
+            FrameLayout.LayoutParams params =
+                    new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                            res.getDimensionPixelSize(R.dimen.toolbar_shadow_height), Gravity.TOP);
+            params.topMargin = mShadowTopMargin;
+            mShadowImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+            mShadowImageView.setLayoutParams(params);
+            FrameLayout parent = (FrameLayout) getParent();
+            parent.addView(mShadowImageView);
+        }
+
+        if (shouldShowShadow && mShadowImageView.getVisibility() != VISIBLE) {
+            mShadowImageView.setVisibility(VISIBLE);
+        } else if (!shouldShowShadow && mShadowImageView.getVisibility() != GONE) {
+            mShadowImageView.setVisibility(GONE);
+        }
+    }
+
+    void setShadowTopMargin(int shadowTopMargin) {
+        mShadowTopMargin = shadowTopMargin;
     }
 
     /**
@@ -167,7 +239,24 @@ class TabListRecyclerView extends RecyclerView {
             }
         };
         mDynamicView.setDownsamplingScale(getDownsamplingScale());
-        loader.registerResource(getResourceId(), mDynamicView);
+        assert mLoader == null : "createDynamicView should only be called once";
+        mLoader = loader;
+    }
+
+    private void registerDynamicView() {
+        if (mIsDynamicViewRegistered) return;
+        if (mLoader == null) return;
+
+        mLoader.registerResource(getResourceId(), mDynamicView);
+        mIsDynamicViewRegistered = true;
+    }
+
+    private void unregisterDynamicView() {
+        if (!mIsDynamicViewRegistered) return;
+        if (mLoader == null) return;
+
+        mLoader.unregisterResource(getResourceId());
+        mIsDynamicViewRegistered = false;
     }
 
     @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
@@ -188,12 +277,38 @@ class TabListRecyclerView extends RecyclerView {
         return retVal;
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        mScrollListener = new TabListOnScrollListener();
+        addOnScrollListener(mScrollListener);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        if (mShadowImageView != null) {
+            removeViewInLayout(mShadowImageView);
+            mShadowImageView = null;
+        }
+
+        if (mScrollListener != null) {
+            removeOnScrollListener(mScrollListener);
+            mScrollListener = null;
+        }
+    }
+
     /**
      * Start hiding the tab list.
      * @param animate Whether the visibility change should be animated.
      */
     void startHiding(boolean animate) {
         endAllAnimations();
+
+        registerDynamicView();
+
         mListener.startedHiding(animate);
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
         mFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
@@ -206,6 +321,8 @@ class TabListRecyclerView extends RecyclerView {
                 mListener.finishedHiding();
             }
         });
+        mScrollListener.pause();
+        setShadowVisibility(false);
         mFadeOutAnimator.start();
         if (!animate) mFadeOutAnimator.end();
     }
@@ -213,6 +330,7 @@ class TabListRecyclerView extends RecyclerView {
     void postHiding() {
         if (mDynamicView != null) {
             mDynamicView.dropCachedBitmap();
+            unregisterDynamicView();
         }
     }
 

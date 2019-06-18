@@ -34,7 +34,7 @@ class ScreenRotationTest
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
     auto* pref = browser()->profile()->GetPrefs();
     pref->SetBoolean(
         ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);

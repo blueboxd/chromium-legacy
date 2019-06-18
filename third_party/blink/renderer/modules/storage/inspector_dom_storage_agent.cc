@@ -126,8 +126,8 @@ Response InspectorDOMStorageAgent::getDOMStorageItems(
   if (!response.isSuccess())
     return response;
 
-  std::unique_ptr<protocol::Array<protocol::Array<String>>> storage_items =
-      protocol::Array<protocol::Array<String>>::create();
+  auto storage_items =
+      std::make_unique<protocol::Array<protocol::Array<String>>>();
 
   DummyExceptionStateForTesting exception_state;
   for (unsigned i = 0; i < storage_area->length(exception_state); ++i) {
@@ -139,11 +139,10 @@ Response InspectorDOMStorageAgent::getDOMStorageItems(
     response = ToResponse(exception_state);
     if (!response.isSuccess())
       return response;
-    std::unique_ptr<protocol::Array<String>> entry =
-        protocol::Array<String>::create();
-    entry->addItem(name);
-    entry->addItem(value);
-    storage_items->addItem(std::move(entry));
+    auto entry = std::make_unique<protocol::Array<String>>();
+    entry->emplace_back(name);
+    entry->emplace_back(value);
+    storage_items->emplace_back(std::move(entry));
   }
   *items = std::move(storage_items);
   return Response::OK();

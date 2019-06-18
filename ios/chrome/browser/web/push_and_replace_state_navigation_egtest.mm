@@ -15,7 +15,6 @@
 #include "ios/net/url_test_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -135,7 +134,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       performAction:grey_tap()];
   // TODO(crbug.com/776606): WKWebView doesn't fire load event for back/forward
   // navigation and WKBasedNavigationManager inherits this behavior.
-  bool expectOnLoad = !web::GetWebClient()->IsSlimNavigationManagerEnabled();
+  bool expectOnLoad = ![ChromeEarlGrey isSlimNavigationManagerEnabled];
   [self assertStatusText:@"replaceStateHashWithObject"
          withOmniboxText:replaceStateHashWithObjectOmniboxText
               pageLoaded:expectOnLoad];
@@ -241,7 +240,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   // TODO(crbug.com/776606): WKWebView doesn't fire load event for back/forward
   // navigation and WKBasedNavigationManager inherits this behavior.
-  bool expectOnLoad = !web::GetWebClient()->IsSlimNavigationManagerEnabled();
+  bool expectOnLoad = ![ChromeEarlGrey isSlimNavigationManagerEnabled];
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:expectOnLoad];

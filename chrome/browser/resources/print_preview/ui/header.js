@@ -182,6 +182,10 @@ Polymer({
    * @private
    */
   getSummary_: function(labelInfo) {
+    if (labelInfo.numSheets === 0) {
+      return '';
+    }
+
     let html = loadTimeData.getStringF(
         'printPreviewSummaryFormatShort',
         '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',

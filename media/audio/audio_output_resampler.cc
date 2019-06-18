@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -94,43 +93,20 @@ namespace {
 
 // Record UMA statistics for hardware output configuration.
 static void RecordStats(const AudioParameters& output_params) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "Media.HardwareAudioChannelLayout", output_params.channel_layout(),
-      CHANNEL_LAYOUT_MAX + 1);
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.HardwareAudioChannelCount",
-                             output_params.channels(),
-                             static_cast<int>(limits::kMaxChannels));
+      static_cast<ChannelLayout>(CHANNEL_LAYOUT_MAX + 1));
+  base::UmaHistogramExactLinear("Media.HardwareAudioChannelCount",
+                                output_params.channels(),
+                                static_cast<int>(limits::kMaxChannels));
 
   AudioSampleRate asr;
-  if (ToAudioSampleRate(output_params.sample_rate(), &asr)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.HardwareAudioSamplesPerSecond", asr, kAudioSampleRateMax + 1);
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("Media.HardwareAudioSamplesPerSecondUnexpected",
-                            output_params.sample_rate());
-  }
-}
+  if (!ToAudioSampleRate(output_params.sample_rate(), &asr))
+    return;
 
-// Record UMA statistics for hardware output configuration after fallback.
-static void RecordFallbackStats(const AudioParameters& output_params) {
-  UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", true);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.FallbackHardwareAudioChannelLayout",
-      output_params.channel_layout(), CHANNEL_LAYOUT_MAX + 1);
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.FallbackHardwareAudioChannelCount",
-                             output_params.channels(),
-                             static_cast<int>(limits::kMaxChannels));
-
-  AudioSampleRate asr;
-  if (ToAudioSampleRate(output_params.sample_rate(), &asr)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.FallbackHardwareAudioSamplesPerSecond",
-        asr, kAudioSampleRateMax + 1);
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Media.FallbackHardwareAudioSamplesPerSecondUnexpected",
-        output_params.sample_rate());
-  }
+  base::UmaHistogramEnumeration(
+      "Media.HardwareAudioSamplesPerSecond", asr,
+      static_cast<AudioSampleRate>(kAudioSampleRateMax + 1));
 }
 
 // Record UMA statistics for input/output rebuffering.
@@ -209,18 +185,18 @@ AudioParameters GetFallbackOutputParams(
 // This enum must match the numbering for
 // AudioOutputResamplerOpenLowLatencyStreamResult in enums.xml. Do not reorder
 // or remove items, only add new items before OPEN_STREAM_MAX.
-enum OpenStreamResult {
-  OPEN_STREAM_FAIL = 0,
-  OPEN_STREAM_FALLBACK_TO_FAKE = 1,
-  OPEN_STREAM_FALLBACK_TO_LINEAR = 2,
-  OPEN_STREAM_SUCCESS = 3,
-  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_FAIL = 4,
-  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_SUCCESS = 5,
-  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_FAIL = 6,
-  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_SUCCESS = 7,
-  OPEN_STREAM_SUBSEQUENT_FAIL = 8,
-  OPEN_STREAM_SUBSEQUENT_SUCCESS = 9,
-  OPEN_STREAM_MAX = 9,
+enum class OpenStreamResult {
+  kFail = 0,
+  kFallbackToFake = 1,
+  kFallbackToLinear = 2,
+  kSuccess = 3,
+  kFallbackToFakeFail = 4,
+  kFallbackToFakeSuccess = 5,
+  kFallbackToLinearFail = 6,
+  kFallbackToLinearSuccess = 7,
+  kSubsequentFail = 8,
+  kSubsequentSuccess = 9,
+  kMaxValue = kSubsequentSuccess,
 };
 
 OpenStreamResult GetSubsequentStreamCreationResultBucket(
@@ -228,17 +204,17 @@ OpenStreamResult GetSubsequentStreamCreationResultBucket(
     bool success) {
   switch (current_params.format()) {
     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
-      return success ? OPEN_STREAM_SUBSEQUENT_SUCCESS
-                     : OPEN_STREAM_SUBSEQUENT_FAIL;
+      return success ? OpenStreamResult::kSubsequentSuccess
+                     : OpenStreamResult::kSubsequentFail;
     case AudioParameters::AUDIO_PCM_LINEAR:
-      return success ? OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_SUCCESS
-                     : OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_FAIL;
+      return success ? OpenStreamResult::kFallbackToLinearSuccess
+                     : OpenStreamResult::kFallbackToLinearFail;
     case AudioParameters::AUDIO_FAKE:
-      return success ? OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_SUCCESS
-                     : OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_FAIL;
+      return success ? OpenStreamResult::kFallbackToFakeSuccess
+                     : OpenStreamResult::kFallbackToFakeFail;
     default:
       NOTREACHED();
-      return OPEN_STREAM_FAIL;
+      return OpenStreamResult::kFail;
   }
 }
 
@@ -327,20 +303,24 @@ bool AudioOutputResampler::OpenStream() {
     dispatcher_ = MakeDispatcher(device_id_, output_params_);
   }
 
+  constexpr char kFallbackHistogramName[] =
+      "Media.FallbackToHighLatencyAudioPath";
+  constexpr char kOpenLowLatencyHistogramName[] =
+      "Media.AudioOutputResampler.OpenLowLatencyStream";
+
   if (dispatcher_->OpenStream()) {
     // Only record the UMA statistic if we didn't fallback during construction
     // and only for the first stream we open.
     if (original_output_params_.format() ==
         AudioParameters::AUDIO_PCM_LOW_LATENCY) {
       if (first_stream)
-        UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", false);
+        base::UmaHistogramBoolean(kFallbackHistogramName, false);
 
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.AudioOutputResampler.OpenLowLatencyStream",
+      base::UmaHistogramEnumeration(
+          kOpenLowLatencyHistogramName,
           first_stream
-              ? OPEN_STREAM_SUCCESS
-              : GetSubsequentStreamCreationResultBucket(output_params_, true),
-          OPEN_STREAM_MAX + 1);
+              ? OpenStreamResult::kSuccess
+              : GetSubsequentStreamCreationResultBucket(output_params_, true));
     }
     return true;
   }
@@ -354,15 +334,13 @@ bool AudioOutputResampler::OpenStream() {
   // If we have successfully opened a stream previously, there's nothing more to
   // be done.
   if (!first_stream) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.AudioOutputResampler.OpenLowLatencyStream",
-        GetSubsequentStreamCreationResultBucket(output_params_, false),
-        OPEN_STREAM_MAX + 1);
+    base::UmaHistogramEnumeration(
+        kOpenLowLatencyHistogramName,
+        GetSubsequentStreamCreationResultBucket(output_params_, false));
     return false;
   }
-  // Record UMA statistics about the hardware which triggered the failure so
-  // we can debug and triage later.
-  RecordFallbackStats(original_output_params_);
+
+  base::UmaHistogramBoolean(kFallbackHistogramName, true);
 
   // Only Windows has a high latency output driver that is not the same as the
   // low latency path.
@@ -374,9 +352,8 @@ bool AudioOutputResampler::OpenStream() {
   const std::string fallback_device_id = "";
   dispatcher_ = MakeDispatcher(fallback_device_id, output_params_);
   if (dispatcher_->OpenStream()) {
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
-                              OPEN_STREAM_FALLBACK_TO_LINEAR,
-                              OPEN_STREAM_MAX + 1);
+    base::UmaHistogramEnumeration(kOpenLowLatencyHistogramName,
+                                  OpenStreamResult::kFallbackToLinear);
     return true;
   }
 #endif
@@ -389,16 +366,16 @@ bool AudioOutputResampler::OpenStream() {
   output_params_.set_format(AudioParameters::AUDIO_FAKE);
   dispatcher_ = MakeDispatcher(device_id_, output_params_);
   if (dispatcher_->OpenStream()) {
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
-                              OPEN_STREAM_FALLBACK_TO_FAKE,
-                              OPEN_STREAM_MAX + 1);
+    base::UmaHistogramEnumeration(kOpenLowLatencyHistogramName,
+                                  OpenStreamResult::kFallbackToFake);
     return true;
   }
 
   // Resetting the malfunctioning dispatcher.
   Reinitialize();
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
-                            OPEN_STREAM_FAIL, OPEN_STREAM_MAX + 1);
+
+  base::UmaHistogramEnumeration(kOpenLowLatencyHistogramName,
+                                OpenStreamResult::kFail);
   return false;
 }
 

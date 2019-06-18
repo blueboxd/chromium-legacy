@@ -160,6 +160,10 @@ class GaiaAuthFetcher {
   // Starts a request to log out the accounts in the GAIA cookie.
   void StartLogOut();
 
+  // Starts a request to log out the accounts in the GAIA cookie. Uses Logout
+  // endpoint with continue URL.
+  void StartLogOutWithBlankContinueURL();
+
   // Starts a request to get the list of URLs to check for connection info.
   // Returns token/URL pairs to check, and the resulting status can be given to
   // /MergeSession requests.
@@ -249,6 +253,9 @@ class GaiaAuthFetcher {
   static const char kOAuthHeaderFormat[];
   static const char kOAuth2BearerHeaderFormat[];
   static const char kOAuthMultiBearerHeaderFormat[];
+
+  // Starts logout flow with an explicit GURL.
+  void StartLogOutInternal(const GURL& logout_gurl);
 
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
@@ -348,6 +355,7 @@ class GaiaAuthFetcher {
   const GURL oauth_multilogin_gurl_;
   const GURL list_accounts_gurl_;
   const GURL logout_gurl_;
+  const GURL logout_with_continue_gurl_;
   const GURL get_check_connection_info_url_;
 
   // While a fetch is going on:

@@ -100,7 +100,6 @@ void ManifestParser::Parse() {
   if (manifest_->has_background_color)
     manifest_->background_color = *background_color;
 
-  manifest_->splash_screen_url = ParseSplashScreenURL(root_object.get());
   manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
@@ -732,11 +731,6 @@ base::Optional<RGBA32> ManifestParser::ParseThemeColor(
 base::Optional<RGBA32> ManifestParser::ParseBackgroundColor(
     const JSONObject* object) {
   return ParseColor(object, "background_color");
-}
-
-KURL ManifestParser::ParseSplashScreenURL(const JSONObject* object) {
-  return ParseURL(object, "splash_screen_url", manifest_url_,
-                  ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
 String ManifestParser::ParseGCMSenderID(const JSONObject* object) {

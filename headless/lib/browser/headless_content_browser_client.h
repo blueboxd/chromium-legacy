@@ -68,8 +68,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
 
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
 
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();

@@ -51,6 +51,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
   std::unique_ptr<ClientNativePixmap> ImportFromHandle(
       gfx::NativePixmapHandle handle,
       const gfx::Size& size,
+      gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
     DCHECK(!handle.planes.empty());
     switch (usage) {

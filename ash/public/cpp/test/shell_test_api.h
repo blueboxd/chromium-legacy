@@ -58,8 +58,8 @@ class ASH_EXPORT ShellTestApi {
   // password dialog).
   bool IsSystemModalWindowOpen();
 
-  // Enables or disables the tablet mode window manager.
-  void EnableTabletModeWindowManager(bool enable);
+  // Enables or disables the tablet mode.
+  void SetTabletModeEnabledForTest(bool enable);
 
   // Enables the keyboard and associates it with the primary root window
   // controller. In tablet mode, enables the virtual keyboard.

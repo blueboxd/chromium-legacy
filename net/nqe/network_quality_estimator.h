@@ -264,6 +264,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   virtual void RecordSpdyPingLatency(const HostPortPair& host_port_pair,
                                      base::TimeDelta rtt);
 
+  // Sets the current count of media connections that require low latency.
+  void OnPeerToPeerConnectionsCountChange(uint32_t count);
+
+  // Returns the current count of peer to peer connections that may require low
+  // latency.
+  uint32_t GetPeerToPeerConnectionsCountChange() const;
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
 
@@ -530,6 +537,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Clamps the throughput estimate based on the current effective connection
   // type.
   void ClampKbpsBasedOnEct();
+
+  uint32_t webrtc_active_connections_count_ = 0u;
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.

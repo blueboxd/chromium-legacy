@@ -146,11 +146,12 @@ class AssistantPaymentRequestBinder
     @Override
     public void bind(AssistantPaymentRequestModel model, ViewHolder view, PropertyKey propertyKey) {
         boolean handled = updateEditors(model, propertyKey, view);
-        handled = updateSectionPaddings(model, propertyKey, view) || handled;
         handled = updateRootVisibility(model, propertyKey, view) || handled;
         handled = updateSectionVisibility(model, propertyKey, view) || handled;
         handled = updateSectionContents(model, propertyKey, view) || handled;
         handled = updateSectionSelectedItem(model, propertyKey, view) || handled;
+        /* Update section paddings *after* updating section visibility. */
+        handled = updateSectionPaddings(model, propertyKey, view) || handled;
 
         if (propertyKey == AssistantPaymentRequestModel.DELEGATE) {
             AssistantPaymentRequestDelegate delegate =

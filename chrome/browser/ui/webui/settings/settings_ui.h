@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "ui/webui/mojo_web_ui_controller.h"
 #else
 #include "content/public/browser/web_ui_controller.h"

@@ -46,6 +46,7 @@ class AppListTestHelper;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
 class TestNewWindowDelegate;
+class TestNotifierSettingsController;
 class TestPrefServiceProvider;
 class TestShellDelegate;
 class TestSystemTrayClient;
@@ -90,6 +91,9 @@ class AshTestHelper {
       std::unique_ptr<TestSessionControllerClient> session_controller_client) {
     session_controller_client_ = std::move(session_controller_client);
   }
+  TestNotifierSettingsController* notifier_settings_controller() {
+    return notifier_settings_controller_.get();
+  }
   TestSystemTrayClient* system_tray_client() {
     return system_tray_client_.get();
   }
@@ -123,6 +127,7 @@ class AshTestHelper {
   bool power_policy_controller_initialized_ = false;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+  std::unique_ptr<TestNotifierSettingsController> notifier_settings_controller_;
   std::unique_ptr<TestSystemTrayClient> system_tray_client_;
   std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
   std::unique_ptr<TestAssistantService> assistant_service_;

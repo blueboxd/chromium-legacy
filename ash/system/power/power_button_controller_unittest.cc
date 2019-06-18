@@ -131,9 +131,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   // Press the power button to show the menu.
   void OpenPowerButtonMenu() {
     PressPowerButton();
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled()) {
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
       EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
       ASSERT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
     }
@@ -1133,9 +1131,7 @@ class PowerButtonControllerWithPositionTest
 
   // Returns true if it is in tablet mode.
   bool IsTabletMode() const {
-    return Shell::Get()
-        ->tablet_mode_controller()
-        ->IsTabletModeWindowManagerEnabled();
+    return Shell::Get()->tablet_mode_controller()->InTabletMode();
   }
 
   // Returns true if the menu is at the center of the display.

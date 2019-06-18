@@ -595,8 +595,7 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     const bool becoming_snapped =
         requested_state == ash::WindowStateType::kLeftSnapped ||
         requested_state == ash::WindowStateType::kRightSnapped;
-    const bool is_tablet_mode =
-        WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled();
+    const bool is_tablet_mode = WMHelper::GetInstance()->InTabletMode();
     gfx::Rect client_bounds =
         becoming_snapped && is_tablet_mode
             ? window_bounds
@@ -767,7 +766,7 @@ void ClientControlledShellSurface::OnDisplayMetricsChanged(
     const display::Display& new_display,
     uint32_t changed_metrics) {
   if (!widget_ || !widget_->IsActive() ||
-      !WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled()) {
+      !WMHelper::GetInstance()->InTabletMode()) {
     return;
   }
 

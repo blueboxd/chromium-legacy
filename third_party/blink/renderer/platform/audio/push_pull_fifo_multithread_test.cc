@@ -67,7 +67,7 @@ class FIFOClient {
           *client_thread_->GetTaskRunner(), FROM_HERE,
           CrossThreadBindOnce(&FIFOClient::RunTaskOnOwnThread,
                               CrossThreadUnretained(this)),
-          TimeDelta::FromMillisecondsD(interval_with_jitter));
+          base::TimeDelta::FromMillisecondsD(interval_with_jitter));
     } else {
       Stop(counter_);
       done_event_->Signal();

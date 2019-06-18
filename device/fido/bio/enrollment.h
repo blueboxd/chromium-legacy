@@ -112,6 +112,8 @@ struct BioEnrollmentRequest {
   static BioEnrollmentRequest ForRename(const pin::TokenResponse& token,
                                         std::vector<uint8_t> id,
                                         std::string name);
+  static BioEnrollmentRequest ForDelete(const pin::TokenResponse& token,
+                                        std::vector<uint8_t> id);
 
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentSubCommand> subcommand;

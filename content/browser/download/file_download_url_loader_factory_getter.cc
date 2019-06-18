@@ -35,13 +35,12 @@ FileDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   DCHECK(download::GetIOTaskRunner()->BelongsToCurrentThread());
 
   network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
-  mojo::MakeStrongBinding(
-      std::make_unique<FileURLLoaderFactory>(
-          profile_path_, shared_cors_origin_access_list_,
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      MakeRequest(&url_loader_factory_ptr_info));
+  mojo::MakeStrongBinding(std::make_unique<FileURLLoaderFactory>(
+                              profile_path_, shared_cors_origin_access_list_,
+                              // USER_VISIBLE because download should progress
+                              // even when there is high priority work to do.
+                              base::TaskPriority::USER_VISIBLE),
+                          MakeRequest(&url_loader_factory_ptr_info));
 
   return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
       std::move(url_loader_factory_ptr_info));

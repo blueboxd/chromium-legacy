@@ -353,6 +353,7 @@ constexpr bool kWin10Only = true;
 FallbackFontTestCase kGetFontFallbackTests[] = {
     {USCRIPT_ARABIC, L"\u062A\u062D", {"Segoe UI", "Tahoma"}},
     {USCRIPT_ARMENIAN, L"\u0540\u0541", {"Segoe UI", "Tahoma"}},
+    {USCRIPT_BENGALI, L"\u09B8\u09AE", {"Nirmala UI", "Vrinda"}},
     {USCRIPT_BRAILLE, L"\u2870\u2871", {"Segoe UI Symbol"}},
     {USCRIPT_BUGINESE, L"\u1A00\u1A01", {"Leelawadee UI"}, kWin10Only},
     {USCRIPT_CANADIAN_ABORIGINAL, L"\u1410\u1411", {"Gadugi", "Euphemia"}},
@@ -379,12 +380,20 @@ FallbackFontTestCase kGetFontFallbackTests[] = {
      {"Segoe UI Historic"},
      kWin10Only},
 
+    {USCRIPT_CYRILLIC, L"\u0410\u0411\u0412", {"Times New Roman"}},
+
     {USCRIPT_DESERET, L"\U00010400\U00010401", {"Segoe UI Symbol"}, kWin10Only},
 
     {USCRIPT_DEVANAGARI, L"\u0905\u0906", {"Mangal", "Nirmala UI"}},
     {USCRIPT_ETHIOPIC, L"\u1201\u1202", {"Ebrima", "Nyala"}},
+    {USCRIPT_GEORGIAN, L"\u10A0\u10A1", {"Sylfaen", "Segoe UI"}, kWin10Only},
+    {USCRIPT_GREEK, L"\u0391\u0392", {"Times New Roman"}},
     {USCRIPT_GURMUKHI, L"\u0A21\u0A22", {"Raavi", "Nirmala UI"}},
+    {USCRIPT_HANGUL, L"\u1100\u1101", {"Malgun Gothic", "Gulim"}, kWin10Only},
     {USCRIPT_HEBREW, L"\u05D1\u05D2", {"Segoe UI", "Tahoma"}},
+    {USCRIPT_KHMER,
+     L"\u1780\u1781",
+     {"Leelawadee UI", "Khmer UI", "Khmer OS", "MoolBoran", "DaunPenh"}},
 
     {USCRIPT_IMPERIAL_ARAMAIC,
      L"\U00010841\U00010842",
@@ -474,6 +483,10 @@ FallbackFontTestCase kGetFontFallbackTests[] = {
     {USCRIPT_TAMIL, L"\u0BB1\u0BB2", {"Latha", "Nirmala UI"}},
     {USCRIPT_TELUGU, L"\u0C21\u0C22", {"Gautami", "Nirmala UI"}},
     {USCRIPT_THAANA, L"\u0781\u0782", {"Mv Boli", "MV Boli"}},
+    {USCRIPT_THAI,
+     L"\u0e01\u0e02",
+     {"Tahoma", "Leelawadee UI", "Leelawadee"},
+     kWin10Only},
     {USCRIPT_TIBETAN, L"\u0F01\u0F02", {"Microsoft Himalaya"}},
     {USCRIPT_TIFINAGH, L"\u2D31\u2D32", {"Ebrima"}},
     {USCRIPT_VAI, L"\uA501\uA502", {"Ebrima"}},

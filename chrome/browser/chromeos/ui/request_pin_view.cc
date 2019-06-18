@@ -197,9 +197,9 @@ void RequestPinView::Init() {
   // Infomation label.
   int label_text_id = IDS_REQUEST_PIN_DIALOG_HEADER;
   base::string16 label_text = l10n_util::GetStringUTF16(label_text_id);
-  header_label_ = new views::Label(label_text);
-  header_label_->SetEnabled(true);
-  layout->AddView(header_label_);
+  auto header_label = std::make_unique<views::Label>(label_text);
+  header_label->SetEnabled(true);
+  header_label_ = layout->AddView(std::move(header_label));
 
   const int related_vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
@@ -212,12 +212,13 @@ void RequestPinView::Init() {
 
   // Textfield to enter the PIN/PUK.
   layout->StartRow(0, column_view_set_id);
-  textfield_ = new PassphraseTextfield();
-  textfield_->set_controller(this);
-  textfield_->SetEnabled(true);
-  textfield_->SetAssociatedLabel(header_label_);
-  layout->AddView(textfield_, 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::FILL, kDefaultTextWidth, 0);
+  auto textfield = std::make_unique<PassphraseTextfield>();
+  textfield->set_controller(this);
+  textfield->SetEnabled(true);
+  textfield->SetAssociatedLabel(header_label_);
+  textfield_ =
+      layout->AddView(std::move(textfield), 1, 1, views::GridLayout::LEADING,
+                      views::GridLayout::FILL, kDefaultTextWidth, 0);
 
   layout->AddPaddingRow(0, related_vertical_spacing);
 
@@ -228,10 +229,10 @@ void RequestPinView::Init() {
 
   // Error label.
   layout->StartRow(0, column_view_set_id);
-  error_label_ = new views::Label();
-  error_label_->SetVisible(false);
-  error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(error_label_);
+  auto error_label = std::make_unique<views::Label>();
+  error_label->SetVisible(false);
+  error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  error_label_ = layout->AddView(std::move(error_label));
 }
 
 void RequestPinView::SetAcceptInput(bool accept_input) {

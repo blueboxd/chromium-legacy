@@ -215,9 +215,6 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   bool FlingInProgress() { return queue()->FlingInProgressForTest(); }
-  bool FlingCancellationIsDeferred() {
-    return queue()->FlingCancellationIsDeferred();
-  }
 
   GestureEventQueue* queue() const {
     return queue_.get();
@@ -476,7 +473,7 @@ TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
 
 // Test that the fling cancelling tap down event and its following tap get
 // suppressed when tap suppression is enabled.
-TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancellsFling) {
+TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancelsFling) {
   SetUpForTapSuppression(400);
   // The velocity of the event must be large enough to make sure that the fling
   // is still active when the tap down happens.
@@ -492,7 +489,6 @@ TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancellsFling) {
   // fling cancel event is not sent to the renderer.
   SimulateGestureEvent(WebInputEvent::kGestureFlingCancel,
                        blink::WebGestureDevice::kTouchscreen);
-  EXPECT_TRUE(FlingCancellationIsDeferred());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(0U, GestureEventQueueSize());
   RunUntilIdle();

@@ -8,7 +8,7 @@
 
 namespace content {
 
-CursorInfo::CursorInfo(blink::WebCursorInfo::Type cursor) : type(cursor) {}
+CursorInfo::CursorInfo(ui::CursorType cursor) : type(cursor) {}
 
 CursorInfo::CursorInfo(const blink::WebCursorInfo& info)
     : type(info.type),

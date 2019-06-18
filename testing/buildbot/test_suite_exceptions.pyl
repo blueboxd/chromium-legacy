@@ -90,6 +90,9 @@
       'linux-chromeos-google-rel': {
         # TODO(https://crbug.com/932269): Promote out of experiment when the
         # tests are green.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
+        ],
         'experiment_percentage': 100,
       },
       'linux-chromeos-oobe-code-coverage': {
@@ -1374,6 +1377,12 @@
           '--jobs=1',
         ],
       },
+      'linux-trusty-rel': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
+      },
       # chromium.mac
       # Disable parallelism on all Mac bots.
       'Mac10.10 Tests': {
@@ -1505,6 +1514,9 @@
       'linux-chromeos-google-rel': {
         # TODO(https://crbug.com/932269): Promote out of experiment when the
         # tests are green.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
+        ],
         'experiment_percentage': 100,
       },
       'linux-chromeos-oobe-code-coverage': {

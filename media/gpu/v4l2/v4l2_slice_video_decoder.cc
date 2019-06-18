@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/gpu/accelerated_video_decoder.h"
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"

@@ -89,14 +89,14 @@ class SearchResultRankerTest : public testing::Test {
   }
 
   std::unique_ptr<SearchResultRanker> MakeRanker(
-      bool use_group_ranker,
+      bool query_based_mixed_types_enabled,
       const std::map<std::string, std::string>& params = {}) {
-    if (use_group_ranker) {
+    if (query_based_mixed_types_enabled) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
           app_list_features::kEnableQueryBasedMixedTypesRanker, params);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnableQueryBasedMixedTypesRanker});
+      scoped_feature_list_.InitAndDisableFeature(
+          app_list_features::kEnableQueryBasedMixedTypesRanker);
     }
 
     auto ranker = std::make_unique<SearchResultRanker>(profile_.get());
@@ -132,7 +132,7 @@ class SearchResultRankerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SearchResultRankerTest);
 };
 
-TEST_F(SearchResultRankerTest, GroupRankerIsDisabledWithFlag) {
+TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   auto ranker = MakeRanker(false);
   for (int i = 0; i < 20; ++i)
     ranker->Train("unused", RankingItemType::kFile);
@@ -150,8 +150,9 @@ TEST_F(SearchResultRankerTest, GroupRankerIsDisabledWithFlag) {
                                               HasId("C"), HasId("D"))));
 }
 
-TEST_F(SearchResultRankerTest, GroupRankerImprovesScores) {
-  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
+  auto ranker = MakeRanker(
+      true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
   for (int i = 0; i < 20; ++i)
     ranker->Train("unused", RankingItemType::kFile);
   ranker->FetchRankings(base::string16());
@@ -165,6 +166,29 @@ TEST_F(SearchResultRankerTest, GroupRankerImprovesScores) {
   ranker->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
                                               HasId("B"), HasId("A"))));
+}
+
+TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
+  // Without the |use_category_model| parameter, the ranker defaults to the item
+  // model.
+  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+
+  for (int i = 0; i < 10; ++i) {
+    ranker->Train("C", RankingItemType::kFile);
+    ranker->Train("D", RankingItemType::kFile);
+  }
+  ranker->FetchRankings(base::string16());
+
+  // The types associated with these results don't match what was trained on,
+  // to check that the type is irrelevant to the item model.
+  auto results = MakeSearchResults({"A", "B", "C", "D"},
+                                   {ResultType::kOmnibox, ResultType::kOmnibox,
+                                    ResultType::kOmnibox, ResultType::kOmnibox},
+                                   {0.3f, 0.2f, 0.1f, 0.1f});
+
+  ranker->Rank(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
+                                              HasId("A"), HasId("B"))));
 }
 
 }  // namespace test

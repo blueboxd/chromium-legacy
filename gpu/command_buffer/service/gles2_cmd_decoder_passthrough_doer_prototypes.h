@@ -172,6 +172,7 @@ error::Error DoDisableVertexAttribArray(GLuint index);
 error::Error DoDispatchCompute(GLuint num_groups_x,
                                GLuint num_groups_y,
                                GLuint num_groups_z);
+error::Error DoDispatchComputeIndirect(GLintptr offset);
 error::Error DoDrawArrays(GLenum mode, GLint first, GLsizei count);
 error::Error DoDrawElements(GLenum mode,
                             GLsizei count,

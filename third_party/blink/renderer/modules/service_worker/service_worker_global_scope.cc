@@ -288,8 +288,8 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
+      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
@@ -302,7 +302,7 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
   FetchModuleScript(module_url_record, outside_settings_object,
                     outside_resource_timing_notifier,
@@ -358,7 +358,7 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
 void ServiceWorkerGlobalScope::RunInstalledModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
   // Currently we don't plumb performance timing for toplevel service worker
   // script fetch. https://crbug.com/954005

@@ -140,40 +140,39 @@ Resource* CachedResource(LocalFrame* frame,
 
 std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
     const WebWindowFeatures& window_features) {
-  std::unique_ptr<protocol::Array<String>> feature_strings =
-      protocol::Array<String>::create();
+  auto feature_strings = std::make_unique<protocol::Array<String>>();
   if (window_features.x_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("left=%d", static_cast<int>(window_features.x)));
   }
   if (window_features.y_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("top=%d", static_cast<int>(window_features.y)));
   }
   if (window_features.width_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("width=%d", static_cast<int>(window_features.width)));
   }
   if (window_features.height_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("height=%d", static_cast<int>(window_features.height)));
   }
   if (window_features.menu_bar_visible)
-    feature_strings->addItem("menubar");
+    feature_strings->emplace_back("menubar");
   if (window_features.tool_bar_visible)
-    feature_strings->addItem("toolbar");
+    feature_strings->emplace_back("toolbar");
   if (window_features.status_bar_visible)
-    feature_strings->addItem("status");
+    feature_strings->emplace_back("status");
   if (window_features.scrollbars_visible)
-    feature_strings->addItem("scrollbars");
+    feature_strings->emplace_back("scrollbars");
   if (window_features.resizable)
-    feature_strings->addItem("resizable");
+    feature_strings->emplace_back("resizable");
   if (window_features.noopener)
-    feature_strings->addItem("noopener");
+    feature_strings->emplace_back("noopener");
   if (window_features.background)
-    feature_strings->addItem("background");
+    feature_strings->emplace_back("background");
   if (window_features.persistent)
-    feature_strings->addItem("persistent");
+    feature_strings->emplace_back("persistent");
   return feature_strings;
 }
 
@@ -764,11 +763,10 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   auto matches = v8_session_->searchInTextByLines(
       ToV8InspectorStringView(content), ToV8InspectorStringView(query),
       case_sensitive, is_regex);
-  auto results = protocol::Array<
-      v8_inspector::protocol::Debugger::API::SearchMatch>::create();
-  for (size_t i = 0; i < matches.size(); ++i)
-    results->addItem(std::move(matches[i]));
-  callback->sendSuccess(std::move(results));
+  callback->sendSuccess(
+      std::make_unique<
+          protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>(
+          std::move(matches)));
 }
 
 void InspectorPageAgent::searchInResource(
@@ -1069,9 +1067,11 @@ InspectorPageAgent::BuildObjectForFrameTree(LocalFrame* frame) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (!child_local_frame)
       continue;
-    if (!children_array)
-      children_array = protocol::Array<protocol::Page::FrameTree>::create();
-    children_array->addItem(BuildObjectForFrameTree(child_local_frame));
+    if (!children_array) {
+      children_array =
+          std::make_unique<protocol::Array<protocol::Page::FrameTree>>();
+    }
+    children_array->emplace_back(BuildObjectForFrameTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;
@@ -1081,8 +1081,8 @@ std::unique_ptr<protocol::Page::FrameResourceTree>
 InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
   std::unique_ptr<protocol::Page::Frame> frame_object =
       BuildObjectForFrame(frame);
-  std::unique_ptr<protocol::Array<protocol::Page::FrameResource>> subresources =
-      protocol::Array<protocol::Page::FrameResource>::create();
+  auto subresources =
+      std::make_unique<protocol::Array<protocol::Page::FrameResource>>();
 
   HeapVector<Member<Resource>> all_resources =
       CachedResourcesForFrame(frame, true);
@@ -1101,7 +1101,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
       resource_object->setCanceled(true);
     else if (cached_resource->GetStatus() == ResourceStatus::kLoadError)
       resource_object->setFailed(true);
-    subresources->addItem(std::move(resource_object));
+    subresources->emplace_back(std::move(resource_object));
   }
 
   HeapVector<Member<Document>> all_imports =
@@ -1113,7 +1113,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
             .setType(ResourceTypeJson(InspectorPageAgent::kDocumentResource))
             .setMimeType(import->SuggestedMIMEType())
             .build();
-    subresources->addItem(std::move(resource_object));
+    subresources->emplace_back(std::move(resource_object));
   }
 
   std::unique_ptr<protocol::Page::FrameResourceTree> result =
@@ -1129,10 +1129,11 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (!child_local_frame)
       continue;
-    if (!children_array)
-      children_array =
-          protocol::Array<protocol::Page::FrameResourceTree>::create();
-    children_array->addItem(BuildObjectForResourceTree(child_local_frame));
+    if (!children_array) {
+      children_array = std::make_unique<
+          protocol::Array<protocol::Page::FrameResourceTree>>();
+    }
+    children_array->emplace_back(BuildObjectForResourceTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;

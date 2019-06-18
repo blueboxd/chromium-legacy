@@ -709,6 +709,8 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
   GLsizei width = -1;
   GLsizei height = -1;
   GLsizei samples = -1;
+  uint32_t colorbufferSize = 0;
+  bool colorbufferSizeValid = false;
   const bool kSamplesMustMatch = feature_info->IsWebGLContext() ||
       !feature_info->feature_flags().chromium_framebuffer_mixed_samples;
 
@@ -751,10 +753,26 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }
 
-    // Attaching an image to more than one color attachment point should return
-    // FRAMEBUFFER_UNSUPPORTED.
     if (it->first >= GL_COLOR_ATTACHMENT0 &&
         it->first < GL_COLOR_ATTACHMENT0 + manager_->max_color_attachments_) {
+      // in GLES 2.0, all color attachments attachments must have the same
+      // number of bitplanes.
+      // in GLES 3.0, there is no such restriction.
+      if (feature_info->context_type() == CONTEXT_TYPE_WEBGL1) {
+        if (colorbufferSizeValid) {
+          if (colorbufferSize !=
+              GLES2Util::GetGLTypeSizeForTextures(attachment->texture_type())) {
+            return GL_FRAMEBUFFER_UNSUPPORTED;
+          }
+        } else {
+          colorbufferSize =
+              GLES2Util::GetGLTypeSizeForTextures(attachment->texture_type());
+          colorbufferSizeValid = true;
+        }
+      }
+
+      // Attaching an image to more than one color attachment point should
+      // return FRAMEBUFFER_UNSUPPORTED.
       for (GLenum i = it->first + 1;
            i < GL_COLOR_ATTACHMENT0 + manager_->max_color_attachments_; i++) {
         const Attachment* other = GetAttachment(i);

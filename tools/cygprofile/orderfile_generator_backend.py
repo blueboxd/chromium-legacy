@@ -257,7 +257,7 @@ class ClankCompiler(object):
       self._apk = 'Monochrome.apk'
       self._apk_target = 'monochrome_apk'
       self._libname = 'libmonochrome'
-      self._libchrome_target = 'monochrome'
+      self._libchrome_target = 'libmonochrome'
     else:
       self._apk = 'Chrome.apk'
       self._apk_target = 'chrome_apk'

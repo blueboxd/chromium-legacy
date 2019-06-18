@@ -4,8 +4,8 @@
 
 #include "base/base_switches.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
@@ -21,11 +21,14 @@ int CloudPrintServiceProcessMain(
 
   base::PlatformThread::SetName("CrServiceMain");
 
-  base::MessageLoopForUI main_message_loop;
 #if defined(OS_WIN)
   // The service process needs to be able to process WM_QUIT messages from the
   // Cloud Print Service UI on Windows.
-  main_message_loop.EnableWmQuit();
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI_WITH_WM_QUIT_SUPPORT);
+#else
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
 #endif
 
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {

@@ -324,6 +324,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Lock events from the renderer.
   virtual InputEventShim* GetInputEventShim() const;
 
+  // Notifies all renderers in a page about changes to the size of the visible
+  // viewport.
+  virtual void NotifyVisibleViewportSizeChanged(
+      const gfx::Size& visible_viewport_size) {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

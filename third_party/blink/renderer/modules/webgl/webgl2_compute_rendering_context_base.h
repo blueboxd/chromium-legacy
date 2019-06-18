@@ -19,6 +19,7 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
 
   /* Launch one or more compute work groups */
   void dispatchCompute(GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ);
+  void dispatchComputeIndirect(int64_t offset);
 
   /* Program interface query */
   ScriptValue getProgramInterfaceParameter(ScriptState*,

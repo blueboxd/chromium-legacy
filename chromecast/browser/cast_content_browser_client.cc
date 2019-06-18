@@ -1085,7 +1085,7 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 #endif
 }
 
-std::string CastContentBrowserClient::GetUserAgent() const {
+std::string CastContentBrowserClient::GetUserAgent() {
   return chromecast::shell::GetUserAgent();
 }
 

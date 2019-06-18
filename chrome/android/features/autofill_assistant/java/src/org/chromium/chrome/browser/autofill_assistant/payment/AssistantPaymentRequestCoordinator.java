@@ -20,7 +20,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Coordinator for the Payment Request.
  */
 public class AssistantPaymentRequestCoordinator {
-    private static final String DIVIDER_TAG = "divider";
+    public static final String DIVIDER_TAG = "divider";
     private final Activity mActivity;
     private final LinearLayout mPaymentRequestUI;
     private final AssistantPaymentRequestModel mModel;

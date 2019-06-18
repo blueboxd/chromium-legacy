@@ -44,12 +44,6 @@ constexpr base::TimeDelta kLowBufferThresholdMediaSource(
 constexpr base::TimeDelta kHighBufferThresholdMediaSource(
     base::TimeDelta::FromMilliseconds(1000));
 
-// Buffering parameters when load_type is kLoadTypeCommunication.
-constexpr base::TimeDelta kLowBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(0));
-constexpr base::TimeDelta kHighBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(20));
-
 // Interval between two updates of the media time.
 constexpr base::TimeDelta kTimeUpdateInterval(
     base::TimeDelta::FromMilliseconds(250));
@@ -133,9 +127,6 @@ void MediaPipelineImpl::Initialize(
     if (load_type == kLoadTypeMediaSource) {
       low_threshold = kLowBufferThresholdMediaSource;
       high_threshold = kHighBufferThresholdMediaSource;
-    } else if (load_type == kLoadTypeCommunication) {
-      low_threshold = kLowBufferThresholdCommunication;
-      high_threshold = kHighBufferThresholdCommunication;
     }
     scoped_refptr<BufferingConfig> buffering_config(
         new BufferingConfig(low_threshold, high_threshold));

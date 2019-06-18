@@ -699,7 +699,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
-  bool FlingCancellationIsDeferred() const;
   void SetNeedsBeginFrameForFlingProgress();
 
   // The RenderWidgetHostImpl will keep showing the old page (for a while) after

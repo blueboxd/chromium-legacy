@@ -88,7 +88,7 @@ BookmarkMenuDelegate::~BookmarkMenuDelegate() {
 void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
                                 MenuItemView* parent,
                                 const BookmarkNode* node,
-                                int start_child_index,
+                                size_t start_child_index,
                                 ShowOptions show_options,
                                 BookmarkLaunchLocation location) {
   GetBookmarkModel()->AddObserver(this);
@@ -111,7 +111,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     bool show_managed =
         show_forced_folders && !managed->managed_node()->children().empty();
     bool has_children =
-        (start_child_index < node->child_count()) || show_managed;
+        (start_child_index < node->children().size()) || show_managed;
     if (has_children && parent->GetSubmenu() &&
         !parent->GetSubmenu()->GetMenuItems().empty())
       parent->AppendSeparator();
@@ -142,7 +142,7 @@ BookmarkMenuDelegate::GetManagedBookmarkService() {
 }
 
 void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
-                                         int start_index) {
+                                         size_t start_index) {
   DCHECK(!parent_menu_item_);
   if (!node_to_menu_map_[node])
     CreateMenu(node, start_index, HIDE_PERMANENT_FOLDERS);
@@ -478,7 +478,7 @@ bool BookmarkMenuDelegate::ShouldCloseOnRemove(const BookmarkNode* node) const {
 }
 
 MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,
-                                               int start_child_index,
+                                               size_t start_child_index,
                                                ShowOptions show_options) {
   MenuItemView* menu = new MenuItemView(real_delegate_);
   menu->SetCommand(next_menu_id_++);
@@ -535,15 +535,15 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
 }
 
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
-                                     int start_child_index,
+                                     size_t start_child_index,
                                      MenuItemView* menu) {
-  DCHECK(parent->children().empty() ||
-         start_child_index < parent->child_count());
+  DCHECK_LE(start_child_index, parent->children().size());
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia folder_icon =
       chrome::GetBookmarkFolderIcon(TextColorForMenu(menu, parent_));
-  for (int i = start_child_index; i < parent->child_count(); ++i) {
-    const BookmarkNode* node = parent->GetChild(i);
+  for (auto i = parent->children().cbegin() + start_child_index;
+       i != parent->children().cend(); ++i) {
+    const BookmarkNode* node = i->get();
     const int id = next_menu_id_++;
     MenuItemView* child_menu_item;
     if (node->is_url()) {

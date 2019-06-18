@@ -78,7 +78,7 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
 
   // Links a surface to its parent window in the host process.
   void AttachSurfaceToWindow(gfx::AcceleratedWidget window,
-                             mojo::ScopedHandle surface_view_holder_token_mojo);
+                             mojo::ScopedHandle surface_export_token_mojo);
 
   base::flat_map<gfx::AcceleratedWidget, ScenicSurface*> surface_map_
       GUARDED_BY(surface_lock_);

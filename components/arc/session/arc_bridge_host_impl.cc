@@ -37,6 +37,7 @@
 #include "components/arc/common/metrics.mojom.h"
 #include "components/arc/common/midis.mojom.h"
 #include "components/arc/common/net.mojom.h"
+#include "components/arc/common/notifications.mojom.h"
 #include "components/arc/common/obb_mounter.mojom.h"
 #include "components/arc/common/oemcrypto.mojom.h"
 #include "components/arc/common/pip.mojom.h"

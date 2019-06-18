@@ -170,11 +170,12 @@ _CONVERSION_FUNCTION_MAP = {
 
   # No need to build targets for these types yet.
   'dart_library': ConvertNoOp,
+  'device_profile': ConvertNoOp,
+  'documentation': ConvertNoOp,
   'host_tool': ConvertNoOp,
   'image': ConvertNoOp,
   'loadable_module': ConvertNoOp,
   'sysroot': ConvertNoOp,
-  'documentation': ConvertNoOp,
 }
 
 
@@ -193,7 +194,7 @@ def ConvertSdkManifests():
       convert_function = _CONVERSION_FUNCTION_MAP.get(part['type'])
       if convert_function is None:
         raise Exception('Unexpected SDK artifact type %s in %s.' %
-                        (parsed['type'], next_part))
+                        (parsed['type'], part['meta']))
 
       converted = convert_function(parsed)
       if converted:

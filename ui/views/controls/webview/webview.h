@@ -134,7 +134,7 @@ class WEBVIEW_EXPORT WebView : public View,
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
   // Overridden from content::WebContentsDelegate:
-  bool EmbedsFullscreenWidget() const override;
+  bool EmbedsFullscreenWidget() override;
 
   // Overridden from content::WebContentsObserver:
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;

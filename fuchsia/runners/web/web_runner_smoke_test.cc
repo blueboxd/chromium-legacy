@@ -3,16 +3,21 @@
 // found in the LICENSE file.
 
 #include <fuchsia/modular/cpp/fidl.h>
+#include <fuchsia/modular/cpp/fidl_test_base.h>
 #include <fuchsia/sys/cpp/fidl.h>
 
 #include "base/bind.h"
+#include "base/fuchsia/scoped_service_binding.h"
+#include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/service_provider_impl.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test_server::HttpRequest;
@@ -29,6 +34,20 @@ class WebRunnerSmokeTest : public testing::Test {
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &WebRunnerSmokeTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
+
+    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+    service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
+        directory.NewRequest());
+    service_provider_ = std::make_unique<base::fuchsia::ServiceProviderImpl>(
+        std::move(directory));
+  }
+
+  fuchsia::sys::LaunchInfo LaunchInfoWithServices() {
+    auto services = fuchsia::sys::ServiceList::New();
+    service_provider_->AddBinding(services->provider.NewRequest());
+    fuchsia::sys::LaunchInfo launch_info;
+    launch_info.additional_services = std::move(services);
+    return launch_info;
   }
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
@@ -67,6 +86,9 @@ class WebRunnerSmokeTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
 
+  std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
+  std::unique_ptr<base::fuchsia::ServiceProviderImpl> service_provider_;
+
   net::EmbeddedTestServer test_server_;
 
   base::RunLoop run_loop_;
@@ -76,7 +98,7 @@ class WebRunnerSmokeTest : public testing::Test {
 
 // Verify that the Component loads and fetches the desired page.
 TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
-  fuchsia::sys::LaunchInfo launch_info;
+  fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/test.html").spec();
 
   auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
@@ -95,7 +117,7 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
 TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
   fidl::InterfaceHandle<fuchsia::io::Directory> directory;
 
-  fuchsia::sys::LaunchInfo launch_info;
+  fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/test.html").spec();
   launch_info.directory_request = directory.NewRequest().TakeChannel();
 
@@ -126,14 +148,11 @@ TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
 
 // Verify that if the Frame disconnects, the Component tears down.
 TEST_F(WebRunnerSmokeTest, ComponentExitOnFrameClose) {
-  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-
-  fuchsia::sys::LaunchInfo launch_info;
+  fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/window_close.html").spec();
-  launch_info.directory_request = directory.NewRequest().TakeChannel();
 
   auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                      ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+                      ->ConnectToService<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
@@ -149,6 +168,55 @@ TEST_F(WebRunnerSmokeTest, ComponentExitOnFrameClose) {
   loop.Run();
 
   EXPECT_FALSE(controller);
+}
+
+class MockModuleContext
+    : public fuchsia::modular::testing::ModuleContext_TestBase {
+ public:
+  MockModuleContext() = default;
+  ~MockModuleContext() override = default;
+
+  MOCK_METHOD0(RemoveSelfFromStory, void());
+
+  void NotImplemented_(const std::string& name) override {
+    NOTIMPLEMENTED() << name;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockModuleContext);
+};
+
+// Verify that Modular's RemoveSelfFromStory() is called on teardown.
+TEST_F(WebRunnerSmokeTest, RemoveSelfFromStoryOnFrameClose) {
+  fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
+  launch_info.url = test_server_.GetURL("/window_close.html").spec();
+
+  MockModuleContext module_context;
+  EXPECT_CALL(module_context, RemoveSelfFromStory);
+  base::fuchsia::ScopedServiceBinding<fuchsia::modular::ModuleContext> binding(
+      service_directory_.get(), &module_context);
+  launch_info.additional_services->names.emplace_back(
+      fuchsia::modular::ModuleContext::Name_);
+
+  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+                      ->ConnectToService<fuchsia::sys::Launcher>();
+
+  fuchsia::sys::ComponentControllerPtr controller;
+  launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
+
+  // Script in the page will execute window.close(), which should teardown the
+  // Component, causing |controller| to be disconnected.
+  base::RunLoop loop;
+  controller.set_error_handler(
+      [quit_loop = loop.QuitClosure()](zx_status_t status) {
+        EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+        quit_loop.Run();
+      });
+  loop.Run();
+
+  EXPECT_FALSE(controller);
+
+  // Spin the loop again to ensure that RemoveSelfFromStory is processed.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // anonymous namespace

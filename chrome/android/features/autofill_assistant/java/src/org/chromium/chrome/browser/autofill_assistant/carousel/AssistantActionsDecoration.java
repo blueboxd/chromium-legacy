@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.autofill_assistant.R;
 
 /**
  * Decoration added to the actions carousel that add offsets to each action to have the right inner
@@ -58,45 +59,37 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
             AssistantActionsCarouselCoordinator.CustomLayoutManager layoutManager) {
         mLayoutManager = layoutManager;
         mOuterSpace = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_bottombar_horizontal_spacing);
+                R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         mInnerSpace = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen.autofill_assistant_actions_spacing);
+                R.dimen.autofill_assistant_actions_spacing);
         mVerticalInset = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_button_bg_vertical_inset);
+                R.dimen.autofill_assistant_button_bg_vertical_inset);
 
         // We remove mVerticalInset from the vertical spacing as that inset will be added above and
         // below the button by ButtonView.
         mVerticalSpacing = context.getResources().getDimensionPixelSize(
-                                   org.chromium.chrome.autofill_assistant.R.dimen
-                                           .autofill_assistant_bottombar_vertical_spacing)
+                                   R.dimen.autofill_assistant_bottombar_vertical_spacing)
                 - mVerticalInset;
 
         mGradientWidth = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_actions_gradient_width);
+                R.dimen.autofill_assistant_actions_gradient_width);
         mLastChildBorderRadius = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_button_corner_radius);
-        mShadowColor = ApiCompatibilityUtils.getColor(context.getResources(),
-                org.chromium.chrome.autofill_assistant.R.color
-                        .autofill_assistant_actions_shadow_color);
-        mShadowLayerWidth = context.getResources().getDimension(
-                                    org.chromium.chrome.autofill_assistant.R.dimen
-                                            .autofill_assistant_actions_shadow_width)
+                R.dimen.autofill_assistant_button_corner_radius);
+        mShadowColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.autofill_assistant_actions_shadow_color);
+        mShadowLayerWidth =
+                context.getResources().getDimension(R.dimen.autofill_assistant_actions_shadow_width)
                 / SHADOW_LAYERS;
         mGradientDrawable =
-                context.getResources().getDrawable(org.chromium.chrome.autofill_assistant.R.drawable
-                                                           .autofill_assistant_actions_gradient);
+                context.getResources().getDrawable(R.drawable.autofill_assistant_actions_gradient);
 
         mShadowPaint.setAntiAlias(true);
         mShadowPaint.setDither(true);
         mShadowPaint.setStyle(Paint.Style.STROKE);
         mShadowPaint.setStrokeWidth(mShadowLayerWidth);
 
-        mOverlayPaint.setColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), org.chromium.chrome.R.color.sheet_bg_color));
+        mOverlayPaint.setColor(
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.sheet_bg_color));
     }
 
     @Override

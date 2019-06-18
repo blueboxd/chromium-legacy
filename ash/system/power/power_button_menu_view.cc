@@ -96,9 +96,7 @@ PowerButtonMenuView::TransformDisplacement
 PowerButtonMenuView::GetTransformDisplacement() const {
   TransformDisplacement transform_displacement;
   if (power_button_position_ == PowerButtonPosition::NONE ||
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     transform_displacement.direction = TransformDirection::Y;
     transform_displacement.distance = kMenuViewTransformDistanceDp;
     return transform_displacement;

@@ -155,7 +155,7 @@ gfx::Size EnrollmentDialogView::CalculatePreferredSize() const {
 void EnrollmentDialogView::InitDialog() {
   added_cert_ = false;
   // Create the views and layout manager and set them up.
-  views::Label* label = new views::Label(
+  auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_INSTRUCTIONS,
                                  base::UTF8ToUTF16(network_name_)));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -187,7 +187,7 @@ void EnrollmentDialogView::InitDialog() {
                      0);                           // Minimum size.
 
   grid_layout->StartRow(views::GridLayout::kFixedSize, 0);
-  grid_layout->AddView(label);
+  grid_layout->AddView(std::move(label));
   grid_layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));

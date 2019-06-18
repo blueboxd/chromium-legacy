@@ -523,6 +523,7 @@ component("skia") {
     sources += skia_gpu_sources
     sources += skia_null_gpu_sources
     sources += skia_sksl_sources
+    sources += skia_sksl_gpu_sources
     if (enable_vulkan) {
       sources += skia_vk_sources
       sources += [

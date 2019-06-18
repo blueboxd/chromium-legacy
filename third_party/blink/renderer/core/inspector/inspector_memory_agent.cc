@@ -129,27 +129,25 @@ Response InspectorMemoryAgent::getSamplingProfile(
 std::unique_ptr<protocol::Memory::SamplingProfile>
 InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
   base::ModuleCache module_cache;
-  std::unique_ptr<protocol::Array<protocol::Memory::SamplingProfileNode>>
-      samples =
-          protocol::Array<protocol::Memory::SamplingProfileNode>::create();
+  auto samples = std::make_unique<
+      protocol::Array<protocol::Memory::SamplingProfileNode>>();
   std::vector<base::SamplingHeapProfiler::Sample> raw_samples =
       base::SamplingHeapProfiler::Get()->GetSamples(id);
 
   for (auto& it : raw_samples) {
-    std::unique_ptr<protocol::Array<protocol::String>> stack =
-        protocol::Array<protocol::String>::create();
     for (const void* frame : it.stack) {
       uintptr_t address = reinterpret_cast<uintptr_t>(frame);
       module_cache.GetModuleForAddress(address);  // Populates module_cache.
     }
     std::vector<std::string> source_stack = Symbolize(it.stack);
-    for (auto& it2 : source_stack)
-      stack->addItem(it2.c_str());
-    samples->addItem(protocol::Memory::SamplingProfileNode::create()
-                         .setSize(it.size)
-                         .setTotal(it.total)
-                         .setStack(std::move(stack))
-                         .build());
+    auto stack = std::make_unique<protocol::Array<protocol::String>>();
+    for (const std::string& frame : source_stack)
+      stack->emplace_back(frame.c_str());
+    samples->emplace_back(protocol::Memory::SamplingProfileNode::create()
+                              .setSize(it.size)
+                              .setTotal(it.total)
+                              .setStack(std::move(stack))
+                              .build());
   }
 
   // Mix in v8 main isolate heap size as a synthetic node.
@@ -158,26 +156,25 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
     v8::HeapStatistics heap_stats;
     v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
     size_t total_bytes = heap_stats.total_heap_size();
-    std::unique_ptr<protocol::Array<protocol::String>> stack =
-        protocol::Array<protocol::String>::create();
-    stack->addItem("<V8 Heap>");
-    samples->addItem(protocol::Memory::SamplingProfileNode::create()
-                         .setSize(total_bytes)
-                         .setTotal(total_bytes)
-                         .setStack(std::move(stack))
-                         .build());
+    auto stack = std::make_unique<protocol::Array<protocol::String>>();
+    stack->emplace_back("<V8 Heap>");
+    samples->emplace_back(protocol::Memory::SamplingProfileNode::create()
+                              .setSize(total_bytes)
+                              .setTotal(total_bytes)
+                              .setStack(std::move(stack))
+                              .build());
   }
 
-  std::unique_ptr<protocol::Array<protocol::Memory::Module>> modules =
-      protocol::Array<protocol::Memory::Module>::create();
+  auto modules = std::make_unique<protocol::Array<protocol::Memory::Module>>();
   for (const auto* module : module_cache.GetModules()) {
-    modules->addItem(protocol::Memory::Module::create()
-                         .setName(module->GetDebugBasename().value().c_str())
-                         .setUuid(module->GetId().c_str())
-                         .setBaseAddress(String::Format(
-                             "0x%" PRIxPTR, module->GetBaseAddress()))
-                         .setSize(static_cast<double>(module->GetSize()))
-                         .build());
+    modules->emplace_back(
+        protocol::Memory::Module::create()
+            .setName(module->GetDebugBasename().value().c_str())
+            .setUuid(module->GetId().c_str())
+            .setBaseAddress(
+                String::Format("0x%" PRIxPTR, module->GetBaseAddress()))
+            .setSize(static_cast<double>(module->GetSize()))
+            .build());
   }
 
   return protocol::Memory::SamplingProfile::create()

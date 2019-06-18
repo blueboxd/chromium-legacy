@@ -4479,8 +4479,9 @@ void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
 }
 
 void RenderFrameImpl::DidEnforceInsecureNavigationsSet(
-    const std::vector<uint32_t>& set) {
-  GetFrameHost()->EnforceInsecureNavigationsSet(set);
+    const WebVector<uint32_t>& set) {
+  GetFrameHost()->EnforceInsecureNavigationsSet(
+      const_cast<WebVector<uint32_t>&>(set).ReleaseVector());
 }
 
 void RenderFrameImpl::DidChangeFramePolicy(
@@ -5829,7 +5830,8 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   params->origin = frame_origin;
 
   params->insecure_request_policy = frame_->GetInsecureRequestPolicy();
-  params->insecure_navigations_set = frame_->GetInsecureRequestToUpgrade();
+  params->insecure_navigations_set =
+      frame_->GetInsecureRequestToUpgrade().ReleaseVector();
 
   params->has_potentially_trustworthy_unique_origin =
       frame_origin.IsUnique() && frame_origin.IsPotentiallyTrustworthy();
@@ -7086,12 +7088,12 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Data urls should not be sent back to the browser either.
   // These values are assumed on the browser side for navigations. These checks
   // ensure the renderer has the correct values.
-  DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
-            info->url_request.GetFetchRequestMode());
-  DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
-            info->url_request.GetFetchCredentialsMode());
-  DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
-            info->url_request.GetFetchRedirectMode());
+  DCHECK_EQ(network::mojom::RequestMode::kNavigate,
+            info->url_request.GetMode());
+  DCHECK_EQ(network::mojom::CredentialsMode::kInclude,
+            info->url_request.GetCredentialsMode());
+  DCHECK_EQ(network::mojom::RedirectMode::kManual,
+            info->url_request.GetRedirectMode());
   DCHECK(frame_->Parent() ||
          info->frame_type ==
              network::mojom::RequestContextFrameType::kTopLevel);
@@ -7526,10 +7528,10 @@ void RenderFrameImpl::ShowCreatedWindow(bool opened_by_user_gesture,
   //
   // This call happens only for renderer-created windows; for example, when a
   // tab is created by script via window.open().
-  Send(new FrameHostMsg_ShowCreatedWindow(
-      GetRoutingID(), render_widget_to_show->routing_id(),
+  GetFrameHost()->ShowCreatedWindow(
+      render_widget_to_show->routing_id(),
       RenderViewImpl::NavigationPolicyToDisposition(policy), initial_rect,
-      opened_by_user_gesture));
+      opened_by_user_gesture);
 }
 
 void RenderFrameImpl::RenderWidgetSetFocus(bool enable) {

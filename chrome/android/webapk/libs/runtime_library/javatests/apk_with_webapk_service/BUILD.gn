@@ -20,4 +20,5 @@ android_apk("apk_with_webapk_service") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_for_tests_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
   ]
+  min_sdk_version = 16
 }

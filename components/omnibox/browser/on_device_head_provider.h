@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/scoped_observer.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/on_device_head_serving.h"
@@ -18,7 +20,8 @@ class AutocompleteProviderListener;
 // help users get suggestions when they are in poor network.
 // All matches provided by this provider will have a relevance no greater than
 // 99, such that its matches will not show before any other providers.
-class OnDeviceHeadProvider : public AutocompleteProvider {
+class OnDeviceHeadProvider : public AutocompleteProvider,
+                             public component_updater::ServiceObserver {
  public:
   static OnDeviceHeadProvider* Create(AutocompleteProviderClient* client,
                                       AutocompleteProviderListener* listener);
@@ -56,6 +59,9 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
   // fetches by DoSearch and then calls OnProviderUpdate.
   void SearchDone(std::unique_ptr<OnDeviceHeadProviderParams> params);
 
+  // Required by component_updater::ServiceObserver.
+  void OnEvent(Events event, const std::string& id) override;
+
   AutocompleteProviderClient* client_;
   AutocompleteProviderListener* listener_;
 
@@ -71,6 +77,12 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
   // The id will be increased whenever a new request is received from the
   // AutocompleteController.
   size_t on_device_search_request_id_;
+
+  // Tracks component update service for model update.
+  ScopedObserver<component_updater::ComponentUpdateService,
+                 OnDeviceHeadProvider>
+      observer_;
+
   base::WeakPtrFactory<OnDeviceHeadProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OnDeviceHeadProvider);

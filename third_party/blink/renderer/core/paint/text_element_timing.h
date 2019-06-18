@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_ELEMENT_TIMING_H_
 
 #include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -13,6 +14,9 @@
 
 namespace blink {
 
+class IntRect;
+class LocalFrameView;
+class PropertyTreeState;
 class TextRecord;
 
 // TextElementTiming is responsible for tracking the paint timings for groups of
@@ -28,6 +32,19 @@ class CORE_EXPORT TextElementTiming final
   explicit TextElementTiming(LocalDOMWindow&);
 
   static TextElementTiming& From(LocalDOMWindow&);
+
+  static inline bool NeededForElementTiming(Node* node) {
+    return !node->IsInShadowTree() && node->IsElementNode() &&
+           !ToElement(node)
+                ->FastGetAttribute(html_names::kElementtimingAttr)
+                .IsEmpty();
+  }
+
+  static FloatRect ComputeIntersectionRect(
+      Node*,
+      const IntRect& aggregated_visual_rect,
+      const PropertyTreeState&,
+      LocalFrameView*);
 
   // Called when the swap promise queued by TextPaintTimingDetector has been
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.

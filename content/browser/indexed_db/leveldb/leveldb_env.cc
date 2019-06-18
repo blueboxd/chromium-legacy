@@ -11,6 +11,8 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
+#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
@@ -44,6 +46,22 @@ leveldb_env::Options GetLevelDBOptions(leveldb::Env* env,
   options.env = env;
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
   return options;
+}
+
+static LevelDBFactory::GetterCallback* s_ldb_factory_getter;
+
+// static
+LevelDBFactory* LevelDBFactory::Get() {
+  static base::NoDestructor<DefaultLevelDBFactory> singleton;
+  if (s_ldb_factory_getter)
+    return (*s_ldb_factory_getter)();
+  return singleton.get();
+}
+
+// static
+void LevelDBFactory::SetFactoryGetterForTesting(
+    LevelDBFactory::GetterCallback* cb) {
+  s_ldb_factory_getter = cb;
 }
 
 std::tuple<std::unique_ptr<leveldb::DB>, leveldb::Status>
@@ -129,6 +147,19 @@ DefaultLevelDBFactory::OpenLevelDBState(
           status, false};
 }
 
+scoped_refptr<LevelDBTransaction>
+DefaultLevelDBFactory::CreateLevelDBTransaction(LevelDBDatabase* db) {
+  return base::WrapRefCounted(new LevelDBTransaction(db));
+}
+
+std::unique_ptr<LevelDBIteratorImpl> DefaultLevelDBFactory::CreateIteratorImpl(
+    std::unique_ptr<leveldb::Iterator> iterator,
+    LevelDBDatabase* db,
+    const leveldb::Snapshot* snapshot) {
+  return base::WrapUnique(
+      new LevelDBIteratorImpl(std::move(iterator), db, snapshot));
+}
+
 leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(
     scoped_refptr<LevelDBState> level_db_state) {
   DCHECK(level_db_state);
@@ -151,12 +182,6 @@ leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(
   leveldb_env::Options options;
   options.env = LevelDBEnv::Get();
   return leveldb::DestroyDB(path.AsUTF8Unsafe(), options);
-}
-
-// static
-DefaultLevelDBFactory* GetDefaultLevelDBFactory() {
-  static base::NoDestructor<DefaultLevelDBFactory> singleton;
-  return singleton.get();
 }
 
 }  // namespace indexed_db

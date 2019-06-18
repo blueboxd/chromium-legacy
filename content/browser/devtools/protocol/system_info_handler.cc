@@ -164,13 +164,13 @@ ImageDecodeAcceleratorSupportedProfileToProtocol(
   for (const auto subsampling : profile.subsamplings) {
     switch (subsampling) {
       case gpu::ImageDecodeAcceleratorSubsampling::k420:
-        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv420);
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv420);
         break;
       case gpu::ImageDecodeAcceleratorSubsampling::k422:
-        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv422);
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv422);
         break;
       case gpu::ImageDecodeAcceleratorSubsampling::k444:
-        subsamplings->addItem(SystemInfo::SubsamplingFormatEnum::Yuv444);
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv444);
         break;
     }
   }
@@ -187,11 +187,10 @@ ImageDecodeAcceleratorSupportedProfileToProtocol(
 
 void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
-  std::unique_ptr<protocol::Array<GPUDevice>> devices =
-      protocol::Array<GPUDevice>::create();
-  devices->addItem(GPUDeviceToProtocol(gpu_info.gpu));
+  auto devices = std::make_unique<protocol::Array<GPUDevice>>();
+  devices->emplace_back(GPUDeviceToProtocol(gpu_info.gpu));
   for (const auto& device : gpu_info.secondary_gpus)
-    devices->addItem(GPUDeviceToProtocol(device));
+    devices->emplace_back(GPUDeviceToProtocol(device));
 
   std::unique_ptr<protocol::DictionaryValue> aux_attributes =
       protocol::DictionaryValue::create();
@@ -207,32 +206,30 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
       protocol::DictionaryValue::cast(
           protocol::toProtocolValue(base_feature_status.get(), 1000));
 
-  std::unique_ptr<protocol::Array<std::string>> driver_bug_workarounds =
-      protocol::Array<std::string>::create();
-  for (const std::string& s : GetDriverBugWorkarounds())
-      driver_bug_workarounds->addItem(s);
+  auto driver_bug_workarounds =
+      std::make_unique<protocol::Array<std::string>>(GetDriverBugWorkarounds());
 
-  auto decoding_profiles =
-      protocol::Array<SystemInfo::VideoDecodeAcceleratorCapability>::create();
+  auto decoding_profiles = std::make_unique<
+      protocol::Array<SystemInfo::VideoDecodeAcceleratorCapability>>();
   for (const auto& profile :
        gpu_info.video_decode_accelerator_capabilities.supported_profiles) {
-    decoding_profiles->addItem(
+    decoding_profiles->emplace_back(
         VideoDecodeAcceleratorSupportedProfileToProtocol(profile));
   }
 
-  auto encoding_profiles =
-      protocol::Array<SystemInfo::VideoEncodeAcceleratorCapability>::create();
+  auto encoding_profiles = std::make_unique<
+      protocol::Array<SystemInfo::VideoEncodeAcceleratorCapability>>();
   for (const auto& profile :
        gpu_info.video_encode_accelerator_supported_profiles) {
-    encoding_profiles->addItem(
+    encoding_profiles->emplace_back(
         VideoEncodeAcceleratorSupportedProfileToProtocol(profile));
   }
 
-  auto image_profiles =
-      protocol::Array<SystemInfo::ImageDecodeAcceleratorCapability>::create();
+  auto image_profiles = std::make_unique<
+      protocol::Array<SystemInfo::ImageDecodeAcceleratorCapability>>();
   for (const auto& profile :
        gpu_info.image_decode_accelerator_supported_profiles) {
-    image_profiles->addItem(
+    image_profiles->emplace_back(
         ImageDecodeAcceleratorSupportedProfileToProtocol(profile));
   }
 
@@ -359,7 +356,8 @@ void AddBrowserProcessInfo(
     protocol::Array<protocol::SystemInfo::ProcessInfo>* process_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  process_info->addItem(MakeProcessInfo(base::Process::Current(), "browser"));
+  process_info->emplace_back(
+      MakeProcessInfo(base::Process::Current(), "browser"));
 }
 
 void AddRendererProcessInfo(
@@ -370,7 +368,8 @@ void AddRendererProcessInfo(
        !it.IsAtEnd(); it.Advance()) {
     RenderProcessHost* host = it.GetCurrentValue();
     if (host->GetProcess().IsValid()) {
-      process_info->addItem(MakeProcessInfo(host->GetProcess(), "renderer"));
+      process_info->emplace_back(
+          MakeProcessInfo(host->GetProcess(), "renderer"));
     }
   }
 }
@@ -385,7 +384,7 @@ AddChildProcessInfo(
     const ChildProcessData& process_data = it.GetData();
     const base::Process& process = process_data.GetProcess();
     if (process.IsValid()) {
-      process_info->addItem(
+      process_info->emplace_back(
           MakeProcessInfo(process, process_data.metrics_name));
     }
   }
@@ -397,8 +396,8 @@ AddChildProcessInfo(
 
 void SystemInfoHandler::GetProcessInfo(
     std::unique_ptr<GetProcessInfoCallback> callback) {
-  std::unique_ptr<protocol::Array<protocol::SystemInfo::ProcessInfo>>
-      process_info = protocol::Array<SystemInfo::ProcessInfo>::create();
+  auto process_info =
+      std::make_unique<protocol::Array<SystemInfo::ProcessInfo>>();
 
   // Collect browser and renderer processes info on the UI thread.
   AddBrowserProcessInfo(process_info.get());

@@ -15,7 +15,10 @@
 // Class that manages requests for OAuth2 access tokens.
 class OAuth2AccessTokenManager {
  public:
-  OAuth2AccessTokenManager();
+  // TODO(https://crbug.com/967598): Remove |token_service| parameter once
+  // OAuth2AccessTokenManager fully manages access tokens independently of
+  // OAuth2TokenService.
+  explicit OAuth2AccessTokenManager(OAuth2TokenService* token_service);
   virtual ~OAuth2AccessTokenManager();
 
   // Add a new entry to the cache.
@@ -32,6 +35,14 @@ class OAuth2AccessTokenManager {
   const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
       const OAuth2TokenService::RequestParameters& client_scopes);
 
+  // Clears the internal token cache.
+  void ClearCache();
+
+  // Clears all of the tokens belonging to |account_id| from the internal token
+  // cache. It does not matter what other parameters, like |client_id| were
+  // used to request the tokens.
+  void ClearCacheForAccount(const CoreAccountId& account_id);
+
  private:
   // TODO(https://crbug.com/967598): Remove this once |token_cache_| management
   // is moved to OAuth2AccessTokenManager.
@@ -39,8 +50,17 @@ class OAuth2AccessTokenManager {
 
   OAuth2TokenService::TokenCache& token_cache() { return token_cache_; }
 
+  // Removes an access token for the given set of scopes from the cache.
+  // Returns true if the entry was removed, otherwise false.
+  bool RemoveCachedTokenResponse(
+      const OAuth2TokenService::RequestParameters& client_scopes,
+      const std::string& token_to_remove);
+
   // The cache of currently valid tokens.
   OAuth2TokenService::TokenCache token_cache_;
+  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
+  // fully manages access tokens independently of OAuth2TokenService.
+  OAuth2TokenService* token_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

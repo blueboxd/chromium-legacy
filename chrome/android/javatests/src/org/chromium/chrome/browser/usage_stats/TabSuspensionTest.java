@@ -42,15 +42,12 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for {@link PageViewObserver} and {@link SuspendedTab}
@@ -63,9 +60,6 @@ import java.util.concurrent.TimeoutException;
 public class TabSuspensionTest {
     private static final String STARTING_FQDN = "example.com";
     private static final String DIFFERENT_FQDN = "www.google.com";
-    private static final String MAINFRAME_TEST_PAGE =
-            "/chrome/test/data/android/usage_stats/amp_root.html";
-    private static final String SUBFRAME_TEST_PAGE = "/chrome/test/data/android/test.html";
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -75,13 +69,12 @@ public class TabSuspensionTest {
     @Mock
     private UsageStatsBridge mUsageStatsBridge;
     @Mock
-    private EventTracker mEventTracker;
-    @Mock
     private SuspensionTracker mSuspensionTracker;
 
     private ChromeTabbedActivity mActivity;
     private PageViewObserver mPageViewObserver;
     private TokenTracker mTokenTracker;
+    private EventTracker mEventTracker;
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
     private String mStartingUrl;
@@ -90,10 +83,12 @@ public class TabSuspensionTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
-        // TokenTracker holds a promise, and Promises can only be used on a single thread, so we
-        // have to initialize it on the thread where it will be used.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mTokenTracker = new TokenTracker(mUsageStatsBridge); });
+        // TokenTracker and EventTracker hold a promise, and Promises can only be used on a single
+        // thread, so we have to initialize them on the thread where they will be used.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTokenTracker = new TokenTracker(mUsageStatsBridge);
+            mEventTracker = new EventTracker(mUsageStatsBridge);
+        });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mStartingUrl = mTestServer.getURLWithHostName(STARTING_FQDN, "/defaultresponse");
         mDifferentUrl = mTestServer.getURLWithHostName(DIFFERENT_FQDN, "/defaultresponse");
@@ -284,38 +279,6 @@ public class TabSuspensionTest {
             TabTestUtils.simulateCrash(mTab, true);
             assertSuspendedTabHidden(mTab);
         });
-    }
-
-    @Test
-    @MediumTest
-    public void testAmpPage() throws InterruptedException, TimeoutException {
-        String mainframeUrl = mTestServer.getURLWithHostName(DIFFERENT_FQDN, MAINFRAME_TEST_PAGE);
-        mActivityTestRule.loadUrl(mainframeUrl);
-        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
-
-        String iframeSrc =
-                mTestServer.getURLWithHostName(STARTING_FQDN, SUBFRAME_TEST_PAGE + "?amp_js_v=0");
-        String code = "document.getElementById('iframe_test_id').src='" + iframeSrc + "';";
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mTab.getWebContents(), code, 3, TimeUnit.SECONDS);
-        waitForSuspendedTabToShow(mTab, STARTING_FQDN);
-
-        doReturn(false).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
-        unsuspendDomain(STARTING_FQDN);
-        assertSuspendedTabHidden(mTab);
-
-        // Un-suspension reloads the page, so we need to wait for it to load and re-navigate the
-        // iframe back to the suspended domain.
-        ChromeTabUtils.waitForTabPageLoaded(mTab, mainframeUrl);
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mTab.getWebContents(), code, 3, TimeUnit.SECONDS);
-
-        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
-        suspendDomain(STARTING_FQDN);
-        waitForSuspendedTabToShow(mTab, STARTING_FQDN);
-
-        mActivityTestRule.loadUrl(mDifferentUrl);
-        assertSuspendedTabHidden(mTab);
     }
 
     private void startLoadingUrl(Tab tab, String url) {

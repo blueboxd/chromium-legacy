@@ -31,11 +31,8 @@ static viz::ResourceFormat kFboTextureFormat = viz::RGBA_8888;
 
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
-        scoped_refptr<viz::ContextProviderCommandBuffer> context,
-        std::unique_ptr<viz::OverlayCandidateValidator>
-            overlay_candidate_validator)
-    : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(overlay_candidate_validator)),
+        scoped_refptr<viz::ContextProviderCommandBuffer> context)
+    : BrowserCompositorOutputSurface(std::move(context)),
       weak_ptr_factory_(this) {
   capabilities_.uses_default_gl_framebuffer = false;
 }
@@ -189,7 +186,9 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
 void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
     const std::vector<ui::LatencyInfo>& latency_info) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidReceiveSwapBuffersAck();
+  // Swap timings are not available since for offscreen there is no Swap, just
+  // a SignalSyncToken.
+  client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
   client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 

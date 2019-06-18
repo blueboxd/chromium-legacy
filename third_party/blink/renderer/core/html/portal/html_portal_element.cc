@@ -389,6 +389,11 @@ LayoutObject* HTMLPortalElement::CreateLayoutObject(const ComputedStyle& style,
   return new LayoutIFrame(this);
 }
 
+void HTMLPortalElement::DisconnectContentFrame() {
+  HTMLFrameOwnerElement::DisconnectContentFrame();
+  ConsumePortal();
+}
+
 void HTMLPortalElement::AttachLayoutTree(AttachContext& context) {
   HTMLFrameOwnerElement::AttachLayoutTree(context);
 

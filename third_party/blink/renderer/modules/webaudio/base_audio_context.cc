@@ -362,6 +362,11 @@ void BaseAudioContext::HandleDecodeAudioData(
     V8PersistentCallbackFunction<V8DecodeErrorCallback>* error_callback) {
   DCHECK(IsMainThread());
 
+  if (!GetExecutionContext()) {
+    // Nothing to do if the execution context is gone.
+    return;
+  }
+
   if (audio_buffer) {
     // Resolve promise successfully and run the success callback
     resolver->Resolve(audio_buffer);

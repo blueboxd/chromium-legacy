@@ -55,12 +55,13 @@
       }
 
       /* Default print preview dialog styles. */
+      cr-dialog::part(wrapper) {
+        max-height: calc(100vh - 68px);
+        max-width: 100%;
+        width:  calc(100vw - 68px);
+      }
+
       cr-dialog {
-        --cr-dialog-wrapper: {
-          max-height: calc(100vh - 68px);
-          width:  calc(100vw - 68px);
-          max-width: 100%;
-        };
         --cr-dialog-body: {
           box-sizing: border-box;
           padding-inline-end: 20px;

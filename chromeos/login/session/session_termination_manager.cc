@@ -30,7 +30,6 @@ SessionTerminationManager::~SessionTerminationManager() {
 
 // static
 SessionTerminationManager* SessionTerminationManager::Get() {
-  DCHECK(g_instance);
   return g_instance;
 }
 
@@ -51,6 +50,10 @@ void SessionTerminationManager::RebootIfNecessary() {
 
 void SessionTerminationManager::SetDeviceLockedToSingleUser() {
   is_locked_to_single_user_ = true;
+}
+
+bool SessionTerminationManager::IsLockedToSingleUser() {
+  return is_locked_to_single_user_;
 }
 
 void SessionTerminationManager::DidWaitForServiceToBeAvailable(

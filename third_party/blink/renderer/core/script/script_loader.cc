@@ -279,17 +279,17 @@ bool ScriptLoader::BlockForNoModule(mojom::ScriptType script_type,
 //     https://html.spec.whatwg.org/C/#prepare-a-script
 //   - Step 6 of obtaining a preloaded module script
 //     https://html.spec.whatwg.org/C/#link-type-modulepreload.
-network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
+network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
     case kCrossOriginAttributeNotSet:
     case kCrossOriginAttributeAnonymous:
-      return network::mojom::FetchCredentialsMode::kSameOrigin;
+      return network::mojom::CredentialsMode::kSameOrigin;
     case kCrossOriginAttributeUseCredentials:
-      return network::mojom::FetchCredentialsMode::kInclude;
+      return network::mojom::CredentialsMode::kInclude;
   }
   NOTREACHED();
-  return network::mojom::FetchCredentialsMode::kOmit;
+  return network::mojom::CredentialsMode::kOmit;
 }
 
 // https://github.com/WICG/feature-policy/issues/135
@@ -449,7 +449,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="17">Let module script credentials mode be the module script
   // credentials mode for the element's crossorigin content attribute.</spec>
-  network::mojom::FetchCredentialsMode credentials_mode =
+  network::mojom::CredentialsMode credentials_mode =
       ModuleScriptCredentialsMode(cross_origin);
 
   // <spec step="18">Let cryptographic nonce be the element's
@@ -880,23 +880,6 @@ PendingScript* ScriptLoader::TakePendingScript(
       EnumerationHistogram, scheduling_type_histogram,
       ("Blink.Script.SchedulingType", kLastScriptSchedulingType + 1));
   scheduling_type_histogram.Count(static_cast<int>(scheduling_type));
-
-  switch (scheduling_type) {
-    case ScriptSchedulingType::kAsync:
-    case ScriptSchedulingType::kInOrder:
-      // As ClassicPendingScript keeps a reference to ScriptResource,
-      // the ScriptResource is anyway kept alive until evaluation,
-      // and can be garbage-collected after that (together with
-      // ClassicPendingScript).
-      resource_keep_alive_ = nullptr;
-      break;
-
-    default:
-      // ScriptResource is kept alive by resource_keep_alive_
-      // until ScriptLoader is garbage collected.
-      break;
-  }
-
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;
   pending_script->SetSchedulingType(scheduling_type);
@@ -908,6 +891,19 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK_EQ(pending_script_, pending_script);
   DCHECK_EQ(pending_script_->GetScriptType(), GetScriptType());
   DCHECK(pending_script->IsControlledByScriptRunner());
+  DCHECK(pending_script_->GetSchedulingType() == ScriptSchedulingType::kAsync ||
+         pending_script_->GetSchedulingType() ==
+             ScriptSchedulingType::kInOrder);
+  // Historically we clear |resource_keep_alive_| when the scheduling type is
+  // kAsync or kInOrder (crbug.com/778799). But if the script resource was
+  // served via signed exchange, the script may not be in the HTTPCache,
+  // therefore will need to be refetched over network if it's evicted from the
+  // memory cache not be in the HTTPCache. So we keep |resource_keep_alive_| to
+  // keep the resource in the memory cache.
+  if (resource_keep_alive_ &&
+      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse()) {
+    resource_keep_alive_ = nullptr;
+  }
 
   Document* context_document = element_->GetDocument().ContextDocument();
   if (!context_document) {

@@ -634,8 +634,8 @@ void PageSchedulerImpl::OnLocalMainFrameNetworkAlmostIdle() {
 
   // If delay_for_background_and_network_idle_tab_freezing_ passes after
   // the page is not visible, we should freeze the page.
-  TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
-                     page_visibility_changed_time_;
+  base::TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
+                           page_visibility_changed_time_;
   if (passed < delay_for_background_and_network_idle_tab_freezing_)
     return;
 
@@ -647,8 +647,9 @@ void PageSchedulerImpl::DoFreezePage() {
 
   if (freeze_on_network_idle_enabled_) {
     DCHECK(delegate_);
-    TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
-                       page_visibility_changed_time_;
+    base::TimeDelta passed =
+        main_thread_scheduler_->GetTickClock()->NowTicks() -
+        page_visibility_changed_time_;
     // The page will be frozen if:
     // (1) the main frame is remote, or,
     // (2) the local main frame's network is almost idle, or,

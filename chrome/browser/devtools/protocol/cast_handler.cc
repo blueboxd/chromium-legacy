@@ -238,8 +238,7 @@ void CastHandler::SendSinkUpdate() {
   if (!frontend_)
     return;
 
-  std::unique_ptr<protocol::Array<Sink>> protocol_sinks =
-      protocol::Array<Sink>::create();
+  auto protocol_sinks = std::make_unique<protocol::Array<Sink>>();
   for (const media_router::MediaSinkWithCastModes& sink_with_modes : sinks_) {
     auto route_it = std::find_if(
         routes_observer_->routes().begin(), routes_observer_->routes().end(),
@@ -256,7 +255,7 @@ void CastHandler::SendSinkUpdate() {
     if (!session.empty())
       sink->SetSession(session);
 
-    protocol_sinks->addItem(std::move(sink));
+    protocol_sinks->emplace_back(std::move(sink));
   }
   frontend_->SinksUpdated(std::move(protocol_sinks));
 }

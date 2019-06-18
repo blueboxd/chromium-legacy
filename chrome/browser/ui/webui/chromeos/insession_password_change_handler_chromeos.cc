@@ -9,7 +9,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,12 +60,16 @@ void InSessionPasswordChangeHandler::HandleChangePassword(
                                                           true);
   if (new_passwords.GetList().size() == 1 &&
       old_passwords.GetList().size() > 0) {
-    UserContext user_context(*user);
-    user_context.SetKey(Key(new_passwords.GetList()[0].GetString()));
-    authenticator_ = new ChromeCryptohomeAuthenticator(this);
-    authenticator_->MigrateKey(user_context,
-                               old_passwords.GetList()[0].GetString());
+    auto* in_session_password_change_manager =
+        g_browser_process->platform_part()
+            ->in_session_password_change_manager();
+    CHECK(in_session_password_change_manager);
+    in_session_password_change_manager->ChangePassword(
+        old_passwords.GetList()[0].GetString(),
+        new_passwords.GetList()[0].GetString());
   }
+
+  // TODO(https://crbug.com/930109): Failed to scrape passwords - show dialog.
 }
 
 void InSessionPasswordChangeHandler::RegisterMessages() {
@@ -74,31 +81,6 @@ void InSessionPasswordChangeHandler::RegisterMessages() {
       "changePassword",
       base::BindRepeating(&InSessionPasswordChangeHandler::HandleChangePassword,
                           weak_factory_.GetWeakPtr()));
-}
-
-void InSessionPasswordChangeHandler::OnAuthSuccess(
-    const UserContext& user_context) {
-  VLOG(3) << "Cryptohome password is changed.";
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(
-      user_context.GetAccountId(), false);
-  authenticator_.reset();
-
-  // Clear expiration time from prefs so that we don't keep nagging the user to
-  // change password (until the SAML provider tells us a new expiration time).
-  Profile* profile = Profile::FromWebUI(web_ui());
-  SamlPasswordAttributes loaded =
-      SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs());
-  SamlPasswordAttributes(
-      /*modified_time=*/base::Time::Now(), /*expiration_time=*/base::Time(),
-      loaded.password_change_url())
-      .SaveToPrefs(profile->GetPrefs());
-  DismissSamlPasswordExpiryNotification(profile);
-}
-
-void InSessionPasswordChangeHandler::OnAuthFailure(const AuthFailure& error) {
-  // TODO(rsorokin): Ask user for the old password
-  VLOG(1) << "Failed to change cryptohome password: " << error.GetErrorString();
-  authenticator_.reset();
 }
 
 }  // namespace chromeos

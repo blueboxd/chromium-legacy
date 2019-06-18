@@ -33,7 +33,7 @@ class MHTMLParserTest : public testing::Test {
     return parser.ParseArchive();
   }
 
-  WTF::Time ParseArchiveTime(const char* mhtml_data, size_t size) {
+  base::Time ParseArchiveTime(const char* mhtml_data, size_t size) {
     scoped_refptr<SharedBuffer> buf = SharedBuffer::Create(mhtml_data, size);
     MHTMLParser parser(buf);
     EXPECT_GT(parser.ParseArchive().size(), 0U);
@@ -356,10 +356,10 @@ TEST_F(MHTMLParserTest, DateParsing_EmptyDate) {
       "bin\0ary\r\n"
       "--BoUnDaRy--\r\n";
 
-  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  base::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
 
   // No header should produce an invalid time.
-  EXPECT_EQ(WTF::Time(), creation_time);
+  EXPECT_EQ(base::Time(), creation_time);
 }
 
 TEST_F(MHTMLParserTest, DateParsing_InvalidDate) {
@@ -383,10 +383,10 @@ TEST_F(MHTMLParserTest, DateParsing_InvalidDate) {
       "bin\0ary\r\n"
       "--BoUnDaRy--\r\n";
 
-  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  base::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
 
   // Invalid header should produce an invalid time.
-  EXPECT_EQ(WTF::Time(), creation_time);
+  EXPECT_EQ(base::Time(), creation_time);
 }
 
 TEST_F(MHTMLParserTest, DateParsing_ValidDate) {
@@ -408,9 +408,9 @@ TEST_F(MHTMLParserTest, DateParsing_ValidDate) {
       "bin\0ary\r\n"
       "--BoUnDaRy--\r\n";
 
-  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
-  WTF::Time expected_time;
-  ASSERT_TRUE(WTF::Time::FromUTCExploded(
+  base::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  base::Time expected_time;
+  ASSERT_TRUE(base::Time::FromUTCExploded(
       {2017, 3 /* March */, 5 /* Friday */, 1, 22, 44, 17, 0}, &expected_time));
   EXPECT_EQ(expected_time, creation_time);
 }
@@ -443,8 +443,8 @@ TEST_F(MHTMLParserTest, OverflowedDate) {
       "bin\0ary\r\n"
       "--BoUnDaRy--\r\n";
 
-  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
-  EXPECT_EQ(WTF::Time(), creation_time);
+  base::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  EXPECT_EQ(base::Time(), creation_time);
 }
 
 TEST_F(MHTMLParserTest, OverflowedDay) {
@@ -465,8 +465,8 @@ TEST_F(MHTMLParserTest, OverflowedDay) {
       "bin\0ary\r\n"
       "--BoUnDaRy--\r\n";
 
-  WTF::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
-  EXPECT_EQ(WTF::Time(), creation_time);
+  base::Time creation_time = ParseArchiveTime(mhtml_data, sizeof(mhtml_data));
+  EXPECT_EQ(base::Time(), creation_time);
 }
 
 }  // namespace blink

@@ -119,6 +119,12 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
             AnonymizeCustomPatterns("SerialNumber: EVT23-17BA01-004"));
   EXPECT_EQ("serial=4", AnonymizeCustomPatterns("serial=\"1234AA5678\""));
 
+  EXPECT_EQ("\"gaia_id\":\"1\"",
+            AnonymizeCustomPatterns("\"gaia_id\":\"1234567890\""));
+  EXPECT_EQ("gaia_id='2'", AnonymizeCustomPatterns("gaia_id='987654321'"));
+  EXPECT_EQ("{id: 1, email:",
+            AnonymizeCustomPatterns("{id: 123454321, email:"));
+
   EXPECT_EQ("<email: 1>",
             AnonymizeCustomPatterns("foo@bar.com"));
   EXPECT_EQ("Email: <email: 1>.",

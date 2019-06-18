@@ -299,7 +299,7 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
                                        const KURL& url,
                                        const String& title,
                                        const String& mime_type,
-                                       WTF::Time date,
+                                       base::Time date,
                                        Vector<char>& output_buffer) {
   DCHECK(!boundary.IsEmpty());
   DCHECK(!mime_type.IsEmpty());

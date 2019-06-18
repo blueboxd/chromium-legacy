@@ -10,14 +10,16 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/label.h"
 
 class LocationBarView;
 class Profile;
+
 namespace gfx {
 class FontList;
 class Size;
-}
+}  // namespace gfx
 
 // SelectedKeywordView displays the tab-to-search UI in the location bar view.
 class SelectedKeywordView : public IconLabelBubbleView {

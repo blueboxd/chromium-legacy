@@ -89,13 +89,29 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
           result.push_back(device);
         }
         break;
-      // For classic and dual mode devices, only filter out if the name is empty
-      // because the device could have an unknown or even known type and still
-      // also provide audio/HID functionality.
+      // For classic mode devices, only filter out if the name is empty because
+      // the device could have an unknown or even known type and still also
+      // provide audio/HID functionality.
       case BLUETOOTH_TRANSPORT_CLASSIC:
-      case BLUETOOTH_TRANSPORT_DUAL:
         if (device->GetName())
           result.push_back(device);
+        break;
+      // For dual mode devices, a device::BluetoothDevice object without a name
+      // and type/appearance most likely signals that it is truly only a LE
+      // advertisement for a peripheral which is active, but not pairable. Many
+      // popular headphones behave in this exact way. Filter them out until they
+      // provide a type/appearance; this means they've become pairable. See
+      // https://crbug.com/1656971 for more.
+      case BLUETOOTH_TRANSPORT_DUAL:
+        if (device->GetName()) {
+          if (base::FeatureList::IsEnabled(
+                  chromeos::features::kBluetoothAggressiveAppearanceFilter) &&
+              device->GetDeviceType() == BluetoothDeviceType::UNKNOWN) {
+            continue;
+          }
+
+          result.push_back(device);
+        }
         break;
     }
   }

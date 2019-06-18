@@ -149,7 +149,6 @@ static_library("utility") {
 
   if (is_chromeos) {
     deps += [
-      "//chrome/services/ble_scan_parser:lib",
       "//chrome/services/file_util:lib",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",

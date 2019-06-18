@@ -216,8 +216,7 @@ void SharedWorkerServiceImpl::CreateWorker(
   // TODO(nhiroki): The document's renderer should provide credentials mode
   // specified by WorkerOptions for module script.
   // (https://crbug.com/824646, https://crbug.com/907749)
-  const auto credentials_mode =
-      network::mojom::FetchCredentialsMode::kSameOrigin;
+  const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
 
   WorkerScriptFetchInitiator::Start(
       process_id, weak_host->instance()->url(),

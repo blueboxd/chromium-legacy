@@ -33,7 +33,6 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/vsync_parameter_listener.h"
@@ -77,7 +76,6 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -149,12 +147,6 @@ namespace content {
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
-  // The |overlay_validator| pointer is used to pass settings for software
-  // mirror mode. The lifetime of the validator is the same as the
-  // |display_output_surface|.
-  // TODO(weiliangc): Remove this once software mirroring code path does not
-  // have to go though validator.
-  viz::OverlayCandidateValidator* overlay_validator = nullptr;
   // Exactly one of |synthetic_begin_frame_source| and
   // |external_begin_frame_source| is valid at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
@@ -243,34 +235,6 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 }
 
-std::unique_ptr<viz::OverlayCandidateValidator> CreateOverlayCandidateValidator(
-    gfx::AcceleratedWidget widget) {
-  std::unique_ptr<viz::OverlayCandidateValidator> validator;
-#if defined(USE_OZONE)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  std::string enable_overlay_flag =
-      command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays);
-
-  ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
-  DCHECK(ozone_platform);
-  auto& host_properties = ozone_platform->GetInitializedHostProperties();
-  if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
-      host_properties.supports_overlays) {
-    enable_overlay_flag = "single-fullscreen,single-on-top,underlay";
-  }
-  if (!enable_overlay_flag.empty()) {
-    std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
-        ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
-    validator.reset(new viz::OverlayCandidateValidatorOzone(
-        std::move(overlay_candidates),
-        viz::ParseOverlayStategies(enable_overlay_flag)));
-  }
-#endif
-
-  return validator;
-}
-
 void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   DCHECK(!!compositor);
@@ -282,7 +246,6 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
     // |data->begin_frame_source| here when the compositor destroys its
     // LayerTreeFrameSink before calling back here.
     data->display_output_surface = nullptr;
-    data->overlay_validator = nullptr;
   }
 
   const bool use_gpu_compositing =
@@ -408,7 +371,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
-  viz::OverlayCandidateValidator* overlay_validator = nullptr;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&
         !compositor->force_software_compositor()) {
@@ -429,30 +391,21 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (data->surface_handle == gpu::kNullSurfaceHandle) {
       display_output_surface =
           std::make_unique<OffscreenBrowserCompositorOutputSurface>(
-              context_provider,
-              std::unique_ptr<viz::OverlayCandidateValidator>());
+              context_provider);
     } else if (capabilities.surfaceless) {
       DCHECK(capabilities.texture_format_bgra8888);
-      auto validator = CreateOverlayCandidateValidator(compositor->widget());
-      overlay_validator = validator.get();
       auto gpu_output_surface =
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
-              context_provider, data->surface_handle, std::move(validator),
+              context_provider, data->surface_handle,
               display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
     } else {
-      std::unique_ptr<viz::OverlayCandidateValidator> validator =
-          CreateOverlayCandidateValidator(compositor->widget());
-      overlay_validator = validator.get();
       auto gpu_output_surface =
-          std::make_unique<GpuBrowserCompositorOutputSurface>(
-              context_provider, std::move(validator));
+          std::make_unique<GpuBrowserCompositorOutputSurface>(context_provider);
       display_output_surface = std::move(gpu_output_surface);
     }
   }
-
-  data->overlay_validator = overlay_validator;
 
   auto vsync_callback = base::BindRepeating(
       &ui::Compositor::SetDisplayVSyncParameters, compositor);
@@ -460,8 +413,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   data->display_output_surface = display_output_surface.get();
   if (data->reflector) {
-    data->reflector->OnSourceSurfaceReady(data->display_output_surface,
-                                          data->overlay_validator);
+    data->reflector->OnSourceSurfaceReady(data->display_output_surface);
   }
 
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
@@ -607,8 +559,7 @@ std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
       new ReflectorImpl(source_compositor, target_layer));
   source_data->reflector = reflector.get();
   if (auto* source_surface = source_data->display_output_surface) {
-    reflector->OnSourceSurfaceReady(source_surface,
-                                    source_data->overlay_validator);
+    reflector->OnSourceSurfaceReady(source_surface);
   }
   return std::move(reflector);
 }

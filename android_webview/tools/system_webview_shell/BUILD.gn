@@ -32,6 +32,7 @@ android_apk("system_webview_shell_apk") {
     "apk/src/org/chromium/webview_shell/WebViewTracingActivity.java",
   ]
   android_manifest = "apk/AndroidManifest.xml"
+  target_sdk_version = 28
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",

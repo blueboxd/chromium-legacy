@@ -201,7 +201,7 @@ bool VulkanDeviceQueue::Initialize(
   return true;
 }
 
-bool VulkanDeviceQueue::InitializeForWevbView(
+bool VulkanDeviceQueue::InitializeForWebView(
     VkPhysicalDevice vk_physical_device,
     VkDevice vk_device,
     VkQueue vk_queue,

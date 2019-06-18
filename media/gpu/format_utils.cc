@@ -37,7 +37,7 @@ VideoPixelFormat GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format) {
   }
 }
 
-gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
+base::Optional<gfx::BufferFormat> VideoPixelFormatToGfxBufferFormat(
     VideoPixelFormat pixel_format) {
   switch (pixel_format) {
     case PIXEL_FORMAT_ARGB:
@@ -59,8 +59,8 @@ gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
       return gfx::BufferFormat::RGBX_8888;
 
     default:
-      LOG(FATAL) << "Unsupported VideoPixelFormat: " << pixel_format;
-      return gfx::BufferFormat::BGRX_8888;
+      DLOG(WARNING) << "Unsupported VideoPixelFormat: " << pixel_format;
+      return base::nullopt;
   }
 }
 

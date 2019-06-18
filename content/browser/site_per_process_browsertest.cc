@@ -72,6 +72,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/actions_parser.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -7893,8 +7894,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
 }
 
-// Helper filter class to wait for a ShowCreatedWindow or ShowWidget message,
-// record the routing ID from the message, and then drop the message.
+// Helper filter class to wait for a ShowWidget message, record the routing ID
+// from the message, and then drop the message.
 const uint32_t kMessageClasses[] = {ViewMsgStart, FrameMsgStart};
 class PendingWidgetMessageFilter : public BrowserMessageFilter {
  public:
@@ -7905,7 +7906,6 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PendingWidgetMessageFilter, message)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -7947,6 +7947,38 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PendingWidgetMessageFilter);
 };
 
+// Intercepts calls to RenderFramHost's ShowCreatedWindow mojo method, and
+// invokes the provided callback.
+class ShowCreatedWindowInterceptor
+    : public mojom::FrameHostInterceptorForTesting {
+ public:
+  ShowCreatedWindowInterceptor(
+      RenderFrameHostImpl* render_frame_host,
+      base::RepeatingCallback<void(int32_t pending_widget_routing_id)>
+          test_callback)
+      : render_frame_host_(render_frame_host),
+        test_callback_(std::move(test_callback)) {
+    render_frame_host_->frame_host_binding_for_testing().SwapImplForTesting(
+        this);
+  }
+
+  ~ShowCreatedWindowInterceptor() override {}
+
+  FrameHost* GetForwardingInterface() override { return render_frame_host_; }
+
+  void ShowCreatedWindow(int32_t pending_widget_routing_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override {
+    test_callback_.Run(pending_widget_routing_id);
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  base::RepeatingCallback<void(int32_t pending_widget_routing_id)>
+      test_callback_;
+};
+
 // Test for https://crbug.com/612276.  Simultaneously open two new windows from
 // two subframes in different processes, where each subframe process's next
 // routing ID is the same.  Make sure that both windows are created properly.
@@ -7965,44 +7997,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child1 = root->child_at(0);
   FrameTreeNode* child2 = root->child_at(1);
-  RenderProcessHost* process1 = child1->current_frame_host()->GetProcess();
-  RenderProcessHost* process2 = child2->current_frame_host()->GetProcess();
+  RenderFrameHostImpl* frame1 = child1->current_frame_host();
+  RenderFrameHostImpl* frame2 = child2->current_frame_host();
+  RenderProcessHost* process1 = frame1->GetProcess();
+  RenderProcessHost* process2 = frame2->GetProcess();
 
   // Call window.open simultaneously in both subframes to create two popups.
-  // Wait for and then drop both FrameHostMsg_ShowCreatedWindow messages.  This
-  // will ensure that both CreateNewWindow calls happen before either
-  // ShowCreatedWindow call.
-  scoped_refptr<PendingWidgetMessageFilter> filter1 =
-      new PendingWidgetMessageFilter();
-  process1->AddFilter(filter1.get());
+  // Wait for and then drop both ShowCreatedWindow messages.  This will ensure
+  // that both CreateNewWindow calls happen before either ShowCreatedWindow
+  // call.
+  base::RunLoop run_loop1;
+  int32_t routing_id1;
+  ShowCreatedWindowInterceptor interceptor1(
+      frame1,
+      base::BindLambdaForTesting([&](int32_t pending_widget_routing_id) {
+        routing_id1 = pending_widget_routing_id;
+        run_loop1.Quit();
+      }));
   EXPECT_TRUE(ExecuteScript(child1, "window.open();"));
-  filter1->Wait();
+  run_loop1.Run();
 
-  scoped_refptr<PendingWidgetMessageFilter> filter2 =
-      new PendingWidgetMessageFilter();
-  process2->AddFilter(filter2.get());
+  base::RunLoop run_loop2;
+  int32_t routing_id2;
+  ShowCreatedWindowInterceptor interceptor2(
+      frame2,
+      base::BindLambdaForTesting([&](int32_t pending_widget_routing_id) {
+        routing_id2 = pending_widget_routing_id;
+        run_loop2.Quit();
+      }));
+
   EXPECT_TRUE(ExecuteScript(child2, "window.open();"));
-  filter2->Wait();
+  run_loop2.Run();
 
   // At this point, we should have two pending WebContents.
-  EXPECT_TRUE(base::Contains(
-      web_contents()->pending_contents_,
-      GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_TRUE(base::Contains(
-      web_contents()->pending_contents_,
-      GlobalRoutingID(process2->GetID(), filter2->routing_id())));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_contents_,
+                             GlobalRoutingID(process1->GetID(), routing_id1)));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_contents_,
+                             GlobalRoutingID(process2->GetID(), routing_id2)));
 
   // Both subframes were set up in the same way, so the next routing ID for the
   // new popup windows should match up (this led to the collision in the
   // pending contents map in the original bug).
-  EXPECT_EQ(filter1->routing_id(), filter2->routing_id());
+  EXPECT_EQ(routing_id1, routing_id2);
 
   // Now, simulate that both FrameHostMsg_ShowCreatedWindow messages arrive by
   // showing both of the pending WebContents.
-  web_contents()->ShowCreatedWindow(process1->GetID(), filter1->routing_id(),
+  web_contents()->ShowCreatedWindow(process1->GetID(), routing_id1,
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     gfx::Rect(), true);
-  web_contents()->ShowCreatedWindow(process2->GetID(), filter2->routing_id(),
+  web_contents()->ShowCreatedWindow(process2->GetID(), routing_id2,
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     gfx::Rect(), true);
 

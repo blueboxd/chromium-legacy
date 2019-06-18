@@ -245,7 +245,7 @@ SurfaceElement* DOMAgentViz::GetRootSurfaceElement() {
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     UIElement* parent_element,
     const viz::FrameSinkId& parent_id) {
-  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
+  auto children = std::make_unique<Array<DOM::Node>>();
 
   // Once the FrameSinkElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -257,18 +257,20 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     FrameSinkElement* child_element = CreateFrameSinkElement(
         child_id, parent_element, /*is_root=*/false, has_created_frame_sink);
 
-    children->addItem(BuildTreeForFrameSink(child_element, child_id));
+    children->emplace_back(BuildTreeForFrameSink(child_element, child_id));
     child_element->AddToParentSorted(parent_element);
   }
 
-  return BuildNode("FrameSink", parent_element->GetAttributes(),
+  return BuildNode("FrameSink",
+                   std::make_unique<std::vector<std::string>>(
+                       parent_element->GetAttributes()),
                    std::move(children), parent_element->node_id());
 }
 
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
     UIElement* parent_element,
     const viz::SurfaceId& parent_id) {
-  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
+  auto children = std::make_unique<Array<DOM::Node>>();
 
   // Once the SurfaceElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -286,10 +288,12 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
       child_element->AddToParentSorted(parent_element);
     }
 
-    children->addItem(BuildTreeForSurface(child_element, child_id));
+    children->emplace_back(BuildTreeForSurface(child_element, child_id));
   }
 
-  return BuildNode("Surface", parent_element->GetAttributes(),
+  return BuildNode("Surface",
+                   std::make_unique<std::vector<std::string>>(
+                       parent_element->GetAttributes()),
                    std::move(children), parent_element->node_id());
 }
 

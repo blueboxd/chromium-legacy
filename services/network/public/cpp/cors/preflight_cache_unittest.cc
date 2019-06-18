@@ -29,7 +29,7 @@ class PreflightCacheTest : public testing::Test {
   PreflightCache* cache() { return &cache_; }
 
   std::unique_ptr<PreflightResult> CreateEntry() {
-    return PreflightResult::Create(mojom::FetchCredentialsMode::kInclude,
+    return PreflightResult::Create(mojom::CredentialsMode::kInclude,
                                    std::string("POST"), base::nullopt,
                                    std::string("5"), nullptr);
   }
@@ -40,7 +40,7 @@ class PreflightCacheTest : public testing::Test {
 
   bool CheckEntryAndRefreshCache(const std::string& origin, const GURL& url) {
     return cache_.CheckIfRequestCanSkipPreflight(
-        origin, url, network::mojom::FetchCredentialsMode::kInclude, "POST",
+        origin, url, network::mojom::CredentialsMode::kInclude, "POST",
         net::HttpRequestHeaders(), false);
   }
 

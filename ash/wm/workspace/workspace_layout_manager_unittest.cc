@@ -1806,7 +1806,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 // Test that backdrop works in split view mode.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
   ShowTopWindowBackdropForContainer(default_container(), true);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:

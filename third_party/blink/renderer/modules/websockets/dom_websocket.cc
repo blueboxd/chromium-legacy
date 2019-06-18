@@ -679,7 +679,9 @@ void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
   event_queue_->ContextDestroyed();
   if (channel_) {
-    channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
+    if (state_ == kOpen) {
+      channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
+    }
     ReleaseChannel();
   }
   if (state_ != kClosed)

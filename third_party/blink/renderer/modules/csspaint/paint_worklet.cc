@@ -164,8 +164,15 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
     // Notify the generator ready only when register paint is called the
     // second time with the same |name| (i.e. there is already a document
     // definition associated with |name|
+    //
+    // We are looking for kNumGlobalScopesPerThread number of definitions
+    // regiserered from RegisterCSSPaintDefinition and one extra definition from
+    // RegisterMainThreadDocumentPaintDefinition if OffMainThreadCSSPaintEnabled
+    // is true.
     if (existing_document_definition->GetRegisteredDefinitionCount() ==
-        PaintWorklet::kNumGlobalScopesPerThread)
+                RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
+            ? kNumGlobalScopesPerThread + 1
+            : kNumGlobalScopesPerThread)
       pending_generator_registry_->NotifyGeneratorReady(name);
   } else {
     auto document_definition = std::make_unique<DocumentPaintDefinition>(
@@ -183,18 +190,38 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     Vector<String> custom_properties,
     Vector<CSSSyntaxDescriptor> input_argument_types,
     double alpha) {
-  // Because this method is called cross-thread, |custom_properties| cannot be
-  // an AtomicString. Instead, convert to AtomicString now that we are on the
-  // main thread.
-  Vector<AtomicString> new_custom_properties;
-  new_custom_properties.ReserveInitialCapacity(custom_properties.size());
-  for (const String& property : custom_properties)
-    new_custom_properties.push_back(AtomicString(property));
-  auto definition = std::make_unique<DocumentPaintDefinition>(
-      std::move(native_properties), std::move(new_custom_properties),
-      std::move(input_argument_types), alpha);
-  document_definition_map_.insert(name, std::move(definition));
-  pending_generator_registry_->NotifyGeneratorReady(name);
+  if (document_definition_map_.Contains(name)) {
+    DocumentPaintDefinition* document_definition =
+        document_definition_map_.at(name);
+    if (!document_definition)
+      return;
+    if (!document_definition->RegisterAdditionalPaintDefinition(
+            native_properties, custom_properties, input_argument_types,
+            alpha)) {
+      document_definition_map_.Set(name, nullptr);
+      return;
+    }
+  } else {
+    // Because this method is called cross-thread, |custom_properties| cannot be
+    // an AtomicString. Instead, convert to AtomicString now that we are on the
+    // main thread.
+    Vector<AtomicString> new_custom_properties;
+    new_custom_properties.ReserveInitialCapacity(custom_properties.size());
+    for (const String& property : custom_properties)
+      new_custom_properties.push_back(AtomicString(property));
+    auto document_definition = std::make_unique<DocumentPaintDefinition>(
+        std::move(native_properties), std::move(new_custom_properties),
+        std::move(input_argument_types), alpha);
+    document_definition_map_.insert(name, std::move(document_definition));
+  }
+  DocumentPaintDefinition* document_definition =
+      document_definition_map_.at(name);
+  // We are looking for kNumGlobalScopesPerThread number of definitions
+  // registered from RegisterCSSPaintDefinition and one extra definition from
+  // RegisterMainThreadDocumentPaintDefinition
+  if (document_definition->GetRegisteredDefinitionCount() ==
+      kNumGlobalScopesPerThread + 1)
+    pending_generator_registry_->NotifyGeneratorReady(name);
 }
 
 bool PaintWorklet::NeedsToCreateGlobalScope() {

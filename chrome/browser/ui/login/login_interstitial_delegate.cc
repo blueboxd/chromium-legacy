@@ -45,7 +45,7 @@ void LoginInterstitialDelegate::CommandReceived(const std::string& command) {
 }
 
 content::InterstitialPageDelegate::TypeID
-LoginInterstitialDelegate::GetTypeForTesting() const {
+LoginInterstitialDelegate::GetTypeForTesting() {
   return LoginInterstitialDelegate::kTypeForTesting;
 }
 

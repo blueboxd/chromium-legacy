@@ -26,6 +26,12 @@ group("android_tools") {
   }
 }
 
+group("fincore") {
+  deps = [
+    "//tools/android/fincore",
+  ]
+}
+
 group("memdump") {
   deps = [
     "//tools/android/memdump",

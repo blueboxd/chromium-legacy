@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -36,6 +35,10 @@
 class Browser;
 class Profile;
 class SwitchAccessEventHandlerDelegate;
+
+namespace ash {
+struct AccessibilityFocusRingInfo;
+}  // namespace ash
 
 namespace gfx {
 class Rect;
@@ -291,8 +294,9 @@ class AccessibilityManager
   bool ToggleDictation();
 
   // Sets the focus ring with the given ID based on |focus_ring|.
-  void SetFocusRing(std::string focus_ring_id,
-                    ash::mojom::FocusRingPtr focus_ring);
+  void SetFocusRing(
+      std::string focus_ring_id,
+      std::unique_ptr<ash::AccessibilityFocusRingInfo> focus_ring);
 
   // Hides focus ring on screen.
   void HideFocusRing(std::string caller_id);
@@ -464,11 +468,6 @@ class AccessibilityManager
 
   // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
-
-  // Ash's mojom::AccessibilityFocusRingController used to request Ash's a11y
-  // focus ring feature.
-  ash::mojom::AccessibilityFocusRingControllerPtr
-      accessibility_focus_ring_controller_;
 
   std::map<std::string, std::set<std::string>>
       focus_ring_names_for_extension_id_;

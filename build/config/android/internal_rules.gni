@@ -924,6 +924,10 @@ if (enable_java_templates) {
           ]
         }
       }
+
+      if (defined(invoker.min_sdk_version)) {
+        args += [ "--min-sdk-version=${invoker.min_sdk_version}" ]
+      }
     }
   }
 
@@ -1768,21 +1772,14 @@ if (enable_java_templates) {
         rebase_path(invoker.output_manifest, root_build_dir),
         "--extras",
         "@FileArg($_rebased_build_config:extra_android_manifests)",
+        "--min-sdk-version=${invoker.min_sdk_version}",
+        "--target-sdk-version=${invoker.target_sdk_version}",
       ]
 
-      if (defined(invoker.expected_manifest)) {
-        inputs += [ invoker.expected_manifest ]
-        _normalized_output = "${invoker.output_manifest}.normalized"
-        outputs += [ _normalized_output ]
-        args += [
-          "--expected-manifest",
-          rebase_path(invoker.expected_manifest, root_build_dir),
-          "--normalized-output",
-          rebase_path(_normalized_output, root_build_dir),
-        ]
-        if (check_android_configuration) {
-          args += [ "--verify-expected-manifest" ]
-        }
+      # TODO(crbug.com/891996): Only activate for non-Chromium code once
+      # downstream has been updated.
+      if ((defined(invoker.chromium_code) && !invoker.chromium_code) || true) {
+        args += [ "--allow-uses-sdk" ]
       }
     }
   }
@@ -2136,6 +2133,8 @@ if (enable_java_templates) {
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
+        "--min-sdk-version=${invoker.min_sdk_version}",
+        "--target-sdk-version=${invoker.target_sdk_version}",
       ]
 
       inputs += [ invoker.android_manifest ]
@@ -2351,6 +2350,24 @@ if (enable_java_templates) {
         _rebased_ids_path = rebase_path(_resource_ids_path, root_out_dir)
         args += [ "--use-resource-ids-path=$_rebased_ids_path" ]
         deps += [ _compile_res_dep ]
+      }
+      if (defined(invoker.max_sdk_version)) {
+        _max_sdk_version = invoker.max_sdk_version
+        args += [ "--max-sdk-version=$_max_sdk_version" ]
+      }
+      if (defined(invoker.expected_manifest)) {
+        inputs += [ invoker.expected_manifest ]
+        _normalized_output = "${invoker.android_manifest}.normalized"
+        outputs += [ _normalized_output ]
+        args += [
+          "--android-manifest-expected",
+          rebase_path(invoker.expected_manifest, root_build_dir),
+          "--android-manifest-normalized",
+          rebase_path(_normalized_output, root_build_dir),
+        ]
+        if (check_android_configuration) {
+          args += [ "--fail-if-unexpected-android-manifest" ]
+        }
       }
     }
 
@@ -3090,6 +3107,8 @@ if (enable_java_templates) {
   #    from the final .jar file.
   #  jar_included_patterns: Optional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
+  #  min_sdk_version: Optional. The minimum Android SDK version this target
+  #    supports.
   #
   # For 'android_apk' and 'android_app_bundle_module' targets only:
   #
@@ -3432,6 +3451,9 @@ if (enable_java_templates) {
     # TODO(agrieve): Enable lint for _has_sources rather than just _java_files.
     _lint_enabled = _java_files != [] && _supports_android && _chromium_code &&
                     !disable_android_lint
+    if (!_lint_enabled && defined(invoker.min_sdk_version)) {
+      not_needed(invoker, [ "min_sdk_version" ])
+    }
     if (defined(invoker.enable_errorprone)) {
       _enable_errorprone = invoker.enable_errorprone
     } else {
@@ -3502,6 +3524,7 @@ if (enable_java_templates) {
       if (_lint_enabled) {
         _android_lint_target = "${_main_target_name}__lint"
         android_lint(_android_lint_target) {
+          forward_variables_from(invoker, [ "min_sdk_version" ])
           if (invoker.type == "android_apk" ||
               invoker.type == "android_app_bundle_module") {
             forward_variables_from(invoker, [ "android_manifest" ])

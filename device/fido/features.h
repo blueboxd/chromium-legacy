@@ -24,6 +24,10 @@ extern const base::Feature kWebAuthPINSupport;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthResidentKeys;
 
+// Enable biometric enrollment in the security keys settings UI.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthBiometricEnrollment;
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

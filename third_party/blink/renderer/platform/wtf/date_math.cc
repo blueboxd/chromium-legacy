@@ -685,8 +685,8 @@ double ParseDateFromNullTerminatedCharacters(const char* date_string) {
 }
 
 // See http://tools.ietf.org/html/rfc2822#section-3.3 for more information.
-String MakeRFC2822DateString(const Time date, int utc_offset) {
-  Time::Exploded time_exploded;
+String MakeRFC2822DateString(const base::Time date, int utc_offset) {
+  base::Time::Exploded time_exploded;
   date.UTCExplode(&time_exploded);
 
   StringBuilder string_builder;

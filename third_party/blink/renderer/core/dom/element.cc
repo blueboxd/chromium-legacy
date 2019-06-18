@@ -1589,6 +1589,24 @@ const AtomicString& Element::getAttributeNS(
   return getAttribute(QualifiedName(g_null_atom, local_name, namespace_uri));
 }
 
+std::pair<wtf_size_t, const QualifiedName>
+Element::LookupAttributeQNameInternal(const AtomicString& local_name) const {
+  AtomicString case_adjusted_local_name = LowercaseIfNecessary(local_name);
+  if (!GetElementData()) {
+    return std::make_pair(
+        kNotFound,
+        QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom));
+  }
+
+  AttributeCollection attributes = GetElementData()->Attributes();
+  wtf_size_t index = attributes.FindIndex(case_adjusted_local_name);
+  return std::make_pair(
+      index,
+      index != kNotFound
+          ? attributes[index].GetName()
+          : QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom));
+}
+
 void Element::setAttribute(const AtomicString& local_name,
                            const AtomicString& value,
                            ExceptionState& exception_state) {
@@ -1600,22 +1618,9 @@ void Element::setAttribute(const AtomicString& local_name,
   }
 
   SynchronizeAttribute(local_name);
-  AtomicString case_adjusted_local_name = LowercaseIfNecessary(local_name);
-
-  if (!GetElementData()) {
-    SetAttributeInternal(
-        kNotFound,
-        QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom),
-        value, kNotInSynchronizationOfLazyAttribute);
-    return;
-  }
-
-  AttributeCollection attributes = GetElementData()->Attributes();
-  wtf_size_t index = attributes.FindIndex(case_adjusted_local_name);
-  const QualifiedName& q_name =
-      index != kNotFound
-          ? attributes[index].GetName()
-          : QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom);
+  wtf_size_t index;
+  QualifiedName q_name = QualifiedName::Null();
+  std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
   SetAttributeInternal(index, q_name, value,
                        kNotInSynchronizationOfLazyAttribute);
 }
@@ -1644,41 +1649,62 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 }
 
 void Element::setAttribute(
-    const AtomicString& name,
+    const AtomicString& local_name,
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_TT,
     ExceptionState& exception_state) {
-  // TODO(vogelheim): Check whether this applies to non-HTML documents, too.
-  AtomicString name_lowercase = LowercaseIfNecessary(name);
-  const AttrNameToTrustedType* attribute_types = &GetCheckedAttributeTypes();
-  AttrNameToTrustedType::const_iterator it =
-      attribute_types->find(name_lowercase);
-  if (it != attribute_types->end()) {
-    String attr_value = GetStringFromSpecificTrustedType(
-        string_or_TT, it->value, &GetDocument(), exception_state);
-    if (!exception_state.HadException())
-      setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
-    return;
-  } else if (name_lowercase.StartsWith("on")) {
-    // TODO(jakubvrana): This requires TrustedScript in all attributes starting
-    // with "on", including e.g. "one". We use this pattern elsewhere (e.g. in
-    // IsEventHandlerAttribute) but it's not ideal. Consider using the event
-    // attribute of the resulting AttributeTriggers.
-    String attr_value = GetStringFromSpecificTrustedType(
-        string_or_TT, SpecificTrustedType::kTrustedScript, &GetDocument(),
-        exception_state);
-    if (!exception_state.HadException())
-      setAttribute(name_lowercase, AtomicString(attr_value), exception_state);
+  if (!Document::IsValidName(local_name)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidCharacterError,
+        "'" + local_name + "' is not a valid attribute name.");
     return;
   }
-  AtomicString value_string =
-      AtomicString(GetStringFromTrustedTypeWithoutCheck(string_or_TT));
-  setAttribute(name_lowercase, value_string, exception_state);
+
+  SynchronizeAttribute(local_name);
+  wtf_size_t index;
+  QualifiedName q_name = QualifiedName::Null();
+  std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
+  String value = GetStringFromSpecificTrustedType(
+      string_or_TT, ExpectedTrustedTypeForAttribute(q_name), &GetDocument(),
+      exception_state);
+  if (exception_state.HadException())
+    return;
+  SetAttributeInternal(index, q_name, AtomicString(value),
+                       kNotInSynchronizationOfLazyAttribute);
 }
 
 const AttrNameToTrustedType& Element::GetCheckedAttributeTypes() const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map, ({}));
   return attribute_map;
+}
+
+SpecificTrustedType Element::ExpectedTrustedTypeForAttribute(
+    const QualifiedName& q_name) const {
+  // There are only a handful of namespaced attributes we care about
+  // (xlink:href), and all of those have identical Trusted Types
+  // properties to their namespace-less counterpart. So we check whether this
+  // is one of SVG's 'known' attributes, and if so just check the local
+  // name part as usual.
+  if (!q_name.NamespaceURI().IsNull() &&
+      !SVGAnimatedHref::IsKnownAttribute(q_name)) {
+    return SpecificTrustedType::kNone;
+  }
+
+  const AttrNameToTrustedType* attribute_types = &GetCheckedAttributeTypes();
+  AttrNameToTrustedType::const_iterator iter =
+      attribute_types->find(q_name.LocalName());
+  if (iter != attribute_types->end())
+    return iter->value;
+
+  if (q_name.LocalName().StartsWith("on")) {
+    // TODO(jakubvrana): This requires TrustedScript in all attributes
+    // starting with "on", including e.g. "one". We use this pattern elsewhere
+    // (e.g. in IsEventHandlerAttribute) but it's not ideal. Consider using
+    // the event attribute of the resulting AttributeTriggers.
+    return SpecificTrustedType::kTrustedScript;
+  }
+
+  return SpecificTrustedType::kNone;
 }
 
 void Element::setAttribute(const QualifiedName& name,
@@ -2202,28 +2228,47 @@ void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
   const ComputedStyle* style = GetComputedStyle();
-  if ((!style || style->IsEnsuredInDisplayNone()) &&
-      !ChildNeedsReattachLayoutTree()) {
+  bool being_rendered =
+      context.parent && style && !style->IsEnsuredInDisplayNone();
+  if (!being_rendered && !ChildNeedsReattachLayoutTree()) {
     Node::AttachLayoutTree(context);
     return;
   }
 
   AttachContext children_context(context);
+  LayoutObject* layout_object = nullptr;
+  if (CanParticipateInFlatTree()) {
+    if (being_rendered) {
+      // If an element requires forced legacy layout, all descendants need it
+      // too.
+      if (ShouldForceLegacyLayout())
+        children_context.force_legacy_layout = true;
+      LegacyLayout legacy = children_context.force_legacy_layout
+                                ? LegacyLayout::kForce
+                                : LegacyLayout::kAuto;
+      LayoutTreeBuilderForElement builder(*this, context, style, legacy);
+      builder.CreateLayoutObject();
 
-  if (style && CanParticipateInFlatTree()) {
-    // If an element requires forced legacy layout, all descendants need it too.
-    if (ShouldForceLegacyLayout())
-      children_context.force_legacy_layout = true;
-    LegacyLayout legacy = children_context.force_legacy_layout
-                              ? LegacyLayout::kForce
-                              : LegacyLayout::kAuto;
-    LayoutTreeBuilderForElement builder(*this, style, legacy);
-    builder.CreateLayoutObjectIfNeeded();
+      layout_object = GetLayoutObject();
+      if (layout_object) {
+        children_context.previous_in_flow = nullptr;
+        children_context.parent = layout_object;
+        children_context.next_sibling = nullptr;
+      } else if (style->Display() != EDisplay::kContents) {
+        // The layout object creation was suppressed for other reasons than
+        // being display:none or display:contents (E.g.
+        // LayoutObject::CanHaveChildren() returning false). Make sure we don't
+        // attempt to create LayoutObjects further down the subtree.
+        children_context.parent = nullptr;
+      }
+      // For display:contents elements, we keep the previous_in_flow,
+      // next_sibling, and parent, in the context for attaching children.
+    } else {
+      // We are a display:none element. Set the parent to nullptr to make sure
+      // we never create any child layout boxes.
+      children_context.parent = nullptr;
+    }
   }
-
-  LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object)
-    children_context.previous_in_flow = nullptr;
   children_context.use_previous_in_flow = true;
 
   AttachPseudoElement(kPseudoIdBefore, children_context);
@@ -2627,11 +2672,9 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
-    if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(*this)) {
-      const LayoutObject* parent_object = parent->GetLayoutObject();
-      if (parent_object && parent_object->ForceLegacyLayout())
-        reattach_context.force_legacy_layout = true;
-    }
+    InitAttachContextParentAndSibling(reattach_context, *this);
+    if (reattach_context.parent && reattach_context.parent->ForceLegacyLayout())
+      reattach_context.force_legacy_layout = true;
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
@@ -3262,14 +3305,17 @@ void Element::setAttributeNS(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
         string_or_TT,
     ExceptionState& exception_state) {
-  String value =
-      GetStringFromTrustedType(string_or_TT, &GetDocument(), exception_state);
-  if (exception_state.HadException())
-    return;
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
                           exception_state))
     return;
+
+  String value = GetStringFromSpecificTrustedType(
+      string_or_TT, ExpectedTrustedTypeForAttribute(parsed_name),
+      &GetDocument(), exception_state);
+  if (exception_state.HadException())
+    return;
+
   setAttribute(parsed_name, AtomicString(value));
 }
 

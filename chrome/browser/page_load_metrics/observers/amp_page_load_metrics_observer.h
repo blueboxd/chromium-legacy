@@ -113,6 +113,9 @@ class AMPPageLoadMetricsObserver
     bool amp_document_loaded = false;
   };
 
+  void RecordLoadingBehaviorObserved(
+      const page_load_metrics::PageLoadExtraInfo& info);
+
   void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle);
   void MaybeRecordAmpDocumentMetrics();
 
@@ -125,6 +128,9 @@ class AMPPageLoadMetricsObserver
   std::map<content::RenderFrameHost*, SubFrameInfo> amp_subframe_info_;
 
   GURL current_url_;
+
+  bool observed_amp_main_frame_ = false;
+  bool observed_amp_sub_frame_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AMPPageLoadMetricsObserver);
 };

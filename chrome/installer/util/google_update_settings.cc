@@ -52,7 +52,8 @@ namespace {
 
 base::LazySequencedTaskRunner g_collect_stats_consent_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::TaskPriority::USER_VISIBLE,
+        base::TaskTraits(base::ThreadPool(),
+                         base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
 // Reads the value |name| from the app's ClientState registry key in |root| into

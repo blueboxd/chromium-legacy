@@ -74,7 +74,15 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       serving_(nullptr),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       on_device_search_request_id_(0),
-      weak_ptr_factory_(this) {}
+      observer_(this),
+      weak_ptr_factory_(this) {
+  if (client_ != nullptr) {
+    auto* component_update_service = client_->GetComponentUpdateService();
+    if (component_update_service != nullptr) {
+      observer_.Add(component_update_service);
+    }
+  }
+}
 
 OnDeviceHeadProvider::~OnDeviceHeadProvider() {
   serving_.reset();
@@ -203,4 +211,17 @@ void OnDeviceHeadProvider::SearchDone(
 
   done_ = true;
   listener_->OnProviderUpdate(true);
+}
+
+// We use component updater to fetch the on device model, which will fire
+// Events::COMPONENT_UPDATED when the download is finished. In this case we will
+// reload the new model and maybe clean up the old one.
+void OnDeviceHeadProvider::OnEvent(Events event, const std::string& id) {
+  // TODO(crbug.com/925072): Returns early if the given id does not match on
+  // device head model updater.
+  if (event != Events::COMPONENT_UPDATED)
+    return;
+
+  CreateOnDeviceHeadServingInstance();
+  // TODO(crbug.com/925072): Cleans up the old model.
 }

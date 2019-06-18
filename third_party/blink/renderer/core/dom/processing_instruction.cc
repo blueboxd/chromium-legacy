@@ -163,8 +163,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
   loading_ = true;
   if (is_xsl_) {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    params.MutableResourceRequest().SetFetchRequestMode(
-        network::mojom::FetchRequestMode::kSameOrigin);
+    params.MutableResourceRequest().SetMode(
+        network::mojom::RequestMode::kSameOrigin);
     XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher(), this);
   } else {
     params.SetCharset(charset.IsEmpty() ? GetDocument().Encoding()

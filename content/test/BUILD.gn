@@ -1883,7 +1883,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",
     "../renderer/media/webrtc/webrtc_set_description_observer_unittest.cc",
     "../renderer/media/webrtc/webrtc_video_track_source_unittest.cc",
-    "../renderer/media/webrtc_local_audio_source_provider_unittest.cc",
     "../renderer/media_recorder/media_recorder_handler_unittest.cc",
     "../renderer/media_recorder/video_track_recorder_unittest.cc",
     "../renderer/p2p/filtering_network_manager_unittest.cc",

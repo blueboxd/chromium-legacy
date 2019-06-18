@@ -16,12 +16,10 @@
 <dom-module id="print-preview-advanced-settings-dialog">
   <template>
     <style include="print-preview-shared cr-hidden-style">
-      #dialog {
-        --cr-dialog-native: {
-          height: -webkit-fit-content;
-          max-height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-          max-width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
-        };
+      #dialog::part(dialog) {
+        height: -webkit-fit-content;
+        max-height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+        max-width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
       }
 
       print-preview-search-box {

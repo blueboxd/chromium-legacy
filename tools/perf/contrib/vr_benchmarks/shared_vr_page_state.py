@@ -91,6 +91,8 @@ class AndroidSharedVrPageState(_SharedVrPageState):
   def __init__(self, test, finder_options, story_set, possible_browser=None):
     super(AndroidSharedVrPageState, self).__init__(
         test, finder_options, story_set, possible_browser)
+    if self._finder_options.remove_system_vrcore:
+      self._RemoveSystemVrCore()
     if not self._finder_options.disable_vrcore_install:
       self._InstallVrCore()
     self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
@@ -98,6 +100,9 @@ class AndroidSharedVrPageState(_SharedVrPageState):
     self._InstallNfcApk()
     if not self._finder_options.disable_keyboard_install:
       self._InstallKeyboardApk()
+
+  def _RemoveSystemVrCore(self):
+    self.platform.RemoveSystemPackages(['com.google.vr.vrcore'])
 
   def _InstallVrCore(self):
     """Installs the VrCore APK."""

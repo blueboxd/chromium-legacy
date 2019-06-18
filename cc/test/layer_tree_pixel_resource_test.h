@@ -10,12 +10,16 @@
 
 namespace cc {
 
-enum PixelResourceTestCase {
+enum RasterType {
   SOFTWARE,
   GPU,
   ONE_COPY,
   ZERO_COPY,
-  SKIA_GL,
+};
+
+struct PixelResourceTestCase {
+  LayerTreeTest::RendererType renderer_type;
+  RasterType raster_type;
 };
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
@@ -23,6 +27,10 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case,
                                           Layer::LayerMaskType mask_type);
   LayerTreeHostPixelResourceTest();
+
+  RendererType renderer_type() const { return test_case_.renderer_type; }
+
+  RasterType raster_type() const { return test_case_.raster_type; }
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider(
       LayerTreeHostImpl* host_impl) override;
@@ -43,16 +51,6 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
 
   void InitializeFromTestCase(PixelResourceTestCase test_case);
 };
-
-// TODO(sgilhuly): Skia tests are only run with GPU raster. Parameterize further
-// so that they can be run with zero copy and one copy raster.
-#define INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(framework_name)           \
-  INSTANTIATE_TEST_SUITE_P(                                               \
-      PixelResourceTest, framework_name,                                  \
-      ::testing::Combine(                                                 \
-          ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY, SKIA_GL), \
-          ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,    \
-                            Layer::LayerMaskType::MULTI_TEXTURE_MASK)))
 
 class ParameterizedPixelResourceTest
     : public LayerTreeHostPixelResourceTest,

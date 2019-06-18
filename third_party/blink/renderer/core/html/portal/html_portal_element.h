@@ -93,6 +93,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   // HTMLFrameOwnerElement overrides
+  void DisconnectContentFrame() override;
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {
     return ParsedFeaturePolicy();
   }

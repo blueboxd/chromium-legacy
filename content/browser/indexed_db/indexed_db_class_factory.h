@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -19,21 +20,13 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
-
-namespace leveldb {
-class Iterator;
-class Snapshot;
-}  // namespace leveldb
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
-
 class IndexedDBBackingStore;
 class IndexedDBConnection;
 class IndexedDBFactory;
 class IndexedDBTransaction;
-class LevelDBDatabase;
-class LevelDBIteratorImpl;
-class LevelDBTransaction;
 
 // Use this factory to create some IndexedDB objects. Exists solely to
 // facilitate tests which sometimes need to inject mock objects into the system.
@@ -51,8 +44,13 @@ class CONTENT_EXPORT IndexedDBClassFactory {
 
   static void SetIndexedDBClassFactoryGetter(GetterCallback* cb);
 
-  // See IndexedDBDatabase::Create.
-  virtual std::unique_ptr<IndexedDBDatabase> CreateIndexedDBDatabase(
+  // Returns a constructed database, or a leveldb::Status error if there was a
+  // problem initializing the database. |error_callback| is called when a
+  // backing store operation has failed. The database will be closed
+  // (IndexedDBFactory::ForceClose) when the callback is called. |destroy_me|
+  // will destroy the IndexedDBDatabase object.
+  virtual std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
+  CreateIndexedDBDatabase(
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
@@ -70,14 +68,6 @@ class CONTENT_EXPORT IndexedDBClassFactory {
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
-
-  virtual std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
-      std::unique_ptr<leveldb::Iterator> iterator,
-      LevelDBDatabase* db,
-      const leveldb::Snapshot* snapshot);
-
-  virtual scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
-      LevelDBDatabase* db);
 
  protected:
   IndexedDBClassFactory() {}

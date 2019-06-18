@@ -470,7 +470,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new cdm::CdmMessageFilterAndroid(true, false));
 }
 
-bool AwContentBrowserClient::ShouldUseMobileFlingCurve() const {
+bool AwContentBrowserClient::ShouldUseMobileFlingCurve() {
   return true;
 }
 
@@ -1111,16 +1111,16 @@ void AwContentBrowserClient::WillCreateRestrictedCookieManager(
       std::move(orig_request));
 }
 
-std::string AwContentBrowserClient::GetProduct() const {
+std::string AwContentBrowserClient::GetProduct() {
   return android_webview::GetProduct();
 }
 
-std::string AwContentBrowserClient::GetUserAgent() const {
+std::string AwContentBrowserClient::GetUserAgent() {
   return android_webview::GetUserAgent();
 }
 
 content::ContentBrowserClient::WideColorGamutHeuristic
-AwContentBrowserClient::GetWideColorGamutHeuristic() const {
+AwContentBrowserClient::GetWideColorGamutHeuristic() {
   if (base::FeatureList::IsEnabled(features::kWebViewWideColorGamutSupport))
     return WideColorGamutHeuristic::kUseWindow;
   return WideColorGamutHeuristic::kNone;

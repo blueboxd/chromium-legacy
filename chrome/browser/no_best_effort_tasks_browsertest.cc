@@ -24,6 +24,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -125,6 +126,25 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintFromNetwork) {
       embedded_test_server()->GetURL("a.com", "/empty.html"),
       content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_TYPED, false);
+  content::WebContents* const web_contents = browser()->OpenURL(open);
+  EXPECT_TRUE(web_contents->IsLoading());
+
+  RunLoopUntilLoadedAndPainted run_until_loaded_and_painted(web_contents);
+  run_until_loaded_and_painted.Run();
+}
+
+// Verify that it is possible to load and paint a file:// URL without running
+// BEST_EFFORT tasks. Regression test for https://crbug.com/973244.
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintFileScheme) {
+  constexpr base::FilePath::CharType kFile[] = FILE_PATH_LITERAL("links.html");
+  GURL file_url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kFile)));
+  ASSERT_TRUE(file_url.SchemeIs(url::kFileScheme));
+
+  content::OpenURLParams open(file_url, content::Referrer(),
+                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                              ui::PAGE_TRANSITION_TYPED, false);
   content::WebContents* const web_contents = browser()->OpenURL(open);
   EXPECT_TRUE(web_contents->IsLoading());
 

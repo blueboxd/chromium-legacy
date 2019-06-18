@@ -8,19 +8,17 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
-#include "base/bind.h"
+#include "ash/system/message_center/fullscreen_notification_blocker.h"
+#include "ash/system/message_center/inactive_user_notification_blocker.h"
+#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "base/command_line.h"
-#include "base/unguessable_token.h"
-#include "components/account_id/account_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -79,32 +77,6 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
-  message_center::RegisterVectorIcons({&vector_icons::kBusinessIcon,
-                                       &kNotificationAssistantIcon,
-                                       &kNotificationCaptivePortalIcon,
-                                       &kNotificationCellularAlertIcon,
-                                       &kNotificationDownloadIcon,
-                                       &kNotificationEndOfSupportIcon,
-                                       &kNotificationFamilyLinkIcon,
-                                       &kNotificationGoogleIcon,
-                                       &kNotificationImageIcon,
-                                       &kNotificationInstalledIcon,
-                                       &kNotificationLinuxIcon,
-                                       &kNotificationMessagesIcon,
-                                       &kNotificationMultiDeviceSetupIcon,
-                                       &kNotificationMobileDataIcon,
-                                       &kNotificationMobileDataOffIcon,
-                                       &kNotificationPlayPrismIcon,
-                                       &kNotificationPrintingDoneIcon,
-                                       &kNotificationPrintingIcon,
-                                       &kNotificationPrintingWarningIcon,
-                                       &kNotificationSettingsIcon,
-                                       &kNotificationStorageFullIcon,
-                                       &kNotificationSupervisedUserIcon,
-                                       &kNotificationVpnIcon,
-                                       &kNotificationWarningIcon,
-                                       &kNotificationWifiOffIcon});
-
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
   message_center::MessageCenter::Get()->SetSystemNotificationAppName(
@@ -128,17 +100,6 @@ void MessageCenterController::BindRequest(
   binding_set_.AddBinding(this, std::move(request));
 }
 
-void MessageCenterController::SetNotifierEnabled(const NotifierId& notifier_id,
-                                                 bool enabled) {
-  client_->SetNotifierEnabled(notifier_id, enabled);
-}
-
-void MessageCenterController::SetClient(
-    mojom::AshMessageCenterClientAssociatedPtrInfo client) {
-  DCHECK(!client_.is_bound());
-  client_.Bind(std::move(client));
-}
-
 void MessageCenterController::SetArcNotificationsInstance(
     arc::mojom::NotificationsInstancePtr arc_notification_instance) {
   if (!arc_notification_manager_) {
@@ -153,61 +114,8 @@ void MessageCenterController::SetArcNotificationsInstance(
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
 
-void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
-                                                 const gfx::ImageSkia& icon) {
-  for (auto& listener : notifier_settings_listeners_)
-    listener.UpdateNotifierIcon(notifier_id, icon);
-}
-
-void MessageCenterController::NotifierEnabledChanged(
-    const NotifierId& notifier_id,
-    bool enabled) {
-  if (!enabled)
-    MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
-}
-
 void MessageCenterController::SetQuietMode(bool enabled) {
   MessageCenter::Get()->SetQuietMode(enabled);
-}
-
-void MessageCenterController::GetArcAppIdByPackageName(
-    const std::string& package_name,
-    GetAppIdByPackageNameCallback callback) {
-  DCHECK(client_.is_bound());
-  client_->GetArcAppIdByPackageName(package_name, std::move(callback));
-}
-
-void MessageCenterController::AddNotifierSettingsListener(
-    NotifierSettingsListener* listener) {
-  DCHECK(listener);
-  notifier_settings_listeners_.AddObserver(listener);
-}
-
-void MessageCenterController::RemoveNotifierSettingsListener(
-    NotifierSettingsListener* listener) {
-  DCHECK(listener);
-  notifier_settings_listeners_.RemoveObserver(listener);
-}
-
-void MessageCenterController::RequestNotifierSettingsUpdate() {
-  // |client_| may not be bound in unit tests.
-  if (!client_.is_bound())
-    return;
-
-  client_->GetNotifierList(base::BindOnce(
-      &MessageCenterController::OnGotNotifierList, base::Unretained(this)));
-}
-
-void MessageCenterController::OnGotNotifierList(
-    std::vector<mojom::NotifierUiDataPtr> ui_data) {
-  disabled_notifier_count_ = 0;
-  for (const auto& notifier : ui_data) {
-    if (!notifier->enabled)
-      ++disabled_notifier_count_;
-  }
-
-  for (auto& listener : notifier_settings_listeners_)
-    listener.OnNotifierListUpdated(ui_data);
 }
 
 }  // namespace ash

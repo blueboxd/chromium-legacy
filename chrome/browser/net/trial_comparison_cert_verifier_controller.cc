@@ -23,6 +23,8 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/features.h"
+#include "net/net_buildflags.h"
 
 namespace {
 
@@ -58,6 +60,14 @@ bool TrialComparisonCertVerifierController::MaybeAllowedForProfile(
 #if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
   is_official_build = true;
 #endif
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  // If the builtin verifier is enabled as the default verifier, the trial does
+  // not make sense.
+  if (base::FeatureList::IsEnabled(net::features::kCertVerifierBuiltinFeature))
+    return false;
+#endif
+
   return is_official_build &&
          base::FeatureList::IsEnabled(
              features::kCertDualVerificationTrialFeature) &&

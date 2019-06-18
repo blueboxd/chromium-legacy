@@ -135,6 +135,10 @@ class PreviewsUITabHelper
   // and a preview was shown.
   void MaybeRecordPreviewReload(content::NavigationHandle* navigation_handle);
 
+  // Show the user the Infobar if they need to be to notified that Lite mode
+  // now optimizes HTTPS pages when HintsFetcher is enabled.
+  void MaybeShowInfoBarForHintsFetcher();
+
   // True if the UI for a preview has been shown for the page.
   bool displayed_preview_ui_ = false;
 

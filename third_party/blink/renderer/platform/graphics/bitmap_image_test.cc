@@ -620,10 +620,10 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
   }
   size_t FrameCount() override { return frame_count_; }
   int RepetitionCount() const override { return repetition_count_; }
-  TimeDelta FrameDuration() const override { return duration_; }
+  base::TimeDelta FrameDuration() const override { return duration_; }
 
  protected:
-  TimeDelta duration_;
+  base::TimeDelta duration_;
   int repetition_count_;
   size_t frame_count_;
   bool last_frame_complete_;
@@ -652,7 +652,7 @@ TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
   }
 
   // Now the load is finished.
-  duration_ = TimeDelta::FromSeconds(1);
+  duration_ = base::TimeDelta::FromSeconds(1);
   repetition_count_ = kAnimationLoopInfinite;
   frame_count_ = 6u;
   last_frame_complete_ = true;

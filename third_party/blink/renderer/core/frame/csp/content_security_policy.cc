@@ -185,10 +185,11 @@ void ContentSecurityPolicy::SetupSelf(const ContentSecurityPolicy& other) {
 void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   DCHECK(delegate_);
 
-  const SecurityOrigin* security_origin = delegate_->GetSecurityOrigin();
-  DCHECK(security_origin);
+  const SecurityOrigin* self_origin =
+      delegate_->GetSecurityOrigin()->GetOriginOrPrecursorOriginIfOpaque();
+  DCHECK(self_origin);
 
-  SetupSelf(*security_origin);
+  SetupSelf(*self_origin);
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
@@ -1615,13 +1616,10 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
 
 WebContentSecurityPolicyList
 ContentSecurityPolicy::ExposeForNavigationalChecks() const {
-  std::vector<WebContentSecurityPolicy> policies;
-  for (const auto& policy : policies_) {
-    policies.push_back(policy->ExposeForNavigationalChecks());
-  }
-
   WebContentSecurityPolicyList list;
-  list.policies = policies;
+  for (const auto& policy : policies_) {
+    list.policies.emplace_back(policy->ExposeForNavigationalChecks());
+  }
 
   if (self_source_)
     list.self_source = self_source_->ExposeForNavigationalChecks();

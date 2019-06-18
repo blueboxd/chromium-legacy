@@ -99,7 +99,7 @@ bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
   return true;
 }
 
-bool ContentBrowserClient::ShouldUseMobileFlingCurve() const {
+bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
   return false;
 }
 
@@ -152,7 +152,7 @@ void ContentBrowserClient::GetAdditionalViewSourceSchemes(
   GetAdditionalWebUISchemes(additional_schemes);
 }
 
-bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
+bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) {
   return false;
 }
 
@@ -678,7 +678,7 @@ bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy) {
 }
 
 base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
-    int sandbox_type) const {
+    int sandbox_type) {
   // Embedders should override this method and return different SIDs for each
   // sandbox type. Note: All content level tests will run child processes in the
   // same AppContainer.
@@ -942,19 +942,19 @@ content::PreviewsState ContentBrowserClient::DetermineCommittedPreviews(
   return content::PREVIEWS_OFF;
 }
 
-std::string ContentBrowserClient::GetProduct() const {
+std::string ContentBrowserClient::GetProduct() {
   return std::string();
 }
 
-std::string ContentBrowserClient::GetUserAgent() const {
+std::string ContentBrowserClient::GetUserAgent() {
   return std::string();
 }
 
-blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() const {
+blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() {
   return blink::UserAgentMetadata();
 }
 
-base::Optional<gfx::ImageSkia> ContentBrowserClient::GetProductLogo() const {
+base::Optional<gfx::ImageSkia> ContentBrowserClient::GetProductLogo() {
   return base::nullopt;
 }
 
@@ -976,7 +976,7 @@ ui::AXMode ContentBrowserClient::GetAXModeForBrowserContext(
 
 #if defined(OS_ANDROID)
 ContentBrowserClient::WideColorGamutHeuristic
-ContentBrowserClient::GetWideColorGamutHeuristic() const {
+ContentBrowserClient::GetWideColorGamutHeuristic() {
   return WideColorGamutHeuristic::kNone;
 }
 #endif
@@ -991,18 +991,18 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
     const WebContents* web_contents,
     const RenderFrameHost* frame_host,
     bool user_gesture,
-    NavigationDownloadPolicy* download_policy) const {}
+    NavigationDownloadPolicy* download_policy) {}
 
 bool ContentBrowserClient::IsBluetoothScanningBlocked(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) const {
+    const url::Origin& embedding_origin) {
   return false;
 }
 
 void ContentBrowserClient::BlockBluetoothScanning(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) const {}
+    const url::Origin& embedding_origin) {}
 
 }  // namespace content

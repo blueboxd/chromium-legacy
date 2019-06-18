@@ -80,7 +80,7 @@ class DragToOverviewTest : public UIPerformanceTest {
   }
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;

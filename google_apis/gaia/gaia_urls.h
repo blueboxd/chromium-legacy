@@ -52,6 +52,7 @@ class GaiaUrls {
 
   GURL ListAccountsURLWithSource(const std::string& source);
   GURL LogOutURLWithSource(const std::string& source);
+  GURL LogOutURLWithSourceAndContinueURL(const std::string& source);
   GURL GetCheckConnectionInfoURLWithSource(const std::string& source);
 
  private:
@@ -72,6 +73,7 @@ class GaiaUrls {
   GURL signin_chrome_sync_dice_;
   GURL service_login_auth_url_;
   GURL service_logout_url_;
+  GURL continue_url_for_logout_;
   GURL get_user_info_url_;
   GURL token_auth_url_;
   GURL merge_session_url_;

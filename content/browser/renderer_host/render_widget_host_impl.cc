@@ -954,6 +954,10 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
+  bool visible_viewport_size_changed =
+      !old_visual_properties_ ||
+      old_visual_properties_->visible_viewport_size !=
+          visual_properties->visible_viewport_size;
 
   // TODO(jonross): Enable on ChromeOS once blocking mus bugs are fixed:
   // https://crbug.com/920642 https://crbug.com/920006
@@ -995,6 +999,10 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         visual_properties->local_surface_id_allocation->local_surface_id()
             .ToString());
     visual_properties_ack_pending_ = needs_ack;
+    if (delegate() && visible_viewport_size_changed) {
+      delegate()->NotifyVisibleViewportSizeChanged(
+          visual_properties->visible_viewport_size);
+    }
     old_visual_properties_.swap(visual_properties);
     sent_visual_properties = true;
   }
@@ -1296,18 +1304,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-    // When a user starts scrolling while a fling is active, the GSB will arrive
-    // when is_in_gesture_scroll_[gesture_event.SourceDevice()] is still true.
-    // This is because the fling controller defers handling the GFC event
-    // arrived before the GSB and doesn't send a GSE to end the fling; Instead,
-    // it waits for a second GFS to arrive and boost the current active fling if
-    // possible. While GFC handling is deferred the controller suppresses the
-    // GSB and GSU events instead of sending them to the renderer and continues
-    // to progress the fling. So, the renderer doesn't receive two GSB events
-    // without any GSE in between.
-    DCHECK(!is_in_gesture_scroll_[static_cast<int>(
-               gesture_event.SourceDevice())] ||
-           FlingCancellationIsDeferred());
+    DCHECK(
+        !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         true;
   } else if (gesture_event.GetType() ==
@@ -3079,10 +3077,6 @@ void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
 
 void RenderWidgetHostImpl::StopFling() {
   input_router_->StopFling();
-}
-
-bool RenderWidgetHostImpl::FlingCancellationIsDeferred() const {
-  return input_router_->FlingCancellationIsDeferred();
 }
 
 void RenderWidgetHostImpl::SetScreenOrientationForTesting(

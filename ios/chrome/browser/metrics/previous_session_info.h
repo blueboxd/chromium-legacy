@@ -22,6 +22,18 @@ enum class DeviceThermalState {
   kSerious = 3,
   kCritical = 4,
 };
+
+// The values of this enum are persisted representing the state of the last
+// session (which may have been running a different version of the application).
+// Therefore, entries should not be renumbered and numeric values should never
+// be reused.
+enum class DeviceBatteryState {
+  kUnknown = 0,
+  kUnplugged = 1,
+  kCharging = 2,
+  // Battery is plugged into power and the battery is 100% charged.
+  kFull = 3,
+};
 }  // namespace previous_session_info_constants
 
 // PreviousSessionInfo has two jobs:
@@ -30,6 +42,13 @@ enum class DeviceThermalState {
 //   instance.
 // - Persist information about the current session, for use in a next session.
 @interface PreviousSessionInfo : NSObject
+
+// The battery level of the device at the end of the previous session.
+@property(nonatomic, assign, readonly) float deviceBatteryLevel;
+
+// The battery state of the device at the end of the previous session.
+@property(nonatomic, assign, readonly)
+    previous_session_info_constants::DeviceBatteryState deviceBatteryState;
 
 // The thermal state of the device at the end of the previous session.
 @property(nonatomic, assign, readonly)
@@ -61,6 +80,12 @@ enum class DeviceThermalState {
 // Clears the persisted information about the previous session and starts
 // persisting information about the current session, for use in a next session.
 - (void)beginRecordingCurrentSession;
+
+// Updates the saved last known battery level of the device.
+- (void)updateStoredBatteryLevel;
+
+// Updates the saved last known battery state of the device.
+- (void)updateStoredBatteryState;
 
 // Updates the saved last known low power mode setting of the device.
 - (void)updateStoredLowPowerMode;

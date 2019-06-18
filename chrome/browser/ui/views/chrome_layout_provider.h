@@ -69,6 +69,8 @@ enum ChromeDistanceMetric {
   // Width of a bubble unless the content is too wide to make that
   // feasible.
   DISTANCE_BUBBLE_PREFERRED_WIDTH,
+  // Horizontal spacing between value and description in the row.
+  DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL
 };
 
 class ChromeLayoutProvider : public views::LayoutProvider {

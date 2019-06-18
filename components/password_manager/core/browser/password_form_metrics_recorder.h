@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
@@ -313,7 +314,8 @@ class PasswordFormMetricsRecorder
 
   // Call this when a password is saved to indicate which path led to
   // submission.
-  void SetSubmissionIndicatorEvent(autofill::SubmissionIndicatorEvent event);
+  void SetSubmissionIndicatorEvent(
+      autofill::mojom::SubmissionIndicatorEvent event);
 
   // Records the event that a password bubble was shown.
   void RecordPasswordBubbleShown(

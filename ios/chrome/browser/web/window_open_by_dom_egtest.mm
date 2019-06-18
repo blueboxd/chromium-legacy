@@ -107,6 +107,33 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
+// Tests opening a window with URL that ends with /..;
+- (void)testWindowOpenWithSpecialURL {
+  const char ID[] = "webScenarioWindowOpenWithSpecialURL";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        [ElementSelector selectorWithElementID:ID])];
+  if (@available(iOS 13, *)) {
+    // Starting from iOS 13 WebKit does not rewrite URL that ends with /..;
+    [ChromeEarlGrey waitForMainTabCount:2];
+  } else if (@available(iOS 12, *)) {
+    // Prior to iOS 13 WebKit rewries URL that ends with /..; to invalid URL
+    // so Chrome opens about:blank for that invalid URL.
+    [ChromeEarlGrey waitForMainTabCount:2];
+    [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    // Prior to iOS 12 WebKit rewries URL that ends with /..; to invalid URL,
+    // but Chrome does not have a chance to open about:blank, so child window
+    // is not created.
+    [ChromeEarlGrey waitForWebStateNotContainingText:ID];
+    [ChromeEarlGrey waitForMainTabCount:1];
+    [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
+        assertWithMatcher:grey_notNil()];
+  }
+}
+
 // Tests executing script that clicks a link with target="_blank".
 - (void)testLinkWithBlankTargetWithoutUserGesture {
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK];

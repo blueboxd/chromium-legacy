@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if defined(OS_ANDROID)

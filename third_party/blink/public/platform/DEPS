@@ -48,6 +48,7 @@ include_rules = [
     "+third_party/skia",
     "+ui/base/ime/text_input_action.h",
     "+ui/base/page_transition_types.h",
+    "+ui/base/cursor/types",
     "+ui/events/types",
     "+ui/gfx",
     "+url",

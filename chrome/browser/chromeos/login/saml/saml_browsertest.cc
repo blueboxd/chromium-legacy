@@ -85,6 +85,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -496,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   content::ExecuteScriptAsync(
       GetLoginUI()->GetWebContents(),
       test::GetOobeElementPath({"gaia-signin", "signin-back-button"}) +
-          ".fire('tap');");
+          ".fire('click');");
 
   // Auth flow should change back to Gaia.
   std::string message;
@@ -536,6 +537,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
                 SystemSaltGetter::ConvertRawSaltToHexString(
                     FakeCryptohomeClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
+
+  EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the single password scraped flow.
@@ -568,6 +573,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   } while (message != "\"fake_password\"");
 
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests password scraping from a dynamically created password field.
@@ -594,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
       content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the multiple password scraped flow.
@@ -619,6 +632,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
       content::NotificationService::AllSources());
   SendConfirmPassword("password1");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the no password scraped flow.
@@ -645,6 +662,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
       content::NotificationService::AllSources());
   SetManualPasswords("Test1", "Test1");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Types |bob@corp.example.com| into the GAIA login form but then authenticates

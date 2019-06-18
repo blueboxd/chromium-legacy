@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -49,7 +48,5 @@ PageNotAvailableForGuestUI::PageNotAvailableForGuestUI(
     const std::string& host_name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  auto* source = CreateHTMLSource(profile, host_name);
-  DarkModeHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(profile, CreateHTMLSource(profile, host_name));
 }

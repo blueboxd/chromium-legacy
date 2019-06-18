@@ -295,7 +295,6 @@ public abstract class ChromeFeatureList {
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PROGRESS_BAR_THROTTLE = "ProgressBarThrottle";
-    public static final String PWA_PERSISTENT_NOTIFICATION = "PwaPersistentNotification";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";

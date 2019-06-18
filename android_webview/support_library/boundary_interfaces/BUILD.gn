@@ -40,6 +40,8 @@ android_library("boundary_interface_java") {
   deps = []
 
   # This is to verify the boundary interfaces compile and lint correctly against
-  # the minSdkVersion of the webkit support library module.
-  android_manifest_for_lint = "AndroidManifest.xml"
+  # the minSdkVersion of the webkit support library module. As the minSdkVersion
+  # of the support library increases, so should this value. See
+  # http://crbug.com/828184 for more details.
+  min_sdk_version = 14
 }

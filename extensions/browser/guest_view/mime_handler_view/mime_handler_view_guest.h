@@ -85,7 +85,7 @@ class MimeHandlerViewGuest
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
-  content::RenderFrameHost* GetEmbedderFrame() const override;
+  content::RenderFrameHost* GetEmbedderFrame() override;
 
   void SetEmbedderFrame(int process_id, int routing_id);
 
@@ -149,7 +149,7 @@ class MimeHandlerViewGuest
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents*) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       content::RenderFrameHost* opener,

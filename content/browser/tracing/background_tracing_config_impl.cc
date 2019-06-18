@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_tracing_rule.h"
+#include "net/base/network_change_notifier.h"
 
 using base::trace_event::TraceConfig;
 
@@ -46,7 +48,42 @@ const char kConfigCategoryBenchmarkPower[] = "BENCHMARK_POWER";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
 const char kConfigCategoryCustom[] = "CUSTOM";
 
-const size_t kDefaultTraceBufferSizeInKb = 10 * 1024;
+// The memory overhead of running background tracing.
+// TODO(ssid): Consider making these limits configurable by experiments.
+constexpr size_t kLowRamBufferSizeKb = 200;
+constexpr size_t kMediumRamBufferSizeKb = 2 * 1024;
+#if defined(OS_ANDROID)
+// Connectivity is also relevant for setting the buffer size because the
+// uploader will fail if we sent large trace and device runs on mobile
+// network.
+constexpr size_t kMobileNetworkBufferSizeKb = 300;
+constexpr size_t kMaxBufferSizeKb = 4 * 1024;
+#else
+constexpr size_t kMaxBufferSizeKb = 25 * 1024;
+#endif
+
+// This function gives the trace buffer size based on device RAM and
+// connectivity.
+size_t GetMaximumTraceBufferSizeKb() {
+  int64_t ram_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  if (ram_mb > 0 && ram_mb <= 1024) {
+    return kLowRamBufferSizeKb;
+  }
+#if defined(OS_ANDROID)
+  auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
+  if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
+      connection_type != net::NetworkChangeNotifier::CONNECTION_ETHERNET &&
+      connection_type != net::NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
+    return kMobileNetworkBufferSizeKb;
+  }
+#endif
+
+  if (ram_mb > 0 && ram_mb <= 2 * 1024) {
+    return kMediumRamBufferSizeKb;
+  }
+
+  return kMaxBufferSizeKb;
+}
 
 }  // namespace
 
@@ -241,7 +278,7 @@ base::trace_event::TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
     chrome_config.EnableArgumentFilter();
   }
 
-  chrome_config.SetTraceBufferSizeInKb(kDefaultTraceBufferSizeInKb);
+  chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
 
 #if defined(OS_ANDROID)
   // Set low trace buffer size on Android in order to upload small trace files.

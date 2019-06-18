@@ -45,17 +45,18 @@ std::unique_ptr<Node> DOMAgentViews::BuildTreeForRootWidget(
   views::Widget* widget =
       UIElement::GetBackingElement<views::Widget, WidgetElement>(
           widget_element);
-  std::unique_ptr<Array<Node>> children = Array<Node>::create();
 
-  UIElement* view_element =
+  auto children = std::make_unique<protocol::Array<Node>>();
+  ViewElement* view_element =
       new ViewElement(widget->GetRootView(), this, widget_element);
-
-  children->addItem(BuildTreeForView(view_element));
+  children->emplace_back(BuildTreeForView(view_element));
   widget_element->AddChild(view_element);
 
   std::unique_ptr<Node> node =
-      BuildNode("Widget", widget_element->GetAttributes(), std::move(children),
-                widget_element->node_id());
+      BuildNode("Widget",
+                std::make_unique<std::vector<std::string>>(
+                    widget_element->GetAttributes()),
+                std::move(children), widget_element->node_id());
   return node;
 }
 
@@ -63,7 +64,7 @@ std::unique_ptr<Node> DOMAgentViews::BuildTreeForView(UIElement* view_element) {
   DCHECK(view_element->type() == UIElementType::VIEW);
   views::View* view =
       UIElement::GetBackingElement<views::View, ViewElement>(view_element);
-  std::unique_ptr<Array<Node>> children = Array<Node>::create();
+  auto children = std::make_unique<protocol::Array<Node>>();
 
   for (auto* child : view->GetChildrenInZOrder()) {
     // When building the subtree, a particular view could be visited multiple
@@ -81,12 +82,12 @@ std::unique_ptr<Node> DOMAgentViews::BuildTreeForView(UIElement* view_element) {
       view_element->AddChild(view_element_child);
     }
 
-    children->addItem(BuildTreeForView(view_element_child));
+    children->emplace_back(BuildTreeForView(view_element_child));
   }
-  std::unique_ptr<Node> node =
-      BuildNode("View", view_element->GetAttributes(), std::move(children),
-                view_element->node_id());
-  return node;
+  return BuildNode(
+      "View",
+      std::make_unique<std::vector<std::string>>(view_element->GetAttributes()),
+      std::move(children), view_element->node_id());
 }
 
 }  // namespace ui_devtools

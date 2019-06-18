@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "third_party/blink/public/web/web_input_element.h"
 
@@ -42,7 +43,7 @@ class ProvisionallySavedPasswordForm {
   blink::WebFormElement& form_element() { return form_element_; }
   blink::WebInputElement& input_element() { return input_element_; }
 
-  void SetSubmissionIndicatorEvent(SubmissionIndicatorEvent event);
+  void SetSubmissionIndicatorEvent(mojom::SubmissionIndicatorEvent event);
 
  private:
   std::unique_ptr<PasswordForm> password_form_;

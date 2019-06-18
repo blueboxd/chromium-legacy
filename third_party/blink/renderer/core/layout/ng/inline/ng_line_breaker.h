@@ -156,7 +156,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void HandleControlItem(const NGInlineItem&, NGLineInfo*);
   void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
-  void HandleAtomicInline(
+  bool HandleAtomicInline(
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);

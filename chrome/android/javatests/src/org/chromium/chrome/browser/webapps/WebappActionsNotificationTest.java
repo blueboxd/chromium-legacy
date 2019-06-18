@@ -27,7 +27,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -61,7 +60,6 @@ public class WebappActionsNotificationTest {
     @Feature({"Webapps"})
     @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
     public void testNotification_openInChrome() throws Exception {
         Notification notification = getWebappNotification();
 
@@ -92,7 +90,6 @@ public class WebappActionsNotificationTest {
       @Feature({"Webapps"})
       @RetryOnFailure
       @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
-      @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
     */
     @DisabledTest(message = "crbug.com/774491")
     public void testNotification_copyUrl() throws Exception {
@@ -108,19 +105,6 @@ public class WebappActionsNotificationTest {
             Assert.assertEquals(mActivityTestRule.getTestServer().getURL(WEB_APP_PATH),
                     clipboard.getPrimaryClip().getItemAt(0).getText().toString());
         });
-    }
-
-    @Test
-    /*
-      @SmallTest
-      @Feature({"Webapps"})
-      @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
-      @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
-    */
-    @DisabledTest(message = "crbug.com/768557")
-    public void testNotificationNotEnabled() throws Exception {
-        // Note ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION is not enabled.
-        Assert.assertNull(getWebappNotification());
     }
 
     @Nullable

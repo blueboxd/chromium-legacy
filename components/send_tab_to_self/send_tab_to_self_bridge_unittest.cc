@@ -26,7 +26,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,52 +88,6 @@ class MockSendTabToSelfModelObserver : public SendTabToSelfModelObserver {
 MATCHER_P(GuidIs, e, "") {
   return testing::ExplainMatchResult(e, arg->GetGUID(), result_listener);
 }
-
-// TODO(crbug.com/958016): Extract into its own file.
-// Mock DeviceInfoTracker class for setting device info.
-class TestDeviceInfoTracker : public syncer::DeviceInfoTracker {
- public:
-  TestDeviceInfoTracker() = default;
-  ~TestDeviceInfoTracker() override = default;
-
-  static std::unique_ptr<syncer::DeviceInfo> CloneDeviceInfo(
-      const syncer::DeviceInfo& device_info) {
-    return std::make_unique<syncer::DeviceInfo>(
-        device_info.guid(), device_info.client_name(),
-        device_info.chrome_version(), device_info.sync_user_agent(),
-        device_info.device_type(), device_info.signin_scoped_device_id(),
-        device_info.last_updated_timestamp(),
-        device_info.send_tab_to_self_receiving_enabled());
-  }
-
-  void Add(const syncer::DeviceInfo* device) { devices_.push_back(device); }
-
-  // DeviceInfoTracker implementation.
-  bool IsSyncing() const override { return false; }
-  std::unique_ptr<syncer::DeviceInfo> GetDeviceInfo(
-      const std::string& client_id) const override {
-    NOTIMPLEMENTED();
-    return std::unique_ptr<syncer::DeviceInfo>();
-  }
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllDeviceInfo()
-      const override {
-    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
-    for (const syncer::DeviceInfo* device : devices_) {
-      devices.push_back(CloneDeviceInfo(*device));
-    }
-    return devices;
-  }
-  int CountActiveDevices() const override { return devices_.size(); }
-  void AddObserver(Observer* observer) override { NOTIMPLEMENTED(); }
-  void RemoveObserver(Observer* observer) override { NOTIMPLEMENTED(); }
-  void ForcePulseForTest() override { NOTIMPLEMENTED(); }
-
- private:
-  // DeviceInfo stored here are not owned.
-  std::vector<const syncer::DeviceInfo*> devices_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDeviceInfoTracker);
-};
 
 class SendTabToSelfBridgeTest : public testing::Test {
  protected:
@@ -242,7 +196,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 
-  TestDeviceInfoTracker device_info_tracker_;
+  syncer::FakeDeviceInfoTracker device_info_tracker_;
 
   std::unique_ptr<SendTabToSelfBridge> bridge_;
 

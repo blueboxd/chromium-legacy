@@ -10,6 +10,23 @@
 
 namespace device {
 
+static void SetPinAuth(BioEnrollmentRequest* request,
+                       const pin::TokenResponse& token) {
+  request->pin_protocol = 1;
+  request->modality = BioEnrollmentModality::kFingerprint;
+
+  std::vector<uint8_t> pin_auth;
+  if (request->params)
+    pin_auth = *cbor::Writer::Write(cbor::Value(request->params.value()));
+
+  if (request->subcommand)
+    pin_auth.insert(pin_auth.begin(), static_cast<int>(*request->subcommand));
+
+  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request->modality));
+
+  request->pin_auth = token.PinAuth(std::move(pin_auth));
+}
+
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForGetModality() {
   BioEnrollmentRequest request;
@@ -27,37 +44,24 @@ BioEnrollmentRequest BioEnrollmentRequest::ForGetSensorInfo() {
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnrollBegin(
-    const pin::TokenResponse& response) {
+    const pin::TokenResponse& token) {
   BioEnrollmentRequest request;
-  request.pin_protocol = 1;
-  request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kEnrollBegin;
-  request.pin_auth = response.PinAuth(
-      std::vector<uint8_t>{static_cast<uint8_t>(*request.modality),
-                           static_cast<uint8_t>(*request.subcommand)});
+  SetPinAuth(&request, token);
   return request;
 }
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnrollNextSample(
-    const pin::TokenResponse& response,
+    const pin::TokenResponse& token,
     std::vector<uint8_t> template_id) {
   BioEnrollmentRequest request;
-  request.pin_protocol = 1;
-  request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kEnrollCaptureNextSample;
   request.params = cbor::Value::MapValue();
   request.params->emplace(
       static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
       cbor::Value(template_id));
-
-  std::vector<uint8_t> pin_auth =
-      *cbor::Writer::Write(cbor::Value(*request.params));
-  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.subcommand));
-  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.modality));
-
-  request.pin_auth = response.PinAuth(std::move(pin_auth));
-
+  SetPinAuth(&request, token);
   return request;
 }
 
@@ -71,38 +75,39 @@ BioEnrollmentRequest BioEnrollmentRequest::ForCancel() {
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnumerate(
-    const pin::TokenResponse& response) {
+    const pin::TokenResponse& token) {
   BioEnrollmentRequest request;
-  request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kEnumerateEnrollments;
-  request.pin_protocol = 1;
-  request.pin_auth = response.PinAuth(
-      std::vector<uint8_t>{static_cast<int>(*request.modality),
-                           static_cast<int>(*request.subcommand)});
+  SetPinAuth(&request, token);
   return request;
 }
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForRename(
-    const pin::TokenResponse& response,
+    const pin::TokenResponse& token,
     std::vector<uint8_t> id,
     std::string name) {
   BioEnrollmentRequest request;
-  request.pin_protocol = 1;
-  request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kSetFriendlyName;
   request.params = cbor::Value::MapValue();
   request.params->emplace(
       static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
       cbor::Value(std::move(id)));
+  SetPinAuth(&request, token);
+  return request;
+}
 
-  std::vector<uint8_t> pin_auth =
-      *cbor::Writer::Write(cbor::Value(*request.params));
-  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.subcommand));
-  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.modality));
-
-  request.pin_auth = response.PinAuth(std::move(pin_auth));
-
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForDelete(
+    const pin::TokenResponse& token,
+    std::vector<uint8_t> id) {
+  BioEnrollmentRequest request;
+  request.subcommand = BioEnrollmentSubCommand::kRemoveEnrollment;
+  request.params = cbor::Value::MapValue();
+  request.params->emplace(
+      static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
+      std::move(id));
+  SetPinAuth(&request, token);
   return request;
 }
 

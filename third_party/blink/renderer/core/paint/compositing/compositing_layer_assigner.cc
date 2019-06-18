@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
-#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -252,9 +251,6 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
 
     // Issue a paint invalidation, since |layer| may have been added to an
     // already-existing squashing layer.
-    TRACE_LAYER_INVALIDATION(
-        layer,
-        inspector_layer_invalidation_tracking_event::kAddedToSquashingLayer);
     layers_needing_paint_invalidation.push_back(layer);
     layers_changed_ = true;
   } else if (composited_layer_update == kRemoveFromSquashingLayer) {
@@ -270,9 +266,6 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
 
     // If we need to issue paint invalidations, do so now that we've removed it
     // from a squashed layer.
-    TRACE_LAYER_INVALIDATION(layer,
-                             inspector_layer_invalidation_tracking_event::
-                                 kRemovedFromSquashingLayer);
     layers_needing_paint_invalidation.push_back(layer);
     layers_changed_ = true;
 
@@ -303,9 +296,6 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
 
     if (compositor_->AllocateOrClearCompositedLayerMapping(
             layer, composited_layer_update)) {
-      TRACE_LAYER_INVALIDATION(
-          layer,
-          inspector_layer_invalidation_tracking_event::kNewCompositedLayer);
       layers_needing_paint_invalidation.push_back(layer);
       layers_changed_ = true;
       if (ScrollingCoordinator* scrolling_coordinator =

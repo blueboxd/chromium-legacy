@@ -341,7 +341,7 @@ android_library("ui_full_java") {
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
-    "//third_party/blink/public:blink_cursor_type_java_enums_srcjar",
+    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
   ]
 }
 

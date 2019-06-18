@@ -142,20 +142,16 @@ void BackgroundApplicationListModel::Application::RequestIcon(
       base::Bind(&Application::OnImageLoaded, AsWeakPtr()));
 }
 
-BackgroundApplicationListModel::~BackgroundApplicationListModel() {
-}
+BackgroundApplicationListModel::~BackgroundApplicationListModel() = default;
 
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
-    : profile_(profile),
-      ready_(false),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {
+    : profile_(profile) {
   DCHECK(profile_);
+  background_contents_service_observer_.Add(
+      BackgroundContentsServiceFactory::GetForProfile(profile));
+
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED,
                  content::Source<Profile>(profile));
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -280,25 +276,11 @@ void BackgroundApplicationListModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!service || !service->is_ready())
-    return;
-
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED:
-      OnExtensionPermissionsUpdated(
-          content::Details<UpdatedExtensionPermissionsInfo>(details)->extension,
-          content::Details<UpdatedExtensionPermissionsInfo>(details)->reason,
-          content::Details<UpdatedExtensionPermissionsInfo>(details)->
-              permissions);
-      break;
-    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED:
-      Update();
-      break;
-    default:
-      NOTREACHED() << "Received unexpected notification";
-  }
+  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED);
+  OnExtensionPermissionsUpdated(
+      content::Details<UpdatedExtensionPermissionsInfo>(details)->extension,
+      content::Details<UpdatedExtensionPermissionsInfo>(details)->reason,
+      content::Details<UpdatedExtensionPermissionsInfo>(details)->permissions);
 }
 
 void BackgroundApplicationListModel::SendApplicationDataChangedNotifications() {
@@ -327,6 +309,7 @@ void BackgroundApplicationListModel::OnExtensionUnloaded(
 }
 
 void BackgroundApplicationListModel::OnExtensionSystemReady() {
+  ready_ = true;
   // All initial extensions will be loaded when extension system ready. So we
   // can get everything here.
   Update();
@@ -338,12 +321,19 @@ void BackgroundApplicationListModel::OnExtensionSystemReady() {
   // for the extension system, which isn't a guarantee. Thus, register here and
   // associate all initial extensions.
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  ready_ = true;
 }
 
 void BackgroundApplicationListModel::OnShutdown(ExtensionRegistry* registry) {
   DCHECK_EQ(ExtensionRegistry::Get(profile_), registry);
   extension_registry_observer_.Remove(registry);
+}
+
+void BackgroundApplicationListModel::OnBackgroundContentsServiceChanged() {
+  Update();
+}
+
+void BackgroundApplicationListModel::OnBackgroundContentsServiceDestroying() {
+  background_contents_service_observer_.RemoveAll();
 }
 
 void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
@@ -377,6 +367,9 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // differs from the old list, it generates OnApplicationListChanged events for
 // each observer.
 void BackgroundApplicationListModel::Update() {
+  if (!ready_)
+    return;
+
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 

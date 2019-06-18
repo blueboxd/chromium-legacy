@@ -15,10 +15,6 @@ namespace cc {
 class SoftwareOutputDevice;
 }
 
-namespace viz {
-class OverlayCandidateValidator;
-}
-
 namespace gfx {
 enum class SwapResult;
 }
@@ -32,8 +28,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   ~BrowserCompositorOutputSurface() override;
 
   // viz::OutputSurface implementation.
-  std::unique_ptr<viz::OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SetUpdateVSyncParametersCallback(
@@ -41,6 +35,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
 
+  bool IsSoftwareMirrorMode() const override;
   void SetReflector(ReflectorImpl* reflector);
 
   // Called when |reflector_| was updated.
@@ -48,9 +43,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
  protected:
   // Constructor used by the accelerated implementation.
-  BrowserCompositorOutputSurface(scoped_refptr<viz::ContextProvider> context,
-                                 std::unique_ptr<viz::OverlayCandidateValidator>
-                                     overlay_candidate_validator);
+  BrowserCompositorOutputSurface(scoped_refptr<viz::ContextProvider> context);
 
   // Constructor used by the software implementation.
   explicit BrowserCompositorOutputSurface(
@@ -58,9 +51,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   ReflectorImpl* reflector_ = nullptr;
-
- private:
-  std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);
 };

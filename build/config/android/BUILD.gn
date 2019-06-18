@@ -36,6 +36,13 @@ config("compiler") {
     ]
   }
 
+  if (current_cpu == "x86") {
+    cflags += [
+      # Forces same alignment between x86 and x64. https://crbug.com/781095
+      "-malign-double",
+    ]
+  }
+
   ldflags = [
     # Don't allow visible symbols from libgcc or libc++ to be
     # re-exported.

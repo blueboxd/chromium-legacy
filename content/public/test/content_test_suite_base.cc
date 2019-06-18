@@ -17,7 +17,6 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
-#include "services/network/network_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
@@ -47,11 +46,6 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
-
-  // Tell the network service to not create its own NetworkChangeNotifier
-  // instance, since it will get leaked and can mess with future tests.
-  // TODO(crbug.com/901092): Remove once the network service cleans itself up.
-  network::NetworkService::DisableNetworkChangeNotifierForTesting();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);

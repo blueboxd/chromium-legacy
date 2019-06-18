@@ -68,7 +68,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   void StartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
-      network::mojom::FetchCredentialsMode credentials_mode,
+      network::mojom::CredentialsMode credentials_mode,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -330,7 +330,7 @@ class DedicatedWorkerHostFactoryImpl
   void CreateWorkerHostAndStartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
-      network::mojom::FetchCredentialsMode credentials_mode,
+      network::mojom::CredentialsMode credentials_mode,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

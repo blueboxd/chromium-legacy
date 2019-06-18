@@ -8,8 +8,11 @@
 #include <stdint.h>
 
 #include <fstream>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,6 +27,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -33,7 +38,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/services/file_util/public/cpp/zip_file_creator.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/public/common/download_item.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"
@@ -42,10 +50,14 @@
 #include "components/drive/job_list.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/service_manager_connection.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -277,6 +289,11 @@ std::pair<ino_t, base::ListValue> GetServiceLogContents(
   return {inode, std::move(result)};
 }
 
+class DriveInternalsWebUIHandler;
+
+void ZipLogs(Profile* profile,
+             base::WeakPtr<DriveInternalsWebUIHandler> drive_internals);
+
 // Class to handle messages from chrome://drive-internals.
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
@@ -284,6 +301,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       : last_sent_event_id_(-1), weak_ptr_factory_(this) {}
 
   ~DriveInternalsWebUIHandler() override {}
+
+  void DownloadLogsZip(const base::FilePath& path) {
+    web_ui()->GetWebContents()->GetController().LoadURL(
+        net::FilePathToFileURL(path), {}, {}, {});
+  }
+
+  void OnZipDone() { MaybeCallJavascript("onZipDone", base::Value()); }
 
  private:
   void MaybeCallJavascript(const std::string& function,
@@ -326,6 +350,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback(
         "listFileEntries",
         base::BindRepeating(&DriveInternalsWebUIHandler::ListFileEntries,
+                            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "zipLogs",
+        base::BindRepeating(&DriveInternalsWebUIHandler::ZipDriveFsLogs,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -877,6 +905,19 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     UpdateFileSystemContentsSection();
   }
 
+  void ZipDriveFsLogs(const base::ListValue* args) {
+    AllowJavascript();
+
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (!integration_service ||
+        integration_service->GetDriveFsLogPath().empty()) {
+      return;
+    }
+
+    ZipLogs(profile(), weak_ptr_factory_.GetWeakPtr());
+  }
+
   // Called after file system reset for ResetDriveFileSystem is done.
   void ResetFinished(bool success) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -928,6 +969,107 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
+
+class LogsZipper : public download::AllDownloadItemNotifier::Observer {
+ public:
+  LogsZipper(Profile* profile,
+             base::WeakPtr<DriveInternalsWebUIHandler> drive_internals)
+      : profile_(profile),
+        logs_directory_(
+            drive::DriveIntegrationServiceFactory::FindForProfile(profile)
+                ->GetDriveFsLogPath()
+                .DirName()),
+        zip_path_(logs_directory_.AppendASCII(kLogsZipName)),
+        drive_internals_(std::move(drive_internals)) {}
+
+  void Start() {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&LogsZipper::EnumerateLogFiles, logs_directory_,
+                       zip_path_),
+        base::BindOnce(&LogsZipper::ZipLogFiles, base::Unretained(this)));
+  }
+
+ private:
+  static constexpr char kLogsZipName[] = "drivefs_logs.zip";
+
+  void ZipLogFiles(const std::vector<base::FilePath>& files) {
+    (new ZipFileCreator(
+         base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
+         logs_directory_, files, zip_path_))
+        ->Start(
+            content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  }
+
+  static std::vector<base::FilePath> EnumerateLogFiles(
+      base::FilePath logs_path,
+      base::FilePath zip_path) {
+    // Note: this may be racy if multiple attempts to export logs are run
+    // concurrently, but it's a debug page and it requires explicit action to
+    // cause problems.
+    base::DeleteFile(zip_path, false);
+    std::vector<base::FilePath> log_files;
+    base::FileEnumerator enumerator(logs_path, false /* recursive */,
+                                    base::FileEnumerator::FILES);
+
+    for (base::FilePath current = enumerator.Next(); !current.empty();
+         current = enumerator.Next()) {
+      if (!current.MatchesExtension(".zip")) {
+        log_files.push_back(current.BaseName());
+      }
+    }
+    return log_files;
+  }
+
+  void OnZipDone(bool success) {
+    if (!drive_internals_ || !success) {
+      CleanUp();
+      return;
+    }
+    download_notifier_ = std::make_unique<download::AllDownloadItemNotifier>(
+        content::BrowserContext::GetDownloadManager(profile_), this);
+    drive_internals_->DownloadLogsZip(zip_path_);
+  }
+
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         download::DownloadItem* item) override {
+    if (item->GetState() == download::DownloadItem::IN_PROGRESS ||
+        item->GetURL() != net::FilePathToFileURL(zip_path_)) {
+      return;
+    }
+    CleanUp();
+  }
+
+  void CleanUp() {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), zip_path_,
+                       false));
+    download_notifier_.reset();
+    if (drive_internals_) {
+      drive_internals_->OnZipDone();
+    }
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+  Profile* const profile_;
+  const base::FilePath logs_directory_;
+  const base::FilePath zip_path_;
+
+  const base::WeakPtr<DriveInternalsWebUIHandler> drive_internals_;
+
+  std::unique_ptr<download::AllDownloadItemNotifier> download_notifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(LogsZipper);
+};
+
+constexpr char LogsZipper::kLogsZipName[];
+
+void ZipLogs(Profile* profile,
+             base::WeakPtr<DriveInternalsWebUIHandler> drive_internals) {
+  auto* logs_zipper = new LogsZipper(profile, std::move(drive_internals));
+  logs_zipper->Start();
+}
 
 }  // namespace
 

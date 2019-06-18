@@ -8,8 +8,6 @@
       xmlns:tools="http://schemas.android.com/tools"
       package="org.chromium.mojo.tests">
 
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21" />
-
     <uses-permission android:name="android.permission.INJECT_EVENTS"
         tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

@@ -6,7 +6,6 @@
 #define UI_BASE_MOJO_CURSOR_STRUCT_TRAITS_H_
 
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_type.h"
 #include "ui/base/mojo/cursor.mojom-shared.h"
 
 namespace mojo {

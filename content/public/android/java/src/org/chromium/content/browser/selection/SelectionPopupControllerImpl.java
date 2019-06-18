@@ -18,7 +18,6 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -363,13 +362,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mUnselectAllOnDismiss = true;
 
         if (hasSelection()) {
-            // Device is not provisioned, don't trigger SelectionClient logic at all.
-            boolean blockSelectionClient = !isDeviceProvisioned();
-
-            // Disable SelectionClient logic if it's incognito.
-            blockSelectionClient |= isIncognito();
-
-            if (!blockSelectionClient && mSelectionMetricsLogger != null) {
+            if (mSelectionMetricsLogger != null) {
                 switch (sourceType) {
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION:
                         mSelectionMetricsLogger.logSelectionModified(
@@ -389,15 +382,14 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             }
 
             // From selection adjustment, show menu directly.
-            if (!blockSelectionClient
-                    && sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
+            // Note that this won't happen if it is incognito mode or device is not provisioned.
+            if (sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
                 showActionModeOrClearOnFailure();
                 return;
             }
 
-            // Show menu if we need to block SelectionClient or there is no updates from
-            // SelectionClient.
-            if (blockSelectionClient || mSelectionClient == null
+            // Show menu there is no updates from SelectionClient.
+            if (mSelectionClient == null
                     || !mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
                 showActionModeOrClearOnFailure();
             }
@@ -1565,14 +1557,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         SelectionClient client = getSelectionClient();
         return client == null ? null : client.getCustomTextClassifier();
-    }
-
-    @VisibleForTesting
-    public boolean isDeviceProvisioned() {
-        if (mContext == null || mContext.getContentResolver() == null) return true;
-        return Settings.Global.getInt(
-                       mContext.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
-                != 0;
     }
 
     @CalledByNative

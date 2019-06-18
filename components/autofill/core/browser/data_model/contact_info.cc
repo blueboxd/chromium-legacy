@@ -159,13 +159,7 @@ base::string16 NameInfo::FullName() const {
 }
 
 base::string16 NameInfo::MiddleInitial() const {
-  if (middle_.empty())
-    return base::string16();
-
-  base::string16 middle_name(middle_);
-  base::string16 initial;
-  initial.push_back(middle_name[0]);
-  return initial;
+  return middle_.empty() ? base::string16() : middle_.substr(0U, 1U);
 }
 
 void NameInfo::SetFullName(const base::string16& full) {

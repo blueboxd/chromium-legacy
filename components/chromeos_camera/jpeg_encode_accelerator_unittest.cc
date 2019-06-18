@@ -686,10 +686,6 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
     }
-#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
-    // TODO(wtlee): Enable DMA-buf test for V4L2 JEA once it supports DMA-buf
-    // encoding.
-#else
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       encoder_thread.task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&JpegClient::StartEncodeDmaBuf,
@@ -698,9 +694,12 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
     }
-#endif
   }
 
+#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
+  // For unaligned images, V4L2 may not be able to encode them so skip for V4L2
+  // cases.
+#else
   for (size_t index = 0; index < test_images_.size(); index++) {
     int buffer_id = index + test_aligned_images_.size();
     VLOG(3) << buffer_id
@@ -715,20 +714,9 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
     }
 
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-// For unaligned images, V4L2 may not be able to encode them.
-#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
-      ClientState status = notes[i]->Wait();
-      ASSERT_TRUE(status == ClientState::ENCODE_PASS ||
-                  status == ClientState::ERROR);
-#else
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
-#endif
     }
 
-#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
-    // TODO(wtlee): Enable DMA-buf test for V4L2 JEA once it supports DMA-buf
-    // encoding.
-#else
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       encoder_thread.task_runner()->PostTask(
           FROM_HERE,
@@ -739,8 +727,8 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
     }
-#endif
   }
+#endif
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
     encoder_thread.task_runner()->PostTask(

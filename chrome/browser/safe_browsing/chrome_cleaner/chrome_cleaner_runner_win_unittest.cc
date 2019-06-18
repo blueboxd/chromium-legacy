@@ -9,17 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
@@ -27,10 +24,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,9 +34,6 @@ namespace safe_browsing {
 namespace {
 
 using ::chrome_cleaner::ChromePromptValue;
-using ::chrome_cleaner::mojom::ChromePrompt;
-using ::chrome_cleaner::mojom::PromptAcceptance;
-using ::content::BrowserThread;
 using ::testing::Bool;
 using ::testing::Combine;
 using ::testing::UnorderedElementsAreArray;
@@ -50,6 +41,7 @@ using ::testing::Values;
 using ChromeMetricsStatus = ChromeCleanerRunner::ChromeMetricsStatus;
 using ExtensionCleaningFeatureStatus =
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
+using PromptAcceptance = ChromePromptActions::PromptAcceptance;
 using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
 
 enum class ReporterEngine {
@@ -74,11 +66,10 @@ enum class ReporterEngine {
 // - chrome_prompt (ChromePromptValue): indicates if this is a user-initiated
 //       run or if the user was prompted.
 class ChromeCleanerRunnerSimpleTest
-    : public testing::TestWithParam<
-          std::tuple<ChromeCleanerRunner::ChromeMetricsStatus,
-                     ReporterEngine,
-                     bool,
-                     ChromePromptValue>>,
+    : public testing::TestWithParam<std::tuple<ChromeMetricsStatus,
+                                               ReporterEngine,
+                                               bool,
+                                               ChromePromptValue>>,
       public ChromeCleanerRunnerTestDelegate {
  public:
   ChromeCleanerRunnerSimpleTest()
@@ -141,7 +132,7 @@ class ChromeCleanerRunnerSimpleTest
   // IPC callbacks.
 
   void OnPromptUser(ChromeCleanerScannerResults&& scanner_results,
-                    ChromePrompt::PromptUserCallback response) {}
+                    ChromePromptActions::PromptUserReplyCallback response) {}
 
   void OnConnectionClosed() {}
 
@@ -155,7 +146,7 @@ class ChromeCleanerRunnerSimpleTest
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   // Test fixture parameters.
-  ChromeCleanerRunner::ChromeMetricsStatus metrics_status_;
+  ChromeMetricsStatus metrics_status_;
   ReporterEngine reporter_engine_;
   bool cleaner_logs_enabled_ = false;
   ChromePromptValue chrome_prompt_ = ChromePromptValue::kUnspecified;
@@ -207,17 +198,16 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
       base::NumberToString(static_cast<int>(chrome_prompt_)));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ChromeCleanerRunnerSimpleTest,
-    Combine(Values(ChromeCleanerRunner::ChromeMetricsStatus::kEnabled,
-                   ChromeCleanerRunner::ChromeMetricsStatus::kDisabled),
-            Values(ReporterEngine::kUnspecified,
-                   ReporterEngine::kOldEngine,
-                   ReporterEngine::kNewEngine),
-            Bool(),
-            Values(ChromePromptValue::kPrompted,
-                   ChromePromptValue::kUserInitiated)));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ChromeCleanerRunnerSimpleTest,
+                         Combine(Values(ChromeMetricsStatus::kEnabled,
+                                        ChromeMetricsStatus::kDisabled),
+                                 Values(ReporterEngine::kUnspecified,
+                                        ReporterEngine::kOldEngine,
+                                        ReporterEngine::kNewEngine),
+                                 Bool(),
+                                 Values(ChromePromptValue::kPrompted,
+                                        ChromePromptValue::kUserInitiated)));
 
 typedef std::tuple<UwsFoundStatus,
                    ExtensionCleaningFeatureStatus,
@@ -316,14 +306,12 @@ class ChromeCleanerRunnerTest
 
   // IPC callbacks.
 
-  // Will receive the main Mojo message from the Mock Chrome Cleaner process.
+  // Will receive the main message from the Mock Chrome Cleaner process.
   void OnPromptUser(ChromeCleanerScannerResults&& scanner_results,
-                    ChromePrompt::PromptUserCallback response) {
+                    ChromePromptActions::PromptUserReplyCallback response) {
     on_prompt_user_called_ = true;
     received_scanner_results_ = std::move(scanner_results);
-    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-        ->PostTask(FROM_HERE, base::BindOnce(std::move(response),
-                                             prompt_acceptance_to_send_));
+    std::move(response).Run(prompt_acceptance_to_send_);
   }
 
   void QuitTestRunLoopIfCommunicationDone() {
@@ -380,7 +368,7 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
   run_loop_.Run();
 
   // Make sure the correct callbacks were invoked whether the process exited
-  // normally or through a Mojo connection error handler.
+  // normally or through a connection error handler.
   EXPECT_TRUE(on_process_done_called_);
   EXPECT_TRUE(on_connection_closed_called_);
 

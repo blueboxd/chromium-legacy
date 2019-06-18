@@ -20,6 +20,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
+#include "components/user_manager/user.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -85,6 +89,12 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
                                 FakeGaiaMixin::kEmptyUserServices);
 
   session_start_waiter.Wait();
+
+  const AccountId account_id =
+      content::Details<const user_manager::User>(session_start_waiter.details())
+          ->GetAccountId();
+  EXPECT_FALSE(
+      user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(account_id));
 }
 
 IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {

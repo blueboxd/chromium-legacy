@@ -254,7 +254,7 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     EXPECT_FALSE(
         enabled_types.IsEnabled(mojom::WebClientHintsType::kUAPlatform));
     EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kUAModel));
-    TimeDelta persist_duration = preferences.GetPersistDuration();
+    base::TimeDelta persist_duration = preferences.GetPersistDuration();
     EXPECT_EQ(base::TimeDelta(), persist_duration);
 
     const KURL kurl(String::FromUTF8("https://www.google.com/"));

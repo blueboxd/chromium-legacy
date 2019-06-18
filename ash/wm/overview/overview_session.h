@@ -230,6 +230,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
 
+  // Returns the sum of the number of windows in all window grids.
+  size_t NumWindowsTotal() const;
+
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,

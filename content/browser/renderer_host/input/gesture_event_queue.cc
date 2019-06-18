@@ -75,10 +75,6 @@ void GestureEventQueue::StopFling() {
   fling_controller_.StopFling();
 }
 
-bool GestureEventQueue::FlingCancellationIsDeferred() const {
-  return fling_controller_.FlingCancellationIsDeferred();
-}
-
 gfx::Vector2dF GestureEventQueue::CurrentFlingVelocity() const {
   return fling_controller_.CurrentFlingVelocity();
 }

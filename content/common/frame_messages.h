@@ -736,16 +736,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
 IPC_STRUCT_END()
 #endif
 
-// Causes a window previously opened via RenderMessageFilter::CreateNewWindow to
-// be shown on the screen. This message is routed to the preexisting frame that
-// opened the window, and |pending_widget_routing_id| corresponds to the
-// widget routing id from the CreateNewWindow reply.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_ShowCreatedWindow,
-                    int /* pending_widget_routing_id */,
-                    WindowOpenDisposition /* disposition */,
-                    gfx::Rect /* initial_rect */,
-                    bool /* opened_by_user_gesture */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_process_id)

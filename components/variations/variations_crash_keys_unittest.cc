@@ -32,7 +32,7 @@ class VariationsCrashKeysTest : public ::testing::Test {
  public:
   VariationsCrashKeysTest() : field_trial_list_(nullptr) {
     crash_reporter::ResetCrashKeysForTesting();
-    crash_reporter::InitializeCrashKeys();
+    crash_reporter::InitializeCrashKeysForTesting();
   }
 
   ~VariationsCrashKeysTest() override {
@@ -51,13 +51,7 @@ class VariationsCrashKeysTest : public ::testing::Test {
 
 }  // namespace
 
-// TODO(crbug.com/821162): Test fails on iOS. Re-enable after fixing.
-#if defined(OS_IOS)
-#define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
-#else
-#define MAYBE_BasicFunctionality BasicFunctionality
-#endif
-TEST_F(VariationsCrashKeysTest, MAYBE_BasicFunctionality) {
+TEST_F(VariationsCrashKeysTest, BasicFunctionality) {
   SyntheticTrialRegistry registry;
   registry.AddSyntheticTrialObserver(
       SyntheticTrialsActiveGroupIdProvider::GetInstance());

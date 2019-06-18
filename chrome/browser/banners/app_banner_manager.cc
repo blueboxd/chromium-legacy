@@ -175,24 +175,24 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
       base::BindOnce(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
 }
 
-void AppBannerManager::OnInstall(bool is_native,
-                                 blink::WebDisplayMode display) {
-  if (!is_native)
-    TrackInstallDisplayMode(display);
+void AppBannerManager::OnInstall(blink::WebDisplayMode display) {
+  TrackInstallDisplayMode(display);
   blink::mojom::InstallationServicePtr installation_service;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&installation_service));
   DCHECK(installation_service);
   installation_service->OnInstall();
 
-  // We've triggered an installation, so reset bindings to ensure that any
-  // existing beforeinstallprompt events cannot trigger add to home screen.
-  ResetBindings();
+  // App has been installed (possibly by the user), page may no longer request
+  // install prompt.
+  binding_.Close();
 }
 
 void AppBannerManager::SendBannerAccepted() {
-  if (event_.is_bound())
+  if (event_.is_bound()) {
     event_->BannerAccepted(GetBannerType());
+    event_.reset();
+  }
 }
 
 void AppBannerManager::SendBannerDismissed() {
@@ -777,6 +777,9 @@ void AppBannerManager::ShowBanner() {
 }
 
 void AppBannerManager::DisplayAppBanner() {
+  // Prevent this from being called multiple times on the same connection.
+  binding_.Close();
+
   if (state_ == State::PENDING_PROMPT) {
     ShowBanner();
   } else if (state_ == State::SENDING_EVENT) {

@@ -39,6 +39,7 @@ class Origin;
 
 namespace content {
 class LevelDBDatabase;
+class IndexedDBClassFactory;
 class IndexedDBContextImpl;
 class IndexedDBFactoryImpl;
 class IndexedDBOriginState;
@@ -47,6 +48,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
  public:
   IndexedDBFactoryImpl(IndexedDBContextImpl* context,
                        indexed_db::LevelDBFactory* leveldb_factory,
+                       IndexedDBClassFactory* indexed_db_class_factory,
                        base::Clock* clock);
   ~IndexedDBFactoryImpl() override;
 
@@ -123,7 +125,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   std::tuple<IndexedDBOriginStateHandle,
              leveldb::Status,
              IndexedDBDatabaseError,
-             IndexedDBDataLossInfo>
+             IndexedDBDataLossInfo,
+             /*was_cold_open=*/bool>
   GetOrOpenOriginFactory(const url::Origin& origin,
                          const base::FilePath& data_directory);
 
@@ -131,6 +134,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   // Used by unittests to allow subclassing of IndexedDBBackingStore.
   virtual std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
+      indexed_db::LevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,
@@ -177,7 +181,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   SEQUENCE_CHECKER(sequence_checker_);
   IndexedDBContextImpl* context_;
-  indexed_db::LevelDBFactory* leveldb_factory_;
+  indexed_db::LevelDBFactory* const leveldb_factory_;
+  IndexedDBClassFactory* indexed_db_class_factory_;
   base::Clock* clock_;
   base::Time earliest_sweep_;
 

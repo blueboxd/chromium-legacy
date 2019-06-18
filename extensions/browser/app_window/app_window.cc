@@ -941,13 +941,13 @@ void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
   SetFullscreen(FULLSCREEN_TYPE_HTML_API, enter_fullscreen);
 }
 
-bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
-    const {
+bool AppWindow::IsFullscreenForTabOrPending(
+    const content::WebContents* source) {
   return IsHtmlApiFullscreen();
 }
 
 blink::WebDisplayMode AppWindow::GetDisplayMode(
-    const content::WebContents* source) const {
+    const content::WebContents* source) {
   return IsFullscreen() ? blink::kWebDisplayModeFullscreen
                         : blink::kWebDisplayModeStandalone;
 }

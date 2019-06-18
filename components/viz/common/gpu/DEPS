@@ -13,6 +13,7 @@ include_rules = [
 
 specific_include_rules = {
   "metal_api_proxy.mm": [
+    "+components/crash/core/common/crash_key.h",
     "+ui/gl",
   ]
 }

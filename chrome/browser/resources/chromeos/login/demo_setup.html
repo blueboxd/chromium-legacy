@@ -51,7 +51,7 @@
             images/alert-illustration_2x.svg 2x">
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button inverse on-tap="onCloseClicked_"
+        <oobe-back-button inverse on-click="onCloseClicked_"
             disabled="[[isPowerwashRequired_]]"></oobe-back-button>
         <oobe-text-button id="retryButton" on-tap="onRetryClicked_"
             inverse hidden="[[isPowerwashRequired_]]">

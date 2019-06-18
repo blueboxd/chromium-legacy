@@ -4,6 +4,7 @@
 
 """Tools for annotation test scripts."""
 
+import json
 import os
 import subprocess
 import sys
@@ -66,13 +67,23 @@ class NetworkTrafficAnnotationTools():
     return all(os.path.exists(
         os.path.join(path, item)) for item in ('gen', 'build.ninja'))
 
-  def GetCompDBFiles(self):
+  def GetCompDBFiles(self, generate_compdb):
     """Gets the list of files.
+
+    Args:
+      generate_compdb: if true, generate a new compdb and write it to
+                       compile_commands.json.
 
     Returns:
       A set of absolute filepaths, with all compile-able C++ files (based on the
       compilation database).
     """
+    if generate_compdb:
+      compile_commands = compile_db.GenerateWithNinja(self.build_path)
+      compdb_path = os.path.join(self.build_path, 'compile_commands.json')
+      with open(compdb_path, 'w') as f:
+        f.write(json.dumps(compile_commands, indent=2))
+
     compdb = compile_db.Read(self.build_path)
     return set(
         os.path.abspath(os.path.join(self.build_path, e['file']))

@@ -55,9 +55,7 @@ void RotationLockFeaturePodController::OnUserRotationLockChanged() {
 }
 
 void RotationLockFeaturePodController::UpdateButton() {
-  bool tablet_enabled = Shell::Get()
-                            ->tablet_mode_controller()
-                            ->IsTabletModeWindowManagerEnabled();
+  bool tablet_enabled = Shell::Get()->tablet_mode_controller()->InTabletMode();
 
   button_->SetVisible(tablet_enabled);
 

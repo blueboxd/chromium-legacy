@@ -176,7 +176,7 @@ public class AssistantChoiceList extends GridLayout {
         View spacer = null;
         if (hasEditButton) {
             editButton = new ChromeImageView(getContext());
-            editButton.setImageResource(org.chromium.chrome.R.drawable.ic_edit_24dp);
+            editButton.setImageResource(R.drawable.ic_edit_24dp);
             editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
             editButton.setOnClickListener(unusedView -> {
                 if (itemEditedListener != null) {
@@ -325,7 +325,7 @@ public class AssistantChoiceList extends GridLayout {
     private TextView createAddButtonLabel(String addButtonText) {
         TextView addButtonLabel = new TextView(getContext());
         ApiCompatibilityUtils.setTextAppearance(
-                addButtonLabel, org.chromium.chrome.R.style.TextAppearance_BlueButtonText2);
+                addButtonLabel, R.style.TextAppearance_BlueButtonText2);
         addButtonLabel.setText(addButtonText);
         addButtonLabel.setOnClickListener(unusedView -> {
             if (mAddButtonListener != null) {

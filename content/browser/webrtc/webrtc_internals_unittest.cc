@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "content/browser/webrtc/webrtc_internals_connections_observer.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread.h"
@@ -74,6 +75,26 @@ class MockWakeLock : public device::mojom::WakeLock {
  private:
   mojo::Binding<device::mojom::WakeLock> binding_;
   bool has_wakelock_;
+};
+
+class TestWebRtcConnectionsObserver
+    : public WebRtcInternalsConnectionsObserver {
+ public:
+  TestWebRtcConnectionsObserver() = default;
+
+  ~TestWebRtcConnectionsObserver() override = default;
+
+  uint32_t latest_connections_count() const {
+    return latest_connections_count_;
+  }
+
+ private:
+  // content::WebRtcInternalsConnectionsObserver:
+  void OnConnectionsCountChange(uint32_t count) override {
+    latest_connections_count_ = count;
+  }
+
+  uint32_t latest_connections_count_ = 0u;
 };
 
 }  // namespace
@@ -724,6 +745,45 @@ TEST_F(WebRtcInternalsTest, WakeLockMultplePeerConnections) {
   webrtc_internals.OnRemovePeerConnection(kPid, kLids[2]);
   EXPECT_EQ(webrtc_internals.num_connected_connections(), 0);
   EXPECT_FALSE(webrtc_internals.HasWakeLock());
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WebRtcInternalsTest, TestWebRtcConnectionsObserver) {
+  const int kRenderProcessId = 1;
+  const int kPid = 1;
+  const int kLid = 1;
+
+  TestWebRtcConnectionsObserver observer;
+
+  WebRTCInternalsForTest webrtc_internals;
+  webrtc_internals.AddConnectionsObserver(&observer);
+  EXPECT_EQ(0u, observer.latest_connections_count());
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 0);
+
+  webrtc_internals.OnAddPeerConnection(kRenderProcessId, kPid, kLid, kUrl,
+                                       kRtcConfiguration, kContraints);
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 0);
+  EXPECT_EQ(0u, observer.latest_connections_count());
+
+  webrtc_internals.OnUpdatePeerConnection(
+      kPid, kLid, "iceConnectionStateChange", "connected");
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 1);
+  EXPECT_EQ(1u, observer.latest_connections_count());
+
+  webrtc_internals.OnUpdatePeerConnection(
+      kPid, kLid, "iceConnectionStateChange", "disconnected");
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 0);
+  EXPECT_EQ(0u, observer.latest_connections_count());
+
+  webrtc_internals.OnUpdatePeerConnection(
+      kPid, kLid, "iceConnectionStateChange", "connected");
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 1);
+  EXPECT_EQ(1u, observer.latest_connections_count());
+
+  webrtc_internals.OnRemovePeerConnection(kPid, kLid);
+  EXPECT_EQ(webrtc_internals.num_connected_connections(), 0);
+  EXPECT_EQ(0u, observer.latest_connections_count());
 
   base::RunLoop().RunUntilIdle();
 }

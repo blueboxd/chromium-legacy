@@ -20,9 +20,7 @@
 
 namespace content {
 class BrowserContext;
-class RenderViewHost;
 class SiteInstance;
-struct MediaPlayerId;
 }  // namespace content
 
 namespace chromecast {
@@ -56,16 +54,8 @@ class CastWebViewDefault : public CastWebView,
 
  private:
   // WebContentsObserver implementation:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void DidFirstVisuallyNonEmptyPaint() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const content::MediaPlayerId& id) override;
-  void MediaStoppedPlaying(
-      const MediaPlayerInfo& media_info,
-      const content::MediaPlayerId& id,
-      WebContentsObserver::MediaStoppedReason reason) override;
 
   // WebContentsDelegate implementation:
   content::WebContents* OpenURLFromTab(
@@ -94,7 +84,6 @@ class CastWebViewDefault : public CastWebView,
   const scoped_refptr<content::SiteInstance> site_instance_;
 
   Delegate* const delegate_;
-  const bool transparent_;
   const bool allow_media_access_;
   const std::string log_prefix_;
 

@@ -80,7 +80,7 @@ class TabletModeControllerTestApi {
   }
 
   bool IsTabletModeStarted() const {
-    return tablet_mode_controller_->IsTabletModeWindowManagerEnabled();
+    return tablet_mode_controller_->InTabletMode();
   }
 
   bool AreEventsBlocked() const {

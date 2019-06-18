@@ -1217,27 +1217,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Get the primary download directory in public external storage. The directory will be created
-     * if it doesn't exist.
-     * @return The download directory. Can be an invalid directory if failed to create the
-     *         directory.
-     */
-    public static File getPrimaryDownloadDirectory() {
-        File downloadDir =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
-        // Create the directory if needed.
-        if (!downloadDir.exists()) {
-            try {
-                downloadDir.mkdirs();
-            } catch (SecurityException e) {
-                Log.e(TAG, "Exception when creating download directory.", e);
-            }
-        }
-        return downloadDir;
-    }
-
-    /**
      * Parses an originating URL string and returns a valid Uri that can be inserted into
      * DownloadProvider. The returned Uri has to be null or non-empty http(s) scheme.
      * @param originalUrl String representation of the originating URL.

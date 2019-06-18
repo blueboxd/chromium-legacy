@@ -63,7 +63,10 @@ namespace ime {
 // issued |request_id| (as returned by DownloadToFile()) and an |error_code| (as
 // defined at
 // https://cs.chromium.org/chromium/src/net/base/net_error_list.h?rcl=f9c935b73381772d508eebba1e216c437139d475).
-typedef void (*DownloadCallback)(int request_id, int status_code);
+typedef void (*ImeCrosDownloadCallback)(int request_id, int status_code);
+
+// A simple downloading callback.
+typedef void (*SimpleDownloadCallback)(int status_code, const char* file_path);
 
 // Based on RequestPriority defined at
 // https://cs.chromium.org/chromium/src/net/base/request_priority.h?rcl=f9c935b73381772d508eebba1e216c437139d475
@@ -97,9 +100,9 @@ struct DownloadOptions {
 };
 
 // Provides CrOS network download service to the shared library.
-class Downloader {
+class ImeCrosDownloader {
  protected:
-  virtual ~Downloader() = default;
+  virtual ~ImeCrosDownloader() = default;
 
  public:
   // Download data from the given |url| and store into a file located at the
@@ -114,7 +117,7 @@ class Downloader {
   virtual int DownloadToFile(const char* url,
                              const DownloadOptions& options,
                              const char* file_path,
-                             DownloadCallback callback) = 0;
+                             ImeCrosDownloadCallback callback) = 0;
 
   // Cancel the download whose |request_id| is given (|request_id| is issued
   // in the return value of each DownloadToFile() call). The callback of a
@@ -124,14 +127,14 @@ class Downloader {
   virtual void Cancel(int request_id) = 0;
 };
 
-// This defines the `Platform` interface, which is used throughout the shared
-// library to manage platform-specific data/operations.
+// This defines the `ImeCrosPlatform` interface, which is used throughout the
+// shared library to manage platform-specific data/operations.
 //
 // This class should be provided by the IME service before creating an
 // `ImeEngineMainEntry` and be always owned by the IME service.
-class Platform {
+class ImeCrosPlatform {
  protected:
-  virtual ~Platform() = default;
+  virtual ~ImeCrosPlatform() = default;
 
  public:
   // The three methods below are Getters of the local data directories on the
@@ -154,8 +157,15 @@ class Platform {
   // Get the Downloader that provides CrOS network download service. Ownership
   // of the returned Downloader instance is never transferred, i.e. it remains
   // owned by the IME service / Platform at all times.
-  virtual Downloader* GetDownloader() = 0;
-  
+  virtual ImeCrosDownloader* GetDownloader() = 0;
+
+  // A shortcut for starting a downloading by the network |SimpleURLLoader|.
+  // Each SimpleDownloadToFile can only be used for a single request.
+  // Make a call after the previous task completes or cancels.
+  virtual int SimpleDownloadToFile(const char* url,
+                                   const char* file_path,
+                                   SimpleDownloadCallback callback) = 0;
+
   // TODO(https://crbug.com/837156): Provide Logger for main entry.
 };
 
@@ -224,7 +234,7 @@ class ImeEngineMainEntry {
 // name defined in IME_MAIN_ENTRY_CREATE_FN_NAME.
 //
 // Returns an instance of ImeEngineMainEntry from the IME shared library.
-typedef ImeEngineMainEntry* (*ImeMainEntryCreateFn)(Platform*);
+typedef ImeEngineMainEntry* (*ImeMainEntryCreateFn)(ImeCrosPlatform*);
 
 // Defined name of ImeMainEntryCreateFn exported from shared library.
 #define IME_MAIN_ENTRY_CREATE_FN_NAME "CreateImeMainEntry"

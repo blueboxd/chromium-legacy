@@ -62,8 +62,8 @@ class PLATFORM_EXPORT PageScheduler {
 
   // Instructs this PageScheduler to use virtual time. When virtual time is
   // enabled the system doesn't actually sleep for the delays between tasks
-  // before executing them. Returns the TimeTicks that virtual time offsets will
-  // be relative to.
+  // before executing them. Returns the base::TimeTicks that virtual time
+  // offsets will be relative to.
   //
   // E.g: A-E are delayed tasks
   //

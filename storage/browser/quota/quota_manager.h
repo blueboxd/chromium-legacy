@@ -81,7 +81,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaEvictionHandler {
   // Returns next origin to evict, or nullopt if there are no evictable
   // origins.
   virtual void GetEvictionOrigin(blink::mojom::StorageType type,
-                                 const std::set<url::Origin>& extra_exceptions,
                                  int64_t global_quota,
                                  GetOriginCallback callback) = 0;
 
@@ -378,14 +377,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void DidDumpOriginInfoTableForHistogram(
       const OriginInfoTableEntries& entries);
 
-  std::set<url::Origin> GetEvictionOriginExceptions(
-      const std::set<url::Origin>& extra_exceptions);
+  std::set<url::Origin> GetEvictionOriginExceptions();
   void DidGetEvictionOrigin(GetOriginCallback callback,
                             const base::Optional<url::Origin>& origin);
 
   // QuotaEvictionHandler.
   void GetEvictionOrigin(blink::mojom::StorageType type,
-                         const std::set<url::Origin>& extra_exceptions,
                          int64_t global_quota,
                          GetOriginCallback callback) override;
   void EvictOriginData(const url::Origin& origin,

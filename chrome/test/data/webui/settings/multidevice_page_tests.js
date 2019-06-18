@@ -98,7 +98,9 @@ suite('Multidevice', function() {
     multidevicePage.remove();
   });
 
-  const getLabel = () => multidevicePage.$$('#multidevice-label').textContent;
+  const getLabel = () => {
+    return multidevicePage.$$('#multidevice-label').textContent.trim();
+  };
 
   const getSubpage = () => multidevicePage.$$('settings-multidevice-subpage');
 
@@ -132,7 +134,7 @@ suite('Multidevice', function() {
       setHostData(mode);
       assertEquals(
           multidevicePage.isHostSet(),
-          !!multidevicePage.$$('#multidevice-item').hasAttribute('actionable'));
+          !!multidevicePage.$$('.link-wrapper').hasAttribute('actionable'));
     }
   });
 
@@ -141,7 +143,7 @@ suite('Multidevice', function() {
       function() {
         setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
         assertFalse(!!getSubpage());
-        multidevicePage.$$('#multidevice-item').click();
+        multidevicePage.$$('.link-wrapper').click();
         assertTrue(!!getSubpage());
         assertTrue(!!getSubpage().$$('settings-multidevice-feature-item'));
       });
@@ -153,7 +155,7 @@ suite('Multidevice', function() {
             settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
             multidevice.HOST_DEVICE);
         assertFalse(!!getSubpage());
-        multidevicePage.$$('#multidevice-item').click();
+        multidevicePage.$$('.link-wrapper').click();
         assertTrue(!!getSubpage());
         assertFalse(!!getSubpage().$$('settings-multidevice-feature-item'));
       });

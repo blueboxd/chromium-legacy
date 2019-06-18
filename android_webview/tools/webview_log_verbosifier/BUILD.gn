@@ -10,6 +10,8 @@ android_apk("webview_log_verbosifier_apk") {
   deps = [
     ":webview_log_verbosifier_resources",
   ]
+  min_sdk_version = 21
+  target_sdk_version = 28
 }
 
 android_resources("webview_log_verbosifier_resources") {

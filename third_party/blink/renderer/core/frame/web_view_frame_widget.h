@@ -44,7 +44,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;

@@ -12368,6 +12368,39 @@ static_assert(offsetof(DispatchCompute, num_groups_y) == 8,
 static_assert(offsetof(DispatchCompute, num_groups_z) == 12,
               "offset of DispatchCompute num_groups_z should be 12");
 
+struct DispatchComputeIndirect {
+  typedef DispatchComputeIndirect ValueType;
+  static const CommandId kCmdId = kDispatchComputeIndirect;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLintptr _offset) {
+    SetHeader();
+    offset = _offset;
+  }
+
+  void* Set(void* cmd, GLintptr _offset) {
+    static_cast<ValueType*>(cmd)->Init(_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t offset;
+};
+
+static_assert(sizeof(DispatchComputeIndirect) == 8,
+              "size of DispatchComputeIndirect should be 8");
+static_assert(offsetof(DispatchComputeIndirect, header) == 0,
+              "offset of DispatchComputeIndirect header should be 0");
+static_assert(offsetof(DispatchComputeIndirect, offset) == 4,
+              "offset of DispatchComputeIndirect offset should be 4");
+
 struct GetProgramInterfaceiv {
   typedef GetProgramInterfaceiv ValueType;
   static const CommandId kCmdId = kGetProgramInterfaceiv;

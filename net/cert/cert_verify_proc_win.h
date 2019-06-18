@@ -11,7 +11,7 @@ namespace net {
 
 // Performs certificate path construction and validation using Windows'
 // CryptoAPI.
-class CertVerifyProcWin : public CertVerifyProc {
+class NET_EXPORT_PRIVATE CertVerifyProcWin : public CertVerifyProc {
  public:
   CertVerifyProcWin();
 

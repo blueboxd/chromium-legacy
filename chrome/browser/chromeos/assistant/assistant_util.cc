@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom-shared.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -42,10 +43,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  // TODO(wutao): Add a new type DISALLOWED_BY_KIOSK_MODE.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
       user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
   }
 
   // String literals used in some cases in the array because their
@@ -88,6 +88,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
   if (prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
+
+  if (prefs->GetBoolean(ash::prefs::kKioskNextShellEnabled))
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_NEXT;
 
   // Bypass the account type check when using fake gaia login, e.g. in Tast
   // tests, or the account is logged in a device with a physical Assistant key

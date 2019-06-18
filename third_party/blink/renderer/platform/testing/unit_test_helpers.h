@@ -42,7 +42,7 @@ namespace test {
 void RunPendingTasks();
 
 // Waits for delayed task to complete or timers to fire for |delay|.
-void RunDelayedTasks(TimeDelta delay);
+void RunDelayedTasks(base::TimeDelta delay);
 
 void EnterRunLoop();
 void ExitRunLoop();

@@ -551,7 +551,7 @@ customize.showCollectionSelectionDialog = function() {
   $(customize.IDS.TITLE).textContent =
       configData.translatedStrings.selectChromeWallpaper;
   if (!configData.richerPicker) {
-    menu.classList.toggle(customize.CLASSES.COLLECTION_DIALOG);
+    menu.classList.add(customize.CLASSES.COLLECTION_DIALOG);
     menu.classList.remove(customize.CLASSES.IMAGE_DIALOG);
   }
 
@@ -677,6 +677,7 @@ customize.richerPicker_previewImage = function(tile) {
   const re = /w\d+\-h\d+/;
   $(customize.IDS.CUSTOM_BG).style.backgroundImage =
       tile.style.backgroundImage.replace(re, 'w1280-h720');
+  $(customize.IDS.CUSTOM_BG).style.opacity = 1;
 };
 
 /**
@@ -896,23 +897,13 @@ customize.showImageSelectionDialog = function(dialogTitle) {
   for (let i = 0; i < collImg.length; ++i) {
     const dataset = {};
 
-    // TODO(crbug.com/854028): Remove this hardcoded check when wallpaper
-    // previews are supported.
-    if (collImg[i].collectionId === 'solidcolors') {
-      dataset.attributionLine1 = '';
-      dataset.attributionLine2 = '';
-      dataset.attributionActionUrl = '';
-    } else {
-      dataset.attributionLine1 =
-          (collImg[i].attributions[0] !== undefined ?
-               collImg[i].attributions[0] :
-               '');
-      dataset.attributionLine2 =
-          (collImg[i].attributions[1] !== undefined ?
-               collImg[i].attributions[1] :
-               '');
-      dataset.attributionActionUrl = collImg[i].attributionActionUrl;
-    }
+    dataset.attributionLine1 =
+        (collImg[i].attributions[0] !== undefined ? collImg[i].attributions[0] :
+                                                    '');
+    dataset.attributionLine2 =
+        (collImg[i].attributions[1] !== undefined ? collImg[i].attributions[1] :
+                                                    '');
+    dataset.attributionActionUrl = collImg[i].attributionActionUrl;
     dataset.url = collImg[i].imageUrl;
     dataset.tileNum = i;
 
@@ -958,15 +949,8 @@ customize.showImageSelectionDialog = function(dialogTitle) {
  *     loading.
  */
 customize.loadTile = function(tile, imageData, countLoad) {
-  if (imageData[tile.dataset.tileNum].collectionId === 'solidcolors') {
-    tile.style.backgroundImage = [
-      customize.CUSTOM_BACKGROUND_OVERLAY,
-      'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')'
-    ].join(',').trim();
-  } else {
-    tile.style.backgroundImage =
-        'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')';
-  }
+  tile.style.backgroundImage =
+      'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')';
   customize.fadeInImageTile(
       tile, imageData[tile.dataset.tileNum].thumbnailImageUrl, countLoad);
 };

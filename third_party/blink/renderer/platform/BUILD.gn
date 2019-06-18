@@ -1336,8 +1336,6 @@ jumbo_component("platform") {
     "web_test_support.cc",
     "web_test_support.h",
     "web_text_input_info.cc",
-    "web_thread_supporting_gc.cc",
-    "web_thread_supporting_gc.h",
     "web_thread_type.cc",
     "web_touch_event.cc",
     "weborigin/known_ports.cc",

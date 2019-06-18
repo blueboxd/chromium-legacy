@@ -28,18 +28,6 @@ bool ArcNotificationManagerDelegateImpl::IsPublicSessionOrKiosk() const {
          login_status == LoginStatus::ARC_KIOSK_APP;
 }
 
-void ArcNotificationManagerDelegateImpl::GetAppIdByPackageName(
-    const std::string& package_name,
-    GetAppIdByPackageNameCallback callback) {
-  if (package_name.empty()) {
-    std::move(callback).Run(std::string());
-    return;
-  }
-
-  Shell::Get()->message_center_controller()->GetArcAppIdByPackageName(
-      package_name, std::move(callback));
-}
-
 void ArcNotificationManagerDelegateImpl::ShowMessageCenter() {
   Shell::Get()
       ->GetPrimaryRootWindowController()

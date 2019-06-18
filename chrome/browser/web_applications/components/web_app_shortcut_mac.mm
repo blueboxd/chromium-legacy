@@ -211,7 +211,7 @@ bool IsImageValidForIcon(const gfx::Image& image) {
   return false;
 }
 
-bool AppShimsDisabledForTest() {
+bool AppShimCreationDisabledForTest() {
   // Disable app shims in tests because shims created in ~/Applications will not
   // be cleaned up.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
@@ -630,7 +630,7 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
 }
 
 bool AppShimLaunchDisabled() {
-  return AppShimsDisabledForTest() &&
+  return AppShimCreationDisabledForTest() &&
          !g_app_shims_allow_update_and_launch_in_tests;
 }
 
@@ -644,12 +644,12 @@ WebAppShortcutCreator::~WebAppShortcutCreator() {}
 
 base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
     bool avoid_conflicts) const {
+  if (g_app_shims_allow_update_and_launch_in_tests)
+    return app_data_dir_.Append(GetShortcutBasename());
+
   base::FilePath applications_dir = GetApplicationsDirname();
   if (applications_dir.empty())
     return base::FilePath();
-
-  if (g_app_shims_allow_update_and_launch_in_tests)
-    return app_data_dir_.Append(GetShortcutBasename());
 
   if (!avoid_conflicts)
     return applications_dir.Append(GetShortcutBasename());
@@ -871,30 +871,18 @@ bool WebAppShortcutCreator::UpdateShortcuts(
       LOG(ERROR) << "Failed to localize " << applications_dir.value();
   }
 
-  // Get the list of paths to (re)create.
-  std::vector<base::FilePath> app_paths;
-  if (g_app_shims_allow_update_and_launch_in_tests) {
-    // Never look in ~/Applications or search the system for a bundle ID in a
-    // test since that relies on global system state and potentially cruft that
-    // may be leftover from prior/crashed test runs.
-    // TODO(tapted): Remove this check when tests that arrive here via setting
-    // |g_app_shims_allow_update_and_launch_in_tests| can properly mock out all
-    // the calls below.
-    app_paths.push_back(app_data_dir_.Append(GetShortcutBasename()));
-  } else {
-    // Update all copies located by bundle id (wherever it was moved or copied
-    // by the user).
-    app_paths = GetAppBundlesById();
+  // Get the list of paths to (re)create by bundle id (wherever it was moved
+  // or copied by the user).
+  std::vector<base::FilePath> app_paths = GetAppBundlesById();
 
-    // If that path does not exist, create a new entry in ~/Applications if
-    // requested.
-    if (app_paths.empty() && create_if_needed) {
-      app_paths.push_back(
-          GetApplicationsShortcutPath(true /* avoid_conflicts */));
-    }
-    if (app_paths.empty())
-      return false;
+  // If that path does not exist, create a new entry in ~/Applications if
+  // requested.
+  if (app_paths.empty() && create_if_needed) {
+    app_paths.push_back(
+        GetApplicationsShortcutPath(true /* avoid_conflicts */));
   }
+  if (app_paths.empty())
+    return false;
 
   CreateShortcutsAt(app_paths, updated_paths);
   return updated_paths->size() == app_paths.size();
@@ -1060,6 +1048,15 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
   // Sort the matches by preference.
   base::FilePath default_path =
       GetApplicationsShortcutPath(false /* avoid_conflicts */);
+
+  // When testing, use only the default path.
+  if (g_app_shims_allow_update_and_launch_in_tests) {
+    paths.clear();
+    if (base::PathExists(default_path))
+      paths.push_back(default_path);
+    return paths;
+  }
+
   base::FilePath apps_dir = GetApplicationsDirname();
   auto compare = [default_path, apps_dir](const base::FilePath& a,
                                           const base::FilePath& b) {
@@ -1154,7 +1151,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  if (AppShimsDisabledForTest())
+  if (AppShimCreationDisabledForTest())
     return true;
 
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
@@ -1180,8 +1177,12 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
   web_app::WebAppShortcutCreator shortcut_creator(app_data_path,
                                                   &shortcut_info);
   std::vector<base::FilePath> updated_shim_paths;
-  shortcut_creator.UpdateShortcuts(false /* create_if_needed */,
-                                   &updated_shim_paths);
+  bool create_if_needed = false;
+  // Tests use web_app::UpdateAllShortcuts to force shim creation (rather than
+  // relying on asynchronous creation at installation.
+  if (g_app_shims_allow_update_and_launch_in_tests)
+    create_if_needed = true;
+  shortcut_creator.UpdateShortcuts(create_if_needed, &updated_shim_paths);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

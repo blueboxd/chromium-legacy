@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -160,6 +161,12 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
   kerberos_credentials_manager_ =
       std::make_unique<chromeos::KerberosCredentialsManager>(
           g_browser_process->local_state(), primary_user);
+
+  DCHECK(!in_session_password_change_manager_);
+  in_session_password_change_manager_ =
+      chromeos::InSessionPasswordChangeManager::CreateIfEnabled(primary_profile,
+                                                                primary_user);
+
   primary_profile_shutdown_subscription_ =
       PrimaryProfileServicesShutdownNotifierFactory::GetInstance()
           ->Get(primary_profile)
@@ -170,6 +177,7 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
   kerberos_credentials_manager_.reset();
+  in_session_password_change_manager_.reset();
 }
 
 void BrowserProcessPlatformPart::RegisterKeepAlive() {

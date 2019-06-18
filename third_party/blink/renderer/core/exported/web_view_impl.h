@@ -162,6 +162,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetVisualViewportOffset(const WebFloatPoint&) override;
   WebFloatPoint VisualViewportOffset() const override;
   WebFloatSize VisualViewportSize() const override;
+  void ResizeVisualViewport(const WebSize&) override;
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
@@ -434,7 +435,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;

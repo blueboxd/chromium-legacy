@@ -252,13 +252,13 @@ body.dark-theme:not(.reordering) .md-tile:active + .md-menu::after {
 
 /* During reorder background is white. Therefore use dark grey for
  * title. */
-.reorder .md-title {
+.reorder {
   color: rgb(var(--GG800-rgb));
 }
 
 /* During reorder in dark mode background is dark. Therefore use light
  * grey for title. */
-html[darkmode=true] .reorder .md-title {
+html[darkmode=true] .reorder {
   color: rgb(var(--GG100-rgb));
 }
 
@@ -285,7 +285,7 @@ body.use-title-container .md-title {
   padding: 0 8px;
 }
 
-body.use-title-container .md-tile:not(.reorder) .md-title {
+body.use-title-container .md-tile:not(.reorder) {
   color: rgb(var(--GG800-rgb));
   filter: unset;
 }

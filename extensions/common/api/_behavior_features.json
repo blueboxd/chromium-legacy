@@ -87,7 +87,8 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "FA84F98B32AFC3013F5711F8711F8F38DB210AB7" // Sign-in Screen Test Extension
+      "FA84F98B32AFC3013F5711F8711F8F38DB210AB7", // Sign-in Screen Test Extension
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519"  // chrome.loginScreenUi Test Extension
     ]
   }],
   "allow_deprecated_audio_api": {

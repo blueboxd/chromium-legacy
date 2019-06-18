@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
       chromeos::AccessibilityManager::Get()->GetFocusRingId(
           extension_misc::kSelectToSpeakExtensionId, "");
 
-  ash::AccessibilityFocusRingController* controller =
+  ash::AccessibilityFocusRingControllerImpl* controller =
       ash::Shell::Get()->accessibility_focus_ring_controller();
   controller->SetNoFadeForTesting();
   const ash::AccessibilityFocusRingGroup* focus_ring_group =

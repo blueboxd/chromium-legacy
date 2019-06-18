@@ -85,9 +85,6 @@ class MockCastWebContentsDelegate : public CastWebContents::Delegate {
   MockCastWebContentsDelegate() {}
   ~MockCastWebContentsDelegate() override = default;
 
-  MOCK_METHOD1(OnPageStateChanged, void(CastWebContents* cast_web_contents));
-  MOCK_METHOD2(OnPageStopped,
-               void(CastWebContents* cast_web_contents, int error_code));
   MOCK_METHOD2(InnerContentsCreated,
                void(CastWebContents* inner_contents,
                     CastWebContents* outer_contents));
@@ -101,8 +98,13 @@ class MockCastWebContentsObserver : public CastWebContents::Observer {
   MockCastWebContentsObserver() {}
   ~MockCastWebContentsObserver() override = default;
 
-  MOCK_METHOD2(RenderFrameCreated,
-               void(int render_process_id, int render_frame_id));
+  MOCK_METHOD1(OnPageStateChanged, void(CastWebContents* cast_web_contents));
+  MOCK_METHOD2(OnPageStopped,
+               void(CastWebContents* cast_web_contents, int error_code));
+  MOCK_METHOD3(RenderFrameCreated,
+               void(int render_process_id,
+                    int render_frame_id,
+                    service_manager::InterfaceProvider* frame_interfaces));
   MOCK_METHOD1(ResourceLoadFailed, void(CastWebContents* cast_web_contents));
 
  private:
@@ -207,11 +209,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -226,11 +228,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -245,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   // ===========================================================================
   // Test: Inject an iframe, verify no events are received for the frame.
   // ===========================================================================
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStateChanged(_)).Times(0);
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStopped(_, _)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStateChanged(_)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStopped(_, _)).Times(0);
   std::string script =
       "var iframe = document.createElement('iframe');"
       "document.body.appendChild(iframe);"
@@ -256,8 +258,8 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   // ===========================================================================
   // Test: Inject an iframe and navigate it to an error page. Verify no events.
   // ===========================================================================
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStateChanged(_)).Times(0);
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStopped(_, _)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStateChanged(_)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStopped(_, _)).Times(0);
   script = "iframe.src = 'https://www.fake-non-existent-cast-page.com';";
   ASSERT_TRUE(ExecJs(web_contents_.get(), script));
 
@@ -268,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   // ===========================================================================
   EXPECT_CALL(mock_wc_delegate_, CloseContents(web_contents_.get()))
       .Times(AtLeast(1));
-  EXPECT_CALL(mock_cast_wc_delegate_,
+  EXPECT_CALL(mock_cast_wc_observer_,
               OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                            CastWebContents::PageState::CLOSED),
                             net::OK))
@@ -281,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, Lifecycle) {
   // Test: Destroy the underlying WebContents. Verify DESTROYED state.
   // ===========================================================================
   EXPECT_CALL(
-      mock_cast_wc_delegate_,
+      mock_cast_wc_observer_,
       OnPageStateChanged(CheckPageState(
           cast_web_contents_.get(), CastWebContents::PageState::DESTROYED)));
   web_contents_.reset();
@@ -299,11 +301,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, WebContentsDestroyed) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -316,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, WebContentsDestroyed) {
   // Test: Destroy the WebContents. Verify OnPageStopped(DESTROYED, net::OK).
   // ===========================================================================
   EXPECT_CALL(
-      mock_cast_wc_delegate_,
+      mock_cast_wc_observer_,
       OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                    CastWebContents::PageState::DESTROYED),
                     net::OK));
@@ -337,11 +339,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorPageCrash) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -350,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorPageCrash) {
   cast_web_contents_->LoadUrl(GURL(url::kAboutBlankURL));
   run_loop->Run();
 
-  EXPECT_CALL(mock_cast_wc_delegate_,
+  EXPECT_CALL(mock_cast_wc_observer_,
               OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                            CastWebContents::PageState::ERROR),
                             net::ERR_UNEXPECTED));
@@ -371,10 +373,10 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLocalFileMissing) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
-    EXPECT_CALL(mock_cast_wc_delegate_,
+    EXPECT_CALL(mock_cast_wc_observer_,
                 OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                              CastWebContents::PageState::ERROR),
                               _))
@@ -400,11 +402,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -414,8 +416,8 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   run_loop->Run();
 
   // Create a sub-frame.
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStateChanged(_)).Times(0);
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStopped(_, _)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStateChanged(_)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStopped(_, _)).Times(0);
   std::string script =
       "var iframe = document.createElement('iframe');"
       "document.body.appendChild(iframe);"
@@ -437,8 +439,8 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   // ===========================================================================
   // Test: Ignore main frame load failures with net::ERR_ABORTED.
   // ===========================================================================
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStateChanged(_)).Times(0);
-  EXPECT_CALL(mock_cast_wc_delegate_, OnPageStopped(_, _)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStateChanged(_)).Times(0);
+  EXPECT_CALL(mock_cast_wc_observer_, OnPageStopped(_, _)).Times(0);
   cast_web_contents_->DidFailLoad(
       web_contents_->GetMainFrame(),
       web_contents_->GetMainFrame()->GetLastCommittedURL(), net::ERR_ABORTED,
@@ -447,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   // ===========================================================================
   // Test: If main frame fails to load, page should enter ERROR state.
   // ===========================================================================
-  EXPECT_CALL(mock_cast_wc_delegate_,
+  EXPECT_CALL(mock_cast_wc_observer_,
               OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                            CastWebContents::PageState::ERROR),
                             net::ERR_FAILED));
@@ -476,10 +478,10 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorHttp4XX) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
-    EXPECT_CALL(mock_cast_wc_delegate_,
+    EXPECT_CALL(mock_cast_wc_observer_,
                 OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                              CastWebContents::PageState::ERROR),
                               net::ERR_FAILED))
@@ -520,10 +522,10 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailed) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
-    EXPECT_CALL(mock_cast_wc_delegate_,
+    EXPECT_CALL(mock_cast_wc_observer_,
                 OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                              CastWebContents::PageState::ERROR),
                               net::ERR_ADDRESS_UNREACHABLE))
@@ -553,11 +555,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, LoadCanceledByApp) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));
@@ -582,11 +584,11 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, NotifyMissingResource) {
   {
     InSequence seq;
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(
             cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
     EXPECT_CALL(
-        mock_cast_wc_delegate_,
+        mock_cast_wc_observer_,
         OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
                                           CastWebContents::PageState::LOADED)))
         .WillOnce(InvokeWithoutArgs(quit_closure));

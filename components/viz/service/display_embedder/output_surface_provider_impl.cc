@@ -15,6 +15,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
@@ -37,17 +38,14 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
-#include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
-#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 #endif
 
 #if defined(OS_MACOSX)
-#include "components/viz/service/display_embedder/gl_output_surface_mac.h"
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif
@@ -57,8 +55,8 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -189,19 +187,19 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-      output_surface = std::make_unique<GLOutputSurfaceOzone>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           gpu_memory_buffer_manager_.get(),
-          renderer_settings.overlay_strategies);
+          display::DisplaySnapshot::PrimaryFormat());
 #elif defined(OS_MACOSX)
-      output_surface = std::make_unique<GLOutputSurfaceMac>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), renderer_settings.allow_overlays);
+          gpu_memory_buffer_manager_.get(), gfx::BufferFormat::RGBA_8888);
 #elif defined(OS_ANDROID)
       auto buffer_format = context_provider->UseRGB565PixelFormat()
                                ? gfx::BufferFormat::BGR_565
                                : gfx::BufferFormat::RGBA_8888;
-      output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           gpu_memory_buffer_manager_.get(), buffer_format);
 #else
@@ -209,32 +207,14 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
     } else {
 #if defined(OS_WIN)
-      const auto& capabilities = context_provider->ContextCapabilities();
-      const bool use_overlays_for_sw_protected_video =
-          base::FeatureList::IsEnabled(
-              features::kUseDCOverlaysForSoftwareProtectedVideo);
-      const bool use_overlays =
-          capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                     use_overlays_for_sw_protected_video);
-      output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), use_overlays);
+      output_surface = std::make_unique<GLOutputSurface>(
+          std::move(context_provider), surface_handle);
 #elif defined(OS_ANDROID)
-      // When SurfaceControl is enabled, any resource backed by an
-      // AHardwareBuffer can be marked as an overlay candidate but it requires
-      // that we use a SurfaceControl backed GLSurface. If we're creating a
-      // native window backed GLSurface, the overlay processing code will
-      // incorrectly assume these resources can be overlayed. So we disable all
-      // overlay processing for this OutputSurface.
-      const bool allow_overlays =
-          task_executor_->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
-          gpu::kGpuFeatureStatusEnabled;
-
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), allow_overlays);
+          std::move(context_provider), surface_handle);
 #else
-      output_surface =
-          std::make_unique<GLOutputSurface>(std::move(context_provider));
+      output_surface = std::make_unique<GLOutputSurface>(
+          std::move(context_provider), surface_handle);
 #endif
     }
   }

@@ -836,21 +836,21 @@ void CupsPrintersHandler::OnAddOrEditPrinterError(
 void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string js_callback;
+  std::string callback_id;
   CHECK_EQ(1U, args->GetSize());
-  CHECK(args->GetString(0, &js_callback));
+  CHECK(args->GetString(0, &callback_id));
   ppd_provider_->ResolveManufacturers(
       base::Bind(&CupsPrintersHandler::ResolveManufacturersDone,
-                 weak_factory_.GetWeakPtr(), js_callback));
+                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterModels(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string js_callback;
+  std::string callback_id;
   std::string manufacturer;
   CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &js_callback));
+  CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &manufacturer));
 
   // Empty manufacturer queries may be triggered as a part of the ui
@@ -859,14 +859,14 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
     base::DictionaryValue response;
     response.SetBoolean("success", true);
     response.Set("models", std::make_unique<base::ListValue>());
-    ResolveJavascriptCallback(base::Value(js_callback), response);
+    ResolveJavascriptCallback(base::Value(callback_id), response);
     return;
   }
 
   ppd_provider_->ResolvePrinters(
       manufacturer,
       base::Bind(&CupsPrintersHandler::ResolvePrintersDone,
-                 weak_factory_.GetWeakPtr(), manufacturer, js_callback));
+                 weak_factory_.GetWeakPtr(), manufacturer, callback_id));
 }
 
 void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
@@ -891,7 +891,7 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::ResolveManufacturersDone(
-    const std::string& js_callback,
+    const std::string& callback_id,
     PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& manufacturers) {
   auto manufacturers_value = std::make_unique<base::ListValue>();
@@ -901,12 +901,12 @@ void CupsPrintersHandler::ResolveManufacturersDone(
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
   response.Set("manufacturers", std::move(manufacturers_value));
-  ResolveJavascriptCallback(base::Value(js_callback), response);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void CupsPrintersHandler::ResolvePrintersDone(
     const std::string& manufacturer,
-    const std::string& js_callback,
+    const std::string& callback_id,
     PpdProvider::CallbackResultCode result_code,
     const PpdProvider::ResolvedPrintersList& printers) {
   auto printers_value = std::make_unique<base::ListValue>();
@@ -919,7 +919,7 @@ void CupsPrintersHandler::ResolvePrintersDone(
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
   response.Set("models", std::move(printers_value));
-  ResolveJavascriptCallback(base::Value(js_callback), response);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void CupsPrintersHandler::FileSelected(const base::FilePath& path,

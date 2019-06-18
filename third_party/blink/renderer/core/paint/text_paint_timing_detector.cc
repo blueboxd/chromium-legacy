@@ -24,12 +24,14 @@
 
 namespace blink {
 
+namespace {
+
 // Calculate metrics candidate every 1 second after the first text pre-paint.
-static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
+constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
 constexpr size_t kTextNodeNumberLimit = 5000;
 
-static bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
-                           const base::WeakPtr<TextRecord>& b) {
+bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
+                    const base::WeakPtr<TextRecord>& b) {
   DCHECK(a);
   DCHECK(b);
   if (a->first_size != b->first_size)
@@ -38,6 +40,8 @@ static bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
   // be merged in the set.
   return a->node_id > b->node_id;
 }
+
+}  // namespace
 
 TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
     : records_manager_(),
@@ -182,14 +186,9 @@ bool TextPaintTimingDetector::ShouldWalkObject(
   // If we have finished recording Largest Text Paint and the element is a
   // shadow element or has no elementtiming attribute, then we should not record
   // its text.
-  if (!is_recording_ltp_) {
-    if (node->IsInShadowTree() || !node->IsElementNode() ||
-        ToElement(node)
-            ->FastGetAttribute(html_names::kElementtimingAttr)
-            .IsEmpty()) {
-      return false;
-    }
-  }
+  if (!is_recording_ltp_ && !TextElementTiming::NeededForElementTiming(node))
+    return false;
+
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(node);
   if (node_id == kInvalidDOMNodeId)
     return true;
@@ -221,7 +220,11 @@ void TextPaintTimingDetector::RecordAggregatedText(
   if (aggregated_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
   } else {
-    records_manager_.RecordVisibleNode(node_id, aggregated_size, aggregator);
+    records_manager_.RecordVisibleNode(
+        node_id, aggregated_size,
+        TextElementTiming::ComputeIntersectionRect(
+            node, aggregated_visual_rect, property_tree_state, frame_view_),
+        aggregator);
   }
 
   if (records_manager_.HasTooManyNodes()) {
@@ -301,11 +304,12 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
 
 void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
                                            const uint64_t& visual_size,
+                                           const FloatRect& element_timing_rect,
                                            const LayoutObject& text_object) {
   DCHECK(!HasTooManyNodes());
   DCHECK_GT(visual_size, 0u);
   std::unique_ptr<TextRecord> record =
-      std::make_unique<TextRecord>(node_id, visual_size);
+      std::make_unique<TextRecord>(node_id, visual_size, element_timing_rect);
 #ifndef NDEBUG
   String text;
   if (text_object.IsText()) {

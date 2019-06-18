@@ -20,12 +20,16 @@ namespace {
 // necessitating the use of a COM single-threaded apartment sequence.
 base::LazyCOMSTATaskRunner g_download_task_runner =
     LAZY_COM_STA_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 #else
 base::LazySequencedTaskRunner g_download_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE));
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE));
 #endif
 
 base::LazyInstance<scoped_refptr<base::SingleThreadTaskRunner>>::

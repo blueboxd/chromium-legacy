@@ -67,9 +67,7 @@ bool IsHomeScreenAvailable() {
 }
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 // Close current Assistant UI.

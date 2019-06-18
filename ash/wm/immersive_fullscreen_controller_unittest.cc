@@ -237,8 +237,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 
   // Enable or disable tablet mode based on |enable|.
   void EnableTabletMode(bool enable) {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        enable);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
   }
 
  private:

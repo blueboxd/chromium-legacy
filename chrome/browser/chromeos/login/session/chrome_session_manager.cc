@@ -55,6 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -254,10 +255,10 @@ void ChromeSessionManager::Initialize(
     // In these contexts, emulate as if sync has been initialized.
     VLOG(1) << "Starting Chrome with stub login.";
 
-    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
     std::string login_user_id = login_account_id.GetUserEmail();
-    IdentityManagerFactory::GetForProfile(profile)->LegacySetPrimaryAccount(
-        login_user_id, login_user_id);
+    IdentityManagerFactory::GetForProfile(profile)
+        ->GetPrimaryAccountMutator()
+        ->SetPrimaryAccountAndUpdateAccountInfo(login_user_id, login_user_id);
     StartUserSession(profile, login_user_id);
     return;
   }

@@ -126,6 +126,7 @@ android_library("cast_shell_java") {
   ]
 
   android_manifest_for_lint = cast_shell_android_manifest
+  min_sdk_version = 21
 
   srcjar_deps = [
     ":cast_shell_build_config_gen",

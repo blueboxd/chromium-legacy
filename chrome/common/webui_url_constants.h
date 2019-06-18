@@ -112,6 +112,7 @@ extern const char kChromeUINetInternalsURL[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUINewTabIconHost[];
 extern const char kChromeUINewTabURL[];
+extern const char kChromeUINotificationsInternalsHost[];
 extern const char kChromeUIOfflineInternalsHost[];
 extern const char kChromeUIOmniboxHost[];
 extern const char kChromeUIOmniboxURL[];

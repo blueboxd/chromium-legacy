@@ -312,25 +312,6 @@ TEST_F(SessionControllerImplTest, GetLoginStateForActiveSession) {
   }
 }
 
-TEST_F(SessionControllerImplTest, GetLoginStateForOwner) {
-  // Simulate an active user session.
-  SessionInfo info;
-  FillDefaultSessionInfo(&info);
-  info.state = SessionState::ACTIVE;
-  SetSessionInfo(info);
-
-  UserSession session;
-  session.session_id = 1u;
-  session.user_info.type = user_manager::USER_TYPE_REGULAR;
-  session.user_info.account_id = AccountId::FromUserEmail("owner@test.com");
-  session.user_info.display_name = "Owner";
-  session.user_info.display_email = "owner@test.com";
-  session.user_info.is_device_owner = true;
-  controller()->UpdateUserSession(session);
-
-  EXPECT_EQ(LoginStatus::OWNER, controller()->login_status());
-}
-
 // Tests that user sessions can be set and updated.
 TEST_F(SessionControllerImplTest, UserSessions) {
   EXPECT_FALSE(controller()->IsActiveUserSessionStarted());

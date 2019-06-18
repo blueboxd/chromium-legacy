@@ -183,7 +183,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode) = 0;
+      network::mojom::CredentialsMode) = 0;
 
   void ReceiveMessage(BlinkTransferableMessage);
   base::TimeTicks TimeOrigin() const { return time_origin_; }

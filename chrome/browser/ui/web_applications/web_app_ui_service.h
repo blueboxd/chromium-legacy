@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
@@ -21,7 +22,6 @@ class Browser;
 namespace web_app {
 
 // This KeyedService is a UI counterpart for WebAppProvider.
-// It tracks the open windows for each web app.
 class WebAppUiService : public KeyedService,
                         public BrowserListObserver,
                         public WebAppUiDelegate {
@@ -38,6 +38,7 @@ class WebAppUiService : public KeyedService,
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
+  void MigrateOSAttributes(const AppId& from, const AppId& to) override;
 
   // BrowserListObserver
   void OnBrowserAdded(Browser* browser) override;
@@ -50,6 +51,8 @@ class WebAppUiService : public KeyedService,
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;
+
+  base::WeakPtrFactory<WebAppUiService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppUiService);
 };

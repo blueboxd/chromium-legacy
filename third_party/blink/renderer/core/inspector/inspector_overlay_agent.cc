@@ -94,12 +94,12 @@ namespace {
 bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
                FloatQuad* quad) {
   const size_t kCoordinatesInQuad = 8;
-  if (!quad_array || quad_array->length() != kCoordinatesInQuad)
+  if (!quad_array || quad_array->size() != kCoordinatesInQuad)
     return false;
-  quad->SetP1(FloatPoint(quad_array->get(0), quad_array->get(1)));
-  quad->SetP2(FloatPoint(quad_array->get(2), quad_array->get(3)));
-  quad->SetP3(FloatPoint(quad_array->get(4), quad_array->get(5)));
-  quad->SetP4(FloatPoint(quad_array->get(6), quad_array->get(7)));
+  quad->SetP1(FloatPoint((*quad_array)[0], (*quad_array)[1]));
+  quad->SetP2(FloatPoint((*quad_array)[2], (*quad_array)[3]));
+  quad->SetP3(FloatPoint((*quad_array)[4], (*quad_array)[5]));
+  quad->SetP4(FloatPoint((*quad_array)[6], (*quad_array)[7]));
   return true;
 }
 

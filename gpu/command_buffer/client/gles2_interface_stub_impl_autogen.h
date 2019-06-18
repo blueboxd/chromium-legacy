@@ -859,6 +859,7 @@ void GLES2InterfaceStub::BindImageTexture(GLuint /* unit */,
 void GLES2InterfaceStub::DispatchCompute(GLuint /* num_groups_x */,
                                          GLuint /* num_groups_y */,
                                          GLuint /* num_groups_z */) {}
+void GLES2InterfaceStub::DispatchComputeIndirect(GLintptr /* offset */) {}
 void GLES2InterfaceStub::GetProgramInterfaceiv(GLuint /* program */,
                                                GLenum /* program_interface */,
                                                GLenum /* pname */,

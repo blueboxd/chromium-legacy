@@ -9,10 +9,10 @@
 
 namespace ash {
 
-bool IsInTabletMode() {
+bool InTabletMode() {
   auto* shell = Shell::Get();
   return shell && shell->tablet_mode_controller() &&
-         shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
+         shell->tablet_mode_controller()->InTabletMode();
 }
 
 bool IsInSplitView() {

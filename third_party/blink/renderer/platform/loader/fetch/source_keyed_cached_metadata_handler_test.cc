@@ -85,7 +85,7 @@ class MockCachedMetadataSender final : public CachedMetadataSender {
 
  private:
   const KURL response_url_;
-  const Time response_time_;
+  const base::Time response_time_;
 };
 
 template <size_t N>

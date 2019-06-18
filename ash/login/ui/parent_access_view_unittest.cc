@@ -267,7 +267,7 @@ TEST_F(ParentAccessViewTest, Backspace) {
 // Tests input with virtual pin keyboard.
 TEST_F(ParentAccessViewTest, PinKeyboard) {
   StartView();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
@@ -293,10 +293,10 @@ TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.pin_keyboard_view()->GetVisible());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(test_api.pin_keyboard_view()->GetVisible());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(test_api.pin_keyboard_view()->GetVisible());
 }
 

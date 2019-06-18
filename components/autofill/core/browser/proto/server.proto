@@ -353,8 +353,7 @@ message AutofillUploadContents {
   // The end of the section of password attributes.
 
   // Event observed by the password manager which indicated that the form was
-  // successfully submitted. Corresponds to
-  // |SubmissionIndicatorEvent|.
+  // successfully submitted. Corresponds to |mojom::SubmissionIndicatorEvent|.
   enum SubmissionIndicatorEvent {
     NONE = 0;
     HTML_FORM_SUBMISSION = 1;

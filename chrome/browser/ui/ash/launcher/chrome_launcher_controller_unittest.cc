@@ -4276,7 +4276,7 @@ TEST_F(ChromeLauncherControllerTest, InternalAppWindowPropertyChanged) {
   InitLauncherController();
 
   // Only test the first internal app. The others should be the same.
-  const auto& internal_app = app_list::GetInternalAppList(profile()).front();
+  const auto internal_app = app_list::GetInternalAppList(profile()).front();
   std::string app_id;
   ash::ShelfID shelf_id;
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));

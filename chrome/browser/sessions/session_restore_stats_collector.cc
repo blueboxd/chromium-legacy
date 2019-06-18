@@ -125,7 +125,8 @@ SessionRestoreStatsCollector::SessionRestoreStatsCollector(
       loading_tab_count_(0u),
       deferred_tab_count_(0u),
       tick_clock_(new base::DefaultTickClock()),
-      reporting_delegate_(std::move(reporting_delegate)) {
+      reporting_delegate_(std::move(reporting_delegate)),
+      observer_(this) {
   this_retainer_ = this;
 }
 
@@ -351,8 +352,10 @@ void SessionRestoreStatsCollector::RenderWidgetHostVisibilityChanged(
 void SessionRestoreStatsCollector::RenderWidgetHostDestroyed(
     content::RenderWidgetHost* widget_host) {
   auto* tab_state = GetTabState(widget_host);
-  if (tab_state)
+  if (tab_state) {
+    observer_.Remove(tab_state->observed_host);
     tab_state->observed_host = nullptr;
+  }
 }
 
 void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
@@ -367,7 +370,7 @@ void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
   DCHECK(tab_it != tabs_tracked_.end());
   TabState& tab_state = tab_it->second;
   if (tab_state.observed_host)
-    tab_state.observed_host->RemoveObserver(this);
+    observer_.Remove(tab_state.observed_host);
 
   // If this tab was waiting for a NOTIFICATION_LOAD_STOP event then update
   // the loading counts.
@@ -419,7 +422,7 @@ SessionRestoreStatsCollector::RegisterForNotifications(
   // Register for RenderWidgetHostVisibilityChanged notifications for this tab.
   tab_state->observed_host = GetRenderWidgetHost(tab);
   if (tab_state->observed_host)
-    tab_state->observed_host->AddObserver(this);
+    observer_.Add(tab_state->observed_host);
   return tab_state;
 }
 

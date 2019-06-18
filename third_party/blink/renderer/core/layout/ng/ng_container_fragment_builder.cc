@@ -202,7 +202,7 @@ NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
-    NGOutOfFlowPositionedDescendant descendant) {
+    const NGOutOfFlowPositionedDescendant& descendant) {
   oof_positioned_descendants_.push_back(descendant);
   return *this;
 }

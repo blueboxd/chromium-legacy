@@ -14,7 +14,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
@@ -27,6 +26,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/webaudio_media_stream_audio_sink.h"
 #include "third_party/blink/public/web/web_frame.h"
 
 using blink::WebFrame;
@@ -194,10 +194,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
   blink::WebMediaStreamSource source = track.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeAudio);
 
-  // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
-  // WebAudioMediaStreamSink since it's not specific to any particular source.
-  // https://crbug.com/577874
-  return new WebRtcLocalAudioSourceProvider(track, context_sample_rate);
+  return new blink::WebAudioMediaStreamAudioSink(track, context_sample_rate);
 }
 
 void MediaStreamCenter::DidStopMediaStreamSource(

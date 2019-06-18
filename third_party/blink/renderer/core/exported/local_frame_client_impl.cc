@@ -944,7 +944,7 @@ void LocalFrameClientImpl::DidEnforceInsecureRequestPolicy(
 }
 
 void LocalFrameClientImpl::DidEnforceInsecureNavigationsSet(
-    const std::vector<unsigned>& set) {
+    const WebVector<unsigned>& set) {
   if (!web_frame_->Client())
     return;
   web_frame_->Client()->DidEnforceInsecureNavigationsSet(set);

@@ -2042,8 +2042,6 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
-  MOCK_METHOD0(TakeOverlayCandidateValidator,
-               std::unique_ptr<OverlayCandidateValidator>());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
   MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
@@ -2077,7 +2075,6 @@ class MockOutputSurfaceTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
 
-    EXPECT_CALL(*output_surface_, TakeOverlayCandidateValidator()).Times(1);
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
     renderer_->Initialize();

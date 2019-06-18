@@ -55,8 +55,8 @@ scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
 COMPONENT_EXPORT(NETWORK_SERVICE)
 std::string ComputeReferrer(const GURL& referrer);
 
-// Any single headers in a set of request headers are not safe to send. When
-// adding sets of headers together, it's safe to call this on each set
+// Checks if any single header in a set of request headers is not safe to send.
+// When adding sets of headers together, it's safe to call this on each set
 // individually.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers);

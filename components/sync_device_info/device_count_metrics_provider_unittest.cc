@@ -9,36 +9,10 @@
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-
-namespace {
-
-class FakeTracker : public DeviceInfoTracker {
- public:
-  explicit FakeTracker(const int count) : count_(count) {}
-
-  // DeviceInfoTracker
-  bool IsSyncing() const override { return false; }
-  std::unique_ptr<DeviceInfo> GetDeviceInfo(
-      const std::string& client_id) const override {
-    return std::unique_ptr<DeviceInfo>();
-  }
-  std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override {
-    return std::vector<std::unique_ptr<DeviceInfo>>();
-  }
-  void AddObserver(Observer* observer) override {}
-  void RemoveObserver(Observer* observer) override {}
-  int CountActiveDevices() const override { return count_; }
-  void ForcePulseForTest() override {}
-
- private:
-  int count_;
-};
-
-}  // namespace
 
 class DeviceCountMetricsProviderTest : public testing::Test {
  public:
@@ -48,9 +22,11 @@ class DeviceCountMetricsProviderTest : public testing::Test {
                                 base::Unretained(this))) {}
 
   void AddTracker(const int count) {
-    trackers_.push_back(
-        std::unique_ptr<DeviceInfoTracker>(new FakeTracker(count)));
+    auto tracker = std::make_unique<FakeDeviceInfoTracker>();
+    tracker->OverrideActiveDeviceCount(count);
+    trackers_.emplace_back(std::move(tracker));
   }
+
   void GetTrackers(std::vector<const DeviceInfoTracker*>* trackers) {
     for (const auto& tracker : trackers_) {
       trackers->push_back(tracker.get());

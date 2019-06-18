@@ -204,15 +204,5 @@ interface NativeWidgetNSWindow {
   ReleaseCapture();
 
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
-  // Note that the callers of this method use content::NativeWebKeyboardEvent,
-  // which would  introduce a layering violation here. Specify explicitly as
-  // arguments only what is used in constructing the |os_event| member of
-  // content::NativeWebKeyboardEvent, to avoid this layering violation.
-  RedispatchKeyEvent(
-      uint64 type,
-      uint64 modifier_flags,
-      double timestamp,
-      mojo_base.mojom.String16 characters,
-      mojo_base.mojom.String16 characters_ignoring_modifiers,
-      uint32 key_code);
+  RedispatchKeyEvent(array<uint8> native_event_data);
 };

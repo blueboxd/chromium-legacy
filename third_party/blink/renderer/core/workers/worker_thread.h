@@ -129,7 +129,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
   // the underlying thread. This task may be blocked by JavaScript execution on
@@ -336,7 +336,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);

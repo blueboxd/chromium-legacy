@@ -26,8 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <meta name='mobile-web-app-capable' content='yes'>
     <meta name='apple-mobile-web-app-capable' content='yes'>
 
-    <!-- Origin Trial Token, feature = WebXR Device API, origin = https://immersive-web.github.io, expires = 2018-08-28 -->
-<meta http-equiv="origin-trial" data-feature="WebXR Device API" data-expires="2018-08-28" content="AnNpu7ceXvLew05ccD8Zr1OZsdZiB2hLQKK82kTTMDwF7oRKtP3QEJ4RzkeHrmB8Sq0vSV6ZNmszpBCZ0I8p9gAAAABceyJvcmlnaW4iOiJodHRwczovL2ltbWVyc2l2ZS13ZWIuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZSIsImV4cGlyeSI6MTUzNTQxNDQwMH0=">
+    <!-- Origin Trial Token, feature = WebXR Device API (For Chrome M76+), origin = storage.googleapis.com, expires = 2019-07-24 -->
+    <meta http-equiv="origin-trial" data-feature="WebXR Device API (For Chrome M76+)" data-expires="2019-07-24" content="Ap6io/uhkGK7vXCD+golNnQfj8wJ4so790EzZoqb8YOljMXIBTvBEQFPTHYIz5d/BgtuwZTKOLrmHAOt30f38g8AAABxeyJvcmlnaW4iOiJodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb206NDQzIiwiZmVhdHVyZSI6IldlYlhSRGV2aWNlTTc2IiwiZXhwaXJ5IjoxNTY0MDA5MzU2LCJpc1N1YmRvbWFpbiI6dHJ1ZX0=">
 
     <title>Magic Window</title>
 
@@ -93,8 +93,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // XR globals.
       let xrButton = null;
-      let xrImmersiveRefSpace = null;
-      let xrNonImmersiveRefSpace = null;
+      let xrRefSpaces = {};
 
       // WebGL scene globals.
       let gl = null;
@@ -126,6 +125,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         navigator.xr.requestSession('immersive-vr').then((session) => {
+          // Keep track of the session mode so that we use the correct reference
+          // space later.
           session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
@@ -175,7 +176,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but an identity space is guaranteed.
+            // the stationary reference space, but a viewer space is guaranteed.
             return session.requestReferenceSpace('viewer');
           } else {
             throw e;
@@ -183,11 +184,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }).then((refSpace) => {
           // Since we're dealing with multple sessions now we need to track
           // which XRReferenceSpace is associated with which XRSession.
-          if (session.mode.startsWith('immersive')) {
-            xrImmersiveRefSpace = refSpace;
-          } else {
-            xrNonImmersiveRefSpace = refSpace;
-          }
+          xrRefSpaces[session.mode] = refSpace;
           session.requestAnimationFrame(onXRFrame);
         });
       }
@@ -203,6 +200,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
+      // Allow the user to click and drag the mouse to adjust the viewer pose
+      // for inline sessions.
       let lookYaw = 0;
       let lookPitch = 0;
       const lookSpeed = 0.0025;
@@ -218,41 +217,79 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       });
 
-      // Called every time a XRSession requests that a new frame be drawn.
-      function onXRFrame(t, frame) {
-        let session = frame.session;
-        // Ensure that we're using the right frame of reference for the session.
-        let refSpace = session.mode.startsWith('immersive') ?
-                         xrImmersiveRefSpace :
-                         xrNonImmersiveRefSpace;
-
-        // Account for the click-and-drag mouse movement when calculating the
-        // viewer pose.
+      // XRReferenceSpace offset is immutable, so return a new reference space
+      // that has an updated orientation.
+      function getAdjustedRefSpace(refSpace) {
+        // Represent the rotational component of the reference space as a
+        // quaternion.
         let invOrientation = quat.create();
         quat.rotateX(invOrientation, invOrientation, -lookPitch);
         quat.rotateY(invOrientation, invOrientation, -lookYaw);
         let xform = new XRRigidTransform(
             {x: 0, y: 0, z: 0},
             {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
-        refSpace = refSpace.getOffsetReferenceSpace(xform);
-        let pose = frame.getViewerPose(refSpace);
+        return refSpace.getOffsetReferenceSpace(xform);
+      }
 
+      // Called every time a XRSession requests that a new frame be drawn.
+      function onXRFrame(t, frame) {
+        let session = frame.session;
+
+        // Per-frame scene setup. Nothing WebXR specific here.
         scene.startFrame();
+
+        // Inform the session that we're ready for the next frame.
         session.requestAnimationFrame(onXRFrame);
 
+        // Ensure that we're using the right reference space for the session.
+        let refSpace = xrRefSpaces[session.mode];
+
+        // Account for the click-and-drag mouse movement when calculating the
+        // viewer pose for inline sessions.
+        if (session.mode == 'inline') {
+          refSpace = getAdjustedRefSpace(refSpace);
+        }
+
+        let pose = frame.getViewerPose(refSpace);
+
+        // In most other samples, these rendering details will be handeld by
+        // cottontail by calling scene.drawXRFrame.
         if (pose) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
           if (!arMode) {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           }
 
+          // Loop through each of the views reported by the frame and draw them
+          // into the corresponding viewport.
           for (let view of pose.views) {
             let viewport = session.renderState.baseLayer.getViewport(view);
             gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+            // Draw this view of the scene. What happens in this function really
+            // isn't all that important. What is important is that it renders
+            // into the XRWebGLLayer's framebuffer, using the viewport into that
+            // framebuffer reported by the current view, and using the
+            // projection and view matricies from the current view and pose.
+            // We bound the framebuffer and viewport up above, and are passing
+            // in the appropriate matrices here to be used when rendering.
             scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }
+        } else {
+          // There's several options for handling cases where no pose is given.
+          // The simplest, which these samples opt for, is to simply not draw
+          // anything. That way the device will continue to show the last frame
+          // drawn, possibly even with reprojection. Alternately you could
+          // re-draw the scene again with the last known good pose (which is now
+          // likely to be wrong), clear to black, or draw a head-locked message
+          // for the user indicating that they should try to get back to an area
+          // with better tracking. In all cases it's possible that the device
+          // may override what is drawn here to show the user it's own error
+          // message, so it should not be anything critical to the application's
+          // use.
         }
 
+        // Per-frame scene teardown. Nothing WebXR specific here.
         scene.endFrame();
       }
 

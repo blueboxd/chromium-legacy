@@ -367,7 +367,7 @@ void WebContentsDelegateAndroid::ExitFullscreenModeForTab(
 }
 
 bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -379,7 +379,7 @@ void WebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {}
 
-int WebContentsDelegateAndroid::GetTopControlsHeight() const {
+int WebContentsDelegateAndroid::GetTopControlsHeight() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -387,7 +387,7 @@ int WebContentsDelegateAndroid::GetTopControlsHeight() const {
   return Java_WebContentsDelegateAndroid_getTopControlsHeight(env, obj);
 }
 
-int WebContentsDelegateAndroid::GetBottomControlsHeight() const {
+int WebContentsDelegateAndroid::GetBottomControlsHeight() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -396,7 +396,7 @@ int WebContentsDelegateAndroid::GetBottomControlsHeight() const {
 }
 
 bool WebContentsDelegateAndroid::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* contents) const {
+    const content::WebContents* contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

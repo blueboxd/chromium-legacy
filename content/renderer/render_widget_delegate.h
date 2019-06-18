@@ -109,6 +109,11 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   virtual void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) = 0;
+
+  // Called when the VisualViewport needs to be updated. Expects coordinates
+  // scaled to account for DeviceScaleFactor.
+  virtual void ResizeVisualViewportForWidget(
+      const gfx::Size& scaled_viewport_size) = 0;
 };
 
 }  // namespace content

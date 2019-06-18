@@ -73,6 +73,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   class CONTENT_EXPORT Observer {
    public:
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // Called just prior to the instance being deleted.
     virtual void OnServiceDestructionImminent(AppCacheServiceImpl* service) {}
 
@@ -82,7 +85,12 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     // ref provided.
     virtual void OnServiceReinitialized(
         AppCacheStorageReference* old_storage_ref) {}
-    virtual ~Observer() {}
+
+   protected:
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    Observer() noexcept = default;
+    virtual ~Observer() = default;
   };
 
   // If not using quota management, the proxy may be NULL.

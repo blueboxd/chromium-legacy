@@ -6,6 +6,8 @@ include_rules = [
   "-components/viz/common/switches.h",
   "-components/viz/service",
   "+components/viz/service/viz_service_export.h",
+  "+gpu/config/gpu_feature_info.h",
+  "+gpu/ipc/common/surface_handle.h",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+third_party/skia",

@@ -1124,6 +1124,15 @@ error::Error GLES2DecoderPassthroughImpl::DoDispatchCompute(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoDispatchComputeIndirect(
+    GLintptr offset) {
+  BindPendingImagesForSamplersIfNeeded();
+  // TODO(jiajie.hu@intel.com): Use glDispatchComputeIndirectRobustANGLEFn()
+  // when it's ready in ANGLE.
+  api()->glDispatchComputeIndirectFn(offset);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoDrawArrays(GLenum mode,
                                                        GLint first,
                                                        GLsizei count) {

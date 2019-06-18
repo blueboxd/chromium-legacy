@@ -256,7 +256,7 @@ bool AnimateShowWindow_SlideDown(aura::Window* window) {
       Shell::Get()->tablet_mode_controller();
 
   if (home_screen_controller && tablet_mode_controller &&
-      tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
+      tablet_mode_controller->InTabletMode()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =

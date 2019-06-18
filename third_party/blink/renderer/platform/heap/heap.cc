@@ -263,7 +263,7 @@ void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
 namespace {
 
 template <typename Worklist, typename Callback>
-bool DrainWorklistWithDeadline(TimeTicks deadline,
+bool DrainWorklistWithDeadline(base::TimeTicks deadline,
                                Worklist* worklist,
                                Callback callback) {
   const size_t kDeadlineCheckInterval = 2500;
@@ -285,7 +285,8 @@ bool DrainWorklistWithDeadline(TimeTicks deadline,
 
 }  // namespace
 
-bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
+bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
+                                base::TimeTicks deadline) {
   bool finished;
   // Ephemeron fixed point loop.
   do {
@@ -597,13 +598,13 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
       ->AddOwnershipEdge(classes_dump->guid(), heaps_dump->guid());
 }
 
-bool ThreadHeap::AdvanceLazySweep(TimeTicks deadline) {
+bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
-    TimeDelta slack = TimeDelta::FromSecondsD(0.001);
-    TimeDelta remaining_budget = deadline - slack - CurrentTimeTicks();
-    if (remaining_budget <= TimeDelta() ||
+    base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
+    base::TimeDelta remaining_budget = deadline - slack - CurrentTimeTicks();
+    if (remaining_budget <= base::TimeDelta() ||
         !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;
     }

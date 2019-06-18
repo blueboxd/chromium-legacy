@@ -2,9 +2,52 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/exo/wayland/fuzzer/wayland_templater.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
+
+# This is the canonical list of protocols which the generators should use
+# (though they don't have to)
+kDefaultWaylandProtocols = [
+  "//third_party/wayland/src/protocol/wayland.xml",
+  "//third_party/wayland-protocols/src/unstable/xdg-shell/xdg-shell-unstable-v6.xml",
+]
+
+wayland_templater("protocol_dump") {
+  sources = [
+    "misc/dump.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
+wayland_templater("protocol_graph") {
+  sources = [
+    "misc/graph.dot.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
+wayland_templater("actions_tmpl") {
+  sources = [
+    "actions.proto.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
+wayland_templater("harness_h_tmpl") {
+  sources = [
+    "harness.h.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
+wayland_templater("harness_cc_tmpl") {
+  sources = [
+    "harness.cc.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
 
 if (use_libfuzzer) {
   fuzzer_test("wayland_fuzzer") {
@@ -64,20 +107,27 @@ source_set("server_environment") {
 }
 
 source_set("harness") {
-  sources = [
-    "harness.cc",
-    "harness.h",
-  ]
+  sources = get_target_outputs(":harness_h_tmpl") +
+            get_target_outputs(":harness_cc_tmpl")
 
   deps = [
     ":actions",
+    ":harness_cc_tmpl",
+    ":harness_h_tmpl",
     "//base",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:xdg_shell_protocol",
   ]
 }
 
 fuzzable_proto_library("actions") {
-  sources = [
-    "actions.proto",
+  sources = get_target_outputs(":actions_tmpl")
+
+  # Since the .proto file is under gen/ we need to manually tell the
+  # output directory to rebase under the source root.
+  proto_out_dir = rebase_path(".", "//")
+
+  deps = [
+    ":actions_tmpl",
   ]
 }

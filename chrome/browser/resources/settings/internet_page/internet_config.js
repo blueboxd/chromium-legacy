@@ -113,7 +113,6 @@ Polymer({
    */
   onClose_: function(event) {
     this.close();
-    this.fire('networks-changed');
     event.stopPropagation();
   },
 

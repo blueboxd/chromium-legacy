@@ -128,10 +128,10 @@ void EventSource::Connect() {
   request.SetHttpHeaderField(http_names::kAccept, "text/event-stream");
   request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
-  request.SetFetchCredentialsMode(
-      with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                        : network::mojom::FetchCredentialsMode::kSameOrigin);
+  request.SetMode(network::mojom::RequestMode::kCors);
+  request.SetCredentialsMode(
+      with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                        : network::mojom::CredentialsMode::kSameOrigin);
   request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());

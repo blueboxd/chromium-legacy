@@ -30,7 +30,7 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
     return s_factory.Pointer();
 }
 
-std::unique_ptr<IndexedDBDatabase>
+std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
 IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
@@ -40,10 +40,17 @@ IndexedDBClassFactory::CreateIndexedDBDatabase(
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
-  return base::WrapUnique(new IndexedDBDatabase(
-      name, backing_store, factory, std::move(error_callback),
-      std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-      transaction_lock_manager));
+  DCHECK(backing_store);
+  DCHECK(factory);
+  std::unique_ptr<IndexedDBDatabase> database =
+      base::WrapUnique(new IndexedDBDatabase(
+          name, backing_store, factory, this, std::move(error_callback),
+          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
+          transaction_lock_manager));
+  leveldb::Status s = database->OpenInternal();
+  if (!s.ok())
+    database = nullptr;
+  return {std::move(database), s};
 }
 
 std::unique_ptr<IndexedDBTransaction>
@@ -57,19 +64,6 @@ IndexedDBClassFactory::CreateIndexedDBTransaction(
   return base::WrapUnique(
       new IndexedDBTransaction(id, connection, std::move(error_callback), scope,
                                mode, backing_store_transaction));
-}
-
-scoped_refptr<LevelDBTransaction>
-IndexedDBClassFactory::CreateLevelDBTransaction(LevelDBDatabase* db) {
-  return new LevelDBTransaction(db);
-}
-
-std::unique_ptr<LevelDBIteratorImpl> IndexedDBClassFactory::CreateIteratorImpl(
-    std::unique_ptr<leveldb::Iterator> iterator,
-    LevelDBDatabase* db,
-    const leveldb::Snapshot* snapshot) {
-  return base::WrapUnique(
-      new LevelDBIteratorImpl(std::move(iterator), db, snapshot));
 }
 
 }  // namespace content

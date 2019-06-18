@@ -225,9 +225,7 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  void RecordLockFileAncestors(int num_missing_ancestors) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
-  base::HistogramBase* GetLockFileAncestorHistogram() const;
 
   // RetrierProvider implementation.
   int MaxRetryTimeMillis() const override { return kMaxRetryTimeMillis; }

@@ -19,11 +19,6 @@ namespace ui_devtools {
 
 class UIElementDelegate;
 
-namespace protocol {
-template <typename T>
-class Array;
-}
-
 // UIElement type.
 enum UIElementType { WINDOW, WIDGET, VIEW, ROOT, FRAMESINK, SURFACE };
 
@@ -95,8 +90,7 @@ class UI_DEVTOOLS_EXPORT UIElement {
 
   // Returns a list of interleaved keys and values of attributes to be displayed
   // on the element in the dev tools hierarchy view.
-  virtual std::unique_ptr<protocol::Array<std::string>> GetAttributes()
-      const = 0;
+  virtual std::vector<std::string> GetAttributes() const = 0;
 
   template <typename BackingT, typename T>
   static BackingT* GetBackingElement(const UIElement* element) {

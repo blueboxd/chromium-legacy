@@ -27,30 +27,46 @@
       cr-policy-indicator {
         padding: 0 var(--cr-controlled-by-spacing);
       }
+
+      .link-wrapper {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+      }
     </style>
     <settings-animated-pages id="pages" section="multidevice"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <div id="multidevice-item"
-            class="settings-box two-line"
-            on-click="handleItemClick_"
-            actionable$="[[doesClickOpenSubpage_(pageContentData)]]">
-          <template is="dom-if" if="[[isHostSet(pageContentData)]]" restamp>
-            <iron-icon icon=
-                "[[getIconName(MultiDeviceFeature.BETTER_TOGETHER_SUITE)]]">
-            </iron-icon>
-          </template>
-          <div class$=
-              "[[getMultiDeviceItemLabelBlockCssClass_(pageContentData)]]
-                  settings-box-text">
-            <div id="multidevice-label">[[getLabelText_(pageContentData)]]</div>
-            <div id="multideviceSubLabel" class="secondary"
-                inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
+        <div id="multidevice-item" class="settings-box two-line">
+          <div class="link-wrapper" actionable
+               actionable$="[[doesClickOpenSubpage_(pageContentData)]]"
+               on-click="handleItemClick_">
+            <template is="dom-if" if="[[isHostSet(pageContentData)]]" restamp>
+              <iron-icon icon=
+                  "[[getIconName(MultiDeviceFeature.BETTER_TOGETHER_SUITE)]]">
+              </iron-icon>
+            </template>
+            <div class$=
+                "[[getMultiDeviceItemLabelBlockCssClass_(pageContentData)]]
+                    settings-box-text">
+              <div id="multidevice-label">
+                [[getLabelText_(pageContentData)]]
+              </div>
+              <div id="multideviceSubLabel" class="secondary"
+                  inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
+              </div>
             </div>
+            <template is="dom-if"
+                      if="[[doesClickOpenSubpage_(pageContentData)]]"
+                      restamp>
+              <cr-icon-button class="subpage-arrow"
+                  aria-labelledby="multidevice-label"
+                  aria-describedby="multideviceSubLabel"></cr-icon-button>
+            </template>
           </div>
           <template is="dom-if"
-              if="[[!isSuiteAllowedByPolicy(pageContentData)]]"
-              restamp>
+                    if="[[!isSuiteAllowedByPolicy(pageContentData)]]"
+                    restamp>
             <cr-policy-indicator indicator-type="userPolicy">
             </cr-policy-indicator>
             <settings-multidevice-feature-toggle
@@ -61,13 +77,6 @@
           <template is="dom-if"
               if="[[shouldShowSeparatorAndSubpageArrow_(pageContentData)]]"
               restamp>
-            <template is="dom-if"
-                if="[[doesClickOpenSubpage_(pageContentData)]]"
-                restamp>
-              <cr-icon-button class="subpage-arrow"
-                  aria-labelledby="multidevice-label"
-                  aria-describedby="multideviceSubLabel"></cr-icon-button>
-            </template>
             <div class="separator"></div>
           </template>
           <template is="dom-if"

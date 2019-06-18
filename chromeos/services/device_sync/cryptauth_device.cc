@@ -111,6 +111,11 @@ base::Optional<CryptAuthDevice> CryptAuthDevice::FromDictionary(
                          *better_together_device_metadata, *feature_states);
 }
 
+CryptAuthDevice::CryptAuthDevice(const std::string& instance_id)
+    : instance_id_(instance_id) {
+  DCHECK(!instance_id.empty());
+}
+
 CryptAuthDevice::CryptAuthDevice(
     const std::string& instance_id,
     const std::string& device_name,
@@ -120,16 +125,13 @@ CryptAuthDevice::CryptAuthDevice(
         better_together_device_metadata,
     const std::map<multidevice::SoftwareFeature,
                    multidevice::SoftwareFeatureState>& feature_states)
-    : instance_id_(instance_id),
-      device_name_(device_name),
-      device_better_together_public_key_(device_better_together_public_key),
-      last_update_time_(last_update_time),
-      better_together_device_metadata_(better_together_device_metadata),
-      feature_states_(feature_states) {
+    : device_name(device_name),
+      device_better_together_public_key(device_better_together_public_key),
+      last_update_time(last_update_time),
+      better_together_device_metadata(better_together_device_metadata),
+      feature_states(feature_states),
+      instance_id_(instance_id) {
   DCHECK(!instance_id.empty());
-  DCHECK(!device_name.empty());
-  DCHECK(!device_better_together_public_key.empty());
-  DCHECK(!last_update_time.is_null());
 }
 
 CryptAuthDevice::CryptAuthDevice(const CryptAuthDevice&) = default;
@@ -139,28 +141,27 @@ CryptAuthDevice::~CryptAuthDevice() = default;
 base::Value CryptAuthDevice::AsDictionary() const {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey(kInstanceIdDictKey, util::EncodeAsValueString(instance_id_));
-  dict.SetKey(kDeviceNameDictKey, util::EncodeAsValueString(device_name_));
+  dict.SetKey(kDeviceNameDictKey, util::EncodeAsValueString(device_name));
   dict.SetKey(kDeviceBetterTogetherPublicKeyDictKey,
-              util::EncodeAsValueString(device_better_together_public_key_));
-  dict.SetKey(kLastUpdateTimeDictKey, ::util::TimeToValue(last_update_time_));
+              util::EncodeAsValueString(device_better_together_public_key));
+  dict.SetKey(kLastUpdateTimeDictKey, ::util::TimeToValue(last_update_time));
   dict.SetKey(
       kBetterTogetherDeviceMetadataDictKey,
-      util::EncodeProtoMessageAsValueString(&better_together_device_metadata_));
-  dict.SetKey(kFeatureStatesDictKey,
-              FeatureStatesToDictionary(feature_states_));
+      util::EncodeProtoMessageAsValueString(&better_together_device_metadata));
+  dict.SetKey(kFeatureStatesDictKey, FeatureStatesToDictionary(feature_states));
 
   return dict;
 }
 
 bool CryptAuthDevice::operator==(const CryptAuthDevice& other) const {
   return instance_id_ == other.instance_id_ &&
-         device_name_ == other.device_name_ &&
-         device_better_together_public_key_ ==
-             other.device_better_together_public_key_ &&
-         last_update_time_ == other.last_update_time_ &&
-         better_together_device_metadata_.SerializeAsString() ==
-             other.better_together_device_metadata_.SerializeAsString() &&
-         feature_states_ == other.feature_states_;
+         device_name == other.device_name &&
+         device_better_together_public_key ==
+             other.device_better_together_public_key &&
+         last_update_time == other.last_update_time &&
+         better_together_device_metadata.SerializeAsString() ==
+             other.better_together_device_metadata.SerializeAsString() &&
+         feature_states == other.feature_states;
 }
 
 bool CryptAuthDevice::operator!=(const CryptAuthDevice& other) const {

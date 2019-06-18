@@ -253,6 +253,30 @@
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
 
+#pragma mark - Check features
+
+// Helpers for checking feature state. These can't use FeatureList directly when
+// invoked from test code, as the EG test code runs in a separate process and
+// must query Chrome for the state.
+
+// Returns YES if SlimNavigationManager feature is enabled.
++ (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if BlockNewTabPagePendingLoad feature is enabled.
++ (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if NewOmniboxPopupLayout feature is enabled.
++ (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UmaCellular feature is enabled.
++ (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UKM feature is enabled.
++ (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if WebPaymentsModifiers feature is enabled.
++ (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

@@ -75,9 +75,11 @@ constexpr const size_t LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase;
 
 LevelDBDatabase::LevelDBDatabase(
     scoped_refptr<LevelDBState> level_db_state,
+    indexed_db::LevelDBFactory* class_factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     size_t max_open_iterators)
     : level_db_state_(std::move(level_db_state)),
+      class_factory_(class_factory),
       clock_(new base::DefaultClock()),
       iterator_lru_(max_open_iterators) {
   if (task_runner) {
@@ -176,8 +178,7 @@ std::unique_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
   // for the iterator until it's first Seek call.
   std::unique_ptr<leveldb::Iterator> i(db()->NewIterator(options));
   return std::unique_ptr<LevelDBIterator>(
-      IndexedDBClassFactory::Get()->CreateIteratorImpl(std::move(i), this,
-                                                       options.snapshot));
+      class_factory_->CreateIteratorImpl(std::move(i), this, options.snapshot));
 }
 
 void LevelDBDatabase::Compact(const base::StringPiece& start,

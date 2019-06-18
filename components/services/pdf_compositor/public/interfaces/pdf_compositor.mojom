@@ -14,10 +14,10 @@ interface PdfCompositor {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum Status {
-    SUCCESS = 0,
-    HANDLE_MAP_ERROR = 1,
-    CONTENT_FORMAT_ERROR = 2,
-    COMPOSTING_FAILURE = 3,
+    kSuccess = 0,
+    kHandleMapError = 1,
+    kContentFormatError = 2,
+    kCompositingFailure = 3,
   };
 
   // Notifies that a subframe is unavailable, such as the render frame process

@@ -139,8 +139,8 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     // V8 calls into embedder tracing from its own marking to ensure
     // progress. Oilpan will additionally schedule marking steps.
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
-    TimeTicks deadline =
-        TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
+    base::TimeTicks deadline =
+        base::TimeTicks() + base::TimeDelta::FromMillisecondsD(deadline_in_ms);
     is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);
     return is_tracing_done_;
   }

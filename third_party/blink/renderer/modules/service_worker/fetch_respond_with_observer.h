@@ -25,8 +25,8 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   FetchRespondWithObserver(ExecutionContext*,
                            int fetch_event_id,
                            const KURL& request_url,
-                           network::mojom::FetchRequestMode,
-                           network::mojom::FetchRedirectMode,
+                           network::mojom::RequestMode,
+                           network::mojom::RedirectMode,
                            network::mojom::RequestContextFrameType,
                            mojom::RequestContextType,
                            WaitUntilObserver*);
@@ -36,8 +36,8 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
       ExecutionContext*,
       int fetch_event_id,
       const KURL& request_url,
-      network::mojom::FetchRequestMode,
-      network::mojom::FetchRedirectMode,
+      network::mojom::RequestMode,
+      network::mojom::RedirectMode,
       network::mojom::RequestContextFrameType,
       mojom::RequestContextType,
       WaitUntilObserver*);
@@ -53,8 +53,8 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
 
  private:
   const KURL request_url_;
-  const network::mojom::FetchRequestMode request_mode_;
-  const network::mojom::FetchRedirectMode redirect_mode_;
+  const network::mojom::RequestMode request_mode_;
+  const network::mojom::RedirectMode redirect_mode_;
   const network::mojom::RequestContextFrameType frame_type_;
   const mojom::RequestContextType request_context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

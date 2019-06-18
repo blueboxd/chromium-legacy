@@ -379,7 +379,7 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest, ShouldCompleteAnimations) {
 // The OverviewButton should be hidden.
 TEST_F(ScreenRotationAnimatorSlowAnimationTest,
        OverviewButtonTrayHideAnimationAlwaysCompletes) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Long duration for hide animation, to allow it to be interrupted.
   ui::ScopedAnimationDurationScaleMode hide_duration(
@@ -610,7 +610,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 // The OverviewButton should be hidden.
 TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
        OverviewButtonTrayHideAnimationAlwaysCompletes) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Long duration for hide animation, to allow it to be interrupted.
   ui::ScopedAnimationDurationScaleMode hide_duration(
@@ -680,7 +680,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest, DisplayChangeDuringCopy) {
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   aura::Window* root_window =
       Shell::GetRootWindowForDisplayId(internal_display_id);
@@ -704,7 +704,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest, DisplayChangeDuringCopy) {
 
   EXPECT_TRUE(animator->IsRotating());
   display_manager()->UpdateDisplays();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(animator->IsRotating());
 
   WaitForCopyCallback();

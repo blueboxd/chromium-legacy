@@ -55,9 +55,6 @@ struct Manifest {
   bool has_background_color;
   uint32 background_color;
 
-  // A URL of the HTML splash screen.
-  url.mojom.Url splash_screen_url;
-
   mojo_base.mojom.String16? gcm_sender_id;
 
   url.mojom.Url scope;

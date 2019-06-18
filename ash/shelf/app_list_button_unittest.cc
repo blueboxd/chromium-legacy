@@ -153,11 +153,11 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
   base::RunLoop().RunUntilIdle();
 
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api.RunMessageLoopUntilAnimationsDone();
   EXPECT_GT(app_list_button()->bounds().x(), 0);
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(ShelfConstants::button_spacing(), app_list_button()->bounds().x());
 }

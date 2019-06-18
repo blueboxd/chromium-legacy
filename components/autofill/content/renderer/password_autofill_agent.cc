@@ -72,6 +72,7 @@ using blink::WebView;
 namespace autofill {
 
 using mojom::FocusedFieldType;
+using mojom::SubmissionIndicatorEvent;
 
 namespace {
 

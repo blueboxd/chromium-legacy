@@ -20,7 +20,6 @@ js_type_check("js_resources") {
     ":action_link",
     ":assert",
     ":cr",
-    ":dark_mode",
     ":event_tracker",
     ":find_shortcut_behavior",
     ":i18n_behavior",
@@ -55,12 +54,6 @@ js_library("cr") {
     ":promise_resolver",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("dark_mode") {
-  deps = [
-    ":cr",
-  ]
 }
 
 js_library("event_tracker") {

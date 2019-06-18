@@ -25,6 +25,13 @@ using testing::A;
 using testing::Invoke;
 using testing::Return;
 
+namespace {
+
+constexpr uint32_t kDevicePathTag = 0x80000000;
+constexpr char kFakeDevicePath[] = "/dev/video5566";
+
+}  // namespace
+
 namespace media {
 
 class CameraHalDelegateTest : public ::testing::Test {
@@ -114,6 +121,24 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
         camera_info->orientation = 0;
         camera_info->static_camera_characteristics = std::move(static_metadata);
         break;
+      case 2:
+        entry = cros::mojom::CameraMetadataEntry::New();
+        entry->index = static_metadata->entry_count;
+        entry->tag =
+            static_cast<cros::mojom::CameraMetadataTag>(kDevicePathTag);
+        entry->type = cros::mojom::EntryType::TYPE_BYTE;
+        entry->count = sizeof(kFakeDevicePath);
+        entry->data.assign(std::begin(kFakeDevicePath),
+                           std::end(kFakeDevicePath));
+
+        static_metadata->entry_count++;
+        static_metadata->entry_capacity++;
+        static_metadata->entries->push_back(std::move(entry));
+
+        camera_info->facing = cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL;
+        camera_info->orientation = 0;
+        camera_info->static_camera_characteristics = std::move(static_metadata);
+        break;
       default:
         FAIL() << "Invalid camera id";
     }
@@ -122,8 +147,15 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
 
   auto get_vendor_tag_ops_cb =
       [&](cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
-          cros::mojom::CameraModule::GetVendorTagOpsCallback& cb) {
+          cros::mojom::CameraModule::GetVendorTagOpsCallback&) {
         mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_request));
+      };
+
+  auto set_callbacks_cb =
+      [&](cros::mojom::CameraModuleCallbacksPtr& callbacks,
+          cros::mojom::CameraModule::SetCallbacksCallback&) {
+        mock_camera_module_.NotifyCameraDeviceChange(
+            2, cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_PRESENT);
       };
 
   EXPECT_CALL(mock_camera_module_, DoGetNumberOfCameras(_))
@@ -133,7 +165,8 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       mock_camera_module_,
       DoSetCallbacks(A<cros::mojom::CameraModuleCallbacksPtr&>(),
                      A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
-      .Times(1);
+      .Times(1)
+      .WillOnce(Invoke(set_callbacks_cb));
   EXPECT_CALL(mock_camera_module_,
               DoGetVendorTagOps(
                   A<cros::mojom::VendorTagOpsRequest&>(),
@@ -150,26 +183,29 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
                   1, A<cros::mojom::CameraModule::GetCameraInfoCallback&>()))
       .Times(1)
       .WillOnce(Invoke(get_camera_info_cb));
+  EXPECT_CALL(mock_camera_module_,
+              DoGetCameraInfo(
+                  2, A<cros::mojom::CameraModule::GetCameraInfoCallback&>()))
+      .Times(1)
+      .WillOnce(Invoke(get_camera_info_cb));
 
   EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagCount())
       .Times(1)
       .WillOnce(Return(1));
 
-  const uint32_t kFakeTag = 0x80000000;
-
   EXPECT_CALL(mock_vendor_tag_ops_, DoGetAllTags())
       .Times(1)
-      .WillOnce(Return(std::vector<uint32_t>{kFakeTag}));
+      .WillOnce(Return(std::vector<uint32_t>{kDevicePathTag}));
 
-  EXPECT_CALL(mock_vendor_tag_ops_, DoGetSectionName(kFakeTag))
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetSectionName(kDevicePathTag))
       .Times(1)
       .WillOnce(Return("com.google"));
 
-  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagName(kFakeTag))
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagName(kDevicePathTag))
       .Times(1)
-      .WillOnce(Return("fake.foo.bar"));
+      .WillOnce(Return("usb.devicePath"));
 
-  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagType(kFakeTag))
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagType(kDevicePathTag))
       .Times(1)
       .WillOnce(
           Return(static_cast<int32_t>(cros::mojom::EntryType::TYPE_BYTE)));
@@ -177,13 +213,15 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   VideoCaptureDeviceDescriptors descriptors;
   camera_hal_delegate_->GetDeviceDescriptors(&descriptors);
 
-  ASSERT_EQ(2U, descriptors.size());
+  ASSERT_EQ(3u, descriptors.size());
   // We have workaround to always put front camera at first.
-  ASSERT_EQ(std::to_string(1), descriptors[0].device_id);
+  ASSERT_EQ("1", descriptors[0].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_USER, descriptors[0].facing);
-  ASSERT_EQ(std::to_string(0), descriptors[1].device_id);
+  ASSERT_EQ("0", descriptors[1].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             descriptors[1].facing);
+  ASSERT_EQ(kFakeDevicePath, descriptors[2].device_id);
+  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_NONE, descriptors[2].facing);
 
   // TODO(shik): Test external camera. Check the fields |display_name| and
   // |model_id| are set properly according to the vendor tags.

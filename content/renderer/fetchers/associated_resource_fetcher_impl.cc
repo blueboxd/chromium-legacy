@@ -151,8 +151,8 @@ void AssociatedResourceFetcherImpl::SetLoaderOptions(
 void AssociatedResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::mojom::RequestContextType request_context,
-    network::mojom::FetchRequestMode fetch_request_mode,
-    network::mojom::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
     StartCallback callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
@@ -162,8 +162,8 @@ void AssociatedResourceFetcherImpl::Start(
 
   request_.SetRequestContext(request_context);
   request_.SetSiteForCookies(frame->GetDocument().SiteForCookies());
-  request_.SetFetchRequestMode(fetch_request_mode);
-  request_.SetFetchCredentialsMode(fetch_credentials_mode);
+  request_.SetMode(request_mode);
+  request_.SetCredentialsMode(credentials_mode);
 
   client_.reset(new ClientImpl(std::move(callback)));
 

@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 
 #include "android_webview/browser/net/aw_network_change_notifier.h"
+#include "base/memory/ptr_util.h"
 
 namespace android_webview {
 
@@ -12,8 +13,9 @@ AwNetworkChangeNotifierFactory::AwNetworkChangeNotifierFactory() {}
 
 AwNetworkChangeNotifierFactory::~AwNetworkChangeNotifierFactory() {}
 
-net::NetworkChangeNotifier* AwNetworkChangeNotifierFactory::CreateInstance() {
-  return new AwNetworkChangeNotifier(&delegate_);
+std::unique_ptr<net::NetworkChangeNotifier>
+AwNetworkChangeNotifierFactory::CreateInstance() {
+  return base::WrapUnique(new AwNetworkChangeNotifier(&delegate_));
 }
 
 }  // namespace android_webview

@@ -22,7 +22,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
-    : GLOutputSurface(context_provider) {
+    : GLOutputSurface(context_provider, surface_handle) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
@@ -102,18 +102,17 @@ gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
 }
 
 void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
-    gfx::SwapResult result) {
+    const gfx::SwapResponse& response) {
   bool force_swap = false;
-  if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+  if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    result = gfx::SwapResult::SWAP_ACK;
     buffer_queue_->RecreateBuffers();
     force_swap = true;
   }
 
   buffer_queue_->PageFlipComplete();
-  client()->DidReceiveSwapBuffersAck();
+  client()->DidReceiveSwapBuffersAck(response.timings);
 
   if (force_swap)
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));
@@ -122,6 +121,9 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
 void GLOutputSurfaceBufferQueue::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
   display_transform_ = transform;
+
+  if (context_provider_)
+    context_provider_->ContextSupport()->SetDisplayTransform(transform);
 }
 
 gfx::OverlayTransform GLOutputSurfaceBufferQueue::GetDisplayTransform() {

@@ -80,29 +80,13 @@ enum GestureMergeState {
   kGestureMergeStateEnd = 1 << 2,
 };
 
-// Remove this when user gesture propagation is standardized. See
-// https://crbug.com/404161.
-static void RecordUserGestureMerge(const UserGestureToken& old_token,
-                                   const UserGestureToken& new_token) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, gesture_merge_histogram,
-                      ("Blink.Gesture.Merged", kGestureMergeStateEnd));
-  int sample = 0;
-  if (old_token.HasGestures())
-    sample |= kOldTokenHasGesture;
-  if (new_token.HasGestures())
-    sample |= kNewTokenHasGesture;
-  gesture_merge_histogram.Count(sample);
-}
-
 UserGestureToken* UserGestureIndicator::root_token_ = nullptr;
 
 void UserGestureIndicator::UpdateRootToken() {
-  if (!root_token_) {
+  if (!root_token_)
     root_token_ = token_.get();
-  } else {
-    RecordUserGestureMerge(*root_token_, *token_);
+  else
     token_->TransferGestureTo(root_token_);
-  }
 }
 
 UserGestureIndicator::UserGestureIndicator(

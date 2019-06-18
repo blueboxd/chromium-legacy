@@ -48,7 +48,7 @@ class Origin;
 }
 
 namespace content {
-
+class IndexedDBClassFactory;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
@@ -68,20 +68,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   static const int64_t kInvalidId = 0;
   static const int64_t kMinimumIndexId = 30;
-
-  // |error_callback| is called when a backing store operation has failed. The
-  // database will be closed (IndexedDBFactory::ForceClose) when the callback is
-  // called.
-  // |destroy_me| will destroy the IndexedDBDatabase object.
-  static std::tuple<std::unique_ptr<IndexedDBDatabase>, leveldb::Status> Create(
-      const base::string16& name,
-      IndexedDBBackingStore* backing_store,
-      IndexedDBFactory* factory,
-      ErrorCallback error_callback,
-      base::OnceClosure destroy_me,
-      std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-      const Identifier& unique_identifier,
-      ScopesLockManager* lock_manager);
 
   virtual ~IndexedDBDatabase();
 
@@ -318,6 +304,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   IndexedDBDatabase(const base::string16& name,
                     IndexedDBBackingStore* backing_store,
                     IndexedDBFactory* factory,
+                    IndexedDBClassFactory* class_factory,
                     ErrorCallback error_callback,
                     base::OnceClosure destroy_me,
                     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
@@ -328,6 +315,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   virtual size_t GetUsableMessageSizeInBytes() const;
 
  private:
+  friend class MockBrowserTestIndexedDBClassFactory;
   friend class IndexedDBClassFactory;
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDatabaseTest, OpenDeleteClear);
@@ -393,6 +381,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   const Identifier identifier_;
   // TODO(dmurph): Remove the need for this to be here (and then remove it).
   IndexedDBFactory* factory_;
+  IndexedDBClassFactory* const class_factory_;
   std::unique_ptr<IndexedDBMetadataCoding> metadata_coding_;
 
   ScopesLockManager* lock_manager_;

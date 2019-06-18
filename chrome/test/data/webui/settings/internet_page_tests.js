@@ -56,9 +56,8 @@ suite('InternetPage', function() {
 
   function flushAsync() {
     Polymer.dom.flush();
-    return new Promise(resolve => {
-      internetPage.async(resolve);
-    });
+    // Use setTimeout to wait for the next macrotask.
+    return new Promise(resolve => setTimeout(resolve));
   }
 
   function setNetworksForTest(networks) {
@@ -88,6 +87,14 @@ suite('InternetPage', function() {
   });
 
   teardown(function() {
+    const subPage = internetPage.$$('settings-internet-subpage');
+    if (subPage) {
+      subPage.remove();
+    }
+    const detailPage = internetPage.$$('settings-internet-detail-page');
+    if (detailPage) {
+      detailPage.remove();
+    }
     internetPage.remove();
     internetPage = null;
     // Navigating to the details page changes the Route state.
@@ -112,32 +119,35 @@ suite('InternetPage', function() {
         {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
       ]);
       api_.enableNetworkType('WiFi');
-      Polymer.dom.flush();
-      const wifi = networkSummary_.$$('#WiFi');
-      assertTrue(!!wifi);
-      assertEquals(2, wifi.networkStateList.length);
+      return flushAsync().then(() => {
+        const wifi = networkSummary_.$$('#WiFi');
+        assertTrue(!!wifi);
+        assertEquals(2, wifi.networkStateList.length);
+      });
     });
 
     test('WiFiToggle', function() {
       // Make WiFi an available but disabled technology.
       api_.disableNetworkType('WiFi');
-      Polymer.dom.flush();
-      const wifi = networkSummary_.$$('#WiFi');
-      assertTrue(!!wifi);
+      return flushAsync().then(() => {
+        const wifi = networkSummary_.$$('#WiFi');
+        assertTrue(!!wifi);
 
-      // Ensure that the initial state is disabled and the toggle is
-      // enabled but unchecked.
-      assertEquals('Disabled', api_.getDeviceStateForTest('WiFi').State);
-      const toggle = wifi.$$('#deviceEnabledButton');
-      assertTrue(!!toggle);
-      assertFalse(toggle.disabled);
-      assertFalse(toggle.checked);
+        // Ensure that the initial state is disabled and the toggle is
+        // enabled but unchecked.
+        assertEquals('Disabled', api_.getDeviceStateForTest('WiFi').State);
+        const toggle = wifi.$$('#deviceEnabledButton');
+        assertTrue(!!toggle);
+        assertFalse(toggle.disabled);
+        assertFalse(toggle.checked);
 
-      // Tap the enable toggle button and ensure the state becomes enabled.
-      toggle.click();
-      Polymer.dom.flush();
-      assertTrue(toggle.checked);
-      assertEquals('Enabled', api_.getDeviceStateForTest('WiFi').State);
+        // Tap the enable toggle button and ensure the state becomes enabled.
+        toggle.click();
+        return flushAsync().then(() => {
+          assertTrue(toggle.checked);
+          assertEquals('Enabled', api_.getDeviceStateForTest('WiFi').State);
+        });
+      });
     });
   });
 
@@ -148,20 +158,21 @@ suite('InternetPage', function() {
         {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
       ]);
       api_.enableNetworkType('WiFi');
-      Polymer.dom.flush();
-      const wifi = networkSummary_.$$('#WiFi');
-      assertTrue(!!wifi);
-      wifi.$$('.subpage-arrow').click();
       return flushAsync().then(() => {
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        assertEquals(2, subpage.networkStateList_.length);
-        const toggle = wifi.$$('#deviceEnabledButton');
-        assertTrue(!!toggle);
-        assertFalse(toggle.disabled);
-        const networkList = subpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(2, networkList.networks.length);
+        const wifi = networkSummary_.$$('#WiFi');
+        assertTrue(!!wifi);
+        wifi.$$('.subpage-arrow').click();
+        return flushAsync().then(() => {
+          const subpage = internetPage.$$('settings-internet-subpage');
+          assertTrue(!!subpage);
+          assertEquals(2, subpage.networkStateList_.length);
+          const toggle = wifi.$$('#deviceEnabledButton');
+          assertTrue(!!toggle);
+          assertFalse(toggle.disabled);
+          const networkList = subpage.$$('#networkList');
+          assertTrue(!!networkList);
+          assertEquals(2, networkList.networks.length);
+        });
       });
     });
 
@@ -170,25 +181,15 @@ suite('InternetPage', function() {
         {GUID: 'cellular1_guid', Name: 'cellular1', Type: 'Cellular'},
       ]);
       api_.enableNetworkType('Cellular');
-      return flushAsync()
-          .then(() => {
-            return Promise.all([
-              api_.whenCalled('getNetworks'),
-              api_.whenCalled('getDeviceStates'),
-            ]);
-          })
-          .then(() => {
-            const mobile = networkSummary_.$$('#Cellular');
-            assertTrue(!!mobile);
-            mobile.$$('.subpage-arrow').click();
-            return Promise.all([
-              api_.whenCalled('getManagedProperties'),
-            ]);
-          })
-          .then(() => {
-            const detailPage = internetPage.$$('settings-internet-detail-page');
-            assertTrue(!!detailPage);
-          });
+      return flushAsync().then(() => {
+        const mobile = networkSummary_.$$('#Cellular');
+        assertTrue(!!mobile);
+        mobile.$$('.subpage-arrow').click();
+        return flushAsync().then(() => {
+          const detailPage = internetPage.$$('settings-internet-detail-page');
+          assertTrue(!!detailPage);
+        });
+      });
     });
 
     test('Tether', function() {
@@ -201,20 +202,21 @@ suite('InternetPage', function() {
         const mobile = networkSummary_.$$('#Tether');
         assertTrue(!!mobile);
         mobile.$$('.subpage-arrow').click();
-        Polymer.dom.flush();
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        assertEquals(2, subpage.networkStateList_.length);
-        const toggle = mobile.$$('#deviceEnabledButton');
-        assertTrue(!!toggle);
-        assertFalse(toggle.disabled);
-        const networkList = subpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(2, networkList.networks.length);
-        const tetherToggle = mobile.$$('#tetherEnabledButton');
-        // No separate tether toggle when Celular is not available; the
-        // primary toggle enables or disables Tether in that case.
-        assertFalse(!!tetherToggle);
+        return flushAsync().then(() => {
+          const subpage = internetPage.$$('settings-internet-subpage');
+          assertTrue(!!subpage);
+          assertEquals(2, subpage.networkStateList_.length);
+          const toggle = mobile.$$('#deviceEnabledButton');
+          assertTrue(!!toggle);
+          assertFalse(toggle.disabled);
+          const networkList = subpage.$$('#networkList');
+          assertTrue(!!networkList);
+          assertEquals(2, networkList.networks.length);
+          const tetherToggle = mobile.$$('#tetherEnabledButton');
+          // No separate tether toggle when Celular is not available; the
+          // primary toggle enables or disables Tether in that case.
+          assertFalse(!!tetherToggle);
+        });
       });
     });
 
@@ -229,20 +231,22 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
+        assertTrue(!!mobile.$$('.subpage-arrow'));
         mobile.$$('.subpage-arrow').click();
-        Polymer.dom.flush();
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        assertEquals(3, subpage.networkStateList_.length);
-        const toggle = mobile.$$('#deviceEnabledButton');
-        assertTrue(!!toggle);
-        assertFalse(toggle.disabled);
-        const networkList = subpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(3, networkList.networks.length);
-        const tetherToggle = subpage.$$('#tetherEnabledButton');
-        assertTrue(!!tetherToggle);
-        assertFalse(tetherToggle.disabled);
+        return flushAsync().then(() => {
+          const subpage = internetPage.$$('settings-internet-subpage');
+          assertTrue(!!subpage);
+          assertEquals(3, subpage.networkStateList_.length);
+          const toggle = mobile.$$('#deviceEnabledButton');
+          assertTrue(!!toggle);
+          assertFalse(toggle.disabled);
+          const networkList = subpage.$$('#networkList');
+          assertTrue(!!networkList);
+          assertEquals(3, networkList.networks.length);
+          const tetherToggle = subpage.$$('#tetherEnabledButton');
+          assertTrue(!!tetherToggle);
+          assertFalse(tetherToggle.disabled);
+        });
       });
     });
 
@@ -283,15 +287,16 @@ suite('InternetPage', function() {
         const vpn = networkSummary_.$$('#VPN');
         assertTrue(!!vpn);
         vpn.$$('.subpage-arrow').click();
-        Polymer.dom.flush();
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        assertEquals(2, subpage.networkStateList_.length);
-        const networkList = subpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(2, networkList.networks.length);
-        // TODO(stevenjb): Implement fake management API and test third
-        // party provider sections.
+        return flushAsync().then(() => {
+          const subpage = internetPage.$$('settings-internet-subpage');
+          assertTrue(!!subpage);
+          assertEquals(2, subpage.networkStateList_.length);
+          const networkList = subpage.$$('#networkList');
+          assertTrue(!!networkList);
+          assertEquals(2, networkList.networks.length);
+          // TODO(stevenjb): Implement fake management API and test third
+          // party provider sections.
+        });
       });
     });
 
@@ -315,14 +320,16 @@ suite('InternetPage', function() {
         assertTrue(!!expandAddConnections);
         assertTrue(!expandAddConnections.expanded);
         internetPage.addConnectionExpanded_ = true;
-        Polymer.dom.flush();
-        const addArcVpn = internetPage.$$('#addArcVpn');
-        assertTrue(!!addArcVpn);
-        addArcVpn.click();
-        Polymer.dom.flush();
-        const subpage = internetPage.$$('settings-internet-subpage');
-        assertTrue(!!subpage);
-        assertEquals(2, subpage.arcVpnProviders.length);
+        return flushAsync().then(() => {
+          const addArcVpn = internetPage.$$('#addArcVpn');
+          assertTrue(!!addArcVpn);
+          addArcVpn.click();
+          return flushAsync().then(() => {
+            const subpage = internetPage.$$('settings-internet-subpage');
+            assertTrue(!!subpage);
+            assertEquals(2, subpage.arcVpnProviders.length);
+          });
+        });
       });
     });
 
@@ -331,38 +338,24 @@ suite('InternetPage', function() {
         {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
       ]);
       api_.enableNetworkType('WiFi');
-      return flushAsync()
-          .then(() => {
-            const wifi = networkSummary_.$$('#WiFi');
-            assertTrue(!!wifi);
-            wifi.$$('.subpage-arrow').click();
-            return flushAsync();
-          })
-          .then(() => {
-            // Call setTimeout to populate iron-list.
-            return new Promise((resolve) => {
-              setTimeout(function() {
-                Polymer.dom.flush();
-                resolve();
-              });
-            });
-          })
-          .then(() => {
-            const subpage = internetPage.$$('settings-internet-subpage');
-            assertTrue(!!subpage);
-            const networkList = subpage.$$('#networkList');
-            assertTrue(!!networkList);
-            assertEquals(1, networkList.networks.length);
-            assertEquals(1, networkList.listItems_.length);
-            const ironList = networkList.$$('iron-list');
-            assertTrue(!!ironList);
-            assertEquals(1, ironList.items.length);
-            const networkListItem = networkList.$$('cr-network-list-item');
-            assertTrue(!!networkListItem);
-            networkListItem.click();
-            return flushAsync();
-          })
-          .then(() => {
+      return flushAsync().then(() => {
+        const wifi = networkSummary_.$$('#WiFi');
+        assertTrue(!!wifi);
+        wifi.$$('.subpage-arrow').click();
+        return flushAsync().then(() => {
+          const subpage = internetPage.$$('settings-internet-subpage');
+          assertTrue(!!subpage);
+          const networkList = subpage.$$('#networkList');
+          assertTrue(!!networkList);
+          assertEquals(1, networkList.networks.length);
+          assertEquals(1, networkList.listItems_.length);
+          const ironList = networkList.$$('iron-list');
+          assertTrue(!!ironList);
+          assertEquals(1, ironList.items.length);
+          const networkListItem = networkList.$$('cr-network-list-item');
+          assertTrue(!!networkListItem);
+          networkListItem.click();
+          return flushAsync().then(() => {
             const detailPage = internetPage.$$('settings-internet-detail-page');
             assertTrue(!!detailPage);
             assertEquals('wifi1_guid', detailPage.guid);
@@ -370,6 +363,8 @@ suite('InternetPage', function() {
               api_.whenCalled('getManagedProperties'),
             ]);
           });
+        });
+      });
     });
   });
 });

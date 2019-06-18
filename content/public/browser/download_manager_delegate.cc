@@ -53,8 +53,7 @@ bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
   return true;
 }
 
-std::string
-DownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {
   return std::string();
 }
 

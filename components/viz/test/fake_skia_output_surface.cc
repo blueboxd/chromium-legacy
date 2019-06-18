@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 
 namespace viz {
@@ -85,12 +86,6 @@ void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 uint32_t FakeSkiaOutputSurface::GetFramebufferCopyTextureFormat() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return GL_RGB;
-}
-
-std::unique_ptr<OverlayCandidateValidator>
-FakeSkiaOutputSurface::TakeOverlayCandidateValidator() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return nullptr;
 }
 
 bool FakeSkiaOutputSurface::IsDisplayedAsOverlayPlane() const {
@@ -336,9 +331,9 @@ bool FakeSkiaOutputSurface::GetGrBackendTexture(
 }
 
 void FakeSkiaOutputSurface::SwapBuffersAck() {
-  client_->DidReceiveSwapBuffersAck();
-  client_->DidReceivePresentationFeedback(
-      {base::TimeTicks::Now(), base::TimeDelta(), 0});
+  base::TimeTicks now = base::TimeTicks::Now();
+  client_->DidReceiveSwapBuffersAck({now, now});
+  client_->DidReceivePresentationFeedback({now, base::TimeDelta(), 0});
 }
 
 }  // namespace viz

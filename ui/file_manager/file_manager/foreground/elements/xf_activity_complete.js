@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Activity complete indicator custom element for use in PanelEntry(s).
+ * Activity complete indicator custom element for use in PanelItem(s).
  */
 class ActivityComplete extends HTMLElement {
   constructor() {
@@ -42,8 +42,8 @@ class ActivityComplete extends HTMLElement {
 
   /**
    * Registers this instance to listen to these attribute changes.
+   * @return {!Array<string>}
    * @private
-   * @return {Array<String>}
    */
   static get observedAttributes() {
     return ['status'];
@@ -52,8 +52,8 @@ class ActivityComplete extends HTMLElement {
   /**
    * Callback triggered by the browser when our attribute values change.
    * @param {string} name Attribute that's changed.
-   * @param {string} oldValue Old value of the attribute.
-   * @param {string} newValue New value of the attribute.
+   * @param {?string} oldValue Old value of the attribute.
+   * @param {?string} newValue New value of the attribute.
    * @private
    */
   attributeChangedCallback(name, oldValue, newValue) {

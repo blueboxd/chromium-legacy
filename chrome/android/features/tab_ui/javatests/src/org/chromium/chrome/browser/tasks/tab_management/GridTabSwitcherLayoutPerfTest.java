@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -184,7 +185,7 @@ public class GridTabSwitcherLayoutPerfTest {
         if (url != null) mActivityTestRule.loadUrl(url);
         for (int i = 0; i < numTabs - 1; i++) {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+                    mActivityTestRule.getActivity(), R.id.new_tab_menu_id);
             if (url != null) mActivityTestRule.loadUrl(url);
         }
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,

@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   // the associated window's top inset is 0 (the top of the window is not
   // visible).
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_EQ(0, aura_window->GetProperty(aura::client::kTopViewInset));
 
@@ -237,13 +237,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that immersive mode remains if the browser was fullscreened when
   // entering tablet mode.
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that if the browser is not fullscreened, upon exiting tablet mode,
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_FALSE(controller()->IsEnabled());
 
   EXPECT_GT(aura_window->GetProperty(aura::client::kTopViewInset), 0);
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
 
   // Verify the size button is hidden in tablet mode.
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   frame_test_api.EndAnimations();
 
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   frame_test_api.EndAnimations();
 
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutStartInTabletMode) {
   // Start in tablet mode
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   BrowserNonClientFrameViewAsh* frame_view = nullptr;
   {
@@ -323,6 +323,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   VerifyButtonsInImmersiveMode(frame_view);
 }

@@ -408,7 +408,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                      menu_width_, menu_width_);
   layout->StartRow(1.0, 0);
-  layout->AddView(scroll_view.release());
+  layout->AddView(std::move(scroll_view));
   if (GetBubbleFrameView()) {
     SizeToContents();
     // SizeToContents() will perform a layout, but only if the size changed.

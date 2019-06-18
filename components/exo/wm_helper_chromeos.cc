@@ -194,10 +194,8 @@ void WMHelperChromeOS::RemovePostTargetHandler(ui::EventHandler* handler) {
   ash::Shell::Get()->RemovePostTargetHandler(handler);
 }
 
-bool WMHelperChromeOS::IsTabletModeWindowManagerEnabled() const {
-  return ash::Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+bool WMHelperChromeOS::InTabletMode() const {
+  return ash::Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 double WMHelperChromeOS::GetDefaultDeviceScaleFactor() const {

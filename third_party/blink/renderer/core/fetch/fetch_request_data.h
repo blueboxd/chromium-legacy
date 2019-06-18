@@ -67,22 +67,20 @@ class CORE_EXPORT FetchRequestData final
   void SetReferrerPolicy(network::mojom::ReferrerPolicy p) {
     referrer_policy_ = p;
   }
-  void SetMode(network::mojom::FetchRequestMode mode) { mode_ = mode; }
-  network::mojom::FetchRequestMode Mode() const { return mode_; }
-  void SetCredentials(network::mojom::FetchCredentialsMode credentials) {
+  void SetMode(network::mojom::RequestMode mode) { mode_ = mode; }
+  network::mojom::RequestMode Mode() const { return mode_; }
+  void SetCredentials(network::mojom::CredentialsMode credentials) {
     credentials_ = credentials;
   }
-  network::mojom::FetchCredentialsMode Credentials() const {
-    return credentials_;
-  }
+  network::mojom::CredentialsMode Credentials() const { return credentials_; }
   void SetCacheMode(mojom::FetchCacheMode cache_mode) {
     cache_mode_ = cache_mode;
   }
   mojom::FetchCacheMode CacheMode() const { return cache_mode_; }
-  void SetRedirect(network::mojom::FetchRedirectMode redirect) {
+  void SetRedirect(network::mojom::RedirectMode redirect) {
     redirect_ = redirect;
   }
-  network::mojom::FetchRedirectMode Redirect() const { return redirect_; }
+  network::mojom::RedirectMode Redirect() const { return redirect_; }
   void SetImportance(mojom::FetchImportanceMode importance) {
     importance_ = importance;
   }
@@ -138,13 +136,13 @@ class CORE_EXPORT FetchRequestData final
   network::mojom::ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;
   // FIXME: Support m_synchronousFlag;
-  network::mojom::FetchRequestMode mode_;
-  network::mojom::FetchCredentialsMode credentials_;
+  network::mojom::RequestMode mode_;
+  network::mojom::CredentialsMode credentials_;
   // TODO(yiyix): |cache_mode_| is exposed but does not yet affect fetch
   // behavior. We must transfer the mode to the network layer and service
   // worker.
   mojom::FetchCacheMode cache_mode_;
-  network::mojom::FetchRedirectMode redirect_;
+  network::mojom::RedirectMode redirect_;
   mojom::FetchImportanceMode importance_;
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;

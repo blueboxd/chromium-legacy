@@ -21,6 +21,10 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
+// Controls whether we sample inline JavaScript for ads in RIND
+// reports.
+extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
+
 // Controls whether we try to get the SafetyNet ID of the device for use when
 // a SBER user downloads an APK file.
 extern const base::Feature kCaptureSafetyNetId;

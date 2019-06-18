@@ -82,6 +82,9 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       BluetoothDeviceScanningPromptController* prompt_controller);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest, PermissionAllowed);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           PermissionPromptCanceled);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            BluetoothScanningPermissionRevokedWhenTabHidden);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,

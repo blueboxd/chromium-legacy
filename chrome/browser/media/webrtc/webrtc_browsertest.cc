@@ -15,10 +15,15 @@
 #include "content/public/common/buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
+#include "content/public/common/network_service_util.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -97,6 +102,26 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     VerifyLocalDescriptionContainsCertificate(left_tab_, "gCertificate");
 
     DetectVideoAndHangUp();
+  }
+
+  uint32_t GetPeerToPeerConnectionsCountChangeFromNetworkService() {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(content::mojom::kNetworkServiceName,
+                        &network_service_test);
+    // TODO(crbug.com/901026): Make sure the network process is started to avoid
+    // a deadlock on Android.
+    network_service_test.FlushForTesting();
+
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    uint32_t connection_count = 0u;
+
+    bool available = network_service_test->GetPeerToPeerConnectionsCountChange(
+        &connection_count);
+    EXPECT_TRUE(available);
+
+    return connection_count;
   }
 
  protected:
@@ -231,6 +256,28 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       GetPeerToPeerConnectionsCountChangeFromNetworkService) {
+  // https://crbug.com/976186: Test fails when network service is in process.
+  // Network Service runs in-process only on Android.
+  if (content::IsInProcessNetworkService())
+    return;
+
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+
+  StartServerAndOpenTabs();
+  SetupPeerconnectionWithLocalStream(left_tab_);
+
+  SetupPeerconnectionWithLocalStream(right_tab_);
+  NegotiateCall(left_tab_, right_tab_);
+
+  VerifyStatsGeneratedCallback(left_tab_);
+  EXPECT_EQ(2u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+
+  DetectVideoAndHangUp();
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
@@ -256,6 +303,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange) {
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
@@ -266,4 +314,27 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_EQ("complete", ice_gatheringstate);
   DetectVideoAndHangUp();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    MAYBE_WebRtcBrowserTest,
+    RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount) {
+  // https://crbug.com/976186: Test fails when network service is in process.
+  // Network Service runs in-process only on Android.
+  if (content::IsInProcessNetworkService())
+    return;
+
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+  StartServerAndOpenTabs();
+  SetupPeerconnectionWithLocalStream(left_tab_);
+  SetupPeerconnectionWithLocalStream(right_tab_);
+  NegotiateCall(left_tab_, right_tab_);
+  EXPECT_EQ(2u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+
+  std::string ice_gatheringstate =
+      ExecuteJavascript("getLastGatheringState()", left_tab_);
+
+  EXPECT_EQ("complete", ice_gatheringstate);
+  DetectVideoAndHangUp();
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
 }

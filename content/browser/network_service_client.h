@@ -25,6 +25,8 @@
 
 namespace content {
 
+class WebRtcConnectionsObserver;
+
 class CONTENT_EXPORT NetworkServiceClient
     : public network::mojom::NetworkServiceClient,
 #if defined(OS_ANDROID)
@@ -98,6 +100,10 @@ class CONTENT_EXPORT NetworkServiceClient
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_presure_level);
 
+  // Called when there is a change in the count of media connections that
+  // require low network latency.
+  void OnPeerToPeerConnectionsCountChange(uint32_t count);
+
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
 
@@ -122,6 +128,8 @@ class CONTENT_EXPORT NetworkServiceClient
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  std::unique_ptr<WebRtcConnectionsObserver> webrtc_connections_observer_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>

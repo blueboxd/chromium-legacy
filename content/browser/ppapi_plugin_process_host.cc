@@ -364,6 +364,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_LINUX)
   int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                         ChildProcessHost::CHILD_NORMAL;
+#elif defined(OS_MACOSX)
+  int flags = ChildProcessHost::CHILD_PLUGIN;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif

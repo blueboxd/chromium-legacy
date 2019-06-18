@@ -59,7 +59,7 @@ struct ExpectedElement {
   static ExpectedElement File(const String& path,
                               uint64_t offset,
                               uint64_t length,
-                              WTF::Time time) {
+                              base::Time time) {
     return ExpectedElement{DataElement::NewFile(
         DataElementFile::New(WebStringToFilePath(path), offset, length, time))};
   }
@@ -67,7 +67,7 @@ struct ExpectedElement {
   static ExpectedElement FileFilesystem(const KURL& url,
                                         uint64_t offset,
                                         uint64_t length,
-                                        WTF::Time time) {
+                                        base::Time time) {
     return ExpectedElement{DataElement::NewFileFilesystem(
         DataElementFilesystemURL::New(url, offset, length, time))};
   }
@@ -368,10 +368,10 @@ TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(
-      ExpectedElement::File("path", 4, 32, WTF::Time::FromDoubleT(timestamp1)));
+  expected_elements.push_back(ExpectedElement::File(
+      "path", 4, 32, base::Time::FromDoubleT(timestamp1)));
   expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 15, 876, WTF::Time::FromDoubleT(timestamp2)));
+      url, 15, 876, base::Time::FromDoubleT(timestamp2)));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -379,7 +379,7 @@ TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
 TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(
-      ExpectedElement::File("path", 0, uint64_t(-1), WTF::Time()));
+      ExpectedElement::File("path", 0, uint64_t(-1), base::Time()));
 
   TestCreateBlob(BlobData::CreateForFileWithUnknownSize("path"),
                  std::move(expected_elements));
@@ -390,7 +390,7 @@ TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
   KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 0, uint64_t(-1), WTF::Time::FromDoubleT(timestamp)));
+      url, 0, uint64_t(-1), base::Time::FromDoubleT(timestamp)));
 
   TestCreateBlob(
       BlobData::CreateForFileSystemURLWithUnknownSize(url, timestamp),

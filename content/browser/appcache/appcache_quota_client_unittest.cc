@@ -114,6 +114,8 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   AppCacheQuotaClient* CreateClient() {
+    // The bare operator new is used here because AppCacheQuotaClient deletes
+    // itself when the QuotaManager goes out of scope.
     return new AppCacheQuotaClient(&mock_service_);
   }
 

@@ -658,9 +658,9 @@ config("compiler") {
   if (compiler_timing) {
     if (is_clang) {
       if (is_win) {
-        cflags += [ "/clang:-ftime-report" ]
+        cflags += [ "/clang:-ftime-trace" ]
       } else {
-        cflags += [ "-ftime-report" ]
+        cflags += [ "-ftime-trace" ]
       }
     } else if (is_win) {
       cflags += [
@@ -1092,7 +1092,8 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang &&
+      strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if

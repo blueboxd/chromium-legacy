@@ -483,10 +483,10 @@ void LocationBarView::Layout() {
   // an extended I-beam click target without affecting actual layout.
   leading_edit_item_padding -= omnibox_view_->GetInsets().left();
 
-  LocationBarLayout leading_decorations(LocationBarLayout::LEFT_EDGE,
+  LocationBarLayout leading_decorations(LocationBarLayout::Position::kLeftEdge,
                                         leading_edit_item_padding);
-  LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
-                                         edge_padding);
+  LocationBarLayout trailing_decorations(
+      LocationBarLayout::Position::kRightEdge, edge_padding);
 
   const base::string16 keyword(omnibox_view_->model()->keyword());
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
@@ -507,12 +507,13 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          TemplateURLServiceFactory::GetForProfile(profile())->
-          GetTemplateURLForKeyword(keyword);
+          TemplateURLServiceFactory::GetForProfile(profile())
+              ->GetTemplateURLForKeyword(keyword);
       if (template_url &&
           (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-        gfx::Image image = extensions::OmniboxAPI::Get(profile())->
-            GetOmniboxIcon(template_url->GetExtensionId());
+        gfx::Image image =
+            extensions::OmniboxAPI::Get(profile())->GetOmniboxIcon(
+                template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
       } else if (template_url && template_url->type() == TemplateURL::NORMAL &&
                  OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
@@ -1123,9 +1124,9 @@ int LocationBarView::GetDragOperationsForView(views::View* sender,
   DCHECK_EQ(location_icon_view_, sender);
   WebContents* web_contents = delegate_->GetWebContents();
   return (web_contents && web_contents->GetURL().is_valid() &&
-          (!GetOmniboxView()->IsEditingOrEmpty())) ?
-      (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
-      ui::DragDropTypes::DRAG_NONE;
+          (!GetOmniboxView()->IsEditingOrEmpty()))
+             ? (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK)
+             : ui::DragDropTypes::DRAG_NONE;
 }
 
 bool LocationBarView::CanStartDragForView(View* sender,
@@ -1312,11 +1313,11 @@ gfx::ImageSkia LocationBarView::GetLocationIcon(
   security_state::SecurityLevel level = security_state::SecurityLevel::NONE;
   if (!IsEditingOrEmpty())
     level = GetLocationBarModel()->GetSecurityLevel();
-  return omnibox_view() ? omnibox_view()->GetIcon(
-                              GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                              GetSecurityChipColor(level),
-                              std::move(on_icon_fetched))
-                        : gfx::ImageSkia();
+  return omnibox_view()
+             ? omnibox_view()->GetIcon(
+                   GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                   GetSecurityChipColor(level), std::move(on_icon_fetched))
+             : gfx::ImageSkia();
 }
 
 SkColor LocationBarView::GetLocationIconInkDropColor() const {

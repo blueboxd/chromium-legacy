@@ -42,7 +42,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
-#include "ui/base/cursor/cursor_type.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -200,9 +200,7 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
     text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
   } else {
-    bool is_tablet = Shell::Get()
-                         ->tablet_mode_controller()
-                         ->IsTabletModeWindowManagerEnabled();
+    bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
 
     title = l10n_util::GetStringUTF16(
         type == A11yNotificationType::kSpokenFeedbackBrailleEnabled

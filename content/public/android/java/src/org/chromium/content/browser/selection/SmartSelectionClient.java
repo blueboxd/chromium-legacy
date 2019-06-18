@@ -4,7 +4,9 @@
 
 package org.chromium.content.browser.selection;
 
+import android.content.Context;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.textclassifier.TextClassifier;
@@ -55,6 +57,10 @@ public class SmartSelectionClient implements SelectionClient {
     public static SmartSelectionClient create(ResultCallback callback, WebContents webContents) {
         WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || windowAndroid == null) return null;
+
+        // Don't do Smart Selection when device is not provisioned or in incognito mode.
+        if (!isDeviceProvisioned(windowAndroid.getContext().get()) || webContents.isIncognito())
+            return null;
 
         return new SmartSelectionClient(callback, webContents, windowAndroid);
     }
@@ -152,6 +158,15 @@ public class SmartSelectionClient implements SelectionClient {
                 assert false : "Unexpected callback data";
                 break;
         }
+    }
+
+    private static boolean isDeviceProvisioned(Context context) {
+        if (context == null || context.getContentResolver() == null) return true;
+        // Returns false when device is not provisioned, i.e. before a new device went through
+        // signup process.
+        return Settings.Global.getInt(
+                       context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
+                != 0;
     }
 
     private boolean textHasValidSelection(String text, int start, int end) {

@@ -33,12 +33,14 @@ class CORE_EXPORT JankTracker {
                             const PropertyTreeState& property_tree_state,
                             const IntRect& old_visual_rect,
                             const IntRect& new_visual_rect);
+  // Layer rects are relative to old layer position.
   void NotifyCompositedLayerMoved(const LayoutObject& object,
                                   FloatRect old_layer_rect,
                                   FloatRect new_layer_rect);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(ScrollType);
+  void NotifyViewportSizeChanged();
   bool IsActive();
   double Score() const { return score_; }
   double ScoreWithMoveDistance() const { return score_with_move_distance_; }

@@ -193,7 +193,7 @@
     };
     stream[_readable] = binding.CreateReadableStream(
         startAlgorithm, pullAlgorithm, cancelAlgorithm, readableHighWaterMark,
-        readableSizeAlgorithm, false);
+        readableSizeAlgorithm);
     stream[_backpressure] = undefined;
     stream[_backpressureChangePromise] = undefined;
     TransformStreamSetBackpressure(stream, true);

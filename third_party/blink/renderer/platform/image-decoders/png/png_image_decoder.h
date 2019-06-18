@@ -49,7 +49,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
   int RepetitionCount() const override;
   bool ImageIsHighBitDepth() override;
   bool FrameIsReceivedAtIndex(size_t) const override;
-  TimeDelta FrameDurationAtIndex(size_t) const override;
+  base::TimeDelta FrameDurationAtIndex(size_t) const override;
   bool SetFailed() override;
 
   // Callbacks from libpng

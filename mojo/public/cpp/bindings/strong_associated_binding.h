@@ -43,9 +43,6 @@ using StrongAssociatedBindingPtr =
 template <typename Interface>
 class StrongAssociatedBinding {
  public:
-  using ImplPointerType =
-      typename AssociatedBinding<Interface>::ImplPointerType;
-
   // Create a new StrongAssociatedBinding instance. The instance owns itself,
   // cleaning up only in the event of a pipe connection error. Returns a WeakPtr
   // to the new StrongAssociatedBinding instance.
@@ -87,8 +84,11 @@ class StrongAssociatedBinding {
   void FlushForTesting() { binding_.FlushForTesting(); }
 
   // Allows test code to swap the interface implementation.
-  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-    return binding_.SwapImplForTesting(new_impl);
+  std::unique_ptr<Interface> SwapImplForTesting(
+      std::unique_ptr<Interface> new_impl) {
+    binding_.SwapImplForTesting(new_impl.get());
+    impl_.swap(new_impl);
+    return new_impl;
   }
 
  private:

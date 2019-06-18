@@ -51,7 +51,8 @@ namespace {
 // global objects: https://codereview.chromium.org/2883403002#msg14.
 base::LazySequencedTaskRunner g_fileapi_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 

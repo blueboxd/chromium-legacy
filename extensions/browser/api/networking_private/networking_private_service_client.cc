@@ -36,9 +36,9 @@ void ShutdownWifiServiceOnWorkerThread(
 // Ensure that all calls to WiFiService are called from the same task runner
 // since the implementations do not provide any thread safety gaurantees.
 base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(base::TaskTraits(
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
 }  // namespace
 

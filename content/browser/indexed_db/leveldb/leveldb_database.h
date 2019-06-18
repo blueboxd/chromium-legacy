@@ -32,11 +32,14 @@ class Snapshot;
 }
 
 namespace content {
-
 class LevelDBComparator;
 class LevelDBDatabase;
 class LevelDBIterator;
 class LevelDBWriteBatch;
+
+namespace indexed_db {
+class LevelDBFactory;
+}  // namespace indexed_db
 
 class LevelDBSnapshot {
  private:
@@ -62,6 +65,7 @@ class CONTENT_EXPORT LevelDBDatabase
   // |max_open_cursors| cannot be 0.
   // All calls to this class should be done on |task_runner|.
   LevelDBDatabase(scoped_refptr<LevelDBState> level_db_state,
+                  indexed_db::LevelDBFactory* factory,
                   scoped_refptr<base::SequencedTaskRunner> task_runner,
                   size_t max_open_iterators);
 
@@ -95,6 +99,10 @@ class CONTENT_EXPORT LevelDBDatabase
   leveldb::Env* env() { return level_db_state_->in_memory_env(); }
   base::Time LastModified() const { return last_modified_; }
 
+  indexed_db::LevelDBFactory* leveldb_class_factory() const {
+    return class_factory_;
+  }
+
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
@@ -111,6 +119,7 @@ class CONTENT_EXPORT LevelDBDatabase
   void CloseDatabase();
 
   scoped_refptr<LevelDBState> level_db_state_;
+  indexed_db::LevelDBFactory* class_factory_;
   base::Time last_modified_;
   std::unique_ptr<base::Clock> clock_;
 

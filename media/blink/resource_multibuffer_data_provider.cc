@@ -120,10 +120,9 @@ void ResourceMultiBufferDataProvider::Start() {
     options.preflight_policy =
         network::mojom::CorsPreflightPolicy::kPreventPreflight;
 
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
+    request.SetMode(network::mojom::RequestMode::kCors);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
-      request.SetFetchCredentialsMode(
-          network::mojom::FetchCredentialsMode::kSameOrigin);
+      request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);
     }
   }
 

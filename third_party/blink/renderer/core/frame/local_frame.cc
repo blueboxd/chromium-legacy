@@ -153,60 +153,6 @@ bool ShouldUseClientLoFiForRequest(
   return true;
 }
 
-WeakPersistent<LocalFrame>& UserActivationNotifierFrame() {
-  DEFINE_STATIC_LOCAL(WeakPersistent<LocalFrame>,
-                      user_activation_notifier_frame, (nullptr));
-  return user_activation_notifier_frame;
-}
-
-enum class UserActivationFrameResultEnum : int {
-  kNullFailure = 0,
-  kNullSuccess = 1,
-  kSelfFailure = 2,
-  kSelfSuccess = 3,
-  kAncestorFailure = 4,
-  kAncestorSuccess = 5,
-  kDescendantFailure = 6,
-  kDescendantSuccess = 7,
-  kOtherFailure = 8,
-  kOtherSuccess = 9,
-  kNonMainThreadFailure = 10,
-  kNonMainThreadSuccess = 11,
-  kMaxValue = kNonMainThreadSuccess
-};
-
-UserActivationFrameResultEnum DetermineActivationResultEnum(
-    const LocalFrame* const caller_frame,
-    const bool call_succeeded,
-    const bool off_main_thread) {
-  if (off_main_thread) {
-    return call_succeeded
-               ? UserActivationFrameResultEnum::kNonMainThreadSuccess
-               : UserActivationFrameResultEnum::kNonMainThreadFailure;
-  }
-
-  LocalFrame* user_activation_notifier_frame = UserActivationNotifierFrame();
-
-  if (!caller_frame || !user_activation_notifier_frame) {
-    return call_succeeded ? UserActivationFrameResultEnum::kNullSuccess
-                          : UserActivationFrameResultEnum::kNullFailure;
-  }
-  if (caller_frame == user_activation_notifier_frame) {
-    return call_succeeded ? UserActivationFrameResultEnum::kSelfSuccess
-                          : UserActivationFrameResultEnum::kSelfFailure;
-  }
-  if (user_activation_notifier_frame->Tree().IsDescendantOf(caller_frame)) {
-    return call_succeeded ? UserActivationFrameResultEnum::kAncestorSuccess
-                          : UserActivationFrameResultEnum::kAncestorFailure;
-  }
-  if (caller_frame->Tree().IsDescendantOf(user_activation_notifier_frame)) {
-    return call_succeeded ? UserActivationFrameResultEnum::kDescendantSuccess
-                          : UserActivationFrameResultEnum::kDescendantFailure;
-  }
-  return call_succeeded ? UserActivationFrameResultEnum::kOtherSuccess
-                        : UserActivationFrameResultEnum::kOtherFailure;
-}
-
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -337,9 +283,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // Starting here, the code must be safe against re-entrancy. Dispatching
   // events, et cetera can run Javascript, which can reenter Detach().
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if (this == UserActivationNotifierFrame())
-    UserActivationNotifierFrame().Clear();
-
   frame_color_overlay_.reset();
 
   if (IsLocalRoot()) {
@@ -1538,10 +1481,8 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken::Status status) {
-  if (frame) {
-    UserActivationNotifierFrame() = frame;
+  if (frame)
     frame->NotifyUserActivation();
-  }
   return std::make_unique<UserGestureIndicator>(status);
 }
 
@@ -1550,32 +1491,20 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken* token) {
   DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
-  if (frame) {
-    UserActivationNotifierFrame() = frame;
+  if (frame)
     frame->NotifyUserActivation();
-  }
   return std::make_unique<UserGestureIndicator>(token);
 }
 
 // static
 bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
                                             bool check_if_main_thread) {
-  bool available;
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
+    return frame ? frame->HasTransientUserActivation() : false;
 
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    available = frame ? frame->HasTransientUserActivation() : false;
-  } else {
-    available = check_if_main_thread
-                    ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-                    : UserGestureIndicator::ProcessingUserGesture();
-  }
-
-  const bool off_main_thread = check_if_main_thread && !IsMainThread();
-  UMA_HISTOGRAM_ENUMERATION(
-      "UserActivation.AvailabilityCheck.FrameResult",
-      DetermineActivationResultEnum(frame, available, off_main_thread));
-
-  return available;
+  return check_if_main_thread
+             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+             : UserGestureIndicator::ProcessingUserGesture();
 }
 
 // static
@@ -1583,25 +1512,12 @@ bool LocalFrame::ConsumeTransientUserActivation(
     LocalFrame* frame,
     bool check_if_main_thread,
     UserActivationUpdateSource update_source) {
-  bool consumed;
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
+    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
 
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    consumed =
-        frame ? frame->ConsumeTransientUserActivation(update_source) : false;
-  } else {
-    consumed = check_if_main_thread
-                   ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-                   : UserGestureIndicator::ConsumeUserGesture();
-  }
-
-  const bool off_main_thread = check_if_main_thread && !IsMainThread();
-  UMA_HISTOGRAM_ENUMERATION(
-      "UserActivation.Consumption.FrameResult",
-      DetermineActivationResultEnum(frame, consumed, off_main_thread));
-  if (!off_main_thread)
-    UserActivationNotifierFrame().Clear();
-
-  return consumed;
+  return check_if_main_thread
+             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+             : UserGestureIndicator::ConsumeUserGesture();
 }
 
 void LocalFrame::NotifyUserActivation() {

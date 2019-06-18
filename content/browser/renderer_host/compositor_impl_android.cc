@@ -50,7 +50,6 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -225,8 +224,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
       base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
-        overlay_candidate_validator_(
-            new viz::OverlayCandidateValidatorAndroid()),
         weak_ptr_factory_(this) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -280,11 +277,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
         gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
   }
 
-  std::unique_ptr<viz::OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() override {
-    return std::move(overlay_candidate_validator_);
-  }
-
   bool IsDisplayedAsOverlayPlane() const override { return false; }
   unsigned GetOverlayTextureId() const override { return 0; }
   gfx::BufferFormat GetOverlayBufferFormat() const override {
@@ -323,7 +315,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
   void OnSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
                               gfx::Size swap_size,
                               const gpu::SwapBuffersCompleteParams& params) {
-    client_->DidReceiveSwapBuffersAck();
+    client_->DidReceiveSwapBuffersAck(params.swap_response.timings);
     swap_buffers_callback_.Run(swap_size);
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
     latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
@@ -336,7 +328,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
  private:
   viz::OutputSurfaceClient* client_ = nullptr;
   base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback_;
-  std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
   ui::LatencyTracker latency_tracker_;
 
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;

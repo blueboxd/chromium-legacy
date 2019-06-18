@@ -101,10 +101,12 @@ Polymer({
    */
   onDisplayedIdsChanged_: async function(newValue, oldValue) {
     const updatedList = newValue.map(id => ({id: id}));
+    let skipFocus = false;
     let selectIndex = -1;
     if (this.matches(':focus-within')) {
       if (this.selectedItems_.size > 0) {
         const selectedId = Array.from(this.selectedItems_)[0];
+        skipFocus = newValue.some(id => id == selectedId);
         selectIndex = this.displayedList_.findIndex(({id}) => selectedId == id);
       }
       if (selectIndex == -1 && updatedList.length > 0) {
@@ -121,7 +123,7 @@ Polymer({
         'getPluralString', 'listChanged', this.displayedList_.length);
     this.fire('iron-announce', {text: label});
 
-    if (selectIndex > -1) {
+    if (!skipFocus && selectIndex > -1) {
       setTimeout(() => {
         this.$.list.focusItem(selectIndex);
         // Focus menu button so 'Undo' is only one tab stop away on delete.

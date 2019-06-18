@@ -1528,7 +1528,7 @@ bool ChromeContentBrowserClient::
 #endif
 }
 
-bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() const {
+bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() {
 #if defined(OS_ANDROID)
   return true;
 #elif defined(OS_CHROMEOS)
@@ -1680,7 +1680,7 @@ void ChromeContentBrowserClient::GetAdditionalViewSourceSchemes(
 #endif
 }
 
-bool ChromeContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
+bool ChromeContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) {
   return webui::LogWebUIUrl(web_ui_url);
 }
 
@@ -3691,7 +3691,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 #if defined(OS_WIN)
 base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
-    int sandbox_type) const {
+    int sandbox_type) {
   // TODO(wfh): Add support for more process types here. crbug.com/499523
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_RENDERER:
@@ -5624,21 +5624,19 @@ void ChromeContentBrowserClient::LogWebFeatureForCurrentPage(
       render_frame_host, new_features);
 }
 
-std::string ChromeContentBrowserClient::GetProduct() const {
+std::string ChromeContentBrowserClient::GetProduct() {
   return ::GetProduct();
 }
 
-std::string ChromeContentBrowserClient::GetUserAgent() const {
+std::string ChromeContentBrowserClient::GetUserAgent() {
   return ::GetUserAgent();
 }
 
-blink::UserAgentMetadata ChromeContentBrowserClient::GetUserAgentMetadata()
-    const {
+blink::UserAgentMetadata ChromeContentBrowserClient::GetUserAgentMetadata() {
   return ::GetUserAgentMetadata();
 }
 
-base::Optional<gfx::ImageSkia> ChromeContentBrowserClient::GetProductLogo()
-    const {
+base::Optional<gfx::ImageSkia> ChromeContentBrowserClient::GetProductLogo() {
   // This icon is available on Android, but adds 19KiB to the APK. Since it
   // isn't used on Android we exclude it to avoid bloat.
 #if !defined(OS_ANDROID)
@@ -5680,7 +5678,7 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
 
 #if defined(OS_ANDROID)
 content::ContentBrowserClient::WideColorGamutHeuristic
-ChromeContentBrowserClient::GetWideColorGamutHeuristic() const {
+ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
   if (features::UseDisplayWideColorGamut()) {
     return WideColorGamutHeuristic::kUseDisplay;
   }
@@ -5704,7 +5702,7 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
     const content::WebContents* web_contents,
     const content::RenderFrameHost* frame_host,
     bool user_gesture,
-    content::NavigationDownloadPolicy* download_policy) const {
+    content::NavigationDownloadPolicy* download_policy) {
   const ChromeSubresourceFilterClient* client =
       ChromeSubresourceFilterClient::FromWebContents(web_contents);
   if (client && client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host)) {
@@ -5728,7 +5726,7 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
 bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) const {
+    const url::Origin& embedding_origin) {
   const HostContentSettingsMap* const content_settings =
       HostContentSettingsMapFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
@@ -5746,7 +5744,7 @@ bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
 void ChromeContentBrowserClient::BlockBluetoothScanning(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) const {
+    const url::Origin& embedding_origin) {
   HostContentSettingsMap* const content_settings =
       HostContentSettingsMapFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));

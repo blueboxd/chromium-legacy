@@ -299,16 +299,13 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 }
 
 void CookiesTreeModelUtil::GetChildNodeDetails(const CookieTreeNode* parent,
-                                               int start,
-                                               int count,
                                                bool include_quota_nodes,
                                                base::ListValue* list) {
   std::string id_path = GetTreeNodeId(parent);
-  for (int i = 0; i < count; ++i) {
-    const CookieTreeNode* child = parent->GetChild(start + i);
-    int cookie_count = child->child_count();
-    std::string cookie_id_path = id_path + "," + GetTreeNodeId(child) + ",";
-    for (int k = 0; k < cookie_count; ++k) {
+  for (const auto& child : parent->children()) {
+    std::string cookie_id_path =
+        id_path + "," + GetTreeNodeId(child.get()) + ",";
+    for (int k = 0; k < child->child_count(); ++k) {
       const CookieTreeNode* details = child->GetChild(k);
       std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
       if (GetCookieTreeNodeDictionary(*details, include_quota_nodes,

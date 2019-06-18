@@ -78,7 +78,7 @@ class MockEventBlocker : public InternalInputDevicesEventBlocker {
 // cause the Virtual Keyboard Controller to crash. See crbug.com/446204.
 TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   // Toggle tablet mode on.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   std::unique_ptr<InternalInputDevicesEventBlocker> blocker(
       new MockEventBlocker);
   TabletModeControllerTestApi().set_event_blocker(std::move(blocker));

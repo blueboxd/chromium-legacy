@@ -55,7 +55,8 @@
         border-color: var(--avatar-selected-color);
       }
 
-      :host-context(.focus-outline-visible) #avatar-grid .avatar:focus {
+      :host-context(.focus-outline-visible) #avatar-grid
+          .avatar:not(.iron-selected):focus {
         --avatar-outline-color: var(--avatar-focus-color);
         --avatar-outline-width: 1px;
       }

@@ -21,6 +21,7 @@
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/content/renderer/provisionally_saved_password_form.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -415,7 +416,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                   RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
-  void FireSubmissionIfFormDisappear(SubmissionIndicatorEvent event);
+  void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
 
   void OnFrameDetached();
   void OnWillSubmitForm(const blink::WebFormElement& form);

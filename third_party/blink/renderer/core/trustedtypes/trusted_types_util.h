@@ -21,6 +21,7 @@ class StringOrTrustedScriptURL;
 class USVStringOrTrustedURL;
 
 enum class SpecificTrustedType {
+  kNone,
   kTrustedHTML,
   kTrustedScript,
   kTrustedScriptURL,

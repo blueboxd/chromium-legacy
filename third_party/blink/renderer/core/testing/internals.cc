@@ -2615,100 +2615,110 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
   return DOMRectList::Create(quads);
 }
 
-static const char* CursorTypeToString(Cursor::Type cursor_type) {
+static const char* CursorTypeToString(ui::CursorType cursor_type) {
   switch (cursor_type) {
-    case Cursor::kPointer:
+    case ui::CursorType::kPointer:
       return "Pointer";
-    case Cursor::kCross:
+    case ui::CursorType::kCross:
       return "Cross";
-    case Cursor::kHand:
+    case ui::CursorType::kHand:
       return "Hand";
-    case Cursor::kIBeam:
+    case ui::CursorType::kIBeam:
       return "IBeam";
-    case Cursor::kWait:
+    case ui::CursorType::kWait:
       return "Wait";
-    case Cursor::kHelp:
+    case ui::CursorType::kHelp:
       return "Help";
-    case Cursor::kEastResize:
+    case ui::CursorType::kEastResize:
       return "EastResize";
-    case Cursor::kNorthResize:
+    case ui::CursorType::kNorthResize:
       return "NorthResize";
-    case Cursor::kNorthEastResize:
+    case ui::CursorType::kNorthEastResize:
       return "NorthEastResize";
-    case Cursor::kNorthWestResize:
+    case ui::CursorType::kNorthWestResize:
       return "NorthWestResize";
-    case Cursor::kSouthResize:
+    case ui::CursorType::kSouthResize:
       return "SouthResize";
-    case Cursor::kSouthEastResize:
+    case ui::CursorType::kSouthEastResize:
       return "SouthEastResize";
-    case Cursor::kSouthWestResize:
+    case ui::CursorType::kSouthWestResize:
       return "SouthWestResize";
-    case Cursor::kWestResize:
+    case ui::CursorType::kWestResize:
       return "WestResize";
-    case Cursor::kNorthSouthResize:
+    case ui::CursorType::kNorthSouthResize:
       return "NorthSouthResize";
-    case Cursor::kEastWestResize:
+    case ui::CursorType::kEastWestResize:
       return "EastWestResize";
-    case Cursor::kNorthEastSouthWestResize:
+    case ui::CursorType::kNorthEastSouthWestResize:
       return "NorthEastSouthWestResize";
-    case Cursor::kNorthWestSouthEastResize:
+    case ui::CursorType::kNorthWestSouthEastResize:
       return "NorthWestSouthEastResize";
-    case Cursor::kColumnResize:
+    case ui::CursorType::kColumnResize:
       return "ColumnResize";
-    case Cursor::kRowResize:
+    case ui::CursorType::kRowResize:
       return "RowResize";
-    case Cursor::kMiddlePanning:
+    case ui::CursorType::kMiddlePanning:
       return "MiddlePanning";
-    case Cursor::kMiddlePanningVertical:
+    case ui::CursorType::kMiddlePanningVertical:
       return "MiddlePanningVertical";
-    case Cursor::kMiddlePanningHorizontal:
+    case ui::CursorType::kMiddlePanningHorizontal:
       return "MiddlePanningHorizontal";
-    case Cursor::kEastPanning:
+    case ui::CursorType::kEastPanning:
       return "EastPanning";
-    case Cursor::kNorthPanning:
+    case ui::CursorType::kNorthPanning:
       return "NorthPanning";
-    case Cursor::kNorthEastPanning:
+    case ui::CursorType::kNorthEastPanning:
       return "NorthEastPanning";
-    case Cursor::kNorthWestPanning:
+    case ui::CursorType::kNorthWestPanning:
       return "NorthWestPanning";
-    case Cursor::kSouthPanning:
+    case ui::CursorType::kSouthPanning:
       return "SouthPanning";
-    case Cursor::kSouthEastPanning:
+    case ui::CursorType::kSouthEastPanning:
       return "SouthEastPanning";
-    case Cursor::kSouthWestPanning:
+    case ui::CursorType::kSouthWestPanning:
       return "SouthWestPanning";
-    case Cursor::kWestPanning:
+    case ui::CursorType::kWestPanning:
       return "WestPanning";
-    case Cursor::kMove:
+    case ui::CursorType::kMove:
       return "Move";
-    case Cursor::kVerticalText:
+    case ui::CursorType::kVerticalText:
       return "VerticalText";
-    case Cursor::kCell:
+    case ui::CursorType::kCell:
       return "Cell";
-    case Cursor::kContextMenu:
+    case ui::CursorType::kContextMenu:
       return "ContextMenu";
-    case Cursor::kAlias:
+    case ui::CursorType::kAlias:
       return "Alias";
-    case Cursor::kProgress:
+    case ui::CursorType::kProgress:
       return "Progress";
-    case Cursor::kNoDrop:
+    case ui::CursorType::kNoDrop:
       return "NoDrop";
-    case Cursor::kCopy:
+    case ui::CursorType::kCopy:
       return "Copy";
-    case Cursor::kNone:
+    case ui::CursorType::kNone:
       return "None";
-    case Cursor::kNotAllowed:
+    case ui::CursorType::kNotAllowed:
       return "NotAllowed";
-    case Cursor::kZoomIn:
+    case ui::CursorType::kZoomIn:
       return "ZoomIn";
-    case Cursor::kZoomOut:
+    case ui::CursorType::kZoomOut:
       return "ZoomOut";
-    case Cursor::kGrab:
+    case ui::CursorType::kGrab:
       return "Grab";
-    case Cursor::kGrabbing:
+    case ui::CursorType::kGrabbing:
       return "Grabbing";
-    case Cursor::kCustom:
+    case ui::CursorType::kCustom:
       return "Custom";
+    case ui::CursorType::kNull:
+      return "Null";
+    case ui::CursorType::kDndNone:
+      return "DragAndDropNone";
+    case ui::CursorType::kDndMove:
+      return "DragAndDropMove";
+    case ui::CursorType::kDndCopy:
+      return "DragAndDropCopy";
+    case ui::CursorType::kDndLink:
+      return "DragAndDropLink";
   }
 
   NOTREACHED();

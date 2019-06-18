@@ -170,7 +170,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
 
 template <typename CharacterType>
 static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
-                                             unsigned length) {
+                                             unsigned length,
+                                             CSSParserMode mode) {
   if (length == 0)
     return CSSPropertyID::kInvalid;
   if (length >= 2 && property_name[0] == '-' && property_name[1] == '-')
@@ -192,24 +193,27 @@ static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
   const Property* hash_table_entry = FindProperty(name, length);
   if (!hash_table_entry)
     return CSSPropertyID::kInvalid;
-  CSSPropertyID property = static_cast<CSSPropertyID>(hash_table_entry->id);
-  if (!CSSProperty::Get(resolveCSSPropertyID(property)).IsEnabled())
-    return CSSPropertyID::kInvalid;
-  return property;
+  CSSPropertyID property_id = static_cast<CSSPropertyID>(hash_table_entry->id);
+  const CSSProperty& property =
+      CSSProperty::Get(resolveCSSPropertyID(property_id));
+  bool enabled =
+      property.IsEnabled() || (property.IsInternal() && mode == kUASheetMode);
+  return enabled ? property_id : CSSPropertyID::kInvalid;
 }
 
 CSSPropertyID unresolvedCSSPropertyID(const String& string) {
   unsigned length = string.length();
+  CSSParserMode mode = kHTMLStandardMode;
   return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(string.Characters8(), length)
-             : UnresolvedCSSPropertyID(string.Characters16(), length);
+             ? UnresolvedCSSPropertyID(string.Characters8(), length, mode)
+             : UnresolvedCSSPropertyID(string.Characters16(), length, mode);
 }
 
-CSSPropertyID UnresolvedCSSPropertyID(StringView string) {
+CSSPropertyID UnresolvedCSSPropertyID(StringView string, CSSParserMode mode) {
   unsigned length = string.length();
   return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(string.Characters8(), length)
-             : UnresolvedCSSPropertyID(string.Characters16(), length);
+             ? UnresolvedCSSPropertyID(string.Characters8(), length, mode)
+             : UnresolvedCSSPropertyID(string.Characters16(), length, mode);
 }
 
 template <typename CharacterType>

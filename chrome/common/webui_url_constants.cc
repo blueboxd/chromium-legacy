@@ -107,6 +107,7 @@ const char kChromeUINetInternalsURL[] = "chrome://net-internals/";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUINewTabIconHost[] = "ntpicon";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUINotificationsInternalsHost[] = "notifications-internals";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
 const char kChromeUIPasswordManagerInternalsHost[] =

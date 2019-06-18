@@ -561,8 +561,7 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
 
   switch (user_sessions_[0]->user_info.type) {
     case user_manager::USER_TYPE_REGULAR:
-      return user_sessions_[0]->user_info.is_device_owner ? LoginStatus::OWNER
-                                                          : LoginStatus::USER;
+      return LoginStatus::USER;
     case user_manager::USER_TYPE_GUEST:
       return LoginStatus::GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:

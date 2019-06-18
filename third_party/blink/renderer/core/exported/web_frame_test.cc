@@ -11541,7 +11541,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   // Now resize the visual viewport so that the input box is no longer in view
   // (e.g. a keyboard is overlayed).
-  WebView().MainFrameWidget()->ResizeVisualViewport(IntSize(200, 100));
+  WebView().ResizeVisualViewport(IntSize(200, 100));
   ASSERT_FALSE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       inputRect));
 

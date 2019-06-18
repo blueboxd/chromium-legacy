@@ -158,8 +158,9 @@ bool VulkanSwapChain::InitializeSwapChain(
   }
 
   if (old_swap_chain) {
-    old_swap_chain->Destroy();
-    old_swap_chain = nullptr;
+    auto* fence_helper = device_queue_->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(old_swap_chain));
   }
 
   swap_chain_ = new_swap_chain;
@@ -172,15 +173,8 @@ bool VulkanSwapChain::InitializeSwapChain(
 void VulkanSwapChain::DestroySwapChain() {
   if (swap_chain_ == VK_NULL_HANDLE)
     return;
-
-  device_queue_->GetFenceHelper()->EnqueueCleanupTaskForSubmittedWork(
-      base::BindOnce(
-          [](VkSwapchainKHR swapchain, VulkanDeviceQueue* device_queue,
-             bool /* is_lost */) {
-            VkDevice device = device_queue->GetVulkanDevice();
-            vkDestroySwapchainKHR(device, swapchain, nullptr /* pAllocator */);
-          },
-          swap_chain_));
+  vkDestroySwapchainKHR(device_queue_->GetVulkanDevice(), swap_chain_,
+                        nullptr /* pAllocator */);
   swap_chain_ = VK_NULL_HANDLE;
 }
 
@@ -230,32 +224,26 @@ bool VulkanSwapChain::InitializeSwapImages(
 }
 
 void VulkanSwapChain::DestroySwapImages() {
-  auto* fence_helper = device_queue_->GetFenceHelper();
-  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](VkSemaphore begin_semaphore, VkSemaphore end_semaphore,
-         std::vector<ImageData> images,
-         std::unique_ptr<VulkanCommandPool> command_pool,
-         VulkanDeviceQueue* device_queue, bool /* is_lost */) {
-        auto* vk_device = device_queue->GetVulkanDevice();
-        if (begin_semaphore)
-          vkDestroySemaphore(vk_device, begin_semaphore,
-                             nullptr /* pAllocator */);
-        if (end_semaphore)
-          vkDestroySemaphore(vk_device, end_semaphore,
-                             nullptr /* pAllocator */);
-        for (auto& image_data : images) {
-          if (!image_data.command_buffer)
-            continue;
-          image_data.command_buffer->Destroy();
-          image_data.command_buffer = nullptr;
-        }
-        command_pool->Destroy();
-      },
-      begin_write_semaphore_, end_write_semaphore_, std::move(images_),
-      std::move(command_pool_)));
+  if (begin_write_semaphore_)
+    vkDestroySemaphore(device_queue_->GetVulkanDevice(), begin_write_semaphore_,
+                       nullptr /* pAllocator */);
   begin_write_semaphore_ = VK_NULL_HANDLE;
+
+  if (end_write_semaphore_)
+    vkDestroySemaphore(device_queue_->GetVulkanDevice(), end_write_semaphore_,
+                       nullptr /* pAllocator */);
   end_write_semaphore_ = VK_NULL_HANDLE;
+
+  for (auto& image_data : images_) {
+    if (!image_data.command_buffer)
+      continue;
+    image_data.command_buffer->Destroy();
+    image_data.command_buffer = nullptr;
+  }
   images_.clear();
+
+  command_pool_->Destroy();
+  command_pool_ = nullptr;
 }
 
 void VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,

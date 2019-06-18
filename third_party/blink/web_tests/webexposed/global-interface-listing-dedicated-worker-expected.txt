@@ -1126,13 +1126,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter content
 [Worker]     method constructor
-[Worker] interface SMSReceiver : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter onchange
-[Worker]     getter sms
-[Worker]     method constructor
-[Worker]     method start
-[Worker]     setter onchange
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI
@@ -2128,6 +2121,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method disable
 [Worker]     method disableVertexAttribArray
 [Worker]     method dispatchCompute
+[Worker]     method dispatchComputeIndirect
 [Worker]     method drawArrays
 [Worker]     method drawArraysInstanced
 [Worker]     method drawBuffers

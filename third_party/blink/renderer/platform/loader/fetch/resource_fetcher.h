@@ -203,7 +203,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum LoaderFinishType { kDidFinishLoading, kDidFinishFirstPartInMultipart };
   void HandleLoaderFinish(Resource*,
-                          TimeTicks finish_time,
+                          base::TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
                           bool should_report_corb_blocking,

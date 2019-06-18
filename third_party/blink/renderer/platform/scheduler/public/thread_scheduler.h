@@ -133,7 +133,8 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 
-  virtual void SetHasSafepoint() {}
+  virtual void OnSafepointEntered() {}
+  virtual void OnSafepointExited() {}
 
   // Test helpers.
 

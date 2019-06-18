@@ -99,24 +99,26 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
 
-  // Returns the supported internal formats for JPEG decoding. If JPEG decoding
-  // is not supported, returns InternalFormats{}.
-  static InternalFormats GetJpegDecodeSupportedInternalFormats();
+  // Returns the supported internal formats for decoding using |va_profile|. If
+  // decoding is not supported for that profile, returns InternalFormats{}.
+  static InternalFormats GetDecodeSupportedInternalFormats(
+      VAProfile va_profile);
 
-  // Returns true if |rt_format| is supported for JPEG decoding. If it's not or
-  // JPEG decoding is not supported, returns false.
-  static bool IsJpegDecodingSupportedForInternalFormat(unsigned int rt_format);
+  // Returns true if |rt_format| is supported for decoding using |va_profile|.
+  // Returns false if |rt_format| or |va_profile| is not supported for decoding.
+  static bool IsDecodingSupportedForInternalFormat(VAProfile va_profile,
+                                                   unsigned int rt_format);
 
-  // Gets the minimum surface size allowed for JPEG decoding. Returns true if
-  // the size can be obtained, false otherwise. If a dimension is not reported
-  // by the driver, the dimension is returned as 0.
-  static bool GetJpegDecodeMinResolution(gfx::Size* min_size);
+  // Gets the minimum surface size allowed for decoding using |va_profile|.
+  // Returns true if the size can be obtained, false otherwise. If a dimension
+  // is not reported by the driver, the dimension is returned as 0.
+  static bool GetDecodeMinResolution(VAProfile va_profile, gfx::Size* min_size);
 
-  // Gets the maximum surface size allowed for JPEG decoding. Returns true if
-  // the size can be obtained, false otherwise. Because of the initialization in
-  // VASupportedProfiles::FillProfileInfo_Locked(), the size is guaranteed to
-  // not be empty (as long as this method returns true).
-  static bool GetJpegDecodeMaxResolution(gfx::Size* max_size);
+  // Gets the maximum surface size allowed for decoding using |va_profile|.
+  // Returns true if the size can be obtained, false otherwise. Because of the
+  // initialization in VASupportedProfiles::FillProfileInfo_Locked(), the size
+  // is guaranteed to not be empty (as long as this method returns true).
+  static bool GetDecodeMaxResolution(VAProfile va_profile, gfx::Size* max_size);
 
   // Obtains a suitable FOURCC that can be used in vaCreateImage() +
   // vaGetImage(). |rt_format| corresponds to the JPEG's subsampling format.

@@ -77,7 +77,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   int RepetitionCount() const;
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
-  TimeDelta FrameDurationAtIndex(size_t index) const;
+  base::TimeDelta FrameDurationAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 

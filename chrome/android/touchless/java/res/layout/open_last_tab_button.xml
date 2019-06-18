@@ -18,7 +18,7 @@
         android:paddingHorizontal="@dimen/open_last_tab_button_padding_horizontal"
         android:paddingVertical="@dimen/open_last_tab_button_padding_vertical"
         android:background="@drawable/hairline_border_card_background"
-        android:theme="@style/Theme.AppCompat.Light">
+        style="@style/Theme.AppCompat.Light">
 
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/favicon"
@@ -29,20 +29,20 @@
 
         <TextView
             android:id="@+id/title"
+            style="@style/TextAppearance.BlackBodyDefault.Touchless"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="@dimen/open_last_tab_title_text_margin_left"
-            android:textAppearance="@style/TextAppearance.BlackTitle2"
             android:ellipsize="end"
             android:maxLines="1"/>
 
         <TextView
             android:id="@+id/timestamp"
+            style="@style/TextAppearance.BlackCaption.Touchless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/open_last_tab_timestamp_text_margin_left"
-            android:textAppearance="@style/TextAppearance.BlackCaption"
             android:ellipsize="end"
             android:maxLines="1" />
 

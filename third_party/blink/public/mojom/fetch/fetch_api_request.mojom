@@ -118,7 +118,7 @@ struct FetchAPIRequestHeaders {
 // Note: When updating this struct, also update
 // content/common/fetch/fetch_request_type_converters.cc.
 struct FetchAPIRequest {
-  network.mojom.FetchRequestMode mode = network.mojom.FetchRequestMode.kNoCors;
+  network.mojom.RequestMode mode = network.mojom.RequestMode.kNoCors;
   bool is_main_resource_load = false;
   RequestContextType request_context_type = RequestContextType.UNSPECIFIED;
   network.mojom.RequestContextFrameType frame_type =
@@ -136,11 +136,11 @@ struct FetchAPIRequest {
   network.mojom.URLRequestBody? body;
 
   Referrer? referrer;
-  network.mojom.FetchCredentialsMode credentials_mode =
-    network.mojom.FetchCredentialsMode.kOmit;
+  network.mojom.CredentialsMode credentials_mode =
+    network.mojom.CredentialsMode.kOmit;
   FetchCacheMode cache_mode = FetchCacheMode.kDefault;
-  network.mojom.FetchRedirectMode redirect_mode =
-    network.mojom.FetchRedirectMode.kFollow;
+  network.mojom.RedirectMode redirect_mode =
+    network.mojom.RedirectMode.kFollow;
   string? integrity;
   network.mojom.RequestPriority priority = network.mojom.RequestPriority.kIdle;
 

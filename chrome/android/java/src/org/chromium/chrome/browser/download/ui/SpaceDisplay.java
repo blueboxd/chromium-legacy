@@ -19,6 +19,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.download.R;
@@ -62,7 +63,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
         @Override
         protected Long doInBackground() {
-            File downloadDirectory = DownloadUtils.getPrimaryDownloadDirectory();
+            File downloadDirectory = DownloadDirectoryProvider.getPrimaryDownloadDirectory();
 
             // Determine how much space is available on the storage device where downloads
             // reside.  If the downloads directory doesn't exist, it is likely that the user

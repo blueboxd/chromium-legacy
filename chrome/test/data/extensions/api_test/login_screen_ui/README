@@ -6,8 +6,9 @@ The not_whitelisted_extension.crx can be packed using the private key
 ./not_whitelisted_extension.pem. For the instructions, refer to:
 <https://developer.chrome.com/extensions/packaging#creating>.
 
-These extensions are intended to be used for the manual testing of the
-chrome.loginScreenUi API.
+These extensions are used in the API tests and browser tests for the
+chrome.loginScreenUi API. The code for the tests can be found under the
+chrome/browser/chromeos/extensions/login_screen_ui/ directory.
 
 In case a new version of the test extension has to be published on WebStore,
 please reach out to the managed-devices@ mailing list.

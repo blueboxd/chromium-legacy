@@ -247,31 +247,34 @@ BubbleHeaderView::BubbleHeaderView(
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
 
-  security_details_label_ =
-      new views::StyledLabel(base::string16(), styled_label_listener);
-  security_details_label_->SetID(
+  auto security_details_label = std::make_unique<views::StyledLabel>(
+      base::string16(), styled_label_listener);
+  security_details_label->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS);
-  layout->AddView(security_details_label_, 1.0, 1.0, views::GridLayout::FILL,
-                  views::GridLayout::LEADING);
+  security_details_label_ =
+      layout->AddView(std::move(security_details_label), 1.0, 1.0,
+                      views::GridLayout::FILL, views::GridLayout::LEADING);
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
-  ev_certificate_label_container_ = new views::View();
-  ev_certificate_label_container_->SetLayoutManager(
+  auto ev_certificate_label_container = std::make_unique<views::View>();
+  ev_certificate_label_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
-  layout->AddView(ev_certificate_label_container_, 1.0, 1.0,
-                  views::GridLayout::FILL, views::GridLayout::LEADING);
+  ev_certificate_label_container_ =
+      layout->AddView(std::move(ev_certificate_label_container), 1.0, 1.0,
+                      views::GridLayout::FILL, views::GridLayout::LEADING);
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
-  reset_decisions_label_container_ = new views::View();
-  reset_decisions_label_container_->SetLayoutManager(
+  auto reset_decisions_label_container = std::make_unique<views::View>();
+  reset_decisions_label_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
-  layout->AddView(reset_decisions_label_container_, 1.0, 1.0,
-                  views::GridLayout::FILL, views::GridLayout::LEADING);
+  reset_decisions_label_container_ =
+      layout->AddView(std::move(reset_decisions_label_container), 1.0, 1.0,
+                      views::GridLayout::FILL, views::GridLayout::LEADING);
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
-  password_reuse_button_container_ = new views::View();
-  layout->AddView(password_reuse_button_container_, 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::LEADING);
+  password_reuse_button_container_ =
+      layout->AddView(std::make_unique<views::View>(), 1, 1,
+                      views::GridLayout::FILL, views::GridLayout::LEADING);
 }
 
 BubbleHeaderView::~BubbleHeaderView() {}
@@ -539,32 +542,29 @@ PageInfoBubbleView::PageInfoBubbleView(
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  header_ = new BubbleHeaderView(this, this, side_margin);
-  layout->AddView(header_);
+  header_ = layout->AddView(
+      std::make_unique<BubbleHeaderView>(this, this, side_margin));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  permissions_view_ = new views::View;
-  layout->AddView(permissions_view_);
+  permissions_view_ = layout->AddView(std::make_unique<views::View>());
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  layout->AddView(new views::Separator());
+  layout->AddView(std::make_unique<views::Separator>());
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                               views::GridLayout::kFixedSize,
                               hover_list_spacing);
-  site_settings_view_ = CreateSiteSettingsView();
-  layout->AddView(site_settings_view_);
+  site_settings_view_ = layout->AddView(CreateSiteSettingsView());
 
   if (!profile->IsGuestSession()) {
     layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                                 views::GridLayout::kFixedSize, 0);
-    layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
+    layout->AddView(CreateSiteSettingsLink(side_margin, this));
   }
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  page_feature_info_view_ = new views::View;
-  layout->AddView(page_feature_info_view_);
+  page_feature_info_view_ = layout->AddView(std::make_unique<views::View>());
 #endif
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -789,7 +789,7 @@ void PageInfoBubbleView::SetPermissionInfo(
     // The view takes ownership of the object info.
     auto object_view = std::make_unique<ChosenObjectView>(std::move(object));
     object_view->AddObserver(this);
-    layout->AddView(object_view.release());
+    layout->AddView(std::move(object_view));
   }
   layout->AddPaddingRow(views::GridLayout::kFixedSize, list_item_padding);
 
@@ -1002,8 +1002,8 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
 }
 #endif
 
-views::View* PageInfoBubbleView::CreateSiteSettingsView() {
-  views::View* site_settings_view = new views::View();
+std::unique_ptr<views::View> PageInfoBubbleView::CreateSiteSettingsView() {
+  auto site_settings_view = std::make_unique<views::View>();
   auto* box_layout = site_settings_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   box_layout->set_cross_axis_alignment(

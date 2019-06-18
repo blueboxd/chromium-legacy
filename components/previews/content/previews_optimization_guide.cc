@@ -114,6 +114,11 @@ ParseHintsFetchOverrideFromCommandLine() {
   return hosts;
 }
 
+bool ShouldOverrideFetchHintsTimer() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kFetchHintsOverrideTimer);
+}
+
 // Provides a random time delta in seconds between |kFetchRandomMinDelay| and
 // |kFetchRandomMaxDelay|.
 base::TimeDelta RandomFetchDelay() {
@@ -413,7 +418,8 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   if (!previews::params::IsHintsFetchingEnabled())
     return;
 
-  if (ParseHintsFetchOverrideFromCommandLine()) {
+  if (ParseHintsFetchOverrideFromCommandLine() ||
+      ShouldOverrideFetchHintsTimer()) {
     // Skip the fetch scheduling logic and perform a hints fetch immediately
     // after initialization.
     last_fetch_attempt_ = time_clock_->Now();

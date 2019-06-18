@@ -136,11 +136,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleSelectPPDFile(const base::ListValue* args);
 
   // PpdProvider callback handlers.
-  void ResolveManufacturersDone(const std::string& js_callback,
+  void ResolveManufacturersDone(const std::string& callback_id,
                                 PpdProvider::CallbackResultCode result_code,
                                 const std::vector<std::string>& available);
   void ResolvePrintersDone(const std::string& manufacturer,
-                           const std::string& js_callback,
+                           const std::string& callback_id,
                            PpdProvider::CallbackResultCode result_code,
                            const PpdProvider::ResolvedPrintersList& printers);
 

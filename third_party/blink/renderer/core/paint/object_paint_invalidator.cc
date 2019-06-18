@@ -172,18 +172,6 @@ void ObjectPaintInvalidator::
   Helper::Traverse(object_);
 }
 
-namespace {
-bool IsClientNGPaintFragmentForObject(const DisplayItemClient& client,
-                                      const LayoutObject& object) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return false;
-  // TODO(crbug.com/880519): This hack only makes current invalidation tracking
-  // web tests pass with LayoutNG. More work is needed if we want to launch
-  // the invalidation tracking feature.
-  return &client == object.PaintFragment();
-}
-}  // namespace
-
 void ObjectPaintInvalidator::InvalidateDisplayItemClient(
     const DisplayItemClient& client,
     PaintInvalidationReason reason) {
@@ -192,14 +180,6 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
   // can use various ways (e.g. PaintInvalidatinContext::painting_layer) to
   // reduce the cost.
   DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
-
-  if (&client == &object_ ||
-      IsClientNGPaintFragmentForObject(client, object_)) {
-    TRACE_EVENT_INSTANT1(
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-        "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        inspector_paint_invalidation_tracking_event::Data(object_));
-  }
 
   client.Invalidate(reason);
 

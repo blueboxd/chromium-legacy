@@ -4,8 +4,13 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
+#include <algorithm>
+#include <list>
 #include <memory>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -19,13 +24,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/class_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/hit_test.h"
@@ -64,6 +69,10 @@
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
+
+#if BUILDFLAG(USE_ATK)
+#include "ui/accessibility/platform/atk_util_auralinux.h"
+#endif
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
 
@@ -165,6 +174,15 @@ class SwapWithNewSizeObserverHelper : public ui::CompositorObserver {
 
   DISALLOW_COPY_AND_ASSIGN(SwapWithNewSizeObserverHelper);
 };
+
+bool ShouldDiscardKeyEvent(XEvent* xev) {
+#if BUILDFLAG(USE_ATK)
+  return ui::AtkUtilAuraLinux::HandleKeyEvent(xev) ==
+         ui::DiscardAtkKeyEvent::Discard;
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -2114,8 +2132,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case KeyPress: {
-      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
-          ui::DiscardAtkKeyEvent::Discard) {
+      if (!ShouldDiscardKeyEvent(xev)) {
         ui::KeyEvent keydown_event(xev);
         DispatchKeyEvent(&keydown_event);
       }
@@ -2127,8 +2144,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (!IsActive() && !HasCapture())
         break;
 
-      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
-          ui::DiscardAtkKeyEvent::Discard) {
+      if (!ShouldDiscardKeyEvent(xev)) {
         ui::KeyEvent key_event(xev);
         DispatchKeyEvent(&key_event);
       }

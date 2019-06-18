@@ -133,10 +133,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_FUCHSIA)
-#define USE_BUILTIN_CERT_VERIFIER
-#endif
-
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
 #include "net/base/filename_util.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -11494,7 +11490,19 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   std::unique_ptr<ScopedTestEVPolicy> ev_test_policy_;
 };
 
+static bool UsingBuiltinCertVerifier() {
+#if defined(OS_FUCHSIA)
+  return true;
+#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
+    return true;
+#endif
+  return false;
+}
+
 static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
+  if (UsingBuiltinCertVerifier())
+    return 0;
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Windows can return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION but we don't
   // have that ability on other platforms.
@@ -11514,8 +11522,9 @@ static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
 // If it does not, then tests which rely on 'hard fail' behaviour should be
 // skipped.
 static bool SystemSupportsHardFailRevocationChecking() {
-#if defined(OS_WIN) || defined(USE_NSS_CERTS) || \
-    defined(USE_BUILTIN_CERT_VERIFIER)
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(OS_WIN) || defined(USE_NSS_CERTS)
   return true;
 #else
   return false;
@@ -11527,6 +11536,8 @@ static bool SystemSupportsHardFailRevocationChecking() {
 // several tests are effected because our testing EV certificate won't be
 // recognised as EV.
 static bool SystemUsesChromiumEVMetadata() {
+  if (UsingBuiltinCertVerifier())
+    return true;
 #if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
   return true;
 #else
@@ -11557,6 +11568,8 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
+  if (UsingBuiltinCertVerifier())
+    return true;
 #if defined(OS_ANDROID)
   return false;
 #elif defined(OS_MACOSX)
@@ -11623,17 +11636,17 @@ TEST_F(HTTPSOCSPTest, Invalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-#if defined(USE_BUILTIN_CERT_VERIFIER)
-  // TODO(649017): This test uses soft-fail revocation checking, but returns an
-  // invalid OCSP response (can't parse). CertVerifyProcBuiltin currently
-  // doesn't consider this a candidate for soft-fail (only considers
-  // network-level failures as skippable).
-  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-            cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
-#else
-  EXPECT_EQ(ExpectedCertStatusForFailedOnlineRevocationCheck(),
-            cert_status & CERT_STATUS_ALL_ERRORS);
-#endif
+  if (UsingBuiltinCertVerifier()) {
+    // TODO(649017): This test uses soft-fail revocation checking, but returns
+    // an invalid OCSP response (can't parse). CertVerifyProcBuiltin currently
+    // doesn't consider this a candidate for soft-fail (only considers
+    // network-level failures as skippable).
+    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+              cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  } else {
+    EXPECT_EQ(ExpectedCertStatusForFailedOnlineRevocationCheck(),
+              cert_status & CERT_STATUS_ALL_ERRORS);
+  }
 
   // Without a positive OCSP response, we shouldn't show the EV status.
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -11704,18 +11717,18 @@ TEST_F(HTTPSOCSPTest, IntermediateResponseTooOld) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-#if defined(USE_BUILTIN_CERT_VERIFIER)
-  // The builtin verifier enforces the baseline requirements for max age of an
-  // intermediate's OCSP response.
-  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-            cert_status & CERT_STATUS_ALL_ERRORS);
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_IS_EV);
-#else
-  // The platform verifiers are more lenient.
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
-  EXPECT_EQ(SystemUsesChromiumEVMetadata(),
-            static_cast<bool>(cert_status & CERT_STATUS_IS_EV));
-#endif
+  if (UsingBuiltinCertVerifier()) {
+    // The builtin verifier enforces the baseline requirements for max age of an
+    // intermediate's OCSP response.
+    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+              cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(0u, cert_status & CERT_STATUS_IS_EV);
+  } else {
+    // The platform verifiers are more lenient.
+    EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(SystemUsesChromiumEVMetadata(),
+              static_cast<bool>(cert_status & CERT_STATUS_IS_EV));
+  }
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -12164,14 +12177,14 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-#if defined(USE_BUILTIN_CERT_VERIFIER)
-  // TODO(crbug.com/649017): Should we consider invalid response as
-  //                         affirmatively revoked?
-  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-            cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
-#else
-  EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_REVOKED);
-#endif
+  if (UsingBuiltinCertVerifier()) {
+    // TODO(crbug.com/649017): Should we consider invalid response as
+    //                         affirmatively revoked?
+    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+              cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  } else {
+    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_REVOKED);
+  }
 
   // Without a positive OCSP response, we shouldn't show the EV status.
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -12221,14 +12234,19 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-// Currently only works for Windows and OS X. When using NSS, it's not
-// possible to determine whether the check failed because of actual
-// revocation or because there was an OCSP failure.
+  // Currently only works for Windows and OS X. When using NSS, it's not
+  // possible to determine whether the check failed because of actual
+  // revocation or because there was an OCSP failure.
+  if (UsingBuiltinCertVerifier()) {
+    // TODO(https://crbug.com/410574): Handle this in builtin verifier too?
+    EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  } else {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #else
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 #endif
+  }
 
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_EQ(SystemUsesChromiumEVMetadata(),

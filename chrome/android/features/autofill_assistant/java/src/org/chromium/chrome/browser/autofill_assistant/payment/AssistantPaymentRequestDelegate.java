@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 
 /** Delegate for the Payment Request UI. */
 @JNINamespace("autofill_assistant")
-class AssistantPaymentRequestDelegate {
+public class AssistantPaymentRequestDelegate {
     private long mNativeAssistantPaymentRequestDelegate;
 
     @CalledByNative

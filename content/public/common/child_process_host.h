@@ -60,7 +60,27 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // gdb). In this case, you'd use GetChildPath to get the real executable
     // file name, and then prepend the GDB command to the command line.
     CHILD_ALLOW_SELF = 1 << 0,
-#endif  // defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+    // Note, on macOS these are not bitwise flags and each value is mutually
+    // exclusive with the others. Each one of these options should correspond
+    // to a value in //content/public/app/mac_helpers.gni.
+
+    // Starts a child process with the macOS entitlement that allows JIT (i.e.
+    // memory that is writable and executable). In order to make use of this,
+    // memory cannot simply be allocated as read-write-execute; instead, the
+    // MAP_JIT flag must be passed to mmap() when allocating the memory region
+    // into which the writable-and-executable data are stored.
+    CHILD_RENDERER,
+
+    // Starts a child process with the macOS entitlement that ignores the
+    // library validation code signing enforcement. Library validation mandates
+    // that all executable pages be backed by a code signature that either 1)
+    // is signed by Apple, or 2) signed by the same Team ID as the main
+    // executable. Binary plug-ins that are not always signed by the same Team
+    // ID as the main binary, so this flag should be used when needing to load
+    // third-party plug-ins.
+    CHILD_PLUGIN,
+#endif
   };
 
   // Returns the pathname to be used for a child process.  If a subprocess

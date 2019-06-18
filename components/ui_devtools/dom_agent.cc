@@ -50,9 +50,7 @@ Response DOMAgent::getDocument(std::unique_ptr<Node>* out_root) {
 Response DOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
-  *result = protocol::Array<int>::create();
-  for (size_t index = 0; index < backend_node_ids->length(); ++index)
-    (*result)->addItem(backend_node_ids->get(index));
+  *result = std::move(backend_node_ids);
   return Response::OK();
 }
 
@@ -137,7 +135,7 @@ int DOMAgent::GetParentIdOfNodeId(int node_id) const {
 
 std::unique_ptr<Node> DOMAgent::BuildNode(
     const std::string& name,
-    std::unique_ptr<Array<std::string>> attributes,
+    std::unique_ptr<std::vector<std::string>> attributes,
     std::unique_ptr<Array<Node>> children,
     int node_ids) {
   constexpr int kDomElementNodeType = 1;
@@ -148,28 +146,30 @@ std::unique_ptr<Node> DOMAgent::BuildNode(
                                    .setNodeType(kDomElementNodeType)
                                    .setAttributes(std::move(attributes))
                                    .build();
-  node->setChildNodeCount(static_cast<int>(children->length()));
+  node->setChildNodeCount(static_cast<int>(children->size()));
   node->setChildren(std::move(children));
   return node;
 }
 
 std::unique_ptr<Node> DOMAgent::BuildDomNodeFromUIElement(UIElement* root) {
-  std::unique_ptr<Array<Node>> children = Array<Node>::create();
+  auto children = std::make_unique<protocol::Array<Node>>();
   for (auto* it : root->children())
-    children->addItem(BuildDomNodeFromUIElement(it));
+    children->emplace_back(BuildDomNodeFromUIElement(it));
 
-  return BuildNode(root->GetTypeName(), root->GetAttributes(),
-                   std::move(children), root->node_id());
+  return BuildNode(
+      root->GetTypeName(),
+      std::make_unique<std::vector<std::string>>(root->GetAttributes()),
+      std::move(children), root->node_id());
 }
 
 std::unique_ptr<Node> DOMAgent::BuildInitialTree() {
-  std::unique_ptr<Array<Node>> children = Array<Node>::create();
+  auto children = std::make_unique<protocol::Array<Node>>();
 
   element_root_ = std::make_unique<RootElement>(this);
   element_root_->set_is_updating(true);
 
   for (auto* child : CreateChildrenForRoot()) {
-    children->addItem(BuildTreeForUIElement(child));
+    children->emplace_back(BuildTreeForUIElement(child));
     element_root_->AddChild(child);
   }
   std::unique_ptr<Node> root_node =
@@ -257,12 +257,7 @@ Response DOMAgent::performSearch(
       continue;
     }
 
-    std::unique_ptr<protocol::Array<std::string>> attribute_array =
-        node->GetAttributes();
-    if (!attribute_array->length())
-      continue;
-    for (size_t i = 0; i < attribute_array->length(); ++i) {
-      protocol::String data = attribute_array->get(i);
+    for (std::string& data : node->GetAttributes()) {
       std::transform(data.begin(), data.end(), data.begin(), ::tolower);
       if (data.find(query) != protocol::String::npos) {
         result_collector.push_back(node->node_id());
@@ -298,9 +293,9 @@ Response DOMAgent::getSearchResults(
   if (from_index < 0 || to_index > size || from_index >= to_index)
     return Response::Error("Invalid search result range");
 
-  *node_ids = protocol::Array<int>::create();
+  *node_ids = std::make_unique<protocol::Array<int>>();
   for (int i = from_index; i < to_index; ++i)
-    (*node_ids)->addItem((it->second)[i]);
+    (*node_ids)->emplace_back((it->second)[i]);
   return Response::OK();
 }
 

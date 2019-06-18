@@ -144,14 +144,13 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   // The prompt for server cards should reference Google Payments, whereas the
   // prompt for local cards should not.
-  std::unique_ptr<views::Label> instructions =
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          credit_card_.record_type() == autofill::CreditCard::LOCAL_CARD
-              ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD
-              : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS));
+  auto instructions = std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+      credit_card_.record_type() == autofill::CreditCard::LOCAL_CARD
+          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD
+          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS));
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(instructions.release());
+  layout->AddView(std::move(instructions));
 
   // Space between the instructions and the CVC field.
   layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
@@ -196,18 +195,17 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
     month->SetID(static_cast<int>(DialogViewID::CVC_MONTH));
     month->SelectValue(credit_card_.ExpirationMonthAsString());
     month->SetInvalid(true);
-    layout->AddView(month.release());
+    layout->AddView(std::move(month));
 
     auto year = std::make_unique<views::Combobox>(&year_combobox_model_);
     year->set_listener(this);
     year->SetID(static_cast<int>(DialogViewID::CVC_YEAR));
     year->SelectValue(credit_card_.Expiration4DigitYearAsString());
     year->SetInvalid(true);
-    layout->AddView(year.release());
+    layout->AddView(std::move(year));
   }
 
-  std::unique_ptr<views::ImageView> cvc_image =
-      std::make_unique<views::ImageView>();
+  auto cvc_image = std::make_unique<views::ImageView>();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(anthonyvd): Consider using
   // CardUnmaskPromptControllerImpl::GetCvcImageRid.
@@ -217,14 +215,12 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
           : IDR_CREDIT_CARD_CVC_HINT));
   cvc_image->set_tooltip_text(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
-  layout->AddView(cvc_image.release());
+  layout->AddView(std::move(cvc_image));
 
-  std::unique_ptr<views::Textfield> cvc_field =
-      std::unique_ptr<views::Textfield>(autofill::CreateCvcTextfield());
+  std::unique_ptr<views::Textfield> cvc_field = autofill::CreateCvcTextfield();
   cvc_field->set_controller(this);
   cvc_field->SetID(static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD));
-  cvc_field_ = cvc_field.get();
-  layout->AddView(cvc_field.release());
+  cvc_field_ = layout->AddView(std::move(cvc_field));
 
   // Space between the CVC field and the error field.
   layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
@@ -242,17 +238,16 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
                            views::GridLayout::SizeType::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 2);
-  std::unique_ptr<views::ImageView> error_icon =
-      std::make_unique<views::ImageView>();
+  auto error_icon = std::make_unique<views::ImageView>();
   error_icon->SetID(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
   error_icon->SetImage(
       gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16,
                             error_icon->GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_AlertSeverityHigh)));
   error_icon->SetVisible(false);
-  layout->AddView(error_icon.release());
+  layout->AddView(std::move(error_icon));
 
-  std::unique_ptr<views::Label> error_label = std::make_unique<views::Label>();
+  auto error_label = std::make_unique<views::Label>();
   error_label->SetID(static_cast<int>(DialogViewID::CVC_ERROR_LABEL));
   error_label->SetMultiLine(true);
   error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -260,7 +255,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
       ui::NativeTheme::kColorId_AlertSeverityHigh));
   error_label->SetVisible(false);
 
-  layout->AddView(error_label.release());
+  layout->AddView(std::move(error_label));
 }
 
 std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {

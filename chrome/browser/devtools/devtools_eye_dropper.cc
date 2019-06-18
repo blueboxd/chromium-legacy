@@ -81,7 +81,7 @@ void DevToolsEyeDropper::DetachFromHost() {
     return;
   host_->RemoveMouseEventCallback(mouse_event_callback_);
   content::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::kTypePointer;
+  cursor_info.type = ui::CursorType::kPointer;
   host_->SetCursor(cursor_info);
   video_capturer_.reset();
   host_ = nullptr;
@@ -255,7 +255,7 @@ void DevToolsEyeDropper::UpdateCursor() {
   canvas.drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
   content::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::kTypeCustom;
+  cursor_info.type = ui::CursorType::kCustom;
   cursor_info.image_scale_factor = device_scale_factor;
   cursor_info.custom_image = result;
   cursor_info.hotspot = gfx::Point(kHotspotOffset * device_scale_factor,

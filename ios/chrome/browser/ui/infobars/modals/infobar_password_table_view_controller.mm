@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
@@ -300,6 +302,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)dismissInfobarModal:(UIButton*)sender {
+  base::RecordAction(
+      base::UserMetricsAction("MobileMessagesModalCancelledTapped"));
   [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Canceled];
   [self.infobarModalDelegate dismissInfobarModal:sender
                                         animated:YES
@@ -307,6 +311,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)saveCredentialsButtonWasPressed:(UIButton*)sender {
+  base::RecordAction(
+      base::UserMetricsAction("MobileMessagesModalAcceptedTapped"));
   [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Accepted];
   if ([self.saveCredentialsItem.buttonText
           isEqualToString:l10n_util::GetNSString(
@@ -325,12 +331,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)presentPasswordSettings {
+  base::RecordAction(base::UserMetricsAction("MobileMessagesModalSettings"));
   [self.metricsRecorder
       recordModalEvent:MobileMessagesModalEvent::SettingsOpened];
   [self.infobarModalDelegate presentPasswordSettings];
 }
 
 - (void)neverSaveCredentialsForCurrentSite {
+  base::RecordAction(base::UserMetricsAction("MobileMessagesModalNever"));
   [self.passwordMetricsRecorder
       recordModalDismiss:MobileMessagesPasswordsModalDismiss::
                              TappedNeverForThisSite];
@@ -351,6 +359,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.passwordItem.identifyingIconAccessibilityLabel =
         l10n_util::GetNSString(
             IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT);
+    [self.passwordMetricsRecorder
+        recordModalEvent:MobileMessagesPasswordsModalEvent::MaskedPassword];
   } else {
     self.passwordItem.identifyingIcon =
         [UIImage imageNamed:@"infobar_hide_password_icon"];
@@ -358,6 +368,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.passwordItem.identifyingIconAccessibilityLabel =
         l10n_util::GetNSString(
             IDS_IOS_INFOBAR_MODAL_PASSWORD_HIDE_PASSWORD_HINT);
+    [self.passwordMetricsRecorder
+        recordModalEvent:MobileMessagesPasswordsModalEvent::UnmaskedPassword];
   }
   [self reconfigureCellsForItems:@[ self.passwordItem ]];
 }

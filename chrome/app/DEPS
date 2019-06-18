@@ -83,7 +83,6 @@ specific_include_rules = {
     "+third_party/blink/public/mojom",
   ],
   "builtin_service_manifests\.cc": [
-    "+chrome/services/ble_scan_parser/public",
     "+chrome/services/cups_ipp_parser/public",
     "+chrome/services/cups_proxy/public",
     "+chrome/services/file_util/public",

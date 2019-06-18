@@ -127,8 +127,8 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
   const KeyframeEffectModelBase* model = effect->Model();
   Vector<double> computed_offsets =
       KeyframeEffectModelBase::GetComputedOffsets(model->GetFrames());
-  std::unique_ptr<protocol::Array<protocol::Animation::KeyframeStyle>>
-      keyframes = protocol::Array<protocol::Animation::KeyframeStyle>::create();
+  auto keyframes =
+      std::make_unique<protocol::Array<protocol::Animation::KeyframeStyle>>();
 
   for (wtf_size_t i = 0; i < model->GetFrames().size(); i++) {
     const Keyframe* keyframe = model->GetFrames().at(i);
@@ -136,7 +136,7 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
     if (!keyframe->IsStringKeyframe())
       continue;
     const StringKeyframe* string_keyframe = ToStringKeyframe(keyframe);
-    keyframes->addItem(
+    keyframes->emplace_back(
         BuildObjectForStringKeyframe(string_keyframe, computed_offsets.at(i)));
   }
   return protocol::Animation::KeyframesRule::create()
@@ -222,12 +222,16 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
   if (id_to_animation_clone_.at(id))
     animation = id_to_animation_clone_.at(id);
 
-  if (animation->Paused()) {
+  if (animation->Paused() || !animation->timeline()->IsActive()) {
     *current_time = animation->currentTime();
   } else {
     // Use startTime where possible since currentTime is limited.
-    *current_time = animation->TimelineInternal()->currentTime() -
-                    animation->startTime().value_or(NullValue());
+    base::Optional<double> timeline_time = animation->timeline()->CurrentTime();
+    // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
+    *current_time = timeline_time
+                        ? timeline_time.value() -
+                              animation->startTime().value_or(NullValue())
+                        : NullValue();
   }
   return Response::OK();
 }
@@ -235,8 +239,7 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
 Response InspectorAnimationAgent::setPaused(
     std::unique_ptr<protocol::Array<String>> animation_ids,
     bool paused) {
-  for (size_t i = 0; i < animation_ids->length(); ++i) {
-    String animation_id = animation_ids->get(i);
+  for (const String& animation_id : *animation_ids) {
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
     if (!response.isSuccess())
@@ -246,8 +249,17 @@ Response InspectorAnimationAgent::setPaused(
       return Response::Error("Failed to clone detached animation");
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
-      double current_time = clone->TimelineInternal()->currentTime() -
-                            clone->startTime().value_or(NullValue());
+      double current_time = 0;
+      if (!clone->timeline()->IsActive()) {
+        current_time = clone->currentTime();
+      } else {
+        base::Optional<double> timeline_time = clone->timeline()->CurrentTime();
+        // TODO(crbug.com/916117): Handle NaN values.
+        current_time = timeline_time
+                           ? timeline_time.value() -
+                                 clone->startTime().value_or(NullValue())
+                           : NullValue();
+      }
       clone->pause();
       clone->setCurrentTime(current_time, false);
     } else if (!paused && clone->Paused()) {
@@ -306,8 +318,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
 Response InspectorAnimationAgent::seekAnimations(
     std::unique_ptr<protocol::Array<String>> animation_ids,
     double current_time) {
-  for (size_t i = 0; i < animation_ids->length(); ++i) {
-    String animation_id = animation_ids->get(i);
+  for (const String& animation_id : *animation_ids) {
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
     if (!response.isSuccess())
@@ -324,8 +335,7 @@ Response InspectorAnimationAgent::seekAnimations(
 
 Response InspectorAnimationAgent::releaseAnimations(
     std::unique_ptr<protocol::Array<String>> animation_ids) {
-  for (size_t i = 0; i < animation_ids->length(); ++i) {
-    String animation_id = animation_ids->get(i);
+  for (const String& animation_id : *animation_ids) {
     blink::Animation* animation = id_to_animation_.at(animation_id);
     if (animation)
       animation->SetEffectSuppressed(false);
@@ -497,14 +507,16 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
   double time_ms = animation.startTime().value_or(NullValue());
-  if (ReferenceTimeline().PlaybackRate() == 0) {
-    time_ms += ReferenceTimeline().currentTime() -
-               animation.TimelineInternal()->currentTime();
-  } else {
-    time_ms += (animation.TimelineInternal()->ZeroTime() -
-                ReferenceTimeline().ZeroTime())
-                   .InMillisecondsF() *
-               ReferenceTimeline().PlaybackRate();
+  if (animation.timeline()->IsDocumentTimeline()) {
+    if (ReferenceTimeline().PlaybackRate() == 0) {
+      time_ms += ReferenceTimeline().currentTime() -
+                 ToDocumentTimeline(animation.timeline())->currentTime();
+    } else {
+      time_ms += (ToDocumentTimeline(animation.timeline())->ZeroTime() -
+                  ReferenceTimeline().ZeroTime())
+                     .InMillisecondsF() *
+                 ReferenceTimeline().PlaybackRate();
+    }
   }
   // Round to the closest microsecond.
   return std::round(time_ms * 1000) / 1000;

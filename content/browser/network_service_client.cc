@@ -16,6 +16,7 @@
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/webrtc_connections_observer.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -558,6 +559,11 @@ NetworkServiceClient::NetworkServiceClient(
     net::NetworkChangeNotifier::AddDNSObserver(this);
 #endif
   }
+
+  webrtc_connections_observer_ =
+      std::make_unique<content::WebRtcConnectionsObserver>(base::BindRepeating(
+          &NetworkServiceClient::OnPeerToPeerConnectionsCountChange,
+          base::Unretained(this)));
 }
 
 NetworkServiceClient::~NetworkServiceClient() {
@@ -690,6 +696,10 @@ void NetworkServiceClient::OnCertDBChanged() {
 void NetworkServiceClient::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   GetNetworkService()->OnMemoryPressure(memory_pressure_level);
+}
+
+void NetworkServiceClient::OnPeerToPeerConnectionsCountChange(uint32_t count) {
+  GetNetworkService()->OnPeerToPeerConnectionsCountChange(count);
 }
 
 #if defined(OS_ANDROID)

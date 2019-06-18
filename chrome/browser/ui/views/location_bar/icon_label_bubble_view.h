@@ -25,7 +25,7 @@
 namespace gfx {
 class FontList;
 class ImageSkia;
-}
+}  // namespace gfx
 
 namespace ui {
 struct AXNodeData;

@@ -684,6 +684,28 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
 
+// If a device returns CTAP2_ERR_PIN_AUTH_INVALID, the request should complete
+// with FidoReturnCode::kUserConsentDenied.
+TEST_F(FidoMakeCredentialHandlerTest, TestRequestWithPinAuthInvalid) {
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device->ExpectCtap2CommandAndRespondWithError(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid);
+
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorAttachment::kAny, /*require_resident_key=*/false,
+              UserVerificationRequirement::kPreferred));
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+}
+
 MATCHER_P(IsCtap2Command, expected_command, "") {
   return !arg.empty() && arg[0] == base::strict_cast<uint8_t>(expected_command);
 }

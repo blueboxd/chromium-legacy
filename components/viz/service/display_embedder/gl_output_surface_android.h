@@ -10,13 +10,11 @@
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 
 namespace viz {
-class OverlayCandidateValidator;
-
 class GLOutputSurfaceAndroid : public GLOutputSurface {
  public:
   GLOutputSurfaceAndroid(
       scoped_refptr<VizProcessContextProvider> context_provider,
-      bool allow_overlays);
+      gpu::SurfaceHandle surface_handle);
   ~GLOutputSurfaceAndroid() override;
 
   // GLOutputSurface implementation:
@@ -25,11 +23,6 @@ class GLOutputSurfaceAndroid : public GLOutputSurface {
       uint32_t flags,
       gpu::ContextSupport::SwapCompletedCallback swap_callback,
       gpu::ContextSupport::PresentationCallback presentation_callback) override;
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
-
- private:
-  std::unique_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceAndroid);
 };

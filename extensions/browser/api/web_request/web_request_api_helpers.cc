@@ -483,30 +483,6 @@ EventResponseDelta& EventResponseDelta ::operator=(EventResponseDelta&& other) =
 EventResponseDelta::~EventResponseDelta() {
 }
 
-// Creates NetLog parameters to indicate that an extension modified a request.
-std::unique_ptr<base::Value> MakeHeaderModificationLogValue(
-    const EventResponseDelta* delta) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("extension_id", delta->extension_id);
-
-  auto modified_headers = std::make_unique<base::ListValue>();
-  net::HttpRequestHeaders::Iterator modification(
-      delta->modified_request_headers);
-  while (modification.GetNext()) {
-    std::string line = modification.name() + ": " + modification.value();
-    modified_headers->AppendString(line);
-  }
-  dict->Set("modified_headers", std::move(modified_headers));
-
-  auto deleted_headers = std::make_unique<base::ListValue>();
-  for (auto key = delta->deleted_request_headers.cbegin();
-       key != delta->deleted_request_headers.cend(); ++key) {
-    deleted_headers->AppendString(*key);
-  }
-  dict->Set("deleted_headers", std::move(deleted_headers));
-  return dict;
-}
-
 bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
                                                 const EventResponseDelta& b) {
   return a.extension_install_time > b.extension_install_time;
@@ -668,14 +644,10 @@ EventResponseDelta CalculateOnAuthRequiredDelta(
   return result;
 }
 
-void MergeCancelOfResponses(const EventResponseDeltas& deltas,
-                            bool* canceled,
-                            extensions::WebRequestInfoLogger* logger) {
+void MergeCancelOfResponses(const EventResponseDeltas& deltas, bool* canceled) {
   for (const auto& delta : deltas) {
     if (delta.cancel) {
       *canceled = true;
-      logger->LogEvent(net::NetLogEventType::CHROME_EXTENSION_ABORTED_REQUEST,
-                       delta.extension_id);
       break;
     }
   }
@@ -693,7 +665,6 @@ static bool MergeRedirectUrlOfResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     IgnoredActions* ignored_actions,
-    extensions::WebRequestInfoLogger* logger,
     bool consider_only_cancel_scheme_urls) {
   // Redirecting WebSocket handshake request is prohibited.
   if (url.SchemeIsWSOrWSS())
@@ -713,15 +684,9 @@ static bool MergeRedirectUrlOfResponsesHelper(
     if (!redirected || *new_url == delta.new_url) {
       *new_url = delta.new_url;
       redirected = true;
-      logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_REDIRECTED_REQUEST,
-          delta.extension_id);
     } else {
       ignored_actions->emplace_back(delta.extension_id,
                                     web_request::IGNORED_ACTION_TYPE_REDIRECT);
-      logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          delta.extension_id);
     }
   }
   return redirected;
@@ -730,12 +695,11 @@ static bool MergeRedirectUrlOfResponsesHelper(
 void MergeRedirectUrlOfResponses(const GURL& url,
                                  const EventResponseDeltas& deltas,
                                  GURL* new_url,
-                                 IgnoredActions* ignored_actions,
-                                 extensions::WebRequestInfoLogger* logger) {
+                                 IgnoredActions* ignored_actions) {
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
   if (MergeRedirectUrlOfResponsesHelper(url, deltas, new_url, ignored_actions,
-                                        logger, true)) {
+                                        true)) {
     // If any extension cancelled a request by redirecting to a data:// URL or
     // about:blank, we don't consider the other redirects.
     return;
@@ -743,15 +707,14 @@ void MergeRedirectUrlOfResponses(const GURL& url,
 
   // Handle all other redirects.
   MergeRedirectUrlOfResponsesHelper(url, deltas, new_url, ignored_actions,
-                                    logger, false);
+                                    false);
 }
 
 void MergeOnBeforeRequestResponses(const GURL& url,
                                    const EventResponseDeltas& deltas,
                                    GURL* new_url,
-                                   IgnoredActions* ignored_actions,
-                                   extensions::WebRequestInfoLogger* logger) {
-  MergeRedirectUrlOfResponses(url, deltas, new_url, ignored_actions, logger);
+                                   IgnoredActions* ignored_actions) {
+  MergeRedirectUrlOfResponses(url, deltas, new_url, ignored_actions);
 }
 
 static bool DoesRequestCookieMatchFilter(
@@ -879,8 +842,7 @@ static bool MergeRemoveRequestCookieModifications(
 void MergeCookiesInOnBeforeSendHeadersResponses(
     const GURL& url,
     const EventResponseDeltas& deltas,
-    net::HttpRequestHeaders* request_headers,
-    extensions::WebRequestInfoLogger* logger) {
+    net::HttpRequestHeaders* request_headers) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   for (const auto& delta : deltas) {
@@ -1020,16 +982,10 @@ void MergeOnBeforeSendHeadersResponses(
           removed_headers->insert(base::ToLowerASCII(header));
         }
       }
-      request.logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-          delta.extension_id);
       *request_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
           delta.extension_id, web_request::IGNORED_ACTION_TYPE_REQUEST_HEADERS);
-      request.logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          delta.extension_id);
     }
   }
 
@@ -1067,8 +1023,8 @@ void MergeOnBeforeSendHeadersResponses(
   record_request_headers(overridden_headers, &RecordRequestHeaderChanged);
 
   // Currently, conflicts are ignored while merging cookies.
-  MergeCookiesInOnBeforeSendHeadersResponses(
-      request.url, deltas, request_headers, request.logger.get());
+  MergeCookiesInOnBeforeSendHeadersResponses(request.url, deltas,
+                                             request_headers);
 }
 
 // Retrieves all cookies from |override_response_headers|.
@@ -1259,8 +1215,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const GURL& url,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    extensions::WebRequestInfoLogger* logger) {
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   for (const auto& delta : base::Reversed(deltas)) {
@@ -1380,28 +1335,21 @@ void MergeOnHeadersReceivedResponses(
               ->AddHeader(header.first + ": " + header.second);
         }
       }
-      request.logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_MODIFIED_HEADERS,
-          delta.extension_id);
       *response_headers_modified = true;
     } else {
       ignored_actions->emplace_back(
           delta.extension_id,
           web_request::IGNORED_ACTION_TYPE_RESPONSE_HEADERS);
-      request.logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          delta.extension_id);
     }
   }
 
   // Currently, conflicts are ignored while merging cookies.
-  MergeCookiesInOnHeadersReceivedResponses(
-      request.url, deltas, original_response_headers, override_response_headers,
-      request.logger.get());
+  MergeCookiesInOnHeadersReceivedResponses(request.url, deltas,
+                                           original_response_headers,
+                                           override_response_headers);
 
   GURL new_url;
-  MergeRedirectUrlOfResponses(request.url, deltas, &new_url, ignored_actions,
-                              request.logger.get());
+  MergeRedirectUrlOfResponses(request.url, deltas, &new_url, ignored_actions);
   if (new_url.is_valid()) {
     // Only create a copy if we really want to modify the response headers.
     if (override_response_headers->get() == NULL) {
@@ -1468,8 +1416,7 @@ void MergeOnHeadersReceivedResponses(
 
 bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
                                   net::AuthCredentials* auth_credentials,
-                                  IgnoredActions* ignored_actions,
-                                  extensions::WebRequestInfoLogger* logger) {
+                                  IgnoredActions* ignored_actions) {
   CHECK(auth_credentials);
   bool credentials_set = false;
 
@@ -1483,13 +1430,7 @@ bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
       ignored_actions->emplace_back(
           delta.extension_id,
           web_request::IGNORED_ACTION_TYPE_AUTH_CREDENTIALS);
-      logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          delta.extension_id);
     } else {
-      logger->LogEvent(
-          net::NetLogEventType::CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
-          delta.extension_id);
       *auth_credentials = *delta.auth_credentials;
       credentials_set = true;
     }

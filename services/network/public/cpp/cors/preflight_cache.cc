@@ -79,7 +79,7 @@ void PreflightCache::AppendEntry(
 bool PreflightCache::CheckIfRequestCanSkipPreflight(
     const std::string& origin,
     const GURL& url,
-    mojom::FetchCredentialsMode credentials_mode,
+    mojom::CredentialsMode credentials_mode,
     const std::string& method,
     const net::HttpRequestHeaders& request_headers,
     bool is_revalidating) {

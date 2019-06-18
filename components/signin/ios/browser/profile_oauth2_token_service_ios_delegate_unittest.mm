@@ -201,26 +201,10 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ReloadCredentials) {
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
-       ReloadCredentialsIgnoredIfNoPrimaryAccountId) {
-  ProviderAccount account1 = fake_provider_->AddAccount("gaia_1", "email_1@x");
-  ProviderAccount account2 = fake_provider_->AddAccount("gaia_2", "email_2@x");
-  oauth2_delegate_->ReloadCredentials();
-
-  EXPECT_EQ(0, token_available_count_);
-  EXPECT_EQ(0, tokens_loaded_count_);
-  EXPECT_EQ(0, token_revoked_count_);
-  EXPECT_EQ(0U, oauth2_delegate_->GetAccounts().size());
-  EXPECT_FALSE(
-      oauth2_delegate_->RefreshTokenIsAvailable(GetAccountId(account1)));
-  EXPECT_FALSE(
-      oauth2_delegate_->RefreshTokenIsAvailable(GetAccountId(account2)));
-}
-
-TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        ReloadCredentialsWithPrimaryAccountId) {
   ProviderAccount account1 = fake_provider_->AddAccount("gaia_1", "email_1@x");
   ProviderAccount account2 = fake_provider_->AddAccount("gaia_2", "email_2@x");
-  oauth2_delegate_->ReloadCredentials(GetAccountId(account1));
+  oauth2_delegate_->ReloadCredentials();
 
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, tokens_loaded_count_);
@@ -285,7 +269,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestFailure) {
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        UpdateAuthErrorAfterRevokeCredentials) {
   ProviderAccount account1 = fake_provider_->AddAccount("gaia_1", "email_1@x");
-  oauth2_delegate_->ReloadCredentials(GetAccountId(account1));
+  oauth2_delegate_->ReloadCredentials();
   base::RunLoop().RunUntilIdle();
 
   ResetObserverCounts();
@@ -303,7 +287,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, GetAuthError) {
   // Accounts have no error by default.
   ProviderAccount account1 = fake_provider_->AddAccount("gaia_1", "email_1@x");
-  oauth2_delegate_->ReloadCredentials(GetAccountId(account1));
+  oauth2_delegate_->ReloadCredentials();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_delegate_->GetAuthError("gaia_1"));

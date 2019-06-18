@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/time/default_clock.h"
@@ -13,7 +14,9 @@
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 
 namespace notifications {
@@ -34,7 +37,10 @@ NotificationSchedulerContext::NotificationSchedulerContext(
       background_task_coordinator_(std::make_unique<BackgroundTaskCoordinator>(
           std::move(background_task),
           config_.get(),
-          base::DefaultClock::GetInstance())) {}
+          base::DefaultClock::GetInstance())) {
+  client_registrar_->RegisterClient(SchedulerClientType::kWebUI,
+                                    std::make_unique<WebUIClient>());
+}
 
 NotificationSchedulerContext::~NotificationSchedulerContext() = default;
 

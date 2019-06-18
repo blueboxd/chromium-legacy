@@ -66,6 +66,12 @@ class TestGetParts(unittest.TestCase):
             set(model.CodeSignOptions.RESTRICT),
             set(parts['helper-app'].options))
         self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT),
+            set(parts['helper-renderer-app'].options))
+        self.assertEqual(
+            set(model.CodeSignOptions.RESTRICT),
+            set(parts['helper-plugin-app'].options))
+        self.assertEqual(
             set(model.CodeSignOptions.RESTRICT +
                 model.CodeSignOptions.LIBRARY_VALIDATION),
             set(parts['crashpad'].options))

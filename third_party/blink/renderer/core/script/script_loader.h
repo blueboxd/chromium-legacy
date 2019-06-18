@@ -78,7 +78,7 @@ class CORE_EXPORT ScriptLoader final
 
   static bool BlockForNoModule(mojom::ScriptType, bool nomodule);
 
-  static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
+  static network::mojom::CredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
 
   // https://html.spec.whatwg.org/C/#prepare-a-script

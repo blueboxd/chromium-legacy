@@ -1250,6 +1250,7 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // value.
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
+    case CSSPropertyID::kInternalEffectiveZoom:
     case CSSPropertyID::kInternalVisitedBackgroundColor:
     case CSSPropertyID::kInternalVisitedBorderBlockEndColor:
     case CSSPropertyID::kInternalVisitedBorderBlockStartColor:

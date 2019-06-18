@@ -147,19 +147,6 @@ static void RecordDetectedTrackTypeStats(int audio_count,
 static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
   UMA_HISTOGRAM_ENUMERATION("Media.AudioCodec", audio_config.codec(),
                             kAudioCodecMax + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioSampleFormat",
-                            audio_config.sample_format(), kSampleFormatMax + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioChannelLayout",
-                            audio_config.channel_layout(),
-                            CHANNEL_LAYOUT_MAX + 1);
-  AudioSampleRate asr;
-  if (ToAudioSampleRate(audio_config.samples_per_second(), &asr)) {
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioSamplesPerSecond", asr,
-                              kAudioSampleRateMax + 1);
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("Media.AudioSamplesPerSecondUnexpected",
-                            audio_config.samples_per_second());
-  }
 }
 
 // Record video decoder config UMA stats corresponding to a src= playback.

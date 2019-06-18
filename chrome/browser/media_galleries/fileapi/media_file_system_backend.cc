@@ -60,7 +60,8 @@ const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
 base::LazySequencedTaskRunner g_media_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 

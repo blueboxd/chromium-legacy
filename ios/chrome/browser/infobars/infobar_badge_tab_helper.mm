@@ -45,7 +45,7 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed() {
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
   delegate_.badgeState |= InfobarBadgeStateAccepted;
-  is_badge_active_ = true;
+  is_badge_accepted_ = true;
 }
 
 bool InfobarBadgeTabHelper::is_infobar_displaying() {
@@ -56,8 +56,8 @@ InfobarType InfobarBadgeTabHelper::infobar_type() {
   return infobar_type_;
 }
 
-bool InfobarBadgeTabHelper::is_badge_active() {
-  return is_badge_active_;
+bool InfobarBadgeTabHelper::is_badge_accepted() {
+  return is_badge_accepted_;
 }
 
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;

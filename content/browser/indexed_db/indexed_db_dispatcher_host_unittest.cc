@@ -184,7 +184,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             special_storage_policy_,
             quota_manager_->proxy(),
-            indexed_db::GetDefaultLevelDBFactory(),
             base::DefaultClock::GetInstance())),
         host_(new IndexedDBDispatcherHost(
                   kFakeProcessId,

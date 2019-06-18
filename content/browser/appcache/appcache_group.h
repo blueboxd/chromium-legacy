@@ -47,9 +47,17 @@ class CONTENT_EXPORT AppCacheGroup
 
   class CONTENT_EXPORT UpdateObserver {
    public:
+    UpdateObserver(const UpdateObserver&) = delete;
+    UpdateObserver& operator=(const UpdateObserver&) = delete;
+
     // Called just after an appcache update has completed.
     virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
-    virtual ~UpdateObserver() {}
+
+   protected:
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    UpdateObserver() noexcept = default;
+    virtual ~UpdateObserver() = default;
   };
 
   enum UpdateAppCacheStatus {

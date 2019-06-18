@@ -30,20 +30,20 @@ class PLATFORM_EXPORT ThreadManager {
 
  public:
   // |initial_time| is the time in which |this| was instantiated.
-  ThreadManager(TimeTicks initial_time,
+  ThreadManager(base::TimeTicks initial_time,
                 SequenceManagerFuzzerProcessor* processor);
 
   ~ThreadManager();
 
   // Returns the time of the underlying task runner.
-  TimeTicks NowTicks();
+  base::TimeTicks NowTicks();
 
   // Returns the delay of the oldest pending task on the thread |this| is bound
   // to.
-  TimeDelta NextPendingTaskDelay();
+  base::TimeDelta NextPendingTaskDelay();
 
   // Advances the clock of the underlying task runner by |delta|.
-  void AdvanceMockTickClock(TimeDelta delta);
+  void AdvanceMockTickClock(base::TimeDelta delta);
 
   // Used to create a thread and register it with the thread pool manager owned
   // by |processor_|.

@@ -337,7 +337,7 @@ void AppBannerUiDelegateAndroid::SendBannerAccepted() {
   // WebAPKs).
   // TODO(mgiuca): Fire the event *after* the installation is completed.
   if (!IsForNativeApp())
-    weak_manager_->OnInstall(/*is_native=*/false, shortcut_info_->display);
+    weak_manager_->OnInstall(shortcut_info_->display);
 }
 
 }  // namespace banners

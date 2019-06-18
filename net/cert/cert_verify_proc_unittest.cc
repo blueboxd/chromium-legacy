@@ -60,19 +60,19 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
 #if defined(USE_NSS_CERTS)
+#include "net/cert/cert_verify_proc_nss.h"
 #include "net/cert_net/nss_ocsp.h"
-#endif
-
-#if defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "net/cert/cert_verify_proc_android.h"
+#elif defined(OS_IOS)
+#include "net/cert/cert_verify_proc_ios.h"
+#elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#endif
-
-#if defined(OS_WIN)
+#include "net/cert/cert_verify_proc_mac.h"
+#elif defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "net/cert/cert_verify_proc_win.h"
 #endif
 
 // TODO(crbug.com/649017): Add tests that only certificates with
@@ -149,27 +149,6 @@ enum CertVerifyProcType {
   CERT_VERIFY_PROC_BUILTIN,
 };
 
-// Returns the CertVerifyProcType corresponding to what
-// CertVerifyProc::CreateDefault() returns. This needs to be kept in sync with
-// CreateDefault().
-CertVerifyProcType GetDefaultCertVerifyProcType() {
-#if defined(USE_NSS_CERTS)
-  return CERT_VERIFY_PROC_NSS;
-#elif defined(OS_ANDROID)
-  return CERT_VERIFY_PROC_ANDROID;
-#elif defined(OS_IOS)
-  return CERT_VERIFY_PROC_IOS;
-#elif defined(OS_MACOSX)
-  return CERT_VERIFY_PROC_MAC;
-#elif defined(OS_WIN)
-  return CERT_VERIFY_PROC_WIN;
-#elif defined(OS_FUCHSIA)
-  return CERT_VERIFY_PROC_BUILTIN;
-#else
-// Will fail to compile.
-#endif
-}
-
 // Whether the test is running within the iphone simulator.
 const bool kTargetIsIphoneSimulator =
 #if TARGET_IPHONE_SIMULATOR
@@ -210,19 +189,55 @@ std::string VerifyProcTypeToName(
   return nullptr;
 }
 
-// The set of all CertVerifyProcTypes that tests should be
-// parameterized on.
-const std::vector<CertVerifyProcType> kAllCertVerifiers = {
-    GetDefaultCertVerifyProcType()
-
-// TODO(crbug.com/649017): Enable this everywhere. Right now this is
-// gated on having CertVerifyProcBuiltin understand the roots added
-// via TestRootCerts.
-#if defined(USE_NSS_CERTS) || (defined(OS_MACOSX) && !defined(OS_IOS))
-        ,
-    CERT_VERIFY_PROC_BUILTIN
+scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
+    CertVerifyProcType type,
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
+  switch (type) {
+#if defined(USE_NSS_CERTS)
+    case CERT_VERIFY_PROC_NSS:
+      return new CertVerifyProcNSS();
+#elif defined(OS_ANDROID)
+    case CERT_VERIFY_PROC_ANDROID:
+      return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
+#elif defined(OS_IOS)
+    case CERT_VERIFY_PROC_IOS:
+      return new CertVerifyProcIOS();
+#elif defined(OS_MACOSX)
+    case CERT_VERIFY_PROC_MAC:
+      return new CertVerifyProcMac();
+#elif defined(OS_WIN)
+    case CERT_VERIFY_PROC_WIN:
+      return new CertVerifyProcWin();
 #endif
-};
+    case CERT_VERIFY_PROC_BUILTIN:
+      return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
+    default:
+      return nullptr;
+  }
+}
+
+// The set of all CertVerifyProcTypes that tests should be parameterized on.
+// This needs to be kept in sync with CertVerifyProc::CreateDefault().
+// TODO(crbug.com/649017): Enable CERT_VERIFY_PROC_BUILTIN everywhere. Right
+// now this is gated on having CertVerifyProcBuiltin understand the roots added
+// via TestRootCerts.
+const std::vector<CertVerifyProcType> kAllCertVerifiers = {
+#if defined(USE_NSS_CERTS)
+    CERT_VERIFY_PROC_NSS, CERT_VERIFY_PROC_BUILTIN
+#elif defined(OS_ANDROID)
+    CERT_VERIFY_PROC_ANDROID
+#elif defined(OS_IOS)
+    CERT_VERIFY_PROC_IOS
+#elif defined(OS_MACOSX)
+    CERT_VERIFY_PROC_MAC, CERT_VERIFY_PROC_BUILTIN
+#elif defined(OS_WIN)
+    CERT_VERIFY_PROC_WIN
+#elif defined(OS_FUCHSIA)
+    CERT_VERIFY_PROC_BUILTIN
+#else
+#error Unsupported platform
+#endif
+};  // namespace
 
 // Returns true if a test root added through ScopedTestRoot can verify
 // successfully as a target certificate with chain of length 1 on the given
@@ -809,13 +824,8 @@ class CertVerifyProcInternalTest
   // fetching by calling SetUpWithCertNetFetcher instead of SetUp.
   void SetUpWithCertNetFetcher(scoped_refptr<CertNetFetcher> cert_net_fetcher) {
     CertVerifyProcType type = verify_proc_type();
-    if (type == CERT_VERIFY_PROC_BUILTIN) {
-      verify_proc_ = CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher));
-    } else if (type == GetDefaultCertVerifyProcType()) {
-      verify_proc_ = CertVerifyProc::CreateDefault(std::move(cert_net_fetcher));
-    } else {
-      ADD_FAILURE() << "Unhandled CertVerifyProcType";
-    }
+    verify_proc_ = CreateCertVerifyProc(type, std::move(cert_net_fetcher));
+    ASSERT_TRUE(verify_proc_);
   }
 
   int Verify(X509Certificate* cert,

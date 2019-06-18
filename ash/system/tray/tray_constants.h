@@ -241,6 +241,11 @@ constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
 
+// Constants used in system tray page transition animations (ms).
+constexpr int kUnifiedSystemTrayPageTransitionDurationMs = 250;
+constexpr int kUnifiedSystemTrayOverScrollPageTransitionDurationMs = 50;
+constexpr double kCollapseThreshold = 0.3;
+
 // Constants used in PageIndicatorView of UnifiedSystemTray.
 constexpr int kUnifiedPageIndicatorButtonRadius = 3;
 constexpr SkColor kUnifiedPageIndicatorButtonColor =

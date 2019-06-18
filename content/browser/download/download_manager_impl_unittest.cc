@@ -95,7 +95,7 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD5(ChooseSavePath, void(
       WebContents*, const base::FilePath&, const base::FilePath::StringType&,
       bool, const SavePackagePathPickedCallback&));
-  MOCK_CONST_METHOD0(ApplicationClientIdForFileScanning, std::string());
+  MOCK_METHOD0(ApplicationClientIdForFileScanning, std::string());
 };
 
 MockDownloadManagerDelegate::MockDownloadManagerDelegate() {}

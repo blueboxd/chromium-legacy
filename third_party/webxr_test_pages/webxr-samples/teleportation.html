@@ -26,8 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <meta name='mobile-web-app-capable' content='yes'>
     <meta name='apple-mobile-web-app-capable' content='yes'>
 
-    <!-- Origin Trial Token, feature = WebXR Device API, origin = https://immersive-web.github.io, expires = 2018-08-28 -->
-<meta http-equiv="origin-trial" data-feature="WebXR Device API" data-expires="2018-08-28" content="AnNpu7ceXvLew05ccD8Zr1OZsdZiB2hLQKK82kTTMDwF7oRKtP3QEJ4RzkeHrmB8Sq0vSV6ZNmszpBCZ0I8p9gAAAABceyJvcmlnaW4iOiJodHRwczovL2ltbWVyc2l2ZS13ZWIuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZSIsImV4cGlyeSI6MTUzNTQxNDQwMH0=">
+    <!-- Origin Trial Token, feature = WebXR Device API (For Chrome M76+), origin = storage.googleapis.com, expires = 2019-07-24 -->
+    <meta http-equiv="origin-trial" data-feature="WebXR Device API (For Chrome M76+)" data-expires="2019-07-24" content="Ap6io/uhkGK7vXCD+golNnQfj8wJ4so790EzZoqb8YOljMXIBTvBEQFPTHYIz5d/BgtuwZTKOLrmHAOt30f38g8AAABxeyJvcmlnaW4iOiJodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb206NDQzIiwiZmVhdHVyZSI6IldlYlhSRGV2aWNlTTc2IiwiZXhwaXJ5IjoxNTY0MDA5MzU2LCJpc1N1YmRvbWFpbiI6dHJ1ZX0=">
 
     <title>Teleportation</title>
 
@@ -76,13 +76,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // If requested, don't display the frame rate info.
       let hideStats = QueryArgs.getBool('hideStats', false);
 
-      // XR globals.
+      // XR globals. Several additional reference spaces are required because of
+      // how the teleportation mechanic in onSelect works.
       let xrButton = null;
       let xrImmersiveRefSpaceBase = null;
       let xrImmersiveRefSpaceOffset = null;
       let xrNonImmersiveRefSpaceBase = null;
       let xrNonImmersiveRefSpaceOffset = null;
       let xrViewerSpace = null;
+
+      // For inline sessions, use an estimated height of 1.5 meters.
+      let trackingSpaceOriginInWorldSpace = {
+        'immersive-vr' : vec3.create(),
+        'inline' : vec3.fromValues(0, 1.5, 0)
+      };
+
+      let trackingSpaceHeadingDegrees = 0;  // around +Y axis, positive angles rotate left
+      let floorSize = 10;
+      let floorPosition = [0, -floorSize / 2 + 0.01, 0];
+      let floorNode = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -96,12 +108,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       scene.standingStats(true);
 
       let boxes = [];
-
-      let trackingSpaceOriginInWorldSpace = vec3.create();
-      let trackingSpaceHeadingDegrees = 0;  // around +Y axis, positive angles rotate left
-      let floorSize = 10;
-      let floorPosition = [0, -floorSize / 2 + 0.01, 0];
-      let floorNode = null;
 
       function initXR() {
         xrButton = new XRDeviceButton({
@@ -118,6 +124,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             onSessionStarted(session);
           });
         } else {
+          // Still render the initial scene if WebXR is not available.
           initFallback();
         }
       }
@@ -147,6 +154,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.addNode(boxNode);
       }
 
+      function addFloorBox() {
+        let boxBuilder = new BoxBuilder();
+        boxBuilder.pushCube([0, 0, 0], floorSize);
+        let boxPrimitive = boxBuilder.finishPrimitive(renderer);
+
+        let boxMaterial = new PbrMaterial();
+        boxMaterial.baseColorFactor.value = [0.3, 0.3, 0.3, 1.0];
+        let boxRenderPrimitive = renderer.createRenderPrimitive(boxPrimitive, boxMaterial);
+
+        floorNode = new Node();
+        floorNode.addRenderPrimitive(boxRenderPrimitive);
+        floorNode.selectable = true;
+        scene.addNode(floorNode);
+        mat4.identity(floorNode.matrix);
+        mat4.translate(floorNode.matrix, floorNode.matrix, floorPosition);
+      }
+
       function initGL() {
         if (gl)
           return;
@@ -173,24 +197,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         addBox(0.0, 1.7, -1.5, 0.0, 1.0, 0.0, boxes);
         addBox(1.0, 1.6, -1.3, 0.0, 0.0, 1.0, boxes);
 
+        // Represent the floor as a box so that we can perform a hit test
+        // against it onSelect so that we can teleport the user to that
+        // particular location.
         addFloorBox();
-      }
-
-      function addFloorBox() {
-        let boxBuilder = new BoxBuilder();
-        boxBuilder.pushCube([0, 0, 0], floorSize);
-        let boxPrimitive = boxBuilder.finishPrimitive(renderer);
-
-        let boxMaterial = new PbrMaterial();
-        boxMaterial.baseColorFactor.value = [0.3, 0.3, 0.3, 1.0];
-        let boxRenderPrimitive = renderer.createRenderPrimitive(boxPrimitive, boxMaterial);
-
-        floorNode = new Node();
-        floorNode.addRenderPrimitive(boxRenderPrimitive);
-        floorNode.selectable = true;
-        scene.addNode(floorNode);
-        mat4.identity(floorNode.matrix);
-        mat4.translate(floorNode.matrix, floorNode.matrix, floorPosition);
       }
 
       function onRequestSession() {
@@ -221,36 +231,52 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             })
         });
 
-        // Same logic for establishing a reference space as in room-scale.html
         session.requestReferenceSpace('local-floor').then((refSpace) => {
           return refSpace;
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but an identity space is guaranteed.
-            console.log("falling back to identity reference space");
+            // the stationary reference space, but a viewer space is guaranteed.
+            console.log("falling back to viewer reference space");
             return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
         }).then((refSpace) => {
-          // Save the session-specific reference space, and apply the
-          // current player orientation/position as originOffset.
+          // Save the session-specific base reference space, and apply the current
+          // player orientation/position as originOffset. This reference space
+          // won't change for the duration of the session and is used when
+          // updating the player position and/or orientation in onSelect.
           setRefSpace(session, refSpace, false);
           updateOriginOffset(session);
+
           session.requestReferenceSpace('viewer').then(function(viewerSpace){
+            // Save a separate reference space that represents the tracking space
+            // origin, which does not change for the duration of the session.
+            // This is used when updating the player position and/or orientation
+            // in onSelect.
             xrViewerSpace = viewerSpace;
             session.requestAnimationFrame(onXRFrame);
           });
         });
       }
 
+      // Used for updating the origin offset.
       let playerInWorldSpaceOld = vec3.create();
       let playerInWorldSpaceNew = vec3.create();
       let playerOffsetInWorldSpaceOld = vec3.create();
       let playerOffsetInWorldSpaceNew = vec3.create();
       let rotationDeltaQuat = quat.create();
+      let invPosition = vec3.create();
+      let invOrientation = quat.create();
 
+      // If the user selected a point on the floor, teleport them to that
+      // position while keeping their orientation the same.
+      // Otherwise, check if one of the boxes was selected and update the
+      // user's orientation accordingly:
+      //    left box: turn left by 30 degress
+      //    center box: reset orientation
+      //    right box: turn right by 30 degrees
       function onSelect(ev) {
         let session = ev.frame.session;
         let refSpace = getRefSpace(session, true);
@@ -262,7 +288,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // to the player's feet. The headPose position is the head position in world space.
         // Subtract the tracking space origin position in world space to get a relative world space vector.
         vec3.set(playerInWorldSpaceOld, headPose.transform.position.x, 0, headPose.transform.position.z);
-        vec3.sub(playerOffsetInWorldSpaceOld, playerInWorldSpaceOld, trackingSpaceOriginInWorldSpace);
+        vec3.sub(
+          playerOffsetInWorldSpaceOld,
+          playerInWorldSpaceOld,
+          trackingSpaceOriginInWorldSpace[session.mode]);
 
         // based on https://github.com/immersive-web/webxr/blob/master/input-explainer.md#targeting-ray-pose
         let inputSourcePose = ev.frame.getPose(ev.inputSource.targetRaySpace, refSpace);
@@ -323,7 +352,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         trackingSpaceHeadingDegrees += rotationDelta;
 
         // Update tracking space origin so that origin + playerOffset == player location in world space
-        vec3.sub(trackingSpaceOriginInWorldSpace, playerInWorldSpaceNew, playerOffsetInWorldSpaceNew);
+        vec3.sub(
+          trackingSpaceOriginInWorldSpace[session.mode],
+          playerInWorldSpaceNew,
+          playerOffsetInWorldSpaceNew);
 
         updateOriginOffset(session);
       }
@@ -332,18 +364,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Compute the origin offset based on player position/orientation.
         quat.identity(invOrientation);
         quat.rotateY(invOrientation, invOrientation, -trackingSpaceHeadingDegrees * Math.PI / 180);
-        vec3.negate(invPosition, trackingSpaceOriginInWorldSpace);
+        vec3.negate(invPosition, trackingSpaceOriginInWorldSpace[session.mode]);
         vec3.transformQuat(invPosition, invPosition, invOrientation);
         let xform = new XRRigidTransform(
           {x: invPosition[0], y: invPosition[1], z: invPosition[2]},
           {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
 
-        // Update offset reference to use a new originOffset with the teleported player position and orientation.
+        // Update offset reference to use a new originOffset with the teleported
+        // player position and orientation.
         // This new offset needs to be applied to the base ref space.
         let refSpace = getRefSpace(session, false).getOffsetReferenceSpace(xform);
         setRefSpace(session, refSpace, true);
 
-        console.log('teleport to', trackingSpaceOriginInWorldSpace);
+        console.log('teleport to', trackingSpaceOriginInWorldSpace[session.mode]);
       }
 
       function onEndSession(session) {
@@ -355,9 +388,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           xrButton.setSession(null);
         }
       }
-
-      let invPosition = vec3.create();
-      let invOrientation = quat.create();
 
       function getRefSpace(session, isOffset) {
         return session.mode.startsWith('immersive') ?

@@ -155,7 +155,7 @@ TEST_F(WorkerThreadTest, TestShutdown) {
       *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&MockTask::Run,
                           WTF::CrossThreadUnretained(&delayed_task)),
-      TimeDelta::FromMilliseconds(50));
+      base::TimeDelta::FromMilliseconds(50));
   thread_.reset();
 }
 

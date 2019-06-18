@@ -50,7 +50,7 @@ group("telemetry_chrome_test") {
   if (is_mac) {
     data_deps += [
       "//chrome:chrome_framework",
-      "//chrome:chrome_helper_app",
+      "//chrome:chrome_helper_app_default",
       "//third_party/breakpad:dump_syms",
       "//third_party/crashpad/crashpad/tools:crashpad_database_util",
     ]

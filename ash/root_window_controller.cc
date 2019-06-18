@@ -709,9 +709,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
           wallpaper_widget_controller()->GetWidget(), source_type,
           base::BindOnce(&RootWindowController::OnMenuClosed,
                          base::Unretained(this)),
-          Shell::Get()
-              ->tablet_mode_controller()
-              ->IsTabletModeWindowManagerEnabled());
+          Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   root_window_menu_model_adapter_->Run(
       gfx::Rect(location_in_screen, gfx::Size()),

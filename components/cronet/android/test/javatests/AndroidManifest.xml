@@ -6,8 +6,6 @@
    -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.net.tests">
-    <!-- //components/cronet still needs to support Jelly Bean. See crbug.com/922656 -->
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="24" />
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>

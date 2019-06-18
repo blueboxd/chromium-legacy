@@ -227,6 +227,10 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EnableViaPrompt);
 };
 
+bool UsesRemoteViews(const extensions::Extension* extension) {
+  return extension->is_hosted_app() && extension->from_bookmark();
+}
+
 }  // namespace
 
 namespace apps {
@@ -299,7 +303,7 @@ AppShimHost* ExtensionAppShimHandler::Delegate::CreateHost(
     Profile* profile,
     const extensions::Extension* extension) {
   return new AppShimHost(extension->id(), profile->GetPath(),
-                         extension->is_hosted_app());
+                         UsesRemoteViews(extension));
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -338,7 +342,10 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     bool recreate_shims,
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
-  if (recreate_shims) {
+  // Only force recreation of shims when RemoteViews is in use (that is, for
+  // PWAs). Otherwise, shims may be created unexpectedly.
+  // https://crbug.com/941160
+  if (recreate_shims && UsesRemoteViews(extension)) {
     // Load the resources needed to build the app shim (icons, etc), and then
     // recreate the shim and launch it.
     web_app::GetShortcutInfoForApp(

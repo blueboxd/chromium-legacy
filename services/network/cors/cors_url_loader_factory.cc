@@ -133,9 +133,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator &&
-      request.fetch_request_mode != mojom::FetchRequestMode::kNavigate &&
-      request.fetch_request_mode != mojom::FetchRequestMode::kNoCors) {
-    LOG(WARNING) << "|fetch_request_mode| is " << request.fetch_request_mode
+      request.mode != mojom::RequestMode::kNavigate &&
+      request.mode != mojom::RequestMode::kNoCors) {
+    LOG(WARNING) << "|mode| is " << request.mode
                  << ", but |request_initiator| is not set.";
     mojo::ReportBadMessage("CorsURLLoaderFactory: cors without initiator");
     return false;
@@ -148,10 +148,10 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   // Fetch mode is kOmit, then either |allow_credentials| must be false or
   // all three load flags must be set. https://crbug.com/799935 tracks
   // unifying |LOAD_DO_NOT_*| into |allow_credentials|.
-  if (request.fetch_credentials_mode == mojom::FetchCredentialsMode::kOmit &&
+  if (request.credentials_mode == mojom::CredentialsMode::kOmit &&
       request.allow_credentials &&
       (request.load_flags & load_flags_pattern) != load_flags_pattern) {
-    LOG(WARNING) << "|fetch_credentials_mode| and |allow_credentials| or "
+    LOG(WARNING) << "|credentials_mode| and |allow_credentials| or "
                     "|load_flags| contradict each "
                     "other.";
     mojo::ReportBadMessage(
@@ -161,8 +161,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
 
   // Ensure that renderer requests are covered either by CORS or CORB.
   if (process_id_ != mojom::kBrowserProcessId) {
-    switch (request.fetch_request_mode) {
-      case mojom::FetchRequestMode::kNavigate:
+    switch (request.mode) {
+      case mojom::RequestMode::kNavigate:
         // Only the browser process can initiate navigations.  This helps ensure
         // that a malicious/compromised renderer cannot bypass CORB by issuing
         // kNavigate, rather than kNoCors requests.  (CORB should apply only to
@@ -172,13 +172,13 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
             "CorsURLLoaderFactory: navigate from non-browser-process");
         return false;
 
-      case mojom::FetchRequestMode::kSameOrigin:
-      case mojom::FetchRequestMode::kCors:
-      case mojom::FetchRequestMode::kCorsWithForcedPreflight:
+      case mojom::RequestMode::kSameOrigin:
+      case mojom::RequestMode::kCors:
+      case mojom::RequestMode::kCorsWithForcedPreflight:
         // SOP enforced by CORS.
         break;
 
-      case mojom::FetchRequestMode::kNoCors:
+      case mojom::RequestMode::kNoCors:
         // SOP enforced by CORB.
         break;
     }

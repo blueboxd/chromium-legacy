@@ -738,10 +738,16 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
       return;
     }
 
+    auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
+    if (!buffer_format) {
+      VLOGF(1) << "Unsupported format: " << pixel_format;
+      NotifyError(INVALID_ARGUMENT);
+      return;
+    }
+
     VaapiPicture* picture = pictures_[picture_buffer_id].get();
     if (!picture->ImportGpuMemoryBufferHandle(
-            VideoPixelFormatToGfxBufferFormat(pixel_format),
-            std::move(gpu_memory_buffer_handle))) {
+            *buffer_format, std::move(gpu_memory_buffer_handle))) {
       // ImportGpuMemoryBufferHandle will close the handles even on failure, so
       // we don't need to do this ourselves.
       VLOGF(1) << "Failed to import GpuMemoryBufferHandle";

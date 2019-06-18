@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -78,6 +79,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   void SetUp() override {
     GetTestClassFactory()->Reset();
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
+    indexed_db::LevelDBFactory::SetFactoryGetterForTesting(GetLevelDBFactory);
     ContentBrowserTest::SetUp();
   }
 
@@ -232,6 +234,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   }
 
   static IndexedDBClassFactory* GetIDBClassFactory() {
+    return GetTestClassFactory();
+  }
+
+  static indexed_db::LevelDBFactory* GetLevelDBFactory() {
     return GetTestClassFactory();
   }
 

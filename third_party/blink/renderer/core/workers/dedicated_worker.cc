@@ -217,7 +217,7 @@ void DedicatedWorker::Start() {
     // For module script, respect the credentials mode specified by
     // WorkerOptions.
     // https://html.spec.whatwg.org/C/#workeroptions
-    auto credentials_mode = network::mojom::FetchCredentialsMode::kSameOrigin;
+    auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
     if (options_->type() == "module") {
       bool result = Request::ParseCredentialsMode(options_->credentials(),
                                                   &credentials_mode);
@@ -261,8 +261,8 @@ void DedicatedWorker::Start() {
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), GetExecutionContext()->Fetcher(),
         script_request_url_, mojom::RequestContextType::WORKER,
-        network::mojom::FetchRequestMode::kSameOrigin,
-        network::mojom::FetchCredentialsMode::kSameOrigin,
+        network::mojom::RequestMode::kSameOrigin,
+        network::mojom::CredentialsMode::kSameOrigin,
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
         WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
     return;

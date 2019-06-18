@@ -446,7 +446,7 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
 }
 
 // Test update succeeding.
-TEST_F(WebApkInstallerTest, UpdateSuccess) {
+TEST_F(WebApkInstallerTest, DISABLED_UpdateSuccess) {
   ScopedTempFile scoped_file;
   base::FilePath update_request_path = scoped_file.GetFilePath();
   UpdateRequestStorer().StoreSync(update_request_path);

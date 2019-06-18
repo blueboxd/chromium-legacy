@@ -288,7 +288,7 @@ void SupervisedUserInterstitial::OnDontProceed() {
 }
 
 content::InterstitialPageDelegate::TypeID
-SupervisedUserInterstitial::GetTypeForTesting() const {
+SupervisedUserInterstitial::GetTypeForTesting() {
   return SupervisedUserInterstitial::kTypeForTesting;
 }
 

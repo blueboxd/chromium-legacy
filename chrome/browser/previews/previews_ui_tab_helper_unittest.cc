@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -16,8 +17,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -370,4 +373,42 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
                                            .GetLastCommittedEntry()
                                            ->GetTransitionType();
   EXPECT_TRUE(transition_type & ui::PAGE_TRANSITION_RELOAD);
+}
+
+TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnHintsFetcherEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kOptimizationHintsFetching}, {});
+
+  data_reduction_proxy::DataReductionProxySettings::
+      SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);
+
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
+
+  GURL test_url("https://tribbles.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
+}
+
+TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarNotShownOnHintsFetcherDisabled) {
+  data_reduction_proxy::DataReductionProxySettings::
+      SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);
+
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
+
+  GURL test_url("https://tribbles.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
 }

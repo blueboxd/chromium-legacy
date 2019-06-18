@@ -65,6 +65,7 @@ shared_library("jni_sample_lib") {
 android_apk("sample_jni_apk") {
   apk_name = "SampleJni"
   android_manifest = "AndroidManifest.xml"
+  target_sdk_version = 24
   deps = [
     ":jni_sample_java",
     "//base:base_java",

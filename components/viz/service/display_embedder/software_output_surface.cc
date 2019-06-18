@@ -16,6 +16,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/latency/latency_info.h"
 
@@ -71,8 +72,9 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
       << "arrive before the previous latency info is processed.";
   stored_latency_info_ = std::move(frame.latency_info);
 
-  software_device()->OnSwapBuffers(base::BindOnce(
-      &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr()));
+  software_device()->OnSwapBuffers(
+      base::BindOnce(&SoftwareOutputSurface::SwapBuffersCallback,
+                     weak_factory_.GetWeakPtr(), swap_time));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider && update_vsync_parameters_callback_) {
@@ -84,12 +86,6 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 
 bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
-}
-
-std::unique_ptr<OverlayCandidateValidator>
-SoftwareOutputSurface::TakeOverlayCandidateValidator() {
-  // No overlay support in software compositing.
-  return nullptr;
 }
 
 unsigned SoftwareOutputSurface::GetOverlayTextureId() const {
@@ -112,11 +108,12 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
   return 0;
 }
 
-void SoftwareOutputSurface::SwapBuffersCallback(const gfx::Size& pixel_size) {
+void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
+                                                const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(stored_latency_info_);
   client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck({swap_time, swap_time});
 
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta interval_to_next_refresh =

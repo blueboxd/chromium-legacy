@@ -81,6 +81,7 @@ DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
 void DownloadOfflineContentProvider::SetSimpleDownloadManagerCoordinator(
     SimpleDownloadManagerCoordinator* manager) {
   DCHECK(manager);
+  DCHECK(!manager_);
   manager_ = manager;
   manager_->AddObserver(this);
 }
@@ -206,13 +207,8 @@ void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
   }
   download::DownloadItem::RenameDownloadCallback download_callback =
       base::BindOnce(
-          [](RenameCallback callback,
-             download::DownloadItem::DownloadRenameResult result) {
-            std::move(callback).Run(
-                OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
-                    result));
-          },
-          std::move(callback));
+          &DownloadOfflineContentProvider::OnRenameDownloadCallbackDone,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), item);
   base::FilePath::StringType filename;
 #if defined(OS_WIN)
   filename = base::UTF8ToWide(name);
@@ -220,6 +216,22 @@ void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
   filename = name;
 #endif
   item->Rename(base::FilePath(filename), std::move(download_callback));
+}
+
+void DownloadOfflineContentProvider::OnRenameDownloadCallbackDone(
+    RenameCallback callback,
+    DownloadItem* item,
+    DownloadItem::DownloadRenameResult result) {
+  if (result == DownloadItem::DownloadRenameResult::SUCCESS) {
+    auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
+    UpdateDelta update_delta;
+    update_delta.state_changed = false;
+    update_delta.visuals_changed = false;
+    UpdateObservers(offline_item, update_delta);
+  }
+
+  std::move(callback).Run(
+      OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(result));
 }
 
 void DownloadOfflineContentProvider::AddObserver(
@@ -273,6 +285,7 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
                                  completed_downloads_.end();
 
     // TODO(crbug.com/938152): May be move this to DownloadItem.
+    // Never call this for completed downloads from history.
     if (completed_downloads_.find(item->GetGuid()) !=
         completed_downloads_.end()) {
       return;
@@ -283,10 +296,8 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
     AddCompletedDownload(item);
   }
 
-  for (auto& observer : observers_) {
-    observer.OnItemUpdated(
-        OfflineItemUtils::CreateOfflineItem(name_space_, item), update_delta);
-  }
+  auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
+  UpdateObservers(offline_item, update_delta);
 }
 
 void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
@@ -334,3 +345,9 @@ void DownloadOfflineContentProvider::GetAllDownloads(
     manager_->GetAllDownloads(all_items);
 }
 
+void DownloadOfflineContentProvider::UpdateObservers(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
+  for (auto& observer : observers_)
+    observer.OnItemUpdated(item, update_delta);
+}

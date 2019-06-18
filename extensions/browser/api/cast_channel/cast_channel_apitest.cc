@@ -33,7 +33,6 @@
 #include "extensions/test/result_catcher.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/log/test_net_log.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -253,7 +252,6 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
   net::IPEndPoint ip_endpoint_;
   LastError last_error_;
   CastSocket::Observer* message_observer_;
-  net::TestNetLog capturing_net_log_;
   int channel_id_;
   base::test::ScopedFeatureList feature_list_;
 };

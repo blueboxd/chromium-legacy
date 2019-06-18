@@ -90,26 +90,25 @@ class StatementCallback final : public SQLStatement::OnSuccessCallback {
   bool OnSuccess(SQLTransaction*, SQLResultSet* result_set) override {
     SQLResultSetRowList* row_list = result_set->rows();
 
-    std::unique_ptr<protocol::Array<String>> column_names =
-        protocol::Array<String>::create();
     const Vector<String>& columns = row_list->ColumnNames();
-    for (wtf_size_t i = 0; i < columns.size(); ++i)
-      column_names->addItem(columns[i]);
+    auto column_names = std::make_unique<protocol::Array<String>>(
+        columns.begin(), columns.end());
 
-    std::unique_ptr<protocol::Array<protocol::Value>> values =
-        protocol::Array<protocol::Value>::create();
+    auto values = std::make_unique<protocol::Array<protocol::Value>>();
     const Vector<SQLValue>& data = row_list->Values();
     for (wtf_size_t i = 0; i < data.size(); ++i) {
       const SQLValue& value = row_list->Values()[i];
       switch (value.GetType()) {
         case SQLValue::kStringValue:
-          values->addItem(protocol::StringValue::create(value.GetString()));
+          values->emplace_back(
+              protocol::StringValue::create(value.GetString()));
           break;
         case SQLValue::kNumberValue:
-          values->addItem(protocol::FundamentalValue::create(value.Number()));
+          values->emplace_back(
+              protocol::FundamentalValue::create(value.Number()));
           break;
         case SQLValue::kNullValue:
-          values->addItem(protocol::Value::null());
+          values->emplace_back(protocol::Value::null());
           break;
       }
     }
@@ -263,14 +262,13 @@ Response InspectorDatabaseAgent::getDatabaseTableNames(
   if (!enabled_.Get())
     return Response::Error("Database agent is not enabled");
 
-  *names = protocol::Array<String>::create();
-
   blink::Database* database = DatabaseForId(database_id);
   if (database) {
     Vector<String> table_names = database->TableNames();
-    unsigned length = table_names.size();
-    for (unsigned i = 0; i < length; ++i)
-      (*names)->addItem(table_names[i]);
+    *names = std::make_unique<protocol::Array<String>>(table_names.begin(),
+                                                       table_names.end());
+  } else {
+    *names = std::make_unique<protocol::Array<String>>();
   }
   return Response::OK();
 }

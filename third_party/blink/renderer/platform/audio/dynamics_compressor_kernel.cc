@@ -312,14 +312,22 @@ void DynamicsCompressorKernel::Process(
 
     // compressionDiffDb is the difference between current compression level and
     // the desired level.
-    float compression_diff_db =
-        LinearToDecibels(compressor_gain_ / scaled_desired_gain);
+    float compression_diff_db;
+
+    if (scaled_desired_gain == 0) {
+      compression_diff_db = is_releasing ? -1 : 1;
+    } else {
+      compression_diff_db =
+          LinearToDecibels(compressor_gain_ / scaled_desired_gain);
+    }
 
     if (is_releasing) {
       // Release mode - compressionDiffDb should be negative dB
       max_attack_compression_diff_db_ = -1;
 
       // Fix gremlins.
+      // TODO(rtoy): Replace with a DCHECK so we can figure out how NaN can
+      // occur.
       if (std::isnan(compression_diff_db))
         compression_diff_db = -1;
       if (std::isinf(compression_diff_db))
@@ -349,6 +357,8 @@ void DynamicsCompressorKernel::Process(
       // Attack mode - compressionDiffDb should be positive dB
 
       // Fix gremlins.
+      // TODO(rtoy): Replace with a DCHECK so we can figure out how NaN can
+      // occur.
       if (std::isnan(compression_diff_db))
         compression_diff_db = 1;
       if (std::isinf(compression_diff_db))

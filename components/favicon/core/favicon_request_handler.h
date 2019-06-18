@@ -61,9 +61,11 @@ class FaviconRequestHandler : public KeyedService {
  public:
   // Callback that requests the synced bitmap for a page url.
   using SyncedFaviconGetter =
-      base::OnceCallback<scoped_refptr<base::RefCountedMemory>(const GURL&)>;
+      base::RepeatingCallback<scoped_refptr<base::RefCountedMemory>(
+          const GURL&)>;
 
-  FaviconRequestHandler(FaviconService* favicon_service,
+  FaviconRequestHandler(const SyncedFaviconGetter& synced_favicon_getter,
+                        FaviconService* favicon_service,
                         LargeIconService* large_icon_service);
 
   ~FaviconRequestHandler() override;
@@ -83,7 +85,6 @@ class FaviconRequestHandler : public KeyedService {
                                FaviconRequestOrigin request_origin,
                                FaviconRequestPlatform request_platform,
                                const GURL& icon_url_for_uma,
-                               SyncedFaviconGetter synced_favicon_getter,
                                bool can_send_history_data,
                                base::CancelableTaskTracker* tracker);
 
@@ -100,7 +101,6 @@ class FaviconRequestHandler : public KeyedService {
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
                                  const GURL& icon_url_for_uma,
-                                 SyncedFaviconGetter synced_favicon_getter,
                                  bool can_send_history_data,
                                  base::CancelableTaskTracker* tracker);
 
@@ -116,7 +116,6 @@ class FaviconRequestHandler : public KeyedService {
       FaviconRequestOrigin origin,
       FaviconRequestPlatform platform,
       const GURL& icon_url_for_uma,
-      SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
@@ -130,7 +129,6 @@ class FaviconRequestHandler : public KeyedService {
       favicon_base::FaviconImageCallback response_callback,
       FaviconRequestOrigin origin,
       const GURL& icon_url_for_uma,
-      SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconImageResult& image_result);
@@ -161,6 +159,8 @@ class FaviconRequestHandler : public KeyedService {
   FaviconService* const favicon_service_;
 
   LargeIconService* const large_icon_service_;
+
+  SyncedFaviconGetter const synced_favicon_getter_;
 
   // Map from a group identifier to the number of callbacks in that group which
   // would be waiting for execution. Used for recording metrics for the possible

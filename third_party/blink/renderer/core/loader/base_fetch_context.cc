@@ -132,12 +132,12 @@ BaseFetchContext::CanRequestInternal(
   scoped_refptr<const SecurityOrigin> origin =
       resource_request.RequestorOrigin();
 
-  const auto request_mode = resource_request.GetFetchRequestMode();
+  const auto request_mode = resource_request.GetMode();
   // On navigation cases, Context().GetSecurityOrigin() may return nullptr, so
   // the request's origin may be nullptr.
   // TODO(yhirano): Figure out if it's actually fine.
-  DCHECK(request_mode == network::mojom::FetchRequestMode::kNavigate || origin);
-  if (request_mode != network::mojom::FetchRequestMode::kNavigate &&
+  DCHECK(request_mode == network::mojom::RequestMode::kNavigate || origin);
+  if (request_mode != network::mojom::RequestMode::kNavigate &&
       !origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
       AddConsoleMessage(ConsoleMessage::Create(
@@ -150,7 +150,7 @@ BaseFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kOther;
   }
 
-  if (request_mode == network::mojom::FetchRequestMode::kSameOrigin &&
+  if (request_mode == network::mojom::RequestMode::kSameOrigin &&
       cors::CalculateCorsFlag(url, origin.get(), request_mode)) {
     PrintAccessDeniedMessage(url);
     return ResourceRequestBlockedReason::kOrigin;

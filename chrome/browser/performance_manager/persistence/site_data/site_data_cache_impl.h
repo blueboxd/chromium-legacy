@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_SITE_DATA_CACHE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -17,10 +19,6 @@
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
-
-namespace content {
-class BrowserContext;
-}
 
 namespace performance_manager {
 
@@ -34,8 +32,9 @@ class SiteDataCacheImpl : public SiteDataCache,
  public:
   using SiteDataMap = base::flat_map<url::Origin, internal::SiteDataImpl*>;
 
-  explicit SiteDataCacheImpl(content::BrowserContext* browser_context);
-  virtual ~SiteDataCacheImpl();
+  SiteDataCacheImpl(const std::string& browser_context_id,
+                    const base::FilePath& browser_context_path);
+  ~SiteDataCacheImpl() override;
 
   // SiteCharacteristicDataCache:
   std::unique_ptr<SiteDataReader> GetReaderForOrigin(
@@ -84,8 +83,10 @@ class SiteDataCacheImpl : public SiteDataCache,
 
   std::unique_ptr<SiteDataStore> data_store_;
 
-  // The browser context this data store is associated with.
-  content::BrowserContext* browser_context_;
+  // The ID of the browser context this data store is associated with.
+  const std::string browser_context_id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataCacheImpl);
 };

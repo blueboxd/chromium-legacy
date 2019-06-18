@@ -70,8 +70,6 @@ class FakeOutputSurface : public OutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;

@@ -98,9 +98,8 @@ void ArcRotationLockBridge::SendRotationLockState() {
     DCHECK(found);
   }
 
-  bool in_tablet_mode = ash::Shell::Get()
-                            ->tablet_mode_controller()
-                            ->IsTabletModeWindowManagerEnabled();
+  bool in_tablet_mode =
+      ash::Shell::Get()->tablet_mode_controller()->InTabletMode();
   bool accelerometer_active = in_tablet_mode
                                   ? !ash::Shell::Get()
                                          ->screen_orientation_controller()

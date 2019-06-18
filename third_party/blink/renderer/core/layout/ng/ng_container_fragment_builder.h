@@ -136,7 +136,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       base::Optional<TextDirection> container_direction = base::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
-      NGOutOfFlowPositionedDescendant descendant);
+      const NGOutOfFlowPositionedDescendant& descendant);
 
   void GetAndClearOutOfFlowDescendantCandidates(
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
@@ -217,8 +217,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     NGOutOfFlowPositionedDescendant descendant;
     LogicalOffset child_offset;  // Logical offset of child's top left vertex.
 
-    NGOutOfFlowPositionedCandidate(NGOutOfFlowPositionedDescendant descendant,
-                                   LogicalOffset child_offset)
+    NGOutOfFlowPositionedCandidate(
+        const NGOutOfFlowPositionedDescendant& descendant,
+        LogicalOffset child_offset)
         : descendant(descendant), child_offset(child_offset) {}
   };
 

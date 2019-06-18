@@ -8,9 +8,6 @@
     featureSplit="devtools"
     package="{{manifest_package}}">
 
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="{{target_sdk_version}}" />
     <dist:module
         dist:onDemand="true"
         dist:title="@string/devtools_module_title">

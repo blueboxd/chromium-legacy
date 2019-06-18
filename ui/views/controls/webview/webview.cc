@@ -255,7 +255,7 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsDelegate implementation:
 
-bool WebView::EmbedsFullscreenWidget() const {
+bool WebView::EmbedsFullscreenWidget() {
   DCHECK(wc_owner_.get());
   return embed_fullscreen_widget_mode_enabled_;
 }

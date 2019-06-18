@@ -265,8 +265,6 @@ class AppCacheServiceImpl::CheckResponseHelper : AsyncHelper {
   }
 
   void Cancel() override {
-    AppCacheHistograms::CountCheckResponseResult(
-        AppCacheHistograms::CHECK_CANCELED);
     response_reader_.reset();
     AsyncHelper::Cancel();
   }
@@ -298,8 +296,6 @@ void AppCacheServiceImpl::CheckResponseHelper::OnGroupLoaded(
   DCHECK_EQ(manifest_url_, manifest_url);
   if (!group || !group->newest_complete_cache() || group->is_being_deleted() ||
       group->is_obsolete()) {
-    AppCacheHistograms::CountCheckResponseResult(
-        AppCacheHistograms::MANIFEST_OUT_OF_DATE);
     delete this;
     return;
   }
@@ -308,13 +304,8 @@ void AppCacheServiceImpl::CheckResponseHelper::OnGroupLoaded(
   const AppCacheEntry* entry = cache_->GetEntryWithResponseId(response_id_);
   if (!entry) {
     if (cache_->cache_id() == cache_id_) {
-      AppCacheHistograms::CountCheckResponseResult(
-          AppCacheHistograms::ENTRY_NOT_FOUND);
       service_->DeleteAppCacheGroup(manifest_url_,
                                     net::CompletionOnceCallback());
-    } else {
-      AppCacheHistograms::CountCheckResponseResult(
-          AppCacheHistograms::RESPONSE_OUT_OF_DATE);
     }
     delete this;
     return;
@@ -333,8 +324,6 @@ void AppCacheServiceImpl::CheckResponseHelper::OnGroupLoaded(
 
 void AppCacheServiceImpl::CheckResponseHelper::OnReadInfoComplete(int result) {
   if (result < 0) {
-    AppCacheHistograms::CountCheckResponseResult(
-        AppCacheHistograms::READ_HEADERS_ERROR);
     service_->DeleteAppCacheGroup(manifest_url_, net::CompletionOnceCallback());
     delete this;
     return;
@@ -360,18 +349,15 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
     return;
   }
 
-  AppCacheHistograms::CheckResponseResultType check_result;
-  if (result < 0)
-    check_result = AppCacheHistograms::READ_DATA_ERROR;
-  else if (info_buffer_->response_data_size != amount_data_read_ ||
-           expected_total_size_ != amount_data_read_ + amount_headers_read_)
-    check_result = AppCacheHistograms::UNEXPECTED_DATA_SIZE;
-  else
-    check_result = AppCacheHistograms::RESPONSE_OK;
-  AppCacheHistograms::CountCheckResponseResult(check_result);
-
-  if (check_result != AppCacheHistograms::RESPONSE_OK)
+  // TODO(pwnall): Deleted histograms show that some of the checks below
+  //               (incomplete headers and incomplete responses) are never hit
+  //               in production. They are covered by unit tests. Figure out if
+  //               the predicates should be converted into DCHECKs.
+  if (result != 0 || amount_data_read_ != info_buffer_->response_data_size ||
+      expected_total_size_ != amount_data_read_ + amount_headers_read_) {
     service_->DeleteAppCacheGroup(manifest_url_, net::CompletionOnceCallback());
+  }
+
   delete this;
 }
 

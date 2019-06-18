@@ -49,10 +49,14 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
       MainThreadTaskQueue* queue,
       const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
+  void RecordTaskSliceMetrics(base::TimeTicks now);
 
   void OnRendererForegrounded(base::TimeTicks now);
   void OnRendererBackgrounded(base::TimeTicks now);
   void OnRendererShutdown(base::TimeTicks now);
+
+  void OnSafepointEntered(base::TimeTicks now);
+  void OnSafepointExited(base::TimeTicks now);
 
   void RecordMainThreadTaskLoad(base::TimeTicks time, double load);
   void RecordForegroundMainThreadTaskLoad(base::TimeTicks time, double load);
@@ -66,6 +70,10 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
           MainThreadTaskQueue::QueueType>;
 
   void ReportLowThreadLoadForPageAlmostIdleSignal(int load_percentage);
+
+  // Record metrics of only top-level tasks with safepoints.
+  void RecordMetricsForTasksWithSafepoints(
+      const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
@@ -142,6 +150,13 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   scheduling_metrics::TotalDurationMetricReporter total_task_time_reporter_;
 
   MainThreadTaskLoadState main_thread_task_load_state_;
+
+  base::TimeTicks current_task_slice_start_time_;
+
+  // Number of safepoints during inside the current top-level tasks in which
+  // cooperative scheduling had a chance to run a task (as we don't necessarily
+  // run a task in each safepoint).
+  int safepoints_in_current_toplevel_task_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadMetricsHelper);
 };

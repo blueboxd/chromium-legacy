@@ -140,7 +140,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url) override;
-  bool ShouldUseMobileFlingCurve() const override;
+  bool ShouldUseMobileFlingCurve() override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& effective_url) override;
   bool ShouldUseSpareRenderProcessHost(content::BrowserContext* browser_context,
@@ -165,7 +165,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(
       std::vector<std::string>* additional_schemes) override;
-  bool LogWebUIUrl(const GURL& web_ui_url) const override;
+  bool LogWebUIUrl(const GURL& web_ui_url) override;
   bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) override;
   bool IsHandledURL(const GURL& url) override;
   bool CanCommitURL(content::RenderProcessHost* process_host,
@@ -393,8 +393,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 #if defined(OS_WIN)
   bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
-  base::string16 GetAppContainerSidForSandboxType(
-      int sandbox_type) const override;
+  base::string16 GetAppContainerSidForSandboxType(int sandbox_type) override;
 #endif
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
@@ -578,11 +577,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
                                    blink::mojom::WebFeature feature) override;
 
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
-  blink::UserAgentMetadata GetUserAgentMetadata() const override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
 
-  base::Optional<gfx::ImageSkia> GetProductLogo() const override;
+  base::Optional<gfx::ImageSkia> GetProductLogo() override;
 
   bool IsBuiltinComponent(content::BrowserContext* browser_context,
                           const url::Origin& origin) override;
@@ -595,7 +594,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
 #if defined(OS_ANDROID)
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
-      const override;
+      override;
 #endif
 
   base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(
@@ -605,17 +604,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::WebContents* web_contents,
       const content::RenderFrameHost* frame_host,
       bool user_gesture,
-      content::NavigationDownloadPolicy* download_policy) const override;
+      content::NavigationDownloadPolicy* download_policy) override;
 
-  bool IsBluetoothScanningBlocked(
-      content::BrowserContext* browser_context,
-      const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) const override;
+  bool IsBluetoothScanningBlocked(content::BrowserContext* browser_context,
+                                  const url::Origin& requesting_origin,
+                                  const url::Origin& embedding_origin) override;
 
-  void BlockBluetoothScanning(
-      content::BrowserContext* browser_context,
-      const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) const override;
+  void BlockBluetoothScanning(content::BrowserContext* browser_context,
+                              const url::Origin& requesting_origin,
+                              const url::Origin& embedding_origin) override;
 
   content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
       content::PreviewsState initial_state,

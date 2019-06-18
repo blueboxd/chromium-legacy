@@ -267,7 +267,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // Marks not fully constructed objects.
   void MarkNotFullyConstructedObjects(MarkingVisitor*);
   // Marks the transitive closure including ephemerons.
-  bool AdvanceMarking(MarkingVisitor*, TimeTicks deadline);
+  bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
   // Conservatively checks whether an address is a pointer in any of the
@@ -360,7 +360,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void Compact();
 
-  bool AdvanceLazySweep(TimeTicks deadline);
+  bool AdvanceLazySweep(base::TimeTicks deadline);
 
   void PrepareForSweep();
   void RemoveAllPages();

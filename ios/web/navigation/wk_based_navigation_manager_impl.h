@@ -182,6 +182,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
     // DetachFromWebView().
     int GetCurrentItemIndex() const;
 
+    // Returns the visible WKWebView URL. If navigation manager is detached,
+    // returns an empty GURL.
+    GURL GetVisibleWebViewURL() const;
+
     // Returns the NavigationItem associated with the WKBackForwardListItem at
     // |index|. If |create_if_missing| is true and the WKBackForwardListItem
     // does not have an associated NavigationItem, creates a new one and returns
@@ -231,6 +235,19 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void UnsafeRestore(int last_committed_item_index,
                      std::vector<std::unique_ptr<NavigationItem>> items);
 
+  // Returns true if |last_committed_item| matches WKWebView.URL when expected.
+  // WKWebView is more aggressive than Chromium is in updating the visible URL,
+  // and there are cases where, even though WKWebView's URL has updated,
+  // Chromium still wants to display last committed.  Normally this is managed
+  // by WKBasedNavigationManagerImpl last committed, but there are short periods
+  // during fast navigations where WKWebView.URL has updated and ios/web can't
+  // validate what should be shown for the visible item.  More importantly,
+  // there are bugs in WkWebView where WKWebView's URL and
+  // backForwardList.currentItem can fall out of sync.  In these situations,
+  // return false as a safeguard so visible item is always trusted.
+  bool CanTrustLastCommittedItemForVisibleItem(
+      const NavigationItem* last_committed_item) const;
+
   // The pending main frame navigation item. This is nullptr if there is no
   // pending item or if the pending item is a back-forward navigation, in which
   // case the NavigationItemImpl is stored on the WKBackForwardListItem.
@@ -259,6 +276,11 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // The transient item in main frame.
   std::unique_ptr<NavigationItemImpl> transient_item_;
 
+  // A placeholder item used when CanTrustLastCommittedItemForVisibleItem
+  // returns false.  The navigation item returned uses crw_web_controller's
+  // documentURL as the URL.
+  mutable std::unique_ptr<NavigationItemImpl> visible_web_view_item_;
+
   // Time smoother for navigation item timestamps. See comment in
   // navigation_controller_impl.h.
   // NOTE: This is mutable because GetNavigationItemImplAtIndex() needs to call
@@ -272,6 +294,11 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // history into WKWebView. It is set in Restore() and unset in the first
   // OnNavigationItemCommitted() callback.
   bool is_restore_session_in_progress_ = false;
+
+  // Set to true when delegate_->GoToBackForwardListItem is being called, which
+  // is useful to know when comparing the VisibleWebViewURL with the last
+  // committed item.
+  bool going_to_back_forward_list_item_ = false;
 
   // Non null during the session restoration. Created when session restoration
   // is started and reset when the restoration is finished. Used to log UMA

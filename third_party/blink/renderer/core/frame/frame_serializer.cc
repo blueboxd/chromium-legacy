@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -83,8 +85,8 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 
  public:
   SerializerMarkupAccumulator(FrameSerializer::Delegate&,
-                              const Document&,
-                              HeapVector<Member<const Element>>&);
+                              FrameSerializerResourceDelegate&,
+                              Document&);
   ~SerializerMarkupAccumulator() override;
 
  protected:
@@ -100,15 +102,11 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   void AppendRewrittenAttribute(const Element&,
                                 const String& attribute_name,
                                 const String& attribute_value);
+  void AppendExtraForHeadElement(const Element&);
 
   FrameSerializer::Delegate& delegate_;
-  Member<const Document> document_;
-
-  // FIXME: |FrameSerializer| uses |elements_| for collecting elements in
-  // document included into serialized text then extracts image, object, etc.
-  // The size of this vector isn't small for large document. It is better to use
-  // callback like functionality.
-  HeapVector<Member<const Element>>& elements_;
+  FrameSerializerResourceDelegate& resource_delegate_;
+  Member<Document> document_;
 
   // Elements with links rewritten via appendAttribute method.
   HeapHashSet<Member<const Element>> elements_with_rewritten_links_;
@@ -116,14 +114,14 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializer::Delegate& delegate,
-    const Document& document,
-    HeapVector<Member<const Element>>& elements)
+    FrameSerializerResourceDelegate& resource_delegate,
+    Document& document)
     : MarkupAccumulator(kResolveAllURLs,
                         document.IsHTMLDocument() ? SerializationType::kHTML
                                                   : SerializationType::kXML),
       delegate_(delegate),
-      document_(&document),
-      elements_(elements) {}
+      resource_delegate_(resource_delegate),
+      document_(&document) {}
 
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 
@@ -150,6 +148,9 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
       ToHTMLMetaElement(element).ComputeEncoding().IsValid()) {
     return true;
   }
+  // This is done in serializing document.StyleSheets.
+  if (IsHTMLStyleElement(element))
+    return true;
   return delegate_.ShouldIgnoreElement(element);
 }
 
@@ -157,24 +158,57 @@ AtomicString SerializerMarkupAccumulator::AppendElement(
     const Element& element) {
   AtomicString prefix = MarkupAccumulator::AppendElement(element);
 
-  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
-  // element like this, without special cases for XHTML
-  if (IsHTMLHeadElement(element)) {
-    markup_.Append("<meta http-equiv=\"Content-Type\" content=\"");
-    AppendAttributeValue(document_->SuggestedMIMEType());
-    markup_.Append("; charset=");
-    AppendAttributeValue(document_->characterSet());
-    if (document_->IsXHTMLDocument())
-      markup_.Append("\" />");
-    else
-      markup_.Append("\">");
-  }
-  elements_.push_back(&element);
+  if (IsHTMLHeadElement(element))
+    AppendExtraForHeadElement(element);
+
+  resource_delegate_.AddResourceForElement(*document_, element);
 
   // FIXME: For object (plugins) tags and video tag we could replace them by an
   // image of their current contents.
 
   return prefix;
+}
+
+void SerializerMarkupAccumulator::AppendExtraForHeadElement(
+    const Element& element) {
+  DCHECK(IsHTMLHeadElement(element));
+
+  // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
+  // element like this, without special cases for XHTML
+  markup_.Append("<meta http-equiv=\"Content-Type\" content=\"");
+  AppendAttributeValue(document_->SuggestedMIMEType());
+  markup_.Append("; charset=");
+  AppendAttributeValue(document_->characterSet());
+  if (document_->IsXHTMLDocument())
+    markup_.Append("\" />");
+  else
+    markup_.Append("\">");
+
+  // The CSS rules of a style element can be updated dynamically independent of
+  // the CSS text included in the style element. So we can't use the inline
+  // CSS text defined in the style element. To solve this, we serialize the
+  // working CSS rules in document.stylesheets and wrap them in link elements.
+  StyleSheetList& sheets = document_->StyleSheets();
+  for (unsigned i = 0; i < sheets.length(); ++i) {
+    StyleSheet* sheet = sheets.item(i);
+    if (!sheet->IsCSSStyleSheet() || sheet->disabled() ||
+        !IsHTMLStyleElement(sheet->ownerNode())) {
+      continue;
+    }
+
+    StringBuilder pseudo_sheet_url_builder;
+    pseudo_sheet_url_builder.Append("cid:css-");
+    pseudo_sheet_url_builder.Append(CreateCanonicalUUIDString());
+    pseudo_sheet_url_builder.Append("@mhtml.blink");
+    KURL pseudo_sheet_url = KURL(pseudo_sheet_url_builder.ToString());
+
+    markup_.Append("<link rel=\"stylesheet\" type=\"text/css\" href=\"");
+    markup_.Append(pseudo_sheet_url.GetString());
+    markup_.Append("\" />");
+
+    resource_delegate_.SerializeCSSStyleSheet(
+        static_cast<CSSStyleSheet&>(*sheet), pseudo_sheet_url);
+  }
 }
 
 void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
@@ -268,58 +302,24 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     return;
   }
 
-  HeapVector<Member<const Element>> serialized_elements;
+  should_collect_problem_metric_ =
+      delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
   {
     TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame HTML");
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.SerializationTime.Html");
-    SerializerMarkupAccumulator accumulator(delegate_, document,
-                                            serialized_elements);
+    SerializerMarkupAccumulator accumulator(delegate_, *this, document);
     String text =
         accumulator.SerializeNodes<EditingStrategy>(document, kIncludeNode);
 
     std::string frame_html =
         document.Encoding().Encode(text, WTF::kEntitiesForUnencodables);
-    resources_->push_back(SerializedResource(
+    // Note that the frame has to be 1st resource.
+    resources_->push_front(SerializedResource(
         url, document.SuggestedMIMEType(),
         SharedBuffer::Create(frame_html.c_str(), frame_html.length())));
   }
 
-  should_collect_problem_metric_ =
-      delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
-  for (const Element* node : serialized_elements) {
-    DCHECK(node);
-    const Element& element = *node;
-    // We have to process in-line style as it might contain some resources
-    // (typically background images).
-    if (element.IsStyledElement()) {
-      RetrieveResourcesForProperties(element.InlineStyle(), document);
-      RetrieveResourcesForProperties(
-          const_cast<Element&>(element).PresentationAttributeStyle(), document);
-    }
-
-    if (const auto* image = ToHTMLImageElementOrNull(element)) {
-      KURL image_url =
-          document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
-      ImageResourceContent* cached_image = image->CachedImage();
-      AddImageToResources(cached_image, image_url);
-    } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
-      if (input->type() == input_type_names::kImage && input->ImageLoader()) {
-        KURL image_url = input->Src();
-        ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
-        AddImageToResources(cached_image, image_url);
-      }
-    } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
-      if (CSSStyleSheet* sheet = link->sheet()) {
-        KURL sheet_url =
-            document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
-        SerializeCSSStyleSheet(*sheet, sheet_url);
-      }
-    } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
-      if (CSSStyleSheet* sheet = style->sheet())
-        SerializeCSSStyleSheet(*sheet, NullURL());
-    }
-  }
   if (should_collect_problem_metric_) {
     // Report detectors through UMA.
     // We're having exact 21 buckets for percentage because we want to have 5%
@@ -347,6 +347,42 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
       css_histogram.Count(loaded_css_count_ * 100 / total_css_count_);
     }
     should_collect_problem_metric_ = false;
+  }
+}
+
+void FrameSerializer::AddResourceForElement(Document& document,
+                                            const Element& element) {
+  // We have to process in-line style as it might contain some resources
+  // (typically background images).
+  if (element.IsStyledElement()) {
+    RetrieveResourcesForProperties(element.InlineStyle(), document);
+    RetrieveResourcesForProperties(
+        const_cast<Element&>(element).PresentationAttributeStyle(), document);
+  }
+
+  if (const auto* image = ToHTMLImageElementOrNull(element)) {
+    // ImageSourceURL() works for both scenarios:
+    // * parent element is <picture>: best fit image URL from sibling source
+    //   element
+    // * single <img> element: image url contained in href attribute
+    KURL image_url = document.CompleteURL(image->ImageSourceURL());
+    ImageResourceContent* cached_image = image->CachedImage();
+    AddImageToResources(cached_image, image_url);
+  } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
+    if (input->type() == input_type_names::kImage && input->ImageLoader()) {
+      KURL image_url = input->Src();
+      ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
+      AddImageToResources(cached_image, image_url);
+    }
+  } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
+    if (CSSStyleSheet* sheet = link->sheet()) {
+      KURL sheet_url =
+          document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
+      SerializeCSSStyleSheet(*sheet, sheet_url);
+    }
+  } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
+    if (CSSStyleSheet* sheet = style->sheet())
+      SerializeCSSStyleSheet(*sheet, NullURL());
   }
 }
 

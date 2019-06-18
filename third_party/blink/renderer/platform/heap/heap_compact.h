@@ -77,6 +77,10 @@ class PLATFORM_EXPORT HeapCompact final {
   // die before being reached by the marker.
   void FilterNonLiveSlots();
 
+  // Verifies that all recorded slots are in consistent state, i.e., either
+  // point to valid objects that can be compacted or are cleared.
+  void VerifySlots();
+
   // Finishes compaction and clears internal state.
   void Finish();
 

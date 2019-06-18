@@ -99,9 +99,7 @@ OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
   if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
-    return Shell::Get()
-                   ->tablet_mode_controller()
-                   ->IsTabletModeWindowManagerEnabled()
+    return Shell::Get()->tablet_mode_controller()->InTabletMode()
                ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
                : OVERVIEW_ANIMATION_NONE;
   }
@@ -271,9 +269,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   // TODO(oshima): SplitViewController has its own logic to adjust the
   // target state in |SplitViewController::OnOverviewModeEnding|.
   // Unify the mechanism to control it and remove ifs.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled() &&
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !Shell::Get()->split_view_controller()->InSplitViewMode() &&
       reset_transform) {
     MaximizeIfSnapped(GetWindow());
@@ -904,9 +900,7 @@ void OverviewItem::ButtonPressed(views::Button* sender,
 
   base::RecordAction(
       base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     base::RecordAction(
         base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
   }

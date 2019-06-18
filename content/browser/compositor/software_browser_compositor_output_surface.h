@@ -46,6 +46,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
  private:
   void SwapBuffersCallback(const std::vector<ui::LatencyInfo>& latency_info,
+                           const base::TimeTicks& swap_time,
                            const gfx::Size& pixel_size);
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);

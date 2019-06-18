@@ -11,6 +11,7 @@
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
@@ -518,7 +519,7 @@ Status IndexedDBMetadataCoding::CreateDatabase(
     IndexedDBDatabaseMetadata* metadata) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
   scoped_refptr<LevelDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db);
+      indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(db);
 
   int64_t row_id = 0;
   Status s = indexed_db::GetNewDatabaseId(transaction.get(), &row_id);

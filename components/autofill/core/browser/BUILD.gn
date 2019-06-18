@@ -313,6 +313,7 @@ jumbo_static_library("browser") {
   public_deps = [
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
+    "//components/autofill/core/common/mojom:mojo_types",
     "//components/resources",
     "//components/security_state/core",
     "//skia",

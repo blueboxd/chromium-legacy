@@ -97,17 +97,22 @@ class TestAXEventObserver : public views::AXEventObserver {
     ui::AXNodeData node_data;
     view->GetAccessibleNodeData(&node_data);
     if (event_type == ax::mojom::Event::kTextChanged &&
-        node_data.role == ax::mojom::Role::kListBoxOption) {
+        node_data.role == ax::mojom::Role::kListBoxOption)
       text_changed_on_listboxoption_count_++;
-    }
+    else if (event_type == ax::mojom::Event::kSelectedChildrenChanged)
+      selected_children_changed_count_++;
   }
 
   int text_changed_on_listboxoption_count() {
     return text_changed_on_listboxoption_count_;
   }
+  int selected_children_changed_count() {
+    return selected_children_changed_count_;
+  }
 
  private:
   int text_changed_on_listboxoption_count_ = 0;
+  int selected_children_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
@@ -367,14 +372,72 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
 
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
                        EmitTextChangedAccessibilityEvent) {
-  // Set the result to what we want and update.
+  // Creation and population of the popup should not result in a text/name
+  // change accessibility event.
   TestAXEventObserver observer;
+  CreatePopupForTestQuery();
+  ACMatches matches;
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  AutocompleteController* controller = popup_model()->autocomplete_controller();
+  match.contents = base::ASCIIToUTF16("https://foobar.com");
+  matches.push_back(match);
+  match.contents = base::ASCIIToUTF16("https://foobarbaz.com");
+  matches.push_back(match);
+  controller->result_.AppendMatches(controller->input_, matches);
   popup_view()->UpdatePopupAppearance();
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
 
-  // Calling it again should emit the event.
+  // Changing the user text while in the input rather than the list should not
+  // result in a text/name change accessibility event.
   edit_model()->SetUserText(base::ASCIIToUTF16("bar"));
   edit_model()->StartAutocomplete(false, false);
   popup_view()->UpdatePopupAppearance();
+  EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
+
+  // Each time the selection changes, we should have a text/name change event.
+  // This makes it possible for screen readers to have the updated match content
+  // when they are notified the selection changed.
+  popup_view()->model()->SetSelectedLine(1, false, false);
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 1);
+
+  popup_view()->model()->SetSelectedLine(2, false, false);
+  EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 2);
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+                       EmitSelectedChildrenChangedAccessibilityEvent) {
+  // Create a popup for the matches.
+  GetPopupWidget();
+  edit_model()->SetUserText(base::ASCIIToUTF16("foo"));
+  AutocompleteInput input(
+      base::ASCIIToUTF16("foo"), metrics::OmniboxEventProto::BLANK,
+      ChromeAutocompleteSchemeClassifier(browser()->profile()));
+  input.set_want_asynchronous_matches(false);
+  popup_model()->autocomplete_controller()->Start(input);
+
+  // Create a match to populate the autocomplete.
+  base::string16 match_url = base::ASCIIToUTF16("https://foobar.com");
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  match.contents = match_url;
+  match.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::URL));
+  match.destination_url = GURL(match_url);
+  match.description = base::ASCIIToUTF16("Foobar");
+  match.allowed_to_be_default_match = true;
+
+  AutocompleteController* autocomplete_controller =
+      popup_model()->autocomplete_controller();
+  AutocompleteResult& results = autocomplete_controller->result_;
+  ACMatches matches;
+  matches.push_back(match);
+  results.AppendMatches(input, matches);
+
+  // Lets check that arrowing up and down emits the event.
+  TestAXEventObserver observer;
+  EXPECT_EQ(observer.selected_children_changed_count(), 0);
+  // This is equiverlent of the user arrowing down in the omnibox.
+  popup_view()->model()->SetSelectedLine(1, false, false);
+  EXPECT_EQ(observer.selected_children_changed_count(), 1);
 }

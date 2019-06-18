@@ -9,6 +9,8 @@
 
 #define ARCH_ARM 1
 
+#define ARCH_PPC64LE 0
+
 #define ARCH_X86 0
 
 #define ARCH_X86_32 0

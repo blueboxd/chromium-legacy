@@ -66,10 +66,10 @@ cr.define('extensions', function() {
           Math.min(maxHeight, headerHeight + this.preferredSize_.height);
       const effectiveWidth = Math.max(MIN_WIDTH, this.preferredSize_.width);
 
-      const nativeDialog = this.$.dialog.getNative();
-      nativeDialog.style.height = `${effectiveHeight}px`;
-      nativeDialog.style.width = `${effectiveWidth}px`;
-      nativeDialog.style.opacity = '1';
+      this.$.dialog.style.setProperty(
+          '--dialog-height', `${effectiveHeight}px`);
+      this.$.dialog.style.setProperty('--dialog-width', `${effectiveWidth}px`);
+      this.$.dialog.style.setProperty('--dialog-opacity', 1);
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */

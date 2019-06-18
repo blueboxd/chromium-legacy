@@ -200,7 +200,7 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
                        aura::client::kResizeBehaviorNone);
   ::wm::ActivateWindow(window1.get());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   BackdropController* backdrop_controller =
       GetWorkspaceControllerForContext(window1.get())
           ->layout_manager()

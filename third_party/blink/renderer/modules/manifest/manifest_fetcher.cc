@@ -22,12 +22,12 @@ void ManifestFetcher::Start(Document& document,
 
   ResourceRequest request(url_);
   request.SetRequestContext(mojom::RequestContextType::MANIFEST);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
+  request.SetMode(network::mojom::RequestMode::kCors);
   // See https://w3c.github.io/manifest/. Use "include" when use_credentials is
   // true, and "omit" otherwise.
-  request.SetFetchCredentialsMode(
-      use_credentials ? network::mojom::FetchCredentialsMode::kInclude
-                      : network::mojom::FetchCredentialsMode::kOmit);
+  request.SetCredentialsMode(use_credentials
+                                 ? network::mojom::CredentialsMode::kInclude
+                                 : network::mojom::CredentialsMode::kOmit);
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;

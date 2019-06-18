@@ -61,7 +61,8 @@ const size_t kZoneIdentifierLength = sizeof(":Zone.Identifier") - 1;
 ReservationMap* g_reservation_map = NULL;
 
 base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER({base::MayBlock()});
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::ThreadPool(), base::MayBlock()));
 
 // Observes a DownloadItem for changes to its target path and state. Updates or
 // revokes associated download path reservations as necessary. Created, invoked

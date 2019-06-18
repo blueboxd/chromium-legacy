@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base//scoped_observer.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
@@ -209,7 +210,7 @@ class SessionRestoreStatsCollector
   void RemoveTab(content::NavigationController* tab);
 
   // Registers for relevant notifications for a tab and inserts the tab into
-  // to tabs_tracked_ map. Return a pointer to the newly created TabState.
+  // to |tabs_tracked_| map. Return a pointer to the newly created TabState.
   TabState* RegisterForNotifications(content::NavigationController* tab);
 
   // Returns the tab state, nullptr if not found.
@@ -280,6 +281,9 @@ class SessionRestoreStatsCollector
   // even if no TabLoader references it. The object only lives on if it still
   // has deferred tabs remaining from an interrupted session restore.
   scoped_refptr<SessionRestoreStatsCollector> this_retainer_;
+
+  ScopedObserver<content::RenderWidgetHost, SessionRestoreStatsCollector>
+      observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreStatsCollector);
 };

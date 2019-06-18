@@ -38,6 +38,10 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
   explicit SVGAElement(Document&);
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
+    return SVGURIReference::GetCheckedAttributeTypes();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:

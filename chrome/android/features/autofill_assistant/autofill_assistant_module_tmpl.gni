@@ -18,10 +18,7 @@ template("autofill_assistant_module_tmpl") {
     input =
         "//chrome/android/features/autofill_assistant/java/AndroidManifest.xml"
     output = _manifest
-    variables = [
-      "target_sdk_version=$android_sdk_version",
-      "manifest_package=${invoker.manifest_package}",
-    ]
+    variables = [ "manifest_package=${invoker.manifest_package}" ]
   }
 
   android_app_bundle_module(target_name) {
@@ -35,6 +32,8 @@ template("autofill_assistant_module_tmpl") {
                            ])
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
+    min_sdk_version = 21
+    target_sdk_version = android_sdk_version
     proguard_enabled = !is_java_debug
     aapt_locale_whitelist = locales
     package_name = "autofill_assistant"

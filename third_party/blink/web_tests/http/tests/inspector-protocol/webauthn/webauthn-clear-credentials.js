@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  var {page, session, dp} =
+  const {page, session, dp} =
       await testRunner.startURL(
           "https://devtools.test:8443/inspector-protocol/webauthn/resources/webauthn-test.https.html",
           "Check that the WebAuthn command clearCredentials works");

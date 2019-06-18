@@ -46,7 +46,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Start) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -56,16 +56,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Start) {
       shell()->web_contents()->GetBrowserContext()->GetSmsService());
   sms_service->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  // Test that SMS content can be retrieved after SmsManager.start().
+  // Test that SMS content can be retrieved after navigator.sms.receive().
   std::string script = R"(
     (async () => {
-      let receiver = new SMSReceiver({timeout: 60});
-      await receiver.start();
-      return new Promise(function(resolve) {
-        receiver.addEventListener('change', e => {
-          resolve(receiver.sms.content);
-        })
-      });
+      let sms = await navigator.sms.receive({timeout: 60});
+      return sms.content;
     }) ();
   )";
 
@@ -74,6 +69,43 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Start) {
   }));
 
   EXPECT_EQ("hello", EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReceiveMultiple) {
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  NavigateToURL(shell(), url);
+
+  auto* mock = new NiceMock<MockSmsProvider>();
+
+  auto* sms_service = static_cast<SmsServiceImpl*>(
+      shell()->web_contents()->GetBrowserContext()->GetSmsService());
+  sms_service->SetSmsProviderForTest(base::WrapUnique(mock));
+
+  // Test that SMS content can retrieve multiple messages.
+  std::string script = R"(
+    (async () => {
+      let sms1 = navigator.sms.receive();
+      let sms2 = navigator.sms.receive();
+
+      let msg1 = await sms1;
+      let msg2 = await sms2;
+
+      return [msg1.content, msg2.content];
+    }) ();
+  )";
+
+  EXPECT_CALL(*mock, Retrieve())
+      .WillOnce(Invoke([&mock, &url]() {
+        mock->NotifyReceive(url::Origin::Create(url), "hello1");
+      }))
+      .WillOnce(Invoke([&mock, &url]() {
+        mock->NotifyReceive(url::Origin::Create(url), "hello2");
+      }));
+
+  base::ListValue result = EvalJs(shell(), script).ExtractList();
+  ASSERT_EQ(2u, result.GetList().size());
+  EXPECT_EQ("hello1", result.GetList()[0].GetString());
+  EXPECT_EQ("hello2", result.GetList()[1].GetString());
 }
 
 }  // namespace content

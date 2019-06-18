@@ -14,6 +14,7 @@
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -30,30 +32,32 @@ namespace web_app {
 
 namespace {
 
-base::flat_map<SystemAppType, GURL> CreateSystemWebApps() {
-  base::flat_map<SystemAppType, GURL> urls;
-
+base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
+  base::flat_map<SystemAppType, SystemAppInfo> infos;
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp))
-    urls[SystemAppType::DISCOVER] = GURL(chrome::kChromeUIDiscoverURL);
+    infos[SystemAppType::DISCOVER] = {GURL(chrome::kChromeUIDiscoverURL)};
 
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
     constexpr char kChromeSettingsPWAURL[] = "chrome://os-settings/pwa.html";
-    urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
+    infos[SystemAppType::SETTINGS] = {GURL(kChromeSettingsPWAURL),
+                                      app_list::kInternalAppIdSettings};
   } else {
     constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
-    urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
+    infos[SystemAppType::SETTINGS] = {GURL(kChromeSettingsPWAURL),
+                                      app_list::kInternalAppIdSettings};
   }
 #endif  // OS_CHROMEOS
 
-  return urls;
+  return infos;
 }
 
-InstallOptions CreateInstallOptionsForSystemApp(const GURL& url) {
-  DCHECK_EQ(content::kChromeUIScheme, url.scheme());
+InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info) {
+  DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
-  web_app::InstallOptions install_options(url, LaunchContainer::kWindow,
+  web_app::InstallOptions install_options(info.install_url,
+                                          LaunchContainer::kWindow,
                                           InstallSource::kSystemInstalled);
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;
@@ -86,12 +90,14 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
   // Dev builds should update every launch.
   update_policy_ = UpdatePolicy::kAlwaysUpdate;
 #endif
-  system_app_urls_ = CreateSystemWebApps();
+  system_app_infos_ = CreateSystemWebApps();
 }
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
-void SystemWebAppManager::Start() {
+void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
+  ui_delegate_ = ui_delegate;
+
   // Clear the last update pref here to force uninstall, and to ensure that when
   // the flag is enabled again, an update is triggered.
   if (!IsEnabled())
@@ -100,10 +106,20 @@ void SystemWebAppManager::Start() {
   if (!NeedsUpdate())
     return;
 
+  std::vector<GURL> installed_apps = pending_app_manager_->GetInstalledAppUrls(
+      InstallSource::kSystemInstalled);
+
+  std::set<SystemAppType> installed_app_types;
+  for (const auto& it : system_app_infos_) {
+    if (std::find(installed_apps.begin(), installed_apps.end(),
+                  it.second.install_url) != installed_apps.end())
+      installed_app_types.insert(it.first);
+  }
+
   std::vector<InstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
-    for (const auto& app : system_app_urls_) {
+    for (const auto& app : system_app_infos_) {
       install_options_list.push_back(
           CreateInstallOptionsForSystemApp(app.second));
     }
@@ -112,13 +128,13 @@ void SystemWebAppManager::Start() {
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(install_options_list), InstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), installed_app_types));
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
   on_apps_synchronized_.reset(new base::OneShotEvent());
-  system_app_urls_ = CreateSystemWebApps();
-  Start();
+  system_app_infos_ = CreateSystemWebApps();
+  Start(ui_delegate_);
 
   // Wait for the System Web Apps to install.
   base::RunLoop run_loop;
@@ -128,12 +144,12 @@ void SystemWebAppManager::InstallSystemAppsForTesting() {
 
 base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
     SystemAppType id) const {
-  auto app_url_it = system_app_urls_.find(id);
+  auto app_url_it = system_app_infos_.find(id);
 
-  if (app_url_it == system_app_urls_.end())
+  if (app_url_it == system_app_infos_.end())
     return base::Optional<AppId>();
 
-  return pending_app_manager_->LookupAppId(app_url_it->second);
+  return pending_app_manager_->LookupAppId(app_url_it->second.install_url);
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
@@ -142,8 +158,8 @@ bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
 }
 
 void SystemWebAppManager::SetSystemAppsForTesting(
-    base::flat_map<SystemAppType, GURL> system_app_urls) {
-  system_app_urls_ = std::move(system_app_urls);
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps) {
+  system_app_infos_ = std::move(system_apps);
 }
 
 void SystemWebAppManager::SetUpdatePolicyForTesting(UpdatePolicy policy) {
@@ -166,12 +182,16 @@ const base::Version& SystemWebAppManager::CurrentVersion() const {
 }
 
 void SystemWebAppManager::OnAppsSynchronized(
+    std::set<SystemAppType> already_installed,
     PendingAppManager::SynchronizeResult result) {
   if (IsEnabled()) {
     pref_service_->SetString(prefs::kSystemWebAppLastUpdateVersion,
                              CurrentVersion().GetString());
   }
 
+  MigrateSystemWebApps(already_installed);
+
+  // May be called more than once in tests.
   if (!on_apps_synchronized_->is_signaled())
     on_apps_synchronized_->Signal();
 }
@@ -186,6 +206,22 @@ bool SystemWebAppManager::NeedsUpdate() const {
   // the System Web Apps are always in sync with the Chrome version.
   return !last_update_version.IsValid() ||
          last_update_version != CurrentVersion();
+}
+
+void SystemWebAppManager::MigrateSystemWebApps(
+    std::set<SystemAppType> already_installed) {
+  DCHECK(ui_delegate_);
+
+  for (const auto& type_and_info : system_app_infos_) {
+    // Migrate if a migration source is specified and the app has been newly
+    // installed.
+    if (!type_and_info.second.migration_source.empty() &&
+        !base::Contains(already_installed, type_and_info.first)) {
+      ui_delegate_->MigrateOSAttributes(
+          type_and_info.second.migration_source,
+          *GetAppIdForSystemApp(type_and_info.first));
+    }
+  }
 }
 
 }  // namespace web_app

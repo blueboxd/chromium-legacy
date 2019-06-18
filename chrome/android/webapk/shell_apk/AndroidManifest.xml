@@ -24,10 +24,6 @@
     <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
     {{{raw_manifest_tags}}}
 
-    <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="28" />
-
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/short_name"

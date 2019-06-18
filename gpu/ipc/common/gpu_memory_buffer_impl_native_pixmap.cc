@@ -55,7 +55,7 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
     DestructionCallback callback) {
   std::unique_ptr<gfx::ClientNativePixmap> native_pixmap =
       client_native_pixmap_factory->ImportFromHandle(
-          CloneHandleForIPC(handle.native_pixmap_handle), size, usage);
+          CloneHandleForIPC(handle.native_pixmap_handle), size, format, usage);
   DCHECK(native_pixmap);
 
   return base::WrapUnique(new GpuMemoryBufferImplNativePixmap(

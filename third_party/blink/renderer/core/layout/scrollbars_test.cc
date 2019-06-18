@@ -125,7 +125,7 @@ class ScrollbarsTest : public SimTest {
                                 offset);
   }
 
-  Cursor::Type CursorType() {
+  ui::CursorType CursorType() {
     return GetDocument()
         .GetFrame()
         ->GetChromeClient()
@@ -629,7 +629,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(Cursor::Type::kPointer, CursorType());
+  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
 }
 
 // Ensure mouse cursor should be override when hovering over the custom
@@ -681,7 +681,7 @@ TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(Cursor::Type::kMove, CursorType());
+  EXPECT_EQ(ui::CursorType::kMove, CursorType());
 }
 
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
@@ -727,13 +727,13 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
   // Mouse over link. Mouse cursor should be hand.
   HandleMouseMoveEvent(a_tag->OffsetLeft(), a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kHand, CursorType());
+  EXPECT_EQ(ui::CursorType::kHand, CursorType());
 
   // Mouse over enabled overlay scrollbar. Mouse cursor should be pointer and no
   // active hover element.
   HandleMouseMoveEvent(18, a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kPointer, CursorType());
+  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
 
   HandleMousePressEvent(18, a_tag->OffsetTop());
 
@@ -759,7 +759,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 
   HandleMouseMoveEvent(18, a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kHand, CursorType());
+  EXPECT_EQ(ui::CursorType::kHand, CursorType());
 
   HandleMousePressEvent(18, a_tag->OffsetTop());
 

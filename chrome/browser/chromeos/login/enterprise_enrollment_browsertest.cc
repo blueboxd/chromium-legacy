@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kSkipButton});
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
-  test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kAdBackToUnlockButton});
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kAdBackToUnlockButton});
   CheckActiveDirectoryUnlockConfigurationShown();
 
   // Enter wrong unlock password.

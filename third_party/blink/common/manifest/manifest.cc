@@ -44,8 +44,8 @@ bool Manifest::IsEmpty() const {
          orientation == blink::kWebScreenOrientationLockDefault &&
          icons.empty() && !share_target.has_value() &&
          related_applications.empty() && !prefer_related_applications &&
-         !theme_color && !background_color && splash_screen_url.is_empty() &&
-         gcm_sender_id.is_null() && scope.is_empty();
+         !theme_color && !background_color && gcm_sender_id.is_null() &&
+         scope.is_empty();
 }
 
 }  // namespace blink

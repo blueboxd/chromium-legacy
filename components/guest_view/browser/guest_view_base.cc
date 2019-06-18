@@ -447,7 +447,7 @@ void GuestViewBase::DidDetach() {
     Destroy(true);
 }
 
-WebContents* GuestViewBase::GetOwnerWebContents() const {
+WebContents* GuestViewBase::GetOwnerWebContents() {
   return owner_web_contents_;
 }
 

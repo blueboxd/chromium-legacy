@@ -574,12 +574,14 @@ void MediaCodecVideoDecoder::OnCodecConfiguredInternal(
     scoped_refptr<CodecSurfaceBundle> surface_bundle,
     std::unique_ptr<MediaCodecBridge> codec) {
   if (!weak_this) {
-    codec_allocator->ReleaseMediaCodec(
-        std::move(codec),
-        base::BindOnce(
-            &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
-            base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
-            std::move(surface_bundle)));
+    if (codec) {
+      codec_allocator->ReleaseMediaCodec(
+          std::move(codec),
+          base::BindOnce(
+              &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
+              base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
+              std::move(surface_bundle)));
+    }
     return;
   }
   weak_this->OnCodecConfigured(std::move(surface_bundle), std::move(codec));

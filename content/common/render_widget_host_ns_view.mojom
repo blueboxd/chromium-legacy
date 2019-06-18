@@ -50,8 +50,8 @@ interface RenderWidgetHostNSView {
   // Call the -[NSView setToolTipAtMousePoint] method.
   SetTooltipText(mojo_base.mojom.String16 display_text);
 
-  // Forward changes in ui::TextInputType.
-  SetTextInputType(ui.mojom.TextInputType text_input_type);
+  // Forward changes in content::TextInputState.
+  SetTextInputState(ui.mojom.TextInputType text_input_type, uint32 flags);
 
   // Forward the TextInputManager::TextSelection from the renderer.
   SetTextSelection(mojo_base.mojom.String16 text,
@@ -136,9 +136,9 @@ interface RenderWidgetHostNSViewHost {
 
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.
-  ForwardKeyboardEvent(content.mojom.Event event, bool skip_in_browser);
   ForwardKeyboardEventWithCommands(
       content.mojom.Event event,
+      array<uint8> native_event_data,
       bool skip_in_browser,
       array<content.mojom.EditCommand> commands);
 

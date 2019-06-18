@@ -16,6 +16,11 @@ bool IsSafeBrowsingWarningDisplayedInWebView(WKWebView* web_view);
 // TODO(crbug.com/954332): Remove this workaround when
 // https://bugs.webkit.org/show_bug.cgi?id=196930 is fixed.
 bool RequiresContentFilterBlockingWorkaround();
+
+// Returns true if this iOS version is known to have
+// https://bugs.webkit.org/show_bug.cgi?id=198794 WebKit bug.
+// TODO(crbug.com/973653): Remove this workaround when WebKit bug is fixed.
+bool RequiresProvisionalNavigationFailureWorkaround();
 }  // namespace web
 
 #endif  // IOS_WEB_WEB_VIEW_WK_WEB_VIEW_UTIL_H_

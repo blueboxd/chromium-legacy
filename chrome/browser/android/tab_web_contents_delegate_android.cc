@@ -204,7 +204,7 @@ void TabWebContentsDelegateAndroid::Observe(
 }
 
 blink::WebDisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

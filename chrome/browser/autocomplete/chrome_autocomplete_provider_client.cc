@@ -268,6 +268,11 @@ base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
 #endif  // !defined(OS_ANDROID)
 }
 
+component_updater::ComponentUpdateService*
+ChromeAutocompleteProviderClient::GetComponentUpdateService() {
+  return g_browser_process->component_updater();
+}
+
 bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {
   return profile_->IsOffTheRecord();
 }

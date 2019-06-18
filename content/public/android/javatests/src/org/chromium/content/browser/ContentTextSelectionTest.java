@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -46,8 +45,6 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ContentJUnit4ClassRunner.class)
 public class ContentTextSelectionTest {
-    private static final String TAG = "ContentTextSelTest";
-
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
@@ -378,9 +375,6 @@ public class ContentTextSelectionTest {
 
         mSelectionPopupController.setSelectionClient(client);
 
-        // TODO(crbug.com/967811): Remove logs once we confirmed the assumpution.
-        Log.d(TAG, "isIncognito = " + mWebContents.isIncognito());
-        Log.d(TAG, "isDeviceProvisioned = " + mSelectionPopupController.isDeviceProvisioned());
         DOMUtils.longPressNode(mWebContents, "smart_selection");
         waitForSelectActionBarVisible(true);
 
@@ -396,7 +390,6 @@ public class ContentTextSelectionTest {
     @Test
     @MediumTest
     @Feature({"TextInput", "SmartSelection"})
-    @DisabledTest(message = "https://crbug.com/973865")
     public void testSmartSelectionReset() throws Throwable {
         SelectionClient.Result result = new SelectionClient.Result();
         result.startAdjust = -5;
@@ -409,9 +402,6 @@ public class ContentTextSelectionTest {
 
         mSelectionPopupController.setSelectionClient(client);
 
-        // TODO(crbug.com/967811): Remove logs once we confirmed the assumpution.
-        Log.d(TAG, "isIncognito = " + mWebContents.isIncognito());
-        Log.d(TAG, "isDeviceProvisioned = " + mSelectionPopupController.isDeviceProvisioned());
         DOMUtils.longPressNode(mWebContents, "smart_selection");
         waitForSelectActionBarVisible(true);
 

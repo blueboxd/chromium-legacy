@@ -36,7 +36,7 @@ constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
 constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
 // Represents each model used within the SearchResultRanker.
-enum class Model { NONE, RESULTS_LIST_GROUP_RANKER };
+enum class Model { NONE, MIXED_TYPES };
 
 // Returns the model relevant for predicting launches for results with the given
 // |type|.
@@ -48,7 +48,7 @@ Model ModelForType(RankingItemType type) {
     case RankingItemType::kOmniboxDocument:
     case RankingItemType::kOmniboxHistory:
     case RankingItemType::kOmniboxSearch:
-      return Model::RESULTS_LIST_GROUP_RANKER;
+      return Model::MIXED_TYPES;
     default:
       return Model::NONE;
   }
@@ -87,35 +87,45 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
     : enable_zero_state_mixed_types_(
           app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
   if (app_list_features::IsQueryBasedMixedTypesRankerEnabled()) {
+    results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableQueryBasedMixedTypesRanker,
+        "boost_coefficient", 0.1);
+
     RecurrenceRankerConfigProto config;
+
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(0u);
     config.set_condition_decay(0.5f);
-
     config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
         app_list_features::kEnableQueryBasedMixedTypesRanker, "target_limit",
         200));
     config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableQueryBasedMixedTypesRanker, "target_decay",
         0.8f));
-
+    // TODO(931149): Replace this with a more sophisticated model if the
+    // query-based mixed type model is being used.
     config.mutable_default_predictor();
 
-    results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
-        profile->GetPath().AppendASCII("adaptive_result_ranker.proto"), config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
-
-    results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableQueryBasedMixedTypesRanker,
-        "boost_coefficient", 0.1);
+    if (GetFieldTrialParamByFeatureAsBool(
+            app_list_features::kEnableQueryBasedMixedTypesRanker,
+            "use_category_model", false)) {
+      results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
+          profile->GetPath().AppendASCII("results_list_group_ranker.pb"),
+          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
+    } else {
+      query_based_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
+          profile->GetPath().AppendASCII("query_based_mixed_types_ranker.pb"),
+          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
+    }
   }
-  profile_ = profile;
 
+  profile_ = profile;
   if (auto* notifier =
           file_manager::file_tasks::FileTasksNotifier::GetForProfile(
               profile_)) {
     notifier->AddObserver(this);
   }
+
   if (enable_zero_state_mixed_types_) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
@@ -162,6 +172,9 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (results_list_group_ranker_) {
     group_ranks_.clear();
     group_ranks_ = results_list_group_ranker_->Rank();
+  } else if (query_based_mixed_types_ranker_) {
+    query_mixed_ranks_.clear();
+    query_mixed_ranks_ = query_based_mixed_types_ranker_->Rank();
   }
 }
 
@@ -170,35 +183,46 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
     return;
 
   for (auto& result : *results) {
-    const RankingItemType& type =
-        RankingItemTypeFromSearchResult(*result.result);
-    const Model& model = ModelForType(type);
+    const auto& type = RankingItemTypeFromSearchResult(*result.result);
+    const auto& model = ModelForType(type);
 
-    if (model == Model::RESULTS_LIST_GROUP_RANKER &&
-        results_list_group_ranker_) {
-      const auto& rank_it =
-          group_ranks_.find(base::NumberToString(static_cast<int>(type)));
-      // The ranker only contains entries trained with types relating to files
-      // or the omnibox. This means scores for apps, app shortcuts, and answer
-      // cards will be unchanged.
-      if (rank_it != group_ranks_.end()) {
-        // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
-        // result of tweaking does not put the score above 3.0, as that may
-        // interfere with apps or answer cards.
-        result.score = std::min(
-            result.score + rank_it->second * results_list_boost_coefficient_,
-            3.0);
+    if (model == Model::MIXED_TYPES) {
+      if (results_list_group_ranker_) {
+        const auto& rank_it =
+            group_ranks_.find(base::NumberToString(static_cast<int>(type)));
+        // The ranker only contains entries trained with types relating to files
+        // or the omnibox. This means scores for apps, app shortcuts, and answer
+        // cards will be unchanged.
+        if (rank_it != group_ranks_.end()) {
+          // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
+          // result of tweaking does not put the score above 3.0, as that may
+          // interfere with apps or answer cards.
+          result.score = std::min(
+              result.score + rank_it->second * results_list_boost_coefficient_,
+              3.0);
+        }
+      } else if (query_based_mixed_types_ranker_) {
+        // TODO(931149): Add some normalization for URLs.
+        const auto& rank_it = query_mixed_ranks_.find(result.result->id());
+        if (rank_it != query_mixed_ranks_.end()) {
+          result.score = std::min(
+              result.score + rank_it->second * results_list_boost_coefficient_,
+              3.0);
+        }
       }
     }
   }
 }
 
 void SearchResultRanker::Train(const std::string& id, RankingItemType type) {
-  const Model& model = ModelForType(type);
-
-  if (model == Model::RESULTS_LIST_GROUP_RANKER && results_list_group_ranker_) {
-    results_list_group_ranker_->Record(
-        base::NumberToString(static_cast<int>(type)));
+  if (ModelForType(type) == Model::MIXED_TYPES) {
+    // TODO(931149): Add some normalization for URLs.
+    if (results_list_group_ranker_) {
+      results_list_group_ranker_->Record(
+          base::NumberToString(static_cast<int>(type)));
+    } else if (query_based_mixed_types_ranker_) {
+      query_based_mixed_types_ranker_->Record(id);
+    }
   }
 }
 

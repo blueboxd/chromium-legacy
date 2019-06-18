@@ -720,11 +720,13 @@ FileURLLoaderFactory::FileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<const SharedCorsOriginAccessList>
         shared_cors_origin_access_list,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    base::TaskPriority task_priority)
     : profile_path_(profile_path),
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
-      task_runner_(std::move(task_runner)) {}
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::MayBlock(), task_priority,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
@@ -738,10 +740,8 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool cors_flag =
-      request.fetch_request_mode !=
-          network::mojom::FetchRequestMode::kNavigate &&
-      request.fetch_request_mode != network::mojom::FetchRequestMode::kNoCors;
+  bool cors_flag = request.mode != network::mojom::RequestMode::kNavigate &&
+                   request.mode != network::mojom::RequestMode::kNoCors;
 
   // CORS mode requires a valid |request_inisiator|. Check this condition first
   // so that kDisableWebSecurity should not hide program errors in tests.
@@ -881,9 +881,7 @@ std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
   // it?
   return std::make_unique<content::FileURLLoaderFactory>(
       profile_path, shared_cors_origin_access_list,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      base::TaskPriority::USER_VISIBLE);
 }
 
 }  // namespace content

@@ -429,7 +429,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WorkerResourceTimingNotifier& resource_timing_notifier,
     mojom::RequestContextType destination,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
   // Step 2: "Let options be a script fetch options whose cryptographic nonce is

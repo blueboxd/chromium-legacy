@@ -56,6 +56,10 @@ std::string PermissionUtil::GetPermissionString(
       return "IdleDetection";
     case CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC:
       return "PeriodicBackgroundSync";
+    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN:
+      return "WakeLockScreen";
+    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM:
+      return "WakeLockSystem";
     default:
       break;
   }
@@ -132,6 +136,10 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::BACKGROUND_FETCH;
   } else if (type == CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC) {
     *out = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (type == CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN) {
+    *out = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (type == CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM) {
+    *out = PermissionType::WAKE_LOCK_SYSTEM;
   } else {
     return false;
   }
@@ -157,6 +165,8 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
     case CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH:
     case CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC:
+    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN:
+    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM:
       return true;
     default:
       return false;

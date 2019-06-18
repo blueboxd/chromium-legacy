@@ -261,9 +261,9 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
 TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
   TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
-  // Ensure calls to EnableTabletModeWindowManager complete.
+  // Ensure calls to SetEnabledForTest complete.
   base::RunLoop().RunUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::RunLoop().RunUntilIdle();
 
   const gfx::Rect bounds(200, 200);

@@ -75,7 +75,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).signOut(any(), anyLong(), anyInt());
         doNothing().when(mDelegateMock).disableSyncAndWipeData(any(), anyLong(), eq(true), any());
         // See verification of nativeWipeProfileData below.
-        doReturn("TestDomain").when(mNativeMock).getManagementDomain(any(), anyLong());
+        doReturn("TestDomain").when(mDelegateMock).getManagementDomain(any(), anyLong());
 
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
@@ -98,7 +98,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).signOut(any(), anyLong(), anyInt());
         doNothing().when(mDelegateMock).disableSyncAndWipeData(any(), anyLong(), eq(false), any());
         // See verification of nativeWipeGoogleServiceWorkerCaches below.
-        doReturn(null).when(mNativeMock).getManagementDomain(any(), anyLong());
+        doReturn(null).when(mDelegateMock).getManagementDomain(any(), anyLong());
 
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
@@ -121,7 +121,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).signOut(any(), anyLong(), anyInt());
         doNothing().when(mDelegateMock).disableSyncAndWipeData(any(), anyLong(), eq(true), any());
         // See verification of nativeWipeProfileData below.
-        doReturn("TestDomain").when(mNativeMock).getManagementDomain(any(), anyLong());
+        doReturn("TestDomain").when(mDelegateMock).getManagementDomain(any(), anyLong());
 
         // Trigger the sign out flow!
         mSigninManager.onNativeSignOut();
@@ -141,7 +141,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).signOut(any(), anyLong(), anyInt());
         doNothing().when(mDelegateMock).disableSyncAndWipeData(any(), anyLong(), eq(false), any());
         // See verification of nativeWipeGoogleServiceWorkerCaches below.
-        doReturn(null).when(mNativeMock).getManagementDomain(any(), anyLong());
+        doReturn(null).when(mDelegateMock).getManagementDomain(any(), anyLong());
 
         // Trigger the sign out flow!
         mSigninManager.onNativeSignOut();

@@ -9,7 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/system/message_center/message_center_controller.h"
+#include "ash/public/cpp/notifier_settings_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -27,10 +27,9 @@ namespace ash {
 
 // A class to show the list of notifier extensions / URL patterns and allow
 // users to customize the settings.
-class ASH_EXPORT NotifierSettingsView
-    : public views::View,
-      public views::ButtonListener,
-      public MessageCenterController::NotifierSettingsListener {
+class ASH_EXPORT NotifierSettingsView : public views::View,
+                                        public views::ButtonListener,
+                                        public NotifierSettingsObserver {
  public:
   explicit NotifierSettingsView();
   ~NotifierSettingsView() override;
@@ -39,11 +38,11 @@ class ASH_EXPORT NotifierSettingsView
 
   void SetQuietModeState(bool is_quiet_mode);
 
-  // NotifierSettingsListener:
-  void OnNotifierListUpdated(
-      const std::vector<mojom::NotifierUiDataPtr>& ui_data) override;
-  void UpdateNotifierIcon(const message_center::NotifierId& notifier_id,
-                          const gfx::ImageSkia& icon) override;
+  // NotifierSettingsObserver:
+  void OnNotifiersUpdated(
+      const std::vector<NotifierMetadata>& notifiers) override;
+  void OnNotifierIconUpdated(const message_center::NotifierId& notifier_id,
+                             const gfx::ImageSkia& icon) override;
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -56,7 +55,7 @@ class ASH_EXPORT NotifierSettingsView
   class ASH_EXPORT NotifierButton : public views::Button,
                                     public views::ButtonListener {
    public:
-    NotifierButton(const mojom::NotifierUiData& notifier_ui_data,
+    NotifierButton(const NotifierMetadata& notifier,
                    views::ButtonListener* listener);
     ~NotifierButton() override;
 

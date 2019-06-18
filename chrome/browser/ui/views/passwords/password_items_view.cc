@@ -204,8 +204,8 @@ void PasswordItemsView::PasswordRow::AddUndoRow(views::GridLayout* layout) {
       CreateUndoButton(this, GetDisplayUsername(*password_form_));
 
   StartRow(layout, UNDO_COLUMN_SET);
-  layout->AddView(text.release());
-  layout->AddView(undo_button.release());
+  layout->AddView(std::move(text));
+  layout->AddView(std::move(undo_button));
 }
 
 void PasswordItemsView::PasswordRow::AddPasswordRow(views::GridLayout* layout) {
@@ -216,9 +216,9 @@ void PasswordItemsView::PasswordRow::AddPasswordRow(views::GridLayout* layout) {
   std::unique_ptr<views::ImageButton> delete_button =
       CreateDeleteButton(this, GetDisplayUsername(*password_form_));
   StartRow(layout, PASSWORD_COLUMN_SET);
-  layout->AddView(username_label.release());
-  layout->AddView(password_label.release());
-  layout->AddView(delete_button.release());
+  layout->AddView(std::move(username_label));
+  layout->AddView(std::move(password_label));
+  layout->AddView(std::move(delete_button));
 }
 
 void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,

@@ -26,6 +26,7 @@ static int32_t g_next_indexed_db_connection_id;
 IndexedDBConnection::IndexedDBConnection(
     int child_process_id,
     IndexedDBOriginStateHandle origin_state_handle,
+    IndexedDBClassFactory* indexed_db_class_factory,
     base::WeakPtr<IndexedDBDatabase> database,
     base::RepeatingClosure on_version_change_ignored,
     base::OnceCallback<void(IndexedDBConnection*)> on_close,
@@ -34,6 +35,7 @@ IndexedDBConnection::IndexedDBConnection(
     : id_(g_next_indexed_db_connection_id++),
       child_process_id_(child_process_id),
       origin_state_handle_(std::move(origin_state_handle)),
+      indexed_db_class_factory_(indexed_db_class_factory),
       database_(std::move(database)),
       on_version_change_ignored_(std::move(on_version_change_ignored)),
       on_close_(std::move(on_close)),
@@ -124,7 +126,7 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(GetTransaction(id), nullptr) << "Duplicate transaction id." << id;
   std::unique_ptr<IndexedDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
+      indexed_db_class_factory_->CreateIndexedDBTransaction(
           id, this, error_callback_, scope, mode, backing_store_transaction);
   IndexedDBTransaction* transaction_ptr = transaction.get();
   transactions_[id] = std::move(transaction);

@@ -68,6 +68,10 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   // Get the associated SVGResource object, if any.
   LocalSVGResource* AssociatedResource() const;
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
+    return SVGURIReference::GetCheckedAttributeTypes();
+  }
+
  private:
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;

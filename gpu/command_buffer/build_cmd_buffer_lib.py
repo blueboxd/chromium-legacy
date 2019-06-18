@@ -576,25 +576,23 @@ _STATE_INFO = {
         'name': 'scissor_x',
         'type': 'GLint',
         'default': '0',
-        'expected': 'kViewportX',
       },
       {
         'name': 'scissor_y',
         'type': 'GLint',
         'default': '0',
-        'expected': 'kViewportY',
       },
       {
         'name': 'scissor_width',
         'type': 'GLsizei',
         'default': '1',
-        'expected': 'kViewportWidth',
+        'expected': 'initial_size.width()',
       },
       {
         'name': 'scissor_height',
         'type': 'GLsizei',
         'default': '1',
-        'expected': 'kViewportHeight',
+        'expected': 'initial_size.height()',
       },
     ],
   },
@@ -608,25 +606,23 @@ _STATE_INFO = {
         'name': 'viewport_x',
         'type': 'GLint',
         'default': '0',
-        'expected': 'kViewportX',
       },
       {
         'name': 'viewport_y',
         'type': 'GLint',
         'default': '0',
-        'expected': 'kViewportY',
       },
       {
         'name': 'viewport_width',
         'type': 'GLsizei',
         'default': '1',
-        'expected': 'kViewportWidth',
+        'expected': 'initial_size.width()',
       },
       {
         'name': 'viewport_height',
         'type': 'GLsizei',
         'default': '1',
-        'expected': 'kViewportHeight',
+        'expected': 'initial_size.height()',
       },
     ],
   },
@@ -780,7 +776,7 @@ def CachedStateName(item):
     return 'cached_' + item['name']
   return item['name']
 
-def GuardState(state, operation):
+def GuardState(state, operation, feature_info):
   if 'manual' in state:
     assert state['manual']
     return ""
@@ -789,11 +785,11 @@ def GuardState(state, operation):
   result_end = []
   if 'es3' in state:
     assert state['es3']
-    result.append("  if (feature_info_->IsES3Capable()) {\n");
+    result.append("  if (%s->IsES3Capable()) {\n" % feature_info);
     result_end.append("  }\n")
   if 'extension_flag' in state:
-    result.append("  if (feature_info_->feature_flags().%s) {\n  " %
-                     (state['extension_flag']))
+    result.append("  if (%s->feature_flags().%s) {\n  " %
+                     (feature_info, state['extension_flag']))
     result_end.append("  }\n")
   if 'gl_version_flag' in state:
     name = state['gl_version_flag']
@@ -801,8 +797,8 @@ def GuardState(state, operation):
     if name[0] == '!':
       inverted = '!'
       name = name[1:]
-    result.append("  if (%sfeature_info_->gl_version_info().%s) {\n" %
-                      (inverted, name))
+    result.append("  if (%s%s->gl_version_info().%s) {\n" %
+                      (inverted, feature_info, name))
     result_end.append("  }\n")
 
   result.append(operation)
@@ -1868,7 +1864,7 @@ class StateSetNamedParameter(TypeHandler):
       if not func.GetInfo("no_gl"):
         operation = "        %s(%s);\n" % \
                     (func.GetGLFunctionName(), func.MakeOriginalArgString(""))
-        f.write(GuardState(state, operation))
+        f.write(GuardState(state, operation, "feature_info_"))
       f.write("      }\n")
       f.write("      break;\n")
     f.write("    default:\n")
@@ -6800,7 +6796,8 @@ void ContextState::InitState(const ContextState *prev_state) const {
               if test_prev:
                 operation.append("  }")
 
-              guarded_operation = GuardState(item, ''.join(operation))
+              guarded_operation = GuardState(item, ''.join(operation),
+                                             "feature_info_")
               f.write(guarded_operation)
           else:
             if 'extension_flag' in state:
@@ -6998,14 +6995,16 @@ namespace gles2 {
             })
       self.generated_cpp_filenames.append(filename)
 
-    comment = ("// It is included by %s_cmd_decoder_unittest_base.cc\n"
-               % _lower_prefix)
-    filename = filename_pattern % 0
+
+  def WriteServiceContextStateTestHelpers(self, filename):
+    comment = "// It is included by context_state_test_helpers.cc\n"
     with CHeaderWriter(filename, self.year, comment) as f:
       if self.capability_flags:
         f.write(
-"""void %sDecoderTestBase::SetupInitCapabilitiesExpectations(
-      bool es3_capable) {""" % _prefix)
+            """void ContextStateTestHelpers::SetupInitCapabilitiesExpectations(
+    MockGL* gl,
+    gles2::FeatureInfo* feature_info) {
+""")
         for capability in self.capability_flags:
           capability_no_init = 'no_init' in capability and \
               capability['no_init'] == True
@@ -7015,28 +7014,30 @@ namespace gles2 {
           if capability_es3:
             continue
           if 'extension_flag' in capability:
-            f.write("  if (feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info->feature_flags().%s) {\n" %
                      capability['extension_flag'])
             f.write("  ")
-          f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
+          f.write("  ExpectEnableDisable(gl, GL_%s, %s);\n" %
                   (capability['name'].upper(),
                    ('false', 'true')['default' in capability]))
           if 'extension_flag' in capability:
             f.write("  }")
-        f.write("  if (es3_capable) {")
+        f.write("  if (feature_info->IsES3Capable()) {")
         for capability in self.capability_flags:
           capability_es3 = 'es3' in capability and capability['es3'] == True
           if capability_es3:
-            f.write("    ExpectEnableDisable(GL_%s, %s);\n" %
+            f.write("    ExpectEnableDisable(gl, GL_%s, %s);\n" %
                        (capability['name'].upper(),
                         ('false', 'true')['default' in capability]))
         f.write("""  }
 }
 """)
       f.write("""
-void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
-  auto* feature_info_ = feature_info();
-""" % _prefix)
+void ContextStateTestHelpers::SetupInitStateExpectations(
+    MockGL* gl,
+    gles2::FeatureInfo* feature_info,
+    const gfx::Size& initial_size) {
+""")
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATE_INFO.keys()):
         state = _STATE_INFO[state_name]
@@ -7051,7 +7052,7 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
               else:
                 args.append(item['default'])
             f.write(
-                "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                "  EXPECT_CALL(*gl, %s(%s, %s))\n" %
                 (state['func'], ('GL_FRONT', 'GL_BACK')[ndx],
                  ", ".join(args)))
             f.write("      .Times(1)\n")
@@ -7065,7 +7066,7 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
 
             operation = []
             operation.append(
-                             "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                             "  EXPECT_CALL(*gl, %s(%s, %s))\n" %
                              (state['func'],
                               (item['enum_set']
                                   if 'enum_set' in item else item['enum']),
@@ -7073,11 +7074,12 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
             operation.append("      .Times(1)\n")
             operation.append("      .RetiresOnSaturation();\n")
 
-            guarded_operation = GuardState(item, ''.join(operation))
+            guarded_operation = GuardState(item, ''.join(operation),
+                                           "feature_info")
             f.write(guarded_operation)
         elif 'no_init' not in state:
           if 'extension_flag' in state:
-            f.write("  if (feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info->feature_flags().%s) {\n" %
                        state['extension_flag'])
             f.write("  ")
           args = []
@@ -7089,16 +7091,16 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
           # TODO: Currently we do not check array values.
           args = ["_" if isinstance(arg, list) else arg for arg in args]
           if 'custom_function' in state:
-            f.write("  SetupInitStateManualExpectationsFor%s(%s);\n" %
+            f.write("  SetupInitStateManualExpectationsFor%s(gl, %s);\n" %
                        (state['func'], ", ".join(args)))
           else:
-            f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
+            f.write("  EXPECT_CALL(*gl, %s(%s))\n" %
                        (state['func'], ", ".join(args)))
             f.write("      .Times(1)\n")
             f.write("      .RetiresOnSaturation();\n")
           if 'extension_flag' in state:
             f.write("  }\n")
-      f.write("  SetupInitStateManualExpectations(es3_capable);\n")
+      f.write("  SetupInitStateManualExpectations(gl, feature_info);\n")
       f.write("}\n")
     self.generated_cpp_filenames.append(filename)
 

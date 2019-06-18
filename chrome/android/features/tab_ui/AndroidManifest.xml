@@ -8,9 +8,6 @@
     featureSplit="tab_ui"
     package="{{manifest_package}}">
 
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="{{target_sdk_version}}" />
     <application></application>
     <dist:module
         dist:onDemand="true"

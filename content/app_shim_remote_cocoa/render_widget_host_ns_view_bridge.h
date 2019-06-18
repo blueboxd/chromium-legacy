@@ -48,7 +48,8 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
-  void SetTextInputType(ui::TextInputType text_input_type) override;
+  void SetTextInputState(ui::TextInputType text_input_type,
+                         uint32_t flags) override;
   void SetTextSelection(const base::string16& text,
                         uint64_t offset,
                         const gfx::Range& range) override;

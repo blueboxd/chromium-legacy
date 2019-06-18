@@ -15,7 +15,7 @@
  *
  * Note that <cr-dialog> wrapper itself always has 0x0 dimensions, and
  * specifying width/height on <cr-dialog> directly will have no effect on the
- * internal native <dialog>. Instead use the --cr-dialog-native mixin to specify
+ * internal native <dialog>. Instead use cr-dialog::part(dialog) to specify
  * width/height (as well as other available mixins to style other parts of the
  * dialog contents).
  */

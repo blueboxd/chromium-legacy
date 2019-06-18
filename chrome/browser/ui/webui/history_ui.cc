@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
@@ -178,7 +177,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* data_source = CreateHistoryUIHTMLSource(profile);
-  DarkModeHandler::Initialize(web_ui, data_source);
   ManagedUIHandler::Initialize(web_ui, data_source);
   content::WebUIDataSource::Add(profile, data_source);
 

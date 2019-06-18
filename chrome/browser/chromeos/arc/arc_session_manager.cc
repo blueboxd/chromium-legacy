@@ -30,6 +30,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"

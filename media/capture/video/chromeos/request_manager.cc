@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/posix/safe_strerror.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
@@ -374,7 +375,7 @@ void RequestManager::ProcessCaptureResult(
               kCrosHalV3BufferManagerInvalidPendingResultId,
           FROM_HERE,
           std::string("Invalid pending_result id: ") +
-              std::to_string(result_id));
+              base::NumberToString(result_id));
       return;
     }
     if (pending_result.partial_metadata_received.count(result_id)) {
@@ -383,7 +384,7 @@ void RequestManager::ProcessCaptureResult(
               kCrosHalV3BufferManagerReceivedDuplicatedPartialMetadata,
           FROM_HERE,
           std::string("Received duplicated partial metadata: ") +
-              std::to_string(result_id));
+              base::NumberToString(result_id));
       return;
     }
     DVLOG(2) << "Received partial result " << result_id << " for frame "
@@ -399,7 +400,7 @@ void RequestManager::ProcessCaptureResult(
               kCrosHalV3BufferManagerIncorrectNumberOfOutputBuffersReceived,
           FROM_HERE,
           std::string("Incorrect number of output buffers received: ") +
-              std::to_string(result->output_buffers->size()));
+              base::NumberToString(result->output_buffers->size()));
       return;
     }
 
@@ -413,7 +414,7 @@ void RequestManager::ProcessCaptureResult(
                 kCrosHalV3BufferManagerInvalidTypeOfOutputBuffersReceived,
             FROM_HERE,
             std::string("Invalid type of output buffers received: ") +
-                std::to_string(stream_buffer->stream_id));
+                base::NumberToString(stream_buffer->stream_id));
         return;
       }
 
@@ -429,8 +430,9 @@ void RequestManager::ProcessCaptureResult(
                   kCrosHalV3BufferManagerReceivedMultipleResultBuffersForFrame,
               FROM_HERE,
               std::string("Received multiple result buffers for frame ") +
-                  std::to_string(frame_number) + std::string(" for stream ") +
-                  std::to_string(stream_buffer->stream_id));
+                  base::NumberToString(frame_number) +
+                  std::string(" for stream ") +
+                  base::NumberToString(stream_buffer->stream_id));
           return;
         } else if (last_received_frame_number_map_[stream_type] >
                    frame_number) {
@@ -440,8 +442,10 @@ void RequestManager::ProcessCaptureResult(
               FROM_HERE,
               std::string("Received frame is out-of-order; expect frame number "
                           "greater than ") +
-                  std::to_string(last_received_frame_number_map_[stream_type]) +
-                  std::string(" but got ") + std::to_string(frame_number));
+                  base::NumberToString(
+                      last_received_frame_number_map_[stream_type]) +
+                  std::string(" but got ") +
+                  base::NumberToString(frame_number));
         } else {
           last_received_frame_number_map_[stream_type] = frame_number;
         }
@@ -511,7 +515,7 @@ void RequestManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
               kCrosHalV3BufferManagerUnknownStreamInCamera3NotifyMsg,
           FROM_HERE,
           std::string("Unknown stream in Camera3NotifyMsg: ") +
-              std::to_string(error_stream_id));
+              base::NumberToString(error_stream_id));
       return;
     }
     cros::mojom::Camera3ErrorMsgCode error_code = error->error_code;
@@ -528,7 +532,7 @@ void RequestManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
               kCrosHalV3BufferManagerReceivedInvalidShutterTime,
           FROM_HERE,
           std::string("Received invalid shutter time: ") +
-              std::to_string(shutter_time));
+              base::NumberToString(shutter_time));
       return;
     }
     CaptureResult& pending_result = pending_results_[frame_number];
@@ -573,7 +577,7 @@ void RequestManager::HandleNotifyError(
       // buffers will be reused in SubmitCaptureResult.
       warning_msg =
           std::string("An error occurred while processing request for frame ") +
-          std::to_string(frame_number);
+          base::NumberToString(frame_number);
       break;
 
     case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_RESULT:
@@ -583,7 +587,7 @@ void RequestManager::HandleNotifyError(
       warning_msg = std::string(
                         "An error occurred while producing result "
                         "metadata for frame ") +
-                    std::to_string(frame_number);
+                    base::NumberToString(frame_number);
       break;
 
     case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_BUFFER:
@@ -598,7 +602,7 @@ void RequestManager::HandleNotifyError(
       warning_msg =
           std::string(
               "An error occurred while filling output buffer for frame ") +
-          std::to_string(frame_number);
+          base::NumberToString(frame_number);
       break;
 
     default:

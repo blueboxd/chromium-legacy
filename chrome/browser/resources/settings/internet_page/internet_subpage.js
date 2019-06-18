@@ -11,6 +11,7 @@ Polymer({
   is: 'settings-internet-subpage',
 
   behaviors: [
+    CrNetworkListenerBehavior,
     CrPolicyNetworkBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
@@ -125,11 +126,6 @@ Polymer({
     },
   },
 
-  listeners: {
-    'network-list-changed': 'getNetworkStateList_',
-    'networks-changed': 'getNetworkStateList_',
-  },
-
   observers: ['deviceStateChanged_(networkingPrivate, deviceState)'],
 
   /** @private {number|null} */
@@ -172,6 +168,20 @@ Polymer({
     // Request the list of networks and start scanning if necessary.
     this.getNetworkStateList_();
     this.updateScanning_();
+  },
+
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
+   */
+  onActiveNetworksChanged: function(networks) {
+    this.getNetworkStateList_();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.getNetworkStateList_();
   },
 
   /** @private */

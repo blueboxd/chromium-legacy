@@ -246,7 +246,7 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
     // top-level page (e.g. in SAVE_PAGE_TYPE_AS_ONLY_HTML mode). This is
     // probably also okay for subresources downloaded in
     // SAVE_PAGE_TYPE_AS_COMPLETE_HTML mode.
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+    request->mode = network::mojom::RequestMode::kNavigate;
 
     network::mojom::URLLoaderFactory* factory = nullptr;
     std::unique_ptr<DataURLLoaderFactory> data_url_loader_factory;

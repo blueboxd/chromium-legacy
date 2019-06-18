@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   // nullptr and |detected_error| is populated with the failed reason if the
   // passed parameters contain an invalid entry, and the pointer is valid.
   static std::unique_ptr<PreflightResult> Create(
-      const mojom::FetchCredentialsMode credentials_mode,
+      const mojom::CredentialsMode credentials_mode,
       const base::Optional<std::string>& allow_methods_header,
       const base::Optional<std::string>& allow_headers_header,
       const base::Optional<std::string>& max_age_header,
@@ -66,7 +66,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   // |headers| is allowed by the CORS-preflight response.
   // This also does not reject the forbidden headers as
   // EnsureAllowCrossOriginHeaders does not.
-  bool EnsureAllowedRequest(mojom::FetchCredentialsMode credentials_mode,
+  bool EnsureAllowedRequest(mojom::CredentialsMode credentials_mode,
                             const std::string& method,
                             const net::HttpRequestHeaders& headers,
                             bool is_revalidating) const;
@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   base::TimeTicks absolute_expiry_time() const { return absolute_expiry_time_; }
 
  protected:
-  explicit PreflightResult(const mojom::FetchCredentialsMode credentials_mode);
+  explicit PreflightResult(const mojom::CredentialsMode credentials_mode);
 
   base::Optional<mojom::CorsError> Parse(
       const base::Optional<std::string>& allow_methods_header,

@@ -49,6 +49,8 @@ class SVGScriptElement final : public SVGElement,
 
   bool IsScriptElement() const override { return true; }
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   void Trace(blink::Visitor*) override;
 
  private:

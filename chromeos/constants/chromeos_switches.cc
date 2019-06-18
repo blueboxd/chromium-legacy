@@ -471,8 +471,17 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
+// Smaller, denser shelf in clamshell mode.
+const char kShelfDenseClamshell[] = "shelf-dense-clamshell";
+
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
+
+// New modular UI design for the shelf.
+const char kShelfNewUi[] = "shelf-new-ui";
+
+// Scrollable list of apps on the shelf.
+const char kShelfScrollable[] = "shelf-scrollable";
 
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
@@ -601,8 +610,21 @@ bool IsSigninFrameClientCertUserSelectionEnabled() {
       kDisableSigninFrameClientCertUserSelection);
 }
 
+bool ShouldShowShelfDenseClamshell() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kShelfDenseClamshell);
+}
+
 bool ShouldShowShelfHoverPreviews() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
+}
+
+bool ShouldShowShelfNewUi() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfNewUi);
+}
+
+bool ShouldShowScrollableShelf() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

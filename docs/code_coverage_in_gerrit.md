@@ -1,19 +1,28 @@
 # Code Coverage in Gerrit
 
-**Have you ever wanted to know if your CL has enough code coverage?** You can
-see uncovered lines in Gerrit, which can help you figure out if your CL or the
-CL you're reviewing needs more/better tests.
+Tests are critical because they find bugs and regressions, enforce better
+designs and make code easier to maintain. **Code coverage helps you ensure your
+tests are thorough**.
 
-To generate code coverage data for your CL, **manually** trigger the
-experimental coverage CQ builder: *linux-coverage-rel*:
+Chromium CLs can show a line-by-line breakdown of test coverage. **You can use
+the code coverage trybot to ensure you only submit well-tested code**.
+
+To see code coverage for a Chromium CL, trigger the code coverage trybot
+**linux-coverage-rel**:
 
 ![choose_tryjobs] ![linux_coverage_rel]
 
-Once the build finishes and code coverage data are processed successfully, look
-at the right column of the side by side diff view to see which lines are **not**
-covered:
+Once the build finishes and code coverage data is processed successfully, **look
+at the right column of the side by side diff view to see coverage information**:
 
-![uncovered_lines]
+![code_coverage_annotations]
+
+The code coverage tool currently **supports C/C++ code for Chrome on Linux**;
+support for more platforms and more languages is in progress.
+
+The code coverage trybot has been **rolled out to a 10% experiment**, and once
+we're more comfortable in its stability, we plan to enable it by default and
+expand it to more platforms.
 
 ## Contacts
 
@@ -24,17 +33,9 @@ For any breakage report and feature requests, please [file a bug].
 For questions and general discussions, please join [code-coverage group].
 
 ## FAQ
-### Why is the coverage CQ builder needs to be triggered manually?
-
-We're still evaluating the stability of the code coverage pipeline, and once
-it's proven to be stable, the experimental builder will be merged into one of
-the existing CQ builders, and at that time, the feature will be available by
-default.
-
 ### Why is coverage not shown even though the try job finished successfully?
 
 There are several possible reasons:
-* All the added/modified lines are covered.
 * A particular source file/test may not be available on a particular project or
 platform. As of now, only `chromium/src` project and `Linux` platform is
 supported.
@@ -45,13 +46,14 @@ supported.
 Please refer to [code_coverage.md] for how code coverage works in Chromium in
 general, and specifically, for per-CL coverage in Gerrit, the
 [clang_code_coverage_wrapper] is used to compile and instrument ONLY the source
-files that are affected by the CL and a [chromium-coverage Gerrit plugin] is
-used to annotate uncovered lines in Gerrit.
+files that are affected by the CL for the sake of performance and a
+[chromium-coverage Gerrit plugin] is used to display code coverage information
+in Gerrit.
 
 
 [choose_tryjobs]: images/code_coverage_choose_tryjobs.png
 [linux_coverage_rel]: images/code_coverage_linux_coverage_rel.png
-[uncovered_lines]: images/code_coverage_uncovered_lines.png
+[code_coverage_annotations]: images/code_coverage_annotations.png
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [code-coverage group]: https://groups.google.com/a/chromium.org/forum/#!forum/code-coverage
 [code_coverage.md]: code_coverage.md

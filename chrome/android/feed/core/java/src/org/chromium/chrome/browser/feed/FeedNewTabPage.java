@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
+import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.api.client.scope.StreamScope;
 import com.google.android.libraries.feed.api.client.stream.Header;
 import com.google.android.libraries.feed.api.client.stream.NonDismissibleHeader;
@@ -27,7 +28,6 @@ import com.google.android.libraries.feed.api.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.api.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.api.host.stream.TooltipApi;
-import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -352,7 +352,7 @@ public class FeedNewTabPage extends NewTabPage {
             mScrollViewResizer = null;
         }
 
-        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        ProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
         assert feedProcessScope != null;
 
         FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();

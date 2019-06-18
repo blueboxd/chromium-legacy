@@ -17,7 +17,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -44,19 +43,6 @@
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
-
-// Tracking of HFontRef allocations (see: http://crbug/972689). The following
-// code is temporary. It will be used to track and fix incorrect usage of
-// GDI handles.
-
-// Amount of HFontRef objects currently allocated.
-int g_hfontref_total = 0;
-
-// Max amount of HFontRef object before reporting a crash.
-constexpr int kMaxHFontRefObjects = 1024;
-
-// Whether a report already got sent.
-bool g_hfontref_dump_already_sent = false;
 
 // Enable the use of PlatformFontSkia instead of PlatformFontWin.
 const base::Feature kPlatformFontSkiaOnWindows{
@@ -594,18 +580,6 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
       requested_font_size_(font_size) {
   DLOG_ASSERT(hfont);
 
-  // We are seeing cases in the field where the amount of HFontRef is above
-  // 10k objects. Each object keeps an HFONT alive, counting towards out 10K GDI
-  // handle limit. This code will help track the source of these issues
-  // (see crbug.com/972689) (todo: etienneb: remove this code when the
-  // experiment is done).
-  ++g_hfontref_total;
-  if (g_hfontref_total > kMaxHFontRefObjects &&
-      !g_hfontref_dump_already_sent) {
-    g_hfontref_dump_already_sent = true;
-    base::debug::DumpWithoutCrashing();
-  }
-
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
   font_name_ = base::UTF16ToUTF8(base::string16(font_info.lfFaceName));
@@ -649,7 +623,6 @@ int PlatformFontWin::HFontRef::GetAverageCharWidthInDialogUnits(
 }
 
 PlatformFontWin::HFontRef::~HFontRef() {
-  --g_hfontref_total;
   DeleteObject(hfont_);
 }
 

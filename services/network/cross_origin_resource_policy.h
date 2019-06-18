@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
       const ResourceResponseInfo& response,
-      mojom::FetchRequestMode fetch_mode,
+      mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock);
 
   // Parsing of the Cross-Origin-Resource-Policy http response header.

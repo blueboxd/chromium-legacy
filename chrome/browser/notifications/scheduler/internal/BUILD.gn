@@ -55,6 +55,8 @@ source_set("lib") {
     "scheduler_config.h",
     "scheduler_utils.cc",
     "scheduler_utils.h",
+    "webui_client.cc",
+    "webui_client.h",
   ]
 
   # This target should not depend on anything in //chrome/* except the proto library.

@@ -80,10 +80,6 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (manifest.background_color)
     background_color = manifest.background_color;
 
-  // Sets the URL of the HTML splash screen, if any.
-  if (manifest.splash_screen_url.is_valid())
-    splash_screen_url = manifest.splash_screen_url;
-
   // Set the icon urls based on the icons in the manifest, if any.
   icon_urls.clear();
   for (const auto& icon : manifest.icons)

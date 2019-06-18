@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.preferences;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
  * notification channels at the top level and links to website specific notifications. This is only
  * used on pre-O devices, devices on Android O+ will link to the Android notification settings.
  */
-public class NotificationsPreferences extends PreferenceFragment {
+public class NotificationsPreferences extends PreferenceFragmentCompat {
     // These are package-private to be used in tests.
     static final String PREF_FROM_WEBSITES = "from_websites";
     static final String PREF_SUGGESTIONS = "content_suggestions";
@@ -33,18 +33,17 @@ public class NotificationsPreferences extends PreferenceFragment {
     // The following field is only set if Feed is disabled, and should be null checked before
     // being used.
     @Nullable
-    private ChromeSwitchPreference mSuggestionsPref;
+    private ChromeSwitchPreferenceCompat mSuggestionsPref;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         assert Build.VERSION.SDK_INT < Build.VERSION_CODES.O
             : "NotificationsPreferences should only be used pre-O.";
 
-        super.onCreate(savedInstanceState);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
 
-        mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);
+        mSuggestionsPref = (ChromeSwitchPreferenceCompat) findPreference(PREF_SUGGESTIONS);
         mSuggestionsPref.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
             PrefetchPrefs.setNotificationEnabled((boolean) newValue);
             return true;

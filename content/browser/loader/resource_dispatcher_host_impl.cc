@@ -1045,7 +1045,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
 
   return AddStandardHandlers(
       request, static_cast<ResourceType>(request_data.resource_type),
-      resource_context, request_data.fetch_request_mode,
+      resource_context, request_data.mode,
       static_cast<blink::mojom::RequestContextType>(
           request_data.fetch_request_context_type),
       url_loader_options, requester_info->appcache_service(), child_id,
@@ -1057,7 +1057,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     net::URLRequest* request,
     ResourceType resource_type,
     ResourceContext* resource_context,
-    network::mojom::FetchRequestMode fetch_request_mode,
+    network::mojom::RequestMode request_mode,
     blink::mojom::RequestContextType fetch_request_context_type,
     uint32_t url_loader_options,
     AppCacheService* appcache_service,
@@ -1119,8 +1119,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (!IsResourceTypeFrame(resource_type)) {
     // Add a handler to block cross-site documents from the renderer process.
-    handler.reset(new CrossSiteDocumentResourceHandler(
-        std::move(handler), request, fetch_request_mode));
+    handler.reset(new CrossSiteDocumentResourceHandler(std::move(handler),
+                                                       request, request_mode));
   }
 
   // Insert a buffered event handler to sniff the mime type.
@@ -1545,7 +1545,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // by the ResourceScheduler. currently it's a no-op.
   handler = AddStandardHandlers(
       new_request.get(), resource_type, resource_context,
-      network::mojom::FetchRequestMode::kNoCors,
+      network::mojom::RequestMode::kNoCors,
       info.begin_params->request_context_type, url_loader_options,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()
                            : nullptr,

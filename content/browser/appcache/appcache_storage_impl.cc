@@ -178,8 +178,8 @@ class AppCacheStorageImpl::DatabaseTask
   DelegateReferenceVector delegates_;
 
  private:
-  void CallRun(base::TimeTicks schedule_time);
-  void CallRunCompleted(base::TimeTicks schedule_time);
+  void CallRun();
+  void CallRunCompleted();
   void OnFatalError();
 
   const scoped_refptr<base::SequencedTaskRunner> io_thread_;
@@ -192,8 +192,7 @@ void AppCacheStorageImpl::DatabaseTask::Schedule() {
     return;
 
   if (storage_->db_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&DatabaseTask::CallRun, this,
-                                    base::TimeTicks::Now()))) {
+          FROM_HERE, base::BindOnce(&DatabaseTask::CallRun, this))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
     NOTREACHED() << "Thread for database tasks is not running.";
@@ -206,18 +205,10 @@ void AppCacheStorageImpl::DatabaseTask::CancelCompletion() {
   storage_ = nullptr;
 }
 
-void AppCacheStorageImpl::DatabaseTask::CallRun(
-    base::TimeTicks schedule_time) {
-  AppCacheHistograms::AddTaskQueueTimeSample(
-      base::TimeTicks::Now() - schedule_time);
+void AppCacheStorageImpl::DatabaseTask::CallRun() {
   if (!database_->is_disabled()) {
-    base::TimeTicks run_time = base::TimeTicks::Now();
     Run();
-    AppCacheHistograms::AddTaskRunTimeSample(
-        base::TimeTicks::Now() - run_time);
-
     if (database_->was_corruption_detected()) {
-      AppCacheHistograms::CountCorruptionDetected();
       database_->Disable();
     }
     if (database_->is_disabled()) {
@@ -226,22 +217,15 @@ void AppCacheStorageImpl::DatabaseTask::CallRun(
     }
   }
   io_thread_->PostTask(FROM_HERE,
-                       base::BindOnce(&DatabaseTask::CallRunCompleted, this,
-                                      base::TimeTicks::Now()));
+                       base::BindOnce(&DatabaseTask::CallRunCompleted, this));
 }
 
-void AppCacheStorageImpl::DatabaseTask::CallRunCompleted(
-    base::TimeTicks schedule_time) {
-  AppCacheHistograms::AddCompletionQueueTimeSample(
-      base::TimeTicks::Now() - schedule_time);
+void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
   if (storage_) {
     DCHECK(io_thread_->RunsTasksInCurrentSequence());
     DCHECK(storage_->scheduled_database_tasks_.front() == this);
     storage_->scheduled_database_tasks_.pop_front();
-    base::TimeTicks run_time = base::TimeTicks::Now();
     RunCompleted();
-    AppCacheHistograms::AddCompletionRunTimeSample(
-        base::TimeTicks::Now() - run_time);
     delegates_.clear();
   }
 }
@@ -433,12 +417,10 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     DCHECK(group->get());
     DCHECK_EQ(group_record_.group_id, group->get()->group_id());
 
-    // TODO(michaeln): histogram is fishing for clues to crbug/95101
-    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
-      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
-          AppCacheHistograms::CALLSITE_0);
-    }
-
+    // TODO(pwnall): A removed histogram shows that, very rarely,
+    //               cache->get()->GetEntry(group_record_.manifest_url))
+    //               return null here. This was supposed to help investigate
+    //               https://crbug.com/95101
     storage_->NotifyStorageAccessed(group_record_.origin);
     return;
   }
@@ -455,12 +437,6 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
   if (group->get()) {
     DCHECK(group_record_.group_id == group->get()->group_id());
     group->get()->AddCache(cache->get());
-
-    // TODO(michaeln): histogram is fishing for clues to crbug/95101
-    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
-      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
-          AppCacheHistograms::CALLSITE_1);
-    }
   } else {
     *group = base::MakeRefCounted<AppCacheGroup>(
         storage_, group_record_.manifest_url, group_record_.group_id);
@@ -471,11 +447,10 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
         group_record_.first_evictable_error_time);
     group->get()->AddCache(cache->get());
 
-    // TODO(michaeln): histogram is fishing for clues to crbug/95101
-    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
-      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
-          AppCacheHistograms::CALLSITE_2);
-    }
+    // TODO(pwnall): A removed histogram shows that, very rarely,
+    //               cache->get()->GetEntry(group_record_.manifest_url))
+    //               return null here. This was supposed to help investigate
+    //               https://crbug.com/95101
   }
   DCHECK(group->get()->newest_complete_cache() == cache->get());
 
@@ -1528,12 +1503,6 @@ void AppCacheStorageImpl::StoreGroupAndNewestCache(
       base::MakeRefCounted<StoreGroupAndCacheTask>(this, group, newest_cache);
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
   task->GetQuotaThenSchedule();
-
-  // TODO(michaeln): histogram is fishing for clues to crbug/95101
-  if (!newest_cache->GetEntry(group->manifest_url())) {
-    AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
-        AppCacheHistograms::CALLSITE_3);
-  }
 }
 
 void AppCacheStorageImpl::FindResponseForMainRequest(
@@ -1896,9 +1865,6 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
 
 void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
   if (rv != net::OK) {
-    LOG(ERROR) << "Failed to open the appcache diskcache.";
-    AppCacheHistograms::CountInitResult(AppCacheHistograms::DISK_CACHE_ERROR);
-
     // We're unable to open the disk cache, this is a fatal error that we can't
     // really recover from. We handle it by temporarily disabling the appcache
     // deleting the directory on disk and reinitializing the appcache system.

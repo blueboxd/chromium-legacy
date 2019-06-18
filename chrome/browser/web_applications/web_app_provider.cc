@@ -172,7 +172,8 @@ void WebAppProvider::OnRegistryReady() {
 
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     web_app_policy_manager_->Start();
-    system_web_app_manager_->Start();
+    DCHECK(ui_delegate_);
+    system_web_app_manager_->Start(ui_delegate_);
 
     // Start ExternalWebApps subsystem:
     ScanForExternalWebApps(

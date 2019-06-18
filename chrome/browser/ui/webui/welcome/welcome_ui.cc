@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
@@ -148,8 +147,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
-
-  DarkModeHandler::Initialize(web_ui, html_source);
 
   // There are multiple possible configurations that affects the layout, but
   // first add resources that are shared across all layouts.

@@ -8,7 +8,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/cursor/cursor_type.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/public/activation_client.h"
@@ -208,8 +207,8 @@ void MouseCursorOverlayController::DisconnectFromToolkitForTesting() {
 
   observer_->StopTracking();
 
-  // The default cursor is ui::CursorType::kNone. Make it kPointer so the tests
-  // have a non-empty cursor bitmap to work with.
+  // The default cursor is ui::CursorType::kNone. Make it kPointer
+  // so the tests have a non-empty cursor bitmap to work with.
   auto* const window = Observer::GetTargetWindow(observer_);
   CHECK(window);
   auto* const host = window->GetHost();

@@ -32,6 +32,10 @@ declare_args() {
 #    is_monochrome: Optional. If set, the library is for use in monochrome.
 #    is_webview: If true, the library is for webview, and browser-specific
 #      config is skipped.
+#    allow_partitions: If true, and the build config supports it, the library
+#      is linked as a partitioned library, and separate feature libs are
+#      generated if specified. Those libraries may later be packaged into
+#      dynamic feature modules or APKs.
 template("chrome_common_shared_library") {
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_webview = defined(invoker.is_webview) && invoker.is_webview
@@ -40,16 +44,21 @@ template("chrome_common_shared_library") {
   _linker_script = "$target_gen_dir/${target_name}_linker_script.txt"
   _linker_script_target = "${target_name}_linker_script"
 
+  # Create a partitioned libraries if the build config supports it, and the
+  # invoker wants partitions.
+  _generate_partitions = defined(invoker.allow_partitions) &&
+                         invoker.allow_partitions && use_native_modules
+
   # Create a custom linker script based on JNI and feature module requirements.
   generate_linker_version_script(_linker_script_target) {
     linker_script = _linker_script
     export_java_symbols = _export_java_symbols
-    if (use_native_modules) {
+    if (_generate_partitions) {
       export_symbol_whitelist_files = native_feature_module_entrypoint_files
     }
   }
 
-  if (use_native_modules) {
+  if (_generate_partitions) {
     _target_type = "partitioned_shared_library"
   } else {
     _target_type = "shared_library"
@@ -92,7 +101,7 @@ template("chrome_common_shared_library") {
       }
     }
 
-    if (use_native_modules) {
+    if (_generate_partitions) {
       partitions = native_feature_modules
       deps += feature_module_base_lib_deps
     }

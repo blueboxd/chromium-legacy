@@ -113,7 +113,7 @@ std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
   for (const auto& id_and_url :
        web_app::ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
            profile_->GetPrefs(), install_source)) {
-    if (registrar_->IsInstalled(id_and_url.second))
+    if (registrar_->IsInstalled(id_and_url.first))
       installed_apps.push_back(id_and_url.second);
   }
 

@@ -49,8 +49,8 @@ class NotificationSchedulerClient {
   using DisplayCallback =
       base::OnceCallback<void(std::unique_ptr<DisplayData>)>;
 
-  NotificationSchedulerClient();
-  virtual ~NotificationSchedulerClient();
+  NotificationSchedulerClient() = default;
+  virtual ~NotificationSchedulerClient() = default;
 
   // Called when the notification should be displayed to the user. The clients
   // can overwrite data in |display_data| and return the updated data in

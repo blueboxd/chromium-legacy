@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_TABS_TAB_PRIVATE_H_
 
 @class CRWWebController;
+@class OpenInController;
 
 // Exposed private methods for testing purpose.
 @interface Tab ()

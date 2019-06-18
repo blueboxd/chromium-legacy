@@ -134,8 +134,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
-    network::mojom::FetchRequestMode fetch_request_mode,
-    network::mojom::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
   DCHECK(fetch_client_settings_object_fetcher);
@@ -153,8 +153,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
-  request.SetFetchRequestMode(fetch_request_mode);
-  request.SetFetchCredentialsMode(fetch_credentials_mode);
+  request.SetMode(request_mode);
+  request.SetCredentialsMode(credentials_mode);
 
   need_to_cancel_ = true;
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(

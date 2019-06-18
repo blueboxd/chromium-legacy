@@ -8,8 +8,8 @@ module network.mojom;
 // https://fetch.spec.whatwg.org/#concept-request-mode
 //
 // This enum is also used in histograms. Append-only.
-// See the "FetchRequestMode" enum in enums.xml.
-enum FetchRequestMode {
+// See the "RequestMode" enum in enums.xml.
+enum RequestMode {
   kSameOrigin,
   kNoCors,
   kCors,
@@ -20,7 +20,7 @@ enum FetchRequestMode {
 
 // Corresponds to Fetch request's "redirect mode":
 // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
-enum FetchRedirectMode {
+enum RedirectMode {
   kFollow,
   kError,
   kManual,
@@ -28,7 +28,7 @@ enum FetchRedirectMode {
 
 // Corresponds to Fetch request's "credentials mode":
 // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
-enum FetchCredentialsMode {
+enum CredentialsMode {
   kOmit,
   kSameOrigin,
   kInclude,

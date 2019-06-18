@@ -35,12 +35,14 @@ const int kWallpaperLayoutCount = base::size(kWallpaperLayoutArrays);
 
 base::LazySequencedTaskRunner g_blocking_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_BLOCKING,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 base::LazySequencedTaskRunner g_non_blocking_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 

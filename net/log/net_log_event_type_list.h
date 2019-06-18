@@ -2414,53 +2414,6 @@ EVENT_TYPE(DNS_TRANSACTION_TCP_ATTEMPT)
 EVENT_TYPE(DNS_TRANSACTION_RESPONSE)
 
 // ------------------------------------------------------------------------
-// ChromeExtension
-// ------------------------------------------------------------------------
-
-// TODO(eroman): This is a layering violation. Fix this in the context
-// of http://crbug.com/90674.
-
-// This event is created when a Chrome extension aborts a request.
-//
-//  {
-//    "extension_id": <Extension ID that caused the abortion>
-//  }
-EVENT_TYPE(CHROME_EXTENSION_ABORTED_REQUEST)
-
-// This event is created when a Chrome extension redirects a request.
-//
-//  {
-//    "extension_id": <Extension ID that caused the redirection>
-//  }
-EVENT_TYPE(CHROME_EXTENSION_REDIRECTED_REQUEST)
-
-// This event is created when a Chrome extension modifies the headers of a
-// request.
-//
-//  {
-//    "extension_id":     <Extension ID that caused the modification>,
-//    "modified_headers": [ "<header>: <value>", ... ],
-//    "deleted_headers":  [ "<header>", ... ]
-//  }
-EVENT_TYPE(CHROME_EXTENSION_MODIFIED_HEADERS)
-
-// This event is created when a Chrome extension tried to modify a request
-// but was ignored due to a conflict.
-//
-//  {
-//    "extension_id": <Extension ID that was ignored>
-//  }
-EVENT_TYPE(CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT)
-
-// This event is created when a Chrome extension provides authentication
-// credentials.
-//
-//  {
-//    "extension_id": <Extension ID that provides credentials>
-//  }
-EVENT_TYPE(CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS)
-
-// ------------------------------------------------------------------------
 // CertVerifier
 // ------------------------------------------------------------------------
 

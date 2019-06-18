@@ -79,6 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   bool IsUsingPin() const;
   bool IsForcingDircrypto() const;
   AuthFlow GetAuthFlow() const;
+  bool IsUsingSamlPrincipalsApi() const;
   user_manager::UserType GetUserType() const;
   const std::string& GetPublicSessionLocale() const;
   const std::string& GetPublicSessionInputMethod() const;
@@ -105,6 +106,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   void SetIsUsingPin(bool is_using_pin);
   void SetIsForcingDircrypto(bool is_forcing_dircrypto);
   void SetAuthFlow(AuthFlow auth_flow);
+  void SetIsUsingSamlPrincipalsApi(bool is_using_saml_principals_api);
   void SetPublicSessionLocale(const std::string& locale);
   void SetPublicSessionInputMethod(const std::string& input_method);
   void SetDeviceId(const std::string& device_id);
@@ -130,6 +132,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   bool is_using_pin_ = false;
   bool is_forcing_dircrypto_ = false;
   AuthFlow auth_flow_ = AUTH_FLOW_OFFLINE;
+  bool is_using_saml_principals_api_ = false;
   user_manager::UserType user_type_ = user_manager::USER_TYPE_REGULAR;
   std::string public_session_locale_;
   std::string public_session_input_method_;

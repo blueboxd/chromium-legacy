@@ -77,6 +77,11 @@ class MockAutocompleteProviderClient
     return nullptr;
   }
 
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override {
+    return nullptr;
+  }
+
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
   MOCK_CONST_METHOD0(GetEmbedderRepresentationOfAboutScheme, std::string());
   MOCK_METHOD0(GetBuiltinURLs, std::vector<base::string16>());

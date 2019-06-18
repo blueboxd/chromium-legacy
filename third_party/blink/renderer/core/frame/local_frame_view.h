@@ -957,6 +957,10 @@ class CORE_EXPORT LocalFrameView final
   bool needs_focus_on_fragment_;
   bool in_lifecycle_update_;
 
+  // True if the frame has deferred commits at least once per document load.
+  // We won't defer again for the same document.
+  bool have_deferred_commits_ = false;
+
   LifecycleData lifecycle_data_;
 
   IntRect remote_viewport_intersection_;

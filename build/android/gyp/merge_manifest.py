@@ -9,14 +9,12 @@
 import argparse
 import contextlib
 import os
-import shlex
 import sys
 import tempfile
-import xml.dom.minidom as minidom
 import xml.etree.ElementTree as ElementTree
 
 from util import build_utils
-from util import diff_utils
+from util import manifest_utils
 
 # Tools library directory - relative to Android SDK root
 _SDK_TOOLS_LIB_DIR = os.path.join('tools', 'lib')
@@ -29,34 +27,21 @@ _MANIFEST_MERGER_JARS = [
     'sdklib{suffix}.jar',
 ]
 
-_TOOLS_NAMESPACE_PREFIX = 'tools'
-_TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
-_ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
-
-# Without registering namespaces ElementTree converts them to "ns0" and "ns1"
-ElementTree.register_namespace('tools', _TOOLS_NAMESPACE)
-ElementTree.register_namespace('android', _ANDROID_NAMESPACE)
-
 
 @contextlib.contextmanager
-def _ProcessManifest(manifest_path):
+def _ProcessManifest(manifest_path, allow_uses_sdk):
   """Patches an Android manifest to always include the 'tools' namespace
   declaration, as it is not propagated by the manifest merger from the SDK.
 
   See https://issuetracker.google.com/issues/63411481
   """
-  doc = minidom.parse(manifest_path)
-  manifests = doc.getElementsByTagName('manifest')
-  assert len(manifests) == 1
-  manifest = manifests[0]
-  package = manifest.getAttribute('package')
-
-  manifest.setAttribute('xmlns:%s' % _TOOLS_NAMESPACE_PREFIX, _TOOLS_NAMESPACE)
-
+  doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
+  package = manifest_utils.GetPackage(manifest)
+  if not allow_uses_sdk:
+    manifest_utils.AssertNoUsesSdk(manifest)
   tmp_prefix = os.path.basename(manifest_path)
   with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as patched_manifest:
-    doc.writexml(patched_manifest)
-    patched_manifest.flush()
+    manifest_utils.SaveManifest(doc, patched_manifest.name)
     yield patched_manifest.name, package
 
 
@@ -69,39 +54,6 @@ def _BuildManifestMergerClasspath(build_vars):
   ])
 
 
-def _SortAndStripElementTree(tree, reverse_toplevel=False):
-  for node in tree:
-    if node.text and node.text.isspace():
-      node.text = None
-    _SortAndStripElementTree(node)
-  tree[:] = sorted(tree, key=ElementTree.tostring, reverse=reverse_toplevel)
-
-
-def _NormalizeManifest(path):
-  with open(path) as f:
-    # This also strips comments and sorts node attributes alphabetically.
-    root = ElementTree.fromstring(f.read())
-
-  # Sort nodes alphabetically, recursively.
-  _SortAndStripElementTree(root, reverse_toplevel=True)
-
-  # Fix up whitespace/indentation.
-  dom = minidom.parseString(ElementTree.tostring(root))
-  lines = []
-  for l in dom.toprettyxml(indent='  ').splitlines():
-    if l.strip():
-      if len(l) > 100:
-        indent = ' ' * l.find('<')
-        attributes = shlex.split(l, posix=False)
-        lines.append('{}{}'.format(indent, attributes[0]))
-        for attribute in attributes[1:]:
-          lines.append('{}    {}'.format(indent, attribute))
-      else:
-        lines.append(l)
-
-  return '\n'.join(lines)
-
-
 def main(argv):
   argv = build_utils.ExpandFileArgs(argv)
   parser = argparse.ArgumentParser(description=__doc__)
@@ -112,16 +64,22 @@ def main(argv):
   parser.add_argument('--root-manifest',
                       help='Root manifest which to merge into',
                       required=True)
-  parser.add_argument(
-      '--expected-manifest', help='Expected contents for the merged manifest.')
-  parser.add_argument('--normalized-output', help='Normalized merged manifest.')
-  parser.add_argument(
-      '--verify-expected-manifest',
-      action='store_true',
-      help='Fail if expected contents do not match merged manifest contents.')
   parser.add_argument('--output', help='Output manifest path', required=True)
   parser.add_argument('--extras',
                       help='GN list of additional manifest to merge')
+  parser.add_argument(
+      '--min-sdk-version',
+      required=True,
+      help='android:minSdkVersion for merging.')
+  parser.add_argument(
+      '--target-sdk-version',
+      required=True,
+      help='android:targetSdkVersion for merging.')
+  parser.add_argument(
+      '--allow-uses-sdk',
+      action='store_true',
+      help='Use only for third party code. '
+      'Don\'t fail if input manifest contains a <uses-sdk> element.')
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(
@@ -141,28 +99,36 @@ def main(argv):
     if extras:
       cmd += ['--libs', ':'.join(extras)]
 
-    with _ProcessManifest(args.root_manifest) as tup:
+    with _ProcessManifest(args.root_manifest, args.allow_uses_sdk) as tup:
       root_manifest, package = tup
-      cmd += ['--main', root_manifest, '--property', 'PACKAGE=' + package]
+      cmd += [
+          '--main',
+          root_manifest,
+          '--property',
+          'PACKAGE=' + package,
+          '--property',
+          'MIN_SDK_VERSION=' + args.min_sdk_version,
+          '--property',
+          'TARGET_SDK_VERSION=' + args.target_sdk_version,
+      ]
       build_utils.CheckOutput(cmd,
         # https://issuetracker.google.com/issues/63514300:
         # The merger doesn't set a nonzero exit code for failures.
         fail_func=lambda returncode, stderr: returncode != 0 or
           build_utils.IsTimeStale(output.name, [root_manifest] + extras))
 
-  if args.expected_manifest:
-    with build_utils.AtomicOutput(args.normalized_output) as normalized_output:
-      normalized_output.write(_NormalizeManifest(args.output))
-    msg = diff_utils.DiffFileContents(args.expected_manifest,
-                                      args.normalized_output)
-    if msg:
-      sys.stderr.write("""\
-AndroidManifest.xml expectations file needs updating. For details see:
-https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-""")
-      sys.stderr.write(msg)
-      if args.verify_expected_manifest:
-        sys.exit(1)
+    # Subsequent build system steps expect uses-sdk tag does not exist.
+    # Therefore, check it has the expected attribute values and remove it.
+    doc, manifest, _ = manifest_utils.ParseManifest(output.name)
+    uses_sdk = manifest.find('./uses-sdk')
+    assert uses_sdk.get(
+        '{%s}minSdkVersion' %
+        manifest_utils.ANDROID_NAMESPACE) == args.min_sdk_version
+    assert uses_sdk.get(
+        '{%s}targetSdkVersion' %
+        manifest_utils.ANDROID_NAMESPACE) == args.target_sdk_version
+    manifest.remove(uses_sdk)
+    manifest_utils.SaveManifest(doc, output.name)
 
   if args.depfile:
     inputs = extras + classpath.split(':')

@@ -23,8 +23,7 @@ namespace {
 bool IsTabletModeActive() {
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
-  return tablet_mode_controller &&
-         tablet_mode_controller->IsTabletModeWindowManagerEnabled();
+  return tablet_mode_controller && tablet_mode_controller->InTabletMode();
 }
 
 }  // namespace

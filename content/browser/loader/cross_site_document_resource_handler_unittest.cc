@@ -1197,11 +1197,11 @@ class CrossSiteDocumentResourceHandlerTest
     stream_sink_ = stream_sink->GetWeakPtr();
 
     // Create the CrossSiteDocumentResourceHandler.
-    auto fetch_request_mode = cors_request == OriginHeader::kOmit
-                                  ? network::mojom::FetchRequestMode::kNoCors
-                                  : network::mojom::FetchRequestMode::kCors;
+    auto request_mode = cors_request == OriginHeader::kOmit
+                            ? network::mojom::RequestMode::kNoCors
+                            : network::mojom::RequestMode::kCors;
     auto document_blocker = std::make_unique<CrossSiteDocumentResourceHandler>(
-        std::move(stream_sink), request_.get(), fetch_request_mode);
+        std::move(stream_sink), request_.get(), request_mode);
     document_blocker_ = document_blocker.get();
     first_handler_ = std::move(document_blocker);
 
@@ -1601,24 +1601,9 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
               testing::ElementsAre(base::Bucket(start_action, 1),
                                    base::Bucket(end_action, 1)))
       << "Should have incremented the right actions.";
-  // Expect to hear the number of bytes in the first read when sniffing is
-  // required.
-  if (expected_to_sniff) {
-    expected_counts[histogram_base + ".BytesReadForSniffing"] = 1;
-
-    // Only the packets up to verdict_packet are sniffed.
-    int expected_sniff_bytes = 0;
-    for (int i = 0; i <= effective_verdict_packet; i++) {
-      expected_sniff_bytes += strlen(packets_vector[i]);
-    }
-    EXPECT_EQ(
-        1, histograms.GetBucketCount(histogram_base + ".BytesReadForSniffing",
-                                     expected_sniff_bytes));
-  }
   if (should_be_blocked) {
     expected_counts[histogram_base + ".Blocked"] = 1;
     expected_counts[histogram_base + ".Blocked.CanonicalMimeType"] = 1;
-    expected_counts[histogram_base + ".Blocked.ContentLength.WasAvailable"] = 1;
     expected_counts[histogram_base + ".Blocked." + bucket] = 1;
     EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked"),
                 testing::ElementsAre(

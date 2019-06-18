@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
@@ -62,10 +63,13 @@ class CastWebContentsImpl : public CastWebContents,
 
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* /* render_frame_host */,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -77,19 +81,30 @@ class CastWebContentsImpl : public CastWebContents,
                    const GURL& validated_url,
                    int error_code,
                    const base::string16& error_description) override;
+  void MainFrameWasResized(bool width_changed) override;
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override;
   void InnerWebContentsCreated(
       content::WebContents* inner_web_contents) override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
+  void DidFirstVisuallyNonEmptyPaint() override;
   void WebContentsDestroyed() override;
+  void DidUpdateFaviconURL(
+      const std::vector<content::FaviconURL>& candidates) override;
+  void MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                           const content::MediaPlayerId& id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& video_type,
+      const content::MediaPlayerId& id,
+      content::WebContentsObserver::MediaStoppedReason reason) override;
 
  private:
   void OnPageLoading();
   void OnPageLoaded();
   void UpdatePageState();
-  void NotifyObservers();
+  void NotifyPageState();
   void TracePageLoadBegin(const GURL& url);
   void TracePageLoadEnd(const GURL& url);
   void DisableDebugging();
@@ -103,6 +118,7 @@ class CastWebContentsImpl : public CastWebContents,
   const bool enabled_for_dev_;
   bool use_cma_renderer_;
   const bool handle_inner_contents_;
+  BackgroundColor view_background_color_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
   std::unique_ptr<CastMediaBlocker> media_blocker_;
 

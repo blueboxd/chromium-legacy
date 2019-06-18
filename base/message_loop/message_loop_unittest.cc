@@ -519,13 +519,19 @@ class MessageLoopTypedTest
       case MessageLoop::TYPE_UI:
         return "UI_pump";
       case MessageLoop::TYPE_CUSTOM:
+        break;
 #if defined(OS_ANDROID)
       case MessageLoop::TYPE_JAVA:
+        break;
 #endif  // defined(OS_ANDROID)
 #if defined(OS_MACOSX)
       case MessagePump::Type::NS_RUNLOOP:
-#endif  // defined(OS_MACOSX)
         break;
+#endif  // defined(OS_MACOSX)
+#if defined(OS_WIN)
+      case MessagePump::Type::UI_WITH_WM_QUIT_SUPPORT:
+        break;
+#endif  // defined(OS_WIN)
     }
     NOTREACHED();
     return "";

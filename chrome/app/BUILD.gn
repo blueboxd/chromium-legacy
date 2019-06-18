@@ -619,7 +619,6 @@ source_set("builtin_service_manifests") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
-      "//chrome/services/ble_scan_parser/public/cpp:manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
       "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",

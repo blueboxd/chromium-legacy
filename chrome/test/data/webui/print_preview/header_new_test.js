@@ -64,6 +64,10 @@ cr.define('header_new_test', function() {
       assertEquals('3 pages', summary.textContent.trim());
       header.setSetting('pages', [1]);
       assertEquals('1 page', summary.textContent.trim());
+      // Verify the chrome://print case of a zero length document does not show
+      // the summary.
+      header.setSetting('pages', []);
+      assertEquals('', summary.textContent);
     });
 
     // Tests that the message is correctly adjusted with a duplex printer.

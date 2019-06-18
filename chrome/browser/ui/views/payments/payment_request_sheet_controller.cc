@@ -233,17 +233,16 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
                      views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  header_view_ = std::make_unique<views::View>();
-  PopulateSheetHeaderView(ShouldShowHeaderBackArrow(),
-                          CreateHeaderContentView(), this, header_view_.get(),
-                          GetHeaderBackground());
-  header_view_->set_owned_by_client();
-  layout->AddView(header_view_.get());
+  auto header_view = std::make_unique<views::View>();
+  PopulateSheetHeaderView(
+      ShouldShowHeaderBackArrow(), CreateHeaderContentView(header_view.get()),
+      this, header_view.get(), GetHeaderBackground(header_view.get()));
+  header_view_ = layout->AddView(std::move(header_view));
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  header_content_separator_container_ = std::make_unique<views::View>();
-  header_content_separator_container_->set_owned_by_client();
-  layout->AddView(header_content_separator_container_.get());
+  auto header_content_separator_container = std::make_unique<views::View>();
+  header_content_separator_container_ =
+      layout->AddView(std::move(header_content_separator_container));
   UpdateHeaderContentSeparatorView();
 
   layout->StartRow(1.0, 0);
@@ -251,7 +250,6 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
   auto pane = std::make_unique<views::View>();
-  pane_ = pane.get();
   views::GridLayout* pane_layout =
       pane->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
@@ -261,26 +259,26 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
       GetActualDialogWidth(), GetActualDialogWidth());
   pane_layout->StartRow(views::GridLayout::kFixedSize, 0);
   // This is owned by its parent. It's the container passed to FillContentView.
-  content_view_ = new views::View;
-  content_view_->SetPaintToLayer();
-  content_view_->layer()->SetFillsBoundsOpaquely(true);
-  content_view_->SetBackground(views::CreateThemedSolidBackground(
-      content_view_, ui::NativeTheme::kColorId_DialogBackground));
-  content_view_->SetID(static_cast<int>(DialogViewID::CONTENT_VIEW));
-  pane_layout->AddView(content_view_);
+  auto content_view = std::make_unique<views::View>();
+  content_view->SetPaintToLayer();
+  content_view->layer()->SetFillsBoundsOpaquely(true);
+  content_view->SetBackground(views::CreateThemedSolidBackground(
+      content_view.get(), ui::NativeTheme::kColorId_DialogBackground));
+  content_view->SetID(static_cast<int>(DialogViewID::CONTENT_VIEW));
+  content_view_ = pane_layout->AddView(std::move(content_view));
   pane->SizeToPreferredSize();
 
-  scroll_ = DisplayDynamicBorderForHiddenContents()
-                ? std::make_unique<BorderedScrollView>()
-                : std::make_unique<views::ScrollView>();
-  scroll_->set_owned_by_client();
-  scroll_->SetHideHorizontalScrollBar(true);
-  scroll_->SetContents(std::move(pane));
-  layout->AddView(scroll_.get());
+  std::unique_ptr<views::ScrollView> scroll =
+      DisplayDynamicBorderForHiddenContents()
+          ? std::make_unique<BorderedScrollView>()
+          : std::make_unique<views::ScrollView>();
+  scroll->SetHideHorizontalScrollBar(true);
+  pane_ = scroll->SetContents(std::move(pane));
+  scroll_ = layout->AddView(std::move(scroll));
 
   if (footer) {
     layout->StartRow(views::GridLayout::kFixedSize, 0);
-    layout->AddView(footer.release());
+    layout->AddView(std::move(footer));
   }
 
   UpdateContentView();
@@ -298,8 +296,8 @@ void PaymentRequestSheetController::UpdateContentView() {
 void PaymentRequestSheetController::UpdateHeaderView() {
   header_view_->RemoveAllChildViews(true);
   PopulateSheetHeaderView(ShouldShowHeaderBackArrow(),
-                          CreateHeaderContentView(), this, header_view_.get(),
-                          GetHeaderBackground());
+                          CreateHeaderContentView(header_view_), this,
+                          header_view_, GetHeaderBackground(header_view_));
   header_view_->Layout();
   header_view_->SchedulePaint();
 }
@@ -380,7 +378,8 @@ PaymentRequestSheetController::CreateExtraFooterView() {
 }
 
 std::unique_ptr<views::View>
-PaymentRequestSheetController::CreateHeaderContentView() {
+PaymentRequestSheetController::CreateHeaderContentView(
+    views::View* header_view) {
   std::unique_ptr<views::Label> title_label = std::make_unique<views::Label>(
       GetSheetTitle(), views::style::CONTEXT_DIALOG_TITLE);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -395,9 +394,9 @@ views::View* PaymentRequestSheetController::CreateHeaderContentSeparatorView() {
 }
 
 std::unique_ptr<views::Background>
-PaymentRequestSheetController::GetHeaderBackground() {
+PaymentRequestSheetController::GetHeaderBackground(views::View* header_view) {
   return views::CreateThemedSolidBackground(
-      header_view_.get(), ui::NativeTheme::kColorId_DialogBackground);
+      header_view, ui::NativeTheme::kColorId_DialogBackground);
 }
 
 void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
@@ -444,7 +443,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::View> extra_view = CreateExtraFooterView();
   if (extra_view)
-    layout->AddView(extra_view.release());
+    layout->AddView(std::move(extra_view));
   else
     layout->SkipColumns(1);
 
@@ -471,17 +470,17 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
     return nullptr;
   }
 
-  layout->AddView(trailing_buttons_container.release());
+  layout->AddView(std::move(trailing_buttons_container));
 
   return container;
 }
 
 views::View* PaymentRequestSheetController::GetFirstFocusedView() {
   if (primary_button_ && primary_button_->GetEnabled())
-    return primary_button_.get();
+    return primary_button_;
 
   if (secondary_button_)
-    return secondary_button_.get();
+    return secondary_button_;
 
   DCHECK(content_view_);
   return content_view_;
@@ -501,28 +500,27 @@ bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
     return true;
 
   if (primary_button_ && primary_button_->GetEnabled())
-    ButtonPressed(primary_button_.get(), DummyEvent());
+    ButtonPressed(primary_button_, DummyEvent());
   return true;
 }
 
 void PaymentRequestSheetController::AddPrimaryButton(views::View* container) {
-  primary_button_ = CreatePrimaryButton();
-  if (primary_button_) {
-    primary_button_->set_owned_by_client();
-    primary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    container->AddChildView(primary_button_.get());
+  std::unique_ptr<views::Button> primary_button = CreatePrimaryButton();
+  if (primary_button) {
+    primary_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    primary_button_ = container->AddChildView(std::move(primary_button));
   }
 }
 
 void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
   if (ShouldShowSecondaryButton()) {
-    secondary_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, GetSecondaryButtonLabel());
-    secondary_button_->set_owned_by_client();
-    secondary_button_->set_tag(GetSecondaryButtonTag());
-    secondary_button_->SetID(GetSecondaryButtonId());
-    secondary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    container->AddChildView(secondary_button_.get());
+    std::unique_ptr<views::Button> secondary_button =
+        views::MdTextButton::CreateSecondaryUiButton(this,
+                                                     GetSecondaryButtonLabel());
+    secondary_button->set_tag(GetSecondaryButtonTag());
+    secondary_button->SetID(GetSecondaryButtonId());
+    secondary_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    secondary_button_ = container->AddChildView(std::move(secondary_button));
   }
 }
 

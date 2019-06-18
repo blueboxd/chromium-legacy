@@ -20,7 +20,7 @@ class TestTabWebContentsDelegateAndroid
   }
 
   blink::WebDisplayMode GetDisplayMode(
-      const content::WebContents* web_contents) const override {
+      const content::WebContents* web_contents) override {
     return display_mode_;
   }
 

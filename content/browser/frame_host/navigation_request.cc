@@ -1098,7 +1098,7 @@ void NavigationRequest::OnRequestRedirected(
     return;
 
   if (should_override_url_loading) {
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    net_error_ = net::ERR_ABORTED;
     common_params_.url = redirect_info.new_url;
     common_params_.method = redirect_info.new_method;
     // Update the navigation handle to point to the new url to ensure
@@ -1286,10 +1286,8 @@ void NavigationRequest::OnResponseStarted(
 
   // Response that will not commit should be marked as aborted in the
   // NavigationHandle.
-  if (!response_should_be_rendered_) {
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+  if (!response_should_be_rendered_)
     net_error_ = net::ERR_ABORTED;
-  }
 
   // Update the AppCache params of the commit params.
   commit_params_.appcache_host_id =
@@ -1370,7 +1368,7 @@ void NavigationRequest::OnResponseStarted(
     // TODO(clamy): Rename ShouldTransferNavigation once PlzNavigate ships.
     if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
             frame_tree_node_->IsMainFrame())) {
-      navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+      net_error_ = net::ERR_ABORTED;
       frame_tree_node_->ResetNavigationRequest(false, true);
       return;
     }
@@ -1496,10 +1494,6 @@ void NavigationRequest::OnRequestFailedInternal(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "OnRequestFailed", "error", status.error_code);
   state_ = FAILED;
-  if (navigation_handle_.get()) {
-    navigation_handle_->set_net_error_code(
-        static_cast<net::Error>(status.error_code));
-  }
 
   int expected_pending_entry_id =
       navigation_handle_.get() ? navigation_handle_->pending_nav_entry_id()
@@ -1507,7 +1501,7 @@ void NavigationRequest::OnRequestFailedInternal(
   frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
       expected_pending_entry_id);
 
-  net_error_ = status.error_code;
+  net_error_ = static_cast<net::Error>(status.error_code);
 
   // If the request was canceled by the user do not show an error page.
   if (status.error_code == net::ERR_ABORTED) {
@@ -1846,9 +1840,8 @@ void NavigationRequest::OnFailureChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
 
-  int old_net_error = net_error_;
+  net::Error old_net_error = net_error_;
   net_error_ = result.net_error_code();
-  navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error_));
 
   // TODO(crbug.com/774663): We may want to take result.action() into account.
   if (net::ERR_ABORTED == result.net_error_code()) {
@@ -1898,8 +1891,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->request_initiator = common_params_.initiator_origin;
       resource_request->referrer = common_params_.referrer.url;
       resource_request->has_user_gesture = common_params_.has_user_gesture;
-      resource_request->fetch_request_mode =
-          network::mojom::FetchRequestMode::kNavigate;
+      resource_request->mode = network::mojom::RequestMode::kNavigate;
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();

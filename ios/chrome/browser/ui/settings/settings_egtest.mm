@@ -17,7 +17,6 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/ios/features.h"
 #include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -370,7 +369,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
   //  - Services record data and upload data.
 
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+  if ([ChromeEarlGrey isUMACellularEnabled]) {
     // kMetricsReportingEnabled OFF
     [self setMetricsReportingEnabled:NO];
   } else {
@@ -381,7 +380,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // I.e. no recording of data, and no uploading of what's been recorded.
   [self assertMetricsServiceDisabled:serviceType];
 
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+  if ([ChromeEarlGrey isUMACellularEnabled]) {
     // kMetricsReportingEnabled OFF
     [self setMetricsReportingEnabled:NO];
   } else {
@@ -400,7 +399,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // The values of the prefs and the wwan vs wifi state should be honored by
   // the services, turning on and off according to the rules laid out above.
 
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+  if (![ChromeEarlGrey isUMACellularEnabled]) {
     // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON.
     [self setMetricsReportingEnabled:YES wifiOnly:YES];
     // Service should be enabled.
@@ -430,7 +429,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   // This tests that no matter the state change, pref or network connection,
   // services remain disabled.
 
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+  if (![ChromeEarlGrey isUMACellularEnabled]) {
     // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON
     [self setMetricsReportingEnabled:YES wifiOnly:YES];
     // Service should remain disabled.

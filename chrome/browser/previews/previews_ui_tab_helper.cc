@@ -250,6 +250,33 @@ void PreviewsUITabHelper::MaybeRecordPreviewReload(
   }
 }
 
+void PreviewsUITabHelper::MaybeShowInfoBarForHintsFetcher() {
+  if (!base::FeatureList::IsEnabled(
+          previews::features::kOptimizationHintsFetching))
+    return;
+
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+
+  if (!previews_service)
+    return;
+
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+
+  DataReductionProxyChromeSettings* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  if (!drp_settings)
+    return;
+
+  if (drp_settings->IsDataReductionProxyEnabled() &&
+      decider->NeedsToNotifyUser()) {
+    decider->NotifyUser(web_contents());
+  }
+}
+
 void PreviewsUITabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
@@ -259,6 +286,8 @@ void PreviewsUITabHelper::DidStartNavigation(
 
   previews::PreviewsTopHostProviderImpl::MaybeUpdateTopHostBlacklist(
       navigation_handle);
+
+  MaybeShowInfoBarForHintsFetcher();
 }
 
 void PreviewsUITabHelper::DidFinishNavigation(

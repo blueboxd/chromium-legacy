@@ -1,6 +1,7 @@
 include_rules = [
   "+components/bookmarks/browser",
   "+components/bookmarks/test",
+  "+components/component_updater",
   "+components/favicon_base",
   "+components/favicon/core",
   "+components/grit",

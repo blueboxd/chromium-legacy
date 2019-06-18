@@ -95,17 +95,8 @@ class ASH_EXPORT TabletModeController
   // async.
   static void SetForceNoScreenshotForTest();
 
-  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
-  // separate for several reasons: there is no internal display when running
-  // unittests; the event blocker prevents keyboard input when running ChromeOS
-  // on linux. http://crbug.com/362881
-  // Turn the always tablet mode window manager on or off.
-  // TODO(xdai): Make it a private function. This function is not supposed to be
-  // called by an external caller except for tests.
-  void EnableTabletModeWindowManager(bool should_enable);
-
   // Test if the TabletModeWindowManager is enabled or not.
-  bool IsTabletModeWindowManagerEnabled() const;
+  bool InTabletMode() const;
 
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
@@ -204,6 +195,13 @@ class ASH_EXPORT TabletModeController
     kExitingTabletMode,
   };
 
+  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
+  // separate for several reasons: there is no internal display when running
+  // unittests; the event blocker prevents keyboard input when running ChromeOS
+  // on linux. http://crbug.com/362881
+  // Turn the always tablet mode window manager on or off.
+  void SetTabletModeEnabledInternal(bool should_enable);
+
   // If EC cannot handle lid angle calc, browser detects hinge rotation from
   // base and lid accelerometers and automatically start / stop tablet mode.
   void HandleHingeRotation(scoped_refptr<const AccelerometerUpdate> update);
@@ -270,7 +268,7 @@ class ASH_EXPORT TabletModeController
   // Returns true if the current lid angle can be detected and is in tablet mode
   // angle range. If EC can handle lid angle calc, lid angle is unavailable to
   // browser.
-  bool LidAngleIsInTabletModeRange();
+  bool LidAngleInTabletModeRange();
 
   // Suspends |occlusion_tracker_pauser_| for the duration of
   // kOcclusionTrackTimeout.
@@ -358,9 +356,6 @@ class ASH_EXPORT TabletModeController
 
   // Counts of the tab drag from top when splitview is active.
   int tab_drag_in_splitview_count_ = 0;
-
-  // Tracks KioskNext state separately to simplify testing.
-  bool kiosk_next_enabled_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to

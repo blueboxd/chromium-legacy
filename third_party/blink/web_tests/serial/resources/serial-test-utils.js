@@ -63,10 +63,10 @@ class FakeSerialService {
 let fakeSerialService = new FakeSerialService();
 
 function serial_test(func, name, properties) {
-  promise_test(async () => {
+  promise_test(async (test) => {
     fakeSerialService.start();
     try {
-      await func(fakeSerialService);
+      await func(test, fakeSerialService);
     } finally {
       fakeSerialService.stop();
       fakeSerialService.reset();

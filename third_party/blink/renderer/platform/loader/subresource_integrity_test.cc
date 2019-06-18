@@ -189,7 +189,7 @@ class SubresourceIntegrityTest : public testing::Test {
 
   struct TestCase {
     const KURL url;
-    network::mojom::FetchRequestMode request_mode;
+    network::mojom::RequestMode request_mode;
     network::mojom::FetchResponseType response_type;
     const Expectation expectation;
   };
@@ -219,14 +219,14 @@ class SubresourceIntegrityTest : public testing::Test {
 
   Resource* CreateTestResource(
       const KURL& url,
-      network::mojom::FetchRequestMode request_mode,
+      network::mojom::RequestMode request_mode,
       network::mojom::FetchResponseType response_type) {
     Resource* resource = RawResource::CreateForTest(
         url, SecurityOrigin::CreateUniqueOpaque(), ResourceType::kRaw);
 
     ResourceRequest request;
     request.SetUrl(url);
-    request.SetFetchRequestMode(request_mode);
+    request.SetMode(request_mode);
 
     ResourceResponse response(url);
     response.SetHttpStatusCode(200);
@@ -509,28 +509,27 @@ TEST_F(SubresourceIntegrityTest, ParsingBase64) {
 // requests, successful and failing CORS checks as well as when the response was
 // handled by a service worker.
 TEST_F(SubresourceIntegrityTest, OriginIntegrity) {
-  using network::mojom::FetchRequestMode;
   using network::mojom::FetchResponseType;
+  using network::mojom::RequestMode;
   constexpr auto kOk = kIntegritySuccess;
   constexpr auto kFail = kIntegrityFailure;
   const KURL& url = sec_url;
 
   const TestCase cases[] = {
       // FetchResponseType::kError never arrives because it is a loading error.
-      {url, FetchRequestMode::kNoCors, FetchResponseType::kBasic, kOk},
-      {url, FetchRequestMode::kNoCors, FetchResponseType::kCors, kOk},
-      {url, FetchRequestMode::kNoCors, FetchResponseType::kDefault, kOk},
-      {url, FetchRequestMode::kNoCors, FetchResponseType::kOpaque, kFail},
-      {url, FetchRequestMode::kNoCors, FetchResponseType::kOpaqueRedirect,
-       kFail},
+      {url, RequestMode::kNoCors, FetchResponseType::kBasic, kOk},
+      {url, RequestMode::kNoCors, FetchResponseType::kCors, kOk},
+      {url, RequestMode::kNoCors, FetchResponseType::kDefault, kOk},
+      {url, RequestMode::kNoCors, FetchResponseType::kOpaque, kFail},
+      {url, RequestMode::kNoCors, FetchResponseType::kOpaqueRedirect, kFail},
 
       // FetchResponseType::kError never arrives because it is a loading error.
       // FetchResponseType::kOpaque and FetchResponseType::kOpaqueResponse
       // never arrives: even when service worker is involved, it's handled as
       // an error.
-      {url, FetchRequestMode::kCors, FetchResponseType::kBasic, kOk},
-      {url, FetchRequestMode::kCors, FetchResponseType::kCors, kOk},
-      {url, FetchRequestMode::kCors, FetchResponseType::kDefault, kOk},
+      {url, RequestMode::kCors, FetchResponseType::kBasic, kOk},
+      {url, RequestMode::kCors, FetchResponseType::kCors, kOk},
+      {url, RequestMode::kCors, FetchResponseType::kDefault, kOk},
   };
 
   for (const auto& test : cases) {

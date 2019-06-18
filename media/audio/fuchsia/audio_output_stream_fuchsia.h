@@ -8,6 +8,7 @@
 #include <fuchsia/media/cpp/fidl.h>
 
 #include "base/memory/shared_memory_mapping.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
@@ -79,10 +80,9 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
 
   int64_t stream_position_samples_;
 
-  // Current min lead time for the stream. This value is updated by
-  // AudioRenderer::OnMinLeadTimeChanged event. Assume 50ms until we get the
-  // first OnMinLeadTimeChanged event.
-  base::TimeDelta min_lead_time_ = base::TimeDelta::FromMilliseconds(50);
+  // Current min lead time for the stream. This value is not set until the first
+  // AudioRenderer::OnMinLeadTimeChanged event.
+  base::Optional<base::TimeDelta> min_lead_time_;
 
   // Timer that's scheduled to call PumpSamples().
   base::OneShotTimer timer_;

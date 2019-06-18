@@ -81,6 +81,8 @@ copy("copies") {
     "$root_out_dir/liblzma_decompress.dylib",
     "$root_out_dir/xz",
     "$root_out_dir/xzdec",
+    "//chrome/app/helper-plugin-entitlements.plist",
+    "//chrome/app/helper-renderer-entitlements.plist",
     "app_resource_rules.plist",
     "dirdiffer.sh",
     "dirpatcher.sh",

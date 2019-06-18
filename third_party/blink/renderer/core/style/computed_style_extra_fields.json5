@@ -297,15 +297,6 @@
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
-      name: "EffectiveZoom",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "float",
-      default_value: "1.0f",
-      field_group: "*",
-      computed_style_custom_functions: ["setter"],
-    },
-    {
       name: "TextStrokeColorIsCurrentColor",
       inherited: true,
       field_template: "primitive",

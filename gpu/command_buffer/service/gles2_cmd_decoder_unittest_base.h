@@ -273,10 +273,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
       GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
       GLuint fragment_shader_client_id, GLuint fragment_shader_service_id);
 
-  void SetupInitCapabilitiesExpectations(bool es3_capable);
-  void SetupInitStateExpectations(bool es3_capable);
-  void ExpectEnableDisable(GLenum cap, bool enable);
-
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform(GLenum uniform_type);
   void SetupDefaultProgram();
@@ -561,11 +557,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   static const GLint kMaxViewportWidth = 8192;
   static const GLint kMaxViewportHeight = 8192;
 
-  static const GLint kViewportX = 0;
-  static const GLint kViewportY = 0;
-  static const GLint kViewportWidth = kBackBufferWidth;
-  static const GLint kViewportHeight = kBackBufferHeight;
-
   static const GLuint kServiceAttrib0BufferId = 801;
   static const GLuint kServiceFixedAttribBufferId = 802;
 
@@ -798,11 +789,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
 
   void AddExpectationsForVertexAttribManager();
   void SetupMockGLBehaviors();
-
-  void SetupInitStateManualExpectations(bool es3_capable);
-  void SetupInitStateManualExpectationsForWindowRectanglesEXT(GLenum mode,
-                                                              GLint count);
-  void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
   GpuPreferences gpu_preferences_;
   MailboxManagerImpl mailbox_manager_;

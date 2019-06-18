@@ -63,12 +63,14 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
   TestableIndexedDBBackingStore(IndexedDBBackingStore::Mode backing_store_mode,
                                 IndexedDBFactory* indexed_db_factory,
+                                indexed_db::LevelDBFactory* leveldb_factory,
                                 const url::Origin& origin,
                                 const base::FilePath& blob_path,
                                 std::unique_ptr<LevelDBDatabase> db,
                                 base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(backing_store_mode,
                               indexed_db_factory,
+                              leveldb_factory,
                               origin,
                               blob_path,
                               std::move(db),
@@ -134,20 +136,22 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactoryImpl(idb_context,
-                             indexed_db::GetDefaultLevelDBFactory(),
+                             indexed_db::LevelDBFactory::Get(),
+                             IndexedDBClassFactory::Get(),
                              base::DefaultClock::GetInstance()) {}
   ~TestIDBFactory() override = default;
 
  protected:
   std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
+      indexed_db::LevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<LevelDBDatabase> db,
       base::SequencedTaskRunner* task_runner) override {
     return std::make_unique<TestableIndexedDBBackingStore>(
-        backing_store_mode, this, origin, blob_path, std::move(db),
-        task_runner);
+        backing_store_mode, this, leveldb_factory, origin, blob_path,
+        std::move(db), task_runner);
   }
 
  private:
@@ -168,7 +172,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
-        indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
     idb_context_->SetTaskRunnerForTesting(
         base::SequencedTaskRunnerHandle::Get());
@@ -188,7 +191,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
 
     leveldb::Status s;
-    std::tie(origin_state_handle_, s, std::ignore, std::ignore) =
+    std::tie(origin_state_handle_, s, std::ignore, std::ignore, std::ignore) =
         idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
     if (!origin_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
@@ -1336,7 +1339,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
         // Set the schema to 2, which was before blob support.
         auto transaction =
-            IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
                 backing_store()->db());
         const std::string schema_version_key = SchemaVersionKey::Encode();
         indexed_db::PutInt(transaction.get(), schema_version_key, 2);
@@ -1370,7 +1373,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
         // Test that we upgraded.
         auto transaction =
-            IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
                 backing_store()->db());
         const std::string schema_version_key = SchemaVersionKey::Encode();
         int64_t found_int = 0;
@@ -1469,7 +1472,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
         // Set the schema to 2, which was before blob support.
         auto transaction =
-            IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
                 backing_store()->db());
         const std::string schema_version_key = SchemaVersionKey::Encode();
         indexed_db::PutInt(transaction.get(), schema_version_key, 2);

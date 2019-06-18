@@ -111,7 +111,7 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
 
   // content::WebContentsDelegate overrides.
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* ignored) const override {
+      const content::WebContents* ignored) override {
     return is_fullscreened_;
   }
 

@@ -13,7 +13,7 @@
 #include "ash/accessibility/accessibility_layer.h"
 #include "ash/accessibility/layer_animation_info.h"
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,7 +33,7 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
   void AnimateFocusRings(base::TimeTicks timestamp);
 
   // Returns true if the focus ring has changed, false if there were no changes.
-  bool UpdateFocusRing(mojom::FocusRingPtr focus_ring,
+  bool UpdateFocusRing(std::unique_ptr<AccessibilityFocusRingInfo> focus_ring,
                        AccessibilityLayerDelegate* delegate);
 
   void ClearFocusRects(AccessibilityLayerDelegate* delegate);
@@ -70,7 +70,7 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
                                gfx::Rect* bottom) const;
   bool Intersects(const gfx::Rect& r1, const gfx::Rect& r2) const;
 
-  mojom::FocusRingPtr focus_ring_info_;
+  std::unique_ptr<AccessibilityFocusRingInfo> focus_ring_info_;
   std::vector<AccessibilityFocusRing> previous_focus_rings_;
   std::vector<std::unique_ptr<AccessibilityFocusRingLayer>> focus_layers_;
   std::vector<AccessibilityFocusRing> focus_rings_;

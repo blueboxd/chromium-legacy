@@ -246,7 +246,8 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   void SetUpNoScriptWhitelist(const GURL& hint_setup_url) {
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, {});
+            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*",
+            {});
 
     base::HistogramTester histogram_tester;
 

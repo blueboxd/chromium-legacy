@@ -182,6 +182,7 @@ class StreamMixer {
                         int channels,
                         std::unique_ptr<uint8_t[]> data,
                         int length);
+  int GetSampleRateForDeviceId(const std::string& device);
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetTotalRenderingDelay(
       FilterGroup* filter_group);
@@ -208,6 +209,8 @@ class StreamMixer {
   int requested_output_samples_per_second_ = 0;
   int output_samples_per_second_ = 0;
   int frames_per_write_ = 0;
+  int redirector_samples_per_second_ = 0;
+  int redirector_frames_per_write_ = 0;
 
   State state_;
   base::TimeTicks close_timestamp_;

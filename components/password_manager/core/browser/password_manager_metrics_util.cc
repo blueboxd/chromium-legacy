@@ -193,17 +193,15 @@ void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type) {
 }
 
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event) {
+    autofill::mojom::SubmissionIndicatorEvent event) {
   UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuccessfulSubmissionIndicatorEvent", event,
-      autofill::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+      "PasswordManager.SuccessfulSubmissionIndicatorEvent", event);
 }
 
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event) {
+    autofill::mojom::SubmissionIndicatorEvent event) {
   UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent", event,
-      autofill::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+      "PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent", event);
 }
 
 void LogSubmittedFormFrame(SubmittedFormFrame frame) {

@@ -115,8 +115,8 @@ bool TextTrackLoader::Load(const KURL& url,
   FetchParameters cue_fetch_params(ResourceRequest(url), options);
 
   if (cross_origin == kCrossOriginAttributeNotSet) {
-    cue_fetch_params.MutableResourceRequest().SetFetchRequestMode(
-        network::mojom::FetchRequestMode::kSameOrigin);
+    cue_fetch_params.MutableResourceRequest().SetMode(
+        network::mojom::RequestMode::kSameOrigin);
   } else {
     cue_fetch_params.SetCrossOriginAccessControl(
         GetDocument().GetSecurityOrigin(), cross_origin);

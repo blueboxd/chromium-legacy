@@ -45,11 +45,13 @@ enum class TaskPriority : uint8_t {
   //    the priority when that user interactions happens).
   BEST_EFFORT = LOWEST,
 
-  // This task affects UI but it is not an immediate response to a user
+  // The result of this task is visible to the user (in the UI or as a
+  // side-effect on the system) but it is not an immediate response to a user
   // interaction.
   //
   // Examples:
   // - Updating the UI to reflect progress on a long task.
+  // - Downloading a file requested by the user.
   // - Loading an image that is displayed in the UI but is non-critical.
   USER_VISIBLE,
 

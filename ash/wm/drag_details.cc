@@ -45,9 +45,8 @@ int GetSizeChangeDirectionForWindowComponent(int window_component) {
 }
 
 gfx::Rect GetWindowInitialBoundsInParent(aura::Window* window) {
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   if (is_tablet_mode) {
     gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
     if (override_bounds && !override_bounds->IsEmpty()) {
@@ -86,9 +85,8 @@ DragDetails::DragDetails(aura::Window* window,
     return;
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   // TODO(xdai): Move these logic to WindowState::GetRestoreBoundsInScreen()
   // and let it return the right value.
   if (!is_tablet_mode && window_state->IsNormalOrSnapped() &&

@@ -99,11 +99,11 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const ResourceResponseInfo& response,
-    mojom::FetchRequestMode fetch_mode,
+    mojom::RequestMode request_mode,
     base::Optional<url::Origin> request_initiator_site_lock) {
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:
   // > 1. If request’s mode is not "no-cors", then return allowed.
-  if (fetch_mode != mojom::FetchRequestMode::kNoCors)
+  if (request_mode != mojom::RequestMode::kNoCors)
     return kAllow;
 
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:

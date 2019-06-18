@@ -36,8 +36,12 @@ def Asan(args):
   disable_verity = device.build_version_sdk >= version_codes.MARSHMALLOW
   try:
     if disable_verity:
+      device.EnableRoot()
       device.adb.DisableVerity()
       device.Reboot()
+    # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
+    # get tripped up by the root timeout.
+    device.EnableRoot()
     setup_cmd = [_SCRIPT_PATH, '--lib', args.lib]
     if args.device:
       setup_cmd += ['--device', args.device]

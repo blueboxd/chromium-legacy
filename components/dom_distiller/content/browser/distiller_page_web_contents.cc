@@ -137,7 +137,7 @@ void DistillerPageWebContents::CreateNewWebContents(const GURL& url) {
 }
 
 gfx::Size DistillerPageWebContents::GetSizeForNewRenderView(
-    content::WebContents* web_contents) const {
+    content::WebContents* web_contents) {
   gfx::Size size(render_view_size_);
   if (size.IsEmpty())
     size = web_contents->GetContainerBounds().size();

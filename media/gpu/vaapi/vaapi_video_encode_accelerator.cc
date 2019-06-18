@@ -41,9 +41,9 @@
 #include "media/gpu/vp8_reference_frame_vector.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
 
-#if defined(OS_LINUX)
-#include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#endif  // defined(OS_CHROMEOS)
 
 #define NOTIFY_ERROR(error, msg)                        \
   do {                                                  \
@@ -558,7 +558,7 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
     gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
     gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
 #endif
     if (gmb_handle.is_null()) {
@@ -566,9 +566,15 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
                    "Failed to create GMB handle from video frame");
       return nullptr;
     }
-    if (!va_picture->ImportGpuMemoryBufferHandle(
-            VideoPixelFormatToGfxBufferFormat(frame->format()),
-            std::move(gmb_handle))) {
+
+    auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
+    if (!buffer_format) {
+      NOTIFY_ERROR(kInvalidArgumentError,
+                   "Unsupported format: " << frame->format());
+      return nullptr;
+    }
+    if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
+                                                 std::move(gmb_handle))) {
       NOTIFY_ERROR(kPlatformFailureError,
                    "Failed in ImportGpuMemoryBufferHandle");
       return nullptr;

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -474,12 +473,10 @@ void BrowserSwitchHandler::HandleRefreshXml(const base::ListValue* args) {
 
 BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  content::WebUIDataSource* data_source =
-      CreateBrowserSwitchUIHTMLSource(web_ui);
-  DarkModeHandler::Initialize(web_ui, data_source);
   web_ui->AddMessageHandler(std::make_unique<BrowserSwitchHandler>());
 
   // Set up the chrome://browser-switch source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, data_source);
+  content::WebUIDataSource::Add(profile,
+                                CreateBrowserSwitchUIHTMLSource(web_ui));
 }

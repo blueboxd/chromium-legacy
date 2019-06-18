@@ -16,6 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/cast_mirroring_service_host.h"
+#include "chrome/browser/media/router/event_page_request_manager.h"
+#include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -1007,9 +1009,11 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
     const std::string& desktop_stream_id,
     mirroring::mojom::MirroringServiceHostRequest request) {
   if (ShouldUseMirroringService()) {
+    // TODO(crbug.com/974335): Remove this code once we fully launch the native
+    // Cast Media Route Provider.
     mirroring::CastMirroringServiceHost::GetForDesktop(
-        GetWebContentsFromId(initiator_tab_id, context_,
-                             true /* include_incognito */),
+        EventPageRequestManagerFactory::GetApiForBrowserContext(context_)
+            ->GetEventPageWebContents(),
         desktop_stream_id, std::move(request));
   }
 }

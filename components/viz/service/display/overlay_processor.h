@@ -61,6 +61,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       std::unique_ptr<OverlayCandidateValidator> overlay_validator);
 
   gfx::Rect GetAndResetOverlayDamage();
+  void SetSoftwareMirrorMode(bool software_mirror_mode);
 
   const OverlayCandidateValidator* GetOverlayCandidateValidator() const {
     return overlay_validator_.get();

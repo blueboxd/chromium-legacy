@@ -100,7 +100,6 @@ class ReadableStreamDefaultController : public ScriptWrappable {
                     StreamAlgorithm* cancel_algorithm,
                     double high_water_mark,
                     StrategySizeAlgorithm* size_algorithm,
-                    bool enable_blink_lock_notifications,
                     ExceptionState&);
 
   // https://streams.spec.whatwg.org/#set-up-readable-stream-default-controller-from-underlying-source
@@ -109,7 +108,6 @@ class ReadableStreamDefaultController : public ScriptWrappable {
                                         v8::Local<v8::Object> underlying_source,
                                         double high_water_mark,
                                         StrategySizeAlgorithm* size_algorithm,
-                                        bool enable_blink_lock_notifications,
                                         ExceptionState&);
 
   // Boolean flags are grouped together to reduce object size. Verbs have been
@@ -118,14 +116,12 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   bool will_pull_again_ = false;
   bool is_pulling_ = false;
   bool is_started_ = false;
-  bool enable_blink_lock_notifications_ = false;
   Member<StreamAlgorithm> cancel_algorithm_;
   Member<ReadableStreamNative> controlled_readable_stream_;
   Member<StreamAlgorithm> pull_algorithm_;
   Member<QueueWithSizes> queue_;
   double strategy_high_water_mark_ = 0.0;
   Member<StrategySizeAlgorithm> strategy_size_algorithm_;
-  TraceWrapperV8Reference<v8::Object> lock_notify_target_;
 };
 
 }  // namespace blink

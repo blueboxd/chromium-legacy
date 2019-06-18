@@ -48,6 +48,9 @@ class CONTENT_EXPORT AppCacheStorage {
 
   class CONTENT_EXPORT Delegate {
    public:
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     // If retrieval fails, 'collection' will be NULL.
     virtual void OnAllInfo(AppCacheInfoCollection* collection) {}
 
@@ -87,7 +90,10 @@ class CONTENT_EXPORT AppCacheStorage {
                                      const GURL& mainfest_url) {}
 
    protected:
-    virtual ~Delegate() {}
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    Delegate() noexcept = default;
+    virtual ~Delegate() = default;
   };
 
   explicit AppCacheStorage(AppCacheServiceImpl* service);

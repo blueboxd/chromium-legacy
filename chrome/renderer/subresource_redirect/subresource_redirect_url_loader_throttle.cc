@@ -69,7 +69,8 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
       "SubresourceRedirect.DidCompress.CompressionPercent",
       static_cast<int>(100 - ((content_length / ofcl) * 100)));
 
-  // TODO(harrisonsean): Add bytes saved histogram.
+  UMA_HISTOGRAM_COUNTS_1M("SubresourceRedirect.DidCompress.BytesSaved",
+                          static_cast<int>(ofcl - content_length));
 }
 
 void SubresourceRedirectURLLoaderThrottle::DetachFromCurrentSequence() {}

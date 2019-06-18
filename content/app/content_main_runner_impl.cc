@@ -755,7 +755,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif
 
     RegisterPathProvider();
-    RegisterContentSchemes(true);
+    RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
     int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);

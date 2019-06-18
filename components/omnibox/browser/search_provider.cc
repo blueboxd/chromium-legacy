@@ -905,7 +905,7 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
   // If the request is from omnibox focus, send empty search term args. The
   // purpose of such a request is to signal the server to warm up; no info
   // is required.
-  TemplateURLRef::SearchTermsArgs empty_search_term_args((base::string16()));
+  TemplateURLRef::SearchTermsArgs empty_search_term_args;
   BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
       template_url, search_terms_data, input.current_page_classification(),
       &empty_search_term_args);

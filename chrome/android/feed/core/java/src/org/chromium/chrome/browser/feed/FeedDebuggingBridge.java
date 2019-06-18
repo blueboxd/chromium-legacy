@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
-import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
+import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.common.logging.Dumper;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -26,28 +26,28 @@ public class FeedDebuggingBridge {
     }
 
     @CalledByNative
-    static String getFeedProcessScopeDump() {
-        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+    static String getProcessScopeDump() {
+        ProcessScope processScope = FeedProcessScopeFactory.getFeedProcessScope();
         Dumper dumper = Dumper.newDefaultDumper();
-        dumper.dump(feedProcessScope);
+        dumper.dump(processScope);
 
         try {
             StringWriter writer = new StringWriter();
             dumper.write(writer);
             return writer.toString();
         } catch (IOException e) {
-            return "Unable to dump FeedProcessScope";
+            return "Unable to dump ProcessScope";
         }
     }
 
     @CalledByNative
     static void triggerRefresh() {
-        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        ProcessScope processScope = FeedProcessScopeFactory.getFeedProcessScope();
 
         // Do nothing if Feed is disabled.
-        if (feedProcessScope == null) return;
+        if (processScope == null) return;
 
-        RequestManager requestManager = feedProcessScope.getRequestManager();
+        RequestManager requestManager = processScope.getRequestManager();
 
         // The only notification of this completing is through the SchedulerApi interface, like all
         // other refreshes.

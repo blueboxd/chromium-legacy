@@ -58,11 +58,11 @@ TEST_F(BackButtonTest, Visibility) {
   ASSERT_TRUE(back_button()->layer());
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api()->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1.f, back_button()->layer()->opacity());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api()->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 }
@@ -74,18 +74,18 @@ TEST_F(BackButtonTest, VisibilityWithVerticalShelf) {
   ASSERT_TRUE(back_button()->layer());
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api()->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1.f, back_button()->layer()->opacity());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api()->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 }
 
 TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   // Enter tablet mode; the back button is not visible in non tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api()->RunMessageLoopUntilAnimationsDone();
 
   AcceleratorControllerImpl* controller =
@@ -160,9 +160,7 @@ TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
   SimulateKioskNextSession();
 
   // Tablet mode should be enabled in Kiosk Next.
-  ASSERT_TRUE(Shell::Get()
-                  ->tablet_mode_controller()
-                  ->IsTabletModeWindowManagerEnabled());
+  ASSERT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
   test_api()->RunMessageLoopUntilAnimationsDone();
 
   // Enter Overview mode, since the shelf view is hidden from the Kiosk Next

@@ -122,7 +122,7 @@ bool SSLBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() const {
+InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() {
   return SSLBlockingPage::kTypeForTesting;
 }
 

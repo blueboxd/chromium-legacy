@@ -52,12 +52,6 @@ uint32_t SkiaOutputSurfaceBase::GetFramebufferCopyTextureFormat() {
   return GL_RGB;
 }
 
-std::unique_ptr<OverlayCandidateValidator>
-SkiaOutputSurfaceBase::TakeOverlayCandidateValidator() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return nullptr;
-}
-
 bool SkiaOutputSurfaceBase::IsDisplayedAsOverlayPlane() const {
   return false;
 }

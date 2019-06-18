@@ -89,9 +89,7 @@ constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 gfx::Size GetPinKeyboardToFooterSpacerSize() {

@@ -56,7 +56,14 @@ typedef void (^MDMStatusCallback)(bool is_blocked);
 // Callback to dismiss Web and App settings details view. No-op, if this block
 // is more than once.
 // |animated| the view will be dismissed with animation if the value is YES.
+// This type is obsolete and should be replaced by
+// DismissASMViewControllerBlock.
 typedef void (^DismissWebAndAppSettingDetailsControllerBlock)(BOOL animated);
+
+// Callback to dismiss ASM view. No-op, if this block is more than once.
+// |animated| the view will be dismissed with animation if the value is YES.
+// Replaces DismissWebAndAppSettingDetailsControllerBlock type.
+typedef void (^DismissASMViewControllerBlock)(BOOL animated);
 
 // Opaque type representing the MDM (Mobile Device Management) status of the
 // device. Checking for equality is guaranteed to be valid.
@@ -111,22 +118,22 @@ class ChromeIdentityService {
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener);
 
-  // Returns a new Web and App Setting Details controller to present.
-  // Deprecated, crbug.com/905680.
-  // Please use PresentWebAndAppSettingDetailsController().
-  virtual UINavigationController* CreateWebAndAppSettingDetailsController(
+  // Not implemented yet. Please use CreateAccountDetailsController().
+  // See: crbug.com/858845.
+  virtual ios::DismissASMViewControllerBlock PresentAccountDetailsController(
       ChromeIdentity* identity,
-      id<ChromeIdentityBrowserOpener> browser_opener);
+      UIViewController* view_controller,
+      BOOL animated);
 
   // Presents a new Web and App Setting Details view.
   // |identity| the identity used to present the view.
-  // |viewController| the view to present the setting details.
+  // |view_controller| the view to present the setting details.
   // |animated| the view is presented with animation if YES.
   // Returns a block to dismiss the presented view. This block can be ignored if
   // not needed.
-  virtual DismissWebAndAppSettingDetailsControllerBlock
+  virtual DismissASMViewControllerBlock
   PresentWebAndAppSettingDetailsController(ChromeIdentity* identity,
-                                           UIViewController* viewController,
+                                           UIViewController* view_controller,
                                            BOOL animated);
 
   // Returns a new ChromeIdentityInteractionManager with |delegate| as its

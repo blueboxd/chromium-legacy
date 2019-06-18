@@ -239,10 +239,11 @@ public class PostTask {
     @CalledByNative
     private static void onNativeSchedulerReady() {
         synchronized (sLock) {
-            for (TaskRunner taskRunner : sPreNativeTaskRunners) {
+            Set<TaskRunner> preNativeTaskRunners = sPreNativeTaskRunners;
+            sPreNativeTaskRunners = null;
+            for (TaskRunner taskRunner : preNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
             }
-            sPreNativeTaskRunners = null;
         }
     }
 

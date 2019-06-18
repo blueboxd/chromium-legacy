@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/background/background_contents_service_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -31,11 +33,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -86,7 +83,7 @@ const char kDriveOfflineSupportUrl[] =
 // files for offline use.
 class DriveWebContentsManager : public content::WebContentsObserver,
                                 public content::WebContentsDelegate,
-                                public content::NotificationObserver {
+                                public BackgroundContentsServiceObserver {
  public:
   typedef base::Callback<
       void(bool, DriveFirstRunController::UMAOutcome)> CompletionCallback;
@@ -138,19 +135,17 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // BackgroundContentsServiceObserver:
+  void OnBackgroundContentsOpened(
+      const BackgroundContentsOpenedDetails& details) override;
 
   Profile* profile_;
   const std::string app_id_;
   const std::string endpoint_url_;
   std::unique_ptr<content::WebContents> web_contents_;
-  content::NotificationRegistrar registrar_;
-  bool started_;
+  bool started_ = false;
   CompletionCallback completion_callback_;
-  base::WeakPtrFactory<DriveWebContentsManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveWebContentsManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveWebContentsManager);
 };
@@ -163,15 +158,14 @@ DriveWebContentsManager::DriveWebContentsManager(
     : profile_(profile),
       app_id_(app_id),
       endpoint_url_(endpoint_url),
-      started_(false),
-      completion_callback_(completion_callback),
-      weak_ptr_factory_(this) {
+      completion_callback_(completion_callback) {
   DCHECK(!completion_callback_.is_null());
-  registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
-                 content::Source<Profile>(profile_));
+  BackgroundContentsServiceFactory::GetForProfile(profile)->AddObserver(this);
 }
 
 DriveWebContentsManager::~DriveWebContentsManager() {
+  BackgroundContentsServiceFactory::GetForProfile(profile_)->RemoveObserver(
+      this);
 }
 
 void DriveWebContentsManager::StartLoad() {
@@ -290,15 +284,9 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
   return false;
 }
 
-void DriveWebContentsManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED, type);
-  const std::string& app_id =
-      content::Details<BackgroundContentsOpenedDetails>(details)
-          ->application_id;
-  if (app_id == app_id_)
+void DriveWebContentsManager::OnBackgroundContentsOpened(
+    const BackgroundContentsOpenedDetails& details) {
+  if (details.application_id == app_id_)
     OnOfflineInit(true, DriveFirstRunController::OUTCOME_OFFLINE_ENABLED);
 }
 

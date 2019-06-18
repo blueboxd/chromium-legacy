@@ -77,7 +77,8 @@ public class SuggestionViewViewBinder {
                     model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION));
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.getTextLine1().setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).text);
-        } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)) {
+        } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)
+                && model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING) != null) {
             Pair<Integer, Integer> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
             view.getTextLine2().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_2_MAX_LINES.equals(propertyKey)) {
@@ -97,7 +98,11 @@ public class SuggestionViewViewBinder {
                             : R.dimen.omnibox_suggestion_start_offset_without_icon);
             updateSuggestionIcon(view, model);
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
-            Spannable line2Text = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).text;
+            // TEXT_LINE_2_TEXT may be not be set if {@code view} is being rebound to a new model
+            // with only one line of text while the previous model had two lines of answer text.
+            Spannable line2Text = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT) == null
+                    ? null
+                    : model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).text;
             if (TextUtils.isEmpty(line2Text)) {
                 view.getTextLine2().setVisibility(View.INVISIBLE);
             } else {

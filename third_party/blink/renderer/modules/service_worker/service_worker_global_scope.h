@@ -110,7 +110,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode) override;
+      network::mojom::CredentialsMode) override;
   void Dispose() override;
 
   // Runs the installed top-level classic worker script for the 'installed'
@@ -123,7 +123,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void RunInstalledModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);

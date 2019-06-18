@@ -15,9 +15,9 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
 
-#if defined(OS_LINUX)
-#include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace media {
 
@@ -137,16 +137,21 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   }
 
   gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   gmb_handle = CreateGpuMemoryBufferHandle(video_frame.get());
 #endif
   if (gmb_handle.is_null()) {
     VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
     return nullptr;
   }
-  if (!va_picture->ImportGpuMemoryBufferHandle(
-          VideoPixelFormatToGfxBufferFormat(video_frame->format()),
-          std::move(gmb_handle))) {
+  auto buffer_format = VideoPixelFormatToGfxBufferFormat(video_frame->format());
+  if (!buffer_format) {
+    VLOGF(1) << "Unsupported format: " << video_frame->format();
+    return nullptr;
+  }
+
+  if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
+                                               std::move(gmb_handle))) {
     VLOGF(1) << "Failed in ImportGpuMemoryBufferHandle.";
     return nullptr;
   }

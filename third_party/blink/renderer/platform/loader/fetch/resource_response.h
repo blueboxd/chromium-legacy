@@ -353,8 +353,10 @@ class PLATFORM_EXPORT ResourceResponse final {
     did_service_worker_navigation_preload_ = value;
   }
 
-  Time ResponseTime() const { return response_time_; }
-  void SetResponseTime(Time response_time) { response_time_ = response_time; }
+  base::Time ResponseTime() const { return response_time_; }
+  void SetResponseTime(base::Time response_time) {
+    response_time_ = response_time;
+  }
 
   const AtomicString& RemoteIPAddress() const { return remote_ip_address_; }
   void SetRemoteIPAddress(const AtomicString& value) {
@@ -545,7 +547,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
-  Time response_time_;
+  base::Time response_time_;
 
   // ALPN negotiated protocol of the socket which fetched this resource.
   AtomicString alpn_negotiated_protocol_;

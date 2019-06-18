@@ -293,6 +293,10 @@ function setSectionEnabled(section, enable) {
   }
 }
 
+function onZipDone(success) {
+  $('button-export-logs').removeAttribute('disabled');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.send('pageLoaded');
 
@@ -315,6 +319,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var button = $('button-show-file-entries');
     button.parentNode.removeChild(button);
     chrome.send('listFileEntries');
+  });
+
+  $('button-export-logs').addEventListener('click', function() {
+    $('button-export-logs').setAttribute('disabled', 'true');
+    chrome.send('zipLogs');
   });
 
   window.setInterval(function() {

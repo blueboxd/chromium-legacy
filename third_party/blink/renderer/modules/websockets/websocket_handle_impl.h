@@ -68,7 +68,8 @@ class WebSocketHandleImpl
   void OnFinishOpeningHandshake(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void OnAddChannelResponse(const String& selected_protocol,
-                            const String& extensions) override;
+                            const String& extensions,
+                            uint64_t receive_quota_threshold) override;
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,

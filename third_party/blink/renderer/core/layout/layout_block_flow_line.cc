@@ -2196,15 +2196,25 @@ void LayoutBlockFlow::DetermineEndPosition(LineLayoutState& layout_state,
                                            BidiStatus& clean_line_bidi_status) {
   DCHECK(!layout_state.EndLine());
   RootInlineBox* last = nullptr;
+  bool previous_was_clean = false;
   for (RootInlineBox* curr = start_line->NextRootBox(); curr;
        curr = curr->NextRootBox()) {
     if (!curr->IsDirty() && LineBoxHasBRWithClearance(curr))
       return;
 
-    if (curr->IsDirty())
+    // A line is considered clean when it's not marked dirty, AND it either
+    // doesn't contain floats, or follows another clean line. The legacy line
+    // layout engine has issues with handling floats at line boundaries,
+    // potentially resulting in a float belonging to two different lines,
+    // causing all kinds of misery.
+    if (curr->IsDirty() || (curr->FloatsPtr() && !previous_was_clean)) {
       last = nullptr;
-    else if (!last)
-      last = curr;
+      previous_was_clean = false;
+    } else {
+      if (!last)
+        last = curr;
+      previous_was_clean = true;
+    }
   }
 
   if (!last)

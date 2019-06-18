@@ -23,8 +23,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/x/x11.h"
@@ -48,14 +47,6 @@ float GetDeviceScaleFactor() {
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
   }
   return device_scale_factor;
-}
-
-gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
-  return gfx::ScaleToFlooredPoint(pixel_point, 1.0f / GetDeviceScaleFactor());
-}
-
-gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
-  return gfx::ScaleToFlooredPoint(dip_point, GetDeviceScaleFactor());
 }
 
 }  // namespace
@@ -111,7 +102,7 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
     auto point = ui::X11EventSource::GetInstance()
                      ->GetRootCursorLocationFromCurrentEvent();
     if (point)
-      return PixelToDIPPoint(point.value());
+      return gfx::ConvertPointToDIP(GetDeviceScaleFactor(), point.value());
   }
 
   ::Window root, child;
@@ -120,7 +111,8 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   XQueryPointer(xdisplay_, x_root_window_, &root, &child, &root_x, &root_y,
                 &win_x, &win_y, &mask);
 
-  return PixelToDIPPoint(gfx::Point(root_x, root_y));
+  return gfx::ConvertPointToDIP(GetDeviceScaleFactor(),
+                                gfx::Point(root_x, root_y));
 }
 
 bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
@@ -131,7 +123,7 @@ gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
   X11TopmostWindowFinder finder;
   return finder.FindLocalProcessWindowAt(
-      DIPToPixelPoint(point), std::set<aura::Window*>());
+      gfx::ConvertPointToPixel(GetDeviceScaleFactor(), point), {});
 }
 
 int DesktopScreenX11::GetNumDisplays() const {
@@ -161,11 +153,10 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
     DesktopWindowTreeHostX11* rwh = DesktopWindowTreeHostX11::GetHostForXID(
         host->GetAcceleratedWidget());
     if (rwh) {
-      const float scale = 1.0f / GetDeviceScaleFactor();
       const gfx::Rect pixel_rect = rwh->GetX11RootWindowBounds();
-      return GetDisplayMatching(
-          gfx::Rect(gfx::ScaleToFlooredPoint(pixel_rect.origin(), scale),
-                    gfx::ScaleToCeiledSize(pixel_rect.size(), scale)));
+      const gfx::Rect dip_rect =
+          gfx::ConvertRectToDIP(GetDeviceScaleFactor(), pixel_rect);
+      return GetDisplayMatching(dip_rect);
     }
   }
 
@@ -185,16 +176,8 @@ display::Display DesktopScreenX11::GetDisplayNearestPoint(
 
 display::Display DesktopScreenX11::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
-  int max_area = 0;
-  const display::Display* matching = nullptr;
-  for (const auto& display : displays_) {
-    gfx::Rect intersect = gfx::IntersectRects(display.bounds(), match_rect);
-    int area = intersect.width() * intersect.height();
-    if (area > max_area) {
-      max_area = area;
-      matching = &display;
-    }
-  }
+  const display::Display* matching =
+      display::FindDisplayWithBiggestIntersection(displays_, match_rect);
   // Fallback to the primary display if there is no matching display.
   return matching ? *matching : GetPrimaryDisplay();
 }

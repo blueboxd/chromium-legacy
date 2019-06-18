@@ -51,11 +51,14 @@ class FileWriterDelegate;
 }
 
 namespace content {
-
 class IndexedDBFactory;
 class LevelDBComparator;
 class LevelDBDatabase;
 struct IndexedDBValue;
+
+namespace indexed_db {
+class LevelDBFactory;
+}
 
 namespace indexed_db_backing_store_unittest {
 class IndexedDBBackingStoreTest;
@@ -264,6 +267,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // transactions & connections before destroying the backing store.
     // TODO(dmurph): Convert to WeakPtr. https://crbug.com/960992
     IndexedDBBackingStore* backing_store_;
+    indexed_db::LevelDBFactory* const leveldb_factory_;
     scoped_refptr<LevelDBTransaction> transaction_;
     std::map<std::string, std::unique_ptr<BlobChangeRecord>> blob_change_map_;
     std::map<std::string, std::unique_ptr<BlobChangeRecord>>
@@ -394,6 +398,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   IndexedDBBackingStore(Mode backing_store_mode,
                         IndexedDBFactory* indexed_db_factory,
+                        indexed_db::LevelDBFactory* leveldb_factory,
                         const url::Origin& origin,
                         const base::FilePath& blob_path,
                         std::unique_ptr<LevelDBDatabase> db,
@@ -625,6 +630,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   Mode backing_store_mode_;
   IndexedDBFactory* indexed_db_factory_;
+  indexed_db::LevelDBFactory* const leveldb_factory_;
   const url::Origin origin_;
   base::FilePath blob_path_;
 

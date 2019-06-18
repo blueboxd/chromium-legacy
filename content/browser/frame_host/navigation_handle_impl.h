@@ -157,10 +157,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will not have a NavigationEntry associated with it, and this will return 0.
   int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
-  void set_net_error_code(net::Error net_error_code) {
-    net_error_code_ = net_error_code;
-  }
-
   void InitServiceWorkerHandle(
       ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
@@ -269,9 +265,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
-
-  // See NavigationHandle for a description of those member variables.
-  net::Error net_error_code_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;

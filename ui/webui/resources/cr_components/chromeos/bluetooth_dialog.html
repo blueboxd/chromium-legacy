@@ -80,7 +80,7 @@
     <!-- TODO(stevenjb/dschuyler): Find a solution to support i18n{} here -->
     <cr-dialog id="dialog" no-cancel="[[noCancel]]"
         close-text="[[i18n('close')]]" on-cancel="onDialogCanceled_"
-        on-closed="onDialogCanceled_">
+        on-closed="onDialogCanceled_" exportparts="dialog">
       <div slot="title">[[dialogTitle]]</div>
       <div slot="body">
         <div class="contents layout vertical center center-justified">

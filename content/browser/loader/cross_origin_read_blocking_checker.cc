@@ -29,7 +29,7 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
   corb_analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
           request.url, request.request_initiator, response,
-          request_initiator_site_lock, request.fetch_request_mode);
+          request_initiator_site_lock, request.mode);
   if (corb_analyzer_->ShouldBlock()) {
     OnBlocked();
     return;

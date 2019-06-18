@@ -54,17 +54,6 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   void ReloadAccountsFromSystem(
       const CoreAccountId& primary_account_id) override;
 
-  // Reloads accounts from the provider. Fires |OnRefreshTokenAvailable| for
-  // each new account. Fires |OnRefreshTokenRevoked| for each account that was
-  // removed.
-  // It expects that there is already a primary account id.
-  void ReloadCredentials();
-
-  // Sets the primary account and then reloads the accounts from the provider.
-  // Should be called when the user signs in to a new account.
-  // |primary_account_id| must not be an empty string.
-  void ReloadCredentials(const CoreAccountId& primary_account_id);
-
   // Adds |account_id| to |accounts_| if it does not exist or udpates
   // the auth error state of |account_id| if it exists. Fires
   // |OnRefreshTokenAvailable| if the account info is updated.
@@ -79,6 +68,14 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   friend class ProfileOAuth2TokenServiceIOSDelegateTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
                            LoadRevokeCredentialsClearsExcludedAccounts);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
+                           ReloadCredentials);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
+                           ReloadCredentialsWithPrimaryAccountId);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
+                           UpdateAuthErrorAfterRevokeCredentials);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
+                           GetAuthError);
 
   struct AccountStatus {
     GoogleServiceAuthError last_auth_error;
@@ -88,11 +85,13 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // to information about the account.
   typedef std::map<CoreAccountId, AccountStatus> AccountStatusMap;
 
+  // Reloads accounts from the provider. Fires |OnRefreshTokenAvailable| for
+  // each new account. Fires |OnRefreshTokenRevoked| for each account that was
+  // removed.
+  void ReloadCredentials();
+
   // Clears exclude secondary accounts preferences.
   void ClearExcludedSecondaryAccounts();
-
-  // The primary account id.
-  CoreAccountId primary_account_id_;
 
   // Info about the existing accounts.
   AccountStatusMap accounts_;
@@ -103,7 +102,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   base::ThreadChecker thread_checker_;
 
   // The client with which this instance was initialied, or NULL.
-  SigninClient* client_;
+  SigninClient* client_ = nullptr;
   std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider_;
   AccountTrackerService* account_tracker_service_;
 

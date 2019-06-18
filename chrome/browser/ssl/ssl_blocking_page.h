@@ -68,7 +68,7 @@ class SSLBlockingPage : public SSLBlockingPageBase {
           callback);
 
   // InterstitialPageDelegate method:
-  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error and
   // if SSL error overriding is allowed by policy.

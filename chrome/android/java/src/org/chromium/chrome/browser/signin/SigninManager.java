@@ -584,7 +584,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Returns the management domain if the signed in account is managed, otherwise returns null.
      */
     public String getManagementDomain() {
-        return SigninManagerJni.get().getManagementDomain(this, mNativeSigninManagerAndroid);
+        return mDelegate.getManagementDomain(this, mNativeSigninManagerAndroid);
     }
 
     @VisibleForTesting
@@ -678,12 +678,15 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
-     * Performs an asynchronous check to see if the user is a managed user.
-     * @param callback A callback to be called with true if the user is a managed user and false
-     *         otherwise. May be called synchronously from this function.
+     * Verifies if the account is managed. Callback may be called either
+     * synchronously or asynchronously depending on the availability of the
+     * result.
+     * @param email An email of the account.
+     * @param callback The callback that will receive true if the account is managed, false
+     *                 otherwise.
      */
-    public void isUserManaged(String email, final Callback<Boolean> callback) {
-        SigninManagerJni.get().isUserManaged(this, mNativeSigninManagerAndroid, email, callback);
+    public void isAccountManaged(String email, final Callback<Boolean> callback) {
+        mDelegate.isAccountManaged(this, mNativeSigninManagerAndroid, email, callback);
     }
 
     public static String extractDomainName(String email) {
@@ -730,7 +733,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isSignedInOnNative(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
-        void isUserManaged(@JCaller SigninManager self, long nativeSigninManagerAndroid,
+        void isAccountManaged(@JCaller SigninManager self, long nativeSigninManagerAndroid,
                 String username, Callback<Boolean> callback);
 
         String extractDomainName(String email);

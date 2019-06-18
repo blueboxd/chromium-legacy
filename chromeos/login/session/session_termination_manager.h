@@ -30,6 +30,9 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_SESSION) SessionTerminationManager {
   // To be called when the device gets locked to single user.
   void SetDeviceLockedToSingleUser();
 
+  // Returns whether the device is locked to single user.
+  bool IsLockedToSingleUser();
+
  private:
   void DidWaitForServiceToBeAvailable(bool service_is_available);
   void ProcessTpmStatusReply(

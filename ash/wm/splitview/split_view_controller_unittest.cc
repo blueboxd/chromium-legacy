@@ -116,9 +116,7 @@ class TestBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
 };
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 }  // namespace
@@ -134,7 +132,7 @@ class SplitViewControllerTest : public AshTestBase {
     // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet
     // mode.
     base::RunLoop().RunUntilIdle();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     FpsCounter::SetForceReportZeroAnimationForTest(true);
     ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         true);
@@ -1403,7 +1401,7 @@ TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
@@ -1791,7 +1789,7 @@ TEST_F(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
   EXPECT_NE(nullptr, w2_state->drag_details());
 
   // End tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
   // Drag is ended for both windows.
   EXPECT_EQ(nullptr, w1_state->drag_details());

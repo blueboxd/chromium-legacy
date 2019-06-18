@@ -110,7 +110,7 @@ class BLINK_EXPORT WebFrame {
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
 
   // The frame's upgrade insecure navigations set.
-  std::vector<unsigned> GetInsecureRequestToUpgrade() const;
+  WebVector<unsigned> GetInsecureRequestToUpgrade() const;
 
   // Updates this frame's FrameOwner properties, such as scrolling, margin,
   // or allowfullscreen.  This is used when this frame's parent is in

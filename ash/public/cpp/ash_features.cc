@@ -79,7 +79,7 @@ const base::Feature kSystemTrayFeaturePodsPagination{
     "SystemTrayFeaturePodsPagination", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSwapSideVolumeButtonsForOrientation{
-    "SwapSideVolumeButtonsForOrientation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&

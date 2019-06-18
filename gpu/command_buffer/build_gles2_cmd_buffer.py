@@ -2202,6 +2202,12 @@ _FUNCTION_INFO = {
     'es31': True,
     'unit_test': False,
   },
+  'DispatchComputeIndirect': {
+    'cmd_args': 'GLintptrNotNegative offset',
+    'trace_level': 2,
+    'es31': True,
+    'unit_test': False,
+  },
   'DrawArrays': {
     'type': 'Custom',
     'impl_func': False,
@@ -4408,6 +4414,8 @@ def main(argv):
     "gpu/command_buffer/service/context_state_autogen.h")
   gen.WriteServiceContextStateImpl(
     "gpu/command_buffer/service/context_state_impl_autogen.h")
+  gen.WriteServiceContextStateTestHelpers(
+    "gpu/command_buffer/service/context_state_test_helpers_autogen.h")
   gen.WriteClientContextStateHeader(
     "gpu/command_buffer/client/client_context_state_autogen.h")
   gen.WriteClientContextStateImpl(

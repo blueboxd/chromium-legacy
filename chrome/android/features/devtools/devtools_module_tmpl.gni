@@ -12,10 +12,7 @@ template("devtools_module_tmpl") {
   jinja_template(_manifest_target) {
     input = "//chrome/android/features/devtools/java/AndroidManifest.xml"
     output = _manifest
-    variables = [
-      "target_sdk_version=$android_sdk_version",
-      "manifest_package=${invoker.manifest_package}",
-    ]
+    variables = [ "manifest_package=${invoker.manifest_package}" ]
   }
 
   android_app_bundle_module(target_name) {
@@ -29,6 +26,8 @@ template("devtools_module_tmpl") {
                            ])
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
+    min_sdk_version = 21
+    target_sdk_version = android_sdk_version
     deps = [
       "//chrome/android/features/devtools:java",
     ]

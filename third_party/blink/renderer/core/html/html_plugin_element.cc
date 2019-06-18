@@ -294,10 +294,8 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
 }
 
 void HTMLPlugInElement::IntrinsicSizingInfoChanged() {
-  if (auto* layout_object = GetLayoutObject()) {
-    layout_object->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kUnknown);
-  }
+  if (auto* embedded_object = GetLayoutEmbeddedObject())
+    embedded_object->IntrinsicSizeChanged();
 }
 
 void HTMLPlugInElement::UpdatePlugin() {
@@ -602,11 +600,9 @@ bool HTMLPlugInElement::IsImageType() const {
 }
 
 LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {
-  // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
+  // HTMLObjectElement and HTMLEmbedElement may return arbitrary LayoutObjects
   // when using fallback content.
-  if (!GetLayoutObject() || !GetLayoutObject()->IsEmbeddedObject())
-    return nullptr;
-  return ToLayoutEmbeddedObject(GetLayoutObject());
+  return ToLayoutEmbeddedObjectOrNull(GetLayoutObject());
 }
 
 // We don't use url_, as it may not be the final URL that the object loads,

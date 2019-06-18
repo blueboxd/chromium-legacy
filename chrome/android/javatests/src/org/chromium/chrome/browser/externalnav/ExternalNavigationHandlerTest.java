@@ -1566,7 +1566,7 @@ public class ExternalNavigationHandlerTest {
 
     private static WebappInfo newWebappInfoFromScope(String scope) {
         return WebappInfo.create("", "", scope, null, null, null, WebDisplayMode.STANDALONE, 0, 0,
-                0, 0, null, false, false, false);
+                0, 0, false, false, false);
     }
 
     private static class IntentActivity {

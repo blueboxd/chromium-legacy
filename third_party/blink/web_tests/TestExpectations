@@ -18,7 +18,7 @@ Bug(none) webgpu/fence.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
-# The following tests need to remove the assumption that user activation is
+# The following tests need to remove the assumption that user activation isfast/text/firstline/capitalize-transform.html
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
@@ -192,8 +192,8 @@ crbug.com/974652 [ Linux Debug ] virtual/scroll_customization/fast/scrolling/uns
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 
@@ -377,6 +377,8 @@ crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
 
 # ====== Layout team owned tests from here ======
+
+crbug.com/974853 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
 
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
@@ -888,6 +890,7 @@ crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ 
 crbug.com/591099 [ Mac10.11 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
+crbug.com/976355 [ Mac10.12 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] compositing/geometry/root-layer-update.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/reflections/reflection-positioning2.html [ Failure ]
@@ -1354,9 +1357,11 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/image-map-anchor-
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflowing-circle-focus-ring.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
+
+crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
@@ -1496,6 +1501,7 @@ crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-009.html [ Crash ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-008.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-block-sibling-003.xht [ Failure ]
 crbug.com/963109 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-button-001.html [ Failure ]
 crbug.com/963109 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-button-002.html [ Failure ]
@@ -2262,13 +2268,10 @@ crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Tim
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
 crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
 crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
-# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
 
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
@@ -3308,7 +3311,6 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/start_alignment.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
@@ -3320,11 +3322,7 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/html/cross-origin/anonymous.tentative
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
@@ -4481,7 +4479,6 @@ crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/background-imag
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/geometry-background-image-tiled-001.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Timeout ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-interpolation-004.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-interpolation-010.https.html [ Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-stylemap.https.html [ Failure ]
@@ -4514,6 +4511,7 @@ crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-007.html [ Fail
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-008.html [ Failure ]
 crbug.com/926685 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
+crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
@@ -4564,6 +4562,9 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
+
+# Underline offset and thickness
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Failure ]
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
@@ -5654,7 +5655,6 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 
 
 # Sheriff 2018-10-29
-crbug.com/899710 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
 crbug.com/766357 [ Win ] virtual/threaded/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
@@ -6155,7 +6155,6 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964158 [ Linux ] external/wpt/payment-handler/change-payment-method.https.html [ Pass Crash ]
-crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
@@ -6223,9 +6222,6 @@ crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 crbug.com/971590 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Pass Failure ]
 crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
-
-# Sheriff 2019-06-10
-crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]

@@ -148,9 +148,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return std::make_unique<PipWindowResizer>(window_state);
   }
 
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return CreateWindowResizerForTabletMode(window, point_in_parent,
                                             window_component, source);
   }

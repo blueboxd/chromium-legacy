@@ -26,9 +26,34 @@
 namespace cc {
 namespace {
 
+auto CombineWithLayerMaskTypes(
+    const std::vector<PixelResourceTestCase>& test_cases) {
+  return ::testing::Combine(
+      ::testing::ValuesIn(test_cases),
+      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
+                        Layer::LayerMaskType::MULTI_TEXTURE_MASK));
+}
+
+std::vector<PixelResourceTestCase> const kTestCases = {
+    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
+    {LayerTreeTest::RENDERER_GL, GPU},
+    {LayerTreeTest::RENDERER_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+};
+
+std::vector<PixelResourceTestCase> const kTestCasesNonSkia = {
+    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
+    {LayerTreeTest::RENDERER_GL, GPU},
+    {LayerTreeTest::RENDERER_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+};
+
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostMasksPixelTest);
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostMasksPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -99,7 +124,9 @@ class LayerTreeHostLayerListPixelTest : public ParameterizedPixelResourceTest {
   }
 };
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostLayerListPixelTest);
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostLayerListPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   PropertyTrees property_trees;
@@ -421,13 +448,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
 using LayerTreeHostLayerListPixelTestNonSkia = LayerTreeHostLayerListPixelTest;
 
 // TODO(crbug.com/948128): Enable this test for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    PixelResourceTest,
-    LayerTreeHostLayerListPixelTestNonSkia,
-    ::testing::Combine(
-        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
-        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
-                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostLayerListPixelTestNonSkia,
+                         CombineWithLayerMaskTypes(kTestCasesNonSkia));
 
 TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
   PropertyTrees property_trees;
@@ -819,8 +842,9 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(
-    LayerTreeHostMasksForBackdropFiltersPixelTest);
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostMasksForBackdropFiltersPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilter) {
@@ -853,7 +877,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
   base::FilePath image_name =
-      (test_case_ == GPU || test_case_ == SKIA_GL)
+      (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
   RunPixelResourceTest(background, image_name);
@@ -963,7 +987,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
       small_error_allowed = 1;
-    } else if (test_case_ != SOFTWARE) {
+    } else if (raster_type() != SOFTWARE) {
       percentage_pixels_small_error = 0.9f;
       percentage_pixels_error = 6.5f;
       average_error_allowed_in_bad_pixels = 3.5f;
@@ -1072,11 +1096,12 @@ class LayerTreeHostMaskAsBlendingPixelTest
 
 // TODO(crbug.com/948128): Enable these tests for Skia.
 MaskTestConfig const kTestConfigs[] = {
-    MaskTestConfig{SOFTWARE, 0},
-    MaskTestConfig{ZERO_COPY, 0},
-    MaskTestConfig{ZERO_COPY, kUseAntialiasing},
-    MaskTestConfig{ZERO_COPY, kForceShaders},
-    MaskTestConfig{ZERO_COPY, kUseAntialiasing | kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kUseAntialiasing},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY},
+                   kUseAntialiasing | kForceShaders},
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1219,7 +1244,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_case_ == SOFTWARE)
+      (raster_type() == SOFTWARE)
           ? base::FilePath(
                 FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png"))
           : base::FilePath(
@@ -1266,7 +1291,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_case_ == SOFTWARE)
+      (raster_type() == SOFTWARE)
           ? base::FilePath(FILE_PATH_LITERAL(
                 "mask_as_blending_rotated_circle_underflow.png"))
           : base::FilePath(FILE_PATH_LITERAL(

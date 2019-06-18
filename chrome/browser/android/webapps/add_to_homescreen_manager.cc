@@ -86,8 +86,7 @@ void AddToHomescreenManager::AddToHomescreen(
   // Fire the appinstalled event and do install time logging.
   banners::AppBannerManagerAndroid* app_banner_manager =
       banners::AppBannerManagerAndroid::FromWebContents(web_contents);
-  app_banner_manager->OnInstall(false /* is_native */,
-                                data_fetcher_->shortcut_info().display);
+  app_banner_manager->OnInstall(data_fetcher_->shortcut_info().display);
 }
 
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {

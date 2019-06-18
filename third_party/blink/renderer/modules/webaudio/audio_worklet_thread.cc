@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"

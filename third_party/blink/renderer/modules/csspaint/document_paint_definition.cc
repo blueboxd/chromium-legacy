@@ -21,10 +21,25 @@ DocumentPaintDefinition::~DocumentPaintDefinition() = default;
 
 bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
     const CSSPaintDefinition& other) {
-  if (alpha() != other.GetPaintRenderingContext2DSettings()->alpha() ||
-      NativeInvalidationProperties() != other.NativeInvalidationProperties() ||
-      CustomInvalidationProperties() != other.CustomInvalidationProperties() ||
-      InputArgumentTypes() != other.InputArgumentTypes())
+  if (other.NativeInvalidationProperties() != NativeInvalidationProperties() ||
+      other.CustomInvalidationProperties() != CustomInvalidationProperties() ||
+      other.InputArgumentTypes() != InputArgumentTypes() ||
+      other.GetPaintRenderingContext2DSettings()->alpha() != alpha())
+    return false;
+  registered_definitions_count_++;
+  return true;
+}
+
+bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
+    const Vector<CSSPropertyID>& native_properties,
+    const Vector<String>& custom_properties,
+    const Vector<CSSSyntaxDescriptor>& input_argument_types,
+    bool alpha) {
+  if (native_properties != NativeInvalidationProperties() ||
+      !std::equal(custom_properties.begin(), custom_properties.end(),
+                  CustomInvalidationProperties().begin(),
+                  CustomInvalidationProperties().end()) ||
+      input_argument_types != InputArgumentTypes() || alpha != this->alpha())
     return false;
   registered_definitions_count_++;
   return true;

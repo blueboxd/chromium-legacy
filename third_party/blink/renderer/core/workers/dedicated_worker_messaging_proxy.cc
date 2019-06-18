@@ -86,7 +86,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."
-    network::mojom::FetchCredentialsMode credentials_mode;
+    network::mojom::CredentialsMode credentials_mode;
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);
     DCHECK(result);

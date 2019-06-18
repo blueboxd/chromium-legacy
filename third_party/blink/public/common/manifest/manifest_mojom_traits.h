@@ -92,10 +92,6 @@ struct BLINK_COMMON_EXPORT
     return m.background_color.value_or(0);
   }
 
-  static const GURL& splash_screen_url(const ::blink::Manifest& manifest) {
-    return manifest.splash_screen_url;
-  }
-
   static const std::vector<::blink::Manifest::ImageResource>& icons(
       const ::blink::Manifest& manifest) {
     return manifest.icons;

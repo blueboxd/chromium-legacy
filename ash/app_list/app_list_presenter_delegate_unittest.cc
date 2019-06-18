@@ -84,7 +84,7 @@ void EnableTabletMode(bool enable) {
   // again at the end of |TabletModeController::TabletModeController|.
   base::RunLoop().RunUntilIdle();
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
 
   // The app list will be shown automatically when tablet mode is enabled (Home
   // launcher flag is enabled). Wait here for the animation complete.

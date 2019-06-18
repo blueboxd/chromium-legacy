@@ -29,7 +29,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
   // From blink::Platform:
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const WebURL& url,
-                     Time,
+                     base::Time,
                      const uint8_t*,
                      size_t) override {
     cached_urls_.push_back(url);

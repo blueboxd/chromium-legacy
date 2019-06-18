@@ -234,7 +234,7 @@ std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
   storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
   storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
   storage_checkbox->SetEnabledTextColors(views::style::GetColor(
-      *storage_checkbox_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
       STYLE_SECONDARY));
   storage_checkbox_ = storage_checkbox.get();
 

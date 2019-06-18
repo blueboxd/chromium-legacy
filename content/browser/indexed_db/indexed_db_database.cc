@@ -127,6 +127,9 @@ class IndexedDBDatabase::ConnectionRequest {
   // |connection| can be null if all connections were closed (see ForceClose).
   virtual void OnConnectionClosed(IndexedDBConnection* connection) = 0;
 
+  // Called when the transaction should be bound.
+  virtual void CreateAndBindTransaction() = 0;
+
   // Called when the upgrade transaction has started executing.
   virtual void UpgradeTransactionStarted(int64_t old_version) = 0;
 
@@ -156,7 +159,9 @@ class IndexedDBDatabase::OpenRequest
               std::unique_ptr<IndexedDBPendingConnection> pending_connection)
       : ConnectionRequest(std::move(origin_state_handle), db),
         pending_(std::move(pending_connection)),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    db_->metadata_.was_cold_open = pending_->was_cold_open;
+  }
 
   void Perform() override {
     if (db_->metadata_.id == kInvalidId) {
@@ -307,14 +312,22 @@ class IndexedDBDatabase::OpenRequest
         blink::mojom::IDBTransactionMode::VersionChange,
         new IndexedDBBackingStore::Transaction(db_->backing_store()));
 
-    std::move(pending_->create_transaction_callback)
-        .Run(transaction->AsWeakPtr());
+    // Save a WeakPtr<IndexedDBTransaction> for the CreateAndBindTransaction
+    // function to use later.
+    pending_->transaction = transaction->AsWeakPtr();
 
     transaction->ScheduleTask(BindWeakOperation(
         &IndexedDBDatabase::VersionChangeOperation, db_->AsWeakPtr(),
         pending_->version, pending_->callbacks));
     transaction->locks_receiver()->locks = std::move(lock_receiver_.locks);
     transaction->Start();
+  }
+
+  void CreateAndBindTransaction() override {
+    if (pending_->create_transaction_callback && pending_->transaction) {
+      std::move(pending_->create_transaction_callback)
+          .Run(std::move(pending_->transaction));
+    }
   }
 
   // Called when the upgrade transaction has started executing.
@@ -426,6 +439,8 @@ class IndexedDBDatabase::DeleteRequest
     db_->RequestComplete(this);
   }
 
+  void CreateAndBindTransaction() override { NOTREACHED(); }
+
   void UpgradeTransactionStarted(int64_t old_version) override { NOTREACHED(); }
 
   void UpgradeTransactionFinished(bool committed) override { NOTREACHED(); }
@@ -441,32 +456,11 @@ class IndexedDBDatabase::DeleteRequest
   DISALLOW_COPY_AND_ASSIGN(DeleteRequest);
 };
 
-// static
-std::tuple<std::unique_ptr<IndexedDBDatabase>, Status>
-IndexedDBDatabase::Create(
-    const base::string16& name,
-    IndexedDBBackingStore* backing_store,
-    IndexedDBFactory* factory,
-    ErrorCallback error_callback,
-    base::OnceClosure destroy_me,
-    std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-    const Identifier& unique_identifier,
-    ScopesLockManager* transaction_lock_manager) {
-  std::unique_ptr<IndexedDBDatabase> database =
-      IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
-          name, backing_store, factory, std::move(error_callback),
-          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-          transaction_lock_manager);
-  Status s = database->OpenInternal();
-  if (!s.ok())
-    database = nullptr;
-  return {std::move(database), s};
-}
-
 IndexedDBDatabase::IndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
+    IndexedDBClassFactory* class_factory,
     ErrorCallback error_callback,
     base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
@@ -479,6 +473,7 @@ IndexedDBDatabase::IndexedDBDatabase(
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory),
+      class_factory_(class_factory),
       metadata_coding_(std::move(metadata_coding)),
       lock_manager_(transaction_lock_manager),
       error_callback_(std::move(error_callback)),
@@ -580,7 +575,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     int child_process_id) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
-          child_process_id, std::move(origin_state_handle),
+          child_process_id, std::move(origin_state_handle), class_factory_,
           weak_factory_.GetWeakPtr(),
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
                               weak_factory_.GetWeakPtr()),
@@ -2067,6 +2062,7 @@ Status IndexedDBDatabase::VersionChangeOperation(
       base::BindOnce(&IndexedDBDatabase::VersionChangeAbortOperation,
                      AsWeakPtr(), old_version));
 
+  active_request_->CreateAndBindTransaction();
   active_request_->UpgradeTransactionStarted(old_version);
   return Status::OK();
 }

@@ -27,12 +27,10 @@
           @apply --cr-page-host;
         }
 
-        bluetooth-dialog {
-          --cr-dialog-native: {
-            border-radius: 0;
-            height: 100%;
-            width: 100%;
-          }
+        bluetooth-dialog::part(dialog) {
+          border-radius: 0;
+          height: 100%;
+          width: 100%;
         }
       </style>
 

@@ -8,11 +8,6 @@
     featureSplit="vr"
     package="{{manifest_package}}">
 
-    <!-- The VR module is only supported on Android L+. -->
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="{{target_sdk_version}}" />
-
     <dist:module
         dist:onDemand="true"
         dist:title="@string/vr_module_title">

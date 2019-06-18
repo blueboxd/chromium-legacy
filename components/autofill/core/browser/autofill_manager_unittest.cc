@@ -82,6 +82,7 @@ using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
+using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;

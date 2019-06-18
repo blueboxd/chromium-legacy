@@ -96,7 +96,7 @@ class ImageFrameGeneratorTest : public testing::Test,
   int RepetitionCount() const override {
     return frame_count_ == 1 ? kAnimationNone : kAnimationLoopOnce;
   }
-  TimeDelta FrameDuration() const override { return TimeDelta(); }
+  base::TimeDelta FrameDuration() const override { return base::TimeDelta(); }
 
  protected:
   void UseMockImageDecoderFactory() {

@@ -10,6 +10,10 @@
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#endif
+
 namespace web_app {
 
 // static
@@ -26,9 +30,12 @@ WebAppUiServiceFactory* WebAppUiServiceFactory::GetInstance() {
 
 WebAppUiServiceFactory::WebAppUiServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "WebAppUiDelegate",
+          "WebAppUiService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebAppProviderFactory::GetInstance());
+#if defined(OS_CHROMEOS)
+  DependsOn(app_list::AppListSyncableServiceFactory::GetInstance());
+#endif
 }
 
 WebAppUiServiceFactory::~WebAppUiServiceFactory() = default;

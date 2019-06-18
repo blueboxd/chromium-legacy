@@ -42,7 +42,11 @@ Polymer({
   is: 'oobe-back-button',
 
   properties: {
-    disabled: {type: Boolean, value: false, reflectToAttribute: true},
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
     /* Note that we are not using "aria-label" property here, because
      * we want to pass the label value but not actually declare it as an
@@ -55,10 +59,15 @@ Polymer({
     this.$.button.focus();
   },
 
+  /**
+   * @param {!Event} e
+   * @private
+   */
   onClick_: function(e) {
-    if (this.disabled)
+    if (this.disabled) {
       e.stopPropagation();
-  }
+    }
+  },
 });
 
 Polymer({

@@ -213,10 +213,10 @@ class LayerTreeHostBlendingPixelTest
     InitializeFromTestCase(resource_type());
 
     // Force shaders only applies to gl renderer.
-    if (renderer_type_ != RENDERER_GL && flags & kForceShaders)
+    if (renderer_type() != RENDERER_GL && flags & kForceShaders)
       return;
 
-    SCOPED_TRACE(TestTypeToString(renderer_type_));
+    SCOPED_TRACE(TestTypeToString(renderer_type()));
     SCOPED_TRACE(SkBlendMode_Name(current_blend_mode()));
 
     scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
@@ -232,7 +232,7 @@ class LayerTreeHostBlendingPixelTest
     this->force_antialiasing_ = (flags & kUseAntialiasing);
     this->force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((flags & kUseAntialiasing) && (renderer_type_ == RENDERER_GL)) {
+    if ((flags & kUseAntialiasing) && (renderer_type() == RENDERER_GL)) {
       // Blending results might differ with one pixel.
       // Don't allow large errors here, only off by ones.
       // However, large error still has to be specified to satisfy
@@ -262,11 +262,16 @@ class LayerTreeHostBlendingPixelTest
   SkColor misc_opaque_color_ = 0xffc86464;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    B,
-    LayerTreeHostBlendingPixelTest,
-    ::testing::Combine(::testing::Values(SOFTWARE, ZERO_COPY, SKIA_GL),
-                       ::testing::ValuesIn(kBlendModes)));
+std::vector<PixelResourceTestCase> const kTestCases = {
+    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
+    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+};
+
+INSTANTIATE_TEST_SUITE_P(B,
+                         LayerTreeHostBlendingPixelTest,
+                         ::testing::Combine(::testing::ValuesIn(kTestCases),
+                                            ::testing::ValuesIn(kBlendModes)));
 
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;

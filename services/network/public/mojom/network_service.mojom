@@ -403,6 +403,10 @@ interface NetworkService {
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 
+  // Called when there is a change in the current count of peer to peer
+  // connections that may require low latency.
+  OnPeerToPeerConnectionsCountChange(uint32 count);
+
   // Called on state changes of the Android application.
   [EnableIf=is_android]
   OnApplicationStateChange(mojo_base.mojom.ApplicationState state);

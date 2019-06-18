@@ -89,8 +89,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
 
-  std::string GetUserAgent() const override;
-  blink::UserAgentMetadata GetUserAgentMetadata() const override;
+  std::string GetUserAgent() override;
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

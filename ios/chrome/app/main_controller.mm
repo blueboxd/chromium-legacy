@@ -443,8 +443,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearchInCurrentBVC;
-// Dismisses |signinInteractionCoordinator|.
-- (void)dismissSigninInteractionCoordinator;
 // Called when the last incognito tab was closed.
 - (void)lastIncognitoTabClosed;
 // Called when the last regular tab was closed.
@@ -2214,12 +2212,6 @@ enum class EnterTabSwitcherSnapshotResult {
                                  completion:nil];
 }
 
-- (void)dismissSigninInteractionCoordinator {
-  // The SigninInteractionCoordinator must not be destroyed at this point, as
-  // it may dismiss the sign in UI in a future callback.
-  [self.signinInteractionCoordinator cancelAndDismiss];
-}
-
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   if (_settingsNavigationController) {
@@ -2431,15 +2423,12 @@ enum class EnterTabSwitcherSnapshotResult {
       ->GetMailtoHandlerProvider()
       ->DismissAllMailtoHandlerInterfaces();
 
-  // Cancel interaction with SSO.
-  // First, cancel the signin interaction.
-  [self.signinInteractionCoordinator cancel];
-
   // Then, depending on what the SSO view controller is presented on, dismiss
   // it.
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.currentBVC);
     DCHECK(![self isTabSwitcherActive]);
+    DCHECK(!self.signinInteractionCoordinator.isActive);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
         clearPresentedStateWithCompletion:completion
@@ -2449,7 +2438,7 @@ enum class EnterTabSwitcherSnapshotResult {
     // |self.currentBVC| may exist but tab switcher should be active.
     DCHECK([self isTabSwitcherActive]);
     // This will dismiss the SSO view controller.
-    [self dismissSigninInteractionCoordinator];
+    [self.signinInteractionCoordinator cancelAndDismiss];
     // History coordinator can be started on top of the tab grid. This is not
     // true of the other tab switchers.
     DCHECK(self.mainCoordinator);
@@ -2462,7 +2451,6 @@ enum class EnterTabSwitcherSnapshotResult {
   if (![self isTabSwitcherActive] && self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
     // settings then call the BVC completion.
-    DCHECK(!self.signinInteractionCoordinator.isActive);
     [self closeSettingsAnimated:NO completion:completionWithBVC];
   } else if (self.isSettingsViewPresented) {
     // In this case, the settings are up but the BVC is not showing. Close the
@@ -2471,6 +2459,7 @@ enum class EnterTabSwitcherSnapshotResult {
   } else if (![self isTabSwitcherActive]) {
     // In this case, the settings are not shown but the BVC is showing. Call the
     // BVC completion.
+    [self.signinInteractionCoordinator cancel];
     completionWithBVC();
   } else {
     // In this case, neither the settings nor the BVC are shown. Call the no-BVC

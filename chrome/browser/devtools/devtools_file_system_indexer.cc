@@ -43,7 +43,7 @@ using std::set;
 
 base::SequencedTaskRunner* impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT};
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT};
   static base::LazySequencedTaskRunner s_sequenced_task_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
   return s_sequenced_task_task_runner.Get().get();

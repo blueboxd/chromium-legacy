@@ -1985,6 +1985,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method disable
 [Worker]     method disableVertexAttribArray
 [Worker]     method dispatchCompute
+[Worker]     method dispatchComputeIndirect
 [Worker]     method drawArrays
 [Worker]     method drawArraysInstanced
 [Worker]     method drawBuffers

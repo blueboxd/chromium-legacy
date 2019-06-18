@@ -404,7 +404,7 @@ void PasswordFormMetricsRecorder::SetSubmittedFormType(
 }
 
 void PasswordFormMetricsRecorder::SetSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event) {
+    autofill::mojom::SubmissionIndicatorEvent event) {
   ukm_entry_builder_.SetSubmission_Indicator(static_cast<int>(event));
 }
 

@@ -154,7 +154,7 @@ std::unique_ptr<ProtocolCookieArray> BuildCookieArray(
   auto cookies = std::make_unique<ProtocolCookieArray>();
 
   for (const net::CanonicalCookie& cookie : cookie_list)
-    cookies->addItem(BuildCookie(cookie));
+    cookies->emplace_back(BuildCookie(cookie));
 
   return cookies;
 }
@@ -287,7 +287,7 @@ class CookieRetrieverNetworkService
   ~CookieRetrieverNetworkService() {
     auto cookies = std::make_unique<ProtocolCookieArray>();
     for (const auto& entry : all_cookies_)
-      cookies->addItem(BuildCookie(entry.second));
+      cookies->emplace_back(BuildCookie(entry.second));
     callback_->sendSuccess(std::move(cookies));
   }
 
@@ -511,10 +511,8 @@ std::vector<GURL> ComputeCookieURLs(RenderFrameHostImpl* frame_host,
   std::vector<GURL> urls;
 
   if (protocol_urls.isJust()) {
-    std::unique_ptr<Array<std::string>> actual_urls = protocol_urls.takeJust();
-
-    for (size_t i = 0; i < actual_urls->length(); i++)
-      urls.push_back(GURL(actual_urls->get(i)));
+    for (const std::string& url : *protocol_urls.fromJust())
+      urls.emplace_back(url);
   } else {
     base::queue<FrameTreeNode*> queue;
     queue.push(frame_host->frame_tree_node());
@@ -808,10 +806,10 @@ std::unique_ptr<Network::SignedExchangeError> BuildSignedExchangeError(
 
 std::unique_ptr<Array<Network::SignedExchangeError>> BuildSignedExchangeErrors(
     const std::vector<SignedExchangeError>& errors) {
-  std::unique_ptr<Array<Network::SignedExchangeError>> signed_exchange_errors =
-      Array<Network::SignedExchangeError>::create();
+  auto signed_exchange_errors =
+      std::make_unique<protocol::Array<Network::SignedExchangeError>>();
   for (const auto& error : errors)
-    signed_exchange_errors->addItem(BuildSignedExchangeError(error));
+    signed_exchange_errors->emplace_back(BuildSignedExchangeError(error));
   return signed_exchange_errors;
 }
 
@@ -1328,8 +1326,7 @@ void NetworkHandler::SetCookies(
   }
 
   std::vector<std::unique_ptr<net::CanonicalCookie>> net_cookies;
-  for (size_t i = 0; i < cookies->length(); i++) {
-    Network::CookieParam* cookie = cookies->get(i);
+  for (const std::unique_ptr<Network::CookieParam>& cookie : *cookies) {
     std::unique_ptr<net::CanonicalCookie> net_cookie =
         MakeCookieFromProtocolValues(
             cookie->GetName(), cookie->GetValue(), cookie->GetUrl(""),
@@ -1476,10 +1473,8 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
     const net::SSLInfo& ssl_info) {
   if (!ssl_info.cert)
     return nullptr;
-  std::unique_ptr<
-      protocol::Array<protocol::Network::SignedCertificateTimestamp>>
-      signed_certificate_timestamp_list =
-          protocol::Array<Network::SignedCertificateTimestamp>::create();
+  auto signed_certificate_timestamp_list =
+      std::make_unique<protocol::Array<Network::SignedCertificateTimestamp>>();
   for (auto const& sct : ssl_info.signed_certificate_timestamps) {
     std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
         signed_certificate_timestamp =
@@ -1499,17 +1494,15 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
                     base::HexEncode(sct.sct->signature.signature_data.c_str(),
                                     sct.sct->signature.signature_data.length()))
                 .Build();
-    signed_certificate_timestamp_list->addItem(
+    signed_certificate_timestamp_list->emplace_back(
         std::move(signed_certificate_timestamp));
   }
   std::vector<std::string> san_dns;
   std::vector<std::string> san_ip;
   ssl_info.cert->GetSubjectAltName(&san_dns, &san_ip);
-  std::unique_ptr<Array<String>> san_list = Array<String>::create();
-  for (const std::string& san : san_dns)
-    san_list->addItem(san);
+  auto san_list = std::make_unique<protocol::Array<String>>(std::move(san_dns));
   for (const std::string& san : san_ip) {
-    san_list->addItem(
+    san_list->emplace_back(
         net::IPAddress(reinterpret_cast<const uint8_t*>(san.data()), san.size())
             .ToString());
   }
@@ -1847,8 +1840,8 @@ void NetworkHandler::OnSignedExchangeReceived(
 
     const SignedExchangeSignatureHeaderField::Signature& sig =
         envelope->signature();
-    std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
-        Array<Network::SignedExchangeSignature>::create();
+    auto signatures =
+        std::make_unique<protocol::Array<Network::SignedExchangeSignature>>();
     std::unique_ptr<Network::SignedExchangeSignature> signature =
         Network::SignedExchangeSignature::Create()
             .SetLabel(sig.label)
@@ -1864,21 +1857,20 @@ void NetworkHandler::OnSignedExchangeReceived(
                                                sizeof(sig.cert_sha256->data)));
     }
     if (certificate) {
-      std::unique_ptr<Array<String>> encoded_certificates =
-          Array<String>::create();
-      std::string encoded;
+      auto encoded_certificates = std::make_unique<protocol::Array<String>>();
+      encoded_certificates->emplace_back();
       base::Base64Encode(
           net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
-          &encoded);
-      encoded_certificates->addItem(std::move(encoded));
+          &encoded_certificates->back());
       for (const auto& cert : certificate->intermediate_buffers()) {
+        encoded_certificates->emplace_back();
         base::Base64Encode(
-            net::x509_util::CryptoBufferAsStringPiece(cert.get()), &encoded);
-        encoded_certificates->addItem(std::move(encoded));
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()),
+            &encoded_certificates->back());
       }
       signature->SetCertificates(std::move(encoded_certificates));
     }
-    signatures->addItem(std::move(signature));
+    signatures->emplace_back(std::move(signature));
 
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
@@ -1901,7 +1893,7 @@ void NetworkHandler::OnSignedExchangeReceived(
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
-  if (!patterns->length()) {
+  if (patterns->empty()) {
     interception_handle_.reset();
     if (url_loader_interceptor_) {
       url_loader_interceptor_.reset();
@@ -1911,19 +1903,20 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   }
 
   std::vector<DevToolsNetworkInterceptor::Pattern> interceptor_patterns;
-  for (size_t i = 0; i < patterns->length(); ++i) {
+  for (const std::unique_ptr<protocol::Network::RequestPattern>& pattern :
+       *patterns) {
     base::flat_set<ResourceType> resource_types;
-    std::string resource_type = patterns->get(i)->GetResourceType("");
+    std::string resource_type = pattern->GetResourceType("");
     if (!resource_type.empty()) {
       if (!AddInterceptedResourceType(resource_type, &resource_types)) {
         return Response::InvalidParams(base::StringPrintf(
             "Cannot intercept resources of type '%s'", resource_type.c_str()));
       }
     }
-    interceptor_patterns.push_back(DevToolsNetworkInterceptor::Pattern(
-        patterns->get(i)->GetUrlPattern("*"), std::move(resource_types),
-        ToInterceptorStage(patterns->get(i)->GetInterceptionStage(
-            protocol::Network::InterceptionStageEnum::Request))));
+    interceptor_patterns.emplace_back(
+        pattern->GetUrlPattern("*"), std::move(resource_types),
+        ToInterceptorStage(pattern->GetInterceptionStage(
+            protocol::Network::InterceptionStageEnum::Request)));
   }
 
   if (!host_)

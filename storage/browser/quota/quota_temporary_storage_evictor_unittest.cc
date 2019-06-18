@@ -70,7 +70,6 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   }
 
   void GetEvictionOrigin(StorageType type,
-                         const std::set<url::Origin>& exceptions,
                          int64_t global_quota,
                          storage::GetOriginCallback callback) override {
     if (origin_order_.empty())

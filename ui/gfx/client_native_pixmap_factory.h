@@ -30,6 +30,7 @@ class GFX_EXPORT ClientNativePixmapFactory {
   virtual std::unique_ptr<ClientNativePixmap> ImportFromHandle(
       gfx::NativePixmapHandle handle,
       const gfx::Size& size,
+      gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;
 };
 

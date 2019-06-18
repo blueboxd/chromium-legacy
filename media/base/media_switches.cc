@@ -242,10 +242,10 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the instance from LinuxVideoDecoderFactory in MojoVideoDecoderService,
-// replacing VdaVideoDecoder at Chrome OS platform.
-const base::Feature kLinuxVideoDecoder{"LinuxVideoDecoder",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable the instance from ChromeosVideoDecoderFactory in
+// MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
+const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
@@ -263,6 +263,10 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 // because the behavior is simpler and more predictable.
 const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Show toolbar button that opens dialog for controlling media sessions.
+const base::Feature kGlobalMediaControls{"GlobalMediaControls",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.

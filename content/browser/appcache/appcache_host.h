@@ -61,13 +61,20 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
  public:
   class CONTENT_EXPORT Observer {
    public:
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // Called just after the cache selection algorithm completes.
     virtual void OnCacheSelectionComplete(AppCacheHost* host) = 0;
 
     // Called just prior to the instance being deleted.
     virtual void OnDestructionImminent(AppCacheHost* host) = 0;
 
-    virtual ~Observer() {}
+   protected:
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    Observer() noexcept = default;
+    virtual ~Observer() = default;
   };
 
   AppCacheHost(const base::UnguessableToken& host_id,

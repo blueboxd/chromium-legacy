@@ -151,8 +151,7 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
       const GURL& origin,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
-  bool IsFullscreenForTabOrPending(
-      const WebContents* web_contents) const override;
+  bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
   void RequestKeyboardLock(WebContents* web_contents,
                            bool esc_key_locked) override;
   void CancelKeyboardLockRequest(WebContents* web_contents) override;
@@ -181,7 +180,7 @@ void FakeKeyboardLockWebContentsDelegate::ExitFullscreenModeForTab(
 }
 
 bool FakeKeyboardLockWebContentsDelegate::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return is_fullscreen_;
 }
 

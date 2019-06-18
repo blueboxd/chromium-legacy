@@ -29,6 +29,7 @@ class AudioDebugRecordingSession;
 namespace content {
 
 class WebContents;
+class WebRtcInternalsConnectionsObserver;
 class WebRTCInternalsUIObserver;
 
 // This is a singleton class running in the browser UI thread.
@@ -110,6 +111,12 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver* observer);
   void RemoveObserver(WebRTCInternalsUIObserver* observer);
+
+  // Methods for adding or removing WebRtcInternalsConnectionsObserver.
+  // |observer| is notified when there is a change in the count of active WebRTC
+  // connections.
+  void AddConnectionsObserver(WebRtcInternalsConnectionsObserver* observer);
+  void RemoveConnectionsObserver(WebRtcInternalsConnectionsObserver* observer);
 
   // Sends all update data to |observer|.
   void UpdateObserver(WebRTCInternalsUIObserver* observer);
@@ -197,6 +204,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                                     size_t* index = nullptr);
 
   base::ObserverList<WebRTCInternalsUIObserver>::Unchecked observers_;
+
+  base::ObserverList<WebRtcInternalsConnectionsObserver> connections_observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
   // updates.

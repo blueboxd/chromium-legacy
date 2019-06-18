@@ -29,10 +29,8 @@ class CookiesTreeModelUtil {
   // Finds or creates an ID for given |node| and returns it as string.
   std::string GetTreeNodeId(const CookieTreeNode* node);
 
-  // Append the details of the child nodes of |parent| in specified range.
+  // Append the details of the child nodes of |parent|.
   void GetChildNodeDetails(const CookieTreeNode* parent,
-                           int start,
-                           int count,
                            bool include_quota_nodes,
                            base::ListValue* list);
 

@@ -173,6 +173,16 @@ bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
 }
 #endif
 
+const AttrNameToTrustedType& SVGScriptElement::GetCheckedAttributeTypes()
+    const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({
+                          {svg_names::kHrefAttr.LocalName(),
+                           SpecificTrustedType::kTrustedScriptURL},
+                      }));
+  return attribute_map;
+}
+
 void SVGScriptElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(loader_);
   SVGElement::Trace(visitor);

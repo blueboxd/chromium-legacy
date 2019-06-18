@@ -122,7 +122,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
       const base::Optional<net::SSLInfo> ssl_info = base::nullopt) {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
-    test_handle()->set_net_error_code(net_error_code);
+    request_->set_net_error(net_error_code);
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.

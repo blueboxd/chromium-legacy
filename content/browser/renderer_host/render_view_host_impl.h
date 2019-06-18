@@ -257,7 +257,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnPasteFromSelectionClipboard();
   void OnTakeFocus(bool reverse);
   void OnClosePageACK();
-  void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnFocus();
 
  private:

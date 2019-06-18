@@ -1047,8 +1047,7 @@ ReadableStreamNative* ReadableStreamNative::Create(
   //    sizeAlgorithm).
   ReadableStreamDefaultController::SetUp(
       script_state, stream, controller, start_algorithm, pull_algorithm,
-      cancel_algorithm, high_water_mark, size_algorithm, false,
-      exception_state);
+      cancel_algorithm, high_water_mark, size_algorithm, exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -1059,14 +1058,12 @@ ReadableStreamNative* ReadableStreamNative::Create(
 
 ReadableStreamNative::ReadableStreamNative() = default;
 
-// TODO(ricea): Remove |enable_blink_lock_notifications| once
-// blink::ReadableStreamOperations has been updated to use CreateReadableStream.
 ReadableStreamNative::ReadableStreamNative(ScriptState* script_state,
                                            ScriptValue raw_underlying_source,
                                            ScriptValue raw_strategy,
-                                           bool enable_blink_lock_notifications,
+                                           bool created_by_ua,
                                            ExceptionState& exception_state) {
-  if (!enable_blink_lock_notifications) {
+  if (!created_by_ua) {
     // TODO(ricea): Move this to IDL once blink::ReadableStreamOperations is
     // no longer using the public constructor.
     UseCounter::Count(ExecutionContext::From(script_state),
@@ -1151,7 +1148,7 @@ ReadableStreamNative::ReadableStreamNative(ScriptState* script_state,
   //  (this, underlyingSource, highWaterMark, sizeAlgorithm).
   ReadableStreamDefaultController::SetUpFromUnderlyingSource(
       script_state, this, underlying_source, high_water_mark, size_algorithm,
-      enable_blink_lock_notifications, exception_state);
+      exception_state);
 }
 
 ReadableStreamNative::~ReadableStreamNative() = default;

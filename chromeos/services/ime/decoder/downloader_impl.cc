@@ -18,7 +18,7 @@ DownloaderImpl::~DownloaderImpl() {
 int DownloaderImpl::DownloadToFile(const char* url,
                                    const DownloadOptions& options,
                                    const char* file_path,
-                                   DownloadCallback callback) {
+                                   ImeCrosDownloadCallback callback) {
   // TODO(crbug/946913): Implement this.
   return 0;
 }

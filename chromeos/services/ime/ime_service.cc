@@ -29,8 +29,7 @@ void ImeService::OnStart() {
       &ImeService::OnConnectionLost, base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
-  input_engine_ = std::make_unique<DecoderEngine>(
-      service_binding_.GetConnector(), base::SequencedTaskRunnerHandle::Get());
+  input_engine_ = std::make_unique<DecoderEngine>(this);
 #else
   input_engine_ = std::make_unique<InputEngine>();
 #endif
@@ -66,6 +65,32 @@ void ImeService::OnConnectionLost() {
     service_binding_.RequestClose();
     // TODO(https://crbug.com/837156): Set a timer to start a cleanup.
   }
+}
+
+const char* ImeService::GetImeBundleDir() {
+  return "";
+}
+
+const char* ImeService::GetImeGlobalDir() {
+  return "";
+}
+
+const char* ImeService::GetImeUserHomeDir() {
+  return "";
+}
+
+int ImeService::SimpleDownloadToFile(const char* url,
+                                     const char* file_path,
+                                     SimpleDownloadCallback callback) {
+  // TODO(https://crbug.com/837156): Create a download with PlatformAccess
+  // Mojo remote. Make sure the parent of |file_path| is ImeUserHomeDir.
+  return 0;
+}
+
+ImeCrosDownloader* ImeService::GetDownloader() {
+  // TODO(https://crbug.com/837156): Create a ImeCrosDownloader based on its
+  // specification in interfaces. The caller should free it after use.
+  return nullptr;
 }
 
 }  // namespace ime

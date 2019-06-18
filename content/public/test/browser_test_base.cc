@@ -5,7 +5,11 @@
 #include "content/public/test/browser_test_base.h"
 
 #include <stddef.h>
+
 #include <iostream>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -43,6 +47,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
@@ -491,6 +496,16 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // otherwise the test body will have to do it in order to use RunLoop for
     // waiting.
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+
+#if !defined(OS_ANDROID)
+    // Fail the test if a renderer crashes while the test is running.
+    //
+    // This cannot be enabled on Android, because of renderer kills triggered
+    // aggressively by the OS itself.
+    no_renderer_crashes_assertion_ =
+        std::make_unique<NoRendererCrashesAssertion>();
+#endif
+
     PreRunTestOnMainThread();
     std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
     if (initial_web_contents_ &&

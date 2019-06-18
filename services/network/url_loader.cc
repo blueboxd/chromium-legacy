@@ -409,11 +409,10 @@ URLLoader::URLLoader(
                             std::make_unique<UnownedPointer>(this));
 
   is_nocors_corb_excluded_request_ =
-      request.corb_excluded &&
-      request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
+      request.corb_excluded && request.mode == mojom::RequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
-  fetch_request_mode_ = request.fetch_request_mode;
+  request_mode_ = request.mode;
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
@@ -751,7 +750,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response->head,
-          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -910,7 +909,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response_->head,
-          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -925,7 +924,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             url_request_->url(), url_request_->initiator(), response_->head,
-            factory_params_->request_initiator_site_lock, fetch_request_mode_);
+            factory_params_->request_initiator_site_lock, request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);

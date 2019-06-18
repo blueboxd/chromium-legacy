@@ -116,7 +116,7 @@ void CastExtensionHost::ExitFullscreenModeForTab(
   SetFullscreen(web_contents, false);
 }
 bool CastExtensionHost::IsFullscreenForTabOrPending(
-    const content::WebContents* web_contents) const {
+    const content::WebContents* web_contents) {
   return is_fullscreen_;
 }
 

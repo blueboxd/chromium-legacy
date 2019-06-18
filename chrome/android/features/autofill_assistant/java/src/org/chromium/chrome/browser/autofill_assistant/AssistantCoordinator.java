@@ -44,8 +44,7 @@ class AssistantCoordinator {
         // Instantiate child components.
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel, controller);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity, mModel);
-        mOverlayCoordinator = new AssistantOverlayCoordinator(
-                activity, mModel.getOverlayModel(), mBottomBarCoordinator);
+        mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mModel.getOverlayModel());
 
         activity.getCompositorViewHolder().addCompositorViewResizer(mBottomBarCoordinator);
         mModel.setVisible(true);

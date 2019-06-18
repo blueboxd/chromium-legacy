@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
+#include "ui/events/cocoa/cocoa_event_utils.h"
 
 namespace remote_cocoa {
 
@@ -66,12 +67,8 @@ class RenderWidgetHostNSViewBridgeOwner
 
   void ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {
-    const blink::WebKeyboardEvent* web_event =
-        static_cast<const blink::WebKeyboardEvent*>(&key_event);
-    std::unique_ptr<content::InputEvent> input_event =
-        std::make_unique<content::InputEvent>(*web_event, latency_info);
-    host_->ForwardKeyboardEvent(std::move(input_event),
-                                key_event.skip_in_browser);
+    std::vector<content::EditCommand> commands;
+    ForwardKeyboardEventWithCommands(key_event, latency_info, commands);
   }
   void ForwardKeyboardEventWithCommands(
       const content::NativeWebKeyboardEvent& key_event,
@@ -81,8 +78,11 @@ class RenderWidgetHostNSViewBridgeOwner
         static_cast<const blink::WebKeyboardEvent*>(&key_event);
     std::unique_ptr<content::InputEvent> input_event =
         std::make_unique<content::InputEvent>(*web_event, latency_info);
+    std::vector<uint8_t> native_event_data =
+        ui::EventToData(key_event.os_event);
     host_->ForwardKeyboardEventWithCommands(
-        std::move(input_event), key_event.skip_in_browser, commands);
+        std::move(input_event), native_event_data, key_event.skip_in_browser,
+        commands);
   }
   void RouteOrProcessMouseEvent(
       const blink::WebMouseEvent& web_event) override {

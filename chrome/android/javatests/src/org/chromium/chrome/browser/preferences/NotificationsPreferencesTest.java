@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.preferences;
 
 import android.app.Fragment;
 import android.os.Build;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,9 +61,11 @@ public class NotificationsPreferencesTest {
     public void testContentSuggestionsToggle() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
-        final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsPreferences.PREF_SUGGESTIONS);
+        final PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+        final ChromeSwitchPreferenceCompat toggle =
+                (ChromeSwitchPreferenceCompat) fragment.findPreference(
+                        NotificationsPreferences.PREF_SUGGESTIONS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure the toggle reflects the state correctly.
@@ -71,17 +73,17 @@ public class NotificationsPreferencesTest {
             Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Make sure we can change the state.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
             Assert.assertEquals(toggle.isChecked(), !initiallyChecked);
             Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Make sure we can change it back.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
             Assert.assertEquals(toggle.isChecked(), initiallyChecked);
             Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Click it one last time so we're in a toggled state for the UI Capture.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
         });
 
         mScreenShooter.shoot("ContentSuggestionsToggle");
@@ -97,9 +99,11 @@ public class NotificationsPreferencesTest {
     public void testToggleDisabledWhenPrefetchingDisabled() {
         // clang-format on
 
-        PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
-        ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsPreferences.PREF_SUGGESTIONS);
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+        ChromeSwitchPreferenceCompat toggle =
+                (ChromeSwitchPreferenceCompat) fragment.findPreference(
+                        NotificationsPreferences.PREF_SUGGESTIONS);
 
         Assert.assertFalse(toggle.isEnabled());
         Assert.assertFalse(toggle.isChecked());
@@ -117,11 +121,12 @@ public class NotificationsPreferencesTest {
         // clang-format on
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
+            PreferenceFragmentCompat fragment =
+                    (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
             Preference fromWebsites =
                     fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
-            PreferencesTest.clickPreference(fragment, fromWebsites);
+            fromWebsites.performClick();
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -147,7 +152,8 @@ public class NotificationsPreferencesTest {
     public void testWebsiteNotificationsSummary() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
+        final PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 

@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("sms") {
   sources = [
+    "navigator_sms.cc",
+    "navigator_sms.h",
     "sms.cc",
     "sms.h",
     "sms_receiver.cc",

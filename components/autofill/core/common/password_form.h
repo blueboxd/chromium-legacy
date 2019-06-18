@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
-#include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -287,7 +286,8 @@ struct PasswordForm {
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is not persisted and filled
   // out only for submitted forms.
-  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
+  mojom::SubmissionIndicatorEvent submission_event =
+      mojom::SubmissionIndicatorEvent::NONE;
 
   // True iff heuristics declined this form for normal saving or filling (e.g.
   // only credit card fields were found). But this form can be saved or filled

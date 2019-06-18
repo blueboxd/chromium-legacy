@@ -47,8 +47,8 @@ class BulkPrintersCalculatorFactory {
   // Tear down all BulkPrintersCalculator created for users/profiles.
   void ShutdownProfiles();
 
-  // Tear down all BulkPrintersCalculator.
-  void Shutdown();
+  // Tear down BulkPrintersCalculator created for the device.
+  void ShutdownForDevice();
 
  private:
   friend struct base::LazyInstanceTraitsBase<BulkPrintersCalculatorFactory>;

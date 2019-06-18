@@ -89,6 +89,12 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
         return FidoReturnCode::kUserConsentDenied;
 
+      // External authenticators may return this error if internal user
+      // verification fails for a make credential request or if the pin token is
+      // not valid.
+      case CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid:
+        return FidoReturnCode::kUserConsentDenied;
+
       case CtapDeviceResponseCode::kCtap2ErrKeyStoreFull:
         return FidoReturnCode::kStorageFull;
 

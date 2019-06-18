@@ -130,7 +130,7 @@ public class WebappVisibilityTest {
             @WebappScopePolicy.Type int scopePolicy, @WebDisplayMode int displayMode) {
         return scopePolicy == WebappScopePolicy.Type.LEGACY
                 ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
-                        displayMode, 0, 0, 0, 0, null, false /* isIconGenerated */,
+                        displayMode, 0, 0, 0, 0, false /* isIconGenerated */,
                         false /* isIconAdaptive */, false /* forceNavigation */)
                 : WebApkInfo.create(
                         "", "", webappStartUrlOrScopeUrl, null, null, null, null, null, displayMode,

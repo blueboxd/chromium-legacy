@@ -17,16 +17,18 @@ Requiring gatherers
 Requiring audits
 Runner setup
 Connecting to browser
-Getting browser version
 Resetting state with about:blank
+Getting browser version
 Benchmarking machine
 Initializing…
+Resetting state with about:blank
+Setting up network for the pass trace
+Cleaning browser cache
 Running beforePass methods
 Gathering setup: CSSUsage
 Gathering setup: ViewportDimensions
 Gathering setup: RuntimeExceptions
-Gathering setup: ChromeConsoleMessages
-Gathering setup: Accessibility
+Gathering setup: ConsoleMessages
 Gathering setup: AnchorElements
 Gathering setup: ImageElements
 Gathering setup: LinkElements
@@ -35,7 +37,6 @@ Gathering setup: ScriptElements
 Gathering setup: AppCacheManifest
 Gathering setup: Doctype
 Gathering setup: DOMStats
-Gathering setup: JSLibraries
 Gathering setup: OptimizedImages
 Gathering setup: PasswordInputsWithPreventedPaste
 Gathering setup: ResponseCompression
@@ -44,14 +45,15 @@ Gathering setup: FontSize
 Gathering setup: EmbeddedContent
 Gathering setup: RobotsTxt
 Gathering setup: TapTargets
-Loading page & waiting for onload
+Gathering setup: Accessibility
+Beginning devtoolsLog and trace
 Getting browser version
+Loading page & waiting for onload
 Running pass methods
 Gathering in-page: CSSUsage
 Gathering in-page: ViewportDimensions
 Gathering in-page: RuntimeExceptions
-Gathering in-page: ChromeConsoleMessages
-Gathering in-page: Accessibility
+Gathering in-page: ConsoleMessages
 Gathering in-page: AnchorElements
 Gathering in-page: ImageElements
 Gathering in-page: LinkElements
@@ -60,7 +62,6 @@ Gathering in-page: ScriptElements
 Gathering in-page: AppCacheManifest
 Gathering in-page: Doctype
 Gathering in-page: DOMStats
-Gathering in-page: JSLibraries
 Gathering in-page: OptimizedImages
 Gathering in-page: PasswordInputsWithPreventedPaste
 Gathering in-page: ResponseCompression
@@ -69,14 +70,14 @@ Gathering in-page: FontSize
 Gathering in-page: EmbeddedContent
 Gathering in-page: RobotsTxt
 Gathering in-page: TapTargets
+Gathering in-page: Accessibility
 Gathering trace
 Gathering devtoolsLog & network records
 Running afterPass methods
 Gathering: CSSUsage
 Gathering: ViewportDimensions
 Gathering: RuntimeExceptions
-Gathering: ChromeConsoleMessages
-Gathering: Accessibility
+Gathering: ConsoleMessages
 Gathering: AnchorElements
 Gathering: ImageElements
 Gathering: LinkElements
@@ -85,7 +86,6 @@ Gathering: ScriptElements
 Gathering: AppCacheManifest
 Gathering: Doctype
 Gathering: DOMStats
-Gathering: JSLibraries
 Gathering: OptimizedImages
 Gathering: PasswordInputsWithPreventedPaste
 Gathering: ResponseCompression
@@ -94,11 +94,14 @@ Gathering: FontSize
 Gathering: EmbeddedContent
 Gathering: RobotsTxt
 Gathering: TapTargets
+Gathering: Accessibility
 Resetting state with about:blank
+Setting up network for the pass trace
 Running beforePass methods
 Gathering setup: ServiceWorker
 Gathering setup: Offline
 Gathering setup: StartUrl
+Beginning devtoolsLog and trace
 Loading page & waiting for onload
 Running pass methods
 Gathering in-page: ServiceWorker
@@ -110,9 +113,11 @@ Gathering: ServiceWorker
 Gathering: Offline
 Gathering: StartUrl
 Resetting state with about:blank
+Setting up network for the pass trace
 Running beforePass methods
 Gathering setup: HTTPRedirect
 Gathering setup: HTMLWithoutJavaScript
+Beginning devtoolsLog and trace
 Loading page & waiting for onload
 Running pass methods
 Gathering in-page: HTTPRedirect
@@ -143,10 +148,9 @@ Computing artifact: SpeedIndex
 Auditing: Screenshot Thumbnails
 Computing artifact: Speedline
 Auditing: Final Screenshot
-Computing artifact: Screenshots
 Auditing: Estimated Input Latency
 Computing artifact: EstimatedInputLatency
-Auditing: Max Potential FID
+Auditing: Max Potential First Input Delay
 Computing artifact: MaxPotentialFID
 Auditing: No browser errors logged to the console
 Auditing: Server response times are low (TTFB)
@@ -161,6 +165,7 @@ Computing artifact: CriticalRequestChains
 Auditing: Avoid multiple page redirects
 Auditing: Web app manifest meets the installability requirements
 Computing artifact: ManifestValues
+Auditing: Provides a valid `apple-touch-icon`
 Auditing: Configured for a custom splash screen
 Auditing: Sets an address-bar theme color
 Auditing: Content is sized correctly for the viewport
@@ -183,6 +188,9 @@ Auditing: Server Backend Latencies
 Auditing: Tasks
 Auditing: Metrics
 Auditing: start_url responds with a 200 when offline
+Auditing: Performance budget
+Computing artifact: ResourceSummary
+Auditing: Keep request counts low and transfer sizes small
 Auditing: Site works cross-browser
 Auditing: Page transitions don't feel like they block on the network
 Auditing: Each page has a URL
@@ -276,6 +284,7 @@ Version: 5.1.0
 
 accesskeys: notApplicable
 appcache-manifest: pass
+apple-touch-icon: fail
 aria-allowed-attr: notApplicable
 aria-required-attr: notApplicable
 aria-required-children: notApplicable
@@ -299,13 +308,13 @@ diagnostics: ERROR Something went wrong with recording the trace over your page 
 dlitem: notApplicable
 doctype: fail
 document-title: fail
-dom-size: numeric
+dom-size: ERROR Required DOMStats gatherer encountered an error: Cannot read property 'localName' of null
 duplicate-id: notApplicable
 efficient-animated-content: flaky
 errors-in-console: pass
 estimated-input-latency: flaky
 external-anchors-use-rel-noopener: pass
-final-screenshot: ERROR Chrome didn't collect any screenshots during the page load. Please make sure there is content visible on the page, and then try re-running Lighthouse. (NO_SCREENSHOTS)
+final-screenshot: ERROR Something went wrong with recording the trace over your page load. Please run Lighthouse again. (NO_FCP)
 first-contentful-paint: flaky
 first-cpu-idle: flaky
 first-meaningful-paint: flaky
@@ -356,6 +365,7 @@ offline-start-url: fail
 offscreen-content-hidden: manual
 offscreen-images: flaky
 password-inputs-can-be-pasted-into: pass
+performance-budget: notApplicable
 plugins: pass
 pwa-cross-browser: manual
 pwa-each-page-has-url: manual
@@ -363,6 +373,7 @@ pwa-page-transitions: manual
 redirects: flaky
 redirects-http: fail
 render-blocking-resources: flaky
+resource-summary: informative
 robots-txt: notApplicable
 screenshot-thumbnails: flaky
 service-worker: fail
@@ -398,5 +409,5 @@ visual-order-follows-dom: manual
 without-javascript: fail
 works-offline: fail
 
-# of .lh-audit divs: 111
+# of .lh-audit divs: 114
 

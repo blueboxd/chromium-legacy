@@ -292,9 +292,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns an interceptor for a main resource request. May return nullptr if
   // the request doesn't require interception.
   std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
-      network::mojom::FetchRequestMode request_mode,
-      network::mojom::FetchCredentialsMode credentials_mode,
-      network::mojom::FetchRedirectMode redirect_mode,
+      network::mojom::RequestMode request_mode,
+      network::mojom::CredentialsMode credentials_mode,
+      network::mojom::RedirectMode redirect_mode,
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,

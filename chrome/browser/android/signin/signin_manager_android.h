@@ -81,10 +81,10 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
-  void IsUserManaged(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj,
-                     const base::android::JavaParamRef<jstring>& j_username,
-                     const base::android::JavaParamRef<jobject>& j_callback);
+  void IsAccountManaged(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jstring>& j_username,
+                        const base::android::JavaParamRef<jobject>& j_callback);
 
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(

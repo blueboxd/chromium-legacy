@@ -633,18 +633,64 @@ TEST_F(MAYBE_PointerTest, OnPointerScrollDiscrete) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, IgnorePointerEventDuringModal) {
+TEST_F(MAYBE_PointerTest, RegisterPointerEventsOnModal) {
+  // Create modal surface.
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), gfx::Point(), true, false,
+                       ash::kShellWindowId_SystemModalContainer));
+  shell_surface->DisableMovement();
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  ash::wm::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
+  // Make the window modal.
+  shell_surface->SetSystemModal(true);
+  EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
+
+  MockPointerDelegate delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  // Pointer events on modal window should be registered.
+  gfx::Point origin = surface->window()->GetBoundsInScreen().origin();
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+    generator.MoveMouseTo(origin);
+
+    EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)));
+    generator.MoveMouseTo(origin + gfx::Vector2d(1, 1));
+
+    EXPECT_CALL(delegate,
+                OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, true));
+    EXPECT_CALL(delegate,
+                OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false));
+    generator.ClickLeftButton();
+
+    EXPECT_CALL(delegate,
+                OnPointerScroll(testing::_, gfx::Vector2dF(1.2, 1.2), false));
+    EXPECT_CALL(delegate, OnPointerScrollStop(testing::_));
+    generator.ScrollSequence(origin, base::TimeDelta(), 1, 1, 1, 1);
+  }
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(MAYBE_PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
+  // Create surface for non-modal window.
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10))));
   surface->Attach(buffer.get());
   surface->Commit();
-  gfx::Point location = surface->window()->GetBoundsInScreen().origin();
-
-  MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   // Create surface for modal window.
   std::unique_ptr<Surface> surface2(new Surface);
@@ -657,11 +703,13 @@ TEST_F(MAYBE_PointerTest, IgnorePointerEventDuringModal) {
   surface2->Attach(buffer2.get());
   surface2->Commit();
   ash::wm::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
-  gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
-
   // Make the window modal.
   shell_surface2->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
+
+  MockPointerDelegate delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -669,122 +717,144 @@ TEST_F(MAYBE_PointerTest, IgnorePointerEventDuringModal) {
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface2.get()))
       .WillRepeatedly(testing::Return(true));
 
-  // Check if pointer events on modal window are registered.
-  {
-    testing::InSequence sequence;
-    EXPECT_CALL(delegate, OnPointerEnter(surface2.get(), gfx::PointF(), 0));
-  }
-  generator.MoveMouseTo(location2);
-
-  {
-    testing::InSequence sequence;
-    EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)));
-  }
-  generator.MoveMouseTo(location2 + gfx::Vector2d(1, 1));
-
-  {
-    testing::InSequence sequence;
-    EXPECT_CALL(delegate,
-                OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, true));
-    EXPECT_CALL(delegate,
-                OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false));
-  }
-  generator.ClickLeftButton();
-
-  {
-    testing::InSequence sequence;
-    EXPECT_CALL(delegate,
-                OnPointerScroll(testing::_, gfx::Vector2dF(1.2, 1.2), false));
-    EXPECT_CALL(delegate, OnPointerScrollStop(testing::_));
-  }
-  generator.ScrollSequence(location2, base::TimeDelta(), 1, 1, 1, 1);
-
-  {
-    testing::InSequence sequence;
-    EXPECT_CALL(delegate, OnPointerLeave(surface2.get()));
-  }
-  generator.MoveMouseTo(surface2->window()->GetBoundsInScreen().bottom_right());
-
   // Check if pointer events on non-modal window are ignored.
+  gfx::Point nonModalOrigin = surface->window()->GetBoundsInScreen().origin();
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0))
         .Times(0);
-  }
-  generator.MoveMouseTo(location);
+    generator.MoveMouseTo(nonModalOrigin);
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)))
         .Times(0);
-  }
-  generator.MoveMouseTo(location + gfx::Vector2d(1, 1));
+    generator.MoveMouseTo(nonModalOrigin + gfx::Vector2d(1, 1));
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate,
                 OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, true))
         .Times(0);
     EXPECT_CALL(delegate,
                 OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false))
         .Times(0);
-  }
-  generator.ClickLeftButton();
+    generator.ClickLeftButton();
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate,
                 OnPointerScroll(testing::_, gfx::Vector2dF(1.2, 1.2), false))
         .Times(0);
     EXPECT_CALL(delegate, OnPointerScrollStop(testing::_)).Times(0);
-  }
-  generator.ScrollSequence(location, base::TimeDelta(), 1, 1, 1, 1);
+    generator.ScrollSequence(nonModalOrigin, base::TimeDelta(), 1, 1, 1, 1);
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate, OnPointerLeave(surface.get())).Times(0);
+    generator.MoveMouseTo(
+        surface->window()->GetBoundsInScreen().bottom_right());
   }
-  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().bottom_right());
 
-  // Make the window non-modal.
-  shell_surface2->SetSystemModal(false);
-  EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
 
-  // Check if pointer events on non-modal window are registered.
+TEST_F(MAYBE_PointerTest, IgnorePointerLeaveOnModal) {
+  // Create modal surface.
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), gfx::Point(), true, false,
+                       ash::kShellWindowId_SystemModalContainer));
+  shell_surface->DisableMovement();
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  ash::wm::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
+  // Make the window modal.
+  shell_surface->SetSystemModal(true);
+  EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
+
+  MockPointerDelegate delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  gfx::Point origin = surface->window()->GetBoundsInScreen().origin();
+
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
-  }
-  generator.MoveMouseTo(location);
+    generator.MoveMouseTo(origin);
 
+    // OnPointerLeave should not be called on the modal surface when the pointer
+    // moves out of its bounds.
+    EXPECT_CALL(delegate, OnPointerLeave(surface.get())).Times(0);
+    generator.MoveMouseTo(
+        surface->window()->GetBoundsInScreen().bottom_right());
+  }
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(MAYBE_PointerTest, RegisterPointerEventsOnNonModal) {
+  // Create surface for non-modal window.
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10))));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Create another surface for a non-modal window.
+  std::unique_ptr<Surface> surface2(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface2(
+      new ShellSurface(surface2.get(), gfx::Point(), true, false,
+                       ash::kShellWindowId_SystemModalContainer));
+  shell_surface2->DisableMovement();
+  std::unique_ptr<Buffer> buffer2(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
+  surface2->Attach(buffer2.get());
+  surface2->Commit();
+  ash::wm::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
+
+  MockPointerDelegate delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface2.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  // Ensure second window is non-modal.
+  shell_surface2->SetSystemModal(false);
+  EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
+
+  // Check if pointer events on first non-modal window are registered.
+  gfx::Point firstWindowOrigin =
+      surface->window()->GetBoundsInScreen().origin();
   {
     testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+    generator.MoveMouseTo(firstWindowOrigin);
+
     EXPECT_CALL(delegate, OnPointerMotion(testing::_, gfx::PointF(1, 1)));
-  }
-  generator.MoveMouseTo(location + gfx::Vector2d(1, 1));
+    generator.MoveMouseTo(firstWindowOrigin + gfx::Vector2d(1, 1));
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate,
                 OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, true));
     EXPECT_CALL(delegate,
                 OnPointerButton(testing::_, ui::EF_LEFT_MOUSE_BUTTON, false));
-  }
-  generator.ClickLeftButton();
+    generator.ClickLeftButton();
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate,
                 OnPointerScroll(testing::_, gfx::Vector2dF(1.2, 1.2), false));
     EXPECT_CALL(delegate, OnPointerScrollStop(testing::_));
-  }
-  generator.ScrollSequence(location, base::TimeDelta(), 1, 1, 1, 1);
+    generator.ScrollSequence(firstWindowOrigin, base::TimeDelta(), 1, 1, 1, 1);
 
-  {
-    testing::InSequence sequence;
     EXPECT_CALL(delegate, OnPointerLeave(surface.get()));
+    generator.MoveMouseTo(
+        surface->window()->GetBoundsInScreen().bottom_right());
   }
-  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().bottom_right());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

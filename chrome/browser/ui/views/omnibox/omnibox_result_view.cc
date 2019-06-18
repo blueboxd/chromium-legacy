@@ -112,7 +112,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   Invalidate();
   Layout();
-  EmitTextChangedAccessiblityEvent();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -214,6 +213,14 @@ void OmniboxResultView::Invalidate() {
 
 void OmniboxResultView::OnSelected() {
   DCHECK(IsSelected());
+
+  // Immediately before notifying screen readers that the selected item has
+  // changed, we want to update the name of the newly-selected item so that any
+  // cached values get updated prior to the selection change.
+  EmitTextChangedAccessiblityEvent();
+
+  // Send accessibility event on the popup box that its selection has changed.
+  EmitSelectedChildrenChangedAccessibilityEvent();
 
   // The text is also accessible via text/value change events in the omnibox but
   // this selection event allows the screen reader to get more details about the
@@ -471,12 +478,20 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
   if (!popup_contents_view_->IsOpen())
     return;
 
+  // The omnibox results list reuses the same items, but the text displayed for
+  // these items is updated as the value of omnibox changes. The displayed text
+  // for a given item is exposed to screen readers as the item's name/label.
   base::string16 current_name = AutocompleteMatchType::ToAccessibilityLabel(
       match_, match_.contents, false);
   if (accessible_name_ != current_name) {
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
     accessible_name_ = current_name;
   }
+}
+
+void OmniboxResultView::EmitSelectedChildrenChangedAccessibilityEvent() {
+  popup_contents_view_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kSelectedChildrenChanged, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

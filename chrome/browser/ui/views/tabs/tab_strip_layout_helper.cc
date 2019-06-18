@@ -200,6 +200,8 @@ int TabStripLayoutHelper::LayoutTabs(views::ViewModelT<Tab>* tabs,
   DCHECK_EQ(bounds.size(), static_cast<size_t>(tabs->view_size()));
   int trailing_x = 0;
   for (size_t i = 0; i < bounds.size(); i++) {
+    if (tabs->view_at(i)->dragging())
+      continue;
     tabs->view_at(i)->SetBoundsRect(bounds[i]);
     trailing_x = std::max(trailing_x, bounds[i].right());
     // TODO(958173): We shouldn't need to update the cached widths here, since

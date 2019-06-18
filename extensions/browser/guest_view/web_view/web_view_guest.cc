@@ -1455,7 +1455,7 @@ void WebViewGuest::ExitFullscreenModeForTab(WebContents* web_contents) {
 }
 
 bool WebViewGuest::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return is_guest_fullscreen_;
 }
 

@@ -67,38 +67,31 @@ class BackgroundContentsServiceTest : public testing::Test {
 
 class MockBackgroundContents : public BackgroundContents {
  public:
-  explicit MockBackgroundContents(Profile* profile)
-      : appid_("app_id"), profile_(profile) {}
-  MockBackgroundContents(Profile* profile, const std::string& id)
-      : appid_(id), profile_(profile) {}
+  MockBackgroundContents(BackgroundContentsService* service,
+                         Profile* profile,
+                         const std::string& id)
+      : service_(service), appid_(id), profile_(profile) {}
+  MockBackgroundContents(BackgroundContentsService* service, Profile* profile)
+      : MockBackgroundContents(service, profile, "app_id") {}
 
-  void SendOpenedNotification(BackgroundContentsService* service) {
+  void SendOpenedNotification() {
     BackgroundContentsOpenedDetails details = {this, "background", appid_};
-    service->BackgroundContentsOpened(&details, profile_);
+    service_->BackgroundContentsOpened(&details, profile_);
   }
 
-  virtual void Navigate(GURL url) {
+  void Navigate(GURL url) {
     url_ = url;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-        content::Source<Profile>(profile_),
-        content::Details<BackgroundContents>(this));
+    service_->OnBackgroundContentsNavigated(this);
   }
   const GURL& GetURL() const override { return url_; }
 
   void MockClose(Profile* profile) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
-        content::Source<Profile>(profile),
-        content::Details<BackgroundContents>(this));
+    service_->OnBackgroundContentsClosed(this);
     delete this;
   }
 
   ~MockBackgroundContents() override {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-        content::Source<Profile>(profile_),
-        content::Details<BackgroundContents>(this));
+    service_->OnBackgroundContentsDeleted(this);
   }
 
   const std::string& appid() { return appid_; }
@@ -106,11 +99,15 @@ class MockBackgroundContents : public BackgroundContents {
  private:
   GURL url_;
 
+  BackgroundContentsService* service_;
+
   // The ID of our parent application
   std::string appid_;
 
   // Parent profile
   Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBackgroundContents);
 };
 
 class BackgroundContentsServiceNotificationTest
@@ -157,9 +154,10 @@ TEST_F(BackgroundContentsServiceTest, Create) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  MockBackgroundContents* contents = new MockBackgroundContents(&profile);
+  MockBackgroundContents* contents =
+      new MockBackgroundContents(&service, &profile);
   EXPECT_FALSE(service.IsTracked(contents));
-  contents->SendOpenedNotification(&service);
+  contents->SendOpenedNotification();
   EXPECT_TRUE(service.IsTracked(contents));
   delete contents;
   EXPECT_FALSE(service.IsTracked(contents));
@@ -174,9 +172,9 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
   GURL url2("http://a/");
   {
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&profile));
+        new MockBackgroundContents(&service, &profile));
     EXPECT_EQ(0U, GetPrefs(&profile)->size());
-    contents->SendOpenedNotification(&service);
+    contents->SendOpenedNotification();
 
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
@@ -196,9 +194,10 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   BackgroundContentsService service(&profile, command_line_.get());
 
   GURL url("http://a/");
-  MockBackgroundContents* contents = new MockBackgroundContents(&profile);
+  MockBackgroundContents* contents =
+      new MockBackgroundContents(&service, &profile);
   EXPECT_EQ(0U, GetPrefs(&profile)->size());
-  contents->SendOpenedNotification(&service);
+  contents->SendOpenedNotification();
   contents->Navigate(url);
   EXPECT_EQ(1U, GetPrefs(&profile)->size());
   EXPECT_EQ(url.spec(), GetPrefURLForApp(&profile, contents->appid()));
@@ -217,8 +216,8 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   GURL url("http://a/");
   {
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&profile, "appid"));
-    contents->SendOpenedNotification(&service);
+        new MockBackgroundContents(&service, &profile, "appid"));
+    contents->SendOpenedNotification();
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
     EXPECT_EQ(url.spec(), GetPrefURLForApp(&profile, contents->appid()));
@@ -230,8 +229,8 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
     // Reopen the BackgroundContents to the same URL, we should not register the
     // URL again.
     std::unique_ptr<MockBackgroundContents> contents(
-        new MockBackgroundContents(&profile, "appid"));
-    contents->SendOpenedNotification(&service);
+        new MockBackgroundContents(&service, &profile, "appid"));
+    contents->SendOpenedNotification();
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
   }
@@ -246,12 +245,12 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 
   EXPECT_EQ(NULL, service.GetAppBackgroundContents("appid"));
   MockBackgroundContents* contents =
-      new MockBackgroundContents(&profile, "appid");
+      new MockBackgroundContents(&service, &profile, "appid");
   std::unique_ptr<MockBackgroundContents> contents2(
-      new MockBackgroundContents(&profile, "appid2"));
-  contents->SendOpenedNotification(&service);
+      new MockBackgroundContents(&service, &profile, "appid2"));
+  contents->SendOpenedNotification();
   EXPECT_EQ(contents, service.GetAppBackgroundContents(contents->appid()));
-  contents2->SendOpenedNotification(&service);
+  contents2->SendOpenedNotification();
   EXPECT_EQ(contents2.get(),
             service.GetAppBackgroundContents(contents2->appid()));
   EXPECT_EQ(0U, GetPrefs(&profile)->size());

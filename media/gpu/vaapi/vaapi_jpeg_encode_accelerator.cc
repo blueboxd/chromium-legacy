@@ -21,7 +21,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
 #include "media/parsers/jpeg_parser.h"

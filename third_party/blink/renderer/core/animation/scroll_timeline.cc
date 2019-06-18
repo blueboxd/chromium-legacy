@@ -309,7 +309,7 @@ void ScrollTimeline::ResolveScrollStartAndEnd(
   }
 }
 
-void ScrollTimeline::AttachAnimation() {
+void ScrollTimeline::AnimationAttached(Animation*) {
   if (!resolved_scroll_source_)
     return;
 
@@ -327,7 +327,7 @@ void ScrollTimeline::AttachAnimation() {
     object->SetNeedsPaintPropertyUpdate();
 }
 
-void ScrollTimeline::DetachAnimation() {
+void ScrollTimeline::AnimationDetached(Animation*) {
   if (!resolved_scroll_source_)
     return;
 

@@ -27,6 +27,7 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace {
 // Pref key for the available hashed pages kept in class.
@@ -160,7 +161,10 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     // expensive DB query doesn't occur during startup or during other user
     // visible actions.
     base::PostDelayedTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::LOWEST},
+        FROM_HERE,
+        {base::MayBlock(), content::BrowserThread::UI,
+         base::TaskPriority::LOWEST,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&PreviewsOfflineHelper::RequestDBUpdate,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(30));

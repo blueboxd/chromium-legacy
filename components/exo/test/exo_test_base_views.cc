@@ -62,7 +62,7 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePreTargetHandler(ui::EventHandler* handler) override {}
   void AddPostTargetHandler(ui::EventHandler* handler) override {}
   void RemovePostTargetHandler(ui::EventHandler* handler) override {}
-  bool IsTabletModeWindowManagerEnabled() const override { return false; }
+  bool InTabletMode() const override { return false; }
   double GetDefaultDeviceScaleFactor() const override { return 1.0; }
   void SetImeBlocked(aura::Window* window, bool ime_blocked) override {}
   bool IsImeBlocked(aura::Window* window) const override { return false; }

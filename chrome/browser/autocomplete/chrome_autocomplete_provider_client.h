@@ -52,6 +52,9 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   // GetCurrentVisitTimestamp is only implemented for desktop users. For mobile
   // users, the function returns base::Time().
   base::Time GetCurrentVisitTimestamp() const override;
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override;
+
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;

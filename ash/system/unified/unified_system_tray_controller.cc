@@ -32,6 +32,7 @@
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -70,6 +71,10 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
   animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
+
+  model_->pagination_model()->SetTransitionDurations(
+      kUnifiedSystemTrayPageTransitionDurationMs,
+      kUnifiedSystemTrayOverScrollPageTransitionDurationMs);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SystemTray.IsExpandedOnOpen",
@@ -334,9 +339,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 
   // If you want to add a new feature pod item, add here.
 
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen",
                              unified_view_->GetVisibleFeaturePodCount());
   } else {
@@ -349,7 +352,8 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
     std::unique_ptr<FeaturePodControllerBase> controller) {
   DCHECK(unified_view_);
   FeaturePodButton* button = controller->CreateButton();
-  button->SetExpandedAmount(IsExpanded() ? 1.0 : 0.0);
+  button->SetExpandedAmount(IsExpanded() ? 1.0 : 0.0,
+                            false /* fade_icon_button */);
 
   // Record DefaultView.VisibleRows UMA.
   SystemTrayItemUmaType uma_type = controller->GetUmaType();

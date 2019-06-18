@@ -3235,10 +3235,10 @@ class MiddleClickAutoscrollWebWidgetClient
     last_cursor_type_ = cursor.type;
   }
 
-  int GetLastCursorType() const { return last_cursor_type_; }
+  ui::CursorType GetLastCursorType() const { return last_cursor_type_; }
 
  private:
-  int last_cursor_type_ = 0;
+  ui::CursorType last_cursor_type_ = ui::CursorType::kPointer;
 };
 
 TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
@@ -3258,7 +3258,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   struct CursorTests {
     int resize_width;
     int resize_height;
-    blink::Cursor::Type expected_cursor;
+    ui::CursorType expected_cursor;
   } cursor_tests[] = {{100, 100, MiddlePanningCursor().GetType()},
                       {1010, 100, MiddlePanningVerticalCursor().GetType()},
                       {100, 2010, MiddlePanningHorizontalCursor().GetType()}};

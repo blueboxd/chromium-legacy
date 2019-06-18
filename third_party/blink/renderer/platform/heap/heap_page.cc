@@ -301,7 +301,7 @@ bool BaseArena::SweepUnsweptPage(BasePage* page) {
   return is_empty;
 }
 
-bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
+bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   // It might be heavy to call
   // Platform::current()->monotonicallyIncreasingTimeSeconds() per page (i.e.,
   // 128 KB sweep or one LargeObject sweep), so we check the deadline per 10
@@ -312,15 +312,6 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
   DCHECK(GetThreadState()->SweepForbidden());
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
-  NormalPageArena* normal_arena = nullptr;
-  if (BasePage* top = unswept_pages_.Top()) {
-    if (!top->IsLargeObjectPage()) {
-      // Mark this NormalPageArena as being lazily swept.
-      NormalPage* normal_page = static_cast<NormalPage*>(top);
-      normal_arena = normal_page->ArenaForNormalPage();
-      normal_arena->SetIsLazySweeping(true);
-    }
-  }
   int page_count = 1;
   // TODO(bikineev): We should probably process pages in the reverse order. This
   // will leave more work for concurrent sweeper and reduce memory footprint
@@ -330,8 +321,6 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
         // Deadline has come.
-        if (normal_arena)
-          normal_arena->SetIsLazySweeping(false);
         return SweepingAndFinalizationCompleted();
       }
     }
@@ -343,8 +332,6 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
         // Deadline has come.
-        if (normal_arena)
-          normal_arena->SetIsLazySweeping(false);
         return SweepingAndFinalizationCompleted();
       }
     }
@@ -355,16 +342,12 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
         // Deadline has come.
-        if (normal_arena)
-          normal_arena->SetIsLazySweeping(false);
         return SweepingAndFinalizationCompleted();
       }
     }
     page_count++;
   }
 
-  if (normal_arena)
-    normal_arena->SetIsLazySweeping(false);
   return true;
 }
 
@@ -415,8 +398,7 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
       current_allocation_point_(nullptr),
       remaining_allocation_size_(0),
       last_remaining_allocation_size_(0),
-      promptly_freed_size_(0),
-      is_lazy_sweeping_(false) {
+      promptly_freed_size_(0) {
   ClearFreeLists();
 }
 
@@ -827,7 +809,6 @@ Address NormalPageArena::AllocateFromFreeList(size_t allocation_size,
 Address NormalPageArena::LazySweepPages(size_t allocation_size,
                                         size_t gc_info_index) {
   DCHECK(!HasCurrentAllocationArea());
-  base::AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
   Address result = nullptr;
   // First, process unfinalized pages as finalizing a page is faster than
   // sweeping.

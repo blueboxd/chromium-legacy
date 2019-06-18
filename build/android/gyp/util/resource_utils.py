@@ -21,11 +21,6 @@ _SOURCE_ROOT = os.path.abspath(
 sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
-EMPTY_ANDROID_MANIFEST_PATH = os.path.join(
-    _SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
-
-ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
-TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
 
 # A variation of these maps also exists in:
 # //base/android/java/src/org/chromium/base/LocaleUtils.java
@@ -44,9 +39,6 @@ _ANDROID_TO_CHROMIUM_LANGUAGE_MAP = {
     'ji': 'yi',
     'no': 'nb',  # 'no' is not a real language. http://crbug.com/920960
 }
-
-
-_xml_namespace_initialized = False
 
 
 def ToAndroidLocaleName(chromium_locale):
@@ -596,11 +588,6 @@ public final class R {
       parent_path=dep_path)
 
 
-def ExtractPackageFromManifest(manifest_path):
-  """Extract package name from Android manifest file."""
-  return ParseAndroidManifest(manifest_path)[1].get('package')
-
-
 def ExtractBinaryManifestValues(aapt2_path, apk_path):
   """Returns (version_code, version_name, package_name) for the given apk."""
   output = subprocess.check_output([
@@ -890,36 +877,3 @@ def FilterAndroidResourceStringsXml(xml_file_path, string_predicate):
     new_xml_data = GenerateAndroidResourceStringsXml(strings_map, namespaces)
     with open(xml_file_path, 'wb') as f:
       f.write(new_xml_data)
-
-
-def _RegisterElementTreeNamespaces():
-  global _xml_namespace_initialized
-  if not _xml_namespace_initialized:
-    _xml_namespace_initialized = True
-    ElementTree.register_namespace('android', ANDROID_NAMESPACE)
-    ElementTree.register_namespace('tools', TOOLS_NAMESPACE)
-
-
-def ParseAndroidManifest(path):
-  """Parses an AndroidManifest.xml using ElementTree.
-
-  Registers required namespaces & creates application node if missing.
-
-  Returns tuple of:
-    doc: Root xml document.
-    manifest_node: the <manifest> node.
-    app_node: the <application> node.
-  """
-  _RegisterElementTreeNamespaces()
-  doc = ElementTree.parse(path)
-  # ElementTree.find does not work if the required tag is the root.
-  if doc.getroot().tag == 'manifest':
-    manifest_node = doc.getroot()
-  else:
-    manifest_node = doc.find('manifest')
-
-  app_node = doc.find('application')
-  if app_node is None:
-    app_node = ElementTree.SubElement(manifest_node, 'application')
-
-  return doc, manifest_node, app_node

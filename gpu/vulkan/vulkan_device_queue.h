@@ -41,11 +41,11 @@ class VULKAN_EXPORT VulkanDeviceQueue {
       const GetPresentationSupportCallback& get_presentation_support,
       bool use_swiftshader);
 
-  bool InitializeForWevbView(VkPhysicalDevice vk_physical_device,
-                             VkDevice vk_device,
-                             VkQueue vk_queue,
-                             uint32_t vk_queue_index,
-                             gfx::ExtensionSet enabled_extensions);
+  bool InitializeForWebView(VkPhysicalDevice vk_physical_device,
+                            VkDevice vk_device,
+                            VkQueue vk_queue,
+                            uint32_t vk_queue_index,
+                            gfx::ExtensionSet enabled_extensions);
 
   const gfx::ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;

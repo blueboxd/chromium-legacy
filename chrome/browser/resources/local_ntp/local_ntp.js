@@ -398,27 +398,34 @@ function renderTheme() {
   setCustomThemeStyle(info);
 
   if (info.customBackgroundConfigured) {
-    const imageWithOverlay = [
-      customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
-    ].join(',').trim();
+    // Do anything only if the custom background changed.
+    if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(info.imageUrl)) {
+      const imageWithOverlay = [
+        customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
+      ].join(',').trim();
+      // If the theme update is because of uploading a local image then we
+      // should close the customization menu. Closing the menu before the image
+      // is selected doesn't look good.
+      const localImageFileName = 'background.jpg';
+      if (imageWithOverlay.includes(localImageFileName) &&
+          !$(IDS.CUSTOM_BG)
+               .style.backgroundImage.includes(localImageFileName)) {
+        customize.closeCustomizationDialog();
+      }
+      // |image| and |imageWithOverlay| use the same url as their source.
+      // Waiting to display the custom background until |image| is fully
+      // loaded ensures that |imageWithOverlay| is also loaded.
+      $(IDS.CUSTOM_BG).style.backgroundImage = imageWithOverlay;
+      const image = new Image();
+      image.onload = function() {
+        $(IDS.CUSTOM_BG).style.opacity = '1';
+      };
+      image.src = info.imageUrl;
 
-    if (imageWithOverlay != $(IDS.CUSTOM_BG).style.backgroundImage) {
-      customize.closeCustomizationDialog();
       customize.clearAttribution();
+      customize.setAttribution(
+          info.attribution1, info.attribution2, info.attributionActionUrl);
     }
-
-    // |image| and |imageWithOverlay| use the same url as their source. Waiting
-    // to display the custom background until |image| is fully loaded ensures
-    // that |imageWithOverlay| is also loaded.
-    $(IDS.CUSTOM_BG).style.backgroundImage = imageWithOverlay;
-    const image = new Image();
-    image.onload = function() {
-      $(IDS.CUSTOM_BG).style.opacity = '1';
-    };
-    image.src = info.imageUrl;
-
-    customize.setAttribution(
-        info.attribution1, info.attribution2, info.attributionActionUrl);
   } else {
     $(IDS.CUSTOM_BG).style.opacity = '0';
     window.setTimeout(function() {

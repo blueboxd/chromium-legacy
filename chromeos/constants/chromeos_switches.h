@@ -176,7 +176,10 @@ extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfDenseClamshell[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfNewUi[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfScrollable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -261,9 +264,18 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSigninFrameClientCertsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsSigninFrameClientCertUserSelectionEnabled();
 
+// Returns true if we should show a smaller, denser shelf in clamshell mode.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfDenseClamshell();
+
 // Returns true if we should show window previews when hovering over an app
 // on the shelf.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHoverPreviews();
+
+// Returns true if we should show the new modular shelf UI.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfNewUi();
+
+// Returns true if we should show a scrollable list of apps in the main shelf.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowScrollableShelf();
 
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model.

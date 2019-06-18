@@ -32,7 +32,10 @@ let NetworkStateListObject;
 Polymer({
   is: 'network-summary',
 
-  behaviors: [CrPolicyNetworkBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+  ],
 
   properties: {
     /**
@@ -91,18 +94,6 @@ Polymer({
     },
   },
 
-  listeners: {
-    'network-list-changed': 'getNetworkLists_',
-    'networks-changed': 'updateActiveNetworks_',
-  },
-
-  /**
-   * Listener function for chrome.networkingPrivate.onDeviceStateListChanged
-   * event.
-   * @private {?function(!Array<string>)}
-   */
-  deviceStateListChangedListener_: null,
-
   /**
    * Set of GUIDs identifying active networks, one for each type.
    * @private {?Set<string>}
@@ -112,43 +103,35 @@ Polymer({
   /** @override */
   attached: function() {
     this.getNetworkLists_();
-
-    this.deviceStateListChangedListener_ =
-        this.deviceStateListChangedListener_ ||
-        this.onDeviceStateListChangedEvent_.bind(this);
-    this.networkingPrivate.onDeviceStateListChanged.addListener(
-        this.deviceStateListChangedListener_);
-  },
-
-  /** @override */
-  detached: function() {
-    this.networkingPrivate.onDeviceStateListChanged.removeListener(
-        assert(this.deviceStateListChangedListener_));
   },
 
   /**
-   * networkingPrivate.onDeviceStateListChanged event callback.
-   * @private
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
    */
-  onDeviceStateListChangedEvent_: function() {
-    this.getNetworkLists_();
-  },
-
-  /**
-   * @param {!CustomEvent<!Array<string>>} event
-   * @private
-   */
-  updateActiveNetworks_: function(event) {
+  onActiveNetworksChanged: function(networks) {
     if (!this.activeNetworkIds_) {
+      // Initial list of networks not received yet.
       return;
-    }  // Initial list of networks not received yet.
-    const networkIds = event.detail;
-    networkIds.forEach(function(id) {
+    }
+    networks.forEach(network => {
+      const id = network.guid;
       if (this.activeNetworkIds_.has(id)) {
         this.networkingPrivate.getState(
             id, this.getActiveStateCallback_.bind(this, id));
       }
-    }, this);
+    });
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.getNetworkLists_();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    this.getNetworkLists_();
   },
 
   /**

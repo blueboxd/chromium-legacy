@@ -34,7 +34,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -14,9 +16,27 @@
 #error "This file requires ARC support."
 #endif
 
+using previous_session_info_constants::DeviceBatteryState;
 using previous_session_info_constants::DeviceThermalState;
 
 namespace {
+
+// Translates a UIDeviceBatteryState value to DeviceBatteryState value.
+DeviceBatteryState GetBatteryStateFromUIDeviceBatteryState(
+    UIDeviceBatteryState device_battery_state) {
+  switch (device_battery_state) {
+    case UIDeviceBatteryStateUnknown:
+      return DeviceBatteryState::kUnknown;
+    case UIDeviceBatteryStateUnplugged:
+      return DeviceBatteryState::kUnplugged;
+    case UIDeviceBatteryStateCharging:
+      return DeviceBatteryState::kCharging;
+    case UIDeviceBatteryStateFull:
+      return DeviceBatteryState::kFull;
+  }
+
+  return DeviceBatteryState::kUnknown;
+}
 
 // Translates a NSProcessInfoThermalState value to DeviceThermalState value.
 DeviceThermalState GetThermalStateFromNSProcessInfoThermalState(
@@ -40,6 +60,13 @@ DeviceThermalState GetThermalStateFromNSProcessInfoThermalState(
 NSString* const kLastRanVersion = @"LastRanVersion";
 // - The (string) device language.
 NSString* const kLastRanLanguage = @"LastRanLanguage";
+// - The (float) battery charge level.
+NSString* const kPreviousSessionInfoBatteryLevel =
+    @"PreviousSessionInfoBatteryLevel";
+// - The (integer) underlying value of the DeviceBatteryState enum representing
+//   the device battery state.
+NSString* const kPreviousSessionInfoBatteryState =
+    @"PreviousSessionInfoBatteryState";
 // - The (string) OS version.
 NSString* const kPreviousSessionInfoOSVersion = @"PreviousSessionInfoOSVersion";
 // - The (integer) underlying value of the DeviceThermalState enum representing
@@ -63,6 +90,8 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL didBeginRecordingCurrentSession;
 
 // Redefined to be read-write.
+@property(nonatomic, assign) float deviceBatteryLevel;
+@property(nonatomic, assign) DeviceBatteryState deviceBatteryState;
 @property(nonatomic, assign) DeviceThermalState deviceThermalState;
 @property(nonatomic, assign) BOOL deviceWasInLowPowerMode;
 @property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
@@ -74,6 +103,8 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 
 @implementation PreviousSessionInfo
 
+@synthesize deviceBatteryLevel = _deviceBatteryLevel;
+@synthesize deviceBatteryState = _deviceBatteryState;
 @synthesize deviceThermalState = _deviceThermalState;
 @synthesize deviceWasInLowPowerMode = _deviceWasInLowPowerMode;
 @synthesize didBeginRecordingCurrentSession = _didBeginRecordingCurrentSession;
@@ -98,6 +129,10 @@ static PreviousSessionInfo* gSharedInstance = nil;
                                  kDidSeeMemoryWarningShortlyBeforeTerminating];
     gSharedInstance.deviceWasInLowPowerMode =
         [defaults boolForKey:kPreviousSessionInfoLowPowerMode];
+    gSharedInstance.deviceBatteryState = static_cast<DeviceBatteryState>(
+        [defaults integerForKey:kPreviousSessionInfoBatteryState]);
+    gSharedInstance.deviceBatteryLevel =
+        [defaults floatForKey:kPreviousSessionInfoBatteryLevel];
     gSharedInstance.deviceThermalState = static_cast<DeviceThermalState>(
         [defaults integerForKey:kPreviousSessionInfoThermalState]);
 
@@ -152,6 +187,21 @@ static PreviousSessionInfo* gSharedInstance = nil;
       removeObjectForKey:previous_session_info_constants::
                              kDidSeeMemoryWarningShortlyBeforeTerminating];
 
+  [UIDevice currentDevice].batteryMonitoringEnabled = YES;
+  [self updateStoredBatteryLevel];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(updateStoredBatteryLevel)
+             name:UIDeviceBatteryLevelDidChangeNotification
+           object:nil];
+
+  [self updateStoredBatteryState];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(updateStoredBatteryState)
+             name:UIDeviceBatteryStateDidChangeNotification
+           object:nil];
+
   [self updateStoredLowPowerMode];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
@@ -168,6 +218,26 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
   // Save critical state information for crash detection.
   [defaults synchronize];
+}
+
+- (void)updateStoredBatteryLevel {
+  [[NSUserDefaults standardUserDefaults]
+      setFloat:[UIDevice currentDevice].batteryLevel
+        forKey:kPreviousSessionInfoBatteryLevel];
+}
+
+- (void)updateStoredBatteryState {
+  UIDevice* device = [UIDevice currentDevice];
+  // Translate value to an app defined enum as the system could change the
+  // underlying values of UIDeviceBatteryState between OS versions.
+  DeviceBatteryState batteryState =
+      GetBatteryStateFromUIDeviceBatteryState(device.batteryState);
+  NSInteger batteryStateValue =
+      static_cast<std::underlying_type<DeviceBatteryState>::type>(batteryState);
+
+  [[NSUserDefaults standardUserDefaults]
+      setInteger:batteryStateValue
+          forKey:kPreviousSessionInfoBatteryState];
 }
 
 - (void)updateStoredLowPowerMode {

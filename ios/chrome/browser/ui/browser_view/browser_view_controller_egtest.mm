@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -124,7 +123,7 @@
   // TODO(crbug.com/931280): This should be 1, but for the time being will be 2
   // to work around an NTP bug.
   int mainTabCount = 1;
-  if (base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad))
+  if ([ChromeEarlGrey isBlockNewTabPagePendingLoadEnabled])
     mainTabCount = 2;
   [ChromeEarlGrey waitForMainTabCount:mainTabCount];
 }

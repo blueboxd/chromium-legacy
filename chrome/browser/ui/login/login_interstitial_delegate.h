@@ -37,7 +37,7 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
 
   // content::InterstitialPageDelegate:
   void CommandReceived(const std::string& command) override;
-  content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
  protected:
   std::string GetHTMLContents() override;

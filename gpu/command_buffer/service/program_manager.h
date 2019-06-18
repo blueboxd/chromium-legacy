@@ -700,6 +700,9 @@ class GPU_GLES2_EXPORT ProgramManager {
   // Check if a Program is owned by this ProgramManager.
   bool IsOwned(Program* program) const;
 
+  // Return true if this shader has compiled status cached.
+  bool HasCachedCompileStatus(Shader* shader) const;
+
   static int32_t MakeFakeLocation(int32_t index, int32_t element);
 
   uint32_t max_varying_vectors() const { return max_varying_vectors_; }

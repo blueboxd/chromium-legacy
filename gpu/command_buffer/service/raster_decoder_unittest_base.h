@@ -153,12 +153,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   typedef gles2::TestHelper::AttribInfo AttribInfo;
   typedef gles2::TestHelper::UniformInfo UniformInfo;
 
-  void SetupInitCapabilitiesExpectations(bool es3_capable);
-  void SetupInitStateExpectations(bool es3_capable);
-  void SetupInitStateManualExpectations(bool es3_capable);
-  void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
-  void ExpectEnableDisable(GLenum cap, bool enable);
-
   gpu::Mailbox CreateFakeTexture(GLuint service_id,
                                  viz::ResourceFormat resource_format,
                                  GLsizei width,
@@ -197,11 +191,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   static const GLint kMaxTextureSize = 2048;
   static const GLint kNumTextureUnits = 8;
   static const GLint kNumVertexAttribs = 16;
-
-  static const GLint kViewportX = 0;
-  static const GLint kViewportY = 0;
-  static const GLint kViewportWidth = 1;
-  static const GLint kViewportHeight = 1;
 
   static const GLuint kServiceBufferId = 301;
   static const GLuint kServiceTextureId = 304;

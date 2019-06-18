@@ -35,9 +35,9 @@
 #define ABSL_BASE_THREAD_ANNOTATIONS_H_
 
 #if defined(__clang__)
-#define ABSL_THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
+#define ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(x) __attribute__((x))
 #else
-#define ABSL_THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
+#define ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(x)  // no-op
 #endif
 
 // ABSL_GUARDED_BY()
@@ -57,7 +57,8 @@
 //     int p1_ ABSL_GUARDED_BY(mu_);
 //     ...
 //   };
-#define ABSL_GUARDED_BY(x) ABSL_THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+#define ABSL_GUARDED_BY(x) \
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(guarded_by(x))
 
 // ABSL_PT_GUARDED_BY()
 //
@@ -79,7 +80,8 @@
 //   // `q_`, guarded by `mu1_`, points to a shared memory location that is
 //   // guarded by `mu2_`:
 //   int *q_ ABSL_GUARDED_BY(mu1_) ABSL_PT_GUARDED_BY(mu2_);
-#define ABSL_PT_GUARDED_BY(x) ABSL_THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
+#define ABSL_PT_GUARDED_BY(x) \
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(pt_guarded_by(x))
 
 // ABSL_ACQUIRED_AFTER() / ABSL_ACQUIRED_BEFORE()
 //
@@ -97,10 +99,10 @@
 //   Mutex m1_;
 //   Mutex m2_ ABSL_ACQUIRED_AFTER(m1_);
 #define ABSL_ACQUIRED_AFTER(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(acquired_after(__VA_ARGS__))
 
 #define ABSL_ACQUIRED_BEFORE(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(acquired_before(__VA_ARGS__))
 
 // ABSL_EXCLUSIVE_LOCKS_REQUIRED() / ABSL_SHARED_LOCKS_REQUIRED()
 //
@@ -125,11 +127,12 @@
 //
 //   void foo() ABSL_EXCLUSIVE_LOCKS_REQUIRED(mu1, mu2) { ... }
 //   void bar() const ABSL_SHARED_LOCKS_REQUIRED(mu1, mu2) { ... }
-#define ABSL_EXCLUSIVE_LOCKS_REQUIRED(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(exclusive_locks_required(__VA_ARGS__))
+#define ABSL_EXCLUSIVE_LOCKS_REQUIRED(...)   \
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE( \
+      exclusive_locks_required(__VA_ARGS__))
 
 #define ABSL_SHARED_LOCKS_REQUIRED(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(shared_locks_required(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(shared_locks_required(__VA_ARGS__))
 
 // ABSL_LOCKS_EXCLUDED()
 //
@@ -137,7 +140,7 @@
 // cannot be held when calling this function (as Abseil's `Mutex` locks are
 // non-reentrant).
 #define ABSL_LOCKS_EXCLUDED(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(locks_excluded(__VA_ARGS__))
 
 // ABSL_LOCK_RETURNED()
 //
@@ -145,13 +148,12 @@
 // a public getter method that returns a pointer to a private mutex should
 // be annotated with ABSL_LOCK_RETURNED.
 #define ABSL_LOCK_RETURNED(x) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(lock_returned(x))
 
 // ABSL_LOCKABLE
 //
 // Documents if a class/type is a lockable type (such as the `Mutex` class).
-#define ABSL_LOCKABLE \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(lockable)
+#define ABSL_LOCKABLE ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(lockable)
 
 // ABSL_SCOPED_LOCKABLE
 //
@@ -161,28 +163,29 @@
 // arguments; the analysis will assume that the destructor unlocks whatever the
 // constructor locked.
 #define ABSL_SCOPED_LOCKABLE \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(scoped_lockable)
 
 // ABSL_EXCLUSIVE_LOCK_FUNCTION()
 //
 // Documents functions that acquire a lock in the body of a function, and do
 // not release it.
-#define ABSL_EXCLUSIVE_LOCK_FUNCTION(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(exclusive_lock_function(__VA_ARGS__))
+#define ABSL_EXCLUSIVE_LOCK_FUNCTION(...)    \
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE( \
+      exclusive_lock_function(__VA_ARGS__))
 
 // ABSL_SHARED_LOCK_FUNCTION()
 //
 // Documents functions that acquire a shared (reader) lock in the body of a
 // function, and do not release it.
 #define ABSL_SHARED_LOCK_FUNCTION(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(shared_lock_function(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(shared_lock_function(__VA_ARGS__))
 
 // ABSL_UNLOCK_FUNCTION()
 //
 // Documents functions that expect a lock to be held on entry to the function,
 // and release it in the body of the function.
 #define ABSL_UNLOCK_FUNCTION(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(unlock_function(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(unlock_function(__VA_ARGS__))
 
 // ABSL_EXCLUSIVE_TRYLOCK_FUNCTION() / ABSL_SHARED_TRYLOCK_FUNCTION()
 //
@@ -193,20 +196,22 @@
 // argument specifies the mutex that is locked on success. If unspecified, this
 // mutex is assumed to be `this`.
 #define ABSL_EXCLUSIVE_TRYLOCK_FUNCTION(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(exclusive_trylock_function(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE( \
+      exclusive_trylock_function(__VA_ARGS__))
 
-#define ABSL_SHARED_TRYLOCK_FUNCTION(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(shared_trylock_function(__VA_ARGS__))
+#define ABSL_SHARED_TRYLOCK_FUNCTION(...)    \
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE( \
+      shared_trylock_function(__VA_ARGS__))
 
 // ABSL_ASSERT_EXCLUSIVE_LOCK() / ABSL_ASSERT_SHARED_LOCK()
 //
 // Documents functions that dynamically check to see if a lock is held, and fail
 // if it is not held.
 #define ABSL_ASSERT_EXCLUSIVE_LOCK(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(assert_exclusive_lock(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(assert_exclusive_lock(__VA_ARGS__))
 
 #define ABSL_ASSERT_SHARED_LOCK(...) \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_lock(__VA_ARGS__))
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(assert_shared_lock(__VA_ARGS__))
 
 // ABSL_NO_THREAD_SAFETY_ANALYSIS
 //
@@ -214,7 +219,7 @@
 // This annotation is used to mark functions that are known to be correct, but
 // the locking behavior is more complicated than the analyzer can handle.
 #define ABSL_NO_THREAD_SAFETY_ANALYSIS \
-  ABSL_THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
+  ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(no_thread_safety_analysis)
 
 //------------------------------------------------------------------------------
 // Tool-Supplied Annotations
@@ -230,28 +235,29 @@
 // The annotation should either be fixed, or changed to ABSL_TS_UNCHECKED.
 #define ABSL_TS_FIXME(x) ""
 
-// Like ABSL_NO_THREAD_SAFETY_ANALYSIS, this turns off checking within the body of
-// a particular function.  However, this attribute is used to mark functions
+// Like ABSL_NO_THREAD_SAFETY_ANALYSIS, this turns off checking within the body
+// of a particular function.  However, this attribute is used to mark functions
 // that are incorrect and need to be fixed.  It is used by automated tools to
 // avoid breaking the build when the analysis is updated.
 // Code owners are expected to eventually fix the routine.
-#define ABSL_NO_THREAD_SAFETY_ANALYSIS_FIXME  ABSL_NO_THREAD_SAFETY_ANALYSIS
+#define ABSL_NO_THREAD_SAFETY_ANALYSIS_FIXME ABSL_NO_THREAD_SAFETY_ANALYSIS
 
-// Similar to ABSL_NO_THREAD_SAFETY_ANALYSIS_FIXME, this macro marks a ABSL_GUARDED_BY
-// annotation that needs to be fixed, because it is producing thread safety
-// warning.  It disables the ABSL_GUARDED_BY.
+// Similar to ABSL_NO_THREAD_SAFETY_ANALYSIS_FIXME, this macro marks a
+// ABSL_GUARDED_BY annotation that needs to be fixed, because it is producing
+// thread safety warning. It disables the ABSL_GUARDED_BY.
 #define ABSL_GUARDED_BY_FIXME(x)
 
 // Disables warnings for a single read operation.  This can be used to avoid
 // warnings when it is known that the read is not actually involved in a race,
 // but the compiler cannot confirm that.
-#define ABSL_TS_UNCHECKED_READ(x) thread_safety_analysis::absl_ts_unchecked_read(x)
+#define ABSL_TS_UNCHECKED_READ(x) absl::base_internal::absl_ts_unchecked_read(x)
 
-
-namespace thread_safety_analysis {
+namespace absl {
+namespace base_internal {
 
 // Takes a reference to a guarded data member, and returns an unguarded
 // reference.
+// Do not used this function directly, use ABSL_TS_UNCHECKED_READ instead.
 template <typename T>
 inline const T& absl_ts_unchecked_read(const T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   return v;
@@ -262,6 +268,7 @@ inline T& absl_ts_unchecked_read(T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   return v;
 }
 
-}  // namespace thread_safety_analysis
+}  // namespace base_internal
+}  // namespace absl
 
 #endif  // ABSL_BASE_THREAD_ANNOTATIONS_H_

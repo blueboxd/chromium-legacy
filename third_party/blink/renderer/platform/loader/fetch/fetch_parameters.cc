@@ -59,24 +59,23 @@ void FetchParameters::SetCrossOriginAccessControl(
       NOTREACHED();
       break;
     case kCrossOriginAttributeAnonymous:
-      SetCrossOriginAccessControl(
-          origin, network::mojom::FetchCredentialsMode::kSameOrigin);
+      SetCrossOriginAccessControl(origin,
+                                  network::mojom::CredentialsMode::kSameOrigin);
       break;
     case kCrossOriginAttributeUseCredentials:
-      SetCrossOriginAccessControl(
-          origin, network::mojom::FetchCredentialsMode::kInclude);
+      SetCrossOriginAccessControl(origin,
+                                  network::mojom::CredentialsMode::kInclude);
       break;
   }
 }
 
 void FetchParameters::SetCrossOriginAccessControl(
     const SecurityOrigin* origin,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   // Currently FetchParametersMode is only used when the request goes to
   // Service Worker.
-  resource_request_.SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kCors);
-  resource_request_.SetFetchCredentialsMode(credentials_mode);
+  resource_request_.SetMode(network::mojom::RequestMode::kCors);
+  resource_request_.SetCredentialsMode(credentials_mode);
 
   resource_request_.SetRequestorOrigin(origin);
 

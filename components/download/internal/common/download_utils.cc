@@ -268,7 +268,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // See also:
   // - https://crbug.com/952834
   // - https://github.com/whatwg/fetch/issues/896#issuecomment-484423278
-  request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+  request->mode = network::mojom::RequestMode::kNavigate;
 
   bool has_upload_data = false;
   if (params->post_body()) {

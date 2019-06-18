@@ -669,9 +669,8 @@ void AssistantOverlay::StartAnimation(bool show_icon) {
   transform.Scale(scale_factor, scale_factor);
   icon_layer_->SetTransform(transform);
 
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
   const int icon_y_offset =
       is_tablet_mode ? -kRippleCircleRadiusDip : -kIconOffsetDip;
@@ -784,9 +783,8 @@ void AssistantOverlay::BurstAnimation() {
   // We want to animate from the background's current position into a larger
   // size. The animation moves the background's center point while morphing from
   // circle to a rectangle.
-  const bool is_tablet_mode = Shell::Get()
-                                  ->tablet_mode_controller()
-                                  ->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
   const int icon_y_offset =
       is_tablet_mode ? -kRippleCircleRadiusDip : -kIconOffsetDip;

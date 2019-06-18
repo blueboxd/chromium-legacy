@@ -58,10 +58,11 @@ Document* GetRootDocumentOrNull(Element* element) {
 
 }  // namespace
 
-void LazyLoadImageObserver::StartMonitoring(Element* element) {
+void LazyLoadImageObserver::StartMonitoring(Element* element,
+                                            bool is_for_intervention) {
   if (Document* document = GetRootDocumentOrNull(element)) {
     document->EnsureLazyLoadImageObserver().StartMonitoringNearViewport(
-        document, element);
+        document, element, is_for_intervention);
   }
 }
 
@@ -93,16 +94,13 @@ void LazyLoadImageObserver::RecordMetricsOnLoadFinished(
 
 LazyLoadImageObserver::LazyLoadImageObserver() = default;
 
-void LazyLoadImageObserver::StartMonitoringNearViewport(Document* root_document,
-                                                        Element* element) {
+void LazyLoadImageObserver::StartMonitoringNearViewport(
+    Document* root_document,
+    Element* element,
+    bool is_for_intervention) {
   DCHECK(RuntimeEnabledFeatures::LazyImageLoadingEnabled());
 
   if (!lazy_load_intersection_observer_) {
-    root_document->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kIntervention,
-        mojom::ConsoleMessageLevel::kInfo,
-        "Images loaded lazily and replaced with placeholders. Load events are "
-        "deferred. See https://crbug.com/846170"));
     lazy_load_intersection_observer_ = IntersectionObserver::Create(
         {Length::Fixed(
             GetLazyImageLoadingViewportDistanceThresholdPx(*root_document))},
@@ -111,6 +109,15 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(Document* root_document,
                            WrapWeakPersistent(this)));
   }
   lazy_load_intersection_observer_->observe(element);
+
+  if (is_for_intervention && !is_load_event_deferred_intervention_shown_) {
+    is_load_event_deferred_intervention_shown_ = true;
+    root_document->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kIntervention,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Images loaded lazily and replaced with placeholders. Load events are "
+        "deferred. See https://crbug.com/846170"));
+  }
 }
 
 void LazyLoadImageObserver::LoadIfNearViewport(

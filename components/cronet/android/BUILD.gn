@@ -19,6 +19,9 @@ import("//url/features.gni")
 _jni_registration_header = "$target_gen_dir/cronet_jni_registration.h"
 _templates_dir = "$target_gen_dir/templates"
 
+# //components/cronet still needs to support Jelly Bean. See crbug.com/922656.
+_cronet_min_sdk_version = 16
+
 declare_args() {
   # In integrated mode, CronetEngine will use the shared network task runner by
   # other Chromium-based clients like webview without self-initialization.
@@ -427,6 +430,7 @@ android_library("cronet_sample_apk_java") {
 android_apk("cronet_sample_apk") {
   apk_name = "CronetSample"
   android_manifest = "sample/AndroidManifest.xml"
+  min_sdk_version = _cronet_min_sdk_version
   shared_libraries = [ ":cronet" ]
 
   deps = [
@@ -676,6 +680,7 @@ if (!is_component_build) {
     apk_name = "CronetSampleTest"
     apk_under_test = ":cronet_sample_apk"
     android_manifest = "sample/javatests/AndroidManifest.xml"
+    min_sdk_version = _cronet_min_sdk_version
     java_files = [ "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java" ]
     deps = [
       "//third_party/android_support_test_runner:rules_java",
@@ -876,6 +881,7 @@ if (!is_component_build) {
   instrumentation_test_apk("cronet_test_instrumentation_apk") {
     apk_name = "CronetTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
+    min_sdk_version = _cronet_min_sdk_version
 
     shared_libraries = [
       ":cronet",
@@ -933,6 +939,7 @@ if (!is_component_build) {
       "cronet_smoketests_platform_only_instrumentation_apk") {
     apk_name = "PlatformOnlyEngineSmokeTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
+    min_sdk_version = _cronet_min_sdk_version
 
     java_files = cronet_smoketests_platform_only_common_srcs + [
                    "test/src/org/chromium/net/CronetTestApplication.java",
@@ -996,6 +1003,7 @@ if (!is_component_build) {
     testonly = true
     apk_name = "CronetPerfTest"
     android_manifest = "test/javaperftests/AndroidManifest.xml"
+    min_sdk_version = _cronet_min_sdk_version
     shared_libraries = [
       ":cronet",
       ":cronet_tests",
@@ -1161,6 +1169,14 @@ if (!is_component_build) {
     outputs = [
       _zip_file,
     ]
+    _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/com_android_support_support_annotations.jar"
+    _src_jar = "$_package_dir/cronet_api-src.jar"
+    inputs = [
+      _annotations_jar,
+      _src_jar,
+      android_sdk_jar,
+    ]
+
     args = [
       "--output-dir",
       rebase_path(_package_dir, root_build_dir),
@@ -1174,16 +1190,18 @@ if (!is_component_build) {
       rebase_path(depfile, root_build_dir),
       "--zip-file",
       rebase_path(_zip_file, root_build_dir),
-
       "--android-sdk-jar",
       rebase_path(android_sdk_jar, root_build_dir),
+      "--support-annotations-jar",
+      rebase_path(_annotations_jar, root_build_dir),
 
       # JavaDoc is generated from Cronet's API source jar.
       "--input-src-jar",
-      rebase_path("$_package_dir/cronet_api-src.jar", root_build_dir),
+      rebase_path(_src_jar, root_build_dir),
     ]
     deps = [
       ":jar_cronet_api_source",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 

@@ -317,7 +317,8 @@ void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
   }
   // Both LibAssistant and Chrome threads may access |display_connection_|.
   // |display_connection_| is thread safe.
-  display_connection_->SetArcPlayStoreEnabled(enable);
+  if (assistant::features::IsAppSupportEnabled())
+    display_connection_->SetArcPlayStoreEnabled(enable);
 }
 
 AssistantSettingsManager*

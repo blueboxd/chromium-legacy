@@ -33,10 +33,11 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierLinux
   explicit NetworkChangeNotifierLinux(
       const std::unordered_set<std::string>& ignored_interfaces);
 
+  ~NetworkChangeNotifierLinux() override;
+
  private:
   class BlockingThreadObjects;
 
-  ~NetworkChangeNotifierLinux() override;
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsLinux();
 
   // NetworkChangeNotifier:

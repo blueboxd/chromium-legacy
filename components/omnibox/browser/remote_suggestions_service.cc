@@ -140,8 +140,7 @@ GURL RemoteSuggestionsService::EndpointUrl(
       search_engine->suggestions_url_ref();
   const SearchTermsData& search_terms_data =
       template_url_service->search_terms_data();
-  base::string16 prefix;
-  TemplateURLRef::SearchTermsArgs search_term_args(prefix);
+  TemplateURLRef::SearchTermsArgs search_term_args;
   if (!current_url.empty()) {
     search_term_args.current_page_url = current_url;
   }

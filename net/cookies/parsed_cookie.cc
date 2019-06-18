@@ -448,12 +448,28 @@ void ParsedCookie::SetupAttributes() {
 
 bool ParsedCookie::SetString(size_t* index,
                              const std::string& key,
-                             const std::string& value) {
-  if (value.empty()) {
+                             const std::string& untrusted_value) {
+  // This function should do equivalent input validation to the
+  // constructor. Otherwise, the Set* functions can put this ParsedCookie in a
+  // state where parsing the output of ToCookieLine() produces a different
+  // ParsedCookie.
+  //
+  // Without input validation, invoking pc.SetPath(" baz ") would result in
+  // pc.ToCookieLine() == "path= baz ". Parsing the "path= baz " string would
+  // produce a cookie with "path" attribute equal to "baz" (no spaces). We
+  // should not produce cookie lines that parse to different key/value pairs!
+
+  // Inputs containing invalid characters should be ignored.
+  if (!IsValidCookieAttributeValue(untrusted_value))
+    return false;
+
+  // Use the same whitespace trimming code as the constructor.
+  const std::string parsed_value = ParseValueString(untrusted_value);
+  if (parsed_value.empty()) {
     ClearAttributePair(*index);
     return true;
   } else {
-    return SetAttributePair(index, key, value);
+    return SetAttributePair(index, key, parsed_value);
   }
 }
 
@@ -469,7 +485,7 @@ bool ParsedCookie::SetBool(size_t* index, const std::string& key, bool value) {
 bool ParsedCookie::SetAttributePair(size_t* index,
                                     const std::string& key,
                                     const std::string& value) {
-  if (!(HttpUtil::IsToken(key) && IsValidCookieAttributeValue(value)))
+  if (!HttpUtil::IsToken(key))
     return false;
   if (!IsValid())
     return false;

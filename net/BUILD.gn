@@ -7,7 +7,6 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
 import("//net/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -86,6 +85,7 @@ buildflag_header("buildflags") {
     "USE_KERBEROS=$use_kerberos",
     "DLOPEN_KERBEROS=$use_external_gssapi",
     "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
+    "BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED=$builtin_cert_verifier_feature_supported",
   ]
 }
 

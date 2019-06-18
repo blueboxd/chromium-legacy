@@ -37,7 +37,7 @@ bool IsBookmarkBarLocation(BookmarkLaunchLocation location) {
 
 void RecordBookmarkLaunch(const BookmarkNode* node,
                           BookmarkLaunchLocation location,
-                          ProfileMetrics::BrowserProfileType profile_type) {
+                          profile_metrics::BrowserProfileType profile_type) {
   if (IsBookmarkBarLocation(location)) {
     base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarURLButton"));
   } else if (location == BOOKMARK_LAUNCH_LOCATION_APP_MENU) {

@@ -24,6 +24,7 @@ strict_error_checking_closure_args = [
   "jscomp_error=externsValidation",
   "jscomp_error=globalThis",
   "jscomp_error=invalidCasts",
+  "jscomp_error=misplacedTypeAnnotation",
   "jscomp_error=missingProperties",
   "jscomp_error=missingReturn",
   "jscomp_error=nonStandardJsDocs",

@@ -50,8 +50,6 @@ jumbo_static_library("common") {
     "save_password_progress_logger.h",
     "signatures_util.cc",
     "signatures_util.h",
-    "submission_indicator_event.cc",
-    "submission_indicator_event.h",
     "submission_source.h",
   ]
 

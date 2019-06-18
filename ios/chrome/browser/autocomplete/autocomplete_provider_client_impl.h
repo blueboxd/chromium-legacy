@@ -17,6 +17,10 @@ namespace unified_consent {
 class UrlKeyedDataCollectionConsentHelper;
 }
 
+namespace component_updater {
+class ComponentUpdateService;
+}
+
 // AutocompleteProviderClientImpl provides iOS-specific implementation of
 // AutocompleteProviderClient interface.
 class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
@@ -53,6 +57,8 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   // GetCurrentVisitTimestamp is only used by the contextual zero suggest
   // suggestions for desktop users. This implementation returns base::Time().
   base::Time GetCurrentVisitTimestamp() const override;
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;

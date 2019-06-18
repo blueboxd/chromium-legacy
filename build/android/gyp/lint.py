@@ -11,20 +11,36 @@ from __future__ import print_function
 import argparse
 import os
 import re
+import shutil
 import sys
 import traceback
 from xml.dom import minidom
 
 from util import build_utils
+from util import manifest_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md' # pylint: disable=line-too-long
 
 
-def _OnStaleMd5(lint_path, config_path, processed_config_path,
-                manifest_path, result_path, product_dir, sources, jar_path,
-                cache_dir, android_sdk_version, srcjars, resource_sources,
-                disable=None, classpath=None, can_fail_build=False,
-                include_unexpected=False, silent=False):
+def _OnStaleMd5(lint_path,
+                config_path,
+                processed_config_path,
+                manifest_path,
+                result_path,
+                product_dir,
+                sources,
+                jar_path,
+                cache_dir,
+                android_sdk_version,
+                srcjars,
+                min_sdk_version,
+                resource_sources,
+                disable=None,
+                classpath=None,
+                can_fail_build=False,
+                include_unexpected=False,
+                silent=False):
+
   def _RebasePath(path):
     """Returns relative path to top-level src dir.
 
@@ -176,8 +192,24 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
       manifest_path = os.path.join(
           build_utils.DIR_SOURCE_ROOT, 'build', 'android',
           'AndroidManifest.xml')
-    os.symlink(os.path.abspath(manifest_path),
-               os.path.join(project_dir, 'AndroidManifest.xml'))
+    lint_manifest_path = os.path.join(project_dir, 'AndroidManifest.xml')
+    shutil.copyfile(os.path.abspath(manifest_path), lint_manifest_path)
+
+    # Add the minSdkVersion to the manifest.
+    doc, manifest, _ = manifest_utils.ParseManifest(lint_manifest_path)
+    # TODO(crbug.com/891996): Only activate once downstream has been updated.
+    # manifest_utils.AssertNoUsesSdk(manifest)
+    if min_sdk_version:
+      # TODO(crbug.com/891996): Don't remove uses-sdk once downstream has been
+      # updated.
+      uses_sdk = manifest.find('./uses-sdk')
+      if uses_sdk is not None:
+        manifest.remove(uses_sdk)
+      uses_sdk = manifest_utils.MakeElement(
+          'uses-sdk', [('android:minSdkVersion', min_sdk_version)])
+      manifest.insert(0, uses_sdk)
+      manifest_utils.SaveManifest(doc, lint_manifest_path)
+
     cmd.append(project_dir)
 
     if os.path.exists(result_path):
@@ -309,6 +341,8 @@ def main():
                       help='Directories containing java files.')
   parser.add_argument('--srcjars',
                       help='GN list of included srcjars.')
+  parser.add_argument(
+      '--min-sdk-version', help='Minimal SDK version to lint against.')
 
   args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
@@ -382,6 +416,7 @@ def main():
                           args.cache_dir,
                           args.android_sdk_version,
                           args.srcjars,
+                          args.min_sdk_version,
                           resource_sources,
                           disable=disable,
                           classpath=classpath,

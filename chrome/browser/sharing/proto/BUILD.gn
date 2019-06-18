@@ -13,6 +13,7 @@ group("proto_lite") {
 
 proto_library("proto") {
   sources = [
+    "click_to_call_message.proto",
     "sharing_message.proto",
   ]
 }

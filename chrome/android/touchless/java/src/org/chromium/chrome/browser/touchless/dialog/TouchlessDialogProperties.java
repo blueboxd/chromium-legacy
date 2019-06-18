@@ -69,12 +69,7 @@ public class TouchlessDialogProperties {
         public static final WritableObjectPropertyKey<View.OnClickListener> CLICK_LISTENER =
                 new WritableObjectPropertyKey<>();
 
-        /** Whether this item has a focus change listener attached to its view. */
-        public static final WritableBooleanPropertyKey FOCUS_LISTENER_SET =
-                new WritableBooleanPropertyKey();
-
-        public static final PropertyKey[] ALL_KEYS = {
-                ICON, TEXT, MULTI_CLICKABLE, CLICK_LISTENER, FOCUS_LISTENER_SET};
+        public static final PropertyKey[] ALL_KEYS = {ICON, TEXT, MULTI_CLICKABLE, CLICK_LISTENER};
     }
 
     /**

@@ -20,6 +20,10 @@ class Snapshot;
 namespace content {
 class LevelDBDatabase;
 
+namespace indexed_db {
+class DefaultLevelDBFactory;
+}  // namespace indexed_db
+
 class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
  public:
   ~LevelDBIteratorImpl() override;
@@ -46,7 +50,7 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
   // Notifies the database of iterator usage and recreates iterator if needed.
   void WillUseDBIterator();
 
-  friend class IndexedDBClassFactory;
+  friend class indexed_db::DefaultLevelDBFactory;
   friend class MockBrowserTestIndexedDBClassFactory;
 
   std::unique_ptr<leveldb::Iterator> iterator_;

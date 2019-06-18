@@ -162,8 +162,8 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
+      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&SharedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
@@ -177,7 +177,7 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
 

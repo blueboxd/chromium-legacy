@@ -13,8 +13,9 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/accessibility_focus_ring_controller.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -326,12 +327,6 @@ AccessibilityManager::AccessibilityManager()
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
-
-  // Connect to ash's AccessibilityFocusRingController interface.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName,
-                      &accessibility_focus_ring_controller_);
 
   // Connect to the media session service.
   content::ServiceManagerConnection::GetForProcess()
@@ -1526,17 +1521,18 @@ void AccessibilityManager::RemoveFocusRings(const std::string& extension_id) {
   focus_ring_names_for_extension_id_.erase(extension_id);
 }
 
-void AccessibilityManager::SetFocusRing(std::string focus_ring_id,
-                                        ash::mojom::FocusRingPtr focus_ring) {
-  accessibility_focus_ring_controller_->SetFocusRing(focus_ring_id,
-                                                     std::move(focus_ring));
+void AccessibilityManager::SetFocusRing(
+    std::string focus_ring_id,
+    std::unique_ptr<ash::AccessibilityFocusRingInfo> focus_ring) {
+  ash::AccessibilityFocusRingController::Get()->SetFocusRing(
+      focus_ring_id, std::move(focus_ring));
 
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
 
 void AccessibilityManager::HideFocusRing(std::string focus_ring_id) {
-  accessibility_focus_ring_controller_->HideFocusRing(focus_ring_id);
+  ash::AccessibilityFocusRingController::Get()->HideFocusRing(focus_ring_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
@@ -1544,11 +1540,12 @@ void AccessibilityManager::HideFocusRing(std::string focus_ring_id) {
 void AccessibilityManager::SetHighlights(
     const std::vector<gfx::Rect>& rects_in_screen,
     SkColor color) {
-  accessibility_focus_ring_controller_->SetHighlights(rects_in_screen, color);
+  ash::AccessibilityFocusRingController::Get()->SetHighlights(rects_in_screen,
+                                                              color);
 }
 
 void AccessibilityManager::HideHighlights() {
-  accessibility_focus_ring_controller_->HideHighlights();
+  ash::AccessibilityFocusRingController::Get()->HideHighlights();
 }
 
 void AccessibilityManager::SetCaretBounds(const gfx::Rect& bounds_in_screen) {

@@ -26,13 +26,12 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 // hardware-accelerated JPEG decodes.
 class VaapiJpegDecoder : public VaapiImageDecoder {
  public:
-  VaapiJpegDecoder() = default;
+  VaapiJpegDecoder();
   ~VaapiJpegDecoder() override;
 
   // VaapiImageDecoder implementation.
   scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
                                   VaapiImageDecodeStatus* status) override;
-  Type GetType() const override;
 
   // Get the decoded data from the last Decode() call as a ScopedVAImage. The
   // VAImage's format will be either |preferred_image_fourcc| if the conversion

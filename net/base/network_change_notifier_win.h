@@ -37,6 +37,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
       public base::win::ObjectWatcher::Delegate {
  public:
   NetworkChangeNotifierWin();
+  ~NetworkChangeNotifierWin() override;
 
   // Begins listening for a single subsequent address change.  If it fails to
   // start watching, it retries on a timer.  Must be called only once, on the
@@ -48,7 +49,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   void WatchForAddressChange();
 
  protected:
-  ~NetworkChangeNotifierWin() override;
 
   // For unit tests only.
   bool is_watching() { return is_watching_; }

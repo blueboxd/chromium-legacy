@@ -167,6 +167,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
     auto provider = std::make_unique<TestWebAppProvider>(profile);
+    provider->Init();
 
     auto test_pending_app_manager = std::make_unique<TestPendingAppManager>();
     test_pending_app_manager_ = test_pending_app_manager.get();

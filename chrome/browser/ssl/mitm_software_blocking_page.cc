@@ -103,8 +103,7 @@ bool MITMSoftwareBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID MITMSoftwareBlockingPage::GetTypeForTesting()
-    const {
+InterstitialPageDelegate::TypeID MITMSoftwareBlockingPage::GetTypeForTesting() {
   return MITMSoftwareBlockingPage::kTypeForTesting;
 }
 

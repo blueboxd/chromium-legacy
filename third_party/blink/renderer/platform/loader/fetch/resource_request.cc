@@ -67,10 +67,10 @@ ResourceRequest::ResourceRequest(const KURL& url)
       plugin_child_id_(-1),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
-      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),
+      mode_(network::mojom::RequestMode::kNoCors),
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
-      fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
-      fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
+      credentials_mode_(network::mojom::CredentialsMode::kInclude),
+      redirect_mode_(network::mojom::RedirectMode::kFollow),
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       did_set_http_referrer_(false),
@@ -112,8 +112,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetUseStreamOnResponse(UseStreamOnResponse());
   request->SetRequestContext(GetRequestContext());
   request->SetShouldResetAppCache(ShouldResetAppCache());
-  request->SetFetchRequestMode(GetFetchRequestMode());
-  request->SetFetchCredentialsMode(GetFetchCredentialsMode());
+  request->SetMode(GetMode());
+  request->SetCredentialsMode(GetCredentialsMode());
   request->SetKeepalive(GetKeepalive());
   request->SetPriority(Priority());
 

@@ -111,7 +111,6 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
@@ -120,7 +119,6 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
@@ -129,8 +127,8 @@ class IndexedDBFactoryTest : public testing::Test {
                                  base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), factory,
-        clock);
+        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock);
+    context_->SetLevelDBFactoryForTesting(factory);
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
 
@@ -223,11 +221,11 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   IndexedDBOriginStateHandle origin_state2_handle;
   leveldb::Status s;
 
-  std::tie(origin_state1_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state1_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin1, context()->data_path());
   EXPECT_TRUE(origin_state1_handle.IsHeld()) << s.ToString();
 
-  std::tie(origin_state2_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state2_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin2, context()->data_path());
   EXPECT_TRUE(origin_state2_handle.IsHeld()) << s.ToString();
 
@@ -244,7 +242,7 @@ TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
@@ -266,7 +264,7 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
@@ -286,7 +284,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, CloseWithoutSweeping) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
@@ -305,7 +303,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
                                 {kIDBTombstoneStatistics});
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
-  SetupContextWithFactories(indexed_db::GetDefaultLevelDBFactory(), &clock);
+  SetupContextWithFactories(indexed_db::LevelDBFactory::Get(), &clock);
 
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
@@ -314,7 +312,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   // Open a connection & immediately release it to cause the closing sequence to
   // start.
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
@@ -335,7 +333,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   // Open a connection & immediately release it to cause the closing sequence to
   // start again.
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
@@ -353,7 +351,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
       factory()->GetOriginFactory(origin)->pre_close_task_queue()->started());
 
   // Stop sweep by opening a connection.
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_FALSE(
@@ -377,7 +375,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   //  Finally, move the clock forward so the origin should allow a sweep.
   clock.Advance(IndexedDBOriginState::kMaxEarliestOriginSweepFromNow);
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   origin_state_handle.Release();
   factory()->GetOriginFactory(origin)->close_timer()->FireNow();
@@ -399,7 +397,7 @@ TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(OriginStateFromHandle(origin_state_handle)
@@ -430,7 +428,7 @@ TEST_F(IndexedDBFactoryTest, TooLongOrigin) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(too_long_origin,
                                         context()->data_path());
   EXPECT_FALSE(origin_state_handle.IsHeld());
@@ -466,7 +464,7 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesHandles) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
@@ -483,7 +481,7 @@ TEST_F(IndexedDBFactoryTest, FactoryForceClose) {
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
 
-  std::tie(origin_state_handle, s, std::ignore, std::ignore) =
+  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path());
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 

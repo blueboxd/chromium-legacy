@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DirectoryOption;
+import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
@@ -88,7 +89,7 @@ public class StorageSummaryProvider implements OfflineItemFilterObserver {
         new AsyncTask<DirectoryOption>() {
             @Override
             protected DirectoryOption doInBackground() {
-                File defaultDownloadDir = DownloadUtils.getPrimaryDownloadDirectory();
+                File defaultDownloadDir = DownloadDirectoryProvider.getPrimaryDownloadDirectory();
                 DirectoryOption directoryOption = new DirectoryOption("",
                         defaultDownloadDir.getAbsolutePath(), defaultDownloadDir.getUsableSpace(),
                         defaultDownloadDir.getTotalSpace(),

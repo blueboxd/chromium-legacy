@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/shell.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -34,10 +34,10 @@ ui::InputMethod* GetSharedInputMethod() {
 
 void SetFocusRing(AccessibilityFocusRingController* controller,
                   std::vector<gfx::Rect> rects) {
-  mojom::FocusRingPtr focus_ring = mojom::FocusRing::New();
+  auto focus_ring = std::make_unique<AccessibilityFocusRingInfo>();
   focus_ring->rects_in_screen = rects;
-  focus_ring->behavior = mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
-  focus_ring->type = mojom::FocusRingType::GLOW;
+  focus_ring->behavior = FocusRingBehavior::FADE_OUT;
+  focus_ring->type = FocusRingType::GLOW;
   focus_ring->color = kFocusColor;
 
   controller->SetFocusRing(kHighlightCallerId, std::move(focus_ring));
@@ -56,7 +56,7 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
 }
 
 AccessibilityHighlightController::~AccessibilityHighlightController() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
   SetFocusRing(controller, std::vector<gfx::Rect>());
   controller->HideCaretRing();
@@ -162,7 +162,7 @@ bool AccessibilityHighlightController::IsCaretVisible(
 }
 
 void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
 
   // The caret highlight takes precedence over the focus highlight if
@@ -183,7 +183,7 @@ void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
 }
 
 void AccessibilityHighlightController::UpdateCursorHighlight() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
   if (cursor_ && IsCursorVisible())
     controller->SetCursorRing(cursor_point_);

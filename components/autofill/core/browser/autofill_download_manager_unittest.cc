@@ -1951,7 +1951,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
   FormStructure form_structure(form);
   form_structure.set_page_language("fr-ca");
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 7; ++i) {
     SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
@@ -2022,7 +2022,7 @@ TEST_P(AutofillUploadTest, Throttling) {
 
   AutofillDownloadManager download_manager(driver_.get(), this);
   FormStructure form_structure(form);
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 7; ++i) {
     SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
@@ -2083,7 +2083,7 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
   FormStructure form_structure(form);
   FormStructure small_form_structure(small_form);
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 7; ++i) {
     SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);

@@ -67,6 +67,9 @@ CodecAllocator* CodecAllocator::GetInstance(
 void CodecAllocator::CreateMediaCodecAsync(
     CodecCreatedCB codec_created_cb,
     std::unique_ptr<VideoCodecConfig> codec_config) {
+  DCHECK(codec_created_cb);
+  DCHECK(codec_config);
+
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -76,9 +79,6 @@ void CodecAllocator::CreateMediaCodecAsync(
                        std::move(codec_config)));
     return;
   }
-
-  DCHECK(codec_created_cb);
-  DCHECK(codec_config);
 
   // Select the task runner before adding the PendingOperation and before
   // querying the |force_sw_codecs_| state.
@@ -110,6 +110,9 @@ void CodecAllocator::CreateMediaCodecAsync(
 
 void CodecAllocator::ReleaseMediaCodec(std::unique_ptr<MediaCodecBridge> codec,
                                        base::OnceClosure codec_released_cb) {
+  DCHECK(codec);
+  DCHECK(codec_released_cb);
+
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
@@ -118,8 +121,6 @@ void CodecAllocator::ReleaseMediaCodec(std::unique_ptr<MediaCodecBridge> codec,
                        BindToCurrentLoop(std::move(codec_released_cb))));
     return;
   }
-
-  DCHECK(codec);
 
   // Update |force_sw_codecs_| status.
   auto* task_runner = SelectCodecTaskRunner();

@@ -47,13 +47,13 @@ TEST_F(ScrollTimelineTest,
   EXPECT_EQ(kNotComposited, scroller->Layer()->GetCompositingState());
 
   // Now attach an animation. This should require a compositing update.
-  scroll_timeline->AttachAnimation();
+  scroll_timeline->AnimationAttached(nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(scroller->Layer()->GetCompositingState(), kNotComposited);
 
   // Now detach an animation. This should again require a compositing update.
-  scroll_timeline->DetachAnimation();
+  scroll_timeline->AnimationDetached(nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scroller->Layer()->GetCompositingState(), kNotComposited);
@@ -239,8 +239,8 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   ASSERT_EQ(scroll_timeline->ResolvedScrollSource(), nullptr);
 
   // These calls should be no-ops in this mode, and shouldn't crash.
-  scroll_timeline->AttachAnimation();
-  scroll_timeline->DetachAnimation();
+  scroll_timeline->AnimationAttached(nullptr);
+  scroll_timeline->AnimationDetached(nullptr);
 }
 
 }  //  namespace blink

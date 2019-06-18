@@ -37,7 +37,7 @@ class AggregatedMetricReporter {
   // to histogram and modifies the passed value.
   // Example: aggregate(time) {
   //   return time.InMilliseconds();
-  //   time %= TimeDelta::FromMilliseconds(1);
+  //   time %= base::TimeDelta::FromMilliseconds(1);
   // }
   using AggregatorFuncPtr = int (*)(ValueType&);
 

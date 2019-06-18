@@ -107,6 +107,15 @@ var eventAttributes = {
   // kCustomEvent
   600: {color: '#7cb342', name: 'Custom event', width: 1.0, radius: 4.0},
 
+  // kInputEventCreated
+  700: {color: '#ff6f00', name: 'create'},
+  // kInputEventWaylandDispatched
+  701: {color: '#f4ff81', name: 'dispatch'},
+  // kInputEventDeliverStart
+  702: {color: '#388e3c', name: 'deliver start'},
+  // kInputEventDeliverEnd
+  703: {color: unusedColor, name: 'deliver end'},
+
   // Service events.
   // kTimeMark
   10000: {color: '#888', name: 'Time mark', width: 0.75},
@@ -146,6 +155,8 @@ var endSequenceEvents = {
   503: [500 /* kChromeOSDraw */],
   // kChromeOSSwapDone
   504: [500 /* kChromeOSDraw */],
+  // kInputEventDeliverEnd
+  703: [],
 };
 
 /**
@@ -653,10 +664,10 @@ class EventBands {
         eventIndices.push(eventIndex);
         minValue = Math.min(minValue, source.events[eventIndex][2]);
         maxValue = Math.max(maxValue, source.events[eventIndex][2]);
-        eventIndex = source.getNextEvent(eventIndex, 1 /* direction */);
         if (!attributes) {
           attributes = valueAttributes[source.events[eventIndex][0]];
         }
+        eventIndex = source.getNextEvent(eventIndex, 1 /* direction */);
       }
       eventIndicesForAll.push(eventIndices);
     }
@@ -1042,7 +1053,11 @@ class EventBands {
         var eventTimestamp = eventBand.events[index][1];
         var entryToShow = {};
         entryToShow.color = attributes.color;
-        entryToShow.text = attributes.name;
+        if (eventBand.events[index].length > 2) {
+          entryToShow.text = attributes.name + ' ' + eventBand.events[index][2];
+        } else {
+          entryToShow.text = attributes.name;
+        }
         if (entriesToShow.length > 0) {
           entriesToShow[entriesToShow.length - 1].text +=
               ' [' + timestampToMsText(eventTimestamp - lastTimestamp) + ' ms]';
@@ -1752,6 +1767,21 @@ function setGraphicBuffersModel(model) {
         view.global_events, 600 /* kCustomEvent */, 600 /* kCustomEvent */);
     activityBands.addGlobal(activityCustomEvents);
     allActivityCustomEvents.push(activityCustomEvents);
+  }
+
+  // Input section if exists.
+  if (model.input && model.input.buffers.length > 0) {
+    var inputTitle =
+        new EventBandTitle(parent, 'Input', 'arc-events-band-title');
+    var inputBands = new EventBands(
+        inputTitle, 'arc-events-band', resolution, 0, model.duration);
+    inputBands.setWidth(inputBands.timestampToOffset(model.duration));
+    for (var i = 0; i < model.input.buffers.length; i++) {
+      inputBands.addBand(
+          new Events(model.input.buffers[i], 700, 799), topBandHeight,
+          topBandPadding);
+    }
+    inputBands.setVSync(vsyncEvents);
   }
 
   // Create time ruler.

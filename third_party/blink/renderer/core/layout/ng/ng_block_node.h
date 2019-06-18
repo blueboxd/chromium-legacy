@@ -92,6 +92,23 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
 
+  // Returns true if this node should fill the viewport.
+  // This occurs when we are in quirks-mode and we are *not* OOF-positioned,
+  // floating, or inline-level.
+  //
+  // https://quirks.spec.whatwg.org/#the-body-element-fills-the-html-element-quirk
+  bool IsQuirkyAndFillsViewport() const {
+    if (!GetDocument().InQuirksMode())
+      return false;
+    if (IsOutOfFlowPositioned())
+      return false;
+    if (IsFloating())
+      return false;
+    if (IsAtomicInlineLevel())
+      return false;
+    return (IsDocumentElement() || IsBody());
+  }
+
   // CSS defines certain cases to synthesize inline block baselines from box.
   // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;

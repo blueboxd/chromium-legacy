@@ -32,7 +32,6 @@ class DictionaryValue;
 
 namespace extensions {
 class Extension;
-class WebRequestInfoLogger;
 struct WebRequestInfo;
 }
 
@@ -399,37 +398,31 @@ EventResponseDelta CalculateOnAuthRequiredDelta(
 // These functions merge the responses (the |deltas|) of request handlers.
 // The |deltas| need to be sorted in decreasing order of precedence of
 // extensions. In case extensions had |deltas| that could not be honored, their
-// IDs are reported in |conflicting_extensions|. NetLog events that shall be
-// reported will be stored in |event_log_entries|.
+// IDs are reported in |conflicting_extensions|.
 
 // Stores in |canceled| whether any extension wanted to cancel the request.
-void MergeCancelOfResponses(const EventResponseDeltas& deltas,
-                            bool* canceled,
-                            extensions::WebRequestInfoLogger* logger);
+void MergeCancelOfResponses(const EventResponseDeltas& deltas, bool* canceled);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
 void MergeRedirectUrlOfResponses(const GURL& url,
                                  const EventResponseDeltas& deltas,
                                  GURL* new_url,
-                                 IgnoredActions* ignored_actions,
-                                 extensions::WebRequestInfoLogger* logger);
+                                 IgnoredActions* ignored_actions);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
 void MergeOnBeforeRequestResponses(const GURL& url,
                                    const EventResponseDeltas& deltas,
                                    GURL* new_url,
-                                   IgnoredActions* ignored_actions,
-                                   extensions::WebRequestInfoLogger* logger);
+                                   IgnoredActions* ignored_actions);
 // Modifies the "Cookie" header in |request_headers| according to
 // |deltas.request_cookie_modifications|. Conflicts are currently ignored
 // silently.
 void MergeCookiesInOnBeforeSendHeadersResponses(
     const GURL& gurl,
     const EventResponseDeltas& deltas,
-    net::HttpRequestHeaders* request_headers,
-    extensions::WebRequestInfoLogger* logger);
+    net::HttpRequestHeaders* request_headers);
 // Modifies the headers in |request_headers| according to |deltas|. Conflicts
 // are tried to be resolved.
 // Stores in |request_headers_modified| whether the request headers were
@@ -450,8 +443,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const GURL& url,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    extensions::WebRequestInfoLogger* logger);
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
 // Stores a copy of |original_response_header| into |override_response_headers|
 // that is modified according to |deltas|. If |deltas| does not instruct to
 // modify the response headers, |override_response_headers| remains empty.
@@ -476,8 +468,7 @@ void MergeOnHeadersReceivedResponses(
 // Returns whether authentication credentials are set.
 bool MergeOnAuthRequiredResponses(const EventResponseDeltas& deltas,
                                   net::AuthCredentials* auth_credentials,
-                                  IgnoredActions* ignored_actions,
-                                  extensions::WebRequestInfoLogger* logger);
+                                  IgnoredActions* ignored_actions);
 
 // Triggers clearing each renderer's in-memory cache the next time it navigates.
 void ClearCacheOnNavigation();

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
 
-#include "chrome/browser/profiles/profile_metrics.h"
+#include "components/profile_metrics/browser_profile_type.h"
 
 namespace bookmarks {
 class BookmarkNode;
@@ -48,7 +48,7 @@ enum BookmarkLaunchLocation {
 // Records the launch of a bookmark for UMA purposes.
 void RecordBookmarkLaunch(const bookmarks::BookmarkNode* node,
                           BookmarkLaunchLocation location,
-                          ProfileMetrics::BrowserProfileType profile_type);
+                          profile_metrics::BrowserProfileType profile_type);
 
 // Records the user launching all bookmarks in a folder (via middle-click, etc.)
 // for UMA purposes.

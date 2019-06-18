@@ -64,7 +64,7 @@ class CORE_EXPORT Request final : public Body {
   // Returns false if |credentials_mode| doesn't represent a valid credentials
   // mode.
   static bool ParseCredentialsMode(const String& credentials_mode,
-                                   network::mojom::FetchCredentialsMode*);
+                                   network::mojom::CredentialsMode*);
 
   // From Request.idl:
   String method() const;

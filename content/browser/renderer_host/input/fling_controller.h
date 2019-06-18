@@ -8,13 +8,10 @@
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "ui/events/blink/fling_booster.h"
 
 namespace blink {
 class WebGestureCurve;
-}
-
-namespace ui {
-class FlingBooster;
 }
 
 namespace content {
@@ -95,9 +92,7 @@ class CONTENT_EXPORT FlingController {
   void ProcessGestureFlingCancel(
       const GestureEventWithLatencyInfo& gesture_event);
 
-  bool fling_in_progress() const { return fling_in_progress_; }
-
-  bool FlingCancellationIsDeferred() const;
+  bool fling_in_progress() const { return fling_curve_.get(); }
 
   gfx::Vector2dF CurrentFlingVelocity() const;
 
@@ -107,20 +102,11 @@ class CONTENT_EXPORT FlingController {
   void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
  protected:
-  std::unique_ptr<ui::FlingBooster> fling_booster_;
+  ui::FlingBooster fling_booster_;
 
  private:
-  // Sub-filter for removing unnecessary GestureFlingCancels.
-  bool ShouldForwardForGFCFiltering(
-      const GestureEventWithLatencyInfo& gesture_event) const;
-
   // Sub-filter for suppressing taps immediately after a GestureFlingCancel.
-  bool ShouldForwardForTapSuppression(
-      const GestureEventWithLatencyInfo& gesture_event);
-
-  // Sub-filter for suppressing gesture events to boost an active fling whenever
-  // possible.
-  bool FilterGestureEventForFlingBoosting(
+  bool ObserveAndFilterForTapSuppression(
       const GestureEventWithLatencyInfo& gesture_event);
 
   void ScheduleFlingProgress();
@@ -145,10 +131,17 @@ class CONTENT_EXPORT FlingController {
 
   void GenerateAndSendFlingEndEvents();
 
-  void CancelCurrentFling();
+  void EndCurrentFling();
 
-  bool UpdateCurrentFlingState(const blink::WebGestureEvent& fling_start_event,
-                               const gfx::Vector2dF& velocity);
+  // Used to update the fling_curve_ state based on the parameters of the fling
+  // start event. Returns true if the fling curve was updated for a valid
+  // fling. Returns false if the parameters should not cause a fling and the
+  // fling_curve_ is not updated.
+  bool UpdateCurrentFlingState(const blink::WebGestureEvent& fling_start_event);
+
+  bool first_fling_update_sent() const {
+    return !last_progress_time_.is_null();
+  }
 
   FlingControllerEventSenderClient* event_sender_client_;
 
@@ -164,17 +157,11 @@ class CONTENT_EXPORT FlingController {
   // canceling tap.
   TouchscreenTapSuppressionController touchscreen_tap_suppression_controller_;
 
-  // Gesture curve of the current active fling.
+  // Gesture curve of the current active fling. nullptr while a fling is not
+  // active.
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
 
   ActiveFlingParameters current_fling_parameters_;
-
-  // True when a fling is active.
-  bool fling_in_progress_;
-
-  // Whether an active fling has seen a |ProgressFling()| call. This is useful
-  // for determining if the fling start time should be re-initialized.
-  bool has_fling_animation_started_;
 
   // The last time fling progress events were sent.
   base::TimeTicks last_progress_time_;

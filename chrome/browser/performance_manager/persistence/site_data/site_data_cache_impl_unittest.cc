@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
@@ -45,9 +46,12 @@ class MockSiteCache : public testing::NoopSiteDataStore {
 
 class SiteDataCacheImplTest : public ::testing::Test {
  protected:
-  SiteDataCacheImplTest() {
+  SiteDataCacheImplTest()
+      : data_cache_factory_(SiteDataCacheFactory::CreateForTesting(
+            test_browser_thread_bundle_.GetMainThreadTaskRunner())) {
     PerformanceManagerClock::SetClockForTesting(&test_clock_);
-    data_cache_ = std::make_unique<SiteDataCacheImpl>(&profile_);
+    data_cache_ = std::make_unique<SiteDataCacheImpl>(profile_.UniqueId(),
+                                                      profile_.GetPath());
     mock_db_ = new ::testing::StrictMock<MockSiteCache>();
     data_cache_->SetDataStoreForTesting(base::WrapUnique(mock_db_));
     test_clock_.SetNowTicks(base::TimeTicks::UnixEpoch());
@@ -124,6 +128,8 @@ class SiteDataCacheImplTest : public ::testing::Test {
 
   // Owned by |data_cache_|.
   ::testing::StrictMock<MockSiteCache>* mock_db_ = nullptr;
+  std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter>
+      data_cache_factory_;
   std::unique_ptr<SiteDataCacheImpl> data_cache_;
 
   std::unique_ptr<SiteDataReader> reader_;
@@ -231,7 +237,8 @@ TEST_F(SiteDataCacheImplTest, ClearAllSiteData) {
 TEST_F(SiteDataCacheImplTest, InspectorWorks) {
   // Make sure the inspector interface was registered at construction.
   SiteDataCacheInspector* inspector =
-      SiteDataCacheInspector::GetForBrowserContext(&profile_);
+      SiteDataCacheFactory::GetInstance()->GetInspectorForBrowserContext(
+          profile_.UniqueId());
   EXPECT_NE(nullptr, inspector);
   EXPECT_EQ(data_cache_.get(), inspector);
 
@@ -263,7 +270,9 @@ TEST_F(SiteDataCacheImplTest, InspectorWorks) {
 
   // Make sure the interface is unregistered from the profile on destruction.
   data_cache_.reset();
-  EXPECT_EQ(nullptr, SiteDataCacheInspector::GetForBrowserContext(&profile_));
+  EXPECT_EQ(nullptr,
+            SiteDataCacheFactory::GetInstance()->GetInspectorForBrowserContext(
+                profile_.UniqueId()));
 }
 
 }  // namespace performance_manager

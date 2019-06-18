@@ -11,6 +11,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.URLUtil;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -49,8 +50,13 @@ class RevampedContextMenuHeaderCoordinator {
     }
 
     private String getTitle(ContextMenuParams params) {
-        return TextUtils.isEmpty(params.getTitleText()) ? params.getLinkText()
-                                                        : params.getTitleText();
+        if (!TextUtils.isEmpty(params.getTitleText())) {
+            return params.getTitleText();
+        }
+        if (!TextUtils.isEmpty(params.getLinkText())) {
+            return params.getLinkText();
+        }
+        return URLUtil.guessFileName(params.getSrcUrl(), null, null);
     }
 
     private CharSequence getUrl(Activity activity, ContextMenuParams params) {

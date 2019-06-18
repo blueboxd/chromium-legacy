@@ -4936,6 +4936,7 @@ interface Navigator
     getter scheduling
     getter serial
     getter serviceWorker
+    getter sms
     getter storage
     getter usb
     getter userActivation
@@ -6117,13 +6118,10 @@ interface SMS
     attribute @@toStringTag
     getter content
     method constructor
-interface SMSReceiver : EventTarget
+interface SMSReceiver
     attribute @@toStringTag
-    getter onchange
-    getter sms
     method constructor
-    method start
-    setter onchange
+    method receive
 interface SVGAElement : SVGGraphicsElement
     attribute @@toStringTag
     getter href
@@ -8884,6 +8882,7 @@ interface WebGL2ComputeRenderingContext
     method disable
     method disableVertexAttribArray
     method dispatchCompute
+    method dispatchComputeIndirect
     method drawArrays
     method drawArraysInstanced
     method drawBuffers

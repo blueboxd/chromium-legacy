@@ -447,6 +447,41 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
   EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
 }
 
+TEST_F(JankTrackerSimTest, ViewportSizeChange) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      body { margin: 0; }
+      .square {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background:yellow;
+      }
+    </style>
+    <div class='square'></div>
+    <div class='square'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Resize the viewport, making it 400px wide. This should cause the second div
+  // to change position during block layout flow. Since it was the result of a
+  // viewport size change, this position change should not affect the score.
+  WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  JankTracker& jank_tracker = MainFrame().GetFrameView()->GetJankTracker();
+  EXPECT_FLOAT_EQ(0.0, jank_tracker.Score());
+}
+
 TEST_F(JankTrackerTest, StableCompositingChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -496,6 +531,69 @@ TEST_F(JankTrackerTest, StableCompositingChanges) {
   while (advance()) {
   }
   EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+
+    html { will-change: transform; }
+    body { height: 2000px; margin: 0; }
+    #drop {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      left: -10000px;
+      top: -1000px;
+    }
+    .pl {
+      position: relative;
+      background: #ddd;
+      z-index: 0;
+      width: 290px;
+      height: 170px;
+      left: 25px;
+      top: 25px;
+    }
+    #comp {
+      position: relative;
+      width: 240px;
+      height: 120px;
+      background: #efe;
+      will-change: transform;
+      z-index: 0;
+      left: 25px;
+      top: 25px;
+    }
+    .sh {
+      top: 515px !important;
+    }
+
+    </style>
+    <div class="pl">
+      <div id="comp"></div>
+    </div>
+    <div id="drop" style="display: none"></div>
+  )HTML");
+
+  Element* drop = GetDocument().getElementById("drop");
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  drop->setAttribute(html_names::kStyleAttr, AtomicString("display: none"));
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+
+  Element* comp = GetDocument().getElementById("comp");
+  comp->setAttribute(html_names::kClassAttr, AtomicString("sh"));
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  // old rect (240 * 120) / (800 * 600) = 0.06
+  // new rect, 50% clipped by viewport (240 * 60) / (800 * 600) = 0.03
+  // final score 0.06 + 0.03 = 0.09
+  EXPECT_FLOAT_EQ(0.09, GetJankTracker().Score());
 }
 
 }  // namespace blink

@@ -7,20 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include <memory>
-#include <vector>
-
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
-
-@class AutofillController;
-@class CastController;
-class GURL;
-@class OpenInController;
-@class PasswordController;
-@class SnapshotManager;
-@class FormSuggestionController;
-@class Tab;
 
 namespace web {
 class WebState;

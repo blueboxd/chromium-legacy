@@ -198,11 +198,8 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
-  if (renderer_type() == RENDERER_SKIA_GL
-#if defined(ENABLE_CC_VULKAN_TESTS)
-      || renderer_type() == RENDERER_SKIA_VK
-#endif
-  ) {
+  if (renderer_type() == RENDERER_SKIA_GL ||
+      renderer_type() == RENDERER_SKIA_VK) {
     // TODO(973696): Implement bounds clipping in skia_renderer.
     return;
   }

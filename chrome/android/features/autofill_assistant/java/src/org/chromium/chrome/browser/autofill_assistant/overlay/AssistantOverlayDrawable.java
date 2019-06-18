@@ -25,8 +25,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -46,8 +45,7 @@ import java.util.List;
  * <p>While scrolling, it keeps track of the current scrolling offset and avoids drawing on top of
  * the top bar which is can be, during animations, just drawn on top of the compositor.
  */
-class AssistantOverlayDrawable
-        extends Drawable implements FullscreenListener, CompositorViewResizer.Observer {
+class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     private static final int FADE_DURATION_MS = 250;
 
     /** Default background color and alpha. */
@@ -64,11 +62,6 @@ class AssistantOverlayDrawable
 
     private final Context mContext;
     private final ChromeFullscreenManager mFullscreenManager;
-
-    /**
-     * The {@link CompositorViewResizer} associated to the Autofill Assistant BottomSheet content.
-     */
-    private final CompositorViewResizer mViewResizer;
 
     private final Paint mBackground;
     private int mBackgroundAlpha;
@@ -102,29 +95,11 @@ class AssistantOverlayDrawable
     /** A single RectF instance used for drawing, to avoid creating many instances when drawing. */
     private final RectF mDrawRect = new RectF();
 
-    /**
-     * Current top margin of this view.
-     *
-     * <p>Margins are set when the top or bottom controller are fully shown. When they're shown
-     * partially, during a scroll, margins are always 0. The drawing takes care of adapting.
-     *
-     * <p>Always 0 unless accessibility is turned on.
-     *
-     * <p>TODO(crbug.com/806868): Better integrate this filter with the view layout to make it
-     * automatic.
-     */
-    private int mMarginTop;
-
-    /** Current bottom margin of this view. */
-    private int mMarginBottom;
-
     private AssistantOverlayDelegate mDelegate;
 
-    AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager,
-            CompositorViewResizer viewResizer) {
+    AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager) {
         mContext = context;
         mFullscreenManager = fullscreenManager;
-        mViewResizer = viewResizer;
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
@@ -151,7 +126,6 @@ class AssistantOverlayDrawable
                 TypedValue.COMPLEX_UNIT_DIP, BOX_CORNER_DP, displayMetrics);
 
         mFullscreenManager.addListener(this);
-        mViewResizer.addObserver(this);
 
         // Sets colors to default.
         setBackgroundColor(null);
@@ -186,7 +160,6 @@ class AssistantOverlayDrawable
 
     void destroy() {
         mFullscreenManager.removeListener(this);
-        mViewResizer.removeObserver(this);
         mDelegate = null;
     }
 
@@ -271,13 +244,11 @@ class AssistantOverlayDrawable
     public void draw(Canvas canvas) {
         Rect bounds = getBounds();
         int width = bounds.width();
-        int yBottom = bounds.height()
-                - (int) (mFullscreenManager.getBottomControlsHeight() + mViewResizer.getHeight()
-                        - mFullscreenManager.getBottomControlOffset());
+        int yBottom = bounds.height() - mFullscreenManager.getBottomControlsHeight()
+                - mFullscreenManager.getBottomControlOffset();
 
         // Don't draw over the top or bottom bars.
-        canvas.clipRect(
-                0, mFullscreenManager.getTopVisibleContentOffset() - mMarginTop, width, yBottom);
+        canvas.clipRect(0, mFullscreenManager.getTopVisibleContentOffset(), width, yBottom);
 
         canvas.drawPaint(mBackground);
 
@@ -286,9 +257,9 @@ class AssistantOverlayDrawable
         // Ratio of to use to convert zoomed CSS pixels, to physical pixels. Aspect ratio is
         // conserved, so width and height are always converted with the same value. Using width
         // here, since viewport width always corresponds to the overlay width.
-        float cssPixelsToPhysical = ((float) width) / ((float) mVisualViewport.width());
+        float cssPixelsToPhysical = ((float) width) / mVisualViewport.width();
 
-        int yTop = (int) mFullscreenManager.getContentOffset();
+        int yTop = mFullscreenManager.getContentOffset();
         for (Box box : mTransparentArea) {
             RectF rect = box.getRectToDraw();
             if (rect.isEmpty() || (!mPartial && box.mAnimationType != AnimationType.FADE_IN)) {
@@ -340,12 +311,6 @@ class AssistantOverlayDrawable
 
     @Override
     public void onUpdateViewportSize() {
-        askForTouchableAreaUpdate();
-        invalidateSelf();
-    }
-
-    @Override
-    public void onHeightChanged(int height) {
         askForTouchableAreaUpdate();
         invalidateSelf();
     }
@@ -424,6 +389,11 @@ class AssistantOverlayDrawable
             mAnimator.start();
         }
 
+        /**
+         * Instantiates and parametrizes {@link #mAnimator}.
+         *
+         * @return true if {@link #mAnimator} was successfully parametrized.
+         */
         boolean setupAnimator(@AnimationType int animationType, float start, float end,
                 TimeInterpolator interpolator) {
             if (mRect.isEmpty()) {

@@ -32,12 +32,10 @@
           @apply --cr-page-host;
         }
 
-        cr-dialog {
-          --cr-dialog-native: {
-            border-radius: 0;
-            height: 100%;
-            width: 100%;
-          }
+        cr-dialog::part(dialog) {
+          border-radius: 0;
+          height: 100%;
+          width: 100%;
         }
 
         cr-dialog [slot=body] {

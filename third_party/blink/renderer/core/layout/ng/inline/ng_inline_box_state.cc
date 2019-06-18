@@ -583,8 +583,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   const ComputedStyle& style = *item->Style();
 
   NGFragmentGeometry fragment_geometry;
-  fragment_geometry.border_box_size = size;
-  fragment_geometry.border_box_size.inline_size.ClampNegativeToZero();
+  fragment_geometry.border_box_size = {size.inline_size.ClampNegativeToZero(),
+                                       size.block_size};
   fragment_geometry.padding =
       NGBoxStrut(padding, IsFlippedLinesWritingMode(style.GetWritingMode()));
 

@@ -76,6 +76,9 @@ class TabController {
   virtual bool IsFirstVisibleTab(const Tab* tab) const = 0;
   virtual bool IsLastVisibleTab(const Tab* tab) const = 0;
 
+  // Returns true if any tab or one of its children has focus.
+  virtual bool IsFocusInTabs() const = 0;
+
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       Tab* tab,

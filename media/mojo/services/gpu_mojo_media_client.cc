@@ -45,11 +45,11 @@
 #include "ui/gl/gl_angle_util_win.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#include "media/gpu/linux/linux_video_decoder_factory.h"
-#include "media/gpu/linux/mailbox_video_frame_converter.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
+#include "media/gpu/chromeos/mailbox_video_frame_converter.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
 #include "media/mojo/services/android_mojo_util.h"
@@ -207,18 +207,18 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           gpu_task_runner_, std::move(get_stub_cb), gpu_preferences_,
           MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
-      std::unique_ptr<VideoDecoder> linux_video_decoder;
-      if (base::FeatureList::IsEnabled(kLinuxVideoDecoder)) {
-        linux_video_decoder = LinuxVideoDecoderFactory::Create(
+#elif defined(OS_CHROMEOS)
+      std::unique_ptr<VideoDecoder> cros_video_decoder;
+      if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
+        cros_video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, gpu_task_runner_,
             base::BindOnce(&GetCommandBufferStub, media_gpu_channel_manager_,
                            command_buffer_id->channel_token,
                            command_buffer_id->route_id));
       }
 
-      if (linux_video_decoder) {
-        video_decoder = std::move(linux_video_decoder);
+      if (cros_video_decoder) {
+        video_decoder = std::move(cros_video_decoder);
       } else {
         video_decoder = VdaVideoDecoder::Create(
             task_runner, gpu_task_runner_, media_log->Clone(),
@@ -228,7 +228,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                 command_buffer_id->channel_token, command_buffer_id->route_id));
       }
 
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
       video_decoder = VdaVideoDecoder::Create(
           task_runner, gpu_task_runner_, media_log->Clone(), target_color_space,
           gpu_preferences_, gpu_workarounds_,

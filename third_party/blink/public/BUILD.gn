@@ -82,12 +82,6 @@ if (is_android) {
     ]
   }
 
-  java_cpp_enum("blink_cursor_type_java_enums_srcjar") {
-    sources = [
-      "./platform/web_cursor_info.h",
-    ]
-  }
-
   android_library("blink_headers_java") {
     deps = [
       "//services/network/public/mojom:mojom_java",
@@ -379,6 +373,7 @@ source_set("blink_headers") {
     "web/modules/mediastream/media_stream_video_track.h",
     "web/modules/mediastream/video_track_adapter_settings.h",
     "web/modules/mediastream/web_media_stream_utils.h",
+    "web/modules/mediastream/webaudio_media_stream_audio_sink.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
     "web/web_active_fling_parameters.h",

@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
-#include "chrome/services/ble_scan_parser/public/cpp/manifest.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
@@ -143,7 +142,6 @@ GetChromeBuiltinServiceManifests() {
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      ble_scan_parser::GetManifest(),
       chromeos::cellular_setup::GetManifest(),
       chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),

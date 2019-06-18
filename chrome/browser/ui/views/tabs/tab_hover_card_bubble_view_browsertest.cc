@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/generated_resources.h"
@@ -180,6 +181,79 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
   EXPECT_TRUE(widget != nullptr);
   EXPECT_TRUE(widget->IsVisible());
   MouseExitTabStrip();
+  EXPECT_FALSE(widget->IsVisible());
+}
+
+// Verify hover card is visible when tab is focused.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is visible when focus moves from the tab to tab close
+// button.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnTabCloseButtonFocusAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+  tab_strip->GetFocusManager()->SetFocusedView(tab->close_button_);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is visible when tab is focused and a key is pressed.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnKeyPressAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0);
+  tab->OnKeyPressed(key_event);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+// Verify hover card is not visible when tab is focused and the mouse is
+// pressed.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetNotVisibleOnMousePressAfterTabFocus) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  Tab* tab = tab_strip->tab_at(0);
+  tab_strip->GetFocusManager()->SetFocusedView(tab);
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  ClickMouseOnTab();
   EXPECT_FALSE(widget->IsVisible());
 }
 

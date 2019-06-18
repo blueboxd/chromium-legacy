@@ -68,9 +68,7 @@ bool CanStartOneFingerDrag(int window_component) {
 
 void ShowResizeShadow(aura::Window* window, int component) {
   // Window resize in tablet mode is disabled (except in splitscreen).
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
   }
 
@@ -511,9 +509,7 @@ aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
 
   aura::Window* toplevel = widget->GetNativeWindow();
 
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return nullptr;
   }
   wm::WindowState* window_state = wm::GetWindowState(toplevel);

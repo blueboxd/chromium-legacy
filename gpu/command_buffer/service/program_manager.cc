@@ -2702,6 +2702,14 @@ bool ProgramManager::IsOwned(Program* program) const {
   return false;
 }
 
+bool ProgramManager::HasCachedCompileStatus(Shader* shader) const {
+  if (program_cache_) {
+    return program_cache_->HasSuccessfullyCompiledShader(
+        shader->last_compiled_signature());
+  }
+  return false;
+}
+
 void ProgramManager::RemoveProgramInfoIfUnused(
     ShaderManager* shader_manager, Program* program) {
   DCHECK(shader_manager);

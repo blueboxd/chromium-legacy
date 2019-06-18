@@ -84,3 +84,8 @@ tspan, textPath {
 *:not(svg), *:not(foreignObject) > svg {
     transform-origin: 0 0;
 }
+
+/* TODO(crbug.com/976224): Support zoom on foreignObject */
+foreignObject {
+    -internal-effective-zoom: initial !important;
+}

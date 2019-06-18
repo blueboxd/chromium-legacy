@@ -272,6 +272,7 @@ GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTa
 
 GL_APICALL void         GL_APIENTRY glBindImageTexture (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+GL_APICALL void         GL_APIENTRY glDispatchComputeIndirect (GLintptrNotNegative offset);
 
 GL_APICALL void         GL_APIENTRY glGetProgramInterfaceiv (GLidProgram program, GLenum program_interface, GLenum pname, GLint* params);
 GL_APICALL GLuint       GL_APIENTRY glGetProgramResourceIndex (GLidProgram program, GLenum program_interface, const char* name);

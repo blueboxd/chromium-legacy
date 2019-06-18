@@ -786,6 +786,13 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsApply', function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsApply);
 });
 
+TEST_F(
+    'PrintPreviewAdvancedDialogTest', 'AdvancedSettingsApplyWithEnter',
+    function() {
+      this.runMochaTest(
+          advanced_dialog_test.TestNames.AdvancedSettingsApplyWithEnter);
+    });
+
 TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsClose', function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsClose);
 });

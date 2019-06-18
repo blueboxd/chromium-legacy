@@ -12,7 +12,7 @@
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (info_.type != blink::WebCursorInfo::kTypeCustom)
+  if (info_.type != ui::CursorType::kCustom)
     return LoadCursor(nullptr, IDC_ARROW);
 
   if (platform_cursor_)

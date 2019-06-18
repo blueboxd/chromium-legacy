@@ -27,13 +27,15 @@ async function runTestCase() {
     }
   });
   const [openTime, closeTime] = await Promise.all([onOpen, onClose]);
-  PerfTestRunner.measureValueAsync(closeTime - openTime);
+  const executeTimeInSeconds = (closeTime - openTime) / 1000;
+  const downloadSpeedInMegaBytesPerSecond = 100 / executeTimeInSeconds;
+  PerfTestRunner.measureValueAsync(downloadSpeedInMegaBytesPerSecond);
 }
 
 let isDone = false;
 PerfTestRunner.startMeasureValuesAsync({
   description: "Measure performance of receiving 1MB array 100 times.",
-  unit: 'ms',
+  unit: 'MB/s',
   done: function () {
     isDone = true;
   },

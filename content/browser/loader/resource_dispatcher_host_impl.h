@@ -568,7 +568,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::URLRequest* request,
       ResourceType resource_type,
       ResourceContext* resource_context,
-      network::mojom::FetchRequestMode fetch_request_mode,
+      network::mojom::RequestMode request_mode,
       blink::mojom::RequestContextType fetch_request_context_type,
       uint32_t url_loader_options,
       AppCacheService* appcache_service,
@@ -617,7 +617,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   static void RecordFetchRequestMode(const GURL& url,
                                      base::StringPiece method,
-                                     network::mojom::FetchRequestMode mode);
+                                     network::mojom::RequestMode request_mode);
 
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotation();
 

@@ -60,7 +60,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   CrossSiteDocumentResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
       net::URLRequest* request,
-      network::mojom::FetchRequestMode fetch_request_mode);
+      network::mojom::RequestMode request_mode);
   ~CrossSiteDocumentResourceHandler() override;
 
   // LayeredResourceHandler overrides:
@@ -144,7 +144,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer> analyzer_;
 
   // Fetch request mode (e.g. 'no-cors' VS 'cors' VS 'same-origin', etc.).
-  network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::RequestMode request_mode_;
 
   // Tracks whether OnResponseStarted has been called, to ensure that it happens
   // before OnWillRead and OnReadCompleted.

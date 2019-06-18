@@ -97,6 +97,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
 
   AudioOutputRedirectionConfig config_;
   const std::unique_ptr<RedirectedAudioOutput> output_;
+  int output_samples_per_second_ = 0;
 
   int next_num_frames_ = 0;
   int64_t next_output_timestamp_ = INT64_MIN;

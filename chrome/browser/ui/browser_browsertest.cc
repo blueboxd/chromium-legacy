@@ -1225,6 +1225,25 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInRegularWindows) {
+  ASSERT_TRUE(browser()->is_type_tabbed());
+  EXPECT_TRUE(browser()->CanOverscrollContent());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInPopups) {
+  Browser* popup_browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
+  ASSERT_TRUE(popup_browser->is_type_popup());
+  EXPECT_TRUE(popup_browser->CanOverscrollContent());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollDisabledInDevToolsWindows) {
+  DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+  Browser* dev_tools_browser = chrome::FindLastActive();
+  ASSERT_EQ(dev_tools_browser->app_name(), DevToolsWindow::kDevToolsApp);
+  EXPECT_FALSE(dev_tools_browser->CanOverscrollContent());
+}
+
 // Open an app window and the dev tools window and ensure that the location
 // bar settings are correct.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {

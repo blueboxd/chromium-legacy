@@ -16,11 +16,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils_chromeos.h"
-#endif
-
 namespace app_list {
 
 namespace {
@@ -32,26 +27,6 @@ constexpr char const* kAppIdsHiddenInLauncher[] = {
 
 bool ShouldShowInLauncher(const extensions::Extension* extension,
                           content::BrowserContext* context) {
-  // TODO(crbug.com/971029): Make this a per System Web App property that is
-  // accessible by querying the SystemWebAppManager.
-#if defined(OS_CHROMEOS)
-  Profile* profile = Profile::FromBrowserContext(context);
-  // These System Web Apps should not show in the launcher as they are added
-  // as internal apps.
-  web_app::SystemAppType hidden_system_web_apps[] = {
-      // TODO(crbug.com/836128): Remove this once OS Settings is launched, and
-      // permanently migrate OS Settings from an internal app to a full System
-      // Web App.
-      web_app::SystemAppType::SETTINGS,
-  };
-  for (auto app_type : hidden_system_web_apps) {
-    if (extension->id() ==
-        web_app::GetAppIdForSystemWebApp(profile, app_type)) {
-      return false;
-    }
-  }
-#endif
-
   return !HideInLauncherById(extension->id()) &&
          chromeos::DemoSession::ShouldDisplayInAppLauncher(extension->id()) &&
          extensions::ui_util::ShouldDisplayInAppLauncher(extension, context);

@@ -259,5 +259,43 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   parent->Close();
 }
 
+// Test that a layer added beneath a view is restacked correctly.
+TEST_F(WindowReordererTest, ViewWithLayerBeneath) {
+  std::unique_ptr<Widget> parent(
+      CreateControlWidget(root_window(), gfx::Rect(0, 0, 100, 100)));
+  parent->Show();
+
+  aura::Window* parent_window = parent->GetNativeWindow();
+
+  View* contents_view = new View;
+  parent->SetContentsView(contents_view);
+
+  View* view_with_layer_beneath =
+      contents_view->AddChildView(std::make_unique<View>());
+  ui::Layer layer_beneath;
+  view_with_layer_beneath->AddLayerBeneathView(&layer_beneath);
+
+  ASSERT_NE(nullptr, view_with_layer_beneath->layer());
+  view_with_layer_beneath->layer()->set_name("view");
+  layer_beneath.set_name("beneath");
+
+  // Verify that the initial ordering is correct.
+  EXPECT_EQ("beneath view",
+            ui::test::ChildLayerNamesAsString(*parent_window->layer()));
+
+  // Add a hosted window to make WindowReorderer::ReorderChildWindows() restack
+  // layers.
+  std::unique_ptr<Widget> child_widget(
+      CreateControlWidget(parent_window, gfx::Rect(gfx::Rect(0, 0, 50, 50))));
+  SetWindowAndLayerName(child_widget->GetNativeView(), "child_widget");
+  child_widget->Show();
+  View* host_view = contents_view->AddChildView(std::make_unique<View>());
+  child_widget->GetNativeView()->SetProperty(kHostViewKey, host_view);
+
+  // Verify the new order is correct.
+  EXPECT_EQ("beneath view child_widget",
+            ui::test::ChildLayerNamesAsString(*parent_window->layer()));
+}
+
 }  // namespace
 }  // namespace views

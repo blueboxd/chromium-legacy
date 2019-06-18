@@ -109,12 +109,25 @@ void TabSwitchTimeRecorder::RecordHistogramsAndTraceEvents(
       tab_switch_duration.InMillisecondsF());
   ++g_num_trace_events_in_process;
 
+  // Each value recorded to a histogram with suffix .NoSavedFrames_Loaded_Frozen
+  // or .NoSavedFrames_Loaded_NotFrozen is also recorded to a histogram with
+  // suffix .NoSavedFrames_Loaded to facilitate assessing the impact of
+  // experiments that affect the number of frozen tab on tab switch time.
+  const bool is_no_saved_frames_loaded =
+      !has_saved_frames_ &&
+      tab_switch_start_state_.value().destination_is_loaded;
+
   // Record result histogram.
   base::UmaHistogramEnumeration(
       std::string("Browser.Tabs.TabSwitchResult.") +
           GetHistogramSuffix(has_saved_frames_,
                              tab_switch_start_state_.value()),
       tab_switch_result);
+
+  if (is_no_saved_frames_loaded) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded", tab_switch_result);
+  }
 
   // Record latency histogram.
   switch (tab_switch_result) {
@@ -124,6 +137,12 @@ void TabSwitchTimeRecorder::RecordHistogramsAndTraceEvents(
               GetHistogramSuffix(has_saved_frames_,
                                  tab_switch_start_state_.value()),
           tab_switch_duration);
+
+      if (is_no_saved_frames_loaded) {
+        UMA_HISTOGRAM_TIMES(
+            "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded",
+            tab_switch_duration);
+      }
       break;
     }
     case TabSwitchResult::kIncomplete: {
@@ -132,6 +151,12 @@ void TabSwitchTimeRecorder::RecordHistogramsAndTraceEvents(
               GetHistogramSuffix(has_saved_frames_,
                                  tab_switch_start_state_.value()),
           tab_switch_duration);
+
+      if (is_no_saved_frames_loaded) {
+        UMA_HISTOGRAM_TIMES(
+            "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_Loaded",
+            tab_switch_duration);
+      }
       break;
     }
     case TabSwitchResult::kPresentationFailure: {

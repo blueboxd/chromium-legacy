@@ -51,6 +51,14 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
         const gfx::Rect& initial_rect,
         bool* was_blocked) = 0;
 
+    // Informs the delegate of lifetime events.
+    virtual void OnBackgroundContentsNavigated(
+        BackgroundContents* contents) = 0;
+    virtual void OnBackgroundContentsTerminated(
+        BackgroundContents* contents) = 0;
+    virtual void OnBackgroundContentsClosed(BackgroundContents* contents) = 0;
+    virtual void OnBackgroundContentsDeleted(BackgroundContents* contents) = 0;
+
    protected:
     virtual ~Delegate() {}
   };

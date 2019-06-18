@@ -33,9 +33,9 @@ public class AssistantPaymentRequestContactDetailsSection
                 R.layout.autofill_assistant_contact_full,
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_title_padding),
-                context.getString(org.chromium.chrome.R.string.payments_contact_details_label),
-                context.getString(org.chromium.chrome.R.string.payments_add_contact),
-                context.getString(org.chromium.chrome.R.string.payments_add_contact));
+                context.getString(R.string.payments_contact_details_label),
+                context.getString(R.string.payments_add_contact),
+                context.getString(R.string.payments_add_contact));
     }
 
     public void setEditor(ContactEditor editor) {

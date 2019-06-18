@@ -35,13 +35,13 @@ class PLATFORM_EXPORT ThreadPoolManager {
   void CreateThread(
       const google::protobuf::RepeatedPtrField<
           SequenceManagerTestDescription::Action>& initial_thread_actions,
-      TimeTicks initial_time);
+      base::TimeTicks initial_time);
 
   // Advances the mock tick clock of all the threads synchronously.
   // Note that this doesn't guarantee advancing the thread's clock to |time|.
   // The clock is advanced to the minimum desired time of all the owned threads.
   void AdvanceClockSynchronouslyToTime(ThreadManager* thread_manager,
-                                       TimeTicks time);
+                                       base::TimeTicks time);
 
   // Advances the mock tick clock of all the threads synchronously.
   // Note that this doesn't guarantee advancing the thread's clock by the next
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT ThreadPoolManager {
   Lock lock_;
 
   // Used to synchronize virtual time across all threads.
-  TimeTicks next_time_;
+  base::TimeTicks next_time_;
 
   // Condition to ensure that all threads have their desired next time
   // computed, and thus the global |next_time_| can be computed as their

@@ -235,8 +235,8 @@ class CORE_EXPORT ThreadableLoader final
   // Saved so that we can use the original value for the modes in
   // ResponseReceived() where |resource| might be a reused one (e.g. preloaded
   // resource) which can have different modes.
-  network::mojom::FetchRequestMode fetch_request_mode_;
-  network::mojom::FetchCredentialsMode fetch_credentials_mode_;
+  network::mojom::RequestMode request_mode_;
+  network::mojom::CredentialsMode credentials_mode_;
 
   // Holds the original request for fallback in case the Service Worker
   // does not respond.
@@ -261,7 +261,7 @@ class CORE_EXPORT ThreadableLoader final
   // Max number of times that this ThreadableLoader can follow.
   int redirect_limit_;
 
-  network::mojom::FetchRedirectMode redirect_mode_;
+  network::mojom::RedirectMode redirect_mode_;
 
   // Holds the referrer after a redirect response was received. This referrer is
   // used to populate the HTTP Referer header when following the redirect.

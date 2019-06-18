@@ -71,4 +71,5 @@ android_library("glue") {
   ]
 
   android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
 }

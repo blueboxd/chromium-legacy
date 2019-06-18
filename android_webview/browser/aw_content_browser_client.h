@@ -71,7 +71,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void RenderProcessWillLaunch(
       content::RenderProcessHost* host,
       service_manager::mojom::ServiceRequest* service_request) override;
-  bool ShouldUseMobileFlingCurve() const override;
+  bool ShouldUseMobileFlingCurve() override;
   bool IsHandledURL(const GURL& url) override;
   bool ForceSniffingFileUrlsForHtml() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
@@ -247,10 +247,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       int process_id,
       int routing_id,
       network::mojom::RestrictedCookieManagerRequest* request) override;
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
-      const override;
+      override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;

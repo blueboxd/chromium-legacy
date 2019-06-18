@@ -227,6 +227,8 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* subframe_rfh,
     int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  RecordLoadingBehaviorObserved(info);
+
   if (subframe_rfh == nullptr)
     return;
 
@@ -253,6 +255,31 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
       subframe_info.viewer_url == current_main_frame_nav_info_->url) {
     current_main_frame_nav_info_->subframe_rfh = subframe_rfh;
   }
+}
+
+void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  ukm::builders::AmpPageLoad builder(info.source_id);
+  bool should_record = false;
+  if (!observed_amp_main_frame_ &&
+      (info.main_frame_metadata.behavior_flags &
+       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
+          0) {
+    builder.SetMainFrameAmpPageLoad(true);
+    observed_amp_main_frame_ = true;
+    should_record = true;
+  }
+
+  if (!observed_amp_sub_frame_ &&
+      (info.subframe_metadata.behavior_flags &
+       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
+          0) {
+    builder.SetSubFrameAmpPageLoad(true);
+    observed_amp_sub_frame_ = true;
+    should_record = true;
+  }
+  if (should_record)
+    builder.Record(ukm::UkmRecorder::Get());
 }
 
 void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {

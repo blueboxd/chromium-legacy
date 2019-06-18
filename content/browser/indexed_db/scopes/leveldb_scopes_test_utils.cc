@@ -39,7 +39,7 @@ void LevelDBScopesTestBase::TearDown() {
     }
     leveldb_.reset();
     if (temp_directory_.IsValid()) {
-      indexed_db::GetDefaultLevelDBFactory()->DestroyLevelDB(
+      indexed_db::LevelDBFactory::Get()->DestroyLevelDB(
           temp_directory_.GetPath());
       ASSERT_TRUE(temp_directory_.Delete());
     }
@@ -52,7 +52,7 @@ void LevelDBScopesTestBase::SetUpRealDatabase() {
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   leveldb::Status status;
   std::tie(leveldb_, status, std::ignore) =
-      indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+      indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
           temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
           leveldb::BytewiseComparator());
   ASSERT_TRUE(status.ok());

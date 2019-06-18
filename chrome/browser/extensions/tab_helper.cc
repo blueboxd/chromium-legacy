@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -61,7 +60,6 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "url/url_constants.h"
 
 using content::NavigationController;
@@ -192,18 +190,10 @@ void TabHelper::InvokeForContentRulesRegistries(const Func& func) {
 void TabHelper::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
-  const bool success = (extension != nullptr);
-
-  if (success && web_app_info.open_as_window) {
-    // Send the 'appinstalled' event and ensure any beforeinstallpromptevent
-    // cannot trigger installation again.
-    banners::AppBannerManagerDesktop::FromWebContents(web_contents())
-        ->OnInstall(false /* is_native app */,
-                    blink::kWebDisplayModeStandalone);
-  }
   pending_web_app_action_ = NONE;
 
   const ExtensionId app_id = extension ? extension->id() : ExtensionId();
+  const bool success = (extension != nullptr);
   std::move(install_callback_).Run(app_id, success);
 }
 

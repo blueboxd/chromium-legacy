@@ -638,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
       {"oobe-update-md", "checking-for-updates-dialog"});
   test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-dialog"});
 
-  test::OobeJS().TapOnPath({"oobe-update-md", "cellular-permission-back"});
+  test::OobeJS().ClickOnPath({"oobe-update-md", "cellular-permission-back"});
 
   WaitForScreenResult();
   EXPECT_EQ(UpdateScreen::Result::UPDATE_ERROR, last_screen_result_.value());

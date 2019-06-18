@@ -297,7 +297,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::TimeTicks EnableVirtualTime();
 
   // Tells the scheduler that all TaskQueues should use virtual time. Returns
-  // the TimeTicks that virtual time offsets will be relative to.
+  // the base::TimeTicks that virtual time offsets will be relative to.
   base::TimeTicks EnableVirtualTime(BaseTimeOverridePolicy policy);
   bool IsVirtualTimeEnabled() const;
 
@@ -589,7 +589,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void OnIdlePeriodStarted() override;
   void OnIdlePeriodEnded() override;
   void OnPendingTasksChanged(bool has_tasks) override;
-  void SetHasSafepoint() override;
+  void OnSafepointEntered() override;
+  void OnSafepointExited() override;
 
   void DispatchRequestBeginMainFrameNotExpected(bool has_tasks);
 
@@ -889,9 +890,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // High-priority for compositing events after input experiment.
     PrioritizeCompositingAfterInputExperiment compositing_experiment;
     bool should_prioritize_compositing;
-
-    // True if a task has a safepoint.
-    bool has_safepoint;
 
     // List of callbacks to execute after the current task.
     WTF::Vector<base::OnceClosure> on_task_completion_callbacks;

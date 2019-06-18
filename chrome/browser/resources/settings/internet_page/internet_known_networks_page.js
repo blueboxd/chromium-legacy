@@ -10,7 +10,10 @@
 Polymer({
   is: 'settings-internet-known-networks-page',
 
-  behaviors: [CrPolicyNetworkBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+  ],
 
   properties: {
     /**
@@ -54,10 +57,13 @@ Polymer({
     enableForget_: Boolean,
   },
 
-  listeners: {'network-list-changed': 'refreshNetworks_'},
-
   /** @private {string} */
   selectedGuid_: '',
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.refreshNetworks_();
+  },
 
   /** @private */
   networkTypeChanged_: function() {

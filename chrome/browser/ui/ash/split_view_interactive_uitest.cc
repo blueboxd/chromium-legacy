@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeTwoWindows) {
   aura::Window* browser2_window = browser2->window()->GetNativeWindow();
   test::ActivateAndSnapWindow(browser2_window,
                               ash::WindowStateType::kRightSnapped);
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   WaitForWarmup();
 
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeTwoWindows) {
   generator.Wait();
   TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 }
 
 IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
   test::ActivateAndSnapWindow(browser2_window,
                               ash::WindowStateType::kRightSnapped);
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kEnterAnimationComplete);
 
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
   generator.Wait();
   TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 }
 
 INSTANTIATE_TEST_SUITE_P(,

@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -205,6 +206,8 @@ class BrowserTestBase : public testing::Test {
   // class to ensure that SetUp was called. If it's not called, the test will
   // not run and report a false positive result.
   bool set_up_called_;
+
+  std::unique_ptr<NoRendererCrashesAssertion> no_renderer_crashes_assertion_;
 
   bool initialized_network_process_ = false;
 

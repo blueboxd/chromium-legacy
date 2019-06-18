@@ -259,6 +259,11 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // OAuth2TokenServiceTest.
   OAuth2TokenService::TokenCache& token_cache();
 
+  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
+  GetDiagnicsObservers() {
+    return diagnostics_observer_list_;
+  }
+
  protected:
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
@@ -344,11 +349,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
                                          const ScopeSet& scopes,
                                          const std::string& access_token);
 
-  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
-  GetDiagnicsObservers() {
-    return diagnostics_observer_list_;
-  }
-
  private:
   class Fetcher;
   friend class Fetcher;
@@ -381,11 +381,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // the returned entry is done.
   const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
       const RequestParameters& client_scopes);
-
-  // Removes an access token for the given set of scopes from the cache.
-  // Returns true if the entry was removed, otherwise false.
-  bool RemoveCachedTokenResponse(const RequestParameters& client_scopes,
-                                 const std::string& token_to_remove);
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);

@@ -190,12 +190,16 @@
       infobarBadgeTabHelper->SetDelegate(self);
       if (self.consumer) {
         // Whenever the WebState changes ask the corresponding
-        // InfobarBadgeTabHelper if a badge should be displayed.
+        // InfobarBadgeTabHelper if a badge should be displayed, and if its
+        // Active or not.
         [self.consumer
             displayInfobarBadge:infobarBadgeTabHelper->is_infobar_displaying()
                            type:infobarBadgeTabHelper->infobar_type()];
-        [self.consumer
-            activeInfobarBadge:infobarBadgeTabHelper->is_badge_active()];
+        if (infobarBadgeTabHelper->is_badge_accepted()) {
+          self.badgeState |= InfobarBadgeStateAccepted;
+        } else {
+          self.badgeState &= ~InfobarBadgeStateAccepted;
+        }
       }
     }
 

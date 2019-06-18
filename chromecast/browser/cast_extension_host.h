@@ -51,7 +51,7 @@ class CastExtensionHost : public extensions::ExtensionHost,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents*) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
 
  private:
   void SetFullscreen(content::WebContents* web_contents, bool value);

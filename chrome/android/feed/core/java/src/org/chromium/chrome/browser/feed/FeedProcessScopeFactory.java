@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.Nullable;
 
+import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.api.client.scope.ProcessScopeBuilder;
 import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.api.host.config.Configuration;
 import com.google.android.libraries.feed.api.host.config.DebugBehavior;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.concurrent.Executors;
 
-/** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
+/** Holds singleton {@link ProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
     private static final String TAG = "FeedProcessScopeFtry";
 
@@ -44,22 +44,24 @@ public class FeedProcessScopeFactory {
 
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedAppLifecycle sFeedAppLifecycle;
-    private static FeedProcessScope sFeedProcessScope;
+    private static ProcessScope sProcessScope;
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
     private static NetworkClient sTestNetworkClient;
     private static FeedLoggingBridge sFeedLoggingBridge;
 
-    /** @return The shared {@link FeedProcessScope} instance. Null if the Feed is disabled. */
-    public static @Nullable FeedProcessScope getFeedProcessScope() {
-        if (sFeedProcessScope == null) {
+    /** @return The shared {@link ProcessScope} instance. Null if the Feed is disabled. */
+    public static @Nullable ProcessScope getFeedProcessScope() {
+        if (sProcessScope == null) {
             initialize();
         }
-        return sFeedProcessScope;
+        return sProcessScope;
     }
 
-    /** @return The {@link FeedScheduler} that was given to the {@link FeedProcessScope}. Null if
-     * the Feed is disabled. */
+    /**
+     * @return The {@link FeedScheduler} that was given to the {@link ProcessScope}. Null if
+     * the Feed is disabled.
+     */
     public static @Nullable FeedScheduler getFeedScheduler() {
         if (sFeedScheduler == null) {
             initialize();
@@ -67,8 +69,10 @@ public class FeedProcessScopeFactory {
         return sFeedScheduler;
     }
 
-    /** @return The {@link FeedOfflineIndicator} that was given to the {@link FeedProcessScope}.
-     * Null if the Feed is disabled. */
+    /**
+     * @return The {@link FeedOfflineIndicator} that was given to the {@link ProcessScope}.
+     * Null if the Feed is disabled.
+     */
     public static @Nullable FeedOfflineIndicator getFeedOfflineIndicator() {
         if (sFeedOfflineIndicator == null) {
             initialize();
@@ -115,7 +119,7 @@ public class FeedProcessScopeFactory {
     }
 
     private static void initialize() {
-        assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
+        assert sProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
                 && sFeedAppLifecycle == null && sFeedLoggingBridge == null;
         if (!isFeedProcessEnabled()) return;
 
@@ -136,24 +140,24 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope = (FeedProcessScope) new ProcessScopeBuilder(configHostApi,
-                Executors.newSingleThreadExecutor(), sFeedLoggingBridge, networkClient,
-                schedulerBridge, DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
-                applicationInfo, new BasicTooltipSupportedApi())
-                                    .setContentStorage(contentStorage)
-                                    .setJournalStorage(journalStorage)
-                                    .build();
-        schedulerBridge.initializeFeedDependencies(sFeedProcessScope.getRequestManager());
+        sProcessScope = new ProcessScopeBuilder(configHostApi, Executors.newSingleThreadExecutor(),
+                sFeedLoggingBridge, networkClient, schedulerBridge, DebugBehavior.SILENT,
+                ContextUtils.getApplicationContext(), applicationInfo,
+                new BasicTooltipSupportedApi())
+                                .setContentStorage(contentStorage)
+                                .setJournalStorage(journalStorage)
+                                .build();
+        schedulerBridge.initializeFeedDependencies(sProcessScope.getRequestManager());
 
-        sFeedOfflineIndicator = new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContent());
+        sFeedOfflineIndicator = new FeedOfflineBridge(profile, sProcessScope.getKnownContent());
 
-        sFeedAppLifecycle = new FeedAppLifecycle(sFeedProcessScope.getAppLifecycleListener(),
+        sFeedAppLifecycle = new FeedAppLifecycle(sProcessScope.getAppLifecycleListener(),
                 new FeedLifecycleBridge(profile), sFeedScheduler);
     }
 
     /**
-     * Creates a {@link FeedProcessScope} using the provided host implementations. Call {@link
-     * #clearFeedProcessScopeForTesting()} to reset the FeedProcessScope after testing is complete.
+     * Creates a {@link ProcessScope} using the provided host implementations. Call {@link
+     * #clearFeedProcessScopeForTesting()} to reset the ProcessScope after testing is complete.
      *
      * @param feedScheduler A {@link FeedScheduler} to use for testing.
      * @param networkClient A {@link NetworkClient} to use for testing.
@@ -174,11 +178,11 @@ public class FeedProcessScopeFactory {
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
-        sFeedProcessScope = (FeedProcessScope) new ProcessScopeBuilder(configHostApi,
-                Executors.newSingleThreadExecutor(), sFeedLoggingBridge, networkClient,
-                sFeedScheduler, DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
-                applicationInfo, new BasicTooltipSupportedApi())
-                                    .build();
+        sProcessScope = new ProcessScopeBuilder(configHostApi, Executors.newSingleThreadExecutor(),
+                sFeedLoggingBridge, networkClient, sFeedScheduler, DebugBehavior.SILENT,
+                ContextUtils.getApplicationContext(), applicationInfo,
+                new BasicTooltipSupportedApi())
+                                .build();
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */
@@ -186,15 +190,15 @@ public class FeedProcessScopeFactory {
     public static void setTestNetworkClient(NetworkClient client) {
         if (client == null) {
             sTestNetworkClient = null;
-        } else if (sFeedProcessScope == null) {
+        } else if (sProcessScope == null) {
             sTestNetworkClient = client;
         } else {
             throw(new IllegalStateException(
-                    "TestNetworkClient can not be set after FeedProcessScope has initialized."));
+                    "TestNetworkClient can not be set after ProcessScope has initialized."));
         }
     }
 
-    /** Resets the FeedProcessScope after testing is complete. */
+    /** Resets the ProcessScope after testing is complete. */
     @VisibleForTesting
     static void clearFeedProcessScopeForTesting() {
         destroy();
@@ -235,9 +239,9 @@ public class FeedProcessScopeFactory {
             sPrefChangeRegistrar.destroy();
             sPrefChangeRegistrar = null;
         }
-        if (sFeedProcessScope != null) {
-            sFeedProcessScope.onDestroy();
-            sFeedProcessScope = null;
+        if (sProcessScope != null) {
+            sProcessScope.onDestroy();
+            sProcessScope = null;
         }
         if (sFeedScheduler != null) {
             sFeedScheduler.destroy();

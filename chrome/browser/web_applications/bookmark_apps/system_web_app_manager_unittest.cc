@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -101,11 +102,14 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     return system_web_app_manager_;
   }
 
+  TestWebAppUiDelegate* ui_delegate() { return &ui_delegate_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   TestWebAppProviderCreator test_web_app_provider_creator_;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   TestSystemWebAppManager* system_web_app_manager_ = nullptr;
+  TestWebAppUiDelegate ui_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerTest);
 };
@@ -117,11 +121,11 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
 
@@ -135,12 +139,12 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager()->install_requests();
@@ -154,11 +158,11 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
   SimulatePreviouslyInstalledApp(kAppUrl2, InstallSource::kSystemInstalled);
   SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternal);
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
 
@@ -178,21 +182,21 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
@@ -202,14 +206,14 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
     base::test::ScopedFeatureList disable_feature_list;
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-    system_web_app_manager()->Start();
+    system_web_app_manager()->Start(ui_delegate());
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
   }
 
   // Re-enabling System Web Apps installs without a version change.
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
@@ -219,21 +223,21 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
   // Create another app. The version hasn't changed so the install won't
   // process.
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
@@ -241,7 +245,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // Bump the version number, and the install will trigger, and request
   // installation of both apps.
   system_web_app_manager()->set_current_version(base::Version("2.0.0.0"));
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
@@ -251,14 +255,14 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     base::test::ScopedFeatureList disable_feature_list;
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-    system_web_app_manager()->Start();
+    system_web_app_manager()->Start(ui_delegate());
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
   }
 
   // Re-enabling System Web Apps installs even without a version change.
-  system_web_app_manager()->Start();
+  system_web_app_manager()->Start(ui_delegate());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5u, pending_app_manager()->install_requests().size());

@@ -210,9 +210,7 @@ bool IsPublicAccountUser(const LoginUserInfo& user) {
 }
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 //

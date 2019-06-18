@@ -1703,14 +1703,14 @@ TEST_P(VisualViewportTest, ResizeVisualViewportStaysWithinOuterViewport) {
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
 
-  WebView()->MainFrameWidget()->ResizeVisualViewport(IntSize(100, 100));
+  WebView()->ResizeVisualViewport(IntSize(100, 100));
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.Move(ScrollOffset(0, 100));
 
   EXPECT_EQ(100, visual_viewport.GetScrollOffset().Height());
 
-  WebView()->MainFrameWidget()->ResizeVisualViewport(IntSize(100, 200));
+  WebView()->ResizeVisualViewport(IntSize(100, 200));
 
   EXPECT_EQ(0, visual_viewport.GetScrollOffset().Height());
 }

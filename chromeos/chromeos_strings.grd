@@ -184,9 +184,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
         Launcher
       </message>
-      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE" desc="The title used for the Ash Launcher in the Shelf to indicate loading/syncinc apps.">
-        Launcher (syncing apps...)
-      </message>
 
       <!-- Password expiry notifications -->
       <message name="IDS_PASSWORD_EXPIRY_DAYS_BODY" desc="Message body for a notification that tells the user their password will expire in less than some number of days (where 0 days means it has expired).">

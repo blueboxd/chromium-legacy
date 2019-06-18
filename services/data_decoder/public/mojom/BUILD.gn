@@ -19,6 +19,11 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
+
+  if (is_chromeos) {
+    sources += [ "ble_scan_parser.mojom" ]
+    public_deps += [ "//device/bluetooth/public/mojom" ]
+  }
 }
 
 mojom("constants") {

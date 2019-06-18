@@ -54,9 +54,6 @@ struct ASH_PUBLIC_EXPORT UserInfo {
   // ephemeral. See |UserManager::IsUserNonCryptohomeDataEphemeral| for details.
   bool is_ephemeral = false;
 
-  // True if the user is also the device owner.
-  bool is_device_owner = false;
-
   // True if the user has a gaia account.
   bool has_gaia_account = false;
 

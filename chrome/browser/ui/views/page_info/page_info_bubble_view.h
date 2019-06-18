@@ -159,7 +159,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
   // returned view is transferred to the caller.
-  views::View* CreateSiteSettingsView() WARN_UNUSED_RESULT;
+  std::unique_ptr<views::View> CreateSiteSettingsView() WARN_UNUSED_RESULT;
 
   // Posts a task to HandleMoreInfoRequestAsync() below.
   void HandleMoreInfoRequest(views::View* source);

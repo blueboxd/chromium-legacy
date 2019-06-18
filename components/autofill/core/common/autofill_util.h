@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/submission_source.h"
 
 namespace base {
 struct Feature;
@@ -104,6 +105,9 @@ bool ShouldAutoselectFirstSuggestionOnArrowDown();
 
 // Returns true if focused_field_type corresponds to a fillable field.
 bool IsFillable(mojom::FocusedFieldType focused_field_type);
+
+mojom::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
+    SubmissionSource source);
 
 }  // namespace autofill
 

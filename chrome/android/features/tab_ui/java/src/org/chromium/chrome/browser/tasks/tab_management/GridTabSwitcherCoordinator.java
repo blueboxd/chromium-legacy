@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -100,10 +100,10 @@ public class GridTabSwitcherCoordinator
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
                 null, compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
-                org.chromium.chrome.tab_ui.R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
+                R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
 
-        HistoryNavigationLayout navigation = compositorViewHolder.findViewById(
-                org.chromium.chrome.tab_ui.R.id.history_navigation);
+        HistoryNavigationLayout navigation =
+                compositorViewHolder.findViewById(R.id.history_navigation);
 
         navigation.setNavigationDelegate(HistoryNavigationDelegate.createForTabSwitcher(
                 context, backPress, tabModelSelector::getCurrentTab));

@@ -6,14 +6,9 @@
 
 [
   SecureContext,
-  Exposed=(Window,DedicatedWorker),
-  ActiveScriptWrappable,
-  Constructor(optional SMSReceiverOptions options),
-  ConstructorCallWith=ScriptState,
-  RaisesException=Constructor,
+  Exposed=Window,
   RuntimeEnabled=SmsReceiver
-] interface SMSReceiver : EventTarget {
-  readonly attribute SMS sms;
-  attribute EventHandler onchange;
-  [CallWith=ScriptState, MeasureAs=SMSReceiverStart] Promise<void> start();
+] interface SMSReceiver {
+  [CallWith=ScriptState, MeasureAs=SMSReceiverStart]
+  Promise<SMS> receive(optional SMSReceiverOptions options);
 };

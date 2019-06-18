@@ -3894,7 +3894,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   EXPECT_TRUE(
       root_view->GetCursorManager()->GetCursorForTesting(child_view, cursor));
   // Since this moused over a text box, this should not be the default cursor.
-  EXPECT_EQ(cursor.info().type, blink::WebCursorInfo::kTypeIBeam);
+  EXPECT_EQ(cursor.info().type, ui::CursorType::kIBeam);
 }
 
 }  // namespace

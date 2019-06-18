@@ -573,7 +573,7 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck(params.swap_response.timings);
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
 }

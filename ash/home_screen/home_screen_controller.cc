@@ -59,9 +59,7 @@ HomeScreenController::~HomeScreenController() {
 }
 
 bool HomeScreenController::IsHomeScreenAvailable() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 void HomeScreenController::Show() {

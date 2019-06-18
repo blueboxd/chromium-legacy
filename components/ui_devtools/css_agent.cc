@@ -52,11 +52,11 @@ std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
 
 std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSPropertyArray(
     const gfx::Rect& bounds) {
-  auto cssProperties = Array<CSS::CSSProperty>::create();
-  cssProperties->addItem(BuildCSSProperty(kHeight, bounds.height()));
-  cssProperties->addItem(BuildCSSProperty(kWidth, bounds.width()));
-  cssProperties->addItem(BuildCSSProperty(kX, bounds.x()));
-  cssProperties->addItem(BuildCSSProperty(kY, bounds.y()));
+  auto cssProperties = std::make_unique<Array<CSS::CSSProperty>>();
+  cssProperties->emplace_back(BuildCSSProperty(kHeight, bounds.height()));
+  cssProperties->emplace_back(BuildCSSProperty(kWidth, bounds.width()));
+  cssProperties->emplace_back(BuildCSSProperty(kX, bounds.x()));
+  cssProperties->emplace_back(BuildCSSProperty(kY, bounds.y()));
   return cssProperties;
 }
 
@@ -69,19 +69,20 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
   if (ui_element->type() != VIEW) {
     bool visible;
     ui_element->GetVisible(&visible);
-    css_properties->addItem(BuildCSSProperty(kVisibility, visible));
+    css_properties->emplace_back(BuildCSSProperty(kVisibility, visible));
   }
 
   const std::vector<std::pair<std::string, std::string>> properties(
       ui_element->GetCustomProperties());
   for (const auto& it : properties)
-    css_properties->addItem(BuildCSSProperty(it.first, it.second));
+    css_properties->emplace_back(BuildCSSProperty(it.first, it.second));
 
   return CSS::CSSStyle::create()
       .setRange(BuildDefaultSourceRange())
       .setStyleSheetId(base::NumberToString(ui_element->node_id()))
       .setCssProperties(std::move(css_properties))
-      .setShorthandEntries(Array<protocol::CSS::ShorthandEntry>::create())
+      .setShorthandEntries(
+          std::make_unique<Array<protocol::CSS::ShorthandEntry>>())
       .build();
 }
 
@@ -149,10 +150,8 @@ Response CSSAgent::getMatchedStylesForNode(int node_id,
 Response CSSAgent::setStyleTexts(
     std::unique_ptr<Array<CSS::StyleDeclarationEdit>> edits,
     std::unique_ptr<Array<CSS::CSSStyle>>* result) {
-  std::unique_ptr<Array<CSS::CSSStyle>> updated_styles =
-      Array<CSS::CSSStyle>::create();
-  for (size_t i = 0; i < edits->length(); i++) {
-    auto* edit = edits->get(i);
+  auto updated_styles = std::make_unique<Array<CSS::CSSStyle>>();
+  for (const auto& edit : *edits) {
     int node_id;
     if (!base::StringToInt(edit->getStyleSheetId(), &node_id))
       return Response::Error("Invalid node id");
@@ -175,7 +174,7 @@ Response CSSAgent::setStyleTexts(
     if (!SetPropertiesForUIElement(ui_element, updated_bounds, visible))
       return NodeNotFoundError(node_id);
 
-    updated_styles->addItem(BuildCSSStyle(ui_element));
+    updated_styles->emplace_back(BuildCSSStyle(ui_element));
   }
   *result = std::move(updated_styles);
   return Response::OK();

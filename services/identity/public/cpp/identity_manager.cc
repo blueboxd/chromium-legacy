@@ -8,7 +8,9 @@
 
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
@@ -65,10 +67,13 @@ IdentityManager::IdentityManager(
   primary_account_manager_->SetObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
-  account_tracker_service_->AddObserver(this);
 
-  // IdentityManager owns gaia_cookie_manager_service_ and will outlive it, so
+  // IdentityManager owns the ATS and GCMS instances and will outlive them, so
   // base::Unretained is safe.
+  account_tracker_service_->SetOnAccountUpdatedCallback(base::BindRepeating(
+      &IdentityManager::OnAccountUpdated, base::Unretained(this)));
+  account_tracker_service_->SetOnAccountRemovedCallback(base::BindRepeating(
+      &IdentityManager::OnAccountRemoved, base::Unretained(this)));
   gaia_cookie_manager_service_->SetGaiaAccountsInCookieUpdatedCallback(
       base::BindRepeating(&IdentityManager::OnGaiaAccountsInCookieUpdated,
                           base::Unretained(this)));
@@ -95,7 +100,6 @@ IdentityManager::~IdentityManager() {
   primary_account_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
-  account_tracker_service_->RemoveObserver(this);
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
@@ -139,7 +143,7 @@ std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
     const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
@@ -152,7 +156,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
@@ -166,7 +170,7 @@ IdentityManager::CreateAccessTokenFetcherForClient(
     const std::string& client_id,
     const std::string& client_secret,
     const std::string& oauth_consumer_name,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
@@ -176,7 +180,7 @@ IdentityManager::CreateAccessTokenFetcherForClient(
 
 void IdentityManager::RemoveAccessTokenFromCache(
     const CoreAccountId& account_id,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     const std::string& access_token) {
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
 }
@@ -383,20 +387,6 @@ void IdentityManager::DeprecatedLoadCredentialsForSupervisedUser(
 DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
-
-#if defined(OS_CHROMEOS)
-void IdentityManager::LegacySetPrimaryAccount(
-    const std::string& gaia_id,
-    const std::string& email_address) {
-  // On ChromeOS the primary account is not guaranteed to be present in
-  // AccountTrackerService when it is set, but PrimaryAccountManager::SignIn()
-  // requires that it be so.
-  // TODO(https://crbug.com/967602): Eliminate the need to seed the account
-  // here.
-  account_tracker_service_->SeedAccountInfo(gaia_id, email_address);
-  primary_account_manager_->SignIn(email_address);
-}
-#endif
 
 #if defined(OS_IOS)
 void IdentityManager::ForceTriggerOnCookieChange() {

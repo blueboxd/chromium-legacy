@@ -1910,6 +1910,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppCacheCheckResponseResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.CheckResponseResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="Manifest obsolete"/>
   <int value="2" label="Response obsolete"/>
@@ -1921,16 +1924,26 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppCacheErrorSite">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.MissingManifestDetectedAtCallsite no
+    longer tracked.
+  </obsolete>
   <summary>Identifies the point of failure, see sources.</summary>
 </enum>
 
 <enum name="AppCacheInitResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.InitResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="SQL Database Error"/>
   <int value="2" label="Disk Cache Error"/>
 </enum>
 
 <enum name="AppCacheUpdateJobResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.UpdateJobResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="SQL Database Error"/>
   <int value="2" label="Disk Cache Error"/>
@@ -9442,6 +9455,8 @@ Called by update_net_error_codes.py.-->
   <int value="50" label="Periodic background sync"/>
   <int value="51" label="HID guard"/>
   <int value="52" label="HID permission data"/>
+  <int value="54" label="Screen wake lock"/>
+  <int value="55" label="System wake lock"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -23659,6 +23674,8 @@ Called by update_net_error_codes.py.-->
   <int value="2921" label="BuiltInModuleSwitchImported"/>
   <int value="2922" label="FeaturePolicyCommaSeparatedDeclarations"/>
   <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
+  <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
+  <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33608,6 +33625,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1684773837" label="TabEngagementReportingAndroid:disabled"/>
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
+  <int value="-1681832882" label="shelf-scrollable"/>
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:enabled"/>
@@ -33831,6 +33849,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1385221197"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:enabled"/>
+  <int value="-1384426209" label="SharingDeviceRegistration:disabled"/>
   <int value="-1383597259" label="SyncUserConsentSeparateType:disabled"/>
   <int value="-1383145700"
       label="AutofillDoNotMigrateUnsupportedLocalCards:enabled"/>
@@ -33991,6 +34010,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
+  <int value="-1166745977"
+      label="BluetoothAggressiveAppearanceFilter:disabled"/>
   <int value="-1166715563" label="ChromeOSAssistant:disabled"/>
   <int value="-1165191758" label="ForegroundNotificationManager:disabled"/>
   <int value="-1164858657" label="CrostiniUsbAllowUnsupported:disabled"/>
@@ -34254,6 +34275,7 @@ from previous Chrome versions.
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
+  <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
   <int value="-773238824" label="AutoplayWhitelistSettings:disabled"/>
@@ -34608,9 +34630,11 @@ from previous Chrome versions.
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
+  <int value="-239176328" label="BluetoothAggressiveAppearanceFilter:enabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
+  <int value="-234231190" label="SharingDeviceRegistration:enabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
@@ -35837,6 +35861,7 @@ from previous Chrome versions.
   <int value="1614309501" label="DataSaverLiteModeRebranding:enabled"/>
   <int value="1614596813" label="CloseButtonsInactiveTabs:disabled"/>
   <int value="1615988672" label="GrantNotificationsToDSE:enabled"/>
+  <int value="1616782064" label="shelf-dense-clamshell"/>
   <int value="1616938915"
       label="OmniboxUIExperimentWhiteBackgroundOnBlur:disabled"/>
   <int value="1617187093" label="enable-improved-a2hs"/>
@@ -36010,6 +36035,7 @@ from previous Chrome versions.
   <int value="1866963423" label="SyncPseudoUSSThemes:enabled"/>
   <int value="1867085340" label="brotli-encoding:enabled"/>
   <int value="1870973833" label="AssistantEnableStereoAudioInput:enabled"/>
+  <int value="1871938175" label="FontSrcLocalMatching:disabled"/>
   <int value="1872185826" label="LocationHardReload:enabled"/>
   <int value="1874195462" label="ChromeHomeMenuItemsExpandSheet:disabled"/>
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
@@ -39005,6 +39031,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="EditedUserName"/>
   <int value="1" label="EditedPassword"/>
   <int value="2" label="UnmaskedPassword"/>
+  <int value="3" label="MaskedPassword"/>
 </enum>
 
 <enum name="MobileMessagesPasswordsModalPresent">
@@ -46111,6 +46138,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="PERMISSION_BACKGROUND_FETCH"/>
   <int value="18" label="PERMISSION_IDLE_DETECTION"/>
   <int value="19" label="PERMISSION_PERIODIC_BACKGROUND_SYNC"/>
+  <int value="20" label="PERMISSION_WAKE_LOCK_SCREEN"/>
+  <int value="21" label="PERMISSION_WAKE_LOCK_SYSTEM"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">
@@ -47759,6 +47788,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="FIT_TO_PAGE"/>
   <int value="22" label="DEFAULT_DPI"/>
   <int value="23" label="NON_DEFAULT_DPI"/>
+  <int value="24" label="PIN"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">
@@ -49619,63 +49649,170 @@ Called by update_net_trust_anchors.py.-->
     Enumerates names of Mojo interfaces that are requests through
     RenderFrameHostImpl::GetInterface.
   </summary>
+  <int value="4595745" label="blink.mojom.NativeFileSystemManager"/>
+  <int value="28688772" label="snippets_internals.mojom.PageHandlerFactory"/>
   <int value="39256405" label="device.mojom.Geolocation"/>
+  <int value="70273688" label="device.mojom.VRService"/>
   <int value="81966276" label="blink.mojom.KeyboardLockService"/>
+  <int value="83462680" label="media.mojom.MediaMetricsProvider"/>
   <int value="112672197" label="blink.mojom.SharedWorkerConnector"/>
+  <int value="116454628" label="blink.mojom.CacheStorage"/>
+  <int value="118314811" label="media.mojom.RemoterFactory"/>
+  <int value="127672107" label="mojom.UsbInternalsPageHandler"/>
   <int value="141486647" label="webauth.mojom.Authenticator"/>
   <int value="155545232" label="blink.mojom.GeolocationService"/>
   <int value="188516542" label="content.mojom.MediaStreamDispatcherHost"/>
   <int value="190256703" label="network.mojom.RestrictedCookieManager"/>
+  <int value="194725745" label="app_management.mojom.PageHandlerFactory"/>
+  <int value="202417688" label="resource_coordinator.mojom.WebUIGraphDump"/>
+  <int value="241045822" label="blink.mojom.DateTimeChooser"/>
+  <int value="242965667" label="blink.mojom.MediaSessionService"/>
+  <int value="250652837" label="mojom.ProcessInternalsHandler"/>
   <int value="264532149" label="blink.mojom.LockManager"/>
+  <int value="271849582" label="performance_manager.mojom.WebUIGraphDump"/>
+  <int value="273500403" label="blink.mojom.PresentationService"/>
   <int value="298400659" label="media.mojom.MediaMetricsProvider"/>
+  <int value="302655516" label="blink.mojom.WakeLockService"/>
+  <int value="323903839" label="feed_internals.mojom.PageHandler"/>
+  <int value="389086904" label="content.mojom.BrowserTarget"/>
+  <int value="390613312" label="autofill.mojom.AutofillDriver"/>
+  <int value="390850644" label="device.mojom.GamepadMonitor"/>
+  <int value="398982196" label="mojom.InterventionsInternalsPageHandler"/>
+  <int value="423966775" label="blink.mojom.IDBFactory"/>
+  <int value="443506227" label="blink.mojom.SpeechRecognizer"/>
+  <int value="450992839" label="blink.mojom.WebBluetoothService"/>
+  <int value="453803103" label="device.mojom.Geolocation"/>
+  <int value="465691137" label="blink.mojom.BadgeService"/>
+  <int value="470231457" label="extensions.KeepAlive"/>
   <int value="473587909" label="autofill.mojom.AutofillDriver"/>
   <int value="480255287" label="content.mojom.BrowserTarget"/>
+  <int value="485751698" label="blink.mojom.MediaStreamDispatcherHost"/>
+  <int value="536067486" label="ws.mojom.Gpu"/>
+  <int value="575717011" label="blink.mojom.AnchorElementMetricsHost"/>
   <int value="583861320" label="media.mojom.InterfaceFactory"/>
   <int value="593735191" label="blink.mojom.PresentationService"/>
   <int value="620853817" label="media.mojom.Renderer"/>
+  <int value="660485518" label="payments.mojom.PaymentRequest"/>
+  <int value="664813603" label="blink.mojom.ShareService"/>
+  <int value="668914812" label="autofill.mojom.PasswordManagerDriver"/>
   <int value="670026296" label="blink.mojom.CacheStorage"/>
+  <int value="738435690" label="blink.mojom.SharedWorkerConnector"/>
+  <int value="772959538"
+      label="dom_distiller.mojom.DistillerJavaScriptService"/>
+  <int value="781395216" label="dom_distiller.mojom.DistillabilityService"/>
   <int value="833468074" label="device.mojom.VRService"/>
   <int value="846414148" label="blink.mojom.MediaDevicesDispatcherHost"/>
+  <int value="893321775"
+      label="resource_coordinator.mojom.FrameCoordinationUnit"/>
+  <int value="902740039" label="blink.mojom.PermissionService"/>
   <int value="917382314" label="blink.mojom.TextSuggestionHost"/>
   <int value="917568449" label="media.mojom.ImageCapture"/>
   <int value="948847120" label="blink.mojom.WebUsbService"/>
+  <int value="958735765" label="shape_detection.mojom.FaceDetectionProvider"/>
   <int value="968027799" label="blink.mojom.MediaSessionService"/>
+  <int value="979421400" label="device.mojom.NFC"/>
+  <int value="982123735" label="blink.mojom.ColorChooserFactory"/>
+  <int value="994757370" label="blink.mojom.InsecureInputService"/>
   <int value="996732224" label="autofill.mojom.PasswordManagerDriver"/>
+  <int value="1014286658" label="blink.mojom.NotificationService"/>
+  <int value="1037735345" label="extensions.mime_handler.BeforeUnloadControl"/>
+  <int value="1044427386" label="blink.mojom.SmsManager"/>
+  <int value="1048723358" label="content.mojom.InputInjector"/>
+  <int value="1049460515" label="translate.mojom.ContentTranslateDriver"/>
   <int value="1071268620" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1100311626" label="blink.mojom.TextSuggestionHost"/>
+  <int value="1102158904" label="chrome.mojom.PrerenderCanceler"/>
   <int value="1116085333"
       label="content.mojom.RendererAudioOutputStreamFactory"/>
+  <int value="1117840258" label="media.mojom.InterfaceFactory"/>
+  <int value="1123228604" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1144764995" label="network.mojom.WebSocket"/>
   <int value="1144778719" label="ui.mojom.Gpu"/>
+  <int value="1148580579" label="blink.mojom.LockManager"/>
+  <int value="1157068323"
+      label="resource_coordinator.mojom.DocumentCoordinationUnit"/>
+  <int value="1207132298" label="media.mojom.Renderer"/>
   <int value="1214902026" label="device.mojom.VibrationManager"/>
+  <int value="1225155271" label="blink.mojom.DedicatedWorkerHostFactory"/>
   <int value="1237802022" label="blink.mojom.PermissionService"/>
+  <int value="1241592573" label="media.mojom.VideoDecodePerfHistory"/>
+  <int value="1258017914" label="blink.mojom.UnhandledTapNotifier"/>
+  <int value="1293422219" label="media.mojom.ImageCapture"/>
   <int value="1298636847" label="media.mojom.RemoterFactory"/>
+  <int value="1303034727" label="blink.mojom.PictureInPictureService"/>
+  <int value="1311956027"
+      label="discardable_memory.mojom.DiscardableSharedMemoryManager"/>
   <int value="1321671191" label="blink.mojom.BudgetService"/>
   <int value="1337066913"
       label="resource_coordinator.mojom.FrameCoordinationUnit"/>
+  <int value="1363277053" label="mojom.OmniboxPageHandler"/>
   <int value="1374541190" label="payments.mojom.PaymentManager"/>
+  <int value="1391649397" label="blink.mojom.InstalledAppProvider"/>
   <int value="1416694600" label="payments.mojom.PaymentRequest"/>
   <int value="1419976867" label="blink.mojom.DedicatedWorkerHostFactory"/>
   <int value="1448556545" label="content.mojom.InputInjector"/>
+  <int value="1450167594" label="device.mojom.WakeLock"/>
+  <int value="1454720654" label="blink.mojom.ContactsManager"/>
+  <int value="1487601584" label="blink.mojom.SerialService"/>
+  <int value="1494628140" label="blink.mojom.BackgroundFetchService"/>
+  <int value="1497405510" label="blink.mojom.Portal"/>
+  <int value="1514474533" label="blink.mojom.DisplayCutoutHost"/>
+  <int value="1517562643"
+      label="content.mojom.RendererAudioInputStreamFactory"/>
+  <int value="1528642323" label="mojom.BluetoothInternalsHandler"/>
   <int value="1548931182" label="shape_detection.mojom.FaceDetectionProvider"/>
+  <int value="1558418769" label="mojom.DiscardsDetailsProvider"/>
   <int value="1558900994" label="device.mojom.NFC"/>
+  <int value="1566236400" label="mojom.SiteEngagementDetailsProvider"/>
+  <int value="1569949878" label="mojom.ResetPasswordHandler"/>
   <int value="1608786055" label="network.mojom.WebSocket"/>
+  <int value="1617971260" label="blink.mojom.HidService"/>
+  <int value="1625278273"
+      label="shape_detection.mojom.BarcodeDetectionProvider"/>
+  <int value="1637627623" label="device.mojom.SensorProvider"/>
   <int value="1658893493" label="device.mojom.WakeLock"/>
   <int value="1659485640" label="password_manager.mojom.CredentialManager"/>
+  <int value="1664576526"
+      label="media.mojom.MediaEngagementScoreDetailsProvider"/>
+  <int value="1694940426" label="blink.mojom.KeyboardLockService"/>
   <int value="1725898486" label="blink.mojom.UnhandledTapNotifier"/>
   <int value="1726661029" label="blink.mojom.ColorChooserFactory"/>
   <int value="1727086043"
       label="content.mojom.RendererAudioInputStreamFactory"/>
   <int value="1729889736"
       label="discardable_memory.mojom.DiscardableSharedMemoryManager"/>
+  <int value="1736030522" label="downloads.mojom.PageHandlerFactory"/>
   <int value="1750772802" label="blink.mojom.NotificationService"/>
+  <int value="1751386040" label="page_load_metrics.mojom.PageLoadMetrics"/>
   <int value="1769429998" label="blink.mojom.PrefetchURLLoaderService"/>
+  <int value="1780600451" label="blink.mojom.MediaDevicesDispatcherHost"/>
   <int value="1785235899" label="shape_detection.mojom.BarcodeDetection"/>
   <int value="1798060917" label="blink.mojom.BackgroundFetchService"/>
+  <int value="1811548070" label="payments.mojom.PaymentManager"/>
+  <int value="1831896638"
+      label="content.mojom.RendererAudioOutputStreamFactory"/>
+  <int value="1844445757" label="image_annotation.mojom.Annotator"/>
   <int value="1851878773" label="blink.mojom.WebBluetoothService"/>
+  <int value="1872102254" label="blink.mojom.PrefetchURLLoaderService"/>
+  <int value="1872706686"
+      label="contextual_search.mojom.ContextualSearchJsApiService"/>
+  <int value="1884536898" label="blink.mojom.FileSystemManager"/>
+  <int value="1893297160" label="network.mojom.RestrictedCookieManager"/>
+  <int value="1921948028" label="blink.mojom.GeolocationService"/>
   <int value="1951066980" label="shape_detection.mojom.TextDetection"/>
+  <int value="1972006840" label="blink.mojom.FileChooser"/>
+  <int value="2015729329" label="extensions.mime_handler.MimeHandlerService"/>
+  <int value="2019700793" label="device.mojom.VibrationManager"/>
+  <int value="2036010684" label="chrome.mojom.OfflinePageAutoFetcher"/>
+  <int value="2051587908" label="blink.mojom.IdleManager"/>
+  <int value="2056556199" label="media_router.mojom.MediaRouter"/>
   <int value="2060513738"
       label="webauth.test.mojom.VirtualAuthenticatorManager"/>
   <int value="2067597900" label="blink.mojom.InsecureInputService"/>
+  <int value="2076591855" label="viz.mojom.Gpu"/>
   <int value="2109171099" label="device.mojom.SensorProvider"/>
+  <int value="2137870010" label="web_ui_test.mojom.TestRunner"/>
+  <int value="2147202291" label="shape_detection.mojom.TextDetection"/>
 </enum>
 
 <enum name="RenderViewContextMenuItem">
@@ -51793,6 +51930,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerPreparationType">
+  <obsolete>
+    Removed on June 2019
+  </obsolete>
   <summary>
     The type of preparation that was required for the browser to find and
     possibly start up a service worker to dispatch a fetch event to. From
@@ -51828,6 +51968,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerResponseError">
+  <obsolete>
+    No longer recorded since NetS13nSW shipped on Dec 2018.
+  </obsolete>
   <int value="0" label="ErrorUnknown"/>
   <int value="1" label="ErrorPromiseRejected"/>
   <int value="2" label="ErrorDefaultPrevented"/>
@@ -51908,6 +52051,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerURLRequestJobResult">
+  <obsolete>
+    No longer recorded since NetS13nSW shipped on Dec 2018.
+  </obsolete>
   <int value="0" label="REQUEST_JOB_FALLBACK_RESPONSE"/>
   <int value="1" label="REQUEST_JOB_FALLBACK_FOR_CORS"/>
   <int value="2" label="REQUEST_JOB_HEADERS_ONLY_RESPONSE"/>
@@ -57958,6 +58104,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UserActivationFrameResultEnum">
+  <obsolete>
+    This was added to assess possible impact of UserActivationV2, by comparing
+    pre- and post-launch stats.
+  </obsolete>
   <int value="0" label="NullFailure"/>
   <int value="1" label="NullSuccess"/>
   <int value="2" label="SelfFailure"/>

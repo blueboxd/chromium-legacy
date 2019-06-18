@@ -80,18 +80,6 @@ void OnEnsureIconIsAvailableFinished(
       env, j_availability_callback, newly_available);
 }
 
-scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
-    Profile* profile,
-    const GURL& page_url) {
-  sync_sessions::SessionSyncService* session_sync_service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(session_sync_service);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
-  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
-                   : nullptr;
-}
-
 // Check if user settings allow querying a Google server using history
 // information.
 bool CanSendHistoryDataToServer(Profile* profile) {
@@ -188,7 +176,6 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
       favicon::FaviconRequestPlatform::kMobile,
       /*icon_url_for_uma=*/
       open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL(),
-      base::BindOnce(&GetSyncedFaviconForPageURL, profile),
       CanSendHistoryDataToServer(profile), cancelable_task_tracker_.get());
   return true;
 }

@@ -284,7 +284,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns whether gesture fling events should use the mobile-behavior gesture
   // curve for scrolling.
-  virtual bool ShouldUseMobileFlingCurve() const;
+  virtual bool ShouldUseMobileFlingCurve();
 
   // Returns whether all instances of the specified effective URL should be
   // rendered by the same process, rather than using process-per-site-instance.
@@ -376,7 +376,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called when WebUI objects are created to get aggregate usage data (i.e. is
   // chrome://downloads used more than chrome://bookmarks?). Only internal (e.g.
   // chrome://) URLs are logged. Returns whether the URL was actually logged.
-  virtual bool LogWebUIUrl(const GURL& web_ui_url) const;
+  virtual bool LogWebUIUrl(const GURL& web_ui_url);
 
   // http://crbug.com/829412
   // Renderers with WebUI bindings shouldn't make http(s) requests for security
@@ -1146,8 +1146,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside
   // an AppContainer.
-  virtual base::string16 GetAppContainerSidForSandboxType(
-      int sandbox_type) const;
+  virtual base::string16 GetAppContainerSidForSandboxType(int sandbox_type);
 #endif
 
   // Binds a new media remoter service to |request|, if supported by the
@@ -1530,17 +1529,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns a string describing the embedder product name and version,
   // of the form "productname/version", with no other slashes.
   // Used as part of the user agent string.
-  virtual std::string GetProduct() const;
+  virtual std::string GetProduct();
 
   // Returns the user agent.  Content may cache this value.
-  virtual std::string GetUserAgent() const;
+  virtual std::string GetUserAgent();
 
   // Returns user agent metadata. Content may cache this value.
-  virtual blink::UserAgentMetadata GetUserAgentMetadata() const;
+  virtual blink::UserAgentMetadata GetUserAgentMetadata();
 
   // Returns a 256x256 transparent background image of the product logo, i.e.
   // the browser icon, if available.
-  virtual base::Optional<gfx::ImageSkia> GetProductLogo() const;
+  virtual base::Optional<gfx::ImageSkia> GetProductLogo();
 
   // Returns whether |origin| should be considered a integral component similar
   // to native code, and as such whether its log messages should be recorded.
@@ -1566,7 +1565,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   };
 
   // Returns kNone by default.
-  virtual WideColorGamutHeuristic GetWideColorGamutHeuristic() const;
+  virtual WideColorGamutHeuristic GetWideColorGamutHeuristic();
 #endif
 
   // Obtains the list of MIME types that are for plugins with external handlers.
@@ -1579,19 +1578,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       const WebContents* web_contents,
       const RenderFrameHost* frame_host,
       bool user_gesture,
-      NavigationDownloadPolicy* download_policy) const;
+      NavigationDownloadPolicy* download_policy);
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) const;
+      const url::Origin& embedding_origin);
 
   // Blocks a site to use Bluetooth scanning API.
-  virtual void BlockBluetoothScanning(
-      content::BrowserContext* browser_context,
-      const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) const;
+  virtual void BlockBluetoothScanning(content::BrowserContext* browser_context,
+                                      const url::Origin& requesting_origin,
+                                      const url::Origin& embedding_origin);
 };
 
 }  // namespace content

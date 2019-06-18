@@ -296,6 +296,8 @@ public class Shell extends LinearLayout {
         Context context = getContext();
         ContentView cv = ContentView.createContentView(context, webContents);
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
+        assert (mWebContents != webContents);
+        if (mWebContents != null) mWebContents.clearNativeReference();
         webContents.initialize(
                 "", mViewAndroidDelegate, cv, mWindow, WebContents.createDefaultInternalsHolder());
         mWebContents = webContents;

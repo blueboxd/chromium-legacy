@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -29,15 +30,12 @@
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
+#include "services/identity/public/cpp/primary_account_mutator_impl.h"
 #include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if defined(OS_IOS)
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
-#include "services/identity/public/cpp/primary_account_mutator_impl.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -219,15 +217,12 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       std::make_unique<GaiaCookieManagerService>(token_service.get(),
                                                  signin_client);
 
-  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator;
+  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator =
+      std::make_unique<PrimaryAccountMutatorImpl>(account_tracker_service.get(),
+                                                  primary_account_manager.get(),
+                                                  pref_service);
+
   std::unique_ptr<AccountsMutator> accounts_mutator;
-
-#if !defined(OS_CHROMEOS)
-  primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
-      account_tracker_service.get(), primary_account_manager.get(),
-      pref_service);
-#endif
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   accounts_mutator = std::make_unique<AccountsMutatorImpl>(
       token_service.get(), account_tracker_service.get(),

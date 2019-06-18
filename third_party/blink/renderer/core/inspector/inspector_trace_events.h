@@ -60,7 +60,6 @@ class LayoutObject;
 class LocalFrame;
 class LocalFrameView;
 class Node;
-class PaintLayer;
 struct PhysicalRect;
 class QualifiedName;
 class Resource;
@@ -261,10 +260,6 @@ std::unique_ptr<TracedValue> CORE_EXPORT
 Data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 }
 
-namespace inspector_paint_invalidation_tracking_event {
-std::unique_ptr<TracedValue> Data(const LayoutObject&);
-}
-
 namespace inspector_change_resource_priority_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   uint64_t identifier,
@@ -354,22 +349,6 @@ std::unique_ptr<TracedValue> Data(ExecutionContext*, XMLHttpRequest*);
 namespace inspector_xhr_load_event {
 std::unique_ptr<TracedValue> Data(ExecutionContext*, XMLHttpRequest*);
 }
-
-namespace inspector_layer_invalidation_tracking_event {
-extern const char kSquashingLayerGeometryWasUpdated[];
-extern const char kAddedToSquashingLayer[];
-extern const char kRemovedFromSquashingLayer[];
-extern const char kReflectionLayerChanged[];
-extern const char kNewCompositedLayer[];
-
-std::unique_ptr<TracedValue> Data(const PaintLayer*, const char* reason);
-}  // namespace inspector_layer_invalidation_tracking_event
-
-#define TRACE_LAYER_INVALIDATION(LAYER, REASON)                            \
-  TRACE_EVENT_INSTANT1(                                                    \
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-      "LayerInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",       \
-      inspector_layer_invalidation_tracking_event::Data((LAYER), (REASON)));
 
 namespace inspector_paint_event {
 std::unique_ptr<TracedValue> Data(LayoutObject*,

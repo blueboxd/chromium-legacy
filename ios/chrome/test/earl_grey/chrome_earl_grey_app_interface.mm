@@ -6,6 +6,10 @@
 #import "base/test/ios/wait_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "components/payments/core/features.h"
+#import "components/ukm/ios/features.h"
+#import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -15,11 +19,14 @@
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_client.h"
+#import "services/metrics/public/cpp/ukm_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -437,6 +444,32 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
     *outError = autoreleasedError;
   }
   return blockResult;
+}
+
+#pragma mark - Check features
+
++ (BOOL)isSlimNavigationManagerEnabled {
+  return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
+}
+
++ (BOOL)isBlockNewTabPagePendingLoadEnabled {
+  return base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
+}
+
++ (BOOL)isNewOmniboxPopupLayoutEnabled {
+  return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
+}
+
++ (BOOL)isUMACellularEnabled {
+  return base::FeatureList::IsEnabled(kUmaCellular);
+}
+
++ (BOOL)isUKMEnabled {
+  return base::FeatureList::IsEnabled(ukm::kUkmFeature);
+}
++ (BOOL)isWebPaymentsModifiersEnabled {
+  return base::FeatureList::IsEnabled(
+      payments::features::kWebPaymentsModifiers);
 }
 
 @end

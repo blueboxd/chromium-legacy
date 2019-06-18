@@ -35,7 +35,7 @@ class LazyLoadImageObserver final
 
   LazyLoadImageObserver();
 
-  static void StartMonitoring(Element*);
+  static void StartMonitoring(Element*, bool is_for_intervention);
   static void StopMonitoring(Element*);
 
   static void StartTrackingVisibilityMetrics(HTMLImageElement*);
@@ -44,7 +44,9 @@ class LazyLoadImageObserver final
   void Trace(Visitor*);
 
  private:
-  void StartMonitoringNearViewport(Document*, Element*);
+  void StartMonitoringNearViewport(Document*,
+                                   Element*,
+                                   bool is_for_intervention);
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void StartMonitoringVisibility(Document*, HTMLImageElement*);
@@ -59,6 +61,9 @@ class LazyLoadImageObserver final
 
   // The intersection observer used to track when the image becomes visible.
   Member<IntersectionObserver> visibility_metrics_observer_;
+
+  // Used to show the intervention console message one time only.
+  bool is_load_event_deferred_intervention_shown_ = false;
 };
 
 }  // namespace blink

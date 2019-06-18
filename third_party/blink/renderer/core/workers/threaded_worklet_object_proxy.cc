@@ -27,7 +27,7 @@ ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() = default;
 
 void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,

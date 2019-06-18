@@ -62,6 +62,18 @@ jumbo_static_library("sync_device_info") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_device_info_tracker.cc",
+    "fake_device_info_tracker.h",
+  ]
+
+  public_deps = [
+    ":sync_device_info",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -76,6 +88,7 @@ source_set("unit_tests") {
 
   deps = [
     ":sync_device_info",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/sync:test_support",

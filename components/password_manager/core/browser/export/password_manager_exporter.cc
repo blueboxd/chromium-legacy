@@ -28,7 +28,9 @@ namespace {
 // passwords are being exported.
 base::LazySingleThreadTaskRunner g_task_runner =
     LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 
 // A wrapper for |write_function|, which can be bound and keep a copy of its

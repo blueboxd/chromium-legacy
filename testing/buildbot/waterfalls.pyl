@@ -650,7 +650,7 @@
           'dimension_sets': [
             {
               'kvm': '1',
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
               'pool': 'Chrome-CrOS-VM',
             },
           ],
@@ -1607,7 +1607,7 @@
           'dimension_sets': [
             {
               'kvm': '1',
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
               'pool': 'Chrome-CrOS-VM',
             },
           ],
@@ -1646,7 +1646,7 @@
           'dimension_sets': [
             {
               'kvm': '1',
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
               'pool': 'Chrome-CrOS-VM',
             },
           ],

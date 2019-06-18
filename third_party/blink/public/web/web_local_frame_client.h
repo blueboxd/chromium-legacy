@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -269,7 +268,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
   // This frame has set an upgrade insecure navigations set.
-  virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
+  virtual void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) {}
 
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.

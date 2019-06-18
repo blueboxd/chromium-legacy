@@ -885,14 +885,14 @@ TEST_F(MultiProfileSupportTest, TabletModeInteraction) {
   EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_TRUE(wm::GetWindowState(window(1))->IsMaximized());
 
   // Tests that on exiting tablet mode, the window states return to not
   // maximized.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 }
@@ -1563,7 +1563,7 @@ TEST_F(MultiProfileSupportTest, WindowBoundsAfterTabletMode) {
   window(1)->SetBounds(bounds);
 
   // Enter tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // Tests that bounds of both windows are maximized.
   const gfx::Rect maximized_bounds(0, 0, 400,
                                    200 - ShelfConstants::shelf_size());
@@ -1577,7 +1577,7 @@ TEST_F(MultiProfileSupportTest, WindowBoundsAfterTabletMode) {
                               display::Display::RotationSource::ACTIVE);
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
   // Tests that both windows have the same bounds as when they entered tablet
   // mode.

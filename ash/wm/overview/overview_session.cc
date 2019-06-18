@@ -753,6 +753,13 @@ bool OverviewSession::IsEmpty() const {
   return true;
 }
 
+size_t OverviewSession::NumWindowsTotal() const {
+  size_t sum = 0;
+  for (const std::unique_ptr<OverviewGrid>& overview_grid : grid_list_)
+    sum += overview_grid->size();
+  return sum;
+}
+
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   EndOverview();

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/feature_list.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +21,7 @@
 #import "ios/web/web_state/context_menu_params_utils.h"
 #import "ios/web/web_state/ui/html_element_fetch_request.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -186,7 +188,13 @@ struct ContextMenuInfo {
     // the detection of a long press by |_contextMenuRecognizer|. WKWebView's
     // context menu gesture recognizer should fail if |_contextMenuRecognizer|
     // detects a long press.
-    NSString* fragment = @"action=_longPressRecognized:";
+    NSString* fragment = nil;
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET &&
+        base::ios::IsRunningOnIOS13OrLater()) {
+      fragment = @"action=_handleGestureRecognizer:";
+    } else {
+      fragment = @"action=_longPressRecognized:";
+    }
     UIGestureRecognizer* systemContextMenuRecognizer =
         [self gestureRecognizerWithDescriptionFragment:fragment];
     if (systemContextMenuRecognizer) {

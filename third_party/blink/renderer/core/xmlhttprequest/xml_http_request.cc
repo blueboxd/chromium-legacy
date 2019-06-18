@@ -1055,12 +1055,12 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetRequestorOrigin(GetSecurityOrigin());
   request.SetHttpMethod(method_);
   request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
-  request.SetFetchRequestMode(
-      upload_events ? network::mojom::FetchRequestMode::kCorsWithForcedPreflight
-                    : network::mojom::FetchRequestMode::kCors);
-  request.SetFetchCredentialsMode(
-      with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                        : network::mojom::FetchCredentialsMode::kSameOrigin);
+  request.SetMode(upload_events
+                      ? network::mojom::RequestMode::kCorsWithForcedPreflight
+                      : network::mojom::RequestMode::kCors);
+  request.SetCredentialsMode(
+      with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                        : network::mojom::CredentialsMode::kSameOrigin);
   request.SetSkipServiceWorker(is_isolated_world_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
@@ -1468,8 +1468,8 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
   WebHTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
-          with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                            : network::mojom::FetchCredentialsMode::kSameOrigin,
+          with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                            : network::mojom::CredentialsMode::kSameOrigin,
           response_);
 
   HTTPHeaderMap::const_iterator end = response_.HttpHeaderFields().end();
@@ -1517,8 +1517,8 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 
   WebHTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
-          with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                            : network::mojom::FetchCredentialsMode::kSameOrigin,
+          with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                            : network::mojom::CredentialsMode::kSameOrigin,
           response_);
 
   if (response_.GetType() == network::mojom::FetchResponseType::kCors &&

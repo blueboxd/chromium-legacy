@@ -16,10 +16,6 @@
 #include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
 #include "url/origin.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace performance_manager {
 
 class SiteDataCache;
@@ -28,11 +24,6 @@ class SiteDataCache;
 // information for the associated web UI.
 class SiteDataCacheInspector {
  public:
-  // Retrieves the instance associated with a given browser context, or nullptr
-  // if none is associated with that browser context.
-  static SiteDataCacheInspector* GetForBrowserContext(
-      content::BrowserContext* browser_context);
-
   // Returns the name of the data cache, which should uniquely identify the kind
   // of storage it implements.
   virtual const char* GetDataCacheName() = 0;
@@ -62,16 +53,6 @@ class SiteDataCacheInspector {
 
   // Retrieves the data cache this inspector is associated with.
   virtual SiteDataCache* GetDataCache() = 0;
-
- protected:
-  // Sets the inspector instance associated with a given browser context.
-  // If |inspector| is nullptr the association is cleared.
-  // The caller must ensure that |inspector|'s registration is cleared before
-  // |inspector| or |browser_context| are deleted.
-  // The intent is for this to be called from implementation class' constructors
-  // and destructors.
-  static void SetForBrowserContext(SiteDataCacheInspector* inspector,
-                                   content::BrowserContext* browser_context);
 };
 
 }  // namespace performance_manager

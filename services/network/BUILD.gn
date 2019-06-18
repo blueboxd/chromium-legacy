@@ -303,6 +303,7 @@ source_set("tests") {
     "ignore_errors_cert_verifier_unittest.cc",
     "initiator_lock_compatibility_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",
+    "loader_util_unittest.cc",
     "mojo_host_resolver_impl_unittest.cc",
     "network_change_manager_unittest.cc",
     "network_context_unittest.cc",

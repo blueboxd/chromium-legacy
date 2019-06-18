@@ -60,7 +60,7 @@ class WorkerScriptFetchInitiator {
       int process_id,
       const GURL& script_url,
       const url::Origin& request_initiator,
-      network::mojom::FetchCredentialsMode credentials_mode,
+      network::mojom::CredentialsMode credentials_mode,
       ResourceType resource_type,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       AppCacheNavigationHandleCore* appcache_handle_core,

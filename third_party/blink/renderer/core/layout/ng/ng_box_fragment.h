@@ -61,13 +61,6 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   TextDirection direction_;
 };
 
-template <>
-struct DowncastTraits<NGBoxFragment> {
-  static bool AllowFrom(const NGFragment& fragment) {
-    return fragment.Type() == NGPhysicalFragment::kFragmentBox;
-  }
-};
-
 }  // namespace blink
 
 #endif  // NGBoxFragment_h

@@ -91,11 +91,9 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
  public:
   using WorkerId = std::pair<int, int>;
   explicit DelegatingURLLoaderClient(network::mojom::URLLoaderClientPtr client,
-                                     base::OnceClosure on_response,
                                      const network::ResourceRequest& request)
       : binding_(this),
         client_(std::move(client)),
-        on_response_(std::move(on_response)),
         url_(request.url),
         devtools_enabled_(request.report_raw_headers) {
     if (!devtools_enabled_)
@@ -136,8 +134,6 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
     client_->OnReceiveResponse(head);
-    DCHECK(on_response_);
-    std::move(on_response_).Run();
     if (!devtools_enabled_)
       return;
     // Make a deep copy of ResourceResponseHead before passing it cross-thread.
@@ -206,7 +202,6 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
 
   mojo::Binding<network::mojom::URLLoaderClient> binding_;
   network::mojom::URLLoaderClientPtr client_;
-  base::OnceClosure on_response_;
   bool completed_ = false;
   const GURL url_;
   const bool devtools_enabled_;
@@ -650,8 +645,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    const WebContentsGetter& web_contents_getter,
-    base::OnceClosure on_response) {
+    const WebContentsGetter& web_contents_getter) {
   if (resource_type_ != ResourceType::kMainFrame &&
       resource_type_ != ResourceType::kSubFrame) {
     return false;
@@ -706,8 +700,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&inner_url_loader_client);
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
-      std::move(inner_url_loader_client), std::move(on_response),
-      resource_request);
+      std::move(inner_url_loader_client), resource_request);
 
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and navigation preloads.

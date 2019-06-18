@@ -39,8 +39,7 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
   label()->SetAutoColorReadabilityEnabled(false);
 }
 
-LocationIconView::~LocationIconView() {
-}
+LocationIconView::~LocationIconView() {}
 
 gfx::Size LocationIconView::GetMinimumSize() const {
   return GetMinimumSizeForPreferredSize(GetPreferredSize());

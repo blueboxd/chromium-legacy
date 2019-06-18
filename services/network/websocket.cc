@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,6 +28,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
@@ -147,7 +149,20 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->handshake_succeeded_ = true;
   impl_->pending_connection_tracker_.OnCompleteHandshake();
 
-  impl_->handshake_client_->OnAddChannelResponse(selected_protocol, extensions);
+  base::CommandLine* const command_line =
+      base::CommandLine::ForCurrentProcess();
+  DCHECK(command_line);
+  uint64_t receive_quota_threshold =
+      net::WebSocketChannel::kReceiveQuotaThreshold;
+  if (command_line->HasSwitch(net::kWebSocketReceiveQuotaThreshold)) {
+    std::string flag_string =
+        command_line->GetSwitchValueASCII(net::kWebSocketReceiveQuotaThreshold);
+    if (!base::StringToUint64(flag_string, &receive_quota_threshold))
+      receive_quota_threshold = net::WebSocketChannel::kReceiveQuotaThreshold;
+  }
+  DVLOG(3) << "receive_quota_threshold is " << receive_quota_threshold;
+  impl_->handshake_client_->OnAddChannelResponse(selected_protocol, extensions,
+                                                 receive_quota_threshold);
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(

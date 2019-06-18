@@ -518,11 +518,11 @@ class Browser : public TabStripModelObserver,
   // Overridden from content::WebContentsDelegate:
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
-  int GetTopControlsHeight() const override;
+  int GetTopControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* contents) const override;
+      const content::WebContents* contents) override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
-  bool CanOverscrollContent() const override;
+  bool CanOverscrollContent() override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
   void SetFocusToLocationBar() override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
@@ -726,16 +726,16 @@ class Browser : public TabStripModelObserver,
   void EnumerateDirectory(content::WebContents* web_contents,
                           std::unique_ptr<content::FileSelectListener> listener,
                           const base::FilePath& path) override;
-  bool EmbedsFullscreenWidget() const override;
+  bool EmbedsFullscreenWidget() override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   blink::WebDisplayMode GetDisplayMode(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   void RegisterProtocolHandler(content::WebContents* web_contents,
                                const std::string& protocol,
                                const GURL& url,
@@ -1059,6 +1059,8 @@ class Browser : public TabStripModelObserver,
 
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
+
+  base::TimeTicks focus_mode_start_time_;
 
   UnloadController unload_controller_;
 

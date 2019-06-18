@@ -156,7 +156,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                          const FetchClientSettingsObjectSnapshot&,
                          WorkerResourceTimingNotifier&,
                          mojom::RequestContextType destination,
-                         network::mojom::FetchCredentialsMode,
+                         network::mojom::CredentialsMode,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*);
 

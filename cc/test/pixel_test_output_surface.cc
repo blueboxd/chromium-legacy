@@ -77,14 +77,9 @@ void PixelTestOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
 }
 
 void PixelTestOutputSurface::SwapBuffersCallback() {
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
   client_->DidReceivePresentationFeedback(
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(), 0));
-}
-
-std::unique_ptr<viz::OverlayCandidateValidator>
-PixelTestOutputSurface::TakeOverlayCandidateValidator() {
-  return nullptr;
 }
 
 bool PixelTestOutputSurface::IsDisplayedAsOverlayPlane() const {

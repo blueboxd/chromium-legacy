@@ -62,7 +62,7 @@ class LookalikeUrlInterstitialPage
   ~LookalikeUrlInterstitialPage() override;
 
   // InterstitialPageDelegate method:
-  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
   // Allow easier reporting of UKM when no interstitial is shown.
   static void RecordUkmEvent(ukm::SourceId source_id,

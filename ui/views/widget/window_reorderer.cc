@@ -168,19 +168,24 @@ void WindowReorderer::ReorderChildWindows() {
   // windows not associated to a view are stacked above windows with an
   // associated view.
   for (View* view : base::Reversed(view_with_layer_order)) {
-    ui::Layer* layer = view->layer();
+    std::vector<ui::Layer*> layers;
     aura::Window* window = nullptr;
 
     auto hosted_window_it = hosted_windows.find(view);
     if (hosted_window_it != hosted_windows.end()) {
       window = hosted_window_it->second;
-      layer = window->layer();
+      layers.push_back(window->layer());
+    } else {
+      layers = view->GetLayersInOrder();
+      std::reverse(layers.begin(), layers.end());
     }
 
-    DCHECK(layer);
+    DCHECK(!layers.empty());
     if (window)
       parent_window_->StackChildAtBottom(window);
-    children_layer_order.emplace_back(layer);
+
+    for (ui::Layer* layer : layers)
+      children_layer_order.emplace_back(layer);
   }
   std::reverse(children_layer_order.begin(), children_layer_order.end());
   parent_window_->layer()->StackChildrenAtBottom(children_layer_order);

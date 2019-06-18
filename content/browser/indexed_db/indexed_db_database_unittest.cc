@@ -66,7 +66,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
     metadata_coding_ = metadata_coding.get();
     leveldb::Status s;
 
-    std::tie(db_, s) = IndexedDBDatabase::Create(
+    std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
         GetErrorCallback(), base::BindLambdaForTesting([&]() {
           db_.reset();
@@ -447,7 +447,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         std::make_unique<FakeIndexedDBMetadataCoding>();
     metadata_coding_ = metadata_coding.get();
     leveldb::Status s;
-    std::tie(db_, s) = IndexedDBDatabase::Create(
+    std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
         GetErrorCallback(), base::BindLambdaForTesting([&]() {
           db_.reset();

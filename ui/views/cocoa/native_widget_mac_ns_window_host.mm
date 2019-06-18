@@ -23,6 +23,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
+#include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
@@ -646,11 +647,7 @@ bool NativeWidgetMacNSWindowHost::RedispatchKeyEvent(NSEvent* event) {
 
   // If the target window is out of process then always report the event as
   // handled (because it should never be handled in this process).
-  GetNSWindowMojo()->RedispatchKeyEvent(
-      [event type], [event modifierFlags], [event timestamp],
-      base::SysNSStringToUTF16([event characters]),
-      base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
-      [event keyCode]);
+  GetNSWindowMojo()->RedispatchKeyEvent(ui::EventToData(event));
   return true;
 }
 

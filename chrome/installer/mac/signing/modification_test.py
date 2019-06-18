@@ -26,6 +26,8 @@ def plist_read(*args):
         '$W/app-entitlements.plist': {
             'com.apple.application-identifier': bundle_id
         },
+        '$W/helper-renderer-entitlements.plist': {},
+        '$W/helper-plugin-entitlements.plist': {},
         '$W/App Product Canary.app/Contents/Resources/test.signing.bundle_id.canary.manifest/Contents/Resources/test.signing.bundle_id.canary.manifest':
             {
                 'pfm_domain': bundle_id
@@ -64,9 +66,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
@@ -86,9 +94,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         self.assertEqual(0, kwargs['move_file'].call_count)
 
     def test_distribution_with_channel(self, plistlib, **kwargs):
@@ -108,9 +122,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
@@ -130,9 +150,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
@@ -152,9 +178,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         kwargs['write_file'].assert_called_once_with(
             '$W/App Product.app/Contents/PkgInfo', 'APPLMooo')
         self.assertEqual(0, kwargs['move_file'].call_count)
@@ -177,9 +209,15 @@ class TestModification(unittest.TestCase):
             '$W/App Product.app/Contents/Info.plist',
         )
 
-        kwargs['copy_files'].assert_called_once_with(
-            '$I/Product Packaging/app-entitlements.plist',
-            '$W/app-entitlements.plist')
+        self.assertEqual(3, kwargs['copy_files'].call_count)
+        kwargs['copy_files'].assert_has_calls([
+            mock.call('$I/Product Packaging/app-entitlements.plist',
+                      '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist')
+        ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
 
@@ -210,10 +248,14 @@ class TestModification(unittest.TestCase):
             ),
         ])
 
-        self.assertEqual(3, kwargs['copy_files'].call_count)
+        self.assertEqual(5, kwargs['copy_files'].call_count)
         kwargs['copy_files'].assert_has_calls([
             mock.call('$I/Product Packaging/app-entitlements.plist',
                       '$W/app-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-renderer-entitlements.plist',
+                      '$W/helper-renderer-entitlements.plist'),
+            mock.call('$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '$W/helper-plugin-entitlements.plist'),
             mock.call('$I/Product Packaging/app_canary.icns',
                       '$W/App Product Canary.app/Contents/Resources/app.icns'),
             mock.call(
@@ -223,7 +265,7 @@ class TestModification(unittest.TestCase):
         kwargs['write_file'].assert_called_once_with(
             '$W/App Product Canary.app/Contents/PkgInfo', 'APPLMooo')
 
-        self.assertEqual(4, plistlib.writePlist.call_count)
+        self.assertEqual(6, plistlib.writePlist.call_count)
         plistlib.writePlist.assert_has_calls([
             mock.call({
                 'CFBundleIdentifier':
@@ -243,6 +285,8 @@ class TestModification(unittest.TestCase):
                 'com.apple.application-identifier':
                     'test.signing.bundle_id.canary'
             }, '$W/app-entitlements.plist'),
+            mock.call({}, '$W/helper-renderer-entitlements.plist'),
+            mock.call({}, '$W/helper-plugin-entitlements.plist'),
             mock.call({
                 'pfm_domain': 'test.signing.bundle_id.canary'
             }, '$W/App Product Canary.app/Contents/Resources/test.signing.bundle_id.canary.manifest/Contents/Resources/test.signing.bundle_id.canary.manifest'

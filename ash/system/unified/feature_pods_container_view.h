@@ -90,7 +90,7 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // PaginationModelObserver:
   void TransitionChanged() override;
 
-  UnifiedSystemTrayController* controller_;
+  UnifiedSystemTrayController* const controller_;
 
   // Owned by UnifiedSystemTrayModel.
   PaginationModel* pagination_model_;

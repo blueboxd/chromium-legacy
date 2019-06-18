@@ -129,14 +129,16 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // close/back button. This is typically the sheet's title but it can be
   // overriden to return a different kind of view as long as it fits inside the
   // header.
-  virtual std::unique_ptr<views::View> CreateHeaderContentView();
+  virtual std::unique_ptr<views::View> CreateHeaderContentView(
+      views::View* header_view);
 
   // Creates and returns the view to be inserted in the header content separator
   // container betweem header and content.
   virtual views::View* CreateHeaderContentSeparatorView();
 
   // Returns the background to use for the header section of the sheet.
-  virtual std::unique_ptr<views::Background> GetHeaderBackground();
+  virtual std::unique_ptr<views::Background> GetHeaderBackground(
+      views::View* header_view);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -160,7 +162,7 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Returns true to display dynamic top and bottom border for hidden contents.
   virtual bool DisplayDynamicBorderForHiddenContents();
 
-  views::Button* primary_button() { return primary_button_.get(); }
+  views::Button* primary_button() { return primary_button_; }
 
  private:
   // Called when the Enter accelerator is pressed. Perform the action associated
@@ -173,24 +175,24 @@ class PaymentRequestSheetController : public views::ButtonListener {
   void AddSecondaryButton(views::View* container);
 
   // All these are not owned. Will outlive this.
-  PaymentRequestSpec* spec_;
-  PaymentRequestState* state_;
-  PaymentRequestDialogView* dialog_;
+  PaymentRequestSpec* spec_ = nullptr;
+  PaymentRequestState* state_ = nullptr;
+  PaymentRequestDialogView* dialog_ = nullptr;
 
   // This view is owned by its encompassing ScrollView.
-  views::View* pane_;
-  views::View* content_view_;
+  views::View* pane_ = nullptr;
+  views::View* content_view_ = nullptr;
 
   // Hold on to the ScrollView because it must be explicitly laid out in some
   // cases.
-  std::unique_ptr<views::ScrollView> scroll_;
+  views::ScrollView* scroll_ = nullptr;
 
   // Hold on to the primary and secondary buttons to use them as initial focus
   // targets when subclasses don't want to focus anything else.
-  std::unique_ptr<views::Button> primary_button_;
-  std::unique_ptr<views::Button> secondary_button_;
-  std::unique_ptr<views::View> header_view_;
-  std::unique_ptr<views::View> header_content_separator_container_;
+  views::Button* primary_button_ = nullptr;
+  views::Button* secondary_button_ = nullptr;
+  views::View* header_view_ = nullptr;
+  views::View* header_content_separator_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };

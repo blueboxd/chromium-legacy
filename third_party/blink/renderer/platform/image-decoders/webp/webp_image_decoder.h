@@ -51,7 +51,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void OnSetData(SegmentReader* data) override;
   int RepetitionCount() const override;
   bool FrameIsReceivedAtIndex(size_t) const override;
-  TimeDelta FrameDurationAtIndex(size_t) const override;
+  base::TimeDelta FrameDurationAtIndex(size_t) const override;
 
  private:
   // ImageDecoder:

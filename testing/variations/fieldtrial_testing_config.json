@@ -2280,6 +2280,25 @@
             ]
         }
     ],
+    "FontSrcLocalMatching": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FontSrcLocalMatching"
+                    ]
+                }
+            ]
+        }
+    ],
     "ForbidSyncXHRInPageDismissal": [
         {
             "platforms": [
@@ -2333,6 +2352,33 @@
                     "name": "LowPriorityForBackgroundPageEnabled_V2",
                     "enable_features": [
                         "BlinkSchedulerLowPriorityForBackgroundPages"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FreezeBackgroundTabOnNetworkIdle": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "enable_1min",
+                    "params": {
+                        "DelayForBackgroundAndNetworkIdleTabFreezingMills": "60000"
+                    },
+                    "enable_features": [
+                        "freeze-background-tab-on-network-idle"
+                    ]
+                },
+                {
+                    "name": "enable_3min",
+                    "params": {
+                        "DelayForBackgroundAndNetworkIdleTabFreezingMills": "180000"
+                    },
+                    "enable_features": [
+                        "freeze-background-tab-on-network-idle"
                     ]
                 }
             ]
@@ -3361,6 +3407,24 @@
             ]
         }
     ],
+    "NewPrintPreviewLayout": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewPrintPreviewLayout"
+                    ]
+                }
+            ]
+        }
+    ],
     "NewTabInProductHelp": [
         {
             "platforms": [
@@ -3570,6 +3634,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OfflinePagesSharing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OfflinePreviewsFalsePositivePrevention": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OfflinePreviewsFalsePositivePrevention"
                     ]
                 }
             ]

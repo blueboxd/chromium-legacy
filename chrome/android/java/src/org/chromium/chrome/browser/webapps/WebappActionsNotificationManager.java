@@ -14,7 +14,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -49,10 +48,7 @@ class WebappActionsNotificationManager {
 
     static boolean isEnabled() {
         // This UI doesn't work with no-touch.
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            return false;
-        }
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION);
+        return !FeatureUtilities.isNoTouchModeEnabled();
     }
 
     public static void maybeShowNotification(Tab tab, WebappInfo webappInfo) {

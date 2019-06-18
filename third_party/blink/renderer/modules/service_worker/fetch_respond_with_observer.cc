@@ -187,8 +187,8 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     ExecutionContext* context,
     int fetch_event_id,
     const KURL& request_url,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchRedirectMode redirect_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::RedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
     mojom::RequestContextType request_context,
     WaitUntilObserver* observer) {
@@ -243,13 +243,13 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kCors &&
-      request_mode_ == network::mojom::FetchRequestMode::kSameOrigin) {
+      request_mode_ == network::mojom::RequestMode::kSameOrigin) {
     OnResponseRejected(
         ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin);
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kOpaque) {
-    if (request_mode_ != network::mojom::FetchRequestMode::kNoCors) {
+    if (request_mode_ != network::mojom::RequestMode::kNoCors) {
       OnResponseRejected(ServiceWorkerResponseError::kResponseTypeOpaque);
       return;
     }
@@ -265,12 +265,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
   }
-  if (redirect_mode_ != network::mojom::FetchRedirectMode::kManual &&
+  if (redirect_mode_ != network::mojom::RedirectMode::kManual &&
       response_type == network::mojom::FetchResponseType::kOpaqueRedirect) {
     OnResponseRejected(ServiceWorkerResponseError::kResponseTypeOpaqueRedirect);
     return;
   }
-  if (redirect_mode_ != network::mojom::FetchRedirectMode::kFollow &&
+  if (redirect_mode_ != network::mojom::RedirectMode::kFollow &&
       response->redirected()) {
     OnResponseRejected(
         ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest);
@@ -366,8 +366,8 @@ FetchRespondWithObserver::FetchRespondWithObserver(
     ExecutionContext* context,
     int fetch_event_id,
     const KURL& request_url,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchRedirectMode redirect_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::RedirectMode redirect_mode,
     network::mojom::RequestContextFrameType frame_type,
     mojom::RequestContextType request_context,
     WaitUntilObserver* observer)

@@ -59,13 +59,13 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   const network::mojom::ReferrerPolicy kReferrerPolicy =
       network::mojom::ReferrerPolicy::kAlways;
   const mojom::RequestContextType kContext = mojom::RequestContextType::AUDIO;
-  const network::mojom::FetchRequestMode kMode =
-      network::mojom::FetchRequestMode::kNavigate;
-  const network::mojom::FetchCredentialsMode kCredentialsMode =
-      network::mojom::FetchCredentialsMode::kInclude;
+  const network::mojom::RequestMode kMode =
+      network::mojom::RequestMode::kNavigate;
+  const network::mojom::CredentialsMode kCredentialsMode =
+      network::mojom::CredentialsMode::kInclude;
   const auto kCacheMode = mojom::FetchCacheMode::kValidateCache;
-  const network::mojom::FetchRedirectMode kRedirectMode =
-      network::mojom::FetchRedirectMode::kError;
+  const network::mojom::RedirectMode kRedirectMode =
+      network::mojom::RedirectMode::kError;
 
   fetch_api_request->url = url;
   fetch_api_request->method = method;

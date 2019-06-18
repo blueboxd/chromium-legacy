@@ -10,7 +10,6 @@ mojom("interfaces") {
   sources = [
     "accessibility_controller.mojom",
     "accessibility_controller_enums.mojom",
-    "accessibility_focus_ring_controller.mojom",
     "ash_message_center_controller.mojom",
     "assistant_controller.mojom",
     "assistant_volume_control.mojom",

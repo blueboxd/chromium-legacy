@@ -31,6 +31,8 @@ std::string ToDatabaseKey(SchedulerClientType type) {
     case SchedulerClientType::kUnknown:
       NOTREACHED();
       return std::string();
+    case SchedulerClientType::kWebUI:
+      return "WebUI";
   }
 }
 

@@ -341,6 +341,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "bluetooth-aggressive-appearance-filter",
+    "owners": [ "hansberry" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
     "expiry_milestone": 78
@@ -1033,11 +1038,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-drive-fs",
-    "owners": [ "sammc", "dats" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-encryption-migration",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
@@ -1555,6 +1555,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-sharing-device-registration",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-show-autofill-signatures",
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.
@@ -1930,6 +1935,11 @@
     // This enables the use of extensions on chrome:// URLs. This is useful for
     // a11y extensions as well as for debugging.
     "expiry_milestone": -1
+  },
+  {
+    "name": "font-src-local-matching",
+    "owners": [ "drott", "layout-dev" ],
+    "expiry_milestone": 82
   },
   {
     "name": "force-use-chrome-camera",
@@ -2630,11 +2640,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "pwa-persistent-notification",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones" ],
     "expiry_milestone": 78
@@ -2692,9 +2697,24 @@
     "expiry_milestone": 78
   },
   {
+    "name": "shelf-dense-clamshell",
+    "owners": [ "manucornet", "mmourgos" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "shelf-hover-previews",
     "owners": [ "manucornet" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "shelf-new-ui",
+    "owners": [ "manucornet", "newcomer" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "shelf-scrollable",
+    "owners": [ "andrewxu", "manucornet" ],
+    "expiry_milestone": 82
   },
   {
     "name": "shopping-assist",

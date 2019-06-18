@@ -33,17 +33,18 @@ UINavigationController* ChromeIdentityService::CreateAccountDetailsController(
   return nil;
 }
 
-UINavigationController*
-ChromeIdentityService::CreateWebAndAppSettingDetailsController(
+DismissASMViewControllerBlock
+ChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
+    UIViewController* view_controller,
+    BOOL animated) {
   return nil;
 }
 
-DismissWebAndAppSettingDetailsControllerBlock
+DismissASMViewControllerBlock
 ChromeIdentityService::PresentWebAndAppSettingDetailsController(
     ChromeIdentity* identity,
-    UIViewController* viewController,
+    UIViewController* view_controller,
     BOOL animated) {
   return nil;
 }

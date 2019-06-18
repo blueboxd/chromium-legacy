@@ -22,6 +22,7 @@ class AccountManagerFactory;
 class ChromeSessionManager;
 class ChromeUserManager;
 class KerberosCredentialsManager;
+class InSessionPasswordChangeManager;
 class ProfileHelper;
 class TimeZoneResolver;
 
@@ -123,6 +124,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   chromeos::AccountManagerFactory* GetAccountManagerFactory();
 
+  chromeos::InSessionPasswordChangeManager*
+  in_session_password_change_manager() {
+    return in_session_password_change_manager_.get();
+  }
+
  private:
   friend class BrowserProcessPlatformPartTestApi;
 
@@ -163,6 +169,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<chromeos::KerberosCredentialsManager>
       kerberos_credentials_manager_;
+
+  std::unique_ptr<chromeos::InSessionPasswordChangeManager>
+      in_session_password_change_manager_;
 
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       primary_profile_shutdown_subscription_;

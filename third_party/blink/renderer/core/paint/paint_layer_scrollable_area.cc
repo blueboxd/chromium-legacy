@@ -2842,10 +2842,17 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
                : WebFeature::kScrollbarUseHorizontalScrollbarButton);
       break;
     case kThumbPart:
-      scrollbar_use_uma =
-          (orientation == kVerticalScrollbar
-               ? WebFeature::kScrollbarUseVerticalScrollbarThumb
-               : WebFeature::kScrollbarUseHorizontalScrollbarThumb);
+      if (orientation == kVerticalScrollbar) {
+        scrollbar_use_uma =
+            (WebInputEvent::IsMouseEventType(type)
+                 ? WebFeature::kVerticalScrollbarThumbScrollingWithMouse
+                 : WebFeature::kVerticalScrollbarThumbScrollingWithTouch);
+      } else {
+        scrollbar_use_uma =
+            (WebInputEvent::IsMouseEventType(type)
+                 ? WebFeature::kHorizontalScrollbarThumbScrollingWithMouse
+                 : WebFeature::kHorizontalScrollbarThumbScrollingWithTouch);
+      }
       break;
     case kBackTrackPart:
     case kForwardTrackPart:
@@ -2860,24 +2867,7 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
 
   Document& document = GetLayoutBox()->GetDocument();
 
-  // TODO(alpastew): Remove the UseCounters kScrollbarUseVerticalScrollbarThumb
-  // and kScrollbarUseHorizontalScrollbarThumb to avoid redundancy in metrics.
   UseCounter::Count(document, scrollbar_use_uma);
-
-  if (scrollbar_use_uma == WebFeature::kScrollbarUseVerticalScrollbarThumb) {
-    WebFeature input_specific_uma =
-        (WebInputEvent::IsMouseEventType(type)
-             ? WebFeature::kVerticalScrollbarThumbScrollingWithMouse
-             : WebFeature::kVerticalScrollbarThumbScrollingWithTouch);
-    UseCounter::Count(document, input_specific_uma);
-  } else if (scrollbar_use_uma ==
-             WebFeature::kScrollbarUseHorizontalScrollbarThumb) {
-    WebFeature input_specific_uma =
-        (WebInputEvent::IsMouseEventType(type)
-             ? WebFeature::kHorizontalScrollbarThumbScrollingWithMouse
-             : WebFeature::kHorizontalScrollbarThumbScrollingWithTouch);
-    UseCounter::Count(document, input_specific_uma);
-  }
 }
 
 CompositorElementId PaintLayerScrollableArea::GetCompositorElementId() const {

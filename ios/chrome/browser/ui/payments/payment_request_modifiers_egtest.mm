@@ -66,8 +66,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)setUp {
   [super setUp];
-  if (!base::FeatureList::IsEnabled(
-          payments::features::kWebPaymentsModifiers)) {
+  if (![ChromeEarlGrey isWebPaymentsModifiersEnabled]) {
     // payments::features::kWebPaymentsModifiers feature is not enabled,
     // You have to pass --enable-features=WebPaymentsModifiers command line
     // argument in order to run this test.

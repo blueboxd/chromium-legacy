@@ -35,7 +35,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       observer_(NULL),
       for_drop_(for_drop),
       bookmark_bar_(NULL) {
-  menu_delegate_->Init(this, NULL, node, int{start_child_index},
+  menu_delegate_->Init(this, NULL, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
   int run_type = 0;
@@ -169,7 +169,7 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
   if (!node || !node->is_folder())
     return NULL;
 
-  menu_delegate_->SetActiveMenu(node, int{start_index});
+  menu_delegate_->SetActiveMenu(node, start_index);
   *button = bookmark_bar_->GetMenuButtonForNode(node);
   bookmark_bar_->GetAnchorPositionForButton(*button, anchor);
   *has_mnemonics = false;

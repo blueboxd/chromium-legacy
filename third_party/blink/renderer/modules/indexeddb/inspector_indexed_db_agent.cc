@@ -133,10 +133,9 @@ class GetDatabaseNamesCallback final : public NativeEventListener {
     }
 
     DOMStringList* database_names_list = request_result->DomStringList();
-    std::unique_ptr<protocol::Array<String>> database_names =
-        protocol::Array<String>::create();
+    auto database_names = std::make_unique<protocol::Array<String>>();
     for (uint32_t i = 0; i < database_names_list->length(); ++i)
-      database_names->addItem(database_names_list->item(i));
+      database_names->emplace_back(database_names_list->item(i));
     request_callback_->sendSuccess(std::move(database_names));
   }
 
@@ -365,12 +364,9 @@ std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(const IDBKeyPath& idb_key_path) {
       break;
     case mojom::IDBKeyPathType::Array: {
       key_path = KeyPath::create().setType(KeyPath::TypeEnum::Array).build();
-      std::unique_ptr<protocol::Array<String>> array =
-          protocol::Array<String>::create();
-      const Vector<String>& string_array = idb_key_path.Array();
-      for (wtf_size_t i = 0; i < string_array.size(); ++i)
-        array->addItem(string_array[i]);
-      key_path->setArray(std::move(array));
+      const Vector<String>& array = idb_key_path.Array();
+      key_path->setArray(std::make_unique<protocol::Array<String>>(
+          array.begin(), array.end()));
       break;
     }
     default:
@@ -393,17 +389,15 @@ class DatabaseLoader final
   void Execute(IDBDatabase* idb_database, ScriptState*) override {
     const IDBDatabaseMetadata database_metadata = idb_database->Metadata();
 
-    std::unique_ptr<protocol::Array<protocol::IndexedDB::ObjectStore>>
-        object_stores =
-            protocol::Array<protocol::IndexedDB::ObjectStore>::create();
+    auto object_stores =
+        std::make_unique<protocol::Array<protocol::IndexedDB::ObjectStore>>();
 
     for (const auto& store_map_entry : database_metadata.object_stores) {
       const IDBObjectStoreMetadata& object_store_metadata =
           *store_map_entry.value;
 
-      std::unique_ptr<protocol::Array<protocol::IndexedDB::ObjectStoreIndex>>
-          indexes =
-              protocol::Array<protocol::IndexedDB::ObjectStoreIndex>::create();
+      auto indexes = std::make_unique<
+          protocol::Array<protocol::IndexedDB::ObjectStoreIndex>>();
 
       for (const auto& metadata_map_entry : object_store_metadata.indexes) {
         const IDBIndexMetadata& index_metadata = *metadata_map_entry.value;
@@ -415,7 +409,7 @@ class DatabaseLoader final
                 .setUnique(index_metadata.unique)
                 .setMultiEntry(index_metadata.multi_entry)
                 .build();
-        indexes->addItem(std::move(object_store_index));
+        indexes->emplace_back(std::move(object_store_index));
       }
 
       std::unique_ptr<ObjectStore> object_store =
@@ -425,7 +419,7 @@ class DatabaseLoader final
               .setAutoIncrement(object_store_metadata.auto_increment)
               .setIndexes(std::move(indexes))
               .build();
-      object_stores->addItem(std::move(object_store));
+      object_stores->emplace_back(std::move(object_store));
     }
     std::unique_ptr<DatabaseWithObjectStores> result =
         DatabaseWithObjectStores::create()
@@ -475,8 +469,10 @@ static std::unique_ptr<IDBKey> IdbKeyFromInspectorObject(
   } else if (type == array_type) {
     IDBKey::KeyArray key_array;
     auto* array = key->getArray(nullptr);
-    for (size_t i = 0; array && i < array->length(); ++i)
-      key_array.push_back(IdbKeyFromInspectorObject(array->get(i)));
+    if (array) {
+      for (const std::unique_ptr<protocol::IndexedDB::Key>& key : *array)
+        key_array.emplace_back(IdbKeyFromInspectorObject(key.get()));
+    }
     idb_key = IDBKey::CreateArray(std::move(key_array));
   } else {
     return nullptr;
@@ -532,7 +528,7 @@ class OpenCursorCallback final : public NativeEventListener {
         request_callback_(std::move(request_callback)),
         skip_count_(skip_count),
         page_size_(page_size) {
-    result_ = Array<DataEntry>::create();
+    result_ = std::make_unique<protocol::Array<DataEntry>>();
   }
   ~OpenCursorCallback() override = default;
 
@@ -567,7 +563,7 @@ class OpenCursorCallback final : public NativeEventListener {
       return;
     }
 
-    if (result_->length() == page_size_) {
+    if (result_->size() == page_size_) {
       end(true);
       return;
     }
@@ -602,7 +598,7 @@ class OpenCursorCallback final : public NativeEventListener {
                 context, idb_cursor->value(script_state_).V8Value(),
                 object_group, true /* generatePreview */))
             .build();
-    result_->addItem(std::move(data_entry));
+    result_->emplace_back(std::move(data_entry));
   }
 
   void end(bool has_more) {

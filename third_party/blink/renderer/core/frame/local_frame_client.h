@@ -348,7 +348,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidChangeName(const String&) {}
 
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
-  virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
+  virtual void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) {}
 
   virtual void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) {}
 

@@ -7,14 +7,13 @@
 
 #include <stdint.h>
 
+#include <va/va.h>
+
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/geometry/size.h"
-
-// This data type is defined in va/va.h using typedef, reproduced here.
-typedef unsigned int VASurfaceID;
 
 namespace media {
 
@@ -50,15 +49,9 @@ enum class VaapiImageDecodeStatus : uint32_t {
 // more implementing classes are added (e.g. VaapiWebPDecoder).
 class VaapiImageDecoder {
  public:
-  // Type of image decoder.
-  enum class Type {
-    kJpeg,
-    kWebP,
-  };
-
   virtual ~VaapiImageDecoder();
 
-  // Uses GetType() to initialize |vaapi_wrapper_| in kDecode mode with the
+  // Initializes |vaapi_wrapper_| in kDecode mode with the
   // appropriate VAAPI profile and |error_uma_cb| for error reporting.
   bool Initialize(const base::RepeatingClosure& error_uma_cb);
 
@@ -72,14 +65,13 @@ class VaapiImageDecoder {
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status) = 0;
 
-  // Returns the type of the current decoder.
-  virtual Type GetType() const = 0;
-
  protected:
-  VaapiImageDecoder();
+  VaapiImageDecoder(VAProfile va_profile);
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
+  // The VA profile used for the current image decoder.
+  const VAProfile va_profile_;
   // The current VA surface for decoding.
   VASurfaceID va_surface_id_;
   // The coded size associated with |va_surface_id_|.

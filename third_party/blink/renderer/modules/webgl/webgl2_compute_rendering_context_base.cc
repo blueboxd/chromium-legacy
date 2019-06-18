@@ -61,6 +61,13 @@ void WebGL2ComputeRenderingContextBase::dispatchCompute(GLuint numGroupsX,
   ContextGL()->DispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
 }
 
+void WebGL2ComputeRenderingContextBase::dispatchComputeIndirect(
+    int64_t offset) {
+  if (!ValidateValueFitNonNegInt32("dispatchComputeIndirect", "offset", offset))
+    return;
+  ContextGL()->DispatchComputeIndirect(static_cast<GLintptr>(offset));
+}
+
 ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     ScriptState* script_state,
     WebGLProgram* program,

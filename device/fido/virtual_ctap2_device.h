@@ -65,6 +65,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // reject_silent_authenticator_requests causes the authenticator to return
     // an error if a up=false assertion request is received.
     bool reject_silent_authentication_requests = false;
+    // Whether internal user verification should succeed or not.
+    bool user_verification_succeeds = true;
     bool is_platform_authenticator = false;
   };
 

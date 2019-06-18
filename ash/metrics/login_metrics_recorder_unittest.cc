@@ -48,8 +48,7 @@ class LoginMetricsRecorderTest : public LoginTestBase {
 
  protected:
   void EnableTabletMode(bool enable) {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        enable);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
   }
 
   LoginMetricsRecorder* metrics_recorder() {

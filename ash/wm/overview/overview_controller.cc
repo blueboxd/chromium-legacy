@@ -70,9 +70,7 @@ bool IsWallpaperChangeAllowed() {
 // the screen.
 bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
   // No sliding if home launcher is not available.
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return false;
   }
 

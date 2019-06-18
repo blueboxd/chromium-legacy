@@ -1630,6 +1630,12 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
+void WebContentsImpl::NotifyVisibleViewportSizeChanged(
+    const gfx::Size& visible_viewport_size) {
+  SendPageMessage(new PageMsg_UpdatePageVisualProperties(
+      MSG_ROUTING_NONE, visible_viewport_size));
+}
+
 void WebContentsImpl::OnAudioStateChanged() {
   // This notification can come from any embedded contents or from this
   // WebContents' stream monitor. Aggregate these signals to get the actual

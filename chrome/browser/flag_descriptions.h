@@ -197,6 +197,9 @@ extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
+extern const char kFontSrcLocalMatchingName[];
+extern const char kFontSrcLocalMatchingDescription[];
+
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];
@@ -592,8 +595,6 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
 
-extern const char kFontCacheScalingDescription[];
-
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];
 extern const char kEffectiveConnectionTypeUnknownDescription[];
@@ -687,9 +688,6 @@ extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
 
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
-
-extern const char kImprovedGeoLanguageDataName[];
-extern const char kImprovedGeoLanguageDataDescription[];
 
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
@@ -979,8 +977,20 @@ extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kSharingDeviceRegistrationName[];
+extern const char kSharingDeviceRegistrationDescription[];
+
+extern const char kShelfDenseClamshellName[];
+extern const char kShelfDenseClamshellDescription[];
+
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
+
+extern const char kShelfNewUiName[];
+extern const char kShelfNewUiDescription[];
+
+extern const char kShelfScrollableName[];
+extern const char kShelfScrollableDescription[];
 
 extern const char kShowAndroidFilesInFilesAppName[];
 extern const char kShowAndroidFilesInFilesAppDescription[];
@@ -1426,9 +1436,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kPwaPersistentNotificationName[];
-extern const char kPwaPersistentNotificationDescription[];
-
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];
@@ -1724,6 +1731,9 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 extern const char kAshSwapSideVolumeButtonsForOrientationName[];
 extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 
+extern const char kBluetoothAggressiveAppearanceFilterName[];
+extern const char kBluetoothAggressiveAppearanceFilterDescription[];
+
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
 
@@ -1810,9 +1820,6 @@ extern const char kEnableChromeOsAccountManagerDescription[];
 
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
-
-extern const char kEnableDriveFsName[];
-extern const char kEnableDriveFsDescription[];
 
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];

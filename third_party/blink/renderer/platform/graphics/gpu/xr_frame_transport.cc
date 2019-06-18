@@ -57,7 +57,7 @@ bool XRFrameTransport::DrawingIntoSharedBuffer() {
 }
 
 void XRFrameTransport::FramePreImage(gpu::gles2::GLES2Interface* gl) {
-  frame_wait_time_ = WTF::TimeDelta();
+  frame_wait_time_ = base::TimeDelta();
 
   // If we're expecting a fence for the previous frame and it hasn't arrived
   // yet, wait for it to be received.
@@ -238,9 +238,9 @@ void XRFrameTransport::OnSubmitFrameRendered() {
   waiting_for_previous_frame_render_ = false;
 }
 
-WTF::TimeDelta XRFrameTransport::WaitForPreviousRenderToFinish() {
+base::TimeDelta XRFrameTransport::WaitForPreviousRenderToFinish() {
   TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
-  WTF::TimeTicks start = WTF::CurrentTimeTicks();
+  base::TimeTicks start = WTF::CurrentTimeTicks();
   while (waiting_for_previous_frame_render_) {
     if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
@@ -257,9 +257,9 @@ void XRFrameTransport::OnSubmitFrameGpuFence(
   previous_frame_fence_ = std::make_unique<gfx::GpuFence>(handle);
 }
 
-WTF::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
+base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   TRACE_EVENT0("gpu", "WaitForGpuFenceReceived");
-  WTF::TimeTicks start = WTF::CurrentTimeTicks();
+  base::TimeTicks start = WTF::CurrentTimeTicks();
   while (waiting_for_previous_frame_fence_) {
     if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";

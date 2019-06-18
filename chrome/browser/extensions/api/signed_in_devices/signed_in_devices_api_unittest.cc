@@ -19,71 +19,22 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
-#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::DeviceInfo;
-using syncer::DeviceInfoTracker;
+using syncer::FakeDeviceInfoTracker;
 using testing::Return;
 
 namespace extensions {
 
-class MockDeviceInfoTracker : public DeviceInfoTracker {
- public:
-  ~MockDeviceInfoTracker() override {}
-
-  bool IsSyncing() const override { return !devices_.empty(); }
-
-  std::unique_ptr<DeviceInfo> GetDeviceInfo(
-      const std::string& client_id) const override {
-    NOTREACHED();
-    return std::unique_ptr<DeviceInfo>();
-  }
-
-  static std::unique_ptr<DeviceInfo> CloneDeviceInfo(
-      const DeviceInfo& device_info) {
-    return std::make_unique<DeviceInfo>(
-        device_info.guid(), device_info.client_name(),
-        device_info.chrome_version(), device_info.sync_user_agent(),
-        device_info.device_type(), device_info.signin_scoped_device_id(),
-        device_info.last_updated_timestamp(),
-        device_info.send_tab_to_self_receiving_enabled());
-  }
-
-  std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override {
-    std::vector<std::unique_ptr<DeviceInfo>> list;
-
-    for (const DeviceInfo* device : devices_)
-      list.push_back(CloneDeviceInfo(*device));
-
-    return list;
-  }
-
-  void AddObserver(Observer* observer) override { NOTREACHED(); }
-
-  void RemoveObserver(Observer* observer) override { NOTREACHED(); }
-
-  int CountActiveDevices() const override {
-    NOTREACHED();
-    return 0;
-  }
-
-  void Add(const DeviceInfo* device) { devices_.push_back(device); }
-
-  void ForcePulseForTest() override { NOTREACHED(); }
-
- private:
-  // DeviceInfo stored here are not owned.
-  std::vector<const DeviceInfo*> devices_;
-};
-
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
-  MockDeviceInfoTracker device_tracker;
+  FakeDeviceInfoTracker device_tracker;
   TestExtensionPrefs extension_prefs(base::ThreadTaskRunnerHandle::Get().get());
 
   // Add a couple of devices and make sure we get back public ids for them.
@@ -140,7 +91,7 @@ class MockDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
   MockDeviceInfoSyncService() = default;
   ~MockDeviceInfoSyncService() override = default;
 
-  MockDeviceInfoTracker* mock_tracker() { return &tracker_; }
+  FakeDeviceInfoTracker* fake_tracker() { return &tracker_; }
 
   // DeviceInfoSyncService implementation.
   syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() override {
@@ -155,7 +106,7 @@ class MockDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
   }
 
  private:
-  MockDeviceInfoTracker tracker_;
+  FakeDeviceInfoTracker tracker_;
 };
 
 std::unique_ptr<KeyedService> CreateMockDeviceInfoSyncService(
@@ -200,10 +151,10 @@ base::DictionaryValue* GetDictionaryFromList(int index,
 }
 
 TEST_F(ExtensionSignedInDevicesTest, GetAll) {
-  MockDeviceInfoTracker* device_tracker =
+  FakeDeviceInfoTracker* device_tracker =
       static_cast<MockDeviceInfoSyncService*>(
           DeviceInfoSyncServiceFactory::GetForProfile(profile()))
-          ->mock_tracker();
+          ->fake_tracker();
 
   DeviceInfo device_info1(base::GenerateGUID(), "abc Device", "XYZ v1",
                           "XYZ SyncAgent v1",

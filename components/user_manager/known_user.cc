@@ -43,6 +43,9 @@ const char kAccountTypeKey[] = "account_type";
 // Key of whether this user ID refers to a SAML user.
 const char kUsingSAMLKey[] = "using_saml";
 
+// Key of whether this user authenticated via SAML using the principals API.
+const char kIsUsingSAMLPrincipalsAPI[] = "using_saml_principals_api";
+
 // Key of Device Id.
 const char kDeviceId[] = "device_id";
 
@@ -72,6 +75,7 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kObjGuidKey,
                                kAccountTypeKey,
                                kUsingSAMLKey,
+                               kIsUsingSAMLPrincipalsAPI,
                                kDeviceId,
                                kGAPSCookie,
                                kReauthReasonKey,
@@ -516,6 +520,23 @@ bool IsUsingSAML(const AccountId& account_id) {
   bool using_saml;
   if (GetBooleanPref(account_id, kUsingSAMLKey, &using_saml))
     return using_saml;
+  return false;
+}
+
+void USER_MANAGER_EXPORT
+UpdateIsUsingSAMLPrincipalsAPI(const AccountId& account_id,
+                               bool is_using_saml_principals_api) {
+  SetBooleanPref(account_id, kIsUsingSAMLPrincipalsAPI,
+                 is_using_saml_principals_api);
+}
+
+bool USER_MANAGER_EXPORT
+GetIsUsingSAMLPrincipalsAPI(const AccountId& account_id) {
+  bool is_using_saml_principals_api;
+  if (GetBooleanPref(account_id, kIsUsingSAMLPrincipalsAPI,
+                     &is_using_saml_principals_api)) {
+    return is_using_saml_principals_api;
+  }
   return false;
 }
 

@@ -6,6 +6,7 @@ import("//build/compiled_action.gni")
 
 executable("generate_colors_info") {
   sources = [
+    "chrome_colors_icon_template.h",
     "generate_colors_info.cc",
     "selected_colors_info.h",
   ]

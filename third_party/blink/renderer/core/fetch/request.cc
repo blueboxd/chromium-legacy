@@ -279,8 +279,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If any of |init|'s members are present, then:"
   if (AreAnyMembersPresent(init)) {
     // "If |request|'s |mode| is "navigate", then set it to "same-origin".
-    if (request->Mode() == network::mojom::FetchRequestMode::kNavigate)
-      request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
+    if (request->Mode() == network::mojom::RequestMode::kNavigate)
+      request->SetMode(network::mojom::RequestMode::kSameOrigin);
 
     // TODO(yhirano): Implement the following substep:
     // "Unset |request|'s reload-navigation flag."
@@ -368,16 +368,16 @@ Request* Request::CreateRequestWithRequestOrString(
     return nullptr;
   }
   if (init->mode() == "same-origin") {
-    request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
+    request->SetMode(network::mojom::RequestMode::kSameOrigin);
   } else if (init->mode() == "no-cors") {
-    request->SetMode(network::mojom::FetchRequestMode::kNoCors);
+    request->SetMode(network::mojom::RequestMode::kNoCors);
   } else if (init->mode() == "cors") {
-    request->SetMode(network::mojom::FetchRequestMode::kCors);
+    request->SetMode(network::mojom::RequestMode::kCors);
   } else {
     // |inputRequest| is directly checked here instead of setting and
     // checking |fallbackMode| as specified in the spec.
     if (!input_request)
-      request->SetMode(network::mojom::FetchRequestMode::kCors);
+      request->SetMode(network::mojom::RequestMode::kCors);
   }
 
   // This is not yet standardized, but we can assume the following:
@@ -400,11 +400,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |credentials| is non-null, set |request|'s credentials mode to
   // |credentials|."
 
-  network::mojom::FetchCredentialsMode credentials_mode;
+  network::mojom::CredentialsMode credentials_mode;
   if (ParseCredentialsMode(init->credentials(), &credentials_mode)) {
     request->SetCredentials(credentials_mode);
   } else if (!input_request) {
-    request->SetCredentials(network::mojom::FetchCredentialsMode::kSameOrigin);
+    request->SetCredentials(network::mojom::CredentialsMode::kSameOrigin);
   }
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
@@ -425,7 +425,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // If |request|’s cache mode is "only-if-cached" and |request|’s mode is not
   // "same-origin", then throw a TypeError.
   if (request->CacheMode() == mojom::FetchCacheMode::kOnlyIfCached &&
-      request->Mode() != network::mojom::FetchRequestMode::kSameOrigin) {
+      request->Mode() != network::mojom::RequestMode::kSameOrigin) {
     exception_state.ThrowTypeError(
         "'only-if-cached' can be set only with 'same-origin' mode");
     return nullptr;
@@ -434,11 +434,11 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
   if (init->redirect() == "follow") {
-    request->SetRedirect(network::mojom::FetchRedirectMode::kFollow);
+    request->SetRedirect(network::mojom::RedirectMode::kFollow);
   } else if (init->redirect() == "error") {
-    request->SetRedirect(network::mojom::FetchRedirectMode::kError);
+    request->SetRedirect(network::mojom::RedirectMode::kError);
   } else if (init->redirect() == "manual") {
-    request->SetRedirect(network::mojom::FetchRedirectMode::kManual);
+    request->SetRedirect(network::mojom::RedirectMode::kManual);
   }
 
   // "If |init|'s integrity member is present, set |request|'s
@@ -492,7 +492,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Empty |r|'s request's header list."
   r->request_->HeaderList()->ClearList();
   // "If |r|'s request's mode is "no-cors", run these substeps:
-  if (r->GetRequest()->Mode() == network::mojom::FetchRequestMode::kNoCors) {
+  if (r->GetRequest()->Mode() == network::mojom::RequestMode::kNoCors) {
     // "If |r|'s request's method is not a CORS-safelisted method, throw a
     // TypeError."
     if (!cors::IsCorsSafelistedMethod(r->GetRequest()->Method())) {
@@ -634,19 +634,18 @@ Request* Request::Create(
   return MakeGarbageCollected<Request>(script_state, data);
 }
 
-bool Request::ParseCredentialsMode(
-    const String& credentials_mode,
-    network::mojom::FetchCredentialsMode* result) {
+bool Request::ParseCredentialsMode(const String& credentials_mode,
+                                   network::mojom::CredentialsMode* result) {
   if (credentials_mode == "omit") {
-    *result = network::mojom::FetchCredentialsMode::kOmit;
+    *result = network::mojom::CredentialsMode::kOmit;
     return true;
   }
   if (credentials_mode == "same-origin") {
-    *result = network::mojom::FetchCredentialsMode::kSameOrigin;
+    *result = network::mojom::CredentialsMode::kSameOrigin;
     return true;
   }
   if (credentials_mode == "include") {
-    *result = network::mojom::FetchCredentialsMode::kInclude;
+    *result = network::mojom::CredentialsMode::kInclude;
     return true;
   }
   return false;
@@ -724,14 +723,14 @@ String Request::mode() const {
   // "The mode attribute's getter must return the value corresponding to the
   // first matching statement, switching on request's mode:"
   switch (request_->Mode()) {
-    case network::mojom::FetchRequestMode::kSameOrigin:
+    case network::mojom::RequestMode::kSameOrigin:
       return "same-origin";
-    case network::mojom::FetchRequestMode::kNoCors:
+    case network::mojom::RequestMode::kNoCors:
       return "no-cors";
-    case network::mojom::FetchRequestMode::kCors:
-    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+    case network::mojom::RequestMode::kCors:
+    case network::mojom::RequestMode::kCorsWithForcedPreflight:
       return "cors";
-    case network::mojom::FetchRequestMode::kNavigate:
+    case network::mojom::RequestMode::kNavigate:
       return "navigate";
   }
   NOTREACHED();
@@ -743,11 +742,11 @@ String Request::credentials() const {
   // to the first matching statement, switching on request's credentials
   // mode:"
   switch (request_->Credentials()) {
-    case network::mojom::FetchCredentialsMode::kOmit:
+    case network::mojom::CredentialsMode::kOmit:
       return "omit";
-    case network::mojom::FetchCredentialsMode::kSameOrigin:
+    case network::mojom::CredentialsMode::kSameOrigin:
       return "same-origin";
-    case network::mojom::FetchCredentialsMode::kInclude:
+    case network::mojom::CredentialsMode::kInclude:
       return "include";
   }
   NOTREACHED();
@@ -781,11 +780,11 @@ String Request::cache() const {
 String Request::redirect() const {
   // "The redirect attribute's getter must return request's redirect mode."
   switch (request_->Redirect()) {
-    case network::mojom::FetchRedirectMode::kFollow:
+    case network::mojom::RedirectMode::kFollow:
       return "follow";
-    case network::mojom::FetchRedirectMode::kError:
+    case network::mojom::RedirectMode::kError:
       return "error";
-    case network::mojom::FetchRedirectMode::kManual:
+    case network::mojom::RedirectMode::kManual:
       return "manual";
   }
   NOTREACHED();

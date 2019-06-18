@@ -212,7 +212,7 @@ void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
@@ -611,7 +611,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(outside_resource_timing_notifier);
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like

@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -50,6 +51,7 @@ using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
 using autofill::mojom::FocusedFieldType;
+using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAutofillState;

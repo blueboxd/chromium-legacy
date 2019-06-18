@@ -469,12 +469,11 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
-std::string ShellContentBrowserClient::GetUserAgent() const {
+std::string ShellContentBrowserClient::GetUserAgent() {
   return GetShellUserAgent();
 }
 
-blink::UserAgentMetadata ShellContentBrowserClient::GetUserAgentMetadata()
-    const {
+blink::UserAgentMetadata ShellContentBrowserClient::GetUserAgentMetadata() {
   return GetShellUserAgentMetadata();
 }
 

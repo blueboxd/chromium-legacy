@@ -84,7 +84,7 @@ void PreflightResult::SetTickClockForTesting(
 
 // static
 std::unique_ptr<PreflightResult> PreflightResult::Create(
-    const mojom::FetchCredentialsMode credentials_mode,
+    const mojom::CredentialsMode credentials_mode,
     const base::Optional<std::string>& allow_methods_header,
     const base::Optional<std::string>& allow_headers_header,
     const base::Optional<std::string>& max_age_header,
@@ -101,9 +101,8 @@ std::unique_ptr<PreflightResult> PreflightResult::Create(
   return result;
 }
 
-PreflightResult::PreflightResult(
-    const mojom::FetchCredentialsMode credentials_mode)
-    : credentials_(credentials_mode == mojom::FetchCredentialsMode::kInclude) {}
+PreflightResult::PreflightResult(const mojom::CredentialsMode credentials_mode)
+    : credentials_(credentials_mode == mojom::CredentialsMode::kInclude) {}
 
 PreflightResult::~PreflightResult() = default;
 
@@ -162,12 +161,11 @@ bool PreflightResult::IsExpired() const {
 }
 
 bool PreflightResult::EnsureAllowedRequest(
-    mojom::FetchCredentialsMode credentials_mode,
+    mojom::CredentialsMode credentials_mode,
     const std::string& method,
     const net::HttpRequestHeaders& headers,
     bool is_revalidating) const {
-  if (!credentials_ &&
-      credentials_mode == mojom::FetchCredentialsMode::kInclude) {
+  if (!credentials_ && credentials_mode == mojom::CredentialsMode::kInclude) {
     return false;
   }
 

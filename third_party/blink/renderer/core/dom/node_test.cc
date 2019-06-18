@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
@@ -40,6 +41,7 @@ class NodeTest : public EditingTestBase {
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
     GetDocument().GetStyleEngine().RecalcStyle({});
     Node::AttachContext context;
+    InitAttachContextParentAndSibling(context, node);
     GetDocument().GetStyleEngine().in_layout_tree_rebuild_ = true;
     node.ReattachLayoutTree(context);
     return context.previous_in_flow;

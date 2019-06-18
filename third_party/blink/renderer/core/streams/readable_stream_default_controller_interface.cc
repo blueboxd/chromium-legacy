@@ -31,8 +31,6 @@ class ReadableStreamDefaultControllerWrapper final
   // (close/desiredSize/enqueue/error will become no-ops afterward.)
   void NoteHasBeenCanceled() override { js_controller_.Clear(); }
 
-  bool IsActive() const override { return !js_controller_.IsEmpty(); }
-
   void Close() override {
     ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
@@ -129,8 +127,6 @@ class ReadableStreamDefaultControllerNative final
 
   void NoteHasBeenCanceled() override { controller_ = nullptr; }
 
-  bool IsActive() const override { return controller_; }
-
   void Close() override {
     if (!controller_)
       return;
@@ -138,6 +134,7 @@ class ReadableStreamDefaultControllerNative final
     ScriptState::Scope scope(script_state_);
 
     ReadableStreamDefaultController::Close(script_state_, controller_);
+    controller_ = nullptr;
   }
 
   double DesiredSize() const override {
@@ -173,6 +170,7 @@ class ReadableStreamDefaultControllerNative final
 
     ReadableStreamDefaultController::Error(script_state_, controller_,
                                            js_error);
+    controller_ = nullptr;
   }
 
   void Trace(Visitor* visitor) override {

@@ -20,7 +20,7 @@ GURL GetFeedFetchUrlForDebugging() {
 std::string GetFeedProcessScopeDumpForDebugging() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_string =
-      Java_FeedDebuggingBridge_getFeedProcessScopeDump(env);
+      Java_FeedDebuggingBridge_getProcessScopeDump(env);
   return ConvertJavaStringToUTF8(env, j_string);
 }
 

@@ -72,9 +72,9 @@ ServiceWorkerRequestHandler::CreateForNavigation(
                                          ? ResourceType::kMainFrame
                                          : ResourceType::kSubFrame;
   return (*out_provider_host)
-      ->CreateLoaderInterceptor(network::mojom::FetchRequestMode::kNavigate,
-                                network::mojom::FetchCredentialsMode::kInclude,
-                                network::mojom::FetchRedirectMode::kManual,
+      ->CreateLoaderInterceptor(network::mojom::RequestMode::kNavigate,
+                                network::mojom::CredentialsMode::kInclude,
+                                network::mojom::RedirectMode::kManual,
                                 std::string() /* integrity */,
                                 false /* keepalive */, resource_type,
                                 request_info.begin_params->request_context_type,
@@ -102,9 +102,8 @@ ServiceWorkerRequestHandler::CreateForWorker(
   }
 
   return host->CreateLoaderInterceptor(
-      resource_request.fetch_request_mode,
-      resource_request.fetch_credentials_mode,
-      resource_request.fetch_redirect_mode, resource_request.fetch_integrity,
+      resource_request.mode, resource_request.credentials_mode,
+      resource_request.redirect_mode, resource_request.fetch_integrity,
       resource_request.keepalive,
       static_cast<ResourceType>(resource_request.resource_type),
       resource_request.resource_type == static_cast<int>(ResourceType::kWorker)

@@ -238,8 +238,6 @@ viz_component("service") {
 
   if (is_mac) {
     sources += [
-      "display_embedder/gl_output_surface_mac.cc",
-      "display_embedder/gl_output_surface_mac.h",
       "display_embedder/overlay_candidate_validator_mac.cc",
       "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
@@ -254,8 +252,6 @@ viz_component("service") {
     sources += [
       "display_embedder/gl_output_surface_android.cc",
       "display_embedder/gl_output_surface_android.h",
-      "display_embedder/gl_output_surface_buffer_queue_android.cc",
-      "display_embedder/gl_output_surface_buffer_queue_android.h",
       "display_embedder/overlay_candidate_validator_android.cc",
       "display_embedder/overlay_candidate_validator_android.h",
       "display_embedder/overlay_candidate_validator_surface_control.cc",
@@ -271,8 +267,6 @@ viz_component("service") {
 
   if (use_ozone) {
     sources += [
-      "display_embedder/gl_output_surface_ozone.cc",
-      "display_embedder/gl_output_surface_ozone.h",
       "display_embedder/overlay_candidate_validator_ozone.cc",
       "display_embedder/overlay_candidate_validator_ozone.h",
       "display_embedder/software_output_device_ozone.cc",
@@ -284,8 +278,6 @@ viz_component("service") {
 
   if (is_win) {
     sources += [
-      "display_embedder/gl_output_surface_win.cc",
-      "display_embedder/gl_output_surface_win.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
       "display_embedder/overlay_candidate_validator_win.cc",

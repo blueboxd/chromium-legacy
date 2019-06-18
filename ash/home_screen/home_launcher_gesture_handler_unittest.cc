@@ -39,7 +39,7 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
     // Wait for TabletModeController::Ctor to finish.
     base::RunLoop().RunUntilIdle();
 
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   }
 
   // Create a test window and set the base transform to identity and
@@ -578,7 +578,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
 
   // Tests that on exiting tablet mode, |window| gets minimized and is no longer
   // tracked by the gesture handler.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
 }

@@ -18,7 +18,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
@@ -279,7 +278,7 @@ using translate::LanguageDetectionController;
 
 + (void)setUp {
   [super setUp];
-  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
+  if ([ChromeEarlGrey isCompactTranslateInfobarIOSEnabled]) {
     // translate::kCompactTranslateInfobarIOS feature is enabled. You need
     // to pass --disable-features=CompactTranslateInfobarIOS command line
     // argument in order to run this test.

@@ -67,9 +67,8 @@ void BulkPrintersCalculatorFactory::ShutdownProfiles() {
   printers_by_user_.clear();
 }
 
-void BulkPrintersCalculatorFactory::Shutdown() {
+void BulkPrintersCalculatorFactory::ShutdownForDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  printers_by_user_.clear();
   device_printers_.reset();
 }
 

@@ -27,6 +27,11 @@ def get_expected_files(source_file):
   return (stdout_file, stderr_file)
 
 
+def dos2unix(str):
+  """Convers CRLF to LF."""
+  return str.replace('\r\n', '\n')
+
+
 def remove_tracebacks(str):
   """Removes python tracebacks from the string."""
   regex = re.compile(
@@ -46,12 +51,12 @@ class ExtractorTest(unittest.TestCase):
       print("Running test on %s..." % source_file)
       (stdout_file, stderr_file) = get_expected_files(source_file)
       with open(stdout_file) as f:
-        expected_stdout = f.read()
+        expected_stdout = dos2unix(f.read())
       with open(stderr_file) as f:
-        expected_stderr = f.read()
+        expected_stderr = dos2unix(f.read())
 
       proc = run_extractor(source_file)
-      (stdout, stderr) = proc.communicate()
+      (stdout, stderr) = map(dos2unix, proc.communicate())
 
       self.assertEqual(expected_stderr, remove_tracebacks(stderr))
       self.assertEqual(int(bool(expected_stderr)), proc.returncode)

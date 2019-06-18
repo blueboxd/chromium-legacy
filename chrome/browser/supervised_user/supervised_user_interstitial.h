@@ -71,7 +71,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   std::string GetHTMLContents() override;
   void OnProceed() override;
   void OnDontProceed() override;
-  content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;

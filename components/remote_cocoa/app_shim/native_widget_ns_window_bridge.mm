@@ -39,6 +39,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
+#include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -1097,10 +1098,6 @@ bool NativeWidgetNSWindowBridge::RedispatchKeyEvent(NSEvent* event) {
   return [[window_ commandDispatcher] redispatchKeyEvent:event];
 }
 
-void NativeWidgetNSWindowBridge::SaveKeyEventForRedispatch(NSEvent* event) {
-  saved_redispatch_event_.reset([event retain]);
-}
-
 NSWindow* NativeWidgetNSWindowBridge::ns_window() {
   return window_.get();
 }
@@ -1252,42 +1249,8 @@ bool NativeWidgetNSWindowBridge::NeedsUpdateWindows() {
 }
 
 void NativeWidgetNSWindowBridge::RedispatchKeyEvent(
-    uint64_t type,
-    uint64_t modifier_flags,
-    double timestamp,
-    const base::string16& characters,
-    const base::string16& characters_ignoring_modifiers,
-    uint32_t key_code) {
-  // If we saved an event for redispatch, and that event looks similar to the
-  // (potentially mangled) event parameters that we received, then use the saved
-  // event.
-  // https://crbug.com/942690
-  if (saved_redispatch_event_) {
-    // Consider two events to have the same timestamp if they are within 0.1 ms.
-    constexpr double kTimestampThreshold = 0.0001;
-    if ([saved_redispatch_event_ type] == type &&
-        base::SysNSStringToUTF16([saved_redispatch_event_ characters]) ==
-            characters &&
-        std::fabs([saved_redispatch_event_ timestamp] - timestamp) <
-            kTimestampThreshold) {
-      RedispatchKeyEvent(saved_redispatch_event_.autorelease());
-      return;
-    }
-    saved_redispatch_event_.reset();
-  }
-  NSEvent* event =
-      [NSEvent keyEventWithType:static_cast<NSEventType>(type)
-                             location:NSZeroPoint
-                        modifierFlags:modifier_flags
-                            timestamp:timestamp
-                         windowNumber:[window_ windowNumber]
-                              context:nil
-                           characters:base::SysUTF16ToNSString(characters)
-          charactersIgnoringModifiers:base::SysUTF16ToNSString(
-                                          characters_ignoring_modifiers)
-                            isARepeat:NO
-                              keyCode:key_code];
-  RedispatchKeyEvent(event);
+    const std::vector<uint8_t>& native_event_data) {
+  RedispatchKeyEvent(ui::EventFromData(native_event_data));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -55,7 +55,13 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
 WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
-IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
+// TODO(crbug/974796): Flaky on Win7 debug builds.
+#if (defined(OS_WIN) && !(defined(NDEBUG)))
+#define MAYBE_TestFailsFast DISABLED_TestFailsFast
+#else
+#define MAYBE_TestFailsFast TestFailsFast
+#endif
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, MAYBE_TestFailsFast) {
   AddLibrary(base::FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("DISABLED_BogusFunctionName"),

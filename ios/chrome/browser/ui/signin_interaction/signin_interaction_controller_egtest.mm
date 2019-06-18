@@ -5,11 +5,14 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#import "base/ios/block_types.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/unified_consent/feature.h"
+#import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
@@ -17,8 +20,11 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -27,15 +33,45 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 using chrome_test_util::BookmarksNavigationBarDoneButton;
+using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SyncSettingsConfirmButton;
+
+typedef NS_ENUM(NSInteger, OpenSigninMethod) {
+  OpenSigninMethodFromSettings,
+  OpenSigninMethodFromBookmarks,
+  OpenSigninMethodFromRecentTabs,
+  OpenSigninMethodFromTabSwitcher,
+};
+
+namespace {
+
+// Taps on the primary sign-in button in recent tabs, and scroll first, if
+// necessary.
+void TapOnPrimarySignInButtonInRecentTabs() {
+  id<GREYMatcher> matcher =
+      grey_allOf(PrimarySignInButton(), grey_sufficientlyVisible(), nil);
+  const CGFloat kPixelsToScroll = 300;
+  id<GREYAction> searchAction =
+      grey_scrollInDirection(kGREYDirectionDown, kPixelsToScroll);
+  GREYElementInteraction* interaction =
+      [[EarlGrey selectElementWithMatcher:matcher]
+             usingSearchAction:searchAction
+          onElementWithMatcher:
+              grey_accessibilityID(
+                  kRecentTabsTableViewControllerAccessibilityIdentifier)];
+  [interaction performAction:grey_tap()];
+}
+
+}
 
 // Sign-in interaction tests that work both with Unified Consent enabled or
 // disabled.
@@ -304,6 +340,136 @@ using chrome_test_util::SyncSettingsConfirmButton;
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
   [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarDoneButton()]
       performAction:grey_tap()];
+}
+
+#pragma mark - Dismiss tests
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: setting menu.
+// Interrupted at: user consent.
+- (void)testDismissSigninFromSettings {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
+                        tapSettingsLink:NO];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: setting menu.
+// Interrupted at: advanced sign-in.
+- (void)testDismissAdvancedSigninSettingsFromAdvancedSigninSettings {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
+                        tapSettingsLink:YES];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: bookmark view.
+// Interrupted at: user consent.
+- (void)testDismissSigninFromBookmarks {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
+                        tapSettingsLink:NO];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: bookmark view.
+// Interrupted at: advanced sign-in.
+- (void)testDismissAdvancedSigninBookmarksFromAdvancedSigninSettings {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
+                        tapSettingsLink:YES];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: recent tabs.
+// Interrupted at: user consent.
+- (void)testDismissSigninFromRecentTabs {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
+                        tapSettingsLink:NO];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: recent tabs.
+// Interrupted at: advanced sign-in.
+- (void)testDismissSigninFromRecentTabsFromAdvancedSigninSettings {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
+                        tapSettingsLink:YES];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: tab switcher.
+// Interrupted at: user consent.
+- (void)testDismissSigninFromTabSwitcher {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
+                        tapSettingsLink:NO];
+}
+
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: tab switcher.
+// Interrupted at: advanced sign-in.
+- (void)testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
+  [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
+                        tapSettingsLink:YES];
+}
+
+#pragma mark - Utils
+
+// Starts the sign-in workflow, and simulates opening an URL from another app.
+// |openSigninMethod| is the way to start the sign-in.
+// |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
+- (void)assertOpenURLWhenSigninFromView:(OpenSigninMethod)openSigninMethod
+                        tapSettingsLink:(BOOL)tapSettingsLink {
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+  switch (openSigninMethod) {
+    case OpenSigninMethodFromSettings:
+      [ChromeEarlGreyUI openSettingsMenu];
+      [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+      break;
+    case OpenSigninMethodFromBookmarks:
+      [ChromeEarlGreyUI openToolsMenu];
+      [ChromeEarlGreyUI
+          tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
+      [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
+          performAction:grey_tap()];
+      break;
+    case OpenSigninMethodFromRecentTabs:
+      [ChromeEarlGreyUI openToolsMenu];
+      [ChromeEarlGreyUI
+          tapToolsMenuButton:chrome_test_util::RecentTabsMenuButton()];
+      TapOnPrimarySignInButtonInRecentTabs();
+      break;
+    case OpenSigninMethodFromTabSwitcher:
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridOpenButton()]
+          performAction:grey_tap()];
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                              TabGridOtherDevicesPanelButton()]
+          performAction:grey_tap()];
+      TapOnPrimarySignInButtonInRecentTabs();
+      break;
+  }
+  if (tapSettingsLink) {
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+    [SigninEarlGreyUI tapSettingsLink];
+  }
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Open the URL as if it was opened from another app.
+  UIApplication* application = UIApplication.sharedApplication;
+  id<UIApplicationDelegate> applicationDelegate = application.delegate;
+  NSURL* url = [NSURL URLWithString:@"http://www.example.com/"];
+  [applicationDelegate application:application openURL:url options:@{}];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Check if the URL was opened.
+  web::WebState* webState = chrome_test_util::GetMainController()
+                                .interfaceProvider.mainInterface.tabModel
+                                .webStateList->GetActiveWebState();
+  GURL expectedString(url.absoluteString.UTF8String);
+  GREYAssertEqual(expectedString, webState->GetVisibleURL(), @"url not loaded");
+  if (tapSettingsLink) {
+    // Should be signed in.
+    CHROME_EG_ASSERT_NO_ERROR(
+        [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  } else {
+    // Should be not signed in.
+    CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  }
 }
 
 @end

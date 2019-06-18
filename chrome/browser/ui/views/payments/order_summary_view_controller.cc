@@ -106,11 +106,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
   wrapper_layout->StartRow(views::GridLayout::kFixedSize, 0);
   currency_text->SetID(static_cast<int>(currency_label_id));
-  wrapper_layout->AddView(currency_text.release());
-  wrapper_layout->AddView(amount_text.release());
+  wrapper_layout->AddView(std::move(currency_text));
+  wrapper_layout->AddView(std::move(amount_text));
 
-  layout->AddView(label_text.release());
-  layout->AddView(amount_wrapper.release());
+  layout->AddView(std::move(label_text));
+  layout->AddView(std::move(amount_wrapper));
 
   return row;
 }

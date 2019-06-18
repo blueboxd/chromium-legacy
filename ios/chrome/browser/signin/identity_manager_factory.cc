@@ -12,6 +12,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/primary_account_manager.h"

@@ -207,7 +207,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     // https://wicg.github.io/background-fetch/#dom-backgroundfetchmanager-fetch
     // ""If |internalRequest|’s mode is "no-cors", then return a promise
     //   rejected with a TypeError.""
-    if (request->mode == network::mojom::FetchRequestMode::kNoCors) {
+    if (request->mode == network::mojom::RequestMode::kNoCors) {
       return RejectWithTypeError(script_state, request_url,
                                  "the request mode must not be no-cors");
     }

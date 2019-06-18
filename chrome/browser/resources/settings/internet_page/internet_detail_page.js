@@ -13,8 +13,12 @@
 Polymer({
   is: 'settings-internet-detail-page',
 
-  behaviors:
-      [CrPolicyNetworkBehavior, settings.RouteObserverBehavior, I18nBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+    settings.RouteObserverBehavior,
+    I18nBehavior,
+  ],
 
   properties: {
     /** The network GUID to display details for. */
@@ -65,9 +69,9 @@ Polymer({
 
     /**
      * Whether the network has been lost (e.g., has gone out of range). A
-     * network is considered to be lost when a 'network-list-changed' event
-     * occurs, and the new network list does not contain the GUID of the current
-     * network.
+     * network is considered to be lost when a OnNetworkStateListChanged
+     * is signaled and the new network list does not contain the GUID of the
+     * current network.
      * @private
      */
     outOfRange_: {
@@ -178,11 +182,6 @@ Polymer({
     'autoConnectChanged_(autoConnect_.*)', 'alwaysOnVpnChanged_(alwaysOnVpn_.*)'
   ],
 
-  listeners: {
-    'network-list-changed': 'checkNetworkExists_',
-    'networks-changed': 'updateNetworkDetails_'
-  },
-
   /** @private {boolean} */
   didSetFocus_: false,
 
@@ -276,7 +275,33 @@ Polymer({
     });
   },
 
-  /** @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy */
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
+   */
+  onActiveNetworksChanged: function(networks) {
+    if (networks.find(network => network.guid == this.guid)) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.checkNetworkExists_();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    if (this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @private
+   */
   globalPolicyChanged_: function(globalPolicy) {
     this.updateAutoConnectPref_(
         !!(this.autoConnect_ && this.autoConnect_.value), globalPolicy);
@@ -384,24 +409,25 @@ Polymer({
     this.setNetworkProperties_(onc);
   },
 
-  /**
-   * @param {!CustomEvent<!Array<string>>} event
-   * @private
-   */
-  checkNetworkExists_: function(event) {
-    const networkIds = event.detail;
-    this.outOfRange_ = networkIds.indexOf(this.guid) == -1;
-  },
-
-  /**
-   * @param {!CustomEvent<!Array<string>>} event
-   * @private
-   */
-  updateNetworkDetails_: function(event) {
-    const networkIds = event.detail;
-    if (networkIds.indexOf(this.guid) != -1) {
-      this.getNetworkDetails_();
-    }
+  /** @private */
+  checkNetworkExists_: function() {
+    const filter = {
+      networkType: CrOnc.Type.ALL,
+      visible: true,
+      configured: false
+    };
+    this.networkingPrivate.getNetworks(filter, networks => {
+      if (networks.find(network => network.GUID == this.guid)) {
+        return;
+      }
+      this.outOfRange_ = true;
+      if (this.networkProperties_) {
+        // Set the connection state since we won't receive an update for a non
+        // existent network.
+        this.networkProperties_.ConnectionState =
+            CrOnc.ConnectionState.NOT_CONNECTED;
+      }
+    });
   },
 
   /**
@@ -444,7 +470,7 @@ Polymer({
     }
 
     if (!properties) {
-      console.error('No properties for: ' + this.guid);
+      // Edge case, may occur when disabling. Close this.
       this.close();
       return;
     }
@@ -467,9 +493,7 @@ Polymer({
    */
   getStateCallback_: function(state) {
     if (!state) {
-      // If |state| is null, the network is no longer visible, close this.
-      console.error('Network no longer exists: ' + this.guid);
-      this.networkProperties_ = undefined;
+      // Edge case, may occur when disabling. Close this.
       this.close();
       return;
     }
@@ -544,6 +568,22 @@ Polymer({
     return this.isCellular_(networkProperties) ?
         this.i18n('networkAutoConnectCellular') :
         this.i18n('networkAutoConnect');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string} The text to display with roaming details.
+   * @private
+   */
+  getRoamingDetails_: function(networkProperties) {
+    if (!networkProperties.Cellular.AllowRoaming) {
+      return this.i18n('networkAllowDataRoamingDisabled');
+    }
+
+    return networkProperties.Cellular.RoamingState ===
+            CrOnc.RoamingState.ROAMING ?
+        this.i18n('networkAllowDataRoamingEnabledRoaming') :
+        this.i18n('networkAllowDataRoamingEnabledHome');
   },
 
   /**
@@ -850,8 +890,7 @@ Polymer({
   /** @private */
   updateAlwaysOnVpnPrefValue_: function() {
     this.alwaysOnVpn_.value = this.prefs.arc && this.prefs.arc.vpn &&
-        this.prefs.arc.vpn.always_on &&
-        this.prefs.arc.vpn.always_on.lockdown &&
+        this.prefs.arc.vpn.always_on && this.prefs.arc.vpn.always_on.lockdown &&
         this.prefs.arc.vpn.always_on.lockdown.value;
   },
 
@@ -868,8 +907,7 @@ Polymer({
     // Only mark VPN networks as enforced. This fake pref also controls the
     // policy indicator on the connect/disconnect buttons, so it shouldn't be
     // shown on non-VPN networks.
-    if (this.isVpn_(this.networkProperties_) &&
-        this.prefs.vpn_config_allowed &&
+    if (this.isVpn_(this.networkProperties_) && this.prefs.vpn_config_allowed &&
         !this.prefs.vpn_config_allowed.value) {
       fakeAlwaysOnVpnEnforcementPref.enforcement =
           chrome.settingsPrivate.Enforcement.ENFORCED;
@@ -1254,8 +1292,8 @@ Polymer({
     const type = this.networkProperties_.Type;
     if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
       fields.push(
-          'Cellular.ActivationState', 'Cellular.RoamingState',
-          'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
+          'Cellular.ActivationState', 'RestrictedConnectivity',
+          'Cellular.ServingOperator.Name');
     } else if (type == CrOnc.Type.TETHER && !!this.networkProperties_.Tether) {
       fields.push(
           'Tether.BatteryPercentage', 'Tether.SignalStrength',
@@ -1509,6 +1547,11 @@ Polymer({
     // TODO(lgcheng@) Show correct IP address when we implement IP configuration
     // correctly.
     if (this.isArcVpn_(networkProperties)) {
+      return false;
+    }
+
+    // Cellular IP addresses are shown under the network details section.
+    if (this.isCellular_(networkProperties)) {
       return false;
     }
 

@@ -1459,6 +1459,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {
             base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
 }
 
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OverscrollEnabled) {
+  ASSERT_TRUE(https_server()->Start());
+  InstallSecurePWA();
+  EXPECT_TRUE(app_browser_->CanOverscrollContent());
+}
+
 // Tests that mixed content is not loaded inside PWA windows.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentInPWA) {
   ASSERT_TRUE(https_server()->Start());

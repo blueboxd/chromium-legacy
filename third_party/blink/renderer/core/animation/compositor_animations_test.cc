@@ -125,7 +125,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
     GetAnimationClock().ResetTimeForTesting();
 
-    timeline_ = DocumentTimeline::Create(&GetDocument());
+    timeline_ = GetDocument().Timeline();
     timeline_->ResetForTesting();
 
     // Using will-change ensures that this object will need paint properties.

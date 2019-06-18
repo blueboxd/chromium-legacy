@@ -48,12 +48,10 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
       resource_request_(resource_request),
       should_send_referrer_(kMaybeSendReferrer) {
   // These flags are passed to a service worker which controls the page.
-  resource_request_.SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kNavigate);
-  resource_request_.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kInclude);
-  resource_request_.SetFetchRedirectMode(
-      network::mojom::FetchRedirectMode::kManual);
+  resource_request_.SetMode(network::mojom::RequestMode::kNavigate);
+  resource_request_.SetCredentialsMode(
+      network::mojom::CredentialsMode::kInclude);
+  resource_request_.SetRedirectMode(network::mojom::RedirectMode::kManual);
 
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     SetInputStartTime(input_event->TimeStamp());

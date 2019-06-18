@@ -38,9 +38,9 @@ bool HasAttributeWithValue(const std::string& attribute,
   if (!node->hasAttributes())
     return false;
   Array<std::string>* attributes = node->getAttributes(nullptr);
-  for (size_t i = 0; i < attributes->length() - 1; i += 2) {
-    if (attributes->get(i) == attribute) {
-      return attributes->get(i + 1) == value;
+  for (size_t i = 0; i < attributes->size() - 1; i += 2) {
+    if ((*attributes)[i] == attribute) {
+      return (*attributes)[i + 1] == value;
     }
   }
   return false;
@@ -54,8 +54,9 @@ DOM::Node* FindNodeByAttribute(const std::string& attribute,
     return root;
 
   Array<DOM::Node>* children = root->getChildren(nullptr);
-  for (size_t i = 0; i < children->length(); ++i) {
-    DOM::Node* node = FindNodeByAttribute(attribute, value, children->get(i));
+  for (size_t i = 0; i < children->size(); ++i) {
+    DOM::Node* node =
+        FindNodeByAttribute(attribute, value, (*children)[i].get());
     if (node)
       return node;
   }
@@ -285,9 +286,9 @@ TEST_F(VizDevToolsTest, InitialFrameSinkHierarchy) {
   DOM::Node* node3 = FindFrameSinkNode(kFrameSink3, root());
 
   // The first and third frame sinks are children of the root element.
-  EXPECT_EQ(node1, root()->getChildren(nullptr)->get(0));
-  EXPECT_EQ(node2, node1->getChildren(nullptr)->get(0));
-  EXPECT_EQ(node3, root()->getChildren(nullptr)->get(1));
+  EXPECT_EQ(node1, (*(root()->getChildren(nullptr)))[0].get());
+  EXPECT_EQ(node2, (*(node1->getChildren(nullptr)))[0].get());
+  EXPECT_EQ(node3, (*(root()->getChildren(nullptr)))[1].get());
 }
 
 // Verify that FrameSinkElements are inserted into the tree according to the
@@ -523,8 +524,8 @@ TEST_F(VizDevToolsTest, FrameSinkAndSurfaceElementOrdering) {
       FindSurfaceNode(surface_manager()->GetRootSurfaceId(), root());
 
   // The frame sink should be before the root surface node.
-  EXPECT_EQ(frame_sink_node, root()->getChildren(nullptr)->get(0));
-  EXPECT_EQ(root_surface_node, root()->getChildren(nullptr)->get(1));
+  EXPECT_EQ(frame_sink_node, (*(root()->getChildren(nullptr)))[0].get());
+  EXPECT_EQ(root_surface_node, (*(root()->getChildren(nullptr)))[1].get());
 
   // Create a frame sink element with a large id, it should still be inserted
   // before the root surface element.

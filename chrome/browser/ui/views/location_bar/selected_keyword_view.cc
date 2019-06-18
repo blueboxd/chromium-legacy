@@ -32,8 +32,7 @@ SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
   label()->SetElideBehavior(gfx::FADE_TAIL);
 }
 
-SelectedKeywordView::~SelectedKeywordView() {
-}
+SelectedKeywordView::~SelectedKeywordView() {}
 
 void SelectedKeywordView::ResetImage() {
   SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,

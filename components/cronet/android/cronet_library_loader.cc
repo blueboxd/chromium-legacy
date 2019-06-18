@@ -55,7 +55,7 @@ namespace {
 base::SingleThreadTaskExecutor* g_init_task_executor = nullptr;
 
 #if !BUILDFLAG(INTEGRATED_MODE)
-net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
+std::unique_ptr<net::NetworkChangeNotifier> g_network_change_notifier;
 #endif
 
 base::WaitableEvent g_init_thread_init_done(

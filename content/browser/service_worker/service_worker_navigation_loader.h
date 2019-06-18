@@ -50,15 +50,13 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
     // Returns the ServiceWorkerVersion fetch events for this request job should
     // be dispatched to. If no appropriate worker can be determined, returns
-    // nullptr and sets |*result| to an appropriate error.
-    virtual ServiceWorkerVersion* GetServiceWorkerVersion(
-        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
+    // nullptr.
+    virtual ServiceWorkerVersion* GetServiceWorkerVersion() = 0;
 
     // Called after dispatching the fetch event to determine if processing of
     // the request should still continue, or if processing should be aborted.
-    // When false is returned, this sets |*result| to an appropriate error.
-    virtual bool RequestStillValid(
-        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
+    // TODO(falken): This can probably be deleted.
+    virtual bool RequestStillValid() = 0;
 
     // Called to signal that loading failed, and that the resource being loaded
     // was a main resource.

@@ -1114,7 +1114,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     ASSERT_EQ(2, report.dom_size());
     // Because the order of elements is not deterministic, we basically need to
     // verify the relationship. Namely that there is an IFRAME element and that
-    // its has a DIV as its parent.
+    // it has a DIV as its parent.
     int iframe_node_id = -1;
     for (const HTMLElement& elem : report.dom()) {
       if (elem.tag() == "IFRAME") {

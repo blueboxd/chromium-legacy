@@ -103,8 +103,7 @@ bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID BadClockBlockingPage::GetTypeForTesting()
-    const {
+InterstitialPageDelegate::TypeID BadClockBlockingPage::GetTypeForTesting() {
   return BadClockBlockingPage::kTypeForTesting;
 }
 

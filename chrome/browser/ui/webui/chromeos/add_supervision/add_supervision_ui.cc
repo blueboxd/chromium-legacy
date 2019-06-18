@@ -25,7 +25,7 @@
 
 namespace {
 
-constexpr int kDialogHeightPx = 672;
+constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
 // Id of System Dialog used to show the Add Supervision flow.
 std::string& GetDialogId() {

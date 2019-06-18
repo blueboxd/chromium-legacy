@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
@@ -222,10 +221,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     profile = ProfileManager::GetActiveUserProfile();
     if (!profile->IsGuestSession() && !profile->IsSystemProfile())
       profile = profile->GetOriginalProfile();
-
-    app_sync_ui_state_ = AppSyncUIState::Get(profile);
-    if (app_sync_ui_state_)
-      app_sync_ui_state_->AddObserver(this);
   }
 
   // All profile relevant settings get bound to the current profile.
@@ -1185,9 +1180,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
 }
 
 void ChromeLauncherController::ReleaseProfile() {
-  if (app_sync_ui_state_)
-    app_sync_ui_state_->RemoveObserver(this);
-
   app_updaters_.clear();
 
   pref_change_registrar_.RemoveAll();
@@ -1275,22 +1267,3 @@ void ChromeLauncherController::ShelfItemChanged(
     RemovePinPosition(profile(), old_item.id);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// AppSyncUIStateObserver:
-
-void ChromeLauncherController::OnAppSyncUIStatusChanged() {
-  // Update the app list button title to reflect the syncing status.
-  base::string16 title = l10n_util::GetStringUTF16(
-      app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING
-          ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
-          : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
-
-  const int app_list_index =
-      model_->GetItemIndexForType(ash::TYPE_APP_LIST_DEPRECATED);
-  DCHECK_GE(app_list_index, 0);
-  ash::ShelfItem item = model_->items()[app_list_index];
-  if (item.title != title) {
-    item.title = title;
-    model_->Set(app_list_index, item);
-  }
-}

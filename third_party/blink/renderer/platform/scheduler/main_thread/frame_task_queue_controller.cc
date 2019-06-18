@@ -71,7 +71,9 @@ FrameTaskQueueController::BestEffortTaskQueue() {
     best_effort_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kIdle)
+            .SetFrameScheduler(frame_scheduler_impl_)
             .SetFixedPriority(TaskQueue::QueuePriority::kBestEffortPriority));
+    TaskQueueCreated(best_effort_task_queue_);
   }
   return best_effort_task_queue_;
 }

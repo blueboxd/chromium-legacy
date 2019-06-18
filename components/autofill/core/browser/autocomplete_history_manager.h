@@ -195,6 +195,10 @@ class AutocompleteHistoryManager : public KeyedService,
   void OnAutofillCleanupReturned(WebDataServiceBase::Handle current_handle,
                                  std::unique_ptr<WDTypedResult> result);
 
+  // Returns true if the given |field| and its value are valid to be saved as a
+  // new or updated Autocomplete entry.
+  bool IsFieldValueSaveable(const FormFieldData& field);
+
   // Must outlive this object.
   scoped_refptr<AutofillWebDataService> profile_database_;
 

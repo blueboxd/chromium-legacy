@@ -33,8 +33,8 @@ namespace {
 
 TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("Orange", "Orange");
   request.headers.SetHeader("Apple", "Red");
@@ -58,8 +58,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("Accept", "everything");
   request.headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
@@ -80,24 +80,23 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("Orange", "Orange");
 
   std::unique_ptr<ResourceRequest> preflight =
       PreflightController::CreatePreflightRequestForTesting(request);
 
-  EXPECT_EQ(mojom::FetchCredentialsMode::kOmit,
-            preflight->fetch_credentials_mode);
+  EXPECT_EQ(mojom::CredentialsMode::kOmit, preflight->credentials_mode);
   EXPECT_FALSE(preflight->allow_credentials);
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest,
      ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
                             "text/plain");
@@ -113,8 +112,8 @@ TEST(PreflightControllerCreatePreflightRequestTest,
 
 TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("X-Custom-Header", "foobar");
 
@@ -130,8 +129,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
 TEST(PreflightControllerCreatePreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
                             "application/octet-stream");
@@ -147,8 +146,8 @@ TEST(PreflightControllerCreatePreflightRequestTest,
 
 TEST(PreflightControllerCreatePreflightRequestTest, ExcludeForbiddenHeaders) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("referer", "https://www.google.com/");
 
@@ -162,8 +161,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeForbiddenHeaders) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, Tainted) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin::Create(GURL("https://example.com"));
 
   std::unique_ptr<ResourceRequest> preflight =
@@ -177,8 +176,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, Tainted) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, FetchWindowId) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
                             "application/octet-stream");
@@ -192,8 +191,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, FetchWindowId) {
 
 TEST(PreflightControllerCreatePreflightRequestTest, RenderFrameId) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.request_initiator = url::Origin();
   request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
                             "application/octet-stream");
@@ -314,8 +313,8 @@ class PreflightControllerTest : public testing::Test {
 
 TEST_F(PreflightControllerTest, CheckInvalidRequest) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.url = GetURL("/404");
   request.request_initiator = url::Origin::Create(request.url);
 
@@ -328,8 +327,8 @@ TEST_F(PreflightControllerTest, CheckInvalidRequest) {
 
 TEST_F(PreflightControllerTest, CheckValidRequest) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.url = GetURL("/allow");
   request.request_initiator = url::Origin::Create(request.url);
 
@@ -365,8 +364,8 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
 
 TEST_F(PreflightControllerTest, CheckTaintedRequest) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.url = GetURL("/tainted");
   request.request_initiator = url::Origin::Create(request.url);
 

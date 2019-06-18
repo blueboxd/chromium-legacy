@@ -347,7 +347,7 @@ void Resource::FinishAsError(const ResourceError& error,
   }
 }
 
-void Resource::Finish(TimeTicks load_response_end,
+void Resource::Finish(base::TimeTicks load_response_end,
                       base::SingleThreadTaskRunner* task_runner) {
   DCHECK(!is_revalidating_);
   load_response_end_ = load_response_end;
@@ -743,8 +743,7 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   // TODO(yhirano): Remove this.
   if (GetResponse().WasFetchedViaServiceWorker() &&
       GetResponse().GetType() == network::mojom::FetchResponseType::kOpaque &&
-      new_request.GetFetchRequestMode() !=
-          network::mojom::FetchRequestMode::kNoCors) {
+      new_request.GetMode() != network::mojom::RequestMode::kNoCors) {
     return MatchStatus::kUnknownFailure;
   }
 
@@ -818,25 +817,25 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   // securityOrigin has more complicated checks which callers are responsible
   // for.
 
-  if (new_request.GetFetchCredentialsMode() !=
-      resource_request_.GetFetchCredentialsMode()) {
+  if (new_request.GetCredentialsMode() !=
+      resource_request_.GetCredentialsMode()) {
     return MatchStatus::kRequestCredentialsModeDoesNotMatch;
   }
 
-  const auto new_mode = new_request.GetFetchRequestMode();
-  const auto existing_mode = resource_request_.GetFetchRequestMode();
+  const auto new_mode = new_request.GetMode();
+  const auto existing_mode = resource_request_.GetMode();
 
   if (new_mode != existing_mode)
     return MatchStatus::kRequestModeDoesNotMatch;
 
   switch (new_mode) {
-    case network::mojom::FetchRequestMode::kNoCors:
-    case network::mojom::FetchRequestMode::kNavigate:
+    case network::mojom::RequestMode::kNoCors:
+    case network::mojom::RequestMode::kNavigate:
       break;
 
-    case network::mojom::FetchRequestMode::kCors:
-    case network::mojom::FetchRequestMode::kSameOrigin:
-    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+    case network::mojom::RequestMode::kCors:
+    case network::mojom::RequestMode::kSameOrigin:
+    case network::mojom::RequestMode::kCorsWithForcedPreflight:
       // We have two separate CORS handling logics in ThreadableLoader
       // and ResourceLoader and sharing resources is difficult when they are
       // handled differently.
@@ -1211,10 +1210,6 @@ blink::mojom::CodeCacheType Resource::ResourceTypeToCodeCacheType(
       // Also accept mock resources for testing.
       resource_type == ResourceType::kMock);
   return ToCodeCacheType(resource_type);
-}
-
-bool Resource::ShouldBlockLoadEvent() const {
-  return !link_preload_ && IsLoadEventBlockingResourceType();
 }
 
 bool Resource::IsLoadEventBlockingResourceType() const {

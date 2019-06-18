@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -230,7 +230,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
       SilenceSpokenFeedback();
       // Clear the focus highlight.
       Shell::Get()->accessibility_focus_ring_controller()->SetFocusRing(
-          extension_misc::kChromeVoxExtensionId, mojom::FocusRing::New());
+          extension_misc::kChromeVoxExtensionId, nullptr);
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }

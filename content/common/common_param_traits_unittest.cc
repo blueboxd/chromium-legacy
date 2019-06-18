@@ -304,7 +304,7 @@ TEST(IPCMessageTest, SurfaceInfo) {
 }
 
 TEST(IPCMessageTest, WebCursor) {
-  content::CursorInfo info(blink::WebCursorInfo::kTypeCustom);
+  content::CursorInfo info(ui::CursorType::kCustom);
   info.custom_image.allocN32Pixels(32, 32);
   info.hotspot = gfx::Point(10, 20);
   info.image_scale_factor = 1.5f;

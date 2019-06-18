@@ -153,6 +153,12 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_HID_GUARD,
   CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA,
 
+  // Wake Lock API, which has two lock types: screen and system locks.
+  // Currently, screen locks do not need any additional permission, and system
+  // locks are always denied while the right UI is worked out.
+  CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN,
+  CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

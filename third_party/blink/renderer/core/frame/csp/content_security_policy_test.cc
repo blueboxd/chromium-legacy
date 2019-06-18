@@ -1601,4 +1601,23 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
       csp->HasPolicyFromSource(kContentSecurityPolicyHeaderSourceHTTP));
 }
 
+TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {
+  const KURL url("https://example.test");
+
+  // Security Origin of execution context might change when sandbox flags
+  // are applied. This shouldn't change the application of the 'self'
+  // determination.
+  secure_origin = secure_origin->DeriveNewOpaqueOrigin();
+  execution_context = CreateExecutionContext();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("default-src 'self';",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceMeta);
+  EXPECT_TRUE(
+      csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE, url, String(),
+                        IntegrityMetadataSet(), kParserInserted,
+                        ResourceRequest::RedirectStatus::kNoRedirect,
+                        SecurityViolationReportingPolicy::kSuppressReporting));
+}
+
 }  // namespace blink

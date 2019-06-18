@@ -306,7 +306,7 @@ void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
 }
 
 void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
-    const std::vector<unsigned>& set) {
+    const WebVector<unsigned>& set) {
   DCHECK(GetFrame());
   GetFrame()->GetSecurityContext()->SetInsecureNavigationsSet(set);
 }

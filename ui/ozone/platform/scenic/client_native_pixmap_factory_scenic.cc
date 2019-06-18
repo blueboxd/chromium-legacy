@@ -99,6 +99,7 @@ class ScenicClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
   std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
       gfx::NativePixmapHandle handle,
       const gfx::Size& size,
+      gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
     if (handle.planes.empty())
       return nullptr;

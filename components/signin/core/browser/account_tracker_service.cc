@@ -135,14 +135,6 @@ void AccountTrackerService::Shutdown() {
   accounts_.clear();
 }
 
-void AccountTrackerService::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void AccountTrackerService::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
 std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
   std::vector<AccountInfo> accounts;
   for (const auto& pair : accounts_) {
@@ -208,15 +200,15 @@ void AccountTrackerService::SetMigrationDone() {
 void AccountTrackerService::NotifyAccountUpdated(
     const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());
-  for (auto& observer : observer_list_)
-    observer.OnAccountUpdated(account_info);
+  if (on_account_updated_callback_)
+    on_account_updated_callback_.Run(account_info);
 }
 
 void AccountTrackerService::NotifyAccountRemoved(
     const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());
-  for (auto& observer : observer_list_)
-    observer.OnAccountRemoved(account_info);
+  if (on_account_removed_callback_)
+    on_account_removed_callback_.Run(account_info);
 }
 
 void AccountTrackerService::StartTrackingAccount(
@@ -301,6 +293,18 @@ void AccountTrackerService::SetIsAdvancedProtectionAccount(
   if (!account_info.gaia.empty())
     NotifyAccountUpdated(account_info);
   SaveToPrefs(account_info);
+}
+
+void AccountTrackerService::SetOnAccountUpdatedCallback(
+    AccountInfoCallback callback) {
+  DCHECK(!on_account_updated_callback_);
+  on_account_updated_callback_ = callback;
+}
+
+void AccountTrackerService::SetOnAccountRemovedCallback(
+    AccountInfoCallback callback) {
+  DCHECK(!on_account_removed_callback_);
+  on_account_removed_callback_ = callback;
 }
 
 void AccountTrackerService::MigrateToGaiaId() {

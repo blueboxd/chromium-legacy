@@ -76,7 +76,7 @@ class OverviewWindowDragTest
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
     int additional_browsers = std::get<0>(GetParam()) - 1;
     bool blank_page = std::get<1>(GetParam());

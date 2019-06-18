@@ -52,10 +52,21 @@ Polymer({
   onKeydown_: function(e) {
     e.stopPropagation();
     const searchInput = this.$.searchBox.getSearchInput();
-    if (e.key == 'Escape' &&
-        (e.composedPath()[0] !== searchInput || !searchInput.value.trim())) {
+    const eventInSearchBox = e.composedPath().includes(searchInput);
+    if (e.key == 'Escape' && (!eventInSearchBox || !searchInput.value.trim())) {
       this.$.dialog.cancel();
       e.preventDefault();
+      return;
+    }
+
+    if (e.key == 'Enter' && !eventInSearchBox) {
+      const activeElementTag = e.composedPath()[0].tagName;
+      if (['CR-BUTTON', 'SELECT'].includes(activeElementTag)) {
+        return;
+      }
+      this.onApplyButtonClick_();
+      e.preventDefault();
+      return;
     }
   },
 

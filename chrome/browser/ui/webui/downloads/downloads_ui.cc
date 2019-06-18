@@ -16,7 +16,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -167,7 +166,6 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui)
 
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
-  DarkModeHandler::Initialize(web_ui, source);
   ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));

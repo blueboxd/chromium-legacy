@@ -11,8 +11,9 @@ Polymer({
   is: 'settings-internet-page',
 
   behaviors: [
-    I18nBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior,
-    CrNetworkListenerBehavior
+    I18nBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -91,31 +92,6 @@ Polymer({
     managedNetworkAvailable: {
       type: Boolean,
       value: false,
-    },
-
-    /** Overridden from NetworkListenerBehavior. */
-    networkListChangeSubscriberSelectors_: {
-      type: Array,
-      value: function() {
-        return [
-          'network-summary',
-          'settings-internet-detail-page',
-          'settings-internet-known-networks-page',
-          'settings-internet-subpage',
-        ];
-      }
-    },
-
-    /** Overridden from NetworkListenerBehavior. */
-    networksChangeSubscriberSelectors_: {
-      type: Array,
-      value: function() {
-        return [
-          'network-summary',
-          'settings-internet-detail-page',
-          'settings-internet-subpage',
-        ];
-      }
     },
 
     /**

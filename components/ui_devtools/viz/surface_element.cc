@@ -57,16 +57,11 @@ void SurfaceElement::GetVisible(bool* visible) const {
 
 void SurfaceElement::SetVisible(bool visible) {}
 
-std::unique_ptr<protocol::Array<std::string>> SurfaceElement::GetAttributes()
-    const {
-  auto attributes = protocol::Array<std::string>::create();
-  attributes->addItem("SurfaceId");
-  attributes->addItem(surface_id_.ToString());
-  attributes->addItem("FrameSink Debug Label");
-  attributes->addItem(
+std::vector<std::string> SurfaceElement::GetAttributes() const {
+  return {
+      "SurfaceId", surface_id_.ToString(), "FrameSink Debug Label",
       frame_sink_manager_->GetFrameSinkDebugLabel(surface_id_.frame_sink_id())
-          .as_string());
-  return attributes;
+          .as_string()};
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

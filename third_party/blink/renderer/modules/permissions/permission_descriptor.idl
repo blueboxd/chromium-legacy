@@ -21,6 +21,7 @@ enum PermissionName {
     "gyroscope",
     "magnetometer",
     // "clipboard",
+    "wake-lock",
 
     // Non-standard:
     "accessibility-events",

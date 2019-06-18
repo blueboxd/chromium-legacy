@@ -132,17 +132,17 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool corb_excluded(const network::ResourceRequest& request) {
     return request.corb_excluded;
   }
-  static network::mojom::FetchRequestMode fetch_request_mode(
+  static network::mojom::RequestMode mode(
       const network::ResourceRequest& request) {
-    return request.fetch_request_mode;
+    return request.mode;
   }
-  static network::mojom::FetchCredentialsMode fetch_credentials_mode(
+  static network::mojom::CredentialsMode credentials_mode(
       const network::ResourceRequest& request) {
-    return request.fetch_credentials_mode;
+    return request.credentials_mode;
   }
-  static network::mojom::FetchRedirectMode fetch_redirect_mode(
+  static network::mojom::RedirectMode redirect_mode(
       const network::ResourceRequest& request) {
-    return request.fetch_redirect_mode;
+    return request.redirect_mode;
   }
   static const std::string& fetch_integrity(
       const network::ResourceRequest& request) {

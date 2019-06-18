@@ -85,9 +85,7 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     // Wait for TabletModeController to take its initial state from the power
     // manager.
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(ash::Shell::Get()
-                     ->tablet_mode_controller()
-                     ->IsTabletModeWindowManagerEnabled());
+    EXPECT_FALSE(ash::Shell::Get()->tablet_mode_controller()->InTabletMode());
   }
 
   void TearDown() override {
@@ -129,7 +127,7 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
   void EnableTabletMode(bool enable) {
     ash::TabletModeController* controller =
         ash::Shell::Get()->tablet_mode_controller();
-    controller->EnableTabletModeWindowManager(enable);
+    controller->SetEnabledForTest(enable);
   }
 
   display::DisplayManager* GetDisplayManager() const {

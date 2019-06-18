@@ -123,8 +123,8 @@ class AssistantBottomBarCoordinator
         // Set children top margins to have a spacing between them.
         int childSpacing = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
-        int suggestionsVerticalInset = activity.getResources().getDimensionPixelSize(
-                org.chromium.chrome.R.dimen.chip_bg_vertical_inset);
+        int suggestionsVerticalInset =
+                activity.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
@@ -142,8 +142,7 @@ class AssistantBottomBarCoordinator
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mFormCoordinator.getView());
 
-        View bottomSheetContainer =
-                bottomSheet.findViewById(org.chromium.chrome.R.id.bottom_sheet_content);
+        View bottomSheetContainer = bottomSheet.findViewById(R.id.bottom_sheet_content);
         bottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetClosed(int reason) {

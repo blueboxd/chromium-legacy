@@ -124,6 +124,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     } else {
       min_sdk_version = 19
     }
+    target_sdk_version = android_sdk_version
 
     resource_blacklist_regex = "[/-]xxxhdpi[/-]"
 

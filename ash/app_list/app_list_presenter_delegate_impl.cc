@@ -128,9 +128,7 @@ base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(
 }
 
 bool AppListPresenterDelegateImpl::IsTabletMode() const {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 app_list::AppListViewDelegate*

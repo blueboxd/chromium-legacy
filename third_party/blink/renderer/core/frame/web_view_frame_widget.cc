@@ -35,10 +35,6 @@ void WebViewFrameWidget::Resize(const WebSize& size) {
   web_view_->Resize(size);
 }
 
-void WebViewFrameWidget::ResizeVisualViewport(const WebSize& size) {
-  web_view_->ResizeVisualViewport(size);
-}
-
 void WebViewFrameWidget::DidEnterFullscreen() {
   web_view_->DidEnterFullscreen();
 }

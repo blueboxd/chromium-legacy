@@ -631,6 +631,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void AddLayerBeneathView(ui::Layer* new_layer);
   virtual void RemoveLayerBeneathView(ui::Layer* old_layer);
 
+  // Gets the layers associated with this view that should be immediate children
+  // of the parent layer. They are returned in bottom-to-top order. This
+  // includes |this->layer()| and any layers added with |AddLayerBeneathView()|.
+  // Returns an empty vector if this view doesn't paint to a layer.
+  std::vector<ui::Layer*> GetLayersInOrder();
+
   // ui::LayerObserver:
   void LayerDestroyed(ui::Layer* layer) override;
 

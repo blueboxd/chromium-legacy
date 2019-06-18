@@ -5,10 +5,12 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -19,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
@@ -55,6 +58,8 @@ class MathCalculatorImpl : public math::Calculator {
   }
 
   Receiver<math::Calculator>& receiver() { return receiver_; }
+
+  double total() const { return total_; }
 
  private:
   double total_;
@@ -926,6 +931,92 @@ TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   // internal Remote can be deleted before the background thread itself is
   // cleaned up.
   shared_remote.reset();
+}
+
+TEST_P(RemoteTest, RemoteSet) {
+  std::vector<base::Optional<MathCalculatorImpl>> impls(3);
+
+  PendingRemote<math::Calculator> remote0;
+  PendingRemote<math::Calculator> remote1;
+  PendingRemote<math::Calculator> remote2;
+  impls[0].emplace(remote0.InitWithNewPipeAndPassReceiver());
+  impls[1].emplace(remote1.InitWithNewPipeAndPassReceiver());
+  impls[2].emplace(remote2.InitWithNewPipeAndPassReceiver());
+
+  RemoteSet<math::Calculator> remotes;
+  auto id0 = remotes.Add(Remote<math::Calculator>(std::move(remote0)));
+  auto id1 = remotes.Add(std::move(remote1));
+  auto id2 = remotes.Add(std::move(remote2));
+
+  // Send a message to each and wait for a reply.
+  {
+    base::RunLoop loop;
+    constexpr double kValue = 42.0;
+    auto on_add = base::BarrierClosure(3, loop.QuitClosure());
+    for (auto& remote : remotes) {
+      remote->Add(kValue, base::BindLambdaForTesting([&](double total) {
+                    EXPECT_EQ(kValue, total);
+                    on_add.Run();
+                  }));
+    }
+    loop.Run();
+
+    EXPECT_EQ(kValue, impls[0]->total());
+    EXPECT_EQ(kValue, impls[1]->total());
+    EXPECT_EQ(kValue, impls[2]->total());
+  }
+
+  EXPECT_FALSE(remotes.empty());
+
+  // Wipe out each of the impls and wait for a disconnect notification for each.
+
+  {
+    base::RunLoop loop;
+    remotes.set_disconnect_handler(
+        base::BindLambdaForTesting([&](RemoteSetElementId id) {
+          EXPECT_EQ(id, id0);
+          EXPECT_FALSE(remotes.Contains(id0));
+          EXPECT_TRUE(remotes.Contains(id1));
+          EXPECT_TRUE(remotes.Contains(id2));
+          loop.Quit();
+        }));
+    impls[0].reset();
+    loop.Run();
+  }
+
+  EXPECT_FALSE(remotes.empty());
+
+  {
+    base::RunLoop loop;
+    remotes.set_disconnect_handler(
+        base::BindLambdaForTesting([&](RemoteSetElementId id) {
+          EXPECT_EQ(id, id2);
+          EXPECT_FALSE(remotes.Contains(id0));
+          EXPECT_TRUE(remotes.Contains(id1));
+          EXPECT_FALSE(remotes.Contains(id2));
+          loop.Quit();
+        }));
+    impls[2].reset();
+    loop.Run();
+  }
+
+  EXPECT_FALSE(remotes.empty());
+
+  {
+    base::RunLoop loop;
+    remotes.set_disconnect_handler(
+        base::BindLambdaForTesting([&](RemoteSetElementId id) {
+          EXPECT_EQ(id, id1);
+          EXPECT_FALSE(remotes.Contains(id0));
+          EXPECT_FALSE(remotes.Contains(id1));
+          EXPECT_FALSE(remotes.Contains(id2));
+          loop.Quit();
+        }));
+    impls[1].reset();
+    loop.Run();
+  }
+
+  EXPECT_TRUE(remotes.empty());
 }
 
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RemoteTest);

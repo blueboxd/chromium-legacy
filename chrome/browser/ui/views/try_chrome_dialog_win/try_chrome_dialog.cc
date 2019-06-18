@@ -1121,9 +1121,8 @@ void TryChromeDialog::OnContextInitialized() {
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kInactiveToastCloseIcon, kBodyColor));
     close_button->set_tag(static_cast<int>(ButtonTag::CLOSE_BUTTON));
-    close_button_ = close_button.get();
     DCHECK_EQ(close_button->GetPreferredSize().width(), kCloseButtonWidth);
-    layout->AddView(close_button.release(), 1, 2);
+    close_button_ = layout->AddView(std::move(close_button), 1, 2);
     close_button_->SetVisible(false);
   } else {
     layout->SkipColumns(1);
@@ -1131,7 +1130,7 @@ void TryChromeDialog::OnContextInitialized() {
 
   // Second row.
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(logo.release());
+  layout->AddView(std::move(logo));
   // All variants have a main header.
   auto header = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(kExperiments[group_].heading_id),
@@ -1140,7 +1139,7 @@ void TryChromeDialog::OnContextInitialized() {
   header->SetEnabledColor(kHeaderColor);
   header->SetMultiLine(true);
   header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(header.release());
+  layout->AddView(std::move(header));
   layout->SkipColumns(1);
 
   // Third row: May have text or may be blank.
@@ -1153,7 +1152,7 @@ void TryChromeDialog::OnContextInitialized() {
     body_text->SetEnabledColor(kBodyColor);
     body_text->SetMultiLine(true);
     body_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->AddView(body_text.release());
+    layout->AddView(std::move(body_text));
   }
 
   // Fourth row: one or two buttons depending on group.
@@ -1179,10 +1178,10 @@ void TryChromeDialog::OnContextInitialized() {
         this, l10n_util::GetStringUTF16(IDS_WIN10_TOAST_NO_THANKS),
         TryChromeButtonType::NO_THANKS);
     no_thanks_button->set_tag(static_cast<int>(ButtonTag::NO_THANKS_BUTTON));
-    buttons->AddChildView(no_thanks_button.release());
+    buttons->AddChildView(std::move(no_thanks_button));
   }
 
-  layout->AddView(buttons.release());
+  layout->AddView(std::move(buttons));
 
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         kTextButtonPadding - kTryChromeBorderThickness);

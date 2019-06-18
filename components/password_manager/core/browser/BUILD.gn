@@ -213,6 +213,7 @@ jumbo_static_library("browser") {
     "//components/sync",
   ]
   deps = [
+    ":csv",
     ":hash_password_manager",
     ":password_generator",
     ":password_hash_data",
@@ -273,6 +274,34 @@ jumbo_static_library("browser") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+# TODO(crbug.com/974822): Ideally, all of the "import/" subdirectory would be
+# in a separate BUILD.gn file inside that subdirectory. However, this requires
+# the big "browser" target here to be split in multiple sub-targets to avoid
+# circular dependencies. For now, at least the files from "import" which can be
+# separated are made so, to limit the growth of this technical debt.
+static_library("csv") {
+  sources = [
+    "import/csv_field_parser.cc",
+    "import/csv_field_parser.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("csv_unittests") {
+  testonly = true
+  sources = [
+    "import/csv_field_parser_unittest.cc",
+  ]
+  deps = [
+    ":csv",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 static_library("password_generator") {
@@ -368,6 +397,7 @@ jumbo_static_library("test_support") {
     "//url:url",
   ]
   deps = [
+    ":csv_unittests",
     "//base",
     "//components/autofill/core/common",
     "//net:net",

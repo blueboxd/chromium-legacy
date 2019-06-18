@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/browser/webrtc/webrtc_internals_connections_observer.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -337,6 +338,18 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver* observer) {
     FreeLogList(&dictionary);
 }
 
+void WebRTCInternals::AddConnectionsObserver(
+    WebRtcInternalsConnectionsObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  connections_observers_.AddObserver(observer);
+}
+
+void WebRTCInternals::RemoveConnectionsObserver(
+    WebRtcInternalsConnectionsObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  connections_observers_.RemoveObserver(observer);
+}
+
 void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (peer_connection_data_.GetSize() > 0)
@@ -586,6 +599,8 @@ void WebRTCInternals::MaybeMarkPeerConnectionAsConnected(
     ++num_connected_connections_;
     record->SetBoolean("connected", true);
     UpdateWakeLock();
+    for (auto& observer : connections_observers_)
+      observer.OnConnectionsCountChange(num_connected_connections_);
   }
 }
 
@@ -598,6 +613,8 @@ void WebRTCInternals::MaybeMarkPeerConnectionAsNotConnected(
     --num_connected_connections_;
     DCHECK_GE(num_connected_connections_, 0);
     UpdateWakeLock();
+    for (auto& observer : connections_observers_)
+      observer.OnConnectionsCountChange(num_connected_connections_);
   }
 }
 

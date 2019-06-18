@@ -28,7 +28,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
   virtual void FetchAndInvokeScript(
       const KURL& module_url_record,
-      network::mojom::FetchCredentialsMode,
+      network::mojom::CredentialsMode,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,

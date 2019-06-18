@@ -239,6 +239,7 @@ class TabStrip : public views::AccessiblePaneView,
   bool IsTabPinned(const Tab* tab) const override;
   bool IsFirstVisibleTab(const Tab* tab) const override;
   bool IsLastVisibleTab(const Tab* tab) const override;
+  bool IsFocusInTabs() const override;
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,

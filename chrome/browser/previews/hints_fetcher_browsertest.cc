@@ -25,6 +25,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -143,7 +144,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   void SetUpComponentUpdateHints(const GURL& hint_setup_url) {
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, {});
+            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*",
+            {});
 
     // Register a QuitClosure for when the next hint update is started below.
     base::RunLoop run_loop;
@@ -182,6 +184,19 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     GURL http_url2("http://maps.google.com/");
     service->AddPointsForTesting(http_url2, 2);
+  }
+
+  void SetTopHostBlacklistState(
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState
+          blacklist_state) {
+    Profile::FromBrowserContext(browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetBrowserContext())
+        ->GetPrefs()
+        ->SetInteger(
+            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+            static_cast<int>(blacklist_state));
   }
 
   void LoadHintsForUrl(const GURL& url) {
@@ -569,4 +584,58 @@ IN_PROC_BROWSER_TEST_F(
       static_cast<int>(
           previews::HintCacheStore::StoreEntryType::kComponentHint),
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherOverrideTimer)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+  GURL url = https_url();
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      previews::switches::kFetchHintsOverride);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      previews::switches::kFetchHintsOverrideTimer);
+
+  SeedSiteEngagementService();
+
+  // Set the blacklist state to initialized so the sites in the engagement
+  // service will be used and not blacklisted on the first GetTopHosts request.
+  SetTopHostBlacklistState(optimization_guide::prefs::
+                               HintsFetcherTopHostBlacklistState::kInitialized);
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the follow histograms as OnePlatform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "Previews.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  // There should be 2 sites in the engagement service.
+  histogram_tester->ExpectBucketCount(
+      "Previews.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          histogram_tester, "Previews.HintsFetcher.GetHintsRequest.Status", 1),
+      1);
+
+  LoadHintsForUrl(https_url());
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verifies that the fetched hint is loaded and not the component hint as
+  // fetched hints are prioritized.
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(previews::HintCacheStore::StoreEntryType::kFetchedHint),
+      1);
+
+  histogram_tester->ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HintType.Loaded",
+      static_cast<int>(
+          previews::HintCacheStore::StoreEntryType::kComponentHint),
+      0);
 }

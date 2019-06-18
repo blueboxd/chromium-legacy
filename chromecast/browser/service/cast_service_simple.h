@@ -35,11 +35,6 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
   void StartInternal() override;
   void StopInternal() override;
 
-  // CastWebView::Delegate implementation:
-  void OnPageStopped(CastWebContents* cast_web_contents,
-                     int error_code) override;
-  void OnPageStateChanged(CastWebContents* cast_web_contents) override;
-
   // CastContentWindow::Delegate implementation:
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;

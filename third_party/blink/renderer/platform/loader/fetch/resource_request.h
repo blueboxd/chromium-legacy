@@ -291,12 +291,8 @@ class PLATFORM_EXPORT ResourceRequest final {
     request_context_ = context;
   }
 
-  network::mojom::FetchRequestMode GetFetchRequestMode() const {
-    return fetch_request_mode_;
-  }
-  void SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
-    fetch_request_mode_ = mode;
-  }
+  network::mojom::RequestMode GetMode() const { return mode_; }
+  void SetMode(network::mojom::RequestMode mode) { mode_ = mode; }
 
   // A resource request's fetch_importance_mode_ is a developer-set priority
   // hint that differs from priority_. It is used in
@@ -313,18 +309,18 @@ class PLATFORM_EXPORT ResourceRequest final {
     fetch_importance_mode_ = mode;
   }
 
-  network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
-    return fetch_credentials_mode_;
+  network::mojom::CredentialsMode GetCredentialsMode() const {
+    return credentials_mode_;
   }
-  void SetFetchCredentialsMode(network::mojom::FetchCredentialsMode mode) {
-    fetch_credentials_mode_ = mode;
+  void SetCredentialsMode(network::mojom::CredentialsMode mode) {
+    credentials_mode_ = mode;
   }
 
-  network::mojom::FetchRedirectMode GetFetchRedirectMode() const {
-    return fetch_redirect_mode_;
+  network::mojom::RedirectMode GetRedirectMode() const {
+    return redirect_mode_;
   }
-  void SetFetchRedirectMode(network::mojom::FetchRedirectMode redirect) {
-    fetch_redirect_mode_ = redirect;
+  void SetRedirectMode(network::mojom::RedirectMode redirect) {
+    redirect_mode_ = redirect;
   }
 
   const String& GetFetchIntegrity() const { return fetch_integrity_; }
@@ -444,7 +440,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TODO(yoav): initial_url_for_resource_timing_ is a stop-gap only needed
   // until Out-of-Blink CORS lands: https://crbug.com/736308
   KURL initial_url_for_resource_timing_;
-  // TimeDelta::Max() represents the default timeout on platforms that have one.
+  // base::TimeDelta::Max() represents the default timeout on platforms that
+  // have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
   scoped_refptr<const SecurityOrigin> top_frame_origin_;
@@ -474,10 +471,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
-  network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::RequestMode mode_;
   mojom::FetchImportanceMode fetch_importance_mode_;
-  network::mojom::FetchCredentialsMode fetch_credentials_mode_;
-  network::mojom::FetchRedirectMode fetch_redirect_mode_;
+  network::mojom::CredentialsMode credentials_mode_;
+  network::mojom::RedirectMode redirect_mode_;
   String fetch_integrity_;
   // TODO(domfarolino): Use AtomicString for referrer_string_ once
   // off-main-thread fetch is fully implemented and ResourceRequest never gets

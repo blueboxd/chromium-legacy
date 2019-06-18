@@ -350,10 +350,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
 // snapped and the other snap region is hosting overview mode.
 TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   // Verify that we're in tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(Shell::Get()
-                  ->tablet_mode_controller()
-                  ->IsTabletModeWindowManagerEnabled());
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
@@ -394,10 +392,8 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
 // when we enable the docked magnifier, but rather their bounds are updated.
 TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   // Verify that we're in tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(Shell::Get()
-                  ->tablet_mode_controller()
-                  ->IsTabletModeWindowManagerEnabled());
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   std::unique_ptr<aura::Window> window1(
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));

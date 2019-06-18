@@ -72,7 +72,7 @@ class AwWebContentsDelegate
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
 

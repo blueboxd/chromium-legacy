@@ -58,13 +58,17 @@ void CooperativeSchedulingManager::LeaveAllowedStackScope() {
 
 void CooperativeSchedulingManager::SafepointSlow() {
   // Avoid nesting more than two levels.
-  if (running_nested_loop_)
+  if (running_nested_loop_ || base::RunLoop::IsNestedOnCurrentThread())
     return;
 
   // TODO(keishi): Also bail if V8 EnteredContextCount is more than 1
-  Thread::MainThread()->Scheduler()->SetHasSafepoint();
+  // This task slice completes here.
+  Thread::MainThread()->Scheduler()->OnSafepointEntered();
 
   RunNestedLoop();
+
+  // A new task slice starts here.
+  Thread::MainThread()->Scheduler()->OnSafepointExited();
 }
 
 void CooperativeSchedulingManager::RunNestedLoop() {

@@ -21,17 +21,16 @@ class ModuleScriptCreationParams {
   DISALLOW_NEW();
 
  public:
-  ModuleScriptCreationParams(
-      const KURL& response_url,
-      const ParkableString& source_text,
-      SingleCachedMetadataHandler* cache_handler,
-      network::mojom::FetchCredentialsMode fetch_credentials_mode)
+  ModuleScriptCreationParams(const KURL& response_url,
+                             const ParkableString& source_text,
+                             SingleCachedMetadataHandler* cache_handler,
+                             network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
         is_isolated_(false),
         source_text_(source_text),
         isolated_source_text_(),
         cache_handler_(cache_handler),
-        fetch_credentials_mode_(fetch_credentials_mode) {}
+        credentials_mode_(credentials_mode) {}
 
   ~ModuleScriptCreationParams() = default;
 
@@ -54,8 +53,8 @@ class ModuleScriptCreationParams {
     return source_text_;
   }
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
-  network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
-    return fetch_credentials_mode_;
+  network::mojom::CredentialsMode GetFetchCredentialsMode() const {
+    return credentials_mode_;
   }
 
   bool IsSafeToSendToAnotherThread() const {
@@ -64,15 +63,14 @@ class ModuleScriptCreationParams {
 
  private:
   // Creates an isolated copy.
-  ModuleScriptCreationParams(
-      const KURL& response_url,
-      const String& isolated_source_text,
-      network::mojom::FetchCredentialsMode fetch_credentials_mode)
+  ModuleScriptCreationParams(const KURL& response_url,
+                             const String& isolated_source_text,
+                             network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
         is_isolated_(true),
         source_text_(),
         isolated_source_text_(isolated_source_text),
-        fetch_credentials_mode_(fetch_credentials_mode) {}
+        credentials_mode_(credentials_mode) {}
 
   const KURL response_url_;
 
@@ -85,7 +83,7 @@ class ModuleScriptCreationParams {
   // |cache_handler_| is cleared when crossing thread boundaries.
   Persistent<SingleCachedMetadataHandler> cache_handler_;
 
-  const network::mojom::FetchCredentialsMode fetch_credentials_mode_;
+  const network::mojom::CredentialsMode credentials_mode_;
 };
 
 }  // namespace blink

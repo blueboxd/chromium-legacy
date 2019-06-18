@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -27,14 +28,13 @@ class CONTENT_EXPORT FileURLLoaderFactory
     : public network::mojom::URLLoaderFactory,
       public base::SupportsWeakPtr<FileURLLoaderFactory> {
  public:
-  // SequencedTaskRunner must be allowed to block and should have background
-  // priority since it will be used to schedule synchronous file I/O tasks.
   // |shared_cors_origin_access_list| can be nullptr if only "no-cors" requests
-  // will be made.
+  // will be made. Thread pool tasks posted by the constructed
+  // FileURLLoadedFactory use |priority|.
   FileURLLoaderFactory(const base::FilePath& profile_path,
                        scoped_refptr<const SharedCorsOriginAccessList>
                            shared_cors_origin_access_list,
-                       scoped_refptr<base::SequencedTaskRunner> task_runner);
+                       base::TaskPriority task_priority);
   ~FileURLLoaderFactory() override;
 
  private:

@@ -78,13 +78,6 @@ class WebWidget {
   // Called to resize the WebWidget.
   virtual void Resize(const WebSize&) {}
 
-  // Resizes the unscaled visual viewport. Normally the unscaled visual
-  // viewport is the same size as the main frame. The passed size becomes the
-  // size of the viewport when unscaled (i.e. scale = 1). This is used to
-  // shrink the visible viewport to allow things like the ChromeOS virtual
-  // keyboard to overlay over content but allow scrolling it into view.
-  virtual void ResizeVisualViewport(const WebSize&) {}
-
   // Called to notify the WebWidget of entering/exiting fullscreen mode.
   virtual void DidEnterFullscreen() {}
   virtual void DidExitFullscreen() {}

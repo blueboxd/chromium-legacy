@@ -211,7 +211,7 @@ TabletModeController::TabletModeController()
 
   // TODO(jonross): Do not create TabletModeController if the flag is
   // unavailable. This will require refactoring
-  // IsTabletModeWindowManagerEnabled to check for the existence of the
+  // InTabletMode to check for the existence of the
   // controller.
   if (ShouldInitTabletModeController()) {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -265,69 +265,12 @@ void TabletModeController::SetForceNoScreenshotForTest() {
   force_no_screenshot = true;
 }
 
-// TODO(jcliang): Hide or remove EnableTabletModeWindowManager
-// (http://crbug.com/620241).
-void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
-  bool is_enabled = IsTabletModeWindowManagerEnabled();
-  if (should_enable == is_enabled)
-    return;
-
-  // Hide the context menu on entering tablet mode to prevent users from
-  // accessing forbidden options. Hide the context menu on exiting tablet mode
-  // to match behaviors.
-  for (auto* root_window : Shell::Get()->GetAllRootWindows())
-    RootWindowController::ForWindow(root_window)->HideContextMenu();
-
-  // Suspend occlusion tracker when entering or exiting tablet mode.
-  SuspendOcclusionTracker();
-  DeleteScreenshot();
-
-  if (should_enable) {
-    state_ = State::kEnteringTabletMode;
-
-    // Take a screenshot if there is a top window that will get animated.
-    // TODO(sammiequon): Handle the case where the top window is not on the
-    // primary display.
-    aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
-    bool top_window_on_primary_display =
-        top_window &&
-        top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
-    if (!force_no_screenshot && top_window_on_primary_display) {
-      screenshot_set_callback_.Reset(
-          base::BindOnce(&TabletModeController::FinishInitTabletMode,
-                         weak_factory_.GetWeakPtr()));
-      TakeScreenshot(top_window, screenshot_set_callback_.callback());
-    } else {
-      FinishInitTabletMode();
-    }
-  } else {
-    state_ = State::kExitingTabletMode;
-
-    tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
-    for (auto& observer : tablet_mode_observers_)
-      observer.OnTabletModeEnding();
-    tablet_mode_window_manager_->Shutdown();
-    tablet_mode_window_manager_.reset();
-    base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
-    RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
-    for (auto& observer : tablet_mode_observers_)
-      observer.OnTabletModeEnded();
-
-    state_ = State::kInClamshellMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(false);
-    VLOG(1) << "Exit tablet mode.";
-  }
-
-  UpdateInternalInputDevicesEventBlocker();
-}
-
-bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
+bool TabletModeController::InTabletMode() const {
   return !!tablet_mode_window_manager_;
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {
-  if (IsTabletModeWindowManagerEnabled())
+  if (InTabletMode())
     tablet_mode_window_manager_->AddWindow(window);
 }
 
@@ -341,7 +284,7 @@ void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
 
 bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
   DCHECK(widget);
-  const bool tablet_mode = IsTabletModeWindowManagerEnabled();
+  const bool tablet_mode = InTabletMode();
   if (!tablet_mode)
     return false;
 
@@ -401,7 +344,7 @@ void TabletModeController::SetTabletModeToggleObserver(
 }
 
 bool TabletModeController::IsEnabled() const {
-  return IsTabletModeWindowManagerEnabled();
+  return InTabletMode();
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
@@ -412,7 +355,7 @@ void TabletModeController::SetEnabledForTest(bool enabled) {
   // ARC++ Tast tests.
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-  EnableTabletModeWindowManager(enabled);
+  SetTabletModeEnabledInternal(enabled);
 }
 
 void TabletModeController::OnShellInitialized() {
@@ -427,7 +370,7 @@ void TabletModeController::OnDisplayConfigurationChanged() {
 
   if (!HasActiveInternalDisplay()) {
     AttemptLeaveTabletMode();
-  } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
+  } else if (tablet_mode_switch_is_on_ && !InTabletMode()) {
     // The internal display has returned, as we are exiting docked mode.
     // The device is still in tablet mode, so trigger tablet mode, as this
     // switch leads to the ignoring of accelerometer events. When the switch is
@@ -532,10 +475,9 @@ void TabletModeController::TabletModeEventReceived(
   // always reliable when |on|. However we wish to exit tablet mode at a
   // smaller angle, so when |on| is false we ignore if it is possible to
   // calculate the lid angle.
-  if (on && !IsTabletModeWindowManagerEnabled()) {
+  if (on && !InTabletMode()) {
     AttemptEnterTabletMode();
-  } else if (!on && IsTabletModeWindowManagerEnabled() &&
-             !can_detect_lid_angle_) {
+  } else if (!on && InTabletMode() && !can_detect_lid_angle_) {
     AttemptLeaveTabletMode();
   }
 
@@ -596,7 +538,7 @@ void TabletModeController::OnDeviceListsComplete() {
 }
 
 void TabletModeController::OnKioskNextEnabled() {
-  kiosk_next_enabled_ = true;
+  force_ui_mode_ = UiMode::kTabletMode;
   AttemptEnterTabletMode();
 }
 
@@ -639,6 +581,63 @@ void TabletModeController::OnLayerAnimationScheduled(
 void TabletModeController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(observed_window_, window);
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
+}
+
+// TODO(jcliang): Remove SetTabletModeEnabledInternal
+// (http://crbug.com/620241).
+void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
+  bool is_enabled = InTabletMode();
+  if (should_enable == is_enabled)
+    return;
+
+  // Hide the context menu on entering tablet mode to prevent users from
+  // accessing forbidden options. Hide the context menu on exiting tablet mode
+  // to match behaviors.
+  for (auto* root_window : Shell::Get()->GetAllRootWindows())
+    RootWindowController::ForWindow(root_window)->HideContextMenu();
+
+  // Suspend occlusion tracker when entering or exiting tablet mode.
+  SuspendOcclusionTracker();
+  DeleteScreenshot();
+
+  if (should_enable) {
+    state_ = State::kEnteringTabletMode;
+
+    // Take a screenshot if there is a top window that will get animated.
+    // TODO(sammiequon): Handle the case where the top window is not on the
+    // primary display.
+    aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
+    bool top_window_on_primary_display =
+        top_window &&
+        top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
+    if (!force_no_screenshot && top_window_on_primary_display) {
+      screenshot_set_callback_.Reset(
+          base::BindOnce(&TabletModeController::FinishInitTabletMode,
+                         weak_factory_.GetWeakPtr()));
+      TakeScreenshot(top_window, screenshot_set_callback_.callback());
+    } else {
+      FinishInitTabletMode();
+    }
+  } else {
+    state_ = State::kExitingTabletMode;
+
+    tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeEnding();
+    tablet_mode_window_manager_->Shutdown();
+    tablet_mode_window_manager_.reset();
+    base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
+    RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
+    for (auto& observer : tablet_mode_observers_)
+      observer.OnTabletModeEnded();
+
+    state_ = State::kInClamshellMode;
+    if (toggle_observer_)  // Null at startup and in tests.
+      toggle_observer_->OnTabletModeToggled(false);
+    VLOG(1) << "Exit tablet mode.";
+  }
+
+  UpdateInternalInputDevicesEventBlocker();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -745,21 +744,21 @@ bool TabletModeController::CanEnterTabletMode() {
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
-  if (IsTabletModeWindowManagerEnabled() || has_external_pointing_device_) {
+  if (InTabletMode() || has_external_pointing_device_) {
     UpdateInternalInputDevicesEventBlocker();
     return;
   }
 
-  EnableTabletModeWindowManager(true);
+  SetTabletModeEnabledInternal(true);
 }
 
 void TabletModeController::AttemptLeaveTabletMode() {
-  if (!IsTabletModeWindowManagerEnabled()) {
+  if (!InTabletMode()) {
     UpdateInternalInputDevicesEventBlocker();
     return;
   }
 
-  EnableTabletModeWindowManager(false);
+  SetTabletModeEnabledInternal(false);
 }
 
 void TabletModeController::RecordTabletModeUsageInterval(
@@ -793,13 +792,13 @@ void TabletModeController::RecordLidAngle() {
 
 TabletModeController::TabletModeIntervalType
 TabletModeController::CurrentTabletModeIntervalType() {
-  if (IsTabletModeWindowManagerEnabled())
+  if (InTabletMode())
     return TABLET_MODE_INTERVAL_ACTIVE;
   return TABLET_MODE_INTERVAL_INACTIVE;
 }
 
 bool TabletModeController::AllowUiModeChange() const {
-  return force_ui_mode_ == UiMode::kNone && !kiosk_next_enabled_;
+  return force_ui_mode_ == UiMode::kNone;
 }
 
 void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
@@ -840,7 +839,7 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   if (has_external_pointing_device) {
     AttemptLeaveTabletMode();
   } else if (HasActiveInternalDisplay() &&
-             (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_)) {
+             (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_)) {
     // If there is no external pointing device, only enter tablet mode if docked
     // mode is inactive and 1) the lid angle can be detected and is in tablet
     // mode angle range. or 2) if the lid angle can't be detected (e.g., tablet
@@ -869,12 +868,12 @@ void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
 
 void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
   bool should_block_internal_events = false;
-  if (IsTabletModeWindowManagerEnabled()) {
+  if (InTabletMode()) {
     // If we are currently in tablet mode, the internal input events should
     // always be blocked.
     should_block_internal_events = (force_ui_mode_ == UiMode::kNone);
   } else if (HasActiveInternalDisplay() &&
-             (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_)) {
+             (LidAngleInTabletModeRange() || tablet_mode_switch_is_on_)) {
     // If we are currently in clamshell mode, the intenral input events should
     // only be blocked if the current lid angle belongs to tablet mode angle
     // or |tablet_mode_switch_is_on_| is true.
@@ -892,7 +891,7 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
     observer.OnTabletModeEventsBlockingChanged();
 }
 
-bool TabletModeController::LidAngleIsInTabletModeRange() {
+bool TabletModeController::LidAngleInTabletModeRange() {
   return can_detect_lid_angle_ && !lid_is_closed_ &&
          lid_angle_ >= kEnterTabletModeAngle;
 }

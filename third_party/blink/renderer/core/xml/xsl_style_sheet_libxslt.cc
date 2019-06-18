@@ -226,8 +226,8 @@ void XSLStyleSheet::LoadChildSheet(const String& href) {
   fetch_options.initiator_info.name = fetch_initiator_type_names::kXml;
   FetchParameters params(
       ResourceRequest(OwnerDocument()->CompleteURL(url_string)), fetch_options);
-  params.MutableResourceRequest().SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kSameOrigin);
+  params.MutableResourceRequest().SetMode(
+      network::mojom::RequestMode::kSameOrigin);
   XSLStyleSheetResource* resource = XSLStyleSheetResource::FetchSynchronously(
       params, OwnerDocument()->Fetcher());
   if (!resource->Sheet())

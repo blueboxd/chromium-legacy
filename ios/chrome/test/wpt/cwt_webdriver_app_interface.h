@@ -13,9 +13,22 @@
 // avoid deadlock while waiting for actions to complete on the main thread.
 @interface CWTWebDriverAppInterface : NSObject
 
-// Loads the given URL in the current tab. Returns true if the load completes
-// within |timeout| seconds, and false otherwise.
+// Loads the given URL in the current tab. Returns an error if the page fails
+// to load within |timeout| seconds.
 + (NSError*)loadURL:(NSString*)URL timeoutInSeconds:(NSTimeInterval)timeout;
+
+// Returns the id of the current tab. If no tabs are open, returns nil.
++ (NSString*)getCurrentTabID;
+
+// Returns an array containing the ids of all open tabs.
++ (NSArray*)getTabIDs;
+
+// Closes the current tab. Returns an error if there is no open tab.
++ (NSError*)closeCurrentTab;
+
+// Makes the tab identified by |ID| the current tab. Returns an error if there
+// is no such tab.
++ (NSError*)switchToTabWithID:(NSString*)ID;
 
 @end
 

@@ -130,38 +130,6 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
   return "_UNKNOWN";
 }
 
-ServiceWorkerMetrics::WorkerPreparationType GetWorkerPreparationType(
-    EmbeddedWorkerStatus initial_worker_status,
-    ServiceWorkerMetrics::StartSituation start_situation) {
-  using Situation = ServiceWorkerMetrics::StartSituation;
-  using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
-  switch (initial_worker_status) {
-    case EmbeddedWorkerStatus::STOPPED: {
-      switch (start_situation) {
-        case Situation::DURING_STARTUP:
-          return Preparation::START_DURING_STARTUP;
-        case Situation::NEW_PROCESS:
-          return Preparation::START_IN_NEW_PROCESS;
-        case Situation::EXISTING_UNREADY_PROCESS:
-          return Preparation::START_IN_EXISTING_UNREADY_PROCESS;
-        case Situation::EXISTING_READY_PROCESS:
-          return Preparation::START_IN_EXISTING_READY_PROCESS;
-        case Situation::UNKNOWN:
-          break;
-      }
-      break;
-    }
-    case EmbeddedWorkerStatus::STARTING:
-      return Preparation::STARTING;
-    case EmbeddedWorkerStatus::RUNNING:
-      return Preparation::RUNNING;
-    case EmbeddedWorkerStatus::STOPPING:
-      return Preparation::STOPPING;
-  }
-  NOTREACHED() << static_cast<int>(initial_worker_status);
-  return Preparation::UNKNOWN;
-}
-
 void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetContentClient()->browser()->RecordURLMetric(metric_name, url);
@@ -369,15 +337,9 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
                      url));
 }
 
-void ServiceWorkerMetrics::RecordStartWorkerStatus(
+void ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(
     blink::ServiceWorkerStatusCode status,
-    EventType purpose,
-    bool is_installed) {
-  if (!is_installed) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status);
-    return;
-  }
-
+    EventType purpose) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status);
   base::UmaHistogramEnumeration(
       base::StrCat({"ServiceWorker.StartWorker.StatusByPurpose",
@@ -414,40 +376,6 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
         time);
   } else {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
-  }
-}
-
-void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
-    base::TimeDelta time,
-    EmbeddedWorkerStatus initial_worker_status,
-    StartSituation start_situation,
-    bool did_navigation_preload,
-    const GURL& url) {
-  // Record the worker preparation type.
-  WorkerPreparationType preparation =
-      GetWorkerPreparationType(initial_worker_status, start_situation);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type", preparation);
-  std::string suffix =
-      GetContentClient()->browser()->GetMetricSuffixForURL(url);
-  if (!suffix.empty()) {
-    base::UmaHistogramEnumeration(
-        base::StrCat(
-            {"ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.",
-             suffix}),
-        preparation);
-  }
-
-  if (did_navigation_preload) {
-    // TODO(falken): Consider removing this UMA if it turns out the same as
-    // ServiceWorker.NavPreload.WorkerPreparationType. That UMA is logged at
-    // the same time as the other NavPreload metrics (which requires both the
-    // worker to start and the nav preload response to arrive successfuly), so
-    // they are more safely compared together.
-    UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
-        "NavigationPreloadEnabled",
-        preparation);
   }
 }
 
@@ -601,36 +529,6 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
   }
 }
 
-void ServiceWorkerMetrics::RecordURLRequestJobResult(
-    bool is_main_resource,
-    URLRequestJobResult result) {
-  if (is_main_resource) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.MainResource.Result",
-                              result, NUM_REQUEST_JOB_RESULT_TYPES);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.Subresource.Result",
-                              result, NUM_REQUEST_JOB_RESULT_TYPES);
-  }
-}
-
-void ServiceWorkerMetrics::RecordStatusZeroResponseError(
-    bool is_main_resource,
-    blink::mojom::ServiceWorkerResponseError error) {
-  if (is_main_resource) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error);
-  }
-}
-
-void ServiceWorkerMetrics::RecordFallbackedRequestMode(
-    network::mojom::FetchRequestMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
-                            mode);
-}
-
 void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
   UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
                         is_new_process);
@@ -738,68 +636,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
     size_t size) {
   UMA_HISTOGRAM_COUNTS_100000("ServiceWorker.NavigationPreload.HeaderSize",
                               size);
-}
-
-void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
-    base::TimeDelta worker_start,
-    base::TimeDelta response_start,
-    EmbeddedWorkerStatus initial_worker_status,
-    StartSituation start_situation,
-    ResourceType resource_type) {
-  DCHECK_GE(worker_start.ToInternalValue(), 0);
-  DCHECK_GE(response_start.ToInternalValue(), 0);
-  DCHECK(resource_type == ResourceType::kMainFrame ||
-         resource_type == ResourceType::kSubFrame);
-  const bool is_main_frame = (resource_type == ResourceType::kMainFrame);
-  // TODO(falken): Log sub-frame navigations also.
-  if (!is_main_frame) {
-    return;
-  }
-  const bool nav_preload_finished_first = response_start < worker_start;
-  const base::TimeDelta concurrent_time =
-      nav_preload_finished_first ? response_start : worker_start;
-  base::TimeDelta worker_wait_time;
-  if (nav_preload_finished_first) {
-    worker_wait_time = worker_start - response_start;
-  }
-  const bool worker_start_occurred =
-      initial_worker_status != EmbeddedWorkerStatus::RUNNING;
-  const WorkerPreparationType preparation =
-      GetWorkerPreparationType(initial_worker_status, start_situation);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame", preparation);
-  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NavPreload.ResponseTime_MainFrame",
-                             response_start);
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavPreload.FinishedFirst_MainFrame",
-                        nav_preload_finished_first);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.NavPreload.ConcurrentTime_MainFrame", concurrent_time);
-  if (nav_preload_finished_first) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame", worker_wait_time);
-  }
-
-  if (worker_start_occurred) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.ResponseTime_MainFrame_"
-        "WorkerStartOccurred",
-        response_start);
-    UMA_HISTOGRAM_BOOLEAN(
-        "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
-        "WorkerStartOccurred",
-        nav_preload_finished_first);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.ConcurrentTime_MainFrame_"
-        "WorkerStartOccurred",
-        concurrent_time);
-    if (nav_preload_finished_first) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame_"
-          "WorkerStartOccurred",
-          worker_wait_time);
-    }
-  }
 }
 
 void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {

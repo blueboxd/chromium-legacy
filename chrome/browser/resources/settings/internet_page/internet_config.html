@@ -11,10 +11,8 @@
 <dom-module id="internet-config">
   <template>
     <style include="internet-shared iron-flex">
-      cr-dialog {
-        --cr-dialog-native: {
-          width: 460px;
-        };
+      cr-dialog::part(dialog) {
+        width: 460px;
       }
 
       .error {

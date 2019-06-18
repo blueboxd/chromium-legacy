@@ -11,7 +11,6 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -194,8 +193,6 @@ class AutotestPrivateGetVisibleNotificationsFunction
  private:
   ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::AshMessageCenterControllerPtr controller_;
 };
 
 class AutotestPrivateGetPlayStoreStateFunction

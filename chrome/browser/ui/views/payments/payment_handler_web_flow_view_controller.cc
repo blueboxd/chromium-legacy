@@ -82,12 +82,12 @@ class ReadOnlyOriginView : public views::View {
       // contrast into account.
       title_label->SetAutoColorReadabilityEnabled(false);
       title_label->SetEnabledColor(foreground);
-      title_origin_layout->AddView(title_label.release());
+      title_origin_layout->AddView(std::move(title_label));
     }
 
     title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    views::Label* origin_label =
-        new views::Label(base::UTF8ToUTF16(origin.host()));
+    auto origin_label =
+        std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host()));
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
@@ -104,7 +104,7 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetEnabledColor(foreground);
 
     origin_label->SetBackgroundColor(background_color);
-    title_origin_layout->AddView(origin_label);
+    title_origin_layout->AddView(std::move(origin_label));
 
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -129,7 +129,7 @@ class ReadOnlyOriginView : public views::View {
     }
 
     top_level_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    top_level_layout->AddView(title_origin_container.release());
+    top_level_layout->AddView(std::move(title_origin_container));
     if (has_icon) {
       std::unique_ptr<views::ImageView> instrument_icon_view =
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
@@ -139,7 +139,7 @@ class ReadOnlyOriginView : public views::View {
       instrument_icon_view->SetImageSize(gfx::Size(
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
-      top_level_layout->AddView(instrument_icon_view.release());
+      top_level_layout->AddView(std::move(instrument_icon_view));
     }
   }
   ~ReadOnlyOriginView() override {}
@@ -223,11 +223,13 @@ bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
 }
 
 std::unique_ptr<views::View>
-PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
+PaymentHandlerWebFlowViewController::CreateHeaderContentView(
+    views::View* header_view) {
   const GURL origin = web_contents()
                           ? web_contents()->GetVisibleURL().GetOrigin()
                           : target_.GetOrigin();
-  std::unique_ptr<views::Background> background = GetHeaderBackground();
+  std::unique_ptr<views::Background> background =
+      GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents(), https_prefix_), origin,
       state()->selected_instrument()->icon_image_skia(),
@@ -242,9 +244,10 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentSeparatorView() {
 }
 
 std::unique_ptr<views::Background>
-PaymentHandlerWebFlowViewController::GetHeaderBackground() {
+PaymentHandlerWebFlowViewController::GetHeaderBackground(
+    views::View* header_view) {
   auto default_header_background =
-      PaymentRequestSheetController::GetHeaderBackground();
+      PaymentRequestSheetController::GetHeaderBackground(header_view);
   if (web_contents()) {
     return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
         web_contents()->GetThemeColor().value_or(SK_ColorTRANSPARENT),

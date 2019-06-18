@@ -64,8 +64,8 @@ class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
   }
 
  protected:
-  void OnInstall(bool is_native, blink::WebDisplayMode display) override {
-    AppBannerManager::OnInstall(is_native, display);
+  void OnInstall(blink::WebDisplayMode display) override {
+    AppBannerManager::OnInstall(display);
     if (on_install_)
       std::move(on_install_).Run();
   }
@@ -248,15 +248,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest, DestroyWebContents) {
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        InstallPromptAfterUserMenuInstall) {
-  // TODO(https://crbug.com/915043): Fix this test for the unified install
-  // codepath. This fails under unified install because the menu install path
-  // relies on extensions::TabHelper to call AppBannerManager::OnInstall which
-  // is no longer the case under unified install. This will be fixed in a follow
-  // up patch when AppBannerManager calls OnInstall by itself via
-  // AppRegistrarObserver::OnWebAppInstalled().
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall))
-    return;
-
   FakeAppBannerManagerDesktop* manager =
       FakeAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());

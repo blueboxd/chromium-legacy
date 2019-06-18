@@ -165,6 +165,11 @@ base::Time AutocompleteProviderClientImpl::GetCurrentVisitTimestamp() const {
   return base::Time();
 }
 
+component_updater::ComponentUpdateService*
+AutocompleteProviderClientImpl::GetComponentUpdateService() {
+  return GetApplicationContext()->GetComponentUpdateService();
+}
+
 bool AutocompleteProviderClientImpl::IsOffTheRecord() const {
   return browser_state_->IsOffTheRecord();
 }

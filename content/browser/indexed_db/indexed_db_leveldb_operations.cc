@@ -167,7 +167,7 @@ DeleteAndRecreateDatabase(
     return {nullptr, status, is_disk_full};
   }
   std::unique_ptr<LevelDBDatabase> database = std::make_unique<LevelDBDatabase>(
-      std::move(state), std::move(task_runner),
+      std::move(state), ldb_factory, std::move(task_runner),
       LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
   ReportOpenStatus(
       indexed_db::INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS, origin);
@@ -747,7 +747,7 @@ OpenAndVerifyLevelDBDatabase(
   // The leveldb database is successfully opened.
   DCHECK(status.ok());
   database = std::make_unique<LevelDBDatabase>(
-      std::move(state), std::move(task_runner),
+      std::move(state), ldb_factory, std::move(task_runner),
       LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   // Check for previous corruption or invalid schemas.

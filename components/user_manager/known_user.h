@@ -152,6 +152,15 @@ void USER_MANAGER_EXPORT UpdateUsingSAML(const AccountId& account_id,
 // returns false.
 bool USER_MANAGER_EXPORT IsUsingSAML(const AccountId& account_id);
 
+// Setter and getter for the known user preference that stores whether the user
+// authenticated via SAML using the principals API.
+void USER_MANAGER_EXPORT
+UpdateIsUsingSAMLPrincipalsAPI(const AccountId& account_id,
+                               bool is_using_saml_principals_api);
+
+bool USER_MANAGER_EXPORT
+GetIsUsingSAMLPrincipalsAPI(const AccountId& account_id);
+
 // Enum describing whether a user's profile requires policy. If kPolicyRequired,
 // the profile initialization code will ensure that valid policy is loaded
 // before session initialization completes.

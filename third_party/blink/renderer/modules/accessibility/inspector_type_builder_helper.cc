@@ -124,9 +124,8 @@ std::unique_ptr<AXRelatedNode> RelatedNodeForAXObject(const AXObject& ax_object,
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(const AXObject& ax_object,
                                                     String* name,
                                                     const String& value_type) {
-  std::unique_ptr<protocol::Array<AXRelatedNode>> related_nodes =
-      protocol::Array<AXRelatedNode>::create();
-  related_nodes->addItem(RelatedNodeForAXObject(ax_object, name));
+  auto related_nodes = std::make_unique<protocol::Array<AXRelatedNode>>();
+  related_nodes->emplace_back(RelatedNodeForAXObject(ax_object, name));
   return AXValue::create()
       .setType(value_type)
       .setRelatedNodes(std::move(related_nodes))
@@ -136,14 +135,14 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(const AXObject& ax_object,
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(
     AXRelatedObjectVector& related_objects,
     const String& value_type) {
-  std::unique_ptr<protocol::Array<AXRelatedNode>> frontend_related_nodes =
-      protocol::Array<AXRelatedNode>::create();
+  auto frontend_related_nodes =
+      std::make_unique<protocol::Array<AXRelatedNode>>();
   for (unsigned i = 0; i < related_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> frontend_related_node =
         RelatedNodeForAXObject(*(related_objects[i]->object),
                                &(related_objects[i]->text));
     if (frontend_related_node)
-      frontend_related_nodes->addItem(std::move(frontend_related_node));
+      frontend_related_nodes->emplace_back(std::move(frontend_related_node));
   }
   return AXValue::create()
       .setType(value_type)
@@ -154,13 +153,12 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
 std::unique_ptr<AXValue> CreateRelatedNodeListValue(
     AXObject::AXObjectVector& ax_objects,
     const String& value_type) {
-  std::unique_ptr<protocol::Array<AXRelatedNode>> related_nodes =
-      protocol::Array<AXRelatedNode>::create();
+  auto related_nodes = std::make_unique<protocol::Array<AXRelatedNode>>();
   for (unsigned i = 0; i < ax_objects.size(); i++) {
     std::unique_ptr<AXRelatedNode> related_node =
         RelatedNodeForAXObject(*(ax_objects[i].Get()));
     if (related_node)
-      related_nodes->addItem(std::move(related_node));
+      related_nodes->emplace_back(std::move(related_node));
   }
   return AXValue::create()
       .setType(value_type)

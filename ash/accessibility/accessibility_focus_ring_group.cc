@@ -11,7 +11,7 @@
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_layer.h"
 #include "ash/accessibility/layer_animation_info.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -69,8 +69,7 @@ void AccessibilityFocusRingGroup::UpdateFocusRingsFromInfo(
           std::make_unique<AccessibilityFocusRingLayer>(delegate);
   }
 
-  if (focus_ring_info_->behavior ==
-          mojom::FocusRingBehavior::PERSIST_FOCUS_RING &&
+  if (focus_ring_info_->behavior == FocusRingBehavior::PERSIST &&
       focus_layers_[0]->CanAnimate() && !no_fade_for_testing_) {
     // In PERSIST mode, animate the first ring to its destination
     // location, then set the rest of the rings directly.
@@ -105,8 +104,7 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
   if (timestamp < focus_animation_info_.change_time)
     timestamp = focus_animation_info_.change_time;
 
-  if (focus_ring_info_->behavior ==
-      mojom::FocusRingBehavior::PERSIST_FOCUS_RING) {
+  if (focus_ring_info_->behavior == FocusRingBehavior::PERSIST) {
     base::TimeDelta delta = timestamp - focus_animation_info_.change_time;
     base::TimeDelta transition_time =
         base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
@@ -135,16 +133,18 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
 }
 
 bool AccessibilityFocusRingGroup::UpdateFocusRing(
-    mojom::FocusRingPtr focus_ring,
+    std::unique_ptr<AccessibilityFocusRingInfo> focus_ring,
     AccessibilityLayerDelegate* delegate) {
-  std::vector<gfx::Rect> rects(focus_ring->rects_in_screen);
-  // Remove duplicates
-  if (rects.size() > 1) {
+  // Remove duplicate rects.
+  if (focus_ring && focus_ring->rects_in_screen.size() > 1) {
+    std::vector<gfx::Rect> rects(focus_ring->rects_in_screen);
     std::set<gfx::Rect> rects_set(rects.begin(), rects.end());
     focus_ring->rects_in_screen.assign(rects_set.begin(), rects_set.end());
   }
+
   // If there is no change, don't do any work.
-  if (focus_ring_info_ == focus_ring)
+  if ((!focus_ring_info_ && !focus_ring) ||
+      (focus_ring_info_ && focus_ring && *focus_ring_info_ == *focus_ring))
     return false;
 
   focus_ring_info_ = std::move(focus_ring);

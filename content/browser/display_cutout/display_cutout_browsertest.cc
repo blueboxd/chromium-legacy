@@ -87,7 +87,7 @@ class TestWebContentsObserver : public WebContentsObserver {
 class DisplayCutoutWebContentsDelegate : public WebContentsDelegate {
  public:
   blink::WebDisplayMode GetDisplayMode(
-      const WebContents* web_contents) const override {
+      const WebContents* web_contents) override {
     return display_mode_;
   }
 

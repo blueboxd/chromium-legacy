@@ -58,7 +58,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     int pending_nav_entry_id,
     net::HttpRequestHeaders request_headers)
     : navigation_request_(navigation_request),
-      net_error_code_(net::OK),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
       navigation_id_(CreateUniqueHandleID()),
@@ -117,7 +116,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
     TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
                            "URL",
                            navigation_request_->common_params().url.spec(),
-                           "Net Error Code", net_error_code_);
+                           "Net Error Code", GetNetErrorCode());
   }
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle", this);
 }
@@ -210,7 +209,7 @@ bool NavigationHandleImpl::IsExternalProtocol() {
 }
 
 net::Error NavigationHandleImpl::GetNetErrorCode() {
-  return net_error_code_;
+  return navigation_request_->net_error();
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {

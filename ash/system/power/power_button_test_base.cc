@@ -117,7 +117,7 @@ void PowerButtonTestBase::UnlockScreen() {
 }
 
 void PowerButtonTestBase::EnableTabletMode(bool enable) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
 }
 
 void PowerButtonTestBase::AdvanceClockToAvoidIgnoring() {

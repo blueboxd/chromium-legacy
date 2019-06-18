@@ -33,8 +33,35 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     return;
   expanded_amount_ = expanded_amount;
 
-  for (auto* view : children())
-    static_cast<FeaturePodButton*>(view)->SetExpandedAmount(expanded_amount_);
+  int visible_index = 0;
+  for (auto* view : children()) {
+    FeaturePodButton* button = static_cast<FeaturePodButton*>(view);
+    // When collapsing from page 1, buttons below the second row fade out
+    // while the rest move up into a single row for the collapsed state.
+    // When collapsing from page > 1, each row of buttons fades out one by one
+    // and once expanded_amount is less than kCollapseThreshold we begin to
+    // fade in the single row of buttons for the collapsed state.
+    if (expanded_amount_ < kCollapseThreshold &&
+        pagination_model_->selected_page() > 0) {
+      button->SetExpandedAmount(1.0 - expanded_amount,
+                                true /* fade_icon_button */);
+    } else if (visible_index > kUnifiedFeaturePodMaxItemsInCollapsed) {
+      int row = (visible_index / kUnifiedFeaturePodItemsInRow) %
+                kUnifiedFeaturePodItemsRows;
+      double button_expanded_amount =
+          expanded_amount
+              ? std::min(1.0,
+                         expanded_amount +
+                             (0.25 * (kUnifiedFeaturePodItemsRows - row - 1)))
+              : expanded_amount;
+      button->SetExpandedAmount(button_expanded_amount,
+                                true /* fade_icon_button */);
+    } else {
+      button->SetExpandedAmount(expanded_amount, false /* fade_icon_button */);
+    }
+    if (view->GetVisible())
+      visible_index++;
+  }
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
   Layout();
@@ -159,10 +186,15 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
                                           kUnifiedFeaturePodVerticalPadding) *
                                              row;
 
-  // When fully expanded, or below the second row, always return the same
-  // position.
-  if (expanded_amount_ == 1.0 || row > 2)
+  // Only feature pods visible in the collapsed state (i.e. the first 5 pods)
+  // move during expansion/collapse. Otherwise, the button position will always
+  // be constant.
+  if (expanded_amount_ == 1.0 ||
+      visible_index > kUnifiedFeaturePodMaxItemsInCollapsed ||
+      (pagination_model_->selected_page() > 0 &&
+       expanded_amount_ >= kCollapseThreshold)) {
     return gfx::Point(x, y);
+  }
 
   int collapsed_x =
       collapsed_side_padding_ + (kUnifiedFeaturePodCollapsedSize.width() +
@@ -170,8 +202,10 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
                                     visible_index;
   int collapsed_y = kUnifiedFeaturePodCollapsedVerticalPadding;
 
-  // When fully collapsed, just return the collapsed position.
-  if (expanded_amount_ == 0.0)
+  // When fully collapsed or collapsing from a different page to the first
+  // page, just return the collapsed position.
+  if (expanded_amount_ == 0.0 || (expanded_amount_ < kCollapseThreshold &&
+                                  pagination_model_->selected_page() > 0))
     return gfx::Point(collapsed_x, collapsed_y);
 
   // Button width is different between expanded and collapsed states.
@@ -246,7 +280,13 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
   for (int i = 0; i < visible_buttons_.view_size(); ++i) {
     gfx::Rect tile_bounds;
     gfx::Size child_size;
-    if (expanded_amount_ > 0.0) {
+    // When we are on the first page we calculate bounds for an expanded tray
+    // when expanded_amount is greater than zero. However, when not on the first
+    // page, we only calculate bounds for an expanded tray until expanded_amount
+    // is above kCollapseThreshold. Below kCollapseThreshold we return collapsed
+    // bounds.
+    if ((expanded_amount_ > 0.0 && pagination_model_->selected_page() == 0) ||
+        expanded_amount_ >= kCollapseThreshold) {
       child_size = kUnifiedFeaturePodSize;
 
       // Flexibly give more height if the child view doesn't fit into the

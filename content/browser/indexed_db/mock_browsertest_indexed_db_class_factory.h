@@ -14,6 +14,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
@@ -38,16 +39,15 @@ enum FailMethod {
   FAIL_METHOD_SEEK,
 };
 
-// TODO(dmurph): Remove the need for this class. We should be solving these
-// problems with dependency injection, factories, using a failing fake leveldb
-// database, or test-specific settings (like
-// SetUsableMessageSizeInBytesForTesting).
-class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
+class MockBrowserTestIndexedDBClassFactory
+    : public IndexedDBClassFactory,
+      public indexed_db::DefaultLevelDBFactory {
  public:
   MockBrowserTestIndexedDBClassFactory();
   ~MockBrowserTestIndexedDBClassFactory() override;
 
-  std::unique_ptr<IndexedDBDatabase> CreateIndexedDBDatabase(
+  std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
+  CreateIndexedDBDatabase(
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
@@ -63,6 +63,7 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
+
   scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
       LevelDBDatabase* db) override;
   std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(

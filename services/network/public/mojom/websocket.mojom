@@ -62,7 +62,13 @@ interface WebSocketHandshakeClient {
   // Response to an AddChannelRequest. |selected_protocol| is the sub-protocol
   // the server selected, or empty if no sub-protocol was selected.
   // |extensions| is the list of extensions negotiated for the connection.
-  OnAddChannelResponse(string selected_protocol, string extensions);
+  // default threshold value
+  // |receive_quota_threshold| is the value that the renderer calls
+  // AddReceiveFlowControlQuota() to the browser per receiving this value
+  // so that the browser can continue sending remaining data to the renderer.
+  OnAddChannelResponse(string selected_protocol,
+                       string extensions,
+                       uint64 receive_quota_threshold);
 };
 
 interface WebSocketClient {

@@ -36,6 +36,7 @@ class VULKAN_EXPORT VulkanSurface {
 
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VulkanSurface::Format format);
+  // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
 
   gfx::SwapResult SwapBuffers();

@@ -138,8 +138,8 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
          scoped_refptr<base::SingleThreadTaskRunner> runner) {
         PostCrossThreadTask(
             *runner, FROM_HERE,
-            CrossThreadBind(&PaintWorkletPaintDispatcher::AsyncPaintDone,
-                            dispatcher));
+            CrossThreadBindOnce(&PaintWorkletPaintDispatcher::AsyncPaintDone,
+                                dispatcher));
       },
       WrapRefCounted(this), WTF::Passed(std::move(runner)));
 

@@ -4142,6 +4142,17 @@ TEST_F(GLES2FormatTest, DispatchCompute) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DispatchComputeIndirect) {
+  cmds::DispatchComputeIndirect& cmd =
+      *GetBufferAs<cmds::DispatchComputeIndirect>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLintptr>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DispatchComputeIndirect::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLintptr>(11), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetProgramInterfaceiv) {
   cmds::GetProgramInterfaceiv& cmd =
       *GetBufferAs<cmds::GetProgramInterfaceiv>();

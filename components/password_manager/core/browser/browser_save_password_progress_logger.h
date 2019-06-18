@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "url/gurl.h"
@@ -49,7 +50,7 @@ class BrowserSavePasswordProgressLogger
 
   // Log a password successful submission event.
   void LogSuccessfulSubmissionIndicatorEvent(
-      autofill::SubmissionIndicatorEvent event);
+      autofill::mojom::SubmissionIndicatorEvent event);
 
   // Browser-specific addition to the base class' Log* methods. The input is
   // sanitized and passed to SendLog for display.

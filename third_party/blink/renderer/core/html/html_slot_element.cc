@@ -253,7 +253,14 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
   if (SupportsAssignment()) {
+    LayoutObject* layout_object = GetLayoutObject();
     AttachContext children_context(context);
+    const ComputedStyle* style = GetComputedStyle();
+    if (layout_object || !style || style->IsEnsuredInDisplayNone()) {
+      children_context.previous_in_flow = nullptr;
+      children_context.parent = layout_object;
+      children_context.next_sibling = nullptr;
+    }
 
     for (auto& node : AssignedNodes())
       node->AttachLayoutTree(children_context);

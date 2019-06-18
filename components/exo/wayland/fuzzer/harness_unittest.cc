@@ -46,9 +46,9 @@ class WaylandFuzzerTest : public test::ExoTestBaseViews {
 };
 
 void RunHarness(Harness* harness, base::WaitableEvent* event) {
-  wayland_fuzzer::actions acts;
-  acts.add_acts()->mutable_act_wayland_wl_display_get_registry()->set_receiver(
-      0);
+  actions::actions acts;
+  acts.add_acts()->mutable_act_wl_display_get_registry()->set_receiver(
+      actions::small_value::ZERO);
   acts.add_acts();
   harness->Run(acts);
   event->Signal();

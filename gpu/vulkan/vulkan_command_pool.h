@@ -23,6 +23,7 @@ class VULKAN_EXPORT VulkanCommandPool {
   ~VulkanCommandPool();
 
   bool Initialize();
+  // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
 
   std::unique_ptr<VulkanCommandBuffer> CreatePrimaryCommandBuffer();

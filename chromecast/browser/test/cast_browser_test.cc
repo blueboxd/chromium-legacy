@@ -84,11 +84,6 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
   return web_contents;
 }
 
-void CastBrowserTest::OnPageStateChanged(CastWebContents* cast_web_contents) {}
-
-void CastBrowserTest::OnPageStopped(CastWebContents* cast_web_contents,
-                                    int error_code) {}
-
 void CastBrowserTest::OnWindowDestroyed() {}
 
 void CastBrowserTest::OnKeyEvent(const ui::KeyEvent& key_event) {}

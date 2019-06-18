@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 
@@ -54,7 +55,8 @@ IDBOpenDBRequest::IDBOpenDBRequest(
       database_callbacks_(callbacks),
       transaction_backend_(std::move(transaction_backend)),
       transaction_id_(transaction_id),
-      version_(version) {
+      version_(version),
+      start_time_(WTF::Time::Now()) {
   DCHECK(!ResultAsAny());
 }
 
@@ -111,7 +113,8 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
     old_version = IDBDatabaseMetadata::kDefaultVersion;
   }
   IDBDatabaseMetadata old_database_metadata(
-      metadata.name, metadata.id, old_version, metadata.max_object_store_id);
+      metadata.name, metadata.id, old_version, metadata.max_object_store_id,
+      metadata.was_cold_open);
 
   transaction_ = IDBTransaction::CreateVersionChange(
       GetExecutionContext(), std::move(transaction_backend_), transaction_id_,
@@ -186,6 +189,22 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event& event) {
     HandleResponse(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "The connection was closed."));
     return DispatchEventResult::kCanceledBeforeDispatch;
+  }
+
+  if (!open_time_recorded_ &&
+      (event.type() == event_type_names::kSuccess ||
+       event.type() == event_type_names::kUpgradeneeded) &&
+      ResultAsAny()->GetType() == IDBAny::kIDBDatabaseType) {
+    // Note: The result type is checked because this request type is also used
+    // for calls to DeleteDatabase, which sets the result to undefined (see
+    // EnqueueResponse(int64_t) above).
+    open_time_recorded_ = true;
+    IDBDatabase* idb_database = ResultAsAny()->IdbDatabase();
+    WTF::TimeDelta time_diff = base::Time::Now() - start_time_;
+    if (idb_database->Metadata().was_cold_open)
+      UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.OpenTime.Cold", time_diff);
+    else
+      UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.OpenTime.Warm", time_diff);
   }
 
   return IDBRequest::DispatchEventInternal(event);

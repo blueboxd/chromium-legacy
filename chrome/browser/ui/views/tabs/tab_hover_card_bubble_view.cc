@@ -377,8 +377,15 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
                                kMaxHoverCardReshowTimeDelta,
                                kHoverCardHistogramBucketCount);
   }
-  bool show_immediately = !last_visible_timestamp_.is_null() &&
-                          elapsed_time <= kShowWithoutDelayTimeBuffer;
+  bool within_delay_time_buffer = !last_visible_timestamp_.is_null() &&
+                                  elapsed_time <= kShowWithoutDelayTimeBuffer;
+  // Hover cards should be shown without delay if triggered within the time
+  // buffer or if the tab or its children have focus which indicates that the
+  // tab is keyboard focused.
+  const views::FocusManager* tab_focus_manager = tab->GetFocusManager();
+  bool show_immediately =
+      within_delay_time_buffer || tab->HasFocus() ||
+      (tab_focus_manager && tab->Contains(tab_focus_manager->GetFocusedView()));
 
   fade_animation_delegate_->CancelFadeOut();
 
@@ -404,8 +411,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   }
 
   if (!widget_->IsVisible()) {
-    if (disable_animations_for_testing_ || show_immediately ||
-        tab->HasFocus()) {
+    if (disable_animations_for_testing_ || show_immediately) {
       widget_->SetOpacity(1.0f);
       widget_->Show();
     } else {

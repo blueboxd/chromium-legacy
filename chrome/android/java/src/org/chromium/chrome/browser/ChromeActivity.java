@@ -2602,7 +2602,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * need to make sure it gets initialized early on regardless of whether somebody tries to use it
      * as it monitors Lifecycles, etc.
      */
-    private TouchlessUiCoordinator getTouchlessUiCoordinator() {
+    public TouchlessUiCoordinator getTouchlessUiCoordinator() {
         if (mTouchlessUiCoordinator == null && FeatureUtilities.isNoTouchModeEnabled()) {
             mTouchlessUiCoordinator = AppHooks.get().createTouchlessUiCoordinator(this);
         }

@@ -11,9 +11,11 @@
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -96,9 +98,26 @@ class CastWebContents {
  public:
   class Delegate {
    public:
+    // Notify that an inner WebContents was created. |inner_contents| is created
+    // in a default-initialized state with no delegate, and can be safely
+    // initialized by the delegate.
+    virtual void InnerContentsCreated(CastWebContents* inner_contents,
+                                      CastWebContents* outer_contents) {}
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  // Observer class. The Observer should *not* destroy CastWebContents during
+  // any of these events, otherwise other observers might try to use a freed
+  // pointer to |cast_web_contents|.
+  class Observer {
+   public:
+    Observer();
+
     // Advertises page state for the CastWebContents.
     // Use CastWebContents::page_state() to get the new state.
-    virtual void OnPageStateChanged(CastWebContents* cast_web_contents) = 0;
+    virtual void OnPageStateChanged(CastWebContents* cast_web_contents) {}
 
     // Called when the page has stopped. e.g.: A 404 occurred when loading the
     // page or if the render process for the main frame crashes. |error_code|
@@ -113,24 +132,21 @@ class CastWebContents {
     // DESTROYED: Page was closed due to deletion of WebContents. The
     //     CastWebContents instance is no longer usable and should be deleted.
     virtual void OnPageStopped(CastWebContents* cast_web_contents,
-                               int error_code) = 0;
+                               int error_code) {}
 
-    // Notify that an inner WebContents was created. |inner_contents| is created
-    // in a default-initialized state with no delegate, and can be safely
-    // initialized by the delegate.
-    virtual void InnerContentsCreated(CastWebContents* inner_contents,
-                                      CastWebContents* outer_contents) {}
+    // A new RenderFrame was created for the WebContents. |frame_interfaces| are
+    // provided by the new frame.
+    virtual void RenderFrameCreated(
+        int render_process_id,
+        int render_frame_id,
+        service_manager::InterfaceProvider* frame_interfaces) {}
 
-   protected:
-    virtual ~Delegate() {}
-  };
-
-  class Observer {
-   public:
-    Observer();
-
-    virtual void RenderFrameCreated(int render_process_id,
-                                    int render_frame_id) {}
+    // These methods are calls forwarded from WebContentsObserver.
+    virtual void MainFrameResized(const gfx::Rect& bounds) {}
+    virtual void UpdateTitle(const base::string16& title) {}
+    virtual void UpdateFaviconURL(GURL icon_url) {}
+    virtual void DidFinishBlockedNavigation(GURL url) {}
+    virtual void DidFirstVisuallyNonEmptyPaint() {}
 
     // Notifies that a resource for the main frame failed to load.
     virtual void ResourceLoadFailed(CastWebContents* cast_web_contents) {}
@@ -152,6 +168,13 @@ class CastWebContents {
     CastWebContents* cast_web_contents_;
   };
 
+  enum class BackgroundColor {
+    NONE,
+    WHITE,
+    BLACK,
+    TRANSPARENT,
+  };
+
   // Initialization parameters for CastWebContents.
   struct InitParams {
     // Delegate for CastWebContents. This can be null for an inner WebContents.
@@ -171,6 +194,9 @@ class CastWebContents {
     bool handle_inner_contents = false;
     // Construct internal media blocker and enable BlockMediaLoading().
     bool use_media_blocker = false;
+    // Background color for the WebContents view. If not provided, the color
+    // will fall back to the platform default.
+    BackgroundColor background_color = BackgroundColor::NONE;
   };
 
   // Page state for the main frame.

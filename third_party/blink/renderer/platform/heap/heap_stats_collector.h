@@ -187,7 +187,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     void StopTrace(Id id) { TRACE_EVENT_END0(TraceCategory(), ToString(id)); }
 
     ThreadHeapStatsCollector* const tracer_;
-    const TimeTicks start_time_;
+    const base::TimeTicks start_time_;
     const Id id_;
   };
 
@@ -211,7 +211,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
    private:
     ThreadHeapStatsCollector* const tracer_;
-    const TimeTicks start_time_;
+    const base::TimeTicks start_time_;
   };
 
   // POD to hold interesting data accumulated during a garbage collection cycle.
@@ -221,20 +221,20 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   struct PLATFORM_EXPORT Event {
     double marking_time_in_ms() const;
     double marking_time_in_bytes_per_second() const;
-    TimeDelta sweeping_time() const;
+    base::TimeDelta sweeping_time() const;
 
     // Marked bytes collected during sweeping.
     size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
-    TimeDelta scope_data[kNumScopeIds];
+    base::TimeDelta scope_data[kNumScopeIds];
     BlinkGC::GCReason reason;
     size_t object_size_in_bytes_before_sweeping = 0;
     size_t allocated_space_in_bytes_before_sweeping = 0;
     size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
     size_t wrapper_count_before_sweeping = 0;
-    TimeDelta gc_nested_in_v8_;
+    base::TimeDelta gc_nested_in_v8_;
   };
 
   // Indicates a new garbage collection cycle.
@@ -248,7 +248,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // is finished at this point.
   void NotifySweepingCompleted();
 
-  void IncreaseScopeTime(Id id, TimeDelta time) {
+  void IncreaseScopeTime(Id id, base::TimeDelta time) {
     DCHECK(is_started_);
     current_.scope_data[id] += time;
   }
@@ -278,7 +278,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // the previous cycle assuming that the collection rate of the current cycle
   // is similar to the rate of the last GC.
   double estimated_marking_time_in_seconds() const;
-  TimeDelta estimated_marking_time() const;
+  base::TimeDelta estimated_marking_time() const;
 
   size_t marked_bytes() const;
   int64_t allocated_bytes_since_prev_gc() const;
@@ -293,8 +293,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
 
-  TimeDelta marking_time_so_far() const {
-    return TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
+  base::TimeDelta marking_time_so_far() const {
+    return base::TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
   }
 
   void RegisterObserver(ThreadHeapStatsObserver* observer);
@@ -335,9 +335,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   bool is_started_ = false;
 
-  // TimeDelta for RawScope. These don't need to be nested within a garbage
-  // collection cycle to make them easier to use.
-  TimeDelta gc_nested_in_v8_;
+  // base::TimeDelta for RawScope. These don't need to be nested within a
+  // garbage collection cycle to make them easier to use.
+  base::TimeDelta gc_nested_in_v8_;
 
   Vector<ThreadHeapStatsObserver*> observers_;
 

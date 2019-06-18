@@ -80,10 +80,10 @@ namespace {
 void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
                   const String& name,
                   double value) {
-  container->addItem(protocol::Performance::Metric::create()
-                         .setName(name)
-                         .setValue(value)
-                         .build());
+  container->emplace_back(protocol::Performance::Metric::create()
+                              .setName(name)
+                              .setValue(value)
+                              .build());
 }
 }  // namespace
 
@@ -126,12 +126,13 @@ Response InspectorPerformanceAgent::getMetrics(
     std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
         out_result) {
   if (!enabled_.Get()) {
-    *out_result = protocol::Array<protocol::Performance::Metric>::create();
+    *out_result =
+        std::make_unique<protocol::Array<protocol::Performance::Metric>>();
     return Response::OK();
   }
 
-  std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
-      protocol::Array<protocol::Performance::Metric>::create();
+  auto result =
+      std::make_unique<protocol::Array<protocol::Performance::Metric>>();
 
   AppendMetric(result.get(), "Timestamp",
                CurrentTimeTicks().since_origin().InSecondsF());

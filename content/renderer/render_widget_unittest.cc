@@ -296,7 +296,7 @@ class RenderWidgetUnittest : public testing::Test {
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
   blink::WebCursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::Type::kTypePointer;
+  cursor_info.type = ui::CursorType::kPointer;
 
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);
@@ -552,6 +552,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}
+  void ResizeVisualViewportForWidget(const gfx::Size& viewport_size) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is

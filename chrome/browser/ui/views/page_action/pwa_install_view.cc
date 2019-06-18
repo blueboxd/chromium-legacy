@@ -55,20 +55,9 @@ bool PwaInstallView::Update() {
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
   base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
-  content::WebContents* web_contents = GetWebContents();
-  // TODO(https://crbug.com/956810): Make AppBannerManager listen for
-  // installations instead of having to notify it from every installation UI
-  // surface.
-  auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
-  web_app::CreateWebAppFromManifest(
-      web_contents, WebappInstallSource::OMNIBOX_INSTALL_ICON,
-      base::BindOnce(
-          [](base::WeakPtr<banners::AppBannerManager> manager,
-             const web_app::AppId& app_id, web_app::InstallResultCode code) {
-            if (manager && code == web_app::InstallResultCode::kSuccess)
-              manager->OnInstall(false, blink::kWebDisplayModeStandalone);
-          },
-          manager ? manager->GetWeakPtr() : nullptr));
+  web_app::CreateWebAppFromManifest(GetWebContents(),
+                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
+                                    base::DoNothing());
 }
 
 views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {

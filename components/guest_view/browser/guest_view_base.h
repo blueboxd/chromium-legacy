@@ -345,7 +345,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const content::WebContents::CreateParams& create_params) final;
   void DidAttach(int guest_proxy_routing_id) final;
   void DidDetach() final;
-  content::WebContents* GetOwnerWebContents() const final;
+  content::WebContents* GetOwnerWebContents() final;
   void SetGuestHost(content::GuestHost* guest_host) final;
   void WillAttach(content::WebContents* embedder_web_contents,
                   int browser_plugin_instance_id,

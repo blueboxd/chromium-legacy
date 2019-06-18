@@ -99,10 +99,8 @@ class Tab : public gfx::AnimationDelegate,
   void OnPaint(gfx::Canvas* canvas) override;
   void AddedToWidget() override;
   void OnFocus() override;
+  void OnBlur() override;
   void OnThemeChanged() override;
-
-  // views::ViewObserver:
-  void OnViewFocused(views::View* observed_view) override;
 
   TabController* controller() const { return controller_; }
 
@@ -188,6 +186,7 @@ class Tab : public gfx::AnimationDelegate,
                                        TabAlertState alert_state);
 
  private:
+  class TabCloseButtonObserver;
   friend class AlertIndicatorTest;
   friend class TabTest;
   friend class TabStripTest;
@@ -195,6 +194,8 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
   FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
+  FRIEND_TEST_ALL_PREFIXES(TabHoverCardBubbleViewBrowserTest,
+                           WidgetVisibleOnTabCloseButtonFocusAfterTabFocus);
 
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
@@ -288,6 +289,8 @@ class Tab : public gfx::AnimationDelegate,
   // different from View::IsMouseHovered() which does a naive intersection with
   // the view bounds.
   bool mouse_hovered_ = false;
+
+  std::unique_ptr<TabCloseButtonObserver> tab_close_button_observer_;
 
   // Focus ring for accessibility.
   std::unique_ptr<views::FocusRing> focus_ring_;

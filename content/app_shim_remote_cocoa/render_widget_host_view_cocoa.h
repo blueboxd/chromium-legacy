@@ -134,8 +134,6 @@ struct DidOverscrollParams;
   // the whole content yet.
   NSRange markedRange_;
 
-  ui::TextInputType textInputType_;
-
   // The text selection, cached from the RenderWidgetHostView. This is only ever
   // updated from the renderer.
   base::string16 textSelectionText_;
@@ -208,6 +206,7 @@ struct DidOverscrollParams;
 
 @property(nonatomic, assign) NSRange markedRange;
 @property(nonatomic, assign) ui::TextInputType textInputType;
+@property(nonatomic, assign) int textInputFlags;
 
 @property(nonatomic, assign) NSSpellChecker* spellCheckerForTesting;
 

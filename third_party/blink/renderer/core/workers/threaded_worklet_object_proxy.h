@@ -37,7 +37,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
 
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      network::mojom::FetchCredentialsMode,
+      network::mojom::CredentialsMode,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,

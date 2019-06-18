@@ -10,13 +10,8 @@ namespace viz {
 
 GLOutputSurfaceAndroid::GLOutputSurfaceAndroid(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    bool allow_overlays)
-    : GLOutputSurface(context_provider) {
-  if (allow_overlays) {
-    overlay_candidate_validator_ =
-        std::make_unique<OverlayCandidateValidatorAndroid>();
-  }
-}
+    gpu::SurfaceHandle surface_handle)
+    : GLOutputSurface(context_provider, surface_handle) {}
 
 GLOutputSurfaceAndroid::~GLOutputSurfaceAndroid() = default;
 
@@ -28,11 +23,6 @@ void GLOutputSurfaceAndroid::HandlePartialSwap(
   DCHECK(sub_buffer_rect.IsEmpty());
   context_provider_->ContextSupport()->CommitOverlayPlanes(
       flags, std::move(swap_callback), std::move(presentation_callback));
-}
-
-std::unique_ptr<OverlayCandidateValidator>
-GLOutputSurfaceAndroid::TakeOverlayCandidateValidator() {
-  return std::move(overlay_candidate_validator_);
 }
 
 }  // namespace viz

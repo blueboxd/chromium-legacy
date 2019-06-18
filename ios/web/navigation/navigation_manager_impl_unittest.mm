@@ -1854,6 +1854,8 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
   navigation_manager()->GetPendingItem()->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
   navigation_manager()->CommitPendingItem();
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.1.com"]);
 
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
@@ -2296,7 +2298,11 @@ TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
   }
   ASSERT_EQ(0, navigation_manager()->GetPendingItemIndex());
 
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   EXPECT_EQ("http://www.url.com/1",
             navigation_manager()->GetVisibleItem()->GetURL().spec());
 }
@@ -2315,7 +2321,11 @@ TEST_P(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
       web::NavigationInitiationType::RENDERER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   EXPECT_EQ("http://www.url.com/0",
             navigation_manager()->GetVisibleItem()->GetURL().spec());
 }

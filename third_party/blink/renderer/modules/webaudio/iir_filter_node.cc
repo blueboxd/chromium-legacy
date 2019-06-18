@@ -105,8 +105,8 @@ void IIRFilterHandler::Process(uint32_t frames_to_process) {
       did_warn_bad_filter_state_ = true;
 
       PostCrossThreadTask(*task_runner_, FROM_HERE,
-                          CrossThreadBind(&IIRFilterHandler::NotifyBadState,
-                                          WrapRefCounted(this)));
+                          CrossThreadBindOnce(&IIRFilterHandler::NotifyBadState,
+                                              WrapRefCounted(this)));
     }
   }
 }

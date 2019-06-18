@@ -49,15 +49,15 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
  public:
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
-                                                  const TimeTicks time) {
+                                                  const base::TimeTicks time) {
     return base::AdoptRef(new ResourceTimingInfo(type, time));
   }
-  TimeTicks InitialTime() const { return initial_time_; }
+  base::TimeTicks InitialTime() const { return initial_time_; }
 
   const AtomicString& InitiatorType() const { return type_; }
 
-  void SetLoadResponseEnd(TimeTicks time) { load_response_end_ = time; }
-  TimeTicks LoadResponseEnd() const { return load_response_end_; }
+  void SetLoadResponseEnd(base::TimeTicks time) { load_response_end_ = time; }
+  base::TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
   void SetInitialURL(const KURL& url) { initial_url_ = url; }
   const KURL& InitialURL() const { return initial_url_; }
@@ -90,12 +90,12 @@ class PLATFORM_EXPORT ResourceTimingInfo
   bool NegativeAllowed() const { return negative_allowed_; }
 
  private:
-  ResourceTimingInfo(const AtomicString& type, const TimeTicks time)
+  ResourceTimingInfo(const AtomicString& type, const base::TimeTicks time)
       : type_(type), initial_time_(time) {}
 
   AtomicString type_;
-  TimeTicks initial_time_;
-  TimeTicks load_response_end_;
+  base::TimeTicks initial_time_;
+  base::TimeTicks load_response_end_;
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;

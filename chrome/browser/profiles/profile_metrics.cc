@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/profile_metrics/counts.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -213,24 +214,25 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   return true;
 }
 
-ProfileMetrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
+profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
     Profile* profile) {
   if (profile->IsSystemProfile())
-    return BrowserProfileType::kSystem;
+    return profile_metrics::BrowserProfileType::kSystem;
   if (profile->IsGuestSession())
-    return BrowserProfileType::kGuest;
+    return profile_metrics::BrowserProfileType::kGuest;
   // A regular profile can be in a guest session or a system profile. Hence it
   // should be checked after them.
   if (profile->IsRegularProfile())
-    return BrowserProfileType::kRegular;
+    return profile_metrics::BrowserProfileType::kRegular;
   if (profile->IsIncognitoProfile()) {
     return profile->IsIndependentOffTheRecordProfile()
-               ? BrowserProfileType::kIndependentIncognitoProfile
-               : BrowserProfileType::kIncognito;
+               ? profile_metrics::BrowserProfileType::
+                     kIndependentIncognitoProfile
+               : profile_metrics::BrowserProfileType::kIncognito;
   }
 
   NOTREACHED();
-  return BrowserProfileType::kMaxValue;
+  return profile_metrics::BrowserProfileType::kMaxValue;
 }
 
 #if !defined(OS_ANDROID)

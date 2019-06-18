@@ -394,7 +394,7 @@ OAuth2TokenService::OAuth2TokenService(
     : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
   DCHECK(delegate_);
   AddObserver(this);
-  token_manager_ = std::make_unique<OAuth2AccessTokenManager>();
+  token_manager_ = std::make_unique<OAuth2AccessTokenManager>(this);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -657,8 +657,8 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
     const ScopeSet& scopes,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RemoveCachedTokenResponse(RequestParameters(client_id, account_id, scopes),
-                            access_token);
+  token_manager_->RemoveCachedTokenResponse(
+      RequestParameters(client_id, account_id, scopes), access_token);
   delegate_->InvalidateAccessToken(account_id, client_id, scopes, access_token);
 }
 
@@ -727,23 +727,6 @@ OAuth2TokenService::GetCachedTokenResponse(
   return token_manager_->GetCachedTokenResponse(request_parameters);
 }
 
-bool OAuth2TokenService::RemoveCachedTokenResponse(
-    const RequestParameters& request_parameters,
-    const std::string& token_to_remove) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TokenCache::iterator token_iterator = token_cache().find(request_parameters);
-  if (token_iterator != token_cache().end() &&
-      token_iterator->second.access_token == token_to_remove) {
-    for (auto& observer : diagnostics_observer_list_) {
-      observer.OnAccessTokenRemoved(request_parameters.account_id,
-                                    request_parameters.scopes);
-    }
-    token_cache().erase(token_iterator);
-    return true;
-  }
-  return false;
-}
-
 void OAuth2TokenService::OnRefreshTokensLoaded() {
   all_credentials_loaded_ = true;
 }
@@ -765,27 +748,12 @@ void OAuth2TokenService::RegisterTokenResponse(
 
 void OAuth2TokenService::ClearCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (const auto& entry : token_cache()) {
-    for (auto& observer : diagnostics_observer_list_)
-      observer.OnAccessTokenRemoved(entry.first.account_id, entry.first.scopes);
-  }
-
-  token_cache().clear();
+  token_manager_->ClearCache();
 }
 
 void OAuth2TokenService::ClearCacheForAccount(const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (TokenCache::iterator iter = token_cache().begin();
-       iter != token_cache().end();
-       /* iter incremented in body */) {
-    if (iter->first.account_id == account_id) {
-      for (auto& observer : diagnostics_observer_list_)
-        observer.OnAccessTokenRemoved(account_id, iter->first.scopes);
-      token_cache().erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
+  token_manager_->ClearCacheForAccount(account_id);
 }
 
 void OAuth2TokenService::CancelAllRequests() {

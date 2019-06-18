@@ -1064,36 +1064,40 @@ bool VaapiWrapper::IsJpegDecodeSupported() {
 }
 
 // static
-VaapiWrapper::InternalFormats
-VaapiWrapper::GetJpegDecodeSupportedInternalFormats() {
+VaapiWrapper::InternalFormats VaapiWrapper::GetDecodeSupportedInternalFormats(
+    VAProfile va_profile) {
   VASupportedProfiles::ProfileInfo profile_info;
-  if (!VASupportedProfiles::Get().IsProfileSupported(
-          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+  if (!VASupportedProfiles::Get().IsProfileSupported(kDecode, va_profile,
+                                                     &profile_info)) {
     return InternalFormats{};
   }
   return profile_info.supported_internal_formats;
 }
 
 // static
-bool VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
+bool VaapiWrapper::IsDecodingSupportedForInternalFormat(
+    VAProfile va_profile,
     unsigned int rt_format) {
   static const base::NoDestructor<VaapiWrapper::InternalFormats>
       supported_internal_formats(
-          VaapiWrapper::GetJpegDecodeSupportedInternalFormats());
-  if (rt_format == VA_RT_FORMAT_YUV420)
-    return supported_internal_formats->yuv420;
-  else if (rt_format == VA_RT_FORMAT_YUV422)
-    return supported_internal_formats->yuv422;
-  else if (rt_format == VA_RT_FORMAT_YUV444)
-    return supported_internal_formats->yuv444;
+          VaapiWrapper::GetDecodeSupportedInternalFormats(va_profile));
+  switch (rt_format) {
+    case VA_RT_FORMAT_YUV420:
+      return supported_internal_formats->yuv420;
+    case VA_RT_FORMAT_YUV422:
+      return supported_internal_formats->yuv422;
+    case VA_RT_FORMAT_YUV444:
+      return supported_internal_formats->yuv444;
+  }
   return false;
 }
 
 // static
-bool VaapiWrapper::GetJpegDecodeMinResolution(gfx::Size* min_size) {
+bool VaapiWrapper::GetDecodeMinResolution(VAProfile va_profile,
+                                          gfx::Size* min_size) {
   VASupportedProfiles::ProfileInfo profile_info;
-  if (!VASupportedProfiles::Get().IsProfileSupported(
-          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+  if (!VASupportedProfiles::Get().IsProfileSupported(kDecode, va_profile,
+                                                     &profile_info)) {
     return false;
   }
   *min_size = profile_info.min_resolution;
@@ -1101,10 +1105,11 @@ bool VaapiWrapper::GetJpegDecodeMinResolution(gfx::Size* min_size) {
 }
 
 // static
-bool VaapiWrapper::GetJpegDecodeMaxResolution(gfx::Size* max_size) {
+bool VaapiWrapper::GetDecodeMaxResolution(VAProfile va_profile,
+                                          gfx::Size* max_size) {
   VASupportedProfiles::ProfileInfo profile_info;
-  if (!VASupportedProfiles::Get().IsProfileSupported(
-          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+  if (!VASupportedProfiles::Get().IsProfileSupported(kDecode, va_profile,
+                                                     &profile_info)) {
     return false;
   }
   *max_size = profile_info.max_resolution;
@@ -1115,7 +1120,7 @@ bool VaapiWrapper::GetJpegDecodeMaxResolution(gfx::Size* max_size) {
 bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
                                                     uint32_t preferred_fourcc,
                                                     uint32_t* suitable_fourcc) {
-  if (!IsJpegDecodingSupportedForInternalFormat(rt_format))
+  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
     return false;
 
   // Work around some driver-specific conversion issues. If you add a workaround

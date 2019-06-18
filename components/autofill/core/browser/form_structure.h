@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "url/gurl.h"
@@ -244,7 +245,7 @@ class FormStructure {
 
   bool has_password_field() const { return has_password_field_; }
 
-  void set_submission_event(SubmissionIndicatorEvent submission_event) {
+  void set_submission_event(mojom::SubmissionIndicatorEvent submission_event) {
     submission_event_ = submission_event;
   }
 
@@ -301,7 +302,7 @@ class FormStructure {
     return password_length_vote_;
   }
 
-  SubmissionIndicatorEvent get_submission_event_for_testing() const {
+  mojom::SubmissionIndicatorEvent get_submission_event_for_testing() const {
     return submission_event_;
   }
 #endif
@@ -521,7 +522,7 @@ class FormStructure {
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
-  SubmissionIndicatorEvent submission_event_;
+  mojom::SubmissionIndicatorEvent submission_event_;
 
   // The source URL.
   GURL source_url_;

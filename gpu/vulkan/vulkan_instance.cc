@@ -148,19 +148,26 @@ bool VulkanInstance::Initialize(
 
   // TODO(crbug.com/843346): Make validation work in combination with
   // VK_KHR_xlib_surface or switch to VK_KHR_xcb_surface.
-  const base::StringPiece xlib_surface_extension_name("VK_KHR_xlib_surface");
-  bool enable_validation =
+  constexpr base::StringPiece xlib_surface_extension_name(
+      "VK_KHR_xlib_surface");
+  bool require_xlib_surface_extension =
       std::find_if(enabled_extensions.begin(), enabled_extensions.end(),
                    [xlib_surface_extension_name](const char* e) {
                      return xlib_surface_extension_name == e;
-                   }) == enabled_extensions.end();
-  if (enable_validation) {
-    constexpr base::StringPiece standard_validation(
-        "VK_LAYER_LUNARG_standard_validation");
-    for (const VkLayerProperties& layer_property : instance_layers) {
-      if (standard_validation == layer_property.layerName)
-        enabled_layer_names.push_back(standard_validation.data());
+                   }) != enabled_extensions.end();
+
+  // VK_LAYER_LUNARG_standard_validation 1.0.106 is required to support
+  // VK_KHR_xlib_surface.
+  constexpr base::StringPiece standard_validation(
+      "VK_LAYER_LUNARG_standard_validation");
+  for (const VkLayerProperties& layer_property : instance_layers) {
+    if (standard_validation != layer_property.layerName)
+      continue;
+    if (!require_xlib_surface_extension ||
+        layer_property.specVersion >= VK_MAKE_VERSION(1, 0, 106)) {
+      enabled_layer_names.push_back(standard_validation.data());
     }
+    break;
   }
 #endif  // DCHECK_IS_ON()
 

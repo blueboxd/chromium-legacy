@@ -94,14 +94,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsError,
                           network::mojom::CorsError::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchCredentialsMode,
-                          network::mojom::FetchCredentialsMode::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CredentialsMode,
+                          network::mojom::CredentialsMode::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRedirectMode,
-                          network::mojom::FetchRedirectMode::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RedirectMode,
+                          network::mojom::RedirectMode::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
-                          network::mojom::FetchRequestMode::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestMode,
+                          network::mojom::RequestMode::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
                           network::mojom::CorsPreflightPolicy::kMaxValue)

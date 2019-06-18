@@ -285,7 +285,7 @@ void PrintViewManagerBase::OnComposePdfDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (status != mojom::PdfCompositor::Status::SUCCESS) {
+  if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }

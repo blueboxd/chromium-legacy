@@ -333,13 +333,11 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   // Follow the original behavior in the trusted plugin and
   // PepperURLLoaderHost.
   if (document.GetSecurityOrigin().CanRequest(gurl)) {
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kSameOrigin);
+    request.SetMode(network::mojom::RequestMode::kSameOrigin);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);
   } else {
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
+    request.SetMode(network::mojom::RequestMode::kCors);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
   }
 
   // Plug-ins should not load via service workers as plug-ins may have their own

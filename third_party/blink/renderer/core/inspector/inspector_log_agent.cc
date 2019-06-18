@@ -95,12 +95,12 @@ void InspectorLogAgent::Restore() {
   InnerEnable();
   if (violation_thresholds_.IsEmpty())
     return;
-  auto settings = protocol::Array<ViolationSetting>::create();
+  auto settings = std::make_unique<protocol::Array<ViolationSetting>>();
   for (const WTF::String& key : violation_thresholds_.Keys()) {
-    settings->addItem(ViolationSetting::create()
-                          .setName(key)
-                          .setThreshold(violation_thresholds_.Get(key))
-                          .build());
+    settings->emplace_back(ViolationSetting::create()
+                               .setName(key)
+                               .setThreshold(violation_thresholds_.Get(key))
+                               .build());
   }
   startViolationsReport(std::move(settings));
 }
@@ -133,10 +133,8 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
 
   if (v8_session_ && message->Frame() && !message->Nodes().IsEmpty()) {
     ScriptForbiddenScope::AllowUserAgentScript allow_script;
-    std::unique_ptr<
-        protocol::Array<v8_inspector::protocol::Runtime::API::RemoteObject>>
-        remote_objects = protocol::Array<
-            v8_inspector::protocol::Runtime::API::RemoteObject>::create();
+    auto remote_objects = std::make_unique<
+        protocol::Array<v8_inspector::protocol::Runtime::API::RemoteObject>>();
     for (DOMNodeId node_id : message->Nodes()) {
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
           remote_object = nullptr;
@@ -150,7 +148,7 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
             NullRemoteObject(v8_session_, message->Frame(), "console");
       }
       if (remote_object) {
-        remote_objects->addItem(std::move(remote_object));
+        remote_objects->emplace_back(std::move(remote_object));
       } else {
         // If a null object could not be referenced, we do not send the message
         // at all, to avoid situations in which the arguments are misleading.
@@ -230,9 +228,9 @@ Response InspectorLogAgent::startViolationsReport(
     return Response::Error("Violations are not supported for this target");
   performance_monitor_->UnsubscribeAll(this);
   violation_thresholds_.Clear();
-  for (size_t i = 0; i < settings->length(); ++i) {
-    const WTF::String& name = settings->get(i)->getName();
-    double threshold = settings->get(i)->getThreshold();
+  for (const std::unique_ptr<ViolationSetting>& setting : *settings) {
+    const WTF::String& name = setting->getName();
+    double threshold = setting->getThreshold();
     PerformanceMonitor::Violation violation = ParseViolation(name);
     if (violation == PerformanceMonitor::kAfterLast)
       continue;

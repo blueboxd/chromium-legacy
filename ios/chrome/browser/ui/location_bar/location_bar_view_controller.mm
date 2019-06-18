@@ -474,9 +474,16 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)displayModalInfobar {
-  MobileMessagesBadgeState state = self.activeBadge
-                                       ? MobileMessagesBadgeState::Active
-                                       : MobileMessagesBadgeState::Inactive;
+  MobileMessagesBadgeState state;
+  if (self.activeBadge) {
+    state = MobileMessagesBadgeState::Active;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+  } else {
+    state = MobileMessagesBadgeState::Inactive;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+  }
   [self.infobarMetricsRecorder recordBadgeTappedInState:state];
   [self.dispatcher displayModalInfobar];
 }

@@ -282,6 +282,14 @@ const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
 
+const char kFontSrcLocalMatchingName[] =
+    "Match @font-face { src: local(<name>) } names by PostScript and full font "
+    "name.";
+const char kFontSrcLocalMatchingDescription[] =
+    "Match local() src attributes in @font-face declarations precisely by "
+    "PostScript name and full font name instead of the previous behavior of "
+    "matching those unspecifically as family names.";
+
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
@@ -1127,11 +1135,6 @@ const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
     "Ignore blacklist decisions made by Optimization Hints for Lite Page "
     "Redirect previews";
 
-const char kImprovedGeoLanguageDataName[] = "Improved Geo-language Data";
-const char kImprovedGeoLanguageDataDescription[] =
-    "Makes the GeoLanguageModel use higher quality, more refined ULP "
-    "geo-language data.";
-
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
@@ -1647,11 +1650,32 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kSharingDeviceRegistrationName[] =
+    "Enable device registration for Sharing features";
+const char kSharingDeviceRegistrationDescription[] =
+    "Enables device registration with Sharing infrastructure. Required to use "
+    "cross-device Sharing features.";
+
+const char kShelfDenseClamshellName[] =
+    "Show a smaller, denser shelf in laptop mode.";
+const char kShelfDenseClamshellDescription[] =
+    "Reduces the size of the shelf and its apps when in laptop mode.";
+
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
 const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
+
+const char kShelfNewUiName[] = "Enable a new modular design for the shelf.";
+const char kShelfNewUiDescription[] =
+    "Shows a new modular design for the shelf where the various pieces are "
+    "separate and behave independently, especially in tablet mode.";
+
+const char kShelfScrollableName[] =
+    "Enable a scrollable list of apps on the shelf";
+const char kShelfScrollableDescription[] =
+    "Shows a list of applications that is scrollable by default on tablets.";
 
 const char kShowAndroidFilesInFilesAppName[] =
     "Show Android files in Files app";
@@ -2404,11 +2428,6 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
-const char kPwaPersistentNotificationName[] =
-    "Persistent notification in standalone PWA";
-const char kPwaPersistentNotificationDescription[] =
-    "Enables a persistent Android notification for standalone PWAs";
-
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";
@@ -2891,6 +2910,12 @@ const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
     "increase the volume and the button that's closer to the bottom/left "
     "always decrease the volume.";
 
+const char kBluetoothAggressiveAppearanceFilterName[] =
+    "Aggressive Bluetooth device filtering";
+const char kBluetoothAggressiveAppearanceFilterDescription[] =
+    "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
+    "likely cannot be connected to.";
+
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
 
@@ -3021,10 +3046,6 @@ const char kEnableChromeOsAccountManagerDescription[] =
 const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =
     "Enable Discover App icon in launcher.";
-
-const char kEnableDriveFsName[] = "Enable DriveFS";
-const char kEnableDriveFsDescription[] =
-    "Enables use of the new DriveFS-based Drive sync client.";
 
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";

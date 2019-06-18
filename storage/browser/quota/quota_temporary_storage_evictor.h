@@ -102,7 +102,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
   EvictionRoundStatistics round_statistics_;
   base::Time time_of_end_of_last_nonskipped_round_;
   base::Time time_of_end_of_last_round_;
-  std::set<url::Origin> in_progress_eviction_origins_;
 
   int64_t interval_ms_;
   bool timer_disabled_for_testing_;

@@ -105,7 +105,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
 
       var self = this;
       $('error-message-back-button')
-          .addEventListener('tap', this.cancel.bind(this));
+          .addEventListener('click', this.cancel.bind(this));
 
       $('error-message-md-reboot-button').addEventListener('tap', function(e) {
         self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);

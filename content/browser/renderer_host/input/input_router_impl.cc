@@ -140,8 +140,7 @@ void InputRouterImpl::SendKeyboardEvent(
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
-  input_stream_validator_.Validate(original_gesture_event.event,
-                                   FlingCancellationIsDeferred());
+  input_stream_validator_.Validate(original_gesture_event.event);
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
@@ -259,10 +258,6 @@ void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
 
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
-}
-
-bool InputRouterImpl::FlingCancellationIsDeferred() {
-  return gesture_event_queue_.FlingCancellationIsDeferred();
 }
 
 void InputRouterImpl::ProcessDeferredGestureEventQueue() {

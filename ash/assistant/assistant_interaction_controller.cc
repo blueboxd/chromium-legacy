@@ -45,9 +45,7 @@ constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
 // Returns true if device is in tablet mode, false otherwise.
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 }  // namespace

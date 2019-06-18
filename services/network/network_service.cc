@@ -40,6 +40,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -73,7 +74,6 @@ namespace network {
 
 namespace {
 
-bool g_disable_network_change_notifier = false;
 NetworkService* g_network_service = nullptr;
 
 net::NetLog* GetNetLog() {
@@ -90,8 +90,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!g_disable_network_change_notifier &&
-      !net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     // On Android and ChromeOS, network change events are synced from the
     // browser process.
@@ -103,7 +102,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    return base::WrapUnique(net::NetworkChangeNotifier::Create());
+    return net::NetworkChangeNotifier::Create();
 #endif
   }
   return nullptr;
@@ -643,6 +642,11 @@ void NetworkService::OnMemoryPressure(
   base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
 }
 
+void NetworkService::OnPeerToPeerConnectionsCountChange(uint32_t count) {
+  network_quality_estimator_manager_->GetNetworkQualityEstimator()
+      ->OnPeerToPeerConnectionsCountChange(count);
+}
+
 #if defined(OS_ANDROID)
 void NetworkService::OnApplicationStateChange(
     base::android::ApplicationState state) {
@@ -831,12 +835,6 @@ void NetworkService::Bind(mojom::NetworkServiceRequest request) {
 // static
 NetworkService* NetworkService::GetNetworkServiceForTesting() {
   return g_network_service;
-}
-
-// static
-void NetworkService::DisableNetworkChangeNotifierForTesting() {
-  DCHECK(!g_network_service);
-  g_disable_network_change_notifier = true;
 }
 
 }  // namespace network

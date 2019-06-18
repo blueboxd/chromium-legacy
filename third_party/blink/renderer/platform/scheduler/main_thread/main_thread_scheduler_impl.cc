@@ -473,8 +473,7 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       virtual_time_stopped(false),
       nested_runloop(false),
       compositing_experiment(main_thread_scheduler_impl),
-      should_prioritize_compositing(false),
-      has_safepoint(false) {}
+      should_prioritize_compositing(false) {}
 
 MainThreadSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -2394,7 +2393,6 @@ void MainThreadSchedulerImpl::OnTaskStarted(
   if (main_thread_only().nested_runloop)
     return;
 
-  main_thread_only().has_safepoint = false;
   main_thread_only().current_task_start_time = task_timing.start_time();
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
       static_cast<TaskType>(task.task_type),
@@ -2441,8 +2439,6 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   // TODO(altimin): Per-page metrics should also be considered.
   main_thread_only().metrics_helper.RecordTaskMetrics(queue.get(), task,
                                                       *task_timing);
-  main_thread_only().has_safepoint = false;
-
   main_thread_only().task_description_for_tracing = base::nullopt;
 
   // Unset the state of |task_priority_for_tracing|.
@@ -2713,9 +2709,16 @@ void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
   UpdatePolicy();
 }
 
-void MainThreadSchedulerImpl::SetHasSafepoint() {
+void MainThreadSchedulerImpl::OnSafepointEntered() {
   DCHECK(WTF::IsMainThread());
-  main_thread_only().has_safepoint = true;
+  DCHECK(!main_thread_only().nested_runloop);
+  main_thread_only().metrics_helper.OnSafepointEntered(helper_.NowTicks());
+}
+
+void MainThreadSchedulerImpl::OnSafepointExited() {
+  DCHECK(WTF::IsMainThread());
+  DCHECK(!main_thread_only().nested_runloop);
+  main_thread_only().metrics_helper.OnSafepointExited(helper_.NowTicks());
 }
 
 void MainThreadSchedulerImpl::ExecuteAfterCurrentTask(

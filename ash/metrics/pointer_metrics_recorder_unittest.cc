@@ -77,10 +77,9 @@ void PointerMetricsRecorderTest::CreateDownEvent(
   window->SetProperty(aura::client::kAppType, static_cast<int>(destination));
 
   if (form_factor == DownEventFormFactor::kClamshell) {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        false);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   } else {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
     display::Display::Rotation rotation =
         (form_factor == DownEventFormFactor::kTabletModeLandscape)

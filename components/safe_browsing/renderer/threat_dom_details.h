@@ -60,6 +60,10 @@ class ThreatDOMDetails : public content::RenderFrameObserver,
   // Exposed for testing.
   void ExtractResources(std::vector<mojom::ThreatDOMDetailsNodePtr>* resources);
 
+  std::vector<TagAndAttributesItem> GetTagAndAttributesListForTest() {
+    return tag_and_attributes_list_;
+  }
+
  private:
   // Creates a ThreatDOMDetails for the specified RenderFrame.
   // The ThreatDOMDetails should be destroyed prior to destroying

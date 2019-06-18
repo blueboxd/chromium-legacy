@@ -86,15 +86,9 @@ void FrameSinkElement::GetVisible(bool* visible) const {
 
 void FrameSinkElement::SetVisible(bool visible) {}
 
-std::unique_ptr<protocol::Array<std::string>> FrameSinkElement::GetAttributes()
-    const {
-  auto attributes = protocol::Array<std::string>::create();
-  attributes->addItem("FrameSinkId");
-  attributes->addItem(frame_sink_id_.ToString());
-  attributes->addItem("Title");
-  attributes->addItem(
-      (frame_sink_manager_->GetFrameSinkDebugLabel(frame_sink_id_)).data());
-  return attributes;
+std::vector<std::string> FrameSinkElement::GetAttributes() const {
+  return {"FrameSinkId", frame_sink_id_.ToString(), "Title",
+          (frame_sink_manager_->GetFrameSinkDebugLabel(frame_sink_id_)).data()};
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

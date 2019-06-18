@@ -17,6 +17,10 @@
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/xml_parser.h"
 
+#ifdef OS_CHROMEOS
+#include "services/data_decoder/ble_scan_parser_impl.h"
+#endif  // OS_CHROMEOS
+
 namespace data_decoder {
 
 namespace {
@@ -35,6 +39,11 @@ DataDecoderService::DataDecoderService()
                                              base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &DataDecoderService::BindBundledExchangesParser, base::Unretained(this)));
+
+#ifdef OS_CHROMEOS
+  registry_.AddInterface(base::BindRepeating(
+      &DataDecoderService::BindBleScanParser, base::Unretained(this)));
+#endif  // OS_CHROMEOS
 }
 
 DataDecoderService::DataDecoderService(
@@ -56,6 +65,15 @@ void DataDecoderService::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
+
+#ifdef OS_CHROMEOS
+void DataDecoderService::BindBleScanParser(
+    mojom::BleScanParserRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<BleScanParserImpl>(keepalive_.CreateRef()),
+      std::move(request));
+}
+#endif  // OS_CHROMEOS
 
 void DataDecoderService::BindImageDecoder(mojom::ImageDecoderRequest request) {
   mojo::MakeStrongBinding(

@@ -17,7 +17,6 @@
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_capture_devices.h"
-#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -64,7 +63,6 @@ CastWebViewDefault::CastWebViewDefault(
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
       delegate_(params.delegate),
-      transparent_(params.transparent),
       allow_media_access_(params.allow_media_access),
       log_prefix_(params.log_prefix),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
@@ -286,22 +284,6 @@ CastWebViewDefault::RunBluetoothChooser(
              : WebContentsDelegate::RunBluetoothChooser(frame, event_handler);
 }
 
-void CastWebViewDefault::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::RenderWidgetHostView* view =
-      render_view_host->GetWidget()->GetView();
-  if (view) {
-    view->SetBackgroundColor(
-        transparent_ ? SK_ColorTRANSPARENT
-                     : chromecast::GetSwitchValueColor(
-                           switches::kCastAppBackgroundColor, SK_ColorBLACK));
-  }
-}
-
-void CastWebViewDefault::DidFirstVisuallyNonEmptyPaint() {
-  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
-}
-
 void CastWebViewDefault::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!resize_window_when_navigation_starts_) {
@@ -317,18 +299,6 @@ void CastWebViewDefault::DidStartNavigation(
   content_window->SetBounds(
       gfx::Rect(display_size.width(), display_size.height()));
 #endif
-}
-
-void CastWebViewDefault::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                             const content::MediaPlayerId& id) {
-  metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
-}
-
-void CastWebViewDefault::MediaStoppedPlaying(
-    const MediaPlayerInfo& media_info,
-    const content::MediaPlayerId& id,
-    WebContentsObserver::MediaStoppedReason reason) {
-  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
 
 }  // namespace chromecast

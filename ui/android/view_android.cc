@@ -32,7 +32,6 @@ namespace ui {
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using blink::WebCursorInfo;
 
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,
@@ -395,10 +394,10 @@ void ViewAndroid::OnCursorChanged(int type,
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (type == WebCursorInfo::kTypeCustom) {
+  if (type == static_cast<int>(ui::CursorType::kCustom)) {
     if (custom_image.drawsNothing()) {
-      Java_ViewAndroidDelegate_onCursorChanged(env, delegate,
-                                               WebCursorInfo::kTypePointer);
+      Java_ViewAndroidDelegate_onCursorChanged(
+          env, delegate, static_cast<int>(ui::CursorType::kPointer));
       return;
     }
     ScopedJavaLocalRef<jobject> java_bitmap =

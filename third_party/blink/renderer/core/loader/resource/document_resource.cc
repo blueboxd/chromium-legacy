@@ -36,8 +36,8 @@ namespace blink {
 DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
                                                      ResourceFetcher* fetcher,
                                                      ResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFetchRequestMode(),
-            network::mojom::FetchRequestMode::kSameOrigin);
+  DCHECK_EQ(params.GetResourceRequest().GetMode(),
+            network::mojom::RequestMode::kSameOrigin);
   params.SetRequestContext(mojom::RequestContextType::IMAGE);
   return ToDocumentResource(
       fetcher->RequestResource(params, SVGDocumentResourceFactory(), client));

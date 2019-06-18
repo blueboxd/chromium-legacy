@@ -96,12 +96,12 @@ void PaymentRequestItemList::Item::Init() {
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   content->set_can_process_events_within_subtree(false);
-  layout->AddView(content.release());
+  layout->AddView(std::move(content));
 
-  layout->AddView(CreateCheckmark(selected() && clickable()).release());
+  layout->AddView(CreateCheckmark(selected() && clickable()));
 
   if (extra_view)
-    layout->AddView(extra_view.release());
+    layout->AddView(std::move(extra_view));
 
   if (show_edit_button_) {
     auto edit_button = views::CreateVectorImageButton(this);
@@ -115,7 +115,7 @@ void PaymentRequestItemList::Item::Init() {
     edit_button->SetID(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
     edit_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT));
-    layout->AddView(edit_button.release());
+    layout->AddView(std::move(edit_button));
   }
 
   UpdateAccessibleName();

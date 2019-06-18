@@ -40,7 +40,7 @@ class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
   double Duration() const;
   FloatPoint TargetValue() const;
   void ApplyAdjustment(IntSize);
-  void UpdateTarget(TimeDelta time, FloatPoint new_target);
+  void UpdateTarget(base::TimeDelta time, FloatPoint new_target);
 
   // CompositorAnimationCurve implementation.
   std::unique_ptr<cc::AnimationCurve> CloneToAnimationCurve() const override;

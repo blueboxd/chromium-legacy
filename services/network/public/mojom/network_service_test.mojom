@@ -85,6 +85,12 @@ interface NetworkServiceTest {
   GetLatestMemoryPressureLevel()
       => (mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 
+  // Gets the current count of peer to peer connections that may require low
+  // latency.
+  [Sync]
+  GetPeerToPeerConnectionsCountChange()
+      => (uint32 connection_count);
+
   // Returns the value of an environment variable in the network service's
   // process, or an empty string if it's not set.
   [Sync]

@@ -51,9 +51,8 @@ namespace safe_browsing {
 
 namespace {
 
-using ::chrome_cleaner::mojom::ChromePrompt;
-using ::chrome_cleaner::mojom::PromptAcceptance;
 using ::content::BrowserThread;
+using PromptAcceptance = ChromePromptActions::PromptAcceptance;
 
 // The global singleton instance. Exposed outside of GetInstance() so that it
 // can be reset by tests.
@@ -468,7 +467,7 @@ void ChromeCleanerControllerImpl::ReplyWithUserResponse(
   if (state() != State::kInfected)
     return;
 
-  DCHECK(prompt_user_callback_);
+  DCHECK(prompt_user_reply_callback_);
 
   PromptAcceptance acceptance = PromptAcceptance::DENIED;
   State new_state = State::kIdle;
@@ -497,9 +496,7 @@ void ChromeCleanerControllerImpl::ReplyWithUserResponse(
       break;
   }
 
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(std::move(prompt_user_callback_), acceptance));
+  std::move(prompt_user_reply_callback_).Run(acceptance);
 
   if (new_state == State::kCleaning)
     time_cleanup_started_ = base::Time::Now();
@@ -585,7 +582,7 @@ void ChromeCleanerControllerImpl::ResetCleanerDataAndInvalidateWeakPtrs() {
 
   weak_factory_.InvalidateWeakPtrs();
   reporter_invocation_.reset();
-  prompt_user_callback_.Reset();
+  prompt_user_reply_callback_.Reset();
 }
 
 void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
@@ -628,40 +625,36 @@ void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
 void ChromeCleanerControllerImpl::WeakOnPromptUser(
     const base::WeakPtr<ChromeCleanerControllerImpl>& controller,
     ChromeCleanerScannerResults&& scanner_results,
-    ChromePrompt::PromptUserCallback prompt_user_callback) {
+    ChromePromptActions::PromptUserReplyCallback reply_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the weak pointer has been invalidated, the controller is no longer able
   // to receive callbacks, so respond with PromptAcceptance::Denied immediately.
   if (!controller) {
-    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-        ->PostTask(FROM_HERE, base::BindOnce(std::move(prompt_user_callback),
-                                             PromptAcceptance::DENIED));
+    std::move(reply_callback).Run(PromptAcceptance::DENIED);
     return;
   }
 
   controller->OnPromptUser(std::move(scanner_results),
-                           std::move(prompt_user_callback));
+                           std::move(reply_callback));
 }
 
 void ChromeCleanerControllerImpl::OnPromptUser(
     ChromeCleanerScannerResults&& scanner_results,
-    ChromePrompt::PromptUserCallback prompt_user_callback) {
+    ChromePromptActions::PromptUserReplyCallback reply_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(State::kScanning, state());
   DCHECK(scanner_results_.files_to_delete().empty());
   DCHECK(scanner_results_.registry_keys().empty());
   DCHECK(scanner_results_.extension_ids().empty());
-  DCHECK(!prompt_user_callback_);
+  DCHECK(!prompt_user_reply_callback_);
   DCHECK(!time_scanning_started_.is_null());
 
   UMA_HISTOGRAM_LONG_TIMES_100("SoftwareReporter.Cleaner.ScanningTime",
                                base::Time::Now() - time_scanning_started_);
 
   if (scanner_results.files_to_delete().empty()) {
-    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-        ->PostTask(FROM_HERE, base::BindOnce(std::move(prompt_user_callback),
-                                             PromptAcceptance::DENIED));
+    std::move(reply_callback).Run(PromptAcceptance::DENIED);
     idle_reason_ = IdleReason::kScanningFoundNothing;
     SetStateAndNotifyObservers(State::kIdle);
     RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOTHING_FOUND);
@@ -671,7 +664,7 @@ void ChromeCleanerControllerImpl::OnPromptUser(
   UMA_HISTOGRAM_COUNTS_1000("SoftwareReporter.NumberOfFilesToDelete",
                             scanner_results.files_to_delete().size());
   scanner_results_ = std::move(scanner_results);
-  prompt_user_callback_ = std::move(prompt_user_callback);
+  prompt_user_reply_callback_ = std::move(reply_callback);
   SetStateAndNotifyObservers(State::kInfected);
 }
 
@@ -697,7 +690,7 @@ void ChromeCleanerControllerImpl::OnConnectionClosed() {
   // - This function will not be called in the kIdle and kRebootRequired
   //   states since we invalidate all weak pointers when we enter those states.
   // - In the kCleaning state, we don't care about the connection to the Chrome
-  //   Cleaner process since communication via Mojo is complete and only the
+  //   Cleaner process since communication via IPC is complete and only the
   //   exit code of the process is of any use to us (for deciding whether we
   //   need to reboot).
   RecordIPCDisconnectedHistogram(IPC_DISCONNECTED_SUCCESS);

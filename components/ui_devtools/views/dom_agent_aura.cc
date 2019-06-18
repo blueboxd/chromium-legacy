@@ -57,24 +57,26 @@ std::unique_ptr<Node> DOMAgentAura::BuildTreeForWindow(
   aura::Window* window =
       UIElement::GetBackingElement<aura::Window, WindowElement>(
           window_element_root);
-  std::unique_ptr<Array<Node>> children = Array<Node>::create();
+  auto children = std::make_unique<protocol::Array<Node>>();
   views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
   if (widget) {
     UIElement* widget_element =
         new WidgetElement(widget, this, window_element_root);
 
-    children->addItem(BuildTreeForRootWidget(widget_element));
+    children->emplace_back(BuildTreeForRootWidget(widget_element));
     window_element_root->AddChild(widget_element);
   }
   for (aura::Window* child : window->children()) {
     UIElement* window_element =
         new WindowElement(child, this, window_element_root);
 
-    children->addItem(BuildTreeForWindow(window_element));
+    children->emplace_back(BuildTreeForWindow(window_element));
     window_element_root->AddChild(window_element);
   }
   std::unique_ptr<Node> node =
-      BuildNode("Window", window_element_root->GetAttributes(),
+      BuildNode("Window",
+                std::make_unique<std::vector<std::string>>(
+                    window_element_root->GetAttributes()),
                 std::move(children), window_element_root->node_id());
   return node;
 }

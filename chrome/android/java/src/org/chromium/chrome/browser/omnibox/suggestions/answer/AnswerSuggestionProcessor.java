@@ -120,8 +120,10 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         // Note: At the time of writing this functionality, AiS was offering at most one answer to
         // any query. If this changes before the metric is expired, the code below may need either
         // revisiting or a secondary metric telling us how many answer suggestions have been shown.
-        RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
-                suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+        if (suggestion.hasAnswer()) {
+            RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
+                    suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+        }
     }
 
     @Override

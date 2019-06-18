@@ -33,6 +33,7 @@
 #include "content/browser/media/video_decoder_proxy.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_control.mojom.h"
@@ -636,17 +637,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-  void OnRegisterAecDumpConsumer(int id);
-  void OnUnregisterAecDumpConsumer(int id);
-  void RegisterAecDumpConsumerOnUIThread(int id);
-  void UnregisterAecDumpConsumerOnUIThread(int id);
-  void EnableAecDumpForId(const base::FilePath& file, int id);
-  // Sends |file_for_transit| to the render process.
-  void SendAecDumpFileToRenderer(int id,
-                                 IPC::PlatformFileForTransit file_for_transit);
-  void SendDisableAecDumpToRenderer();
-  base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
-  base::SequencedTaskRunner& GetAecDumpFileTaskRunner();
   void NotifyRendererIfLockedToSite();
   void PopulateTerminationInfoRendererFields(ChildProcessTerminationInfo* info);
 
@@ -839,12 +829,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 
   // Must be accessed on UI thread.
-  std::vector<int> aec_dump_consumers_;
+  AecDumpManagerImpl aec_dump_manager_;
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
-
-  scoped_refptr<base::SequencedTaskRunner>
-      audio_debug_recordings_file_task_runner_;
 
   std::unique_ptr<MediaStreamTrackMetricsHost, BrowserThread::DeleteOnIOThread>
       media_stream_track_metrics_host_;

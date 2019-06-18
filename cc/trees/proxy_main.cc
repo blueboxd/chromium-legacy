@@ -202,11 +202,22 @@ void ProxyMain::BeginMainFrame(
 
   current_pipeline_stage_ = ANIMATE_PIPELINE_STAGE;
 
-  // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from the
-  // compositor thread thread to the main thread for both cc and and its
-  // client (e.g. Blink).
-  layer_tree_host_->ApplyScrollAndScale(
-      begin_main_frame_state->scroll_info.get());
+  // Check now if we should stop deferring commits due to a timeout. We
+  // may also stop deferring in BeginMainFrame, but maintain the status
+  // from this point to keep scroll in sync.
+  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+  }
+  skip_commit |= defer_commits_;
+
+  if (!skip_commit) {
+    // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from
+    // the compositor thread to the main thread for both cc and and its client
+    // (e.g. Blink). Do not do this if we explicitly plan to not commit the
+    // layer tree, to prevent scroll offsets getting out of sync.
+    layer_tree_host_->ApplyScrollAndScale(
+        begin_main_frame_state->scroll_info.get());
+  }
 
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->RecordStartOfFrameMetrics();
@@ -230,14 +241,10 @@ void ProxyMain::BeginMainFrame(
   // what this does.
   layer_tree_host_->RequestMainFrameUpdate();
 
-  // Check now if we should stop deferring commits
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
-  }
-
-  // At this point the main frame may have deferred commits to avoid committing
-  // right now, or we may be deferring commits but not deferring main
-  // frame updates.
+  // At this point the main frame may have deferred main frame updates to
+  // avoid committing right now, or we may be deferring commits but not
+  // deferring main frame updates. Either may have changed the status
+  // of the defer... flags, so re-evaluate skip_commit.
   skip_commit |= defer_main_frame_update_ || defer_commits_;
 
   if (skip_commit) {

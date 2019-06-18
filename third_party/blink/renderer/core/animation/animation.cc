@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -115,24 +116,16 @@ Animation* Animation::Create(AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   DCHECK(timeline);
-  if (!timeline->IsDocumentTimeline()) {
+  if (!timeline->IsDocumentTimeline() && !timeline->IsScrollTimeline()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Invalid timeline. Animation requires a "
-                                      "DocumentTimeline");
+                                      "DocumentTimeline or ScrollTimeline");
     return nullptr;
   }
+  DCHECK(timeline->IsDocumentTimeline() || timeline->IsScrollTimeline());
 
-  DocumentTimeline* subtimeline = ToDocumentTimeline(timeline);
-
-  Animation* animation = MakeGarbageCollected<Animation>(
-      subtimeline->GetDocument()->ContextDocument(), subtimeline, effect);
-
-  if (subtimeline) {
-    subtimeline->AnimationAttached(*animation);
-    animation->AttachCompositorTimeline();
-  }
-
-  return animation;
+  return MakeGarbageCollected<Animation>(
+      timeline->GetDocument()->ContextDocument(), timeline, effect);
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
@@ -156,7 +149,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 }
 
 Animation::Animation(ExecutionContext* execution_context,
-                     DocumentTimeline* timeline,
+                     AnimationTimeline* timeline,
                      AnimationEffect* content)
     : ContextLifecycleObserver(execution_context),
       internal_play_state_(kIdle),
@@ -190,6 +183,11 @@ Animation::Animation(ExecutionContext* execution_context,
   document_ =
       timeline_ ? timeline_->GetDocument() : To<Document>(execution_context);
   DCHECK(document_);
+
+  TickingTimeline().AnimationAttached(this);
+  if (timeline_ && timeline_->IsScrollTimeline())
+    timeline_->AnimationAttached(this);
+  AttachCompositorTimeline();
   probe::DidCreateAnimation(document_, sequence_number_);
 }
 
@@ -199,6 +197,8 @@ Animation::~Animation() {
 }
 
 void Animation::Dispose() {
+  if (timeline_ && timeline_->IsScrollTimeline())
+    timeline_->AnimationDetached(this);
   DestroyCompositorAnimation();
   // If the DocumentTimeline and its Animation objects are
   // finalized by the same GC, we have to eagerly clear out
@@ -215,9 +215,36 @@ bool Animation::Limited(double current_time) const {
          (playback_rate_ > 0 && current_time >= EffectEnd());
 }
 
+Document* Animation::GetDocument() {
+  return document_;
+}
+
+double Animation::TimelineTime() const {
+  if (timeline_)
+    return timeline_->CurrentTime().value_or(NullValue());
+  return NullValue();
+}
+
+DocumentTimeline& Animation::TickingTimeline() {
+  // Active animations are tracked and ticked through the timeline attached to
+  // the animation's document.
+  // TODO(crbug.com/916117): Reconsider how animations are tracked and ticked.
+  return document_->Timeline();
+}
+
 void Animation::setCurrentTime(double new_current_time,
                                bool is_null,
                                ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement setting current time for scroll-linked
+  // animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support setting"
+        " current time.");
+    return;
+  }
+
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   // Step 1. of the procedure to silently set the current time of an
@@ -274,7 +301,7 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
 
 // Update timing to reflect updated animation clock due to tick
 void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
-  if (internal_play_state_ == kIdle || !timeline_)
+  if (internal_play_state_ == kIdle || !timeline_ || !timeline_->IsActive())
     return;
   if (hold_time_) {
     double new_current_time = hold_time_.value();
@@ -328,13 +355,21 @@ double Animation::currentTime() {
   //    * the associated timeline is inactive, or
   //    * the animation’s start time is unresolved.
   // The current time is an unresolved time value.
-  if (!timeline_ || PlayStateInternal() == kIdle || !start_time_)
+  if (!timeline_ || !timeline_->IsActive() || PlayStateInternal() == kIdle ||
+      !start_time_) {
     return NullValue();
+  }
 
   // 3. Otherwise,
   // current time = (timeline time - start time) × playback rate
+  base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
+  // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
+  if (!timeline_time) {
+    DCHECK(timeline_->IsScrollTimeline());
+    return 0;
+  }
   double current_time =
-      (timeline_->EffectiveTime() - start_time_.value()) * playback_rate_;
+      (timeline_time.value() - start_time_.value()) * playback_rate_;
   return ToMilliseconds(current_time);
 }
 
@@ -521,20 +556,41 @@ base::Optional<double> Animation::CalculateStartTime(
     double current_time) const {
   base::Optional<double> start_time;
   if (timeline_) {
-    start_time = timeline_->EffectiveTime() - current_time / playback_rate_;
-    DCHECK(!IsNull(start_time.value()));
+    base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
+    if (timeline_time)
+      start_time = timeline_time.value() - current_time / playback_rate_;
+    // TODO(crbug.com/916117): Handle NaN time for scroll-linked animations.
+    DCHECK(start_time || timeline_->IsScrollTimeline());
   }
   return start_time;
 }
 
 double Animation::CalculateCurrentTime() const {
-  if (!start_time_ || !timeline_)
+  if (!start_time_ || !timeline_ || !timeline_->IsActive())
     return NullValue();
-  return (timeline_->EffectiveTime() - start_time_.value()) * playback_rate_;
+  base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
+  // TODO(crbug.com/916117): Handle NaN time for scroll-linked animations.
+  if (!timeline_time) {
+    DCHECK(timeline_->IsScrollTimeline());
+    return NullValue();
+  }
+  return (timeline_time.value() - start_time_.value()) * playback_rate_;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
-void Animation::setStartTime(double start_time, bool is_null) {
+void Animation::setStartTime(double start_time,
+                             bool is_null,
+                             ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement setting start time for scroll-linked
+  // animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support setting start"
+        " time.");
+    return;
+  }
+
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   base::Optional<double> new_start_time;
@@ -556,7 +612,14 @@ void Animation::setStartTime(double start_time, bool is_null) {
 void Animation::SetStartTimeInternal(base::Optional<double> new_start_time) {
   bool had_start_time = start_time_.has_value();
   double previous_current_time = CurrentTimeInternal();
-  start_time_ = new_start_time;
+
+  // Scroll-linked animations are initialized with the start time of
+  // zero (i.e., scroll origin).
+  // Changing scroll-linked animation start_time initialization is under
+  // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+  start_time_ =
+      (!timeline_ || timeline_->IsDocumentTimeline()) ? new_start_time : 0;
+
   // When we don't have an active timeline it is only possible to set either the
   // start time or the current time. Resetting the hold time clears current
   // time.
@@ -706,6 +769,13 @@ void Animation::ResetPendingTasks() {
 }
 
 void Animation::pause(ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement pause for scroll-linked animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support pause.");
+    return;
+  }
   if (paused_)
     return;
 
@@ -797,6 +867,13 @@ void Animation::play(ExceptionState& exception_state) {
 
 // https://drafts.csswg.org/web-animations/#reversing-an-animation-section
 void Animation::reverse(ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement reverse for scroll-linked animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support reverse.");
+    return;
+  }
   if (!playback_rate_) {
     return;
   }
@@ -852,7 +929,17 @@ void Animation::finish(ExceptionState& exception_state) {
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
-void Animation::updatePlaybackRate(double playback_rate) {
+void Animation::updatePlaybackRate(double playback_rate,
+                                   ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement updatePlaybackRate for scroll-linked
+  // animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support"
+        " updatePlaybackRate.");
+    return;
+  }
   // The implementation differs from the spec; however, the end result is
   // consistent. Whereas Animation.playbackRate updates the playback rate
   // immediately, updatePlaybackRate is to take effect on the next async cycle.
@@ -929,7 +1016,17 @@ double Animation::playbackRate() const {
   return active_playback_rate_.value_or(playback_rate_);
 }
 
-void Animation::setPlaybackRate(double playback_rate) {
+void Animation::setPlaybackRate(double playback_rate,
+                                ExceptionState& exception_state) {
+  // TODO(crbug.com/916117): Implement setting playback rate for scroll-linked
+  // animations.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Scroll-linked WebAnimation currently does not support setting"
+        " playback rate.");
+    return;
+  }
   active_playback_rate_.reset();
   if (playback_rate == playback_rate_)
     return;
@@ -971,7 +1068,7 @@ void Animation::ClearOutdated() {
     return;
   outdated_ = false;
   if (timeline_)
-    timeline_->ClearOutdatedAnimation(this);
+    TickingTimeline().ClearOutdatedAnimation(this);
 }
 
 void Animation::SetOutdated() {
@@ -979,12 +1076,12 @@ void Animation::SetOutdated() {
     return;
   outdated_ = true;
   if (timeline_)
-    timeline_->SetOutdatedAnimation(this);
+    TickingTimeline().SetOutdatedAnimation(this);
 }
 
 void Animation::ForceServiceOnNextFrame() {
   if (timeline_)
-    timeline_->Wake();
+    TickingTimeline().Wake();
 }
 
 CompositorAnimations::FailureReasons
@@ -1025,7 +1122,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   // reason to composite it. Additionally, mutating the timeline playback rate
   // is a debug feature available via devtools; we don't support this on the
   // compositor currently and there is no reason to do so.
-  if (!timeline_ || timeline_->PlaybackRate() != 1)
+  if (!timeline_ || (timeline_->IsDocumentTimeline() &&
+                     ToDocumentTimeline(timeline_)->PlaybackRate() != 1))
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // An Animation without an effect cannot produce a visual, so there is no
@@ -1038,6 +1136,10 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   if (!Playing())
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
+  // TODO(crbug.com/916117): Support accelerated scroll linked animations.
+  if (timeline_->IsScrollTimeline())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
   return reasons;
 }
 
@@ -1045,14 +1147,16 @@ void Animation::StartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) {
   DCHECK_EQ(CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
+  DCHECK(timeline_->IsDocumentTimeline());
 
   bool reversed = playback_rate_ < 0;
 
   base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
   if (start_time_) {
-    start_time = TimelineInternal()->ZeroTime().since_origin().InSecondsF() +
-                 start_time_.value();
+    start_time =
+        ToDocumentTimeline(timeline_)->ZeroTime().since_origin().InSecondsF() +
+        start_time_.value();
     if (reversed)
       start_time = start_time.value() - (EffectEnd() / fabs(playback_rate_));
   } else {
@@ -1153,9 +1257,8 @@ bool Animation::Update(TimingUpdateReason reason) {
   bool idle = PlayStateInternal() == kIdle;
 
   if (content_) {
-    double inherited_time = idle || IsNull(timeline_->CurrentTimeInternal())
-                                ? NullValue()
-                                : CurrentTimeInternal();
+    double inherited_time =
+        idle || !timeline_->CurrentTime() ? NullValue() : CurrentTimeInternal();
 
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && playback_rate_ < 0)
@@ -1177,6 +1280,8 @@ bool Animation::Update(TimingUpdateReason reason) {
         const AtomicString& event_type = event_type_names::kCancel;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
+          // TODO(crbug.com/916117): Handle NaN values for scroll-linked
+          // animations.
           pending_cancelled_event_ =
               MakeGarbageCollected<AnimationPlaybackEvent>(
                   event_type, event_current_time, TimelineTime());
@@ -1198,6 +1303,7 @@ void Animation::QueueFinishedEvent() {
   const AtomicString& event_type = event_type_names::kFinish;
   if (GetExecutionContext() && HasEventListeners(event_type)) {
     double event_current_time = CurrentTimeInternal() * 1000;
+    // TODO(crbug.com/916117): Handle NaN values for scroll-linked animations.
     pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
         event_type, event_current_time, TimelineTime());
     pending_finished_event_->SetTarget(this);
@@ -1294,7 +1400,8 @@ void Animation::DestroyCompositorAnimation() {
 void Animation::AttachCompositorTimeline() {
   if (compositor_animation_) {
     CompositorAnimationTimeline* timeline =
-        timeline_ ? timeline_->CompositorTimeline() : nullptr;
+        timeline_ ? ToDocumentTimeline(timeline_)->CompositorTimeline()
+                  : nullptr;
     if (timeline)
       timeline->AnimationAttached(*this);
   }
@@ -1303,7 +1410,8 @@ void Animation::AttachCompositorTimeline() {
 void Animation::DetachCompositorTimeline() {
   if (compositor_animation_) {
     CompositorAnimationTimeline* timeline =
-        timeline_ ? timeline_->CompositorTimeline() : nullptr;
+        timeline_ ? ToDocumentTimeline(timeline_)->CompositorTimeline()
+                  : nullptr;
     if (timeline)
       timeline->AnimationDestroyed(*this);
   }

@@ -23,7 +23,7 @@ class CachedMetadataSenderImpl : public CachedMetadataSender {
 
  private:
   const KURL response_url_;
-  const Time response_time_;
+  const base::Time response_time_;
   const blink::mojom::CodeCacheType code_cache_type_;
 };
 
@@ -69,7 +69,7 @@ class ServiceWorkerCachedMetadataSender : public CachedMetadataSender {
 
  private:
   const KURL response_url_;
-  const Time response_time_;
+  const base::Time response_time_;
   const String cache_storage_cache_name_;
   scoped_refptr<const SecurityOrigin> security_origin_;
 };

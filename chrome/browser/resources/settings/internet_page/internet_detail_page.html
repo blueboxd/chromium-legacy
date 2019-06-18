@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
@@ -196,7 +197,8 @@
       <template is="dom-if" if="[[isCellular_(networkProperties_)]]">
         <settings-toggle-button id="allowDataRoaming"
             pref="{{prefs.cros.signed.data_roaming_enabled}}"
-            label="$i18n{networkAllowDataRoaming}">
+            label="$i18n{networkAllowDataRoaming}"
+            sub-label="[[getRoamingDetails_(networkProperties_)]]">
         </settings-toggle-button>
       </template>
       <!-- SIM Info (Cellular only). -->

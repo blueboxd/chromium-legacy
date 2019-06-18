@@ -31,6 +31,7 @@ const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
+const char kContinueUrlForLogoutSuffix[] = "chrome/blank.html";
 const char kGetUserInfoUrlSuffix[] = "GetUserInfo";
 const char kTokenAuthUrlSuffix[] = "TokenAuth";
 const char kMergeSessionUrlSuffix[] = "MergeSession";
@@ -117,6 +118,7 @@ GaiaUrls::GaiaUrls() {
   signin_chrome_sync_dice_ = gaia_url_.Resolve(kSigninChromeSyncDice);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
+  continue_url_for_logout_ = gaia_url_.Resolve(kContinueUrlForLogoutSuffix);
   get_user_info_url_ = gaia_url_.Resolve(kGetUserInfoUrlSuffix);
   token_auth_url_ = gaia_url_.Resolve(kTokenAuthUrlSuffix);
   merge_session_url_ = gaia_url_.Resolve(kMergeSessionUrlSuffix);
@@ -295,6 +297,16 @@ GURL GaiaUrls::LogOutURLWithSource(const std::string& source) {
   return source.empty() ? service_logout_url_
                         : service_logout_url_.Resolve(
                               base::StringPrintf("?source=%s", source.c_str()));
+}
+
+GURL GaiaUrls::LogOutURLWithSourceAndContinueURL(const std::string& source) {
+  std::string params =
+      source.empty()
+          ? base::StringPrintf("?continue=%s",
+                               continue_url_for_logout_.spec().c_str())
+          : base::StringPrintf("?source=%s&continue=%s", source.c_str(),
+                               continue_url_for_logout_.spec().c_str());
+  return service_logout_url_.Resolve(params);
 }
 
 GURL GaiaUrls::GetCheckConnectionInfoURLWithSource(const std::string& source) {

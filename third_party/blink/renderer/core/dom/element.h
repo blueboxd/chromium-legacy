@@ -1078,6 +1078,10 @@ class CORE_EXPORT Element : public ContainerNode {
                                SynchronizationOfLazyAttribute);
   void RemoveAttributeInternal(wtf_size_t index,
                                SynchronizationOfLazyAttribute);
+  std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameInternal(
+      const AtomicString& local_name) const;
+  SpecificTrustedType ExpectedTrustedTypeForAttribute(
+      const QualifiedName&) const;
 
   void CancelFocusAppearanceUpdate();
 

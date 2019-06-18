@@ -26,6 +26,7 @@ optimization_guide::HintsComponentInfo
 TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
     const std::vector<std::string>& page_hint_host_suffixes,
+    const std::string& page_pattern,
     const std::vector<std::string>& resource_blocking_patterns) {
   optimization_guide::proto::Configuration config;
   for (const auto& page_hint_site : page_hint_host_suffixes) {
@@ -34,7 +35,7 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
-    page_hint->set_page_pattern("*");
+    page_hint->set_page_pattern(page_pattern);
 
     optimization_guide::proto::Optimization* optimization =
         page_hint->add_whitelisted_optimizations();

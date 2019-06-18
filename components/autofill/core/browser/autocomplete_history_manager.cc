@@ -183,23 +183,9 @@ void AutocompleteHistoryManager::OnWillSubmitForm(
     return;
   }
 
-  // We put the following restriction on stored FormFields:
-  //  - non-empty name
-  //  - non-empty value
-  //  - text field
-  //  - autocomplete is not disabled
-  //  - value is not a credit card number
-  //  - value is not a SSN
-  //  - field was not identified as a CVC field (this is handled in
-  //    AutofillManager)
-  //  - field is focusable
-  //  - not a presentation field
   std::vector<FormFieldData> values;
   for (const FormFieldData& field : form.fields) {
-    if (!field.value.empty() && !field.name.empty() && IsTextField(field) &&
-        field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
-        !IsSSN(field.value) && field.is_focusable &&
-        field.role != FormFieldData::RoleAttribute::kPresentation) {
+    if (IsFieldValueSaveable(field)) {
       values.push_back(field);
     }
   }
@@ -364,6 +350,35 @@ void AutocompleteHistoryManager::CleanupEntries(
     const QueryHandler& query_handler = pending_query.second;
     return !query_handler.handler_ || query_handler.handler_.get() == handler;
   });
+}
+
+// We put the following restriction on stored FormFields:
+//  - non-empty name
+//  - non-empty nor whitespace only value
+//  - text field
+//  - autocomplete is not disabled
+//  - value is not a credit card number
+//  - value is not a SSN
+//  - field was not identified as a CVC field (this is handled in
+//    AutofillManager)
+//  - field is focusable
+//  - not a presentation field
+bool AutocompleteHistoryManager::IsFieldValueSaveable(
+    const FormFieldData& field) {
+  // We don't want to save a trimmed string, but we want to make sure that the
+  // value is non-empty nor only whitespaces.
+  bool is_value_valid = false;
+  for (const char& c : field.value) {
+    if (c != ' ') {
+      is_value_valid = true;
+      break;
+    }
+  }
+
+  return is_value_valid && !field.name.empty() && IsTextField(field) &&
+         field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
+         !IsSSN(field.value) && field.is_focusable &&
+         field.role != FormFieldData::RoleAttribute::kPresentation;
 }
 
 }  // namespace autofill

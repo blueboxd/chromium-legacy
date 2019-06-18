@@ -505,6 +505,29 @@ TEST(ParsedCookieTest, SetSameSite) {
   EXPECT_TRUE(pc.IsValid());
 }
 
+TEST(ParsedCookieTest, SettersInputValidation) {
+  ParsedCookie pc("name=foobar");
+  EXPECT_TRUE(pc.SetPath("baz"));
+  EXPECT_EQ(pc.ToCookieLine(), "name=foobar; path=baz");
+
+  EXPECT_TRUE(pc.SetPath("  baz "));
+  EXPECT_EQ(pc.ToCookieLine(), "name=foobar; path=baz");
+
+  EXPECT_TRUE(pc.SetPath("     "));
+  EXPECT_EQ(pc.ToCookieLine(), "name=foobar");
+
+  EXPECT_TRUE(pc.SetDomain("  baz "));
+  EXPECT_EQ(pc.ToCookieLine(), "name=foobar; domain=baz");
+
+  // Invalid characters
+  EXPECT_FALSE(pc.SetPath("  baz\n "));
+  EXPECT_FALSE(pc.SetPath("f;oo"));
+  EXPECT_FALSE(pc.SetPath("\r"));
+  EXPECT_FALSE(pc.SetPath("\a"));
+  EXPECT_FALSE(pc.SetPath("\t"));
+  EXPECT_FALSE(pc.SetSameSite("\r"));
+}
+
 TEST(ParsedCookieTest, SameSiteValues) {
   struct TestCase {
     const char* cookie;

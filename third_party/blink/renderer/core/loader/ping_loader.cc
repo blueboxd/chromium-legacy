@@ -255,11 +255,10 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   }
   request.SetKeepalive(true);
   request.SetHttpBody(std::move(report));
-  request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kSameOrigin);
+  request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);
   request.SetRequestContext(mojom::RequestContextType::CSP_REPORT);
   request.SetRequestorOrigin(frame->GetDocument()->GetSecurityOrigin());
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kError);
+  request.SetRedirectMode(network::mojom::RedirectMode::kError);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name =
       fetch_initiator_type_names::kViolationreport;

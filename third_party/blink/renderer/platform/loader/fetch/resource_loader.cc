@@ -438,7 +438,7 @@ void ResourceLoader::Start() {
   if (ShouldCheckCorsInResourceLoader()) {
     const auto origin = resource_->GetOrigin();
     response_tainting_ = cors::CalculateResponseTainting(
-        request.Url(), request.GetFetchRequestMode(), origin.get(),
+        request.Url(), request.GetMode(), origin.get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
@@ -614,7 +614,7 @@ void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
 
 void ResourceLoader::ScheduleCancel() {
   if (!cancel_timer_.IsActive())
-    cancel_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cancel_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void ResourceLoader::CancelTimerFired(TimerBase*) {
@@ -643,8 +643,7 @@ void ResourceLoader::CancelForRedirectAccessCheckError(
 }
 
 static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
-  return request.GetFetchRedirectMode() ==
-             network::mojom::FetchRedirectMode::kManual &&
+  return request.GetRedirectMode() == network::mojom::RedirectMode::kManual &&
          request.GetRequestContext() == mojom::RequestContextType::FETCH;
 }
 
@@ -683,10 +682,9 @@ bool ResourceLoader::WillFollowRedirect(
   // The following parameters never change during the lifetime of a request.
   mojom::RequestContextType request_context =
       initial_request.GetRequestContext();
-  network::mojom::FetchRequestMode fetch_request_mode =
-      initial_request.GetFetchRequestMode();
-  network::mojom::FetchCredentialsMode fetch_credentials_mode =
-      initial_request.GetFetchCredentialsMode();
+  network::mojom::RequestMode request_mode = initial_request.GetMode();
+  network::mojom::CredentialsMode credentials_mode =
+      initial_request.GetCredentialsMode();
 
   const ResourceLoaderOptions& options = resource_->Options();
 
@@ -724,13 +722,12 @@ bool ResourceLoader::WillFollowRedirect(
       scoped_refptr<const SecurityOrigin> origin = resource_->GetOrigin();
       base::Optional<network::CorsErrorStatus> cors_error =
           cors::CheckRedirectLocation(
-              new_url, fetch_request_mode, origin.get(),
+              new_url, request_mode, origin.get(),
               GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
       if (!cors_error && GetCorsFlag()) {
-        cors_error =
-            cors::CheckAccess(new_url, redirect_response.HttpStatusCode(),
-                              redirect_response.HttpHeaderFields(),
-                              fetch_credentials_mode, *origin);
+        cors_error = cors::CheckAccess(
+            new_url, redirect_response.HttpStatusCode(),
+            redirect_response.HttpHeaderFields(), credentials_mode, *origin);
       }
       if (cors_error) {
         HandleError(
@@ -762,12 +759,12 @@ bool ResourceLoader::WillFollowRedirect(
 
   base::Optional<ResourceResponse> redirect_response_with_type;
   if (ShouldCheckCorsInResourceLoader()) {
-    new_request->SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
-        fetch_credentials_mode, response_tainting_));
+    new_request->SetAllowStoredCredentials(
+        cors::CalculateCredentialsFlag(credentials_mode, response_tainting_));
     if (!redirect_response.WasFetchedViaServiceWorker()) {
       auto response_type = response_tainting_;
-      if (initial_request.GetFetchRedirectMode() ==
-          network::mojom::FetchRedirectMode::kManual) {
+      if (initial_request.GetRedirectMode() ==
+          network::mojom::RedirectMode::kManual) {
         response_type = network::mojom::FetchResponseType::kOpaqueRedirect;
       }
       if (response_type != redirect_response.GetType()) {
@@ -806,8 +803,8 @@ bool ResourceLoader::WillFollowRedirect(
 
   // The following parameters never change during the lifetime of a request.
   DCHECK_EQ(new_request->GetRequestContext(), request_context);
-  DCHECK_EQ(new_request->GetFetchRequestMode(), fetch_request_mode);
-  DCHECK_EQ(new_request->GetFetchCredentialsMode(), fetch_credentials_mode);
+  DCHECK_EQ(new_request->GetMode(), request_mode);
+  DCHECK_EQ(new_request->GetCredentialsMode(), credentials_mode);
 
   if (new_request->Url() != KURL(new_url)) {
     CancelForRedirectAccessCheckError(new_request->Url(),
@@ -823,9 +820,9 @@ bool ResourceLoader::WillFollowRedirect(
 
   if (ShouldCheckCorsInResourceLoader()) {
     bool new_cors_flag =
-        GetCorsFlag() || cors::CalculateCorsFlag(new_request->Url(),
-                                                 resource_->GetOrigin().get(),
-                                                 fetch_request_mode);
+        GetCorsFlag() ||
+        cors::CalculateCorsFlag(new_request->Url(),
+                                resource_->GetOrigin().get(), request_mode);
     resource_->MutableOptions().cors_flag = new_cors_flag;
     // Cross-origin requests are only allowed certain registered schemes.
     if (GetCorsFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
@@ -837,7 +834,7 @@ bool ResourceLoader::WillFollowRedirect(
       return false;
     }
     response_tainting_ = cors::CalculateResponseTainting(
-        new_request->Url(), fetch_request_mode, resource_->GetOrigin().get(),
+        new_request->Url(), request_mode, resource_->GetOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
@@ -904,8 +901,7 @@ void ResourceLoader::DidReceiveResponseInternal(
   // The following parameters never change during the lifetime of a request.
   mojom::RequestContextType request_context =
       initial_request.GetRequestContext();
-  network::mojom::FetchRequestMode fetch_request_mode =
-      initial_request.GetFetchRequestMode();
+  network::mojom::RequestMode request_mode = initial_request.GetMode();
 
   const ResourceLoaderOptions& options = resource_->Options();
 
@@ -929,7 +925,7 @@ void ResourceLoader::DidReceiveResponseInternal(
   if (response.WasFetchedViaServiceWorker()) {
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCorsHandlingByResourceFetcher &&
-        fetch_request_mode == network::mojom::FetchRequestMode::kCors &&
+        request_mode == network::mojom::RequestMode::kCors &&
         response.WasFallbackRequiredByServiceWorker()) {
       ResourceRequest last_request = resource_->LastResourceRequest();
       DCHECK(!last_request.GetSkipServiceWorker());
@@ -991,8 +987,8 @@ void ResourceLoader::DidReceiveResponseInternal(
     if (GetCorsFlag()) {
       base::Optional<network::CorsErrorStatus> cors_error = cors::CheckAccess(
           response.CurrentRequestUrl(), response.HttpStatusCode(),
-          response.HttpHeaderFields(),
-          initial_request.GetFetchCredentialsMode(), *resource_->GetOrigin());
+          response.HttpHeaderFields(), initial_request.GetCredentialsMode(),
+          *resource_->GetOrigin());
       if (cors_error) {
         HandleError(ResourceError(response.CurrentRequestUrl(), *cors_error));
         return;
@@ -1104,13 +1100,13 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
-      resource_.Get(), TimeTicks(),
+      resource_.Get(), base::TimeTicks(),
       ResourceFetcher::kDidFinishFirstPartInMultipart, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
 }
 
 void ResourceLoader::DidFinishLoading(
-    TimeTicks response_end,
+    base::TimeTicks response_end,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length,

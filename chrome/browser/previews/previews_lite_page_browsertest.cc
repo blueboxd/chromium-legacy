@@ -1923,7 +1923,7 @@ class PreviewsLitePageAndPageHintsBrowserTest
 
     ProcessHintsComponent(
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::RESOURCE_LOADING, hints_sites,
+            optimization_guide::proto::RESOURCE_LOADING, hints_sites, "*",
             resource_patterns));
   }
 

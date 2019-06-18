@@ -8,18 +8,16 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_message_callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
 class NFCPushOptions;
-using NDEFMessageSource = StringOrArrayBufferOrNDEFMessage;
-using NDEFRecordData = StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
 class NFCReaderOptions;
 class ScriptPromiseResolver;
 

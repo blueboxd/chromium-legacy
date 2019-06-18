@@ -16,5 +16,6 @@ template("remoting_apk_tmpl") {
     android_manifest_dep = "//remoting/android:remoting_apk_manifest"
     shared_libraries = [ "//remoting/client/jni:remoting_client_jni" ]
     version_name = chrome_version_name
+    version_code = chrome_version_code
   }
 }

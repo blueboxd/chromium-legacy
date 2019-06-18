@@ -22,7 +22,7 @@ class TestSystemWebAppManager : public SystemWebAppManager {
                           PendingAppManager* pending_app_manager);
   ~TestSystemWebAppManager() override;
 
-  void SetSystemApps(base::flat_map<SystemAppType, GURL> system_apps);
+  void SetSystemApps(base::flat_map<SystemAppType, SystemAppInfo> system_apps);
 
   void SetUpdatePolicy(SystemWebAppManager::UpdatePolicy policy);
 

@@ -831,6 +831,8 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  if (using_saml)
+    user_context.SetIsUsingSamlPrincipalsApi(using_saml_api_);
   user_context.SetGAPSCookie(gaps_cookie);
   if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
     user_context.SetSamlPasswordAttributes(password_attributes);
@@ -983,6 +985,8 @@ void GaiaScreenHandler::DoCompleteLogin(
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  if (using_saml)
+    user_context.SetIsUsingSamlPrincipalsApi(using_saml_api_);
 
   if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
     user_context.SetSamlPasswordAttributes(password_attributes);

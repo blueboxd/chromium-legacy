@@ -228,7 +228,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
 
     private OfflineItem findItemByUrl(String url) throws InterruptedException, TimeoutException {
         for (OfflineItem item : OfflineTestUtil.getOfflineItems()) {
-            if (item.pageUrl.equals(URL1)) {
+            if (item.pageUrl.equals(url)) {
                 return item;
             }
         }
@@ -266,7 +266,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     /**
      * Waits for |callbackHelper| to be notified. Runs the background task while waiting.
      * @param callbackHelper The callback helper to wait for.
-     * @param currentCallbacount |callbackHelper|'s current call count.
+     * @param currentCallCount |callbackHelper|'s current call count.
      * @param numberOfCallsToWaitFor number of calls to wait for.
      */
     private void runBackgroundTaskUntilCallCountReached(CallbackHelper callbackHelper,

@@ -594,14 +594,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const base::Optional<url::Origin>& request_initiator,
     const ResourceResponseInfo& response,
     base::Optional<url::Origin> request_initiator_site_lock,
-    mojom::FetchRequestMode fetch_request_mode) {
+    mojom::RequestMode request_mode) {
   content_length_ = response.content_length;
   http_response_code_ =
       response.headers ? response.headers->response_code() : 0;
   request_initiator_site_lock_ = request_initiator_site_lock;
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
-      fetch_request_mode, request_url, request_initiator, response);
+      request_mode, request_url, request_initiator, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
 }
@@ -610,7 +610,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
-    mojom::FetchRequestMode fetch_request_mode,
+    mojom::RequestMode request_mode,
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const ResourceResponseInfo& response) {
@@ -658,14 +658,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
 
   // Allow the response through if this is a CORS request and the response has
   // valid CORS headers.
-  switch (fetch_request_mode) {
-    case mojom::FetchRequestMode::kNavigate:
-    case mojom::FetchRequestMode::kNoCors:
-    case mojom::FetchRequestMode::kSameOrigin:
+  switch (request_mode) {
+    case mojom::RequestMode::kNavigate:
+    case mojom::RequestMode::kNoCors:
+    case mojom::RequestMode::kSameOrigin:
       break;
 
-    case mojom::FetchRequestMode::kCors:
-    case mojom::FetchRequestMode::kCorsWithForcedPreflight:
+    case mojom::RequestMode::kCors:
+    case mojom::RequestMode::kCorsWithForcedPreflight:
       std::string cors_header;
       response.headers->GetNormalizedHeader("access-control-allow-origin",
                                             &cors_header);
@@ -750,11 +750,11 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // blocked before reaching the renderer process (even without CORB's help).
   // Of course this assumes that OOR-CORS will use trustworthy
   // |request_initiator| (i.e. vetted against |request_initiator|site_lock|).
-  constexpr mojom::FetchRequestMode kOverreachingFetchMode =
-      mojom::FetchRequestMode::kNoCors;
+  constexpr mojom::RequestMode kOverreachingRequestMode =
+      mojom::RequestMode::kNoCors;
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(request_url, request_initiator,
-                                        response, kOverreachingFetchMode,
+                                        response, kOverreachingRequestMode,
                                         request_initiator_site_lock_)) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
@@ -931,13 +931,6 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
   return true;
 }
 
-void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
-  if (bytes_read_for_sniffing_ >= 0) {
-    UMA_HISTOGRAM_COUNTS_1M("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                            bytes_read_for_sniffing_);
-  }
-}
-
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
   // Note that if a response is allowed because of hitting EOF or
   // kMaxBytesToSniff, then |sniffers_| are not emptied and consequently
@@ -955,8 +948,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
       needs_sniffing()
           ? network::CrossOriginReadBlocking::Action::kAllowedAfterSniffing
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
-
-  LogBytesReadForSniffing();
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -969,20 +960,9 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
           ? network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing
           : network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "SiteIsolation.XSD.Browser.Blocked.ContentLength.WasAvailable",
-      content_length() >= 0);
-  if (content_length() >= 0) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "SiteIsolation.XSD.Browser.Blocked.ContentLength.ValueIfAvailable",
-        content_length());
-  }
-
   UMA_HISTOGRAM_ENUMERATION(
       "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
       canonical_mime_type_);
-
-  LogBytesReadForSniffing();
 }
 
 // static

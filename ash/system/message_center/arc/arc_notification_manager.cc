@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/arc_app_id_provider.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
@@ -191,10 +192,11 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
     it = result.first;
   }
 
-  delegate_->GetAppIdByPackageName(
-      data->package_name.value_or(std::string()),
-      base::BindOnce(&ArcNotificationManager::OnGotAppId,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+  std::string app_id =
+      data->package_name
+          ? ArcAppIdProvider::Get()->GetAppIdByPackageName(*data->package_name)
+          : std::string();
+  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
@@ -235,10 +237,11 @@ void ArcNotificationManager::OnNotificationUpdated(
     previously_focused_notification_key_.clear();
   }
 
-  delegate_->GetAppIdByPackageName(
-      data->package_name.value_or(std::string()),
-      base::BindOnce(&ArcNotificationManager::OnGotAppId,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+  std::string app_id =
+      data->package_name
+          ? ArcAppIdProvider::Get()->GetAppIdByPackageName(*data->package_name)
+          : std::string();
+  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 void ArcNotificationManager::OpenMessageCenter() {
@@ -487,16 +490,6 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
   }
 
   return false;
-}
-
-void ArcNotificationManager::OnGotAppId(ArcNotificationDataPtr data,
-                                        const std::string& app_id) {
-  const std::string& key = data->key;
-  auto it = items_.find(key);
-  if (it == items_.end())
-    return;
-
-  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 void ArcNotificationManager::OnDoNotDisturbStatusUpdated(

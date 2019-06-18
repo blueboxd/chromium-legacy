@@ -58,8 +58,8 @@ struct ReferrerPolicyTestCase {
 struct CorsTestCase {
   const char* base_url;
   const char* input_html;
-  network::mojom::FetchRequestMode request_mode;
-  network::mojom::FetchCredentialsMode credentials_mode;
+  network::mojom::RequestMode request_mode;
+  network::mojom::CredentialsMode credentials_mode;
 };
 
 struct CSPTestCase {
@@ -159,15 +159,14 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
 
   void CorsRequestVerification(
       Document* document,
-      network::mojom::FetchRequestMode request_mode,
-      network::mojom::FetchCredentialsMode credentials_mode) {
+      network::mojom::RequestMode request_mode,
+      network::mojom::CredentialsMode credentials_mode) {
     ASSERT_TRUE(preload_request_.get());
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
-    EXPECT_EQ(request_mode,
-              resource->GetResourceRequest().GetFetchRequestMode());
+    EXPECT_EQ(request_mode, resource->GetResourceRequest().GetMode());
     EXPECT_EQ(credentials_mode,
-              resource->GetResourceRequest().GetFetchCredentialsMode());
+              resource->GetResourceRequest().GetCredentialsMode());
   }
 
   void NonceRequestVerification(const char* nonce) {
@@ -910,27 +909,27 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
 TEST_F(HTMLPreloadScannerTest, testCors) {
   CorsTestCase test_cases[] = {
       {"http://example.test", "<script src='/script'></script>",
-       network::mojom::FetchRequestMode::kNoCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kNoCors,
+       network::mojom::CredentialsMode::kInclude},
       {"http://example.test", "<script crossorigin src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script crossorigin=use-credentials src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kInclude},
       {"http://example.test", "<script type='module' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='anonymous' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='use-credentials' "
        "src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kInclude},
   };
 
   for (const auto& test_case : test_cases) {

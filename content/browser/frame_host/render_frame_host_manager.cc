@@ -945,12 +945,8 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
   if (render_frame_host == speculative_render_frame_host_.get()) {
     // TODO(nasko, clamy): This should just clean up the speculative RFH
     // without canceling the request.  See https://crbug.com/636119.
-    if (frame_tree_node_->navigation_request() &&
-        frame_tree_node_->navigation_request()->navigation_handle()) {
-      frame_tree_node_->navigation_request()
-          ->navigation_handle()
-          ->set_net_error_code(net::ERR_ABORTED);
-    }
+    if (frame_tree_node_->navigation_request())
+      frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     frame_tree_node_->ResetNavigationRequest(false, true);
   }
 }

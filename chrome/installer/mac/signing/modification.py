@@ -161,9 +161,11 @@ def _process_entitlements(paths, dist, config):
         if dist.channel_customize:
             with commands.PlistContext(
                     entitlements_file, rewrite=True) as entitlements:
-                app_id = entitlements[_ENT_APP_ID]
-                entitlements[_ENT_APP_ID] = app_id.replace(
-                    config.base_config.base_bundle_id, config.base_bundle_id)
+                if _ENT_APP_ID in entitlements:
+                    app_id = entitlements[_ENT_APP_ID]
+                    entitlements[_ENT_APP_ID] = app_id.replace(
+                        config.base_config.base_bundle_id,
+                        config.base_bundle_id)
 
 
 def customize_distribution(paths, dist, config):

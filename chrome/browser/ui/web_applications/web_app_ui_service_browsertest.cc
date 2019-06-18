@@ -13,11 +13,21 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
+#endif
 
 namespace web_app {
 
@@ -171,47 +181,81 @@ IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
   }
 }
 
-// Tests that callbacks are correctly called when there is more than one
-// request.
-IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
-                       NotifyOnAllAppWindowsClosed_MultipleRequests) {
-  const auto* foo_app = InstallWebApp(kFooUrl);
-  const auto* bar_app = InstallWebApp(kBarUrl);
+#if defined(OS_CHROMEOS)
+class WebAppUiServiceMigrationBrowserTest : public WebAppUiServiceBrowserTest {
+ public:
+  void SetUp() override {
+    // Disable System Web Apps so that the Internal Apps are installed.
+    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+    WebAppUiServiceBrowserTest::SetUp();
+  }
 
-  auto* foo_window1 = LaunchApp(foo_app);
-  auto* foo_window2 = LaunchApp(foo_app);
-  auto* bar_window = LaunchApp(bar_app);
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
-  bool callback_ran1 = false;
-  bool callback_ran2 = false;
+// Tests that the Settings app migrates the launcher and app list details from
+// the Settings internal app.
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceMigrationBrowserTest,
+                       SettingsSystemWebAppMigration) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kSystemWebApps);
 
-  base::RunLoop run_loop;
-  auto barrier_closure = base::BarrierClosure(2, run_loop.QuitClosure());
-  ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                            base::BindLambdaForTesting([&]() {
-                                              callback_ran1 = true;
-                                              barrier_closure.Run();
-                                            }));
-  ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                            base::BindLambdaForTesting([&]() {
-                                              callback_ran2 = true;
-                                              barrier_closure.Run();
-                                            }));
+  auto& system_web_app_manager =
+      web_app::WebAppProvider::Get(browser()->profile())
+          ->system_web_app_manager();
 
-  CloseAndWait(foo_window1);
-  // The callback shouldn't have run yet because there is still one window
-  // opened.
-  EXPECT_FALSE(callback_ran1);
-  EXPECT_FALSE(callback_ran2);
+  auto* app_list_service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(
+          browser()->profile());
 
-  CloseAndWait(bar_window);
-  EXPECT_FALSE(callback_ran1);
-  EXPECT_FALSE(callback_ran2);
+  // Pin the Settings Internal App.
+  syncer::StringOrdinal pin_position =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+  pin_position = pin_position.CreateAfter().CreateAfter();
+  app_list_service->SetPinPosition(app_list::kInternalAppIdSettings,
+                                   pin_position);
 
-  CloseAndWait(foo_window2);
-  run_loop.Run();
-  EXPECT_TRUE(callback_ran1);
-  EXPECT_TRUE(callback_ran2);
+  // Add the Settings Internal App to a folder.
+  AppListModelUpdater* updater =
+      test::GetModelUpdater(test::GetAppListClient());
+  updater->MoveItemToFolder(app_list::kInternalAppIdSettings, "asdf");
+
+  // Install the Settings System Web App, which should be immediately migrated
+  // to the Settings Internal App's details.
+  system_web_app_manager.InstallSystemAppsForTesting();
+  std::string settings_system_web_app_id =
+      *system_web_app_manager.GetAppIdForSystemApp(SystemAppType::SETTINGS);
+  {
+    const app_list::AppListSyncableService::SyncItem* web_app_item =
+        app_list_service->GetSyncItem(settings_system_web_app_id);
+    const app_list::AppListSyncableService::SyncItem* internal_app_item =
+        app_list_service->GetSyncItem(app_list::kInternalAppIdSettings);
+
+    EXPECT_TRUE(internal_app_item->item_pin_ordinal.Equals(
+        web_app_item->item_pin_ordinal));
+    EXPECT_TRUE(
+        internal_app_item->item_ordinal.Equals(web_app_item->item_ordinal));
+    EXPECT_EQ(internal_app_item->parent_id, web_app_item->parent_id);
+  }
+
+  // Change Settings System Web App properties.
+  app_list_service->SetPinPosition(
+      settings_system_web_app_id,
+      syncer::StringOrdinal::CreateInitialOrdinal());
+  updater->MoveItemToFolder(settings_system_web_app_id, std::string());
+
+  // Do migration again with the already-installed app. Should be a no-op.
+  system_web_app_manager.InstallSystemAppsForTesting();
+  {
+    const app_list::AppListSyncableService::SyncItem* web_app_item =
+        app_list_service->GetSyncItem(settings_system_web_app_id);
+
+    EXPECT_TRUE(syncer::StringOrdinal::CreateInitialOrdinal().Equals(
+        web_app_item->item_pin_ordinal));
+    EXPECT_EQ(std::string(), web_app_item->parent_id);
+  }
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace web_app

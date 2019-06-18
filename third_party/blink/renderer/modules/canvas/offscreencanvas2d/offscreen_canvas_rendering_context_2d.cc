@@ -22,7 +22,52 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+
+namespace {
+const size_t kHardMaxCachedFonts = 250;
+const size_t kMaxCachedFonts = 25;
+
+class OffscreenFontCache {
+ public:
+  void PruneLocalFontCache(size_t target_size) {
+    while (font_lru_list_.size() > target_size) {
+      fonts_resolved_.erase(font_lru_list_.back());
+      font_lru_list_.pop_back();
+    }
+  }
+
+  void AddFont(String name, blink::Font font) {
+    fonts_resolved_.insert(name, font);
+    auto add_result = font_lru_list_.PrependOrMoveToFirst(name);
+    DCHECK(add_result.is_new_entry);
+    PruneLocalFontCache(kHardMaxCachedFonts);
+  }
+
+  blink::Font* GetFont(String name) {
+    HashMap<String, blink::Font>::iterator i = fonts_resolved_.find(name);
+    if (i != fonts_resolved_.end()) {
+      auto add_result = font_lru_list_.PrependOrMoveToFirst(name);
+      DCHECK(!add_result.is_new_entry);
+      return &(i->value);
+    }
+    return nullptr;
+  }
+
+ private:
+  HashMap<String, blink::Font> fonts_resolved_;
+  LinkedHashSet<String> font_lru_list_;
+};
+
+OffscreenFontCache& GetOffscreenFontCache() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<OffscreenFontCache>,
+                                  thread_specific_pool, ());
+  return *thread_specific_pool;
+}
+
+}  // namespace
 
 namespace blink {
 
@@ -57,6 +102,7 @@ void OffscreenCanvasRenderingContext2D::commit() {
   SkIRect damage_rect(dirty_rect_for_commit_);
   dirty_rect_for_commit_.setEmpty();
   Host()->Commit(ProduceCanvasResource(), damage_rect);
+  GetOffscreenFontCache().PruneLocalFontCache(kMaxCachedFonts);
 }
 
 // BaseRenderingContext2D implementation
@@ -115,6 +161,7 @@ void OffscreenCanvasRenderingContext2D::PushFrame() {
   SkIRect damage_rect(dirty_rect_for_commit_);
   Host()->PushFrame(ProduceCanvasResource(), damage_rect);
   dirty_rect_for_commit_.setEmpty();
+  GetOffscreenFontCache().PruneLocalFontCache(kMaxCachedFonts);
 }
 
 ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
@@ -282,27 +329,40 @@ String OffscreenCanvasRenderingContext2D::font() const {
 }
 
 void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
-  if (new_font == GetState().UnparsedFont() && GetState().HasRealizedFont())
+  if (GetState().HasRealizedFont() && new_font == GetState().UnparsedFont())
     return;
 
-  auto* style =
-      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
-  if (!style)
-    return;
+  OffscreenFontCache& font_cache = GetOffscreenFontCache();
 
-  if (EqualIgnoringASCIICase(new_font, "inherit")) {
-    return;
+  Font* cached_font = font_cache.GetFont(new_font);
+  if (cached_font) {
+    ModifiableState().SetFont(*cached_font, Host()->GetFontSelector());
+  } else {
+    auto* style =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+    if (!style)
+      return;
+
+    CSSParser::ParseValue(
+        style, CSSPropertyID::kFont, new_font, true,
+        Host()->GetTopExecutionContext()->GetSecureContextMode());
+
+    // According to
+    // http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
+    // the "inherit", "initial" and "unset" values must be ignored.
+    const CSSValue* font_value =
+        style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
+    if (font_value && font_value->IsCSSWideKeyword())
+      return;
+
+    FontDescription desc =
+        FontStyleResolver::ComputeFont(*style, Host()->GetFontSelector());
+
+    Font font = Font(desc);
+
+    font_cache.AddFont(new_font, font);
+    ModifiableState().SetFont(font, Host()->GetFontSelector());
   }
-
-  CSSParser::ParseValue(
-      style, CSSPropertyID::kFont, new_font, true,
-      Host()->GetTopExecutionContext()->GetSecureContextMode());
-
-  FontDescription desc =
-      FontStyleResolver::ComputeFont(*style, Host()->GetFontSelector());
-
-  Font font = Font(desc);
-  ModifiableState().SetFont(font, Host()->GetFontSelector());
   ModifiableState().SetUnparsedFont(new_font);
 }
 

@@ -147,7 +147,7 @@ class PLATFORM_EXPORT FetchParameters {
   // Configures the request to use the "cors" mode and the specified
   // credentials mode.
   void SetCrossOriginAccessControl(const SecurityOrigin*,
-                                   network::mojom::FetchCredentialsMode);
+                                   network::mojom::CredentialsMode);
   const IntegrityMetadataSet IntegrityMetadata() const {
     return options_.integrity_metadata;
   }

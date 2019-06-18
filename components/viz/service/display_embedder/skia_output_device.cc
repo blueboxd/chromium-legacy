@@ -46,6 +46,9 @@ gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
 
   params_->swap_response.result = result;
   params_->swap_response.timings.swap_end = base::TimeTicks::Now();
+  did_swap_buffer_complete_callback_.Run(
+      *params_, gfx::Size(draw_surface_->width(), draw_surface_->height()));
+
   if (feedback_) {
     std::move(*feedback_)
         .Run(gfx::PresentationFeedback(
@@ -55,8 +58,6 @@ gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
                 ? 0
                 : gfx::PresentationFeedback::Flags::kFailure));
   }
-  did_swap_buffer_complete_callback_.Run(
-      *params_, gfx::Size(draw_surface_->width(), draw_surface_->height()));
 
   feedback_.reset();
   auto response = params_->swap_response;

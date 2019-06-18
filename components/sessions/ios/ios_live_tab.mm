@@ -12,8 +12,6 @@ const char kIOSLiveTabWebStateUserDataKey[] = "ios_live_tab";
 
 namespace sessions {
 
-std::string IOSLiveTab::user_agent_override_;
-
 // static
 IOSLiveTab* IOSLiveTab::GetForWebState(web::WebState* web_state) {
   if (!web_state->GetUserData(kIOSLiveTabWebStateUserDataKey)) {

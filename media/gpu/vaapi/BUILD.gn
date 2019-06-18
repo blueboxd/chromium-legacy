@@ -57,6 +57,8 @@ source_set("vaapi") {
     "vaapi_utils.h",
     "vaapi_video_decode_accelerator.cc",
     "vaapi_video_decode_accelerator.h",
+    "vaapi_video_decoder.cc",
+    "vaapi_video_decoder.h",
     "vaapi_video_encode_accelerator.cc",
     "vaapi_video_encode_accelerator.h",
     "vaapi_vp8_accelerator.cc",
@@ -81,7 +83,7 @@ source_set("vaapi") {
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
-    "//media/gpu/linux",
+    "//media/gpu/chromeos:common",
     "//media/parsers",
     "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
@@ -105,7 +107,6 @@ source_set("vaapi") {
 
   if (is_linux) {
     configs += [ "//build/config/linux/libva" ]
-    deps += [ "//media/gpu/linux:common" ]
   }
 
   if (use_x11) {

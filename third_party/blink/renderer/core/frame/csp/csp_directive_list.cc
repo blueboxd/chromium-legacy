@@ -1575,30 +1575,25 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   policy.disposition =
       static_cast<mojom::ContentSecurityPolicyType>(header_type_);
   policy.source = static_cast<WebContentSecurityPolicySource>(header_source_);
-  std::vector<WebContentSecurityPolicyDirective> directives;
   for (const auto& directive :
        {child_src_, default_src_, form_action_, frame_src_, navigate_to_}) {
     if (directive) {
-      directives.push_back(WebContentSecurityPolicyDirective{
+      policy.directives.emplace_back(WebContentSecurityPolicyDirective{
           directive->DirectiveName(),
           directive->ExposeForNavigationalChecks()});
     }
   }
   if (upgrade_insecure_requests_) {
-    directives.push_back(WebContentSecurityPolicyDirective{
+    policy.directives.emplace_back(WebContentSecurityPolicyDirective{
         blink::WebString("upgrade-insecure-requests"),
         WebContentSecurityPolicySourceList()});
   }
-  policy.directives = directives;
 
-  std::vector<WebString> report_endpoints;
   for (const auto& report_endpoint : ReportEndpoints()) {
-    report_endpoints.push_back(report_endpoint);
+    policy.report_endpoints.emplace_back(report_endpoint);
   }
 
   policy.use_reporting_api = use_reporting_api_;
-
-  policy.report_endpoints = report_endpoints;
 
   policy.header = Header();
 

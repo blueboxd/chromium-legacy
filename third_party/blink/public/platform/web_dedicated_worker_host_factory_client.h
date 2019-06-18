@@ -35,7 +35,7 @@ class WebDedicatedWorkerHostFactoryClient {
   virtual void CreateWorkerHost(
       const blink::WebURL& script_url,
       const blink::WebSecurityOrigin& script_origin,
-      network::mojom::FetchCredentialsMode credentials_mode,
+      network::mojom::CredentialsMode credentials_mode,
       mojo::ScopedMessagePipeHandle blob_url_token) = 0;
 
   // Clones the given WebWorkerFetchContext for nested workers.

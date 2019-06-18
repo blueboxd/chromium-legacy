@@ -673,6 +673,12 @@ class CORE_EXPORT Node : public EventTarget {
     // we don't need to backtrack past display:none/contents and out of flow
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
+    // The parent LayoutObject to use when inserting a new child into the layout
+    // tree in LayoutTreeBuilder::CreateLayoutObject.
+    LayoutObject* parent = nullptr;
+    // LayoutObject to be used as the next pointer when inserting a LayoutObject
+    // into the tree.
+    LayoutObject* next_sibling = nullptr;
     // Set to true if the AttachLayoutTree is done as part of the
     // RebuildLayoutTree pass.
     bool performing_reattach = false;
@@ -695,10 +701,6 @@ class CORE_EXPORT Node : public EventTarget {
   // and delete it.
   virtual void DetachLayoutTree(bool performing_reattach = false);
 
-  void ReattachLayoutTree() {
-    AttachContext context;
-    ReattachLayoutTree(context);
-  }
   void ReattachLayoutTree(AttachContext&);
 
   // ---------------------------------------------------------------------------

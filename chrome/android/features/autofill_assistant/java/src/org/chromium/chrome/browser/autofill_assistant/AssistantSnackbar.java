@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import org.chromium.chrome.R;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;

@@ -862,7 +862,7 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
   ash::TabletModeController* controller =
       ash::Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
-  EXPECT_TRUE(controller->IsTabletModeWindowManagerEnabled());
+  EXPECT_TRUE(controller->InTabletMode());
 
   // Trigger 90 degree rotation
   update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false,
@@ -1011,7 +1011,7 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
   ash::TabletModeController* tablet_mode_controller =
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->OnAccelerometerUpdated(update);
-  EXPECT_TRUE(tablet_mode_controller->IsTabletModeWindowManagerEnabled());
+  EXPECT_TRUE(tablet_mode_controller->InTabletMode());
   bool screen_orientation_rotation_lock = IsRotationLocked();
   display::Display::Rotation tablet_mode_rotation =
       GetCurrentInternalDisplayRotation();

@@ -44,7 +44,7 @@ class PdfCompositorServiceTest : public testing::Test {
 
   void OnCompositeToPdfCallback(mojom::PdfCompositor::Status status,
                                 base::ReadOnlySharedMemoryRegion region) {
-    if (status == mojom::PdfCompositor::Status::SUCCESS)
+    if (status == mojom::PdfCompositor::Status::kSuccess)
       CallbackOnCompositeSuccess(region);
     else
       CallbackOnCompositeStatus(status);
@@ -123,7 +123,7 @@ TEST_F(PdfCompositorServiceTest, InvokeCallbackOnContentError) {
   auto serialized_content = base::ReadOnlySharedMemoryRegion::Create(10);
 
   EXPECT_CALL(*this, CallbackOnCompositeStatus(
-                         mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR))
+                         mojom::PdfCompositor::Status::kContentFormatError))
       .Times(1);
   compositor_->CompositeDocumentToPdf(
       5u, std::move(serialized_content.region), ContentToFrameMap(),

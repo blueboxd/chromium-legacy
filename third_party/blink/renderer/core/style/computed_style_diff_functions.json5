@@ -84,7 +84,7 @@
                 "-webkit-margin-before-collapse",
                 "-webkit-margin-after-collapse", "-webkit-line-clamp",
                 "text-overflow", "shape-margin", "order", "-webkit-highlight",
-                "text-indent", "text-align-last", "TextIndentLine", "EffectiveZoom", 
+                "text-indent", "text-align-last", "TextIndentLine", "-internal-effective-zoom",
                 "word-break", "overflow-wrap", "-webkit-line-break", 
                 "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
                 "HyphenationLimitAfter", "-webkit-hyphenate-character", 

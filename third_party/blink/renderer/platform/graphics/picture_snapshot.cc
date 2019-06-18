@@ -131,11 +131,11 @@ Vector<char> PictureSnapshot::Replay(unsigned from_step,
   return base64_data;
 }
 
-Vector<Vector<TimeDelta>> PictureSnapshot::Profile(
+Vector<Vector<base::TimeDelta>> PictureSnapshot::Profile(
     unsigned min_repeat_count,
-    TimeDelta min_duration,
+    base::TimeDelta min_duration,
     const FloatRect* clip_rect) const {
-  Vector<Vector<TimeDelta>> timings;
+  Vector<Vector<base::TimeDelta>> timings;
   timings.ReserveInitialCapacity(min_repeat_count);
   const SkIRect bounds = picture_->cullRect().roundOut();
   SkBitmap bitmap;
@@ -143,10 +143,10 @@ Vector<Vector<TimeDelta>> PictureSnapshot::Profile(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
   bitmap.eraseARGB(0, 0, 0, 0);
 
-  TimeTicks now = WTF::CurrentTimeTicks();
-  TimeTicks stop_time = now + min_duration;
+  base::TimeTicks now = WTF::CurrentTimeTicks();
+  base::TimeTicks stop_time = now + min_duration;
   for (unsigned step = 0; step < min_repeat_count || now < stop_time; ++step) {
-    Vector<TimeDelta> current_timings;
+    Vector<base::TimeDelta> current_timings;
     if (!timings.IsEmpty())
       current_timings.ReserveInitialCapacity(timings.front().size());
     ProfilingCanvas canvas(bitmap);

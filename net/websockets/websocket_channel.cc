@@ -392,6 +392,12 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   // |this| may have been deleted.
 }
 
+// Overrides default quota resend threshold size for WebSocket. This flag will
+// be used to investigate the performance issue of crbug.com/865001 and be
+// deleted later on.
+const char kWebSocketReceiveQuotaThreshold[] =
+    "websocket-renderer-receive-quota-max";
+
 ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
          state_ == CLOSE_WAIT);

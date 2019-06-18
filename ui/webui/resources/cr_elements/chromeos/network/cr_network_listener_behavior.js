@@ -3,98 +3,36 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer behavior for alerting specified child elements of
- * changes to the devices network data.
+ * @fileoverview Polymer behavior for observing CrosNetworkConfigObserver
+ * events.
  */
 
 /** @polymerBehavior */
 const CrNetworkListenerBehavior = {
-  properties: {
-    /**
-     * Array of selectors specifying all children to alert of changes to the
-     * network list.
-     * @private {!Array<string>}
-     */
-    networkListChangeSubscriberSelectors_: Array,
-
-    /**
-     * Array of selectors specifying all children to alert of important changes
-     * to the specific networks.
-     * @private {!Array<string>}
-     */
-    networksChangeSubscriberSelectors_: Array,
-
-    /** @type {!NetworkingPrivate} */
-    networkingPrivate: Object,
-  },
-
-  /** @private {?function(!Array<string>)} */
-  networkListChangedListener_: null,
-
-  /** @private {?function(!Array<string>)} */
-  networksChangedListener_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigObserver} */
+  observer_: null,
 
   /** @override */
   attached: function() {
-    this.networkListChangedListener_ = this.networkListChangedListener_ ||
-        this.onNetworkListChanged_.bind(this);
-    this.networkingPrivate.onNetworkListChanged.addListener(
-        this.networkListChangedListener_);
-
-    this.networksChangedListener_ =
-        this.networksChangedListener_ || this.onNetworksChanged_.bind(this);
-    this.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
+    this.observer_ =
+        new chromeos.networkConfig.mojom.CrosNetworkConfigObserver(this);
+    network_config.MojoInterfaceProviderImpl.getInstance()
+        .getMojoServiceProxy()
+        .addObserver(this.observer_.createProxy());
   },
 
-  /** @override */
-  detached: function() {
-    this.networkingPrivate.onNetworkListChanged.removeListener(
-        assert(this.networkListChangedListener_));
-    this.networkingPrivate.onNetworksChanged.removeListener(
-        assert(this.networksChangedListener_));
-  },
+  // CrosNetworkConfigObserver methods. Override these in the implementation.
 
   /**
-   * This event is triggered when the list of networks changes.
-   * |networkIds| contains the ids for all visible or configured networks.
-   * networkingPrivate.onNetworkListChanged event callback.
-   * @param {!Array<string>} networkIds
-   * @private
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     activeNetworks
    */
-  onNetworkListChanged_: function(networkIds) {
-    const event = new CustomEvent('network-list-changed', {detail: networkIds});
-    for (let i = 0; i < this.networkListChangeSubscriberSelectors_.length;
-         i++) {
-      this.maybeDispatchEvent_(
-          this.networkListChangeSubscriberSelectors_[i], event);
-    }
-  },
+  onActiveNetworksChanged: function(activeNetworks) {},
 
-  /**
-   * This event is triggered when interesting properties of a network change.
-   * |networkIds| contains the ids for networks whose properties have changed.
-   * networkingPrivate.onNetworksChanged event callback.
-   * @param {!Array<string>} networkIds
-   * @private
-   */
-  onNetworksChanged_: function(networkIds) {
-    const event = new CustomEvent('networks-changed', {detail: networkIds});
-    for (let i = 0; i < this.networksChangeSubscriberSelectors_.length; i++) {
-      this.maybeDispatchEvent_(
-          this.networksChangeSubscriberSelectors_[i], event);
-    }
-  },
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {},
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  maybeDispatchEvent_: function(selectors, event) {
-    const element = this.$$(selectors);
-    if (!element) {
-      return;
-    }
-    element.dispatchEvent(event);
-  },
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {},
 };

@@ -97,19 +97,19 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   // |log_for_testing_| is enabled.
   void LogTaskForTesting(std::vector<TaskForTest>* ordered_tasks,
                          uint64_t task_id,
-                         TimeTicks start_time,
-                         TimeTicks end_time);
+                         base::TimeTicks start_time,
+                         base::TimeTicks end_time);
 
   // Logs the action defined by the parameters passed to |ordered_actions| if
   // |log_for_testing_| is enabled.
   void LogActionForTesting(std::vector<ActionForTest>* ordered_actions,
                            uint64_t action_id,
                            ActionForTest::ActionType type,
-                           TimeTicks start_time);
+                           base::TimeTicks start_time);
 
   const bool log_for_testing_;
 
-  const TimeTicks initial_time_;
+  const base::TimeTicks initial_time_;
 
   const std::unique_ptr<ThreadPoolManager> thread_pool_manager_;
 

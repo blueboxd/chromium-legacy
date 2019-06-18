@@ -164,6 +164,7 @@ class StyleBuilderConverter {
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
+  static float ConvertZoom(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthOrAuto(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthSizing(StyleResolverState&, const CSSValue&);
   static Length ConvertLengthMaxSizing(StyleResolverState&, const CSSValue&);

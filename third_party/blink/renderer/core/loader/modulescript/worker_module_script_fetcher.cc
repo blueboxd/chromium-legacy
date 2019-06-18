@@ -128,7 +128,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ModuleScriptCreationParams params(
       script_resource->GetResponse().CurrentRequestUrl(),
       script_resource->SourceText(), script_resource->CacheHandler(),
-      script_resource->GetResourceRequest().GetFetchCredentialsMode());
+      script_resource->GetResourceRequest().GetCredentialsMode());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response." [spec text]

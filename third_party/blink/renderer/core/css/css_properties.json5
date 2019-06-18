@@ -395,15 +395,6 @@
     visited_property_for: {
       valid_type: "str",
     },
-
-    // - valid_for_visited_link
-    // Most CSS properties do not apply to :visited and :link for privacy
-    // reasons. Mark properties which apply to :visited and :link by setting
-    // this flag to true.
-    valid_for_visited_link: {
-      default: false,
-      valid_type: "bool",
-    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -597,7 +588,6 @@
       priority: "High",
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
-      valid_for_visited_link: true,
     },
     {
       name: "direction",
@@ -993,7 +983,6 @@
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
-      valid_for_visited_link: true,
     },
     {
       name: "background-image",
@@ -1086,7 +1075,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1212,7 +1200,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "border-left-style",
@@ -1255,7 +1242,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "border-right-style",
@@ -1298,7 +1284,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "border-top-left-radius",
@@ -1453,7 +1438,6 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto", "currentcolor"],
       typedom_types: ["Keyword"],
-      valid_for_visited_link: true,
     },
     {
       name: "clear",
@@ -1676,7 +1660,6 @@
       setter: "SetFillPaint",
       getter: "FillPaint",
       converter: "ConvertSVGPaint",
-      valid_for_visited_link: true,
     },
     {
       name: "fill-opacity",
@@ -2413,7 +2396,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "outline-offset",
@@ -3007,7 +2989,6 @@
       setter: "SetStrokePaint",
       getter: "StrokePaint",
       converter: "ConvertSVGPaint",
-      valid_for_visited_link: true,
     },
     {
       name: "stroke-dasharray",
@@ -3159,7 +3140,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "text-decoration-line",
@@ -3623,7 +3603,6 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "column-rule-style",
@@ -3942,7 +3921,6 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -3973,7 +3951,6 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-security",
@@ -3983,7 +3960,6 @@
       field_template: "keyword",
       keywords: ["none", "disc", "circle", "square"],
       default_value: "none",
-      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-stroke-color",
@@ -3998,7 +3974,6 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
-      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-stroke-width",
@@ -4289,7 +4264,6 @@
     {
       name: "border-inline-start-color",
       property_methods: ["ParseSingleValue"],
-      valid_for_visited_link: true,
       direction_aware_options: {
         resolver: "inline-start",
         physical_group: "border-color",
@@ -4313,7 +4287,6 @@
     {
       name: "border-inline-end-color",
       property_methods: ["ParseSingleValue"],
-      valid_for_visited_link: true,
       direction_aware_options: {
         resolver: "inline-end",
         physical_group: "border-color",
@@ -4337,7 +4310,6 @@
     {
       name: "border-block-start-color",
       property_methods: ["ParseSingleValue"],
-      valid_for_visited_link: true,
       direction_aware_options: {
         resolver: "block-start",
         physical_group: "border-color",
@@ -4361,7 +4333,6 @@
     {
       name: "border-block-end-color",
       property_methods: ["ParseSingleValue"],
-      valid_for_visited_link: true,
       direction_aware_options: {
         resolver: "block-end",
         physical_group: "border-color",
@@ -5383,6 +5354,16 @@
       style_builder_template_args: {
         initial_color: "blink::Color",
       },
+    },
+    {
+      name: "-internal-effective-zoom",
+      inherited: true,
+      field_template: "primitive",
+      type_name: "float",
+      default_value: "1.0f",
+      field_group: "*",
+      priority: "High",
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
 
     // Aliases; these map to the same CSSPropertyID

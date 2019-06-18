@@ -3,9 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
         android:key="content_suggestions"
         android:title="@string/notifications_content_suggestions_title"
         android:summary="@string/notifications_content_suggestions_summary" />
@@ -14,4 +14,4 @@
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:title="@string/notifications_from_websites_title"
         android:key="from_websites" />
-</PreferenceScreen>
+</android.support.v7.preference.PreferenceScreen>

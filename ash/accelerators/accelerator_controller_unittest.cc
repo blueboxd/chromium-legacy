@@ -1103,58 +1103,64 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
 
 // Tests the histogram of volume adjustment in tablet mode.
 TEST_F(AcceleratorControllerTest, TabletModeVolumeAdjustHistogram) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(
-      histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
   const ui::Accelerator kVolumeDown(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator kVolumeUp(ui::VKEY_VOLUME_UP, ui::EF_NONE);
-  ASSERT_FALSE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
-  // Starts with volume down but ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is disabled.
-  ProcessInController(kVolumeDown);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  EXPECT_FALSE(
-      histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapDisabled, 1);
 
-  // Starts with volume up and ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is disabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kNormalAdjustWithSwapDisabled, 1);
+  // Disable features::kSwapSideVolumeButtonsForOrientation.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kSwapSideVolumeButtonsForOrientation);
+    EXPECT_FALSE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
+    EXPECT_TRUE(
+        histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
+    // Starts with volume down but ends with an overall-increased volume.
+    ProcessInController(kVolumeDown);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    EXPECT_FALSE(
+        histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapDisabled, 1);
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kSwapSideVolumeButtonsForOrientation);
-  EXPECT_TRUE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
-  // Starts with volume up but ends with an overall-decreased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is enabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeDown);
-  ProcessInController(kVolumeDown);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapEnabled, 1);
+    // Starts with volume up and ends with an overall-increased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kNormalAdjustWithSwapDisabled, 1);
+  }
 
-  // Starts with volume up and ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is enabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kNormalAdjustWithSwapEnabled, 1);
+  // Enable features::kSwapSideVolumeButtonsForOrientation.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kSwapSideVolumeButtonsForOrientation);
+    EXPECT_TRUE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
+    // Starts with volume up but ends with an overall-decreased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeDown);
+    ProcessInController(kVolumeDown);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapEnabled, 1);
+
+    // Starts with volume up and ends with an overall-increased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kNormalAdjustWithSwapEnabled, 1);
+  }
 }
 
 class SideVolumeButtonAcceleratorTest
@@ -1170,7 +1176,7 @@ class SideVolumeButtonAcceleratorTest
 
   void SetUp() override {
     AcceleratorControllerTest::SetUp();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     test_api_->SetSideVolumeButtonLocation(region_, side_);
     ui::DeviceDataManagerTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,

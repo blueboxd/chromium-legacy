@@ -40,7 +40,6 @@ public class WebappDataStorage {
     static final String KEY_LAST_USED = "last_used";
     static final String KEY_HAS_BEEN_LAUNCHED = "has_been_launched";
     static final String KEY_URL = "url";
-    static final String KEY_SPLASH_SCREEN_URL = "splash_screen_url";
     static final String KEY_SCOPE = "scope";
     static final String KEY_ICON = "icon";
     static final String KEY_NAME = "name";
@@ -217,7 +216,6 @@ public class WebappDataStorage {
                         KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
                 mPreferences.getLong(
                         KEY_BACKGROUND_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
-                mPreferences.getString(KEY_SPLASH_SCREEN_URL, ""),
                 mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false),
                 mPreferences.getBoolean(KEY_IS_ICON_ADAPTIVE, false));
     }
@@ -257,9 +255,6 @@ public class WebappDataStorage {
         // cleared together.
         if (mPreferences.getInt(KEY_VERSION, VERSION_INVALID)
                 != ShortcutHelper.WEBAPP_SHORTCUT_VERSION) {
-            editor.putString(KEY_SPLASH_SCREEN_URL,
-                    IntentUtils.safeGetStringExtra(
-                            shortcutIntent, ShortcutHelper.EXTRA_SPLASH_SCREEN_URL));
             editor.putString(KEY_NAME, IntentUtils.safeGetStringExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_NAME));
             editor.putString(KEY_SHORT_NAME, IntentUtils.safeGetStringExtra(

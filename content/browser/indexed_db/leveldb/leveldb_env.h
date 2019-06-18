@@ -24,7 +24,15 @@ template <typename T>
 class NoDestructor;
 }
 
+namespace leveldb {
+class Iterator;
+class Snapshot;
+}  // namespace leveldb
+
 namespace content {
+class LevelDBIteratorImpl;
+class LevelDBDatabase;
+class LevelDBTransaction;
 
 // The leveldb::Env used by the Indexed DB backend.
 class LevelDBEnv : public leveldb_env::ChromiumEnv {
@@ -51,6 +59,15 @@ CONTENT_EXPORT leveldb_env::Options GetLevelDBOptions(
 // for tests.
 class CONTENT_EXPORT LevelDBFactory {
  public:
+  using GetterCallback = LevelDBFactory*();
+
+  // Returns a singleton factory, which can be customized below for testing.
+  // Note: it is best to avoid using this method, and instead acquiring a
+  // LevelDBFactory through dependency injection.
+  static LevelDBFactory* Get();
+
+  static void SetFactoryGetterForTesting(LevelDBFactory::GetterCallback* cb);
+
   virtual ~LevelDBFactory() = default;
 
   virtual std::tuple<std::unique_ptr<leveldb::DB>, leveldb::Status> OpenDB(
@@ -65,6 +82,14 @@ class CONTENT_EXPORT LevelDBFactory {
       OpenLevelDBState(const base::FilePath& file_name,
                        const LevelDBComparator* idb_comparator,
                        const leveldb::Comparator* ldb_comparator) = 0;
+
+  virtual std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
+      std::unique_ptr<leveldb::Iterator> iterator,
+      LevelDBDatabase* db,
+      const leveldb::Snapshot* snapshot) = 0;
+
+  virtual scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
+      LevelDBDatabase* db) = 0;
 
   // A somewhat safe way to destroy a leveldb database. This asserts that there
   // are no other references to the given LevelDBState, and deletes the database
@@ -89,13 +114,16 @@ class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
   OpenLevelDBState(const base::FilePath& file_name,
                    const LevelDBComparator* idb_comparator,
                    const leveldb::Comparator* ldb_comparator) override;
+  std::unique_ptr<LevelDBIteratorImpl> CreateIteratorImpl(
+      std::unique_ptr<leveldb::Iterator> iterator,
+      LevelDBDatabase* db,
+      const leveldb::Snapshot* snapshot) override;
+  scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
+      LevelDBDatabase* db) override;
   leveldb::Status DestroyLevelDB(
       scoped_refptr<LevelDBState> output_state) override;
   leveldb::Status DestroyLevelDB(const base::FilePath& path) override;
 };
-
-// Returns a singleton default factory.
-CONTENT_EXPORT DefaultLevelDBFactory* GetDefaultLevelDBFactory();
 
 }  // namespace indexed_db
 }  // namespace content

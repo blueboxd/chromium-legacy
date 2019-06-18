@@ -334,6 +334,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // If the user authenticated via SAML, this indicates whether the principals
   // API was used.
+  // TODO(emaxx): This is also currently set when the user authenticated via
+  // Gaia, since Gaia uses the same API for passing the password to Chrome.
+  // Either fix this behavior, or change the naming and the comments to reflect
+  // it.
   bool using_saml_api_ = false;
 
   // Test credentials.

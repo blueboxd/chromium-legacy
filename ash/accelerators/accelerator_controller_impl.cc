@@ -119,6 +119,7 @@ using message_center::SystemNotificationWarningLevel;
 
 // Toast id and duration for voice interaction shortcuts
 constexpr char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
+const char kFeatureDisabledByPolicyToastId[] = "disabled_by_policy_error";
 constexpr int kToastDurationMs = 2500;
 
 // Path of the json file that contains side volume button location info.
@@ -197,7 +198,8 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
 }
 
 void ShowToast(std::string id, const base::string16& text) {
-  ToastData toast(id, text, kToastDurationMs, base::nullopt);
+  ToastData toast(id, text, kToastDurationMs, base::nullopt,
+                  /*visible_on_lock_screen=*/true);
   Shell::Get()->toast_manager()->Show(toast);
 }
 
@@ -739,10 +741,15 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE));
       return;
+    // TODO(crbug.com/974228) Add final strings when we have them.
+    case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_NEXT:
     case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
+      // No need to show toast in KIOSK mode.
       return;
     case mojom::AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.
@@ -870,15 +877,28 @@ void RemoveStickyNotitification(const std::string& notification_id) {
                                                            false /* by_user */);
 }
 
+void ShowDisabledByPolicyToastMessage(int feature_name_string_id) {
+  ShowToast(kFeatureDisabledByPolicyToastId,
+            l10n_util::GetStringFUTF16(
+                IDS_ASH_FEATURE_DISABLED_BY_POLICY,
+                l10n_util::GetStringUTF16(feature_name_string_id)));
+}
 void SetDockedMagnifierEnabled(bool enabled) {
-  if (enabled) {
+  Shell::Get()->docked_magnifier_controller()->SetEnabled(enabled);
+
+  // We need to show the notification only if the state actually changed.
+  const bool actual_enabled =
+      Shell::Get()->docked_magnifier_controller()->GetEnabled();
+  if (enabled && actual_enabled) {
     CreateAndShowStickyNotification(IDS_DOCKED_MAGNIFIER_ACCEL_TITLE,
                                     IDS_DOCKED_MAGNIFIER_ACCEL_MSG,
                                     kDockedMagnifierToggleAccelNotificationId);
+  } else if (enabled != actual_enabled) {
+    ShowDisabledByPolicyToastMessage(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER);
   } else {
     RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
   }
-  Shell::Get()->docked_magnifier_controller()->SetEnabled(enabled);
 }
 
 void HandleToggleDockedMagnifier() {
@@ -907,20 +927,26 @@ void HandleToggleDockedMagnifier() {
 }
 
 void SetFullscreenMagnifierEnabled(bool enabled) {
-  if (enabled) {
-    CreateAndShowStickyNotification(
-        IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE,
-        IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG,
-        kFullscreenMagnifierToggleAccelNotificationId);
-  } else {
-    RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
-  }
-
   // TODO (afakhry): Move the below into a single call (crbug/817157).
   // Necessary to make magnification controller in ash observe changes to the
   // prefs iteself.
   Shell* shell = Shell::Get();
   shell->accessibility_controller()->SetFullscreenMagnifierEnabled(enabled);
+
+  // We need to show the notification only if the state actually changed.
+  const bool actual_enabled =
+      Shell::Get()->magnification_controller()->IsEnabled();
+  if (enabled && actual_enabled) {
+    CreateAndShowStickyNotification(
+        IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE,
+        IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG,
+        kFullscreenMagnifierToggleAccelNotificationId);
+  } else if (enabled != actual_enabled) {
+    ShowDisabledByPolicyToastMessage(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER);
+  } else {
+    RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
+  }
 }
 
 void SetHighContrastEnabled(bool enabled) {
@@ -934,6 +960,9 @@ void SetHighContrastEnabled(bool enabled) {
     CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
                                     IDS_HIGH_CONTRAST_ACCEL_MSG,
                                     kHighContrastToggleAccelNotificationId);
+  } else if (enabled != actual_enabled) {
+    ShowDisabledByPolicyToastMessage(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE);
   } else {
     RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
   }
@@ -991,8 +1020,15 @@ void HandleToggleSpokenFeedback() {
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
+  bool old_value = controller->spoken_feedback_enabled();
   controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
                                        A11Y_NOTIFICATION_SHOW);
+  // If we tried to enable it and didn't succeed — show disabled by policy
+  // toast.
+  if (!controller->spoken_feedback_enabled() && !old_value) {
+    ShowDisabledByPolicyToastMessage(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK);
+  }
 }
 
 // Percent by which the volume should be changed when a volume key is pressed.
@@ -1512,9 +1548,7 @@ void AcceleratorControllerImpl::PerformAction(
     return;
 
   if ((action == VOLUME_DOWN || action == VOLUME_UP) &&
-      Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+      Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     if (ShouldSwapSideVolumeButtons(accelerator.source_device_id()))
       action = action == VOLUME_DOWN ? VOLUME_UP : VOLUME_DOWN;
 

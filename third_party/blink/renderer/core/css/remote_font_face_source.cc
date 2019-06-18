@@ -117,6 +117,11 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   ExecutionContext* execution_context = font_selector_->GetExecutionContext();
   if (!execution_context)
     return;
+  // Prevent promise rejection while shutting down the document.
+  // See crbug.com/960290
+  if (execution_context->IsDocument() &&
+      To<Document>(execution_context)->IsDetached())
+    return;
 
   FontResource* font = ToFontResource(resource);
   histograms_.RecordRemoteFont(font);

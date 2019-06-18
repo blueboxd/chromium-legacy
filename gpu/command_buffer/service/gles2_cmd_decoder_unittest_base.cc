@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/context_state_test_helpers.h"
 #include "gpu/command_buffer/service/copy_texture_chromium_mock.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -438,8 +439,9 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
         .RetiresOnSaturation();
   }
 
-  SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
-  SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
+  ContextStateTestHelpers::SetupInitState(
+      gl_.get(), group_->feature_info(),
+      gfx::Size(kBackBufferWidth, kBackBufferHeight));
 
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
       .Times(1)
@@ -615,19 +617,6 @@ void GLES2DecoderTestBase::ResetDecoder() {
 void GLES2DecoderTestBase::TearDown() {
   ResetDecoder();
 }
-
-void GLES2DecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
-  if (enable) {
-    EXPECT_CALL(*gl_, Enable(cap))
-        .Times(1)
-        .RetiresOnSaturation();
-  } else {
-    EXPECT_CALL(*gl_, Disable(cap))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-}
-
 
 GLint GLES2DecoderTestBase::GetGLError() {
   EXPECT_CALL(*gl_, GetError())
@@ -1799,11 +1788,6 @@ const GLint GLES2DecoderTestBase::kMaxVertexUniformVectors;
 const GLint GLES2DecoderTestBase::kMaxViewportWidth;
 const GLint GLES2DecoderTestBase::kMaxViewportHeight;
 
-const GLint GLES2DecoderTestBase::kViewportX;
-const GLint GLES2DecoderTestBase::kViewportY;
-const GLint GLES2DecoderTestBase::kViewportWidth;
-const GLint GLES2DecoderTestBase::kViewportHeight;
-
 const GLuint GLES2DecoderTestBase::kServiceAttrib0BufferId;
 const GLuint GLES2DecoderTestBase::kServiceFixedAttribBufferId;
 
@@ -2361,30 +2345,6 @@ void GLES2DecoderTestBase::SetupMockGLBehaviors() {
           &GLES2DecoderTestBase::MockGLStates::OnVertexAttribNullPointer));
 }
 
-void GLES2DecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    if (group_->feature_info()->feature_flags().ext_window_rectangles) {
-      EXPECT_CALL(*gl_, WindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-  }
-}
-
-void GLES2DecoderTestBase::SetupInitStateManualExpectationsForDoLineWidth(
-    GLfloat width) {
-  EXPECT_CALL(*gl_, LineWidth(width)).Times(1).RetiresOnSaturation();
-}
-
 void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
   SetupDefaultProgram();
@@ -2413,11 +2373,6 @@ void GLES2DecoderTestBase::DoLockDiscardableTextureCHROMIUM(GLuint texture_id) {
   cmd.Init(texture_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
-
-// Include the auto-generated part of this file. We split this because it means
-// we can easily edit the non-auto generated parts right here in this file
-// instead of having to edit some template or the code generator.
-#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h"
 
 namespace {
 

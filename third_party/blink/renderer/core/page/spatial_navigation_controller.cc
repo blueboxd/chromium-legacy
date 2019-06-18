@@ -563,7 +563,7 @@ void SpatialNavigationController::OnSpatialNavigationStateChanged() {
 }
 
 bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
-  bool can_exit_focus = IsFocused(element);
+  bool can_exit_focus = IsFocused(element) && !IsHTMLBodyElement(element);
   if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
     return false;
   spatial_navigation_state_->can_exit_focus = can_exit_focus;

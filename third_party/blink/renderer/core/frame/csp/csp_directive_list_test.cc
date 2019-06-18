@@ -6,7 +6,6 @@
 
 #include <list>
 #include <string>
-#include <vector>
 
 #include "base/test/scoped_feature_list.h"
 #include "services/network/public/cpp/features.h"
@@ -665,7 +664,7 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
       kContentSecurityPolicyHeaderTypeEnforce);
 
   struct TestCase {
-    const std::vector<const char*> policies;
+    const Vector<const char*> policies;
     bool expected;
     bool expected_first_policy_opposite;
   } cases[] = {
@@ -743,7 +742,7 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
 TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
   struct TestCase {
     const char* policy_a;
-    const std::vector<const char*> policies_b;
+    const Vector<const char*> policies_b;
     bool expected;
   } cases[] = {
       // `policyA` subsumes any vector of policies.
@@ -844,7 +843,7 @@ TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
 TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
   struct TestCase {
     const char* policy_a;
-    const std::vector<const char*> policies_b;
+    const Vector<const char*> policies_b;
     bool expected;
   } cases[] = {
       // `policyA` subsumes `policiesB`.
@@ -926,7 +925,7 @@ TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
 TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
   struct TestCase {
     ContentSecurityPolicy::DirectiveType directive;
-    std::vector<ContentSecurityPolicy::DirectiveType> fallback_list;
+    Vector<ContentSecurityPolicy::DirectiveType> fallback_list;
   } cases[] = {
       // Directives with default directive.
       {ContentSecurityPolicy::DirectiveType::kChildSrc,
@@ -986,12 +985,12 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
     EXPECT_FALSE(empty->OperativeDirective(test.directive));
 
     // Add the directive itself as it should be the first one to be returned.
-    test.fallback_list.insert(test.fallback_list.begin(), test.directive);
+    test.fallback_list.push_front(test.directive);
 
     // Start the tests with all directives present.
     directive_string = all_directives.str();
 
-    while (!test.fallback_list.empty()) {
+    while (!test.fallback_list.IsEmpty()) {
       directive_list = CreateList(directive_string.c_str(),
                                   kContentSecurityPolicyHeaderTypeEnforce);
 
@@ -1032,7 +1031,7 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
 }
 
 TEST_F(CSPDirectiveListTest, GetSourceVector) {
-  const std::vector<const char*> policies = {
+  const Vector<const char*> policies = {
       // Policy 1
       "default-src https://default-src.com",
       // Policy 2

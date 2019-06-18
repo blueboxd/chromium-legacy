@@ -2209,11 +2209,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   view_->OnScrollEvent(&scroll2);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(widget_host_->FlingCancellationIsDeferred());
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
       events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->momentum_phase);
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[2]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 

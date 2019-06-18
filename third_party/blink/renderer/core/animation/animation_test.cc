@@ -42,10 +42,12 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -70,7 +72,7 @@ class AnimationAnimationTest : public RenderingTest {
     page_holder = std::make_unique<DummyPageHolder>();
     document = &page_holder->GetDocument();
     document->GetAnimationClock().ResetTimeForTesting();
-    timeline = DocumentTimeline::Create(document.Get());
+    timeline = document->Timeline();
     timeline->ResetForTesting();
     animation = timeline->Play(nullptr);
     animation->setStartTime(0, false);
@@ -1132,6 +1134,63 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
   ToKeyframeEffect(animation->effect())->SetKeyframes(keyframes);
 
   EXPECT_TRUE(animation->CompositorPendingForTesting());
+}
+
+// Verifies correctness of scroll linked animation current and start times in
+// various animation states.
+TEST_F(AnimationAnimationTest, ScrollLinkedAnimationCreation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  NonThrowableExceptionState exception_state;
+  Animation* scroll_animation =
+      Animation::Create(MakeAnimation(), scroll_timeline, exception_state);
+
+  // Verify start and current times in Idle state.
+  bool is_null;
+  scroll_animation->startTime(is_null);
+  EXPECT_TRUE(is_null);
+  scroll_animation->currentTime(is_null);
+  EXPECT_TRUE(is_null);
+
+  scroll_animation->play();
+
+  // Verify start and current times in Pending state.
+  scroll_animation->startTime(is_null);
+  EXPECT_TRUE(is_null);
+  EXPECT_EQ(0, scroll_animation->currentTime(is_null));
+  EXPECT_FALSE(is_null);
+
+  UpdateAllLifecyclePhasesForTest();
+  // Verify start and current times in Playing state.
+  EXPECT_EQ(0, scroll_animation->startTime(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(20, scroll_animation->currentTime(is_null));
+  EXPECT_FALSE(is_null);
+
+  // Verify current time after scroll.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
+  EXPECT_EQ(40, scroll_animation->currentTime(is_null));
+  EXPECT_FALSE(is_null);
 }
 
 }  // namespace blink

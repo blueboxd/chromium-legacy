@@ -49,35 +49,33 @@ public class ButtonView extends LinearLayout {
      * Constructor for inflating from XML.
      */
     public ButtonView(Context context, AttributeSet attrs) {
-        this(context, attrs, org.chromium.chrome.R.style.SuggestionChipThemeOverlay);
+        this(context, attrs, R.style.SuggestionChipThemeOverlay);
     }
 
     private ButtonView(Context context, AttributeSet attrs, @StyleRes int themeOverlay) {
-        super(new ContextThemeWrapper(context, themeOverlay), attrs,
-                org.chromium.chrome.R.attr.chipStyle);
+        super(new ContextThemeWrapper(context, themeOverlay), attrs, R.attr.chipStyle);
 
-        final @Px int leadingElementPadding = getResources().getDimensionPixelSize(
-                org.chromium.chrome.R.dimen.chip_element_leading_padding);
+        final @Px int leadingElementPadding =
+                getResources().getDimensionPixelSize(R.dimen.chip_element_leading_padding);
 
         TypedArray a = getContext().obtainStyledAttributes(
-                attrs, R.styleable.ButtonView, org.chromium.chrome.R.attr.chipStyle, 0);
-        int chipColorId = a.getResourceId(R.styleable.ButtonView_chipColor,
-                org.chromium.chrome.R.color.chip_background_color);
-        int rippleColorId = a.getResourceId(
-                R.styleable.ButtonView_rippleColor, org.chromium.chrome.R.color.chip_ripple_color);
+                attrs, R.styleable.ButtonView, R.attr.chipStyle, 0);
+        int chipColorId =
+                a.getResourceId(R.styleable.ButtonView_chipColor, R.color.chip_background_color);
+        int rippleColorId =
+                a.getResourceId(R.styleable.ButtonView_rippleColor, R.color.chip_ripple_color);
         int cornerRadius = a.getDimensionPixelSize(R.styleable.ButtonView_cornerRadius,
-                getContext().getResources().getDimensionPixelSize(
-                        org.chromium.chrome.R.dimen.chip_corner_radius));
+                getContext().getResources().getDimensionPixelSize(R.dimen.chip_corner_radius));
         int iconWidth = a.getDimensionPixelSize(R.styleable.ButtonView_iconWidth,
-                getResources().getDimensionPixelSize(org.chromium.chrome.R.dimen.chip_icon_size));
+                getResources().getDimensionPixelSize(R.dimen.chip_icon_size));
         int iconHeight = a.getDimensionPixelSize(R.styleable.ButtonView_iconHeight,
-                getResources().getDimensionPixelSize(org.chromium.chrome.R.dimen.chip_icon_size));
-        int primaryTextAppearance = a.getResourceId(R.styleable.ButtonView_primaryTextAppearance,
-                org.chromium.chrome.R.style.TextAppearance_ChipText);
-        mSecondaryTextAppearanceId = a.getResourceId(R.styleable.ButtonView_secondaryTextAppearance,
-                org.chromium.chrome.R.style.TextAppearance_ChipText);
-        int borderWidth = a.getResourceId(R.styleable.ButtonView_chipBorderWidth,
-                org.chromium.chrome.R.dimen.chip_border_width);
+                getResources().getDimensionPixelSize(R.dimen.chip_icon_size));
+        int primaryTextAppearance = a.getResourceId(
+                R.styleable.ButtonView_primaryTextAppearance, R.style.TextAppearance_ChipText);
+        mSecondaryTextAppearanceId = a.getResourceId(
+                R.styleable.ButtonView_secondaryTextAppearance, R.style.TextAppearance_ChipText);
+        int borderWidth =
+                a.getResourceId(R.styleable.ButtonView_chipBorderWidth, R.dimen.chip_border_width);
         int verticalInset = a.getDimensionPixelSize(R.styleable.ButtonView_verticalInset,
                 getResources().getDimensionPixelSize(
                         org.chromium.ui.R.dimen.chip_bg_vertical_inset));
@@ -89,17 +87,15 @@ public class ButtonView extends LinearLayout {
 
         ViewCompat.setPaddingRelative(this, leadingElementPadding, 0, leadingElementPadding, 0);
 
-        mPrimaryText = new TextView(
-                new ContextThemeWrapper(getContext(), org.chromium.chrome.R.style.ChipTextView));
+        mPrimaryText = new TextView(new ContextThemeWrapper(getContext(), R.style.ChipTextView));
         ApiCompatibilityUtils.setTextAppearance(mPrimaryText, primaryTextAppearance);
         ViewCompat.setPaddingRelative(mPrimaryText, ViewUtils.dpToPx(context, 4), 0, 0, 0);
         addView(mPrimaryText);
         setPrimaryTextMargins(4);
 
         // Reset icon and background:
-        mRippleBackgroundHelper =
-                new RippleBackgroundHelper(this, chipColorId, rippleColorId, cornerRadius,
-                        org.chromium.chrome.R.color.chip_stroke_color, borderWidth, verticalInset);
+        mRippleBackgroundHelper = new RippleBackgroundHelper(this, chipColorId, rippleColorId,
+                cornerRadius, R.color.chip_stroke_color, borderWidth, verticalInset);
         setIcon(INVALID_ICON_ID, false);
     }
 
@@ -162,8 +158,8 @@ public class ButtonView extends LinearLayout {
      */
     public TextView getSecondaryTextView() {
         if (mSecondaryText == null) {
-            mSecondaryText = new TextView(new ContextThemeWrapper(
-                    getContext(), org.chromium.chrome.R.style.ChipTextView));
+            mSecondaryText =
+                    new TextView(new ContextThemeWrapper(getContext(), R.style.ChipTextView));
             ApiCompatibilityUtils.setTextAppearance(mSecondaryText, mSecondaryTextAppearanceId);
             addView(mSecondaryText);
         }

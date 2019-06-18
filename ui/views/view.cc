@@ -581,6 +581,20 @@ void View::RemoveLayerBeneathView(ui::Layer* old_layer) {
   CreateOrDestroyLayer();
 }
 
+std::vector<ui::Layer*> View::GetLayersInOrder() {
+  // If not painting to a layer, there are no layers immediately related to this
+  // view.
+  if (!layer())
+    return {};
+
+  std::vector<ui::Layer*> result;
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    result.push_back(layer_beneath);
+  result.push_back(layer());
+
+  return result;
+}
+
 void View::LayerDestroyed(ui::Layer* layer) {
   // Only layers added with |AddLayerBeneathView()| are observed so |layer| can
   // safely be removed.

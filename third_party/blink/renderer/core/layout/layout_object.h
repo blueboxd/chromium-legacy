@@ -420,7 +420,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void AssertClearedPaintInvalidationFlags() const {
-    if (PaintInvalidationStateIsDirty() && !PrePaintBlockedByDisplayLock()) {
+    if (PaintInvalidationStateIsDirty() &&
+        !PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
       ShowLayoutTreeForThis();
       NOTREACHED();
     }
@@ -428,7 +429,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
     for (const LayoutObject* layout_object = this; layout_object;
-         layout_object = layout_object->PrePaintBlockedByDisplayLock()
+         layout_object = layout_object->PrePaintBlockedByDisplayLock(
+                             DisplayLockContext::kChildren)
                              ? layout_object->NextInPreOrderAfterChildren()
                              : layout_object->NextInPreOrder()) {
       layout_object->AssertClearedPaintInvalidationFlags();
@@ -2185,11 +2187,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 DocumentLifecycle::kInPrePaint);
       layout_object_.ClearPaintInvalidationFlags();
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
-      layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
-      layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetEffectiveAllowedTouchActionChanged(false);
-      layout_object_.bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(
-          false);
+
+      if (!layout_object_.PrePaintBlockedByDisplayLock(
+              DisplayLockContext::kChildren)) {
+        layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
+        layout_object_.bitfields_
+            .SetDescendantEffectiveAllowedTouchActionChanged(false);
+        layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
+      }
     }
     void SetShouldCheckForPaintInvalidation() {
       layout_object_.SetShouldCheckForPaintInvalidation();
@@ -2391,9 +2397,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return context && context->IsLocked();
   }
 
-  bool PrePaintBlockedByDisplayLock() const {
+  bool PrePaintBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
-    return context && !context->ShouldPrePaint();
+    return context && !context->ShouldPrePaint(target);
   }
 
   bool PaintBlockedByDisplayLock() const {
@@ -2401,9 +2408,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return context && !context->ShouldPaint();
   }
 
-  void NotifyDisplayLockDidPrePaint() const {
+  void NotifyDisplayLockDidPrePaint(
+      DisplayLockContext::LifecycleTarget target) const {
     if (auto* context = GetDisplayLockContext())
-      context->DidPrePaint();
+      context->DidPrePaint(target);
   }
 
   void NotifyDisplayLockDidPaint() const {
@@ -2568,7 +2576,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #endif
 
   // Called before paint invalidation.
-  virtual void EnsureIsReadyForPaintInvalidation() { DCHECK(!NeedsLayout()); }
+  virtual void EnsureIsReadyForPaintInvalidation() {
+    DCHECK(!NeedsLayout() ||
+           LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  }
 
   void SetIsBackgroundAttachmentFixedObject(bool);
 

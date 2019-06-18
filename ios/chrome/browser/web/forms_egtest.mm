@@ -216,7 +216,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // WKBasedNavigationManager presents repost confirmation dialog before loading
   // stops.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
@@ -233,7 +233,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // synchronization is not left disabled if the test fails.
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
         std::make_unique<ScopedSynchronizationDisabler>();
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
       disabler.reset();
     }
 
@@ -265,7 +265,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
@@ -278,7 +278,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // synchronization is not left disabled if the test fails.
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
         std::make_unique<ScopedSynchronizationDisabler>();
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
       disabler.reset();
     }
 
@@ -309,7 +309,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
@@ -322,7 +322,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // synchronization is not left disabled if the test fails.
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
         std::make_unique<ScopedSynchronizationDisabler>();
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
       disabler.reset();
     }
 
@@ -357,7 +357,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // Back-forward navigation with WKBasedNavigationManager is served from
   // WKWebView's app-cache, so it won't trigger repost warning.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [self confirmResendWarning];
   }
 
@@ -384,7 +384,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // WKWebView's back-forward cache. Force reload to trigger repost. Not using
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
@@ -397,7 +397,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // synchronization is not left disabled if the test fails.
     std::unique_ptr<ScopedSynchronizationDisabler> disabler =
         std::make_unique<ScopedSynchronizationDisabler>();
-    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
       disabler.reset();
     }
 
@@ -409,7 +409,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // Expected behavior is different between the two navigation manager
   // implementations.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     // LegacyNavigationManager displays repost on |goBack|. So after cancelling,
     // web view should show form URL.
     [ChromeEarlGrey waitForWebStateContainingText:(base::SysNSStringToUTF8(
@@ -447,7 +447,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
   // WKBasedNavigationManager presents repost confirmation dialog before loading
   // stops.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
@@ -463,7 +463,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // synchronization is not left disabled if the test fails.
   std::unique_ptr<ScopedSynchronizationDisabler> disabler =
       std::make_unique<ScopedSynchronizationDisabler>();
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     disabler.reset();
   }
 

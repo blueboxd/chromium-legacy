@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
@@ -37,6 +38,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/network_change_notifier.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -44,6 +46,37 @@
 using base::trace_event::TraceConfig;
 
 namespace content {
+
+namespace {
+
+// All the upload limits below are set for uncompressed trace log. On
+// compression the data size usually reduces by 3x for size < 10MB, and the
+// compression ratio grows up to 8x if the buffer size is around 100MB.
+// TODO(ssid): Consider making these limits configurable by experiments.
+#if defined(OS_ANDROID)
+// TODO(ssid): If we see too many failures while uploading then consider
+// lowering this limit.
+constexpr size_t kUploadLimitNoWifiKb = 300;       // ~100KB compressed size.
+constexpr size_t kUploadLimitOnWifiKb = 5 * 1024;  // ~1MB compressed size.
+#else
+constexpr size_t kUploadLimitKb = 30 * 1024;  // Less than 10MB compressed size.
+#endif
+
+bool IsTraceLogUploadAllowed(size_t trace_size_kb) {
+#if defined(OS_ANDROID)
+  auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
+  if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
+      connection_type != net::NetworkChangeNotifier::CONNECTION_ETHERNET &&
+      connection_type != net::NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
+    return kUploadLimitNoWifiKb;
+  }
+  return kUploadLimitOnWifiKb;
+#else
+  return kUploadLimitKb;
+#endif
+}
+
+}  // namespace
 
 // static
 void BackgroundTracingManagerImpl::RecordMetric(Metrics metric) {
@@ -192,7 +225,20 @@ bool BackgroundTracingManagerImpl::HasActiveScenario() {
 
 bool BackgroundTracingManagerImpl::HasTraceToUpload() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return !trace_to_upload_.empty();
+  // Send the logs only when the trace size is within limits. If the connection
+  // type changes and we have a bigger than expected trace, then the next time
+  // service asks us when wifi is available, the trace will be sent. If we did
+  // collect a trace that is bigger than expected, then we will end up never
+  // uploading, and drop the trace. This should never happen because the trace
+  // buffer limits are set appropriately.
+  if (trace_to_upload_.empty()) {
+    return false;
+  }
+  if (!IsTraceLogUploadAllowed(trace_to_upload_.size())) {
+    RecordMetric(Metrics::LARGE_UPLOAD_WAITING_TO_RETRY);
+    return false;
+  }
+  return true;
 }
 
 std::string BackgroundTracingManagerImpl::GetLatestTraceToUpload() {

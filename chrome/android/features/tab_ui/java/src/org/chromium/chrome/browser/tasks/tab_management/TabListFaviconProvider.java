@@ -12,11 +12,11 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.tab_ui.R;
 
 /**
  * Provider for processed favicons in Tab list.

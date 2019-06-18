@@ -139,7 +139,9 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
       total_task_time_reporter_(
           "Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Positive",
           "Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Negative"),
-      main_thread_task_load_state_(MainThreadTaskLoadState::kUnknown) {
+      main_thread_task_load_state_(MainThreadTaskLoadState::kUnknown),
+      current_task_slice_start_time_(now),
+      safepoints_in_current_toplevel_task_count_(0) {
   main_thread_load_tracker_.Resume(now);
   if (renderer_backgrounded) {
     background_main_thread_load_tracker_.Resume(now);
@@ -203,6 +205,37 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 }
 
 }  // namespace
+
+void MainThreadMetricsHelper::OnSafepointEntered(base::TimeTicks now) {
+  current_task_slice_start_time_ = now;
+}
+
+void MainThreadMetricsHelper::OnSafepointExited(base::TimeTicks now) {
+  safepoints_in_current_toplevel_task_count_++;
+  RecordTaskSliceMetrics(now);
+}
+
+void MainThreadMetricsHelper::RecordTaskSliceMetrics(base::TimeTicks now) {
+  UMA_HISTOGRAM_TIMES("RendererScheduler.TasksWithSafepoints.TaskSliceTime",
+                      now - current_task_slice_start_time_);
+}
+
+void MainThreadMetricsHelper::RecordMetricsForTasksWithSafepoints(
+    const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
+  if (safepoints_in_current_toplevel_task_count_ == 0)
+    return;
+
+  RecordTaskSliceMetrics(task_timing.end_time());
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "RendererScheduler.TasksWithSafepoints.TaskTime",
+      task_timing.wall_duration(), base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromSeconds(1), 50);
+  UMA_HISTOGRAM_COUNTS_100(
+      "RendererScheduler.TasksWithSafepoints.SafepointCount",
+      safepoints_in_current_toplevel_task_count_);
+  safepoints_in_current_toplevel_task_count_ = 0;
+}
 
 void MainThreadMetricsHelper::RecordTaskMetrics(
     MainThreadTaskQueue* queue,
@@ -476,7 +509,7 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
                               frame_status, FrameStatus::kCount);
   }
 
-  if (main_thread_scheduler_->main_thread_only().has_safepoint) {
+  if (safepoints_in_current_toplevel_task_count_ > 0) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT,
                               frame_status, FrameStatus::kCount);
     if (duration >= base::TimeDelta::FromMilliseconds(16)) {
@@ -508,6 +541,7 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
                                 ".LongerThan1s",
                                 frame_status, FrameStatus::kCount);
     }
+    RecordMetricsForTasksWithSafepoints(task_timing);
   }
 
   UseCase use_case =

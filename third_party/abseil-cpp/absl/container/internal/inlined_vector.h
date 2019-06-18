@@ -22,6 +22,7 @@
 #include <utility>
 
 #include "absl/container/internal/compressed_tuple.h"
+#include "absl/memory/memory.h"
 #include "absl/meta/type_traits.h"
 
 namespace absl {
@@ -35,15 +36,7 @@ using IsAtLeastForwardIterator = std::is_convertible<
 template <typename AllocatorType, typename ValueType, typename SizeType>
 void DestroyElements(AllocatorType* alloc_ptr, ValueType* destroy_first,
                      SizeType destroy_size) {
-  using AllocatorTraits = std::allocator_traits<AllocatorType>;
-
-  // Destroys `destroy_size` elements from `destroy_first`.
-  //
-  // Destroys the range
-  //   [`destroy_first`, `destroy_first + destroy_size`).
-  //
-  // NOTE: We assume destructors do not throw and thus make no attempt to roll
-  // back.
+  using AllocatorTraits = absl::allocator_traits<AllocatorType>;
   for (SizeType i = 0; i < destroy_size; ++i) {
     AllocatorTraits::destroy(*alloc_ptr, destroy_first + i);
   }
@@ -58,6 +51,16 @@ void DestroyElements(AllocatorType* alloc_ptr, ValueType* destroy_first,
   std::memset(memory, 0xab, memory_size);
 #endif  // NDEBUG
 }
+
+template <typename AllocatorType>
+struct StorageView {
+  using pointer = typename AllocatorType::pointer;
+  using size_type = typename AllocatorType::size_type;
+
+  pointer data;
+  size_type size;
+  size_type capacity;
+};
 
 template <typename T, size_t N, typename A>
 class Storage {
@@ -75,10 +78,16 @@ class Storage {
   using const_iterator = const_pointer;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  using AllocatorTraits = std::allocator_traits<allocator_type>;
+  using AllocatorTraits = absl::allocator_traits<allocator_type>;
+
+  using StorageView = inlined_vector_internal::StorageView<allocator_type>;
+
+  Storage() : metadata_() {}
 
   explicit Storage(const allocator_type& alloc)
       : metadata_(alloc, /* empty and inlined */ 0) {}
+
+  ~Storage() { DestroyAndDeallocate(); }
 
   size_type GetSize() const { return GetSizeAndIsAllocated() >> 1; }
 
@@ -104,6 +113,13 @@ class Storage {
     return data_.allocated.allocated_capacity;
   }
 
+  StorageView MakeStorageView() {
+    return GetIsAllocated() ? StorageView{GetAllocatedData(), GetSize(),
+                                          GetAllocatedCapacity()}
+                            : StorageView{GetInlinedData(), GetSize(),
+                                          static_cast<size_type>(N)};
+  }
+
   allocator_type* GetAllocPtr() {
     return std::addressof(metadata_.template get<0>());
   }
@@ -120,9 +136,8 @@ class Storage {
 
   void AddSize(size_type count) { GetSizeAndIsAllocated() += count << 1; }
 
-  void SetAllocatedData(pointer data) { data_.allocated.allocated_data = data; }
-
-  void SetAllocatedCapacity(size_type capacity) {
+  void SetAllocatedData(pointer data, size_type capacity) {
+    data_.allocated.allocated_data = data;
     data_.allocated.allocated_capacity = capacity;
   }
 
@@ -135,6 +150,8 @@ class Storage {
     using std::swap;
     swap(data_.allocated, other->data_.allocated);
   }
+
+  void DestroyAndDeallocate();
 
  private:
   size_type& GetSizeAndIsAllocated() { return metadata_.template get<1>(); }
@@ -165,6 +182,20 @@ class Storage {
   Metadata metadata_;
   Data data_;
 };
+
+template <typename T, size_t N, typename A>
+void Storage<T, N, A>::DestroyAndDeallocate() {
+  namespace ivi = inlined_vector_internal;
+
+  StorageView storage_view = MakeStorageView();
+
+  ivi::DestroyElements(GetAllocPtr(), storage_view.data, storage_view.size);
+
+  if (GetIsAllocated()) {
+    AllocatorTraits::deallocate(*GetAllocPtr(), storage_view.data,
+                                storage_view.capacity);
+  }
+}
 
 }  // namespace inlined_vector_internal
 }  // namespace absl

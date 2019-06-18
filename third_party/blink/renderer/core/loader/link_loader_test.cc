@@ -468,25 +468,25 @@ struct ModulePreloadTestParams {
   CrossOriginAttributeValue cross_origin;
   network::mojom::ReferrerPolicy referrer_policy;
   bool expecting_load;
-  network::mojom::FetchCredentialsMode expected_credentials_mode;
+  network::mojom::CredentialsMode expected_credentials_mode;
 };
 
 constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
     {"", nullptr, nullptr, kCrossOriginAttributeNotSet,
      network::mojom::ReferrerPolicy::kDefault, false,
-     network::mojom::FetchCredentialsMode::kSameOrigin},
+     network::mojom::CredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, nullptr,
      kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kDefault,
-     true, network::mojom::FetchCredentialsMode::kSameOrigin},
+     true, network::mojom::CredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, nullptr,
      kCrossOriginAttributeAnonymous, network::mojom::ReferrerPolicy::kDefault,
-     true, network::mojom::FetchCredentialsMode::kSameOrigin},
+     true, network::mojom::CredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", "nonce", nullptr,
      kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kNever, true,
-     network::mojom::FetchCredentialsMode::kSameOrigin},
+     network::mojom::CredentialsMode::kSameOrigin},
     {"http://example.test/cat.js", nullptr, "sha384-abc",
      kCrossOriginAttributeNotSet, network::mojom::ReferrerPolicy::kDefault,
-     true, network::mojom::FetchCredentialsMode::kSameOrigin}};
+     true, network::mojom::CredentialsMode::kSameOrigin}};
 
 class LinkLoaderModulePreloadTest
     : public testing::TestWithParam<ModulePreloadTestParams> {};

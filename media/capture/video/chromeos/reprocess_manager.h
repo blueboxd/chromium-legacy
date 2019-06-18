@@ -47,14 +47,14 @@ constexpr int32_t kReprocessSuccess = 0;
 // sequentialize to a single sequence.
 class CAPTURE_EXPORT ReprocessManager {
  public:
+  using CameraInfoGetter = base::RepeatingCallback<cros::mojom::CameraInfoPtr(
+      const std::string& device_id)>;
   using GetCameraInfoCallback =
       base::OnceCallback<void(cros::mojom::CameraInfoPtr camera_info)>;
-  using UpdateCameraInfoCallback =
-      base::RepeatingCallback<void(const std::string& device_id)>;
 
   class ReprocessManagerImpl {
    public:
-    ReprocessManagerImpl(UpdateCameraInfoCallback callback);
+    ReprocessManagerImpl(CameraInfoGetter get_camera_info);
     ~ReprocessManagerImpl();
 
     void SetReprocessOption(
@@ -73,19 +73,11 @@ class CAPTURE_EXPORT ReprocessManager {
     void GetCameraInfo(const std::string& device_id,
                        GetCameraInfoCallback callback);
 
-    void UpdateCameraInfo(const std::string& device_id,
-                          cros::mojom::CameraInfoPtr camera_info);
-
    private:
     base::flat_map<std::string, base::queue<ReprocessTask>>
         reprocess_task_queue_map_;
 
-    base::flat_map<std::string, cros::mojom::CameraInfoPtr> camera_info_map_;
-
-    base::flat_map<std::string, base::queue<GetCameraInfoCallback>>
-        get_camera_info_callback_queue_map_;
-
-    UpdateCameraInfoCallback update_camera_info_callback_;
+    CameraInfoGetter get_camera_info_;
 
     DISALLOW_COPY_AND_ASSIGN(ReprocessManagerImpl);
   };
@@ -93,7 +85,7 @@ class CAPTURE_EXPORT ReprocessManager {
   static int GetReprocessReturnCode(
       cros::mojom::Effect effect,
       const cros::mojom::CameraMetadataPtr* metadata);
-  ReprocessManager(UpdateCameraInfoCallback callback);
+  ReprocessManager(CameraInfoGetter callback);
   ~ReprocessManager();
 
   // Sets the reprocess option for given device id and effect. Each reprocess
@@ -117,10 +109,6 @@ class CAPTURE_EXPORT ReprocessManager {
   // Gets camera information for current active device.
   void GetCameraInfo(const std::string& device_id,
                      GetCameraInfoCallback callback);
-
-  // Updates camera information for given device.
-  void UpdateCameraInfo(const std::string& device_id,
-                        const cros::mojom::CameraInfoPtr& camera_info);
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;

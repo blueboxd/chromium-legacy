@@ -185,10 +185,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
   // Return true if the event is handled.
   bool RedispatchKeyEvent(NSEvent* event);
-  // Save an NSEvent to be used at the mojo version of RedispatchKeyEvent,
-  // rather than (inaccurately) reconstructing the NSEvent.
-  // https://crbug.com/942690
-  void SaveKeyEventForRedispatch(NSEvent* event);
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -241,12 +237,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void UpdateTooltip() override;
   void AcquireCapture() override;
   void ReleaseCapture() override;
-  void RedispatchKeyEvent(uint64_t type,
-                          uint64_t modifier_flags,
-                          double timestamp,
-                          const base::string16& characters,
-                          const base::string16& characters_ignoring_modifiers,
-                          uint32_t key_code) override;
+  void RedispatchKeyEvent(
+      const std::vector<uint8_t>& native_event_data) override;
 
   // Return true if [NSApp updateWindows] needs to be called after updating the
   // TextInputClient.
@@ -302,7 +294,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<NSObject<CommandDispatcherDelegate>>
       window_command_dispatcher_delegate_;
-  base::scoped_nsobject<NSEvent> saved_redispatch_event_;
 
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> bridged_view_id_mapping_;

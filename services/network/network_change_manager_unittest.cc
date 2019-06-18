@@ -92,7 +92,7 @@ class NetworkChangeManagerTest : public testing::Test {
  public:
   NetworkChangeManagerTest()
       : network_change_manager_(new NetworkChangeManager(
-            base::WrapUnique(net::NetworkChangeNotifier::CreateMock()))) {
+            net::NetworkChangeNotifier::CreateMock())) {
     network_change_manager_client_ =
         std::make_unique<TestNetworkChangeManagerClient>(
             network_change_manager_.get());

@@ -38,9 +38,7 @@ SkColor GetWallpaperDarkenColor() {
       SkColorSetA(darken_color, 0xFF));
 
   int alpha = login_constants::kTranslucentAlpha;
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     alpha = kTabletModeWallpaperAlpha;
   } else if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // Overview mode will apply its own brightness filter on a downscaled image,

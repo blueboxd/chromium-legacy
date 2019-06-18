@@ -104,7 +104,8 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->was_parsed_using_autofill_predictions = false;
   form->is_public_suffix_match = true;
   form->is_affiliation_based_match = true;
-  form->submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+  form->submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 }
 
 void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {

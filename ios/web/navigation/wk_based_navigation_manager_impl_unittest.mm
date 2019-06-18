@@ -799,6 +799,8 @@ TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {
 
   [mock_wk_list_ setCurrentURL:@"http://www.2.com"];
   manager_->CommitPendingItem();
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.2.com"]);
 
   const NavigationItem* last_committed_item_2 =
       manager_->GetLastCommittedItem();

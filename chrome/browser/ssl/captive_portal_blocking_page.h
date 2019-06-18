@@ -51,7 +51,7 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   ~CaptivePortalBlockingPage() override;
 
   // InterstitialPageDelegate method:
-  const void* GetTypeForTesting() const override;
+  const void* GetTypeForTesting() override;
 
  protected:
   // Returns true if the connection is a Wi-Fi connection. Virtual for tests.

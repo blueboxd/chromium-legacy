@@ -66,7 +66,11 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
   }
 }
 
-StartupContext::~StartupContext() = default;
+StartupContext::~StartupContext() {
+  // |additional_services_directory_| needs to be empty for clean teardown.
+  if (additional_services_directory_)
+    additional_services_directory_->RemoveAllServices();
+}
 
 ServiceDirectory* StartupContext::public_services() {
   if (!public_services_ && startup_info_.launch_info.directory_request) {

@@ -91,7 +91,7 @@ void FidoAuthenticator::GetSensorInfo(BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::BioEnrollFingerprint(pin::TokenResponse,
+void FidoAuthenticator::BioEnrollFingerprint(const pin::TokenResponse&,
                                              BioEnrollmentCallback) {
   NOTREACHED();
 }
@@ -100,14 +100,20 @@ void FidoAuthenticator::BioEnrollCancel(BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::BioEnrollEnumerate(pin::TokenResponse,
+void FidoAuthenticator::BioEnrollEnumerate(const pin::TokenResponse&,
                                            BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::BioEnrollRename(pin::TokenResponse,
+void FidoAuthenticator::BioEnrollRename(const pin::TokenResponse&,
                                         std::vector<uint8_t>,
                                         std::string,
+                                        BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
+                                        std::vector<uint8_t>,
                                         BioEnrollmentCallback) {
   NOTREACHED();
 }

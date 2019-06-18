@@ -509,8 +509,9 @@ void ZoomBubbleView::ButtonPressed(views::Button* sender,
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     DCHECK(browser);
     chrome::AddSelectedTabWithURL(
-        browser, GURL(base::StringPrintf("chrome://extensions?id=%s",
-                                         extension_info_.id.c_str())),
+        browser,
+        GURL(base::StringPrintf("chrome://extensions?id=%s",
+                                extension_info_.id.c_str())),
         ui::PAGE_TRANSITION_FROM_API);
   } else if (sender == zoom_out_button_) {
     zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);

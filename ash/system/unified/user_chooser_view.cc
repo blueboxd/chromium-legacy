@@ -315,6 +315,10 @@ UserChooserView::UserChooserView(
       AddChildView(CreateAddUserErrorView(
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS)));
       break;
+    case AddUserSessionPolicy::ERROR_LOCKED_TO_SINGLE_USER:
+      AddChildView(CreateAddUserErrorView(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER)));
+      break;
   }
 
   Shell::Get()->media_controller()->AddObserver(this);

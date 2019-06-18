@@ -458,9 +458,7 @@ void CookiesViewHandler::SendCookieDetails(const CookieTreeNode* parent) {
   // Passing false for |include_quota_nodes| since they don't reflect reality
   // until bug http://crbug.com/642955 is fixed and local/session storage is
   // counted against the total.
-  model_util_->GetChildNodeDetails(parent, /*start=*/0, parent->child_count(),
-                                   /*include_quota_nodes=*/false,
-                                   children.get());
+  model_util_->GetChildNodeDetails(parent, false, children.get());
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())

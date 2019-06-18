@@ -55,11 +55,12 @@ const struct AppModeInfo* gAppModeInfo = nullptr;
 #if defined(OS_WIN)
 base::LazyCOMSTATaskRunner g_sequenced_task_runner =
     LAZY_COM_STA_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock()),
+        base::TaskTraits(base::ThreadPool(), base::MayBlock()),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 #else
 base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(base::TaskTraits(base::MayBlock()));
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::ThreadPool(), base::MayBlock()));
 #endif
 
 }  // namespace

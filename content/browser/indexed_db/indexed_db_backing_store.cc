@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
-#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -39,6 +38,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -515,12 +515,14 @@ bool IndexCursorOptions(
 IndexedDBBackingStore::IndexedDBBackingStore(
     Mode backing_store_mode,
     IndexedDBFactory* indexed_db_factory,
+    indexed_db::LevelDBFactory* leveldb_factory,
     const Origin& origin,
     const FilePath& blob_path,
     std::unique_ptr<LevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner)
     : backing_store_mode_(backing_store_mode),
       indexed_db_factory_(indexed_db_factory),
+      leveldb_factory_(leveldb_factory),
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
@@ -571,7 +573,7 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_live_journal) {
   const std::string data_version_key = DataVersionKey::Encode();
 
   scoped_refptr<LevelDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(db_.get());
 
   int64_t db_schema_version = 0;
   IndexedDBDataFormatVersion db_data_version;
@@ -771,7 +773,7 @@ Status IndexedDBBackingStore::RevertSchemaToV2() {
 #endif
   const std::string schema_version_key = SchemaVersionKey::Encode();
   scoped_refptr<LevelDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(db_.get());
 
   PutInt(transaction.get(), schema_version_key, 2);
   Status s = transaction->Commit();
@@ -787,7 +789,7 @@ V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
 #endif
   const std::string schema_version_key = SchemaVersionKey::Encode();
   scoped_refptr<LevelDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(db_.get());
 
   int64_t db_schema_version = 0;
   bool found = false;
@@ -1340,8 +1342,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
     if (delegate_.get())  // Only present for Blob, not File.
-      content::BrowserThread::DeleteSoon(
-          content::BrowserThread::IO, FROM_HERE, delegate_.release());
+      content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                         delegate_.release());
     if (aborted_) {
       self_ref_ = nullptr;
       return;
@@ -1582,7 +1584,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
   DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobKey(blob_key));
   scoped_refptr<LevelDBTransaction> transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(db_.get());
 
   BlobJournalType live_blob_journal, primary_journal;
   if (!GetLiveBlobJournal(transaction.get(), &live_blob_journal).ok())
@@ -1704,7 +1706,7 @@ Status IndexedDBBackingStore::CleanUpBlobJournal(
   IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournal");
   DCHECK(!committing_transaction_count_);
   scoped_refptr<LevelDBTransaction> journal_transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(db_.get());
   BlobJournalType journal;
 
   Status s = GetBlobJournal(level_db_key, journal_transaction.get(), &journal);
@@ -1876,12 +1878,8 @@ Status IndexedDBBackingStore::PutIndexDataForRecord(
   EncodeIDBKey(key, &encoded_key);
 
   const std::string index_data_key =
-      IndexDataKey::Encode(database_id,
-                           object_store_id,
-                           index_id,
-                           encoded_key,
-                           record_identifier.primary_key(),
-                           0);
+      IndexDataKey::Encode(database_id, object_store_id, index_id, encoded_key,
+                           record_identifier.primary_key(), 0);
 
   std::string data;
   EncodeVarInt(record_identifier.version(), &data);
@@ -2325,8 +2323,8 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
-    return ObjectStoreDataKey::Encode(
-        cursor_options_.database_id, cursor_options_.object_store_id, key);
+    return ObjectStoreDataKey::Encode(cursor_options_.database_id,
+                                      cursor_options_.object_store_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
@@ -2399,8 +2397,8 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
-    return ObjectStoreDataKey::Encode(
-        cursor_options_.database_id, cursor_options_.object_store_id, key);
+    return ObjectStoreDataKey::Encode(cursor_options_.database_id,
+                                      cursor_options_.object_store_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
@@ -2484,16 +2482,13 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   std::string EncodeKey(const IndexedDBKey& key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
-                                cursor_options_.index_id,
-                                key);
+                                cursor_options_.index_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
-                                cursor_options_.index_id,
-                                key,
-                                primary_key);
+                                cursor_options_.index_id, key, primary_key);
   }
 
  private:
@@ -2598,16 +2593,13 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   std::string EncodeKey(const IndexedDBKey& key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
-                                cursor_options_.index_id,
-                                key);
+                                cursor_options_.index_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
-                                cursor_options_.index_id,
-                                key,
-                                primary_key);
+                                cursor_options_.index_id, key, primary_key);
   }
 
  private:
@@ -2652,8 +2644,7 @@ bool IndexCursorImpl::LoadCurrentRow(Status* s) {
   DCHECK_EQ(index_data_key.DatabaseId(), database_id_);
   primary_leveldb_key_ =
       ObjectStoreDataKey::Encode(index_data_key.DatabaseId(),
-                                 index_data_key.ObjectStoreId(),
-                                 *primary_key_);
+                                 index_data_key.ObjectStoreId(), *primary_key_);
 
   std::string result;
   bool found = false;
@@ -2807,9 +2798,12 @@ void IndexedDBBackingStore::ForceRunBlobCleanup() {
   journal_cleaning_timer_.FireNow();
 }
 
+// |backing_store| can be null in unittests (see FakeTransaction).
 IndexedDBBackingStore::Transaction::Transaction(
     IndexedDBBackingStore* backing_store)
     : backing_store_(backing_store),
+      leveldb_factory_(backing_store ? backing_store->leveldb_factory_
+                                     : nullptr),
       database_id_(-1),
       committing_(false),
       ptr_factory_(this) {}
@@ -2821,8 +2815,8 @@ IndexedDBBackingStore::Transaction::~Transaction() {
 void IndexedDBBackingStore::Transaction::Begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(!transaction_.get());
-  transaction_ = IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-      backing_store_->db_.get());
+  transaction_ =
+      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db_.get());
 
   // If incognito, this snapshots blobs just as the above transaction_
   // constructor snapshots the leveldb.
@@ -2845,8 +2839,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
 
   // Create LevelDBTransaction for the name generator seed and add-journal.
   scoped_refptr<LevelDBTransaction> pre_transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-          backing_store_->db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db_.get());
 
   for (auto& iter : blob_change_map_) {
     std::vector<IndexedDBBlobInfo*> new_blob_keys;
@@ -2999,8 +2992,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
     // Read the persisted states of the primary/live blob journals,
     // so that they can be updated correctly by the transaction.
     scoped_refptr<LevelDBTransaction> journal_transaction =
-        IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-            backing_store_->db_.get());
+        leveldb_factory_->CreateLevelDBTransaction(backing_store_->db_.get());
     s = GetPrimaryBlobJournal(journal_transaction.get(), &primary_journal);
     if (!s.ok())
       return s;
@@ -3070,8 +3062,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   }
 
   scoped_refptr<LevelDBTransaction> update_journal_transaction =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-          backing_store_->db_.get());
+      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db_.get());
   UpdatePrimaryBlobJournal(update_journal_transaction.get(),
                            saved_primary_journal);
   s = update_journal_transaction->Commit();
@@ -3149,8 +3140,7 @@ IndexedDBBackingStore::BlobChangeRecord::BlobChangeRecord(
     int64_t object_store_id)
     : key_(key), object_store_id_(object_store_id) {}
 
-IndexedDBBackingStore::BlobChangeRecord::~BlobChangeRecord() {
-}
+IndexedDBBackingStore::BlobChangeRecord::~BlobChangeRecord() = default;
 
 void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
     std::vector<IndexedDBBlobInfo>* blob_info) {
@@ -3245,8 +3235,7 @@ IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
       file_path_(file_path),
       key_(key),
       size_(size),
-      last_modified_(last_modified) {
-}
+      last_modified_(last_modified) {}
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
     const WriteDescriptor& other) = default;

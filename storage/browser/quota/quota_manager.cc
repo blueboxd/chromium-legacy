@@ -1547,10 +1547,9 @@ void QuotaManager::DidDumpOriginInfoTableForHistogram(
   }
 }
 
-std::set<url::Origin> QuotaManager::GetEvictionOriginExceptions(
-    const std::set<url::Origin>& extra_exceptions) {
+std::set<url::Origin> QuotaManager::GetEvictionOriginExceptions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::set<url::Origin> exceptions = extra_exceptions;
+  std::set<url::Origin> exceptions;
   for (const auto& p : origins_in_use_) {
     if (p.second > 0)
       exceptions.insert(p.first);
@@ -1585,7 +1584,6 @@ void QuotaManager::DidGetEvictionOrigin(
 
 void QuotaManager::GetEvictionOrigin(
     StorageType type,
-    const std::set<url::Origin>& extra_exceptions,
     int64_t global_quota,
     GetOriginCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1651,7 +1649,7 @@ void QuotaManager::GetLRUOrigin(StorageType type, GetOriginCallback callback) {
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
       base::BindOnce(&GetLRUOriginOnDBThread, type,
-                     GetEvictionOriginExceptions(std::set<url::Origin>()),
+                     GetEvictionOriginExceptions(),
                      base::RetainedRef(special_storage_policy_),
                      base::Unretained(origin_ptr)),
       base::BindOnce(&QuotaManager::DidGetLRUOrigin, weak_factory_.GetWeakPtr(),

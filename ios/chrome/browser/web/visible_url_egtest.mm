@@ -18,7 +18,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/common/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -168,7 +167,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // pending back and forward navigations.
 - (void)testBackForwardNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -218,7 +217,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // pending navigations initialted from back history popover.
 - (void)testHistoryNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -261,7 +260,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // URL, not pending URL.
 - (void)testStoppingPendingBackNavigationAndReload {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -298,7 +297,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // back forward navigations initiated with JS.
 - (void)testJSBackForwardNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -348,7 +347,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // navigations initiated with JS.
 - (void)testJSGoNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -398,7 +397,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // back navigation started with pending reload in progress.
 - (void)testBackNavigationWithPendingReload {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -447,7 +446,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 #endif
 - (void)MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -481,7 +480,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // progress.
 - (void)testRendererInitiatedNavigationWithPendingBackNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Purge web view caches and pause the server to make sure that tests can
@@ -515,7 +514,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // issues 2 go back commands.
 - (void)testDoubleBackNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Create 3rd entry in the history, to be able to go back twice.
@@ -550,7 +549,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
 - (void)testDoubleForwardNavigationToWebUIPage {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Create 3rd entry in the history, to be able to go back twice.
@@ -581,7 +580,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // window.history.back() twice.
 - (void)testDoubleBackJSNavigation {
   // TODO(crbug.com/874634): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   // Create 3rd entry in the history, to be able to go back twice.

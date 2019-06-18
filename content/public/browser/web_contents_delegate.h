@@ -188,7 +188,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Called to determine if the WebContents can be overscrolled with touch/wheel
   // gestures.
-  virtual bool CanOverscrollContent() const;
+  virtual bool CanOverscrollContent();
 
   // Invoked prior to showing before unload handler confirmation dialog.
   virtual void WillRunBeforeUnloadConfirm() {}
@@ -417,7 +417,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // render widget.  In this case, the delegate may access the widget by calling
   // WebContents::GetFullscreenRenderWidgetHostView().  If false is returned,
   // WebContents will be responsible for showing the fullscreen widget.
-  virtual bool EmbedsFullscreenWidget() const;
+  virtual bool EmbedsFullscreenWidget();
 
   // Called when the renderer puts a tab into fullscreen mode.
   // |origin| is the origin of the initiating frame inside the |web_contents|.
@@ -431,16 +431,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Called when the renderer puts a tab out of fullscreen mode.
   virtual void ExitFullscreenModeForTab(WebContents*) {}
 
-  virtual bool IsFullscreenForTabOrPending(
-      const WebContents* web_contents) const;
+  virtual bool IsFullscreenForTabOrPending(const WebContents* web_contents);
 
   // Returns the actual display mode of the top-level browsing context.
   // For example, it should return 'blink::WebDisplayModeFullscreen' whenever
   // the browser window is put to fullscreen mode (either by the end user,
   // or HTML API or from a web manifest setting).
   // See http://w3c.github.io/manifest/#dfn-display-mode
-  virtual blink::WebDisplayMode GetDisplayMode(
-      const WebContents* web_contents) const;
+  virtual blink::WebDisplayMode GetDisplayMode(const WebContents* web_contents);
 
   // Register a new handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
@@ -552,7 +550,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This is optional for implementations of WebContentsDelegate; if the
   // delegate doesn't provide a size, the current WebContentsView's size will be
   // used.
-  virtual gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const;
+  virtual gfx::Size GetSizeForNewRenderView(WebContents* web_contents);
 
   // Returns true if the WebContents is never visible.
   virtual bool IsNeverVisible(WebContents* web_contents);
@@ -598,10 +596,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Note that they are not complete in the sense that there is no API to tell
   // content to poll these values again, except part of resize. But this is not
   // needed by embedder because it's always accompanied by view size change.
-  virtual int GetTopControlsHeight() const;
-  virtual int GetBottomControlsHeight() const;
+  virtual int GetTopControlsHeight();
+  virtual int GetBottomControlsHeight();
   virtual bool DoBrowserControlsShrinkRendererSize(
-      const WebContents* web_contents) const;
+      const WebContents* web_contents);
 
   // Propagates to the browser that gesture scrolling has changed state. This is
   // used by the browser to assist in controlling the behavior of sliding the

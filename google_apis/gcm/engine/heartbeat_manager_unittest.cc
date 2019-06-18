@@ -28,8 +28,10 @@ mcs_proto::HeartbeatConfig BuildHeartbeatConfig(int interval_ms) {
 
 class TestHeartbeatManager : public HeartbeatManager {
  public:
-  TestHeartbeatManager(scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-      : HeartbeatManager(io_task_runner) {}
+  TestHeartbeatManager(scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+                       scoped_refptr<base::SequencedTaskRunner>
+                           maybe_power_wrapped_io_task_runner)
+      : HeartbeatManager(io_task_runner, maybe_power_wrapped_io_task_runner) {}
   ~TestHeartbeatManager() override {}
 
   // Bypass the heartbeat timer, and send the heartbeat now.
@@ -76,7 +78,7 @@ class HeartbeatManagerTest : public testing::Test {
 HeartbeatManagerTest::HeartbeatManagerTest()
     : task_runner_(new base::TestSimpleTaskRunner()),
       task_runner_handle_(task_runner_),
-      manager_(new TestHeartbeatManager(task_runner_)),
+      manager_(new TestHeartbeatManager(task_runner_, task_runner_)),
       heartbeats_sent_(0),
       reconnects_triggered_(0) {}
 

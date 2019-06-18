@@ -61,9 +61,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-using network::mojom::FetchRedirectMode;
-using network::mojom::FetchRequestMode;
 using network::mojom::FetchResponseType;
+using network::mojom::RedirectMode;
+using network::mojom::RequestMode;
 
 namespace blink {
 
@@ -278,13 +278,13 @@ bool FetchManager::Loader::WillFollowRedirect(
     const KURL& url,
     const ResourceResponse& response) {
   const auto redirect_mode = fetch_request_data_->Redirect();
-  if (redirect_mode == network::mojom::FetchRedirectMode::kError) {
+  if (redirect_mode == network::mojom::RedirectMode::kError) {
     DidFailRedirectCheck();
     Dispose();
     return false;
   }
 
-  if (redirect_mode == network::mojom::FetchRedirectMode::kManual) {
+  if (redirect_mode == network::mojom::RedirectMode::kManual) {
     const uint64_t unused = 0;
     // There is no need to read the body of redirect response because there is
     // no way to read the body of opaque-redirect filtered response's internal
@@ -302,7 +302,7 @@ bool FetchManager::Loader::WillFollowRedirect(
     return false;
   }
 
-  DCHECK_EQ(redirect_mode, network::mojom::FetchRedirectMode::kFollow);
+  DCHECK_EQ(redirect_mode, network::mojom::RedirectMode::kFollow);
   url_list_.push_back(url);
   return true;
 }
@@ -330,13 +330,13 @@ void FetchManager::Loader::DidReceiveResponse(
       // TODO(hiroshige): currently redirects to data URLs in no-cors
       // mode is also rejected by Chromium side.
       switch (fetch_request_data_->Mode()) {
-        case FetchRequestMode::kNoCors:
+        case RequestMode::kNoCors:
           tainting = FetchRequestData::kOpaqueTainting;
           break;
-        case FetchRequestMode::kSameOrigin:
-        case FetchRequestMode::kCors:
-        case FetchRequestMode::kCorsWithForcedPreflight:
-        case FetchRequestMode::kNavigate:
+        case RequestMode::kSameOrigin:
+        case RequestMode::kCors:
+        case RequestMode::kCorsWithForcedPreflight:
+        case RequestMode::kNavigate:
           PerformNetworkError("Fetch API cannot load " +
                               fetch_request_data_->Url().GetString() +
                               ". Redirects to data: URL are allowed only when "
@@ -349,17 +349,17 @@ void FetchManager::Loader::DidReceiveResponse(
     // Recompute the tainting if the request was redirected to a different
     // origin.
     switch (fetch_request_data_->Mode()) {
-      case FetchRequestMode::kSameOrigin:
+      case RequestMode::kSameOrigin:
         NOTREACHED();
         break;
-      case FetchRequestMode::kNoCors:
+      case RequestMode::kNoCors:
         tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case FetchRequestMode::kCors:
-      case FetchRequestMode::kCorsWithForcedPreflight:
+      case RequestMode::kCors:
+      case RequestMode::kCorsWithForcedPreflight:
         tainting = FetchRequestData::kCorsTainting;
         break;
-      case FetchRequestMode::kNavigate:
+      case RequestMode::kNavigate:
         LOG(FATAL);
         break;
     }
@@ -432,10 +432,10 @@ void FetchManager::Loader::DidReceiveResponse(
 
   DCHECK(!(network_utils::IsRedirectResponseCode(response_http_status_code_) &&
            HasNonEmptyLocationHeader(response_data->HeaderList()) &&
-           fetch_request_data_->Redirect() != FetchRedirectMode::kManual));
+           fetch_request_data_->Redirect() != RedirectMode::kManual));
 
   if (network_utils::IsRedirectResponseCode(response_http_status_code_) &&
-      fetch_request_data_->Redirect() == FetchRedirectMode::kManual) {
+      fetch_request_data_->Redirect() == RedirectMode::kManual) {
     tainted_response = response_data->CreateOpaqueRedirectFilteredResponse();
   } else {
     switch (tainting) {
@@ -563,14 +563,14 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
            ->IsSameSchemeHostPort(fetch_request_data_->Origin().get())) ||
       (fetch_request_data_->Url().ProtocolIsData() &&
        fetch_request_data_->SameOriginDataURLFlag()) ||
-      (fetch_request_data_->Mode() == FetchRequestMode::kNavigate)) {
+      (fetch_request_data_->Mode() == RequestMode::kNavigate)) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch(exception_state);
     return;
   }
 
   // "- |request|'s mode is |same-origin|"
-  if (fetch_request_data_->Mode() == FetchRequestMode::kSameOrigin) {
+  if (fetch_request_data_->Mode() == RequestMode::kSameOrigin) {
     // "A network error."
     PerformNetworkError("Fetch API cannot load " +
                         fetch_request_data_->Url().GetString() +
@@ -581,10 +581,10 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
   }
 
   // "- |request|'s mode is |no CORS|"
-  if (fetch_request_data_->Mode() == FetchRequestMode::kNoCors) {
+  if (fetch_request_data_->Mode() == RequestMode::kNoCors) {
     // "If |request|'s redirect mode is not |follow|, then return a network
     // error.
-    if (fetch_request_data_->Redirect() != FetchRedirectMode::kFollow) {
+    if (fetch_request_data_->Redirect() != RedirectMode::kFollow) {
       PerformNetworkError("Fetch API cannot load " +
                           fetch_request_data_->Url().GetString() +
                           ". Request mode is \"no-cors\" but the redirect mode "
@@ -690,22 +690,22 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       fetch_request_data_->ShouldAlsoUseFactoryBoundOriginForCors());
 
   switch (fetch_request_data_->Mode()) {
-    case FetchRequestMode::kSameOrigin:
-    case FetchRequestMode::kNoCors:
-    case FetchRequestMode::kCors:
-    case FetchRequestMode::kCorsWithForcedPreflight:
-      request.SetFetchRequestMode(fetch_request_data_->Mode());
+    case RequestMode::kSameOrigin:
+    case RequestMode::kNoCors:
+    case RequestMode::kCors:
+    case RequestMode::kCorsWithForcedPreflight:
+      request.SetMode(fetch_request_data_->Mode());
       break;
-    case FetchRequestMode::kNavigate:
+    case RequestMode::kNavigate:
       // NetworkService (i.e. CorsURLLoaderFactory::IsSane) rejects kNavigate
       // requests coming from renderers, so using kSameOrigin here.
       // TODO(lukasza): Tweak CorsURLLoaderFactory::IsSane to accept kNavigate
       // if request_initiator and the target are same-origin.
-      request.SetFetchRequestMode(FetchRequestMode::kSameOrigin);
+      request.SetMode(RequestMode::kSameOrigin);
       break;
   }
 
-  request.SetFetchCredentialsMode(fetch_request_data_->Credentials());
+  request.SetCredentialsMode(fetch_request_data_->Credentials());
   for (const auto& header : fetch_request_data_->HeaderList()->List()) {
     // Since |fetch_request_data_|'s headers are populated with either of the
     // "request" guard or "request-no-cors" guard, we can assume that none of
@@ -726,7 +726,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
     }
   }
   request.SetCacheMode(fetch_request_data_->CacheMode());
-  request.SetFetchRedirectMode(fetch_request_data_->Redirect());
+  request.SetRedirectMode(fetch_request_data_->Redirect());
   request.SetFetchImportanceMode(fetch_request_data_->Importance());
   request.SetPriority(fetch_request_data_->Priority());
   request.SetUseStreamOnResponse(true);
@@ -793,8 +793,8 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetUseStreamOnResponse(true);
   request.SetHttpMethod(fetch_request_data_->Method());
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
-  request.SetFetchRedirectMode(FetchRedirectMode::kError);
+  request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
+  request.SetRedirectMode(RedirectMode::kError);
   request.SetFetchImportanceMode(fetch_request_data_->Importance());
   request.SetPriority(fetch_request_data_->Priority());
   // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',

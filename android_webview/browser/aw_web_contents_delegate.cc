@@ -304,7 +304,7 @@ void AwWebContentsDelegate::ExitFullscreenModeForTab(
 }
 
 bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
-    const content::WebContents* web_contents) const {
+    const content::WebContents* web_contents) {
   return is_fullscreen_;
 }
 

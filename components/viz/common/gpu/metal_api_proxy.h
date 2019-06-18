@@ -21,6 +21,18 @@ API_AVAILABLE(macos(10.11))
 @interface MTLDeviceProxy : NSObject <MTLDevice> {
   base::scoped_nsprotocol<id<MTLDevice>> device_;
 
+  // Weak pointer to the most vertexMain and fragmentMain MTLFunctions most
+  // recently present in the result from a -newLibraryWithSource. Used for
+  // comparison only in -newRenderPipelineStateWithDescriptor.
+  // https://crbug.com/974219
+  id vertexSourceFunction_;
+  id fragmentSourceFunction_;
+
+  // The source used in the -newLibraryWithSource functions that created
+  // the above functions.
+  std::string vertexSource_;
+  std::string fragmentSource_;
+
   // Weak pointer to the progress reporter used to avoid watchdog timeouts.
   // This must be re-set to nullptr when it is no longer known to be valid.
   gl::ProgressReporter* progressReporter_;

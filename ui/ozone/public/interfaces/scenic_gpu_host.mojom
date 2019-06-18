@@ -6,7 +6,7 @@ module ui.mojom;
 
 // Browser process interface that enables the GPU process to present to Scenic.
 interface ScenicGpuHost {
-  // Attaches the surface View identified by |view_holder_token| to the scene
-  // graph for |window_id|.
-  AttachSurfaceToWindow(int32 window_id, handle view_holder_token);
+  // Attaches the surface identified by |surface_export_token| as an import
+  // node in the scene graph for |window_id|.
+  AttachSurfaceToWindow(int32 window_id, handle surface_export_token);
 };

@@ -156,7 +156,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Create business icon.
   int business_icon_size = 20;
-  views::ImageView* business_icon = new views::ImageView();
+  auto business_icon = std::make_unique<views::ImageView>();
   business_icon->SetImage(gfx::CreateVectorIcon(gfx::IconDescription(
       vector_icons::kBusinessIcon, business_icon_size, gfx::kChromeIconGrey,
       base::TimeDelta(), gfx::kNoneIcon)));
@@ -170,7 +170,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT,
           domain, &offset);
-  views::StyledLabel* prompt_label = new views::StyledLabel(prompt_text, this);
+  auto prompt_label = std::make_unique<views::StyledLabel>(prompt_text, this);
   prompt_label->SetDisplayedOnBackgroundColor(kPromptBarBackgroundColor);
 
   views::StyledLabel::RangeStyleInfo bold_style;
@@ -179,7 +179,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       gfx::Range(offset, offset + domain.size()), bold_style);
 
   // Create the prompt bar.
-  views::View* prompt_bar = new views::View;
+  auto prompt_bar = std::make_unique<views::View>();
   prompt_bar->SetBorder(views::CreateSolidSidedBorder(
       1, 0, 1, 0,
       ui::GetSigninConfirmationPromptBarColor(GetNativeTheme(), 0x1F)));
@@ -195,8 +195,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION :
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION,
           username, learn_more_text, &offsets);
-  views::StyledLabel* explanation_label =
-      new views::StyledLabel(signin_explanation_text, this);
+  auto explanation_label =
+      std::make_unique<views::StyledLabel>(signin_explanation_text, this);
   explanation_label->AddStyleRange(
       gfx::Range(offsets[1], offsets[1] + learn_more_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
@@ -232,17 +232,16 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
                               views::GridLayout::USE_PREF, 0, 0);
 
   prompt_layout->StartRow(views::GridLayout::kFixedSize, kPromptBarColumnSetId);
-  prompt_layout->AddView(business_icon);
-  prompt_layout->AddView(prompt_label);
+  prompt_layout->AddView(std::move(business_icon));
+  prompt_layout->AddView(std::move(prompt_label));
 
   // Use a column set with no padding.
   dialog_layout->AddColumnSet(0)->AddColumn(views::GridLayout::FILL,
                                             views::GridLayout::FILL, 1.0,
                                             views::GridLayout::USE_PREF, 0, 0);
   dialog_layout->StartRow(views::GridLayout::kFixedSize, 0);
-  dialog_layout->AddView(
-      prompt_bar, 1, 1,
-      views::GridLayout::FILL, views::GridLayout::FILL, 0, 0);
+  dialog_layout->AddView(std::move(prompt_bar), 1, 1, views::GridLayout::FILL,
+                         views::GridLayout::FILL, 0, 0);
 
   // Use a new column set for the explanation label so we can add padding.
   dialog_layout->AddPaddingRow(views::GridLayout::kFixedSize,
@@ -260,9 +259,11 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   dialog_layout->StartRow(views::GridLayout::kFixedSize,
                           kExplanationColumnSetId);
   const int kPreferredWidth = 440;
-  dialog_layout->AddView(explanation_label, 1, 1, views::GridLayout::FILL,
-                         views::GridLayout::FILL, kPreferredWidth,
-                         explanation_label->GetHeightForWidth(kPreferredWidth));
+  int explanation_label_height =
+      explanation_label->GetHeightForWidth(kPreferredWidth);
+  dialog_layout->AddView(std::move(explanation_label), 1, 1,
+                         views::GridLayout::FILL, views::GridLayout::FILL,
+                         kPreferredWidth, explanation_label_height);
 }
 
 void ProfileSigninConfirmationDialogViews::WindowClosing() {

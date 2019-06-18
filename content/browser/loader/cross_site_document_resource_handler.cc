@@ -221,10 +221,10 @@ class CrossSiteDocumentResourceHandler::Controller : public ResourceController {
 CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request,
-    network::mojom::FetchRequestMode fetch_request_mode)
+    network::mojom::RequestMode request_mode)
     : LayeredResourceHandler(request, std::move(next_handler)),
       weak_next_handler_(next_handler_.get()),
-      fetch_request_mode_(fetch_request_mode),
+      request_mode_(request_mode),
       weak_this_(this) {}
 
 CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
@@ -237,7 +237,7 @@ void CrossSiteDocumentResourceHandler::OnRequestRedirected(
   if (network::CrossOriginResourcePolicy::kBlock ==
       network::CrossOriginResourcePolicy::Verify(
           request()->url(), request()->initiator(), response->head,
-          fetch_request_mode_, kNonNetworkServiceInitiatorLock)) {
+          request_mode_, kNonNetworkServiceInitiatorLock)) {
     blocked_read_completed_ = true;
     blocked_by_cross_origin_resource_policy_ = true;
     controller->Cancel();
@@ -257,7 +257,7 @@ void CrossSiteDocumentResourceHandler::OnResponseStarted(
   if (network::CrossOriginResourcePolicy::kBlock ==
       network::CrossOriginResourcePolicy::Verify(
           request()->url(), request()->initiator(), response->head,
-          fetch_request_mode_, kNonNetworkServiceInitiatorLock)) {
+          request_mode_, kNonNetworkServiceInitiatorLock)) {
     blocked_read_completed_ = true;
     blocked_by_cross_origin_resource_policy_ = true;
     controller->Cancel();
@@ -638,7 +638,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
           request()->url(), request()->initiator(), response.head,
-          kNonNetworkServiceInitiatorLock, fetch_request_mode_);
+          kNonNetworkServiceInitiatorLock, request_mode_);
   if (analyzer_->ShouldAllow())
     return false;
 
@@ -665,7 +665,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   //   additionally PDF doesn't _really_ make *cross*-origin requests - it just
   //   seems that way because of the usage of the Chrome extension).
   if (info->GetResourceType() == ResourceType::kPluginResource &&
-      fetch_request_mode_ == network::mojom::FetchRequestMode::kNoCors &&
+      request_mode_ == network::mojom::RequestMode::kNoCors &&
       network::CrossOriginReadBlocking::ShouldAllowForPlugin(
           info->GetChildID())) {
     return false;

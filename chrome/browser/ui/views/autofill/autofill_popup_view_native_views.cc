@@ -646,8 +646,10 @@ void AutofillPopupFooterView::CreateContent() {
 
   auto value_label = CreateValueLabel();
   AddChildView(std::move(value_label));
-  AddSpacerWithSize(AutofillPopupBaseView::kValueLabelPadding,
-                    /*resize=*/true, layout_manager);
+  AddSpacerWithSize(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL),
+      /*resize=*/true, layout_manager);
 
   if (!icon.isNull() && !use_leading_icon) {
     AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
@@ -790,7 +792,8 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  if (is_selected)
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   RefreshStyle();
 }
 

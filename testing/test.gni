@@ -96,11 +96,13 @@ template("test") {
         "android_manifest",
         "android_manifest_dep",
         "enable_multidex",
+        "min_sdk_version",
         "proguard_configs",
         "proguard_enabled",
+        "target_sdk_version",
         "use_default_launcher",
-        "write_asset_list",
         "use_native_activity",
+        "write_asset_list",
       ]
 
       # Adds the unwind tables from unstripped binary as an asset file in the

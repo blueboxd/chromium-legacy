@@ -585,6 +585,8 @@ domain Browser
       sensors
       videoCapture
       idleDetection
+      wakeLockScreen
+      wakeLockSystem
 
   # Grant specific permissions to the given origin and reject all others.
   experimental command grantPermissions
@@ -6922,6 +6924,9 @@ experimental domain WebAuthn
       AuthenticatorTransport transport
       boolean hasResidentKey
       boolean hasUserVerification
+      # If set to true, tests of user presence will succeed immediately.
+      # Otherwise, they will not be resolved. Defaults to true.
+      optional boolean automaticPresenceSimulation
 
   type Credential extends object
     properties
@@ -6973,3 +6978,10 @@ experimental domain WebAuthn
   command clearCredentials
     parameters
       AuthenticatorId authenticatorId
+
+  # Sets whether User Verification succeeds or fails for an authenticator.
+  # The default is true.
+  command setUserVerified
+    parameters
+      AuthenticatorId authenticatorId
+      boolean isUserVerified

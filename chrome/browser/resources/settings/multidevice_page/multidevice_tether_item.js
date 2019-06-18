@@ -14,7 +14,10 @@
 Polymer({
   is: 'settings-multidevice-tether-item',
 
-  behaviors: [MultiDeviceFeatureBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    MultiDeviceFeatureBehavior,
+  ],
 
   properties: {
     /**
@@ -62,54 +65,25 @@ Polymer({
     },
   },
 
-  listeners: {
-    'network-list-changed': 'updateTetherNetworkState_',
-    // network-changed is fired by the settings-multidevice-subpage element's
-    // CrNetworkListenerBehavior.
-    // TODO (jordynass): Refactor to allow this element to listen to network
-    // changes without requiring the settings-multidevice-subpage to communicate
-    // with the networkingPrivate API.
-    'networks-changed': 'onNetworksChanged_',
-  },
-
-  /**
-   * Listener function for chrome.networkingPrivate.onDeviceStateListChanged
-   * event.
-   * @private {?function(!Array<string>)}
-   */
-  deviceStateListChangedListener_: null,
-
   /** @override */
   attached: function() {
     this.updateTetherDeviceState_();
     this.updateTetherNetworkState_();
-
-    this.deviceStateListChangedListener_ =
-        this.deviceStateListChangedListener_ ||
-        this.updateTetherDeviceState_.bind(this);
-    this.networkingPrivate_.onDeviceStateListChanged.addListener(
-        this.deviceStateListChangedListener_);
-  },
-
-  /** @override */
-  detached: function() {
-    this.networkingPrivate_.onDeviceStateListChanged.removeListener(
-        assert(this.deviceStateListChangedListener_));
   },
 
   /**
-   * Callback for the a network changing state. Note that any change to leading
-   * to a new active network would fire the 'network-list-changed' event,
-   * triggering updateTetherNetworkState_ and rendering this callback
-   * redundant. As a result, we return early if the active network is not
-   * changed.
-   * @param {!CustomEvent<!Array<string>>} event stores an array of the GUIDs of
-   *     all networks that changed in its detail property.
+   * CrosNetworkConfigObserver impl
+   * Note that any change to leading to a new active network will also trigger
+   * onNetworkStateListChanged, triggering updateTetherNetworkState_ and
+   * rendering this callback redundant. As a result, we return early if the
+   * active network is not changed.
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
    * @private
    */
-  onNetworksChanged_: function(event) {
+  onActiveNetworksChanged: function(networks) {
     const id = this.activeNetworkState_.GUID;
-    if (!event.detail.includes(id)) {
+    if (!networks.find(network => network.guid == id)) {
       return;
     }
     this.networkingPrivate_.getState(id, newNetworkState => {
@@ -125,6 +99,16 @@ Polymer({
       }
       this.activeNetworkState_ = newNetworkState;
     });
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.updateTetherNetworkState_();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    this.updateTetherDeviceState_();
   },
 
   /**

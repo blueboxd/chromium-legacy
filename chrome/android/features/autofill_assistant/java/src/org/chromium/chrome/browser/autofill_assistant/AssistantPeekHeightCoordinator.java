@@ -88,8 +88,8 @@ class AssistantPeekHeightCoordinator {
                 R.dimen.autofill_assistant_progress_bar_height);
         mChildrenVerticalSpacing = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
-        mSuggestionsVerticalInset = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.R.dimen.chip_bg_vertical_inset);
+        mSuggestionsVerticalInset =
+                context.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
 
         // Show only actions if we are in the peek state and peek mode is HANDLE_HEADER_CAROUSELS.
         bottomSheet.addObserver(new EmptyBottomSheetObserver() {

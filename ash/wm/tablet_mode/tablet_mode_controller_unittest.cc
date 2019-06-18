@@ -199,18 +199,18 @@ TEST_F(TabletModeControllerTest, VerifyTabletModeEnabledDisabledCounts) {
   ASSERT_EQ(0, user_action_tester()->GetActionCount(kTabletModeDisabled));
 
   user_action_tester()->ResetCounts();
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTabletModeEnabled));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTabletModeDisabled));
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTabletModeEnabled));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTabletModeDisabled));
 
   user_action_tester()->ResetCounts();
-  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTabletModeEnabled));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTabletModeDisabled));
-  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(0, user_action_tester()->GetActionCount(kTabletModeEnabled));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(kTabletModeDisabled));
 }
@@ -553,7 +553,7 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
   ASSERT_FALSE(IsTabletModeStarted());
 
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
@@ -681,23 +681,23 @@ class TabletModeControllerInitedFromPowerManagerClientTest
 
 TEST_F(TabletModeControllerInitedFromPowerManagerClientTest,
        InitializedWhileTabletModeSwitchOn) {
-  EXPECT_FALSE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
+  EXPECT_FALSE(tablet_mode_controller()->InTabletMode());
   // PowerManagerClient callback is a posted task.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
+  EXPECT_TRUE(tablet_mode_controller()->InTabletMode());
 }
 
 TEST_F(TabletModeControllerTest, RestoreAfterExit) {
   UpdateDisplay("1000x600");
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 900, 300)));
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   Shell::Get()->screen_orientation_controller()->SetLockToRotation(
       display::Display::ROTATE_90);
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(display::Display::ROTATE_90, display.rotation());
   EXPECT_LT(display.size().width(), display.size().height());
-  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  tablet_mode_controller()->SetEnabledForTest(false);
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   // Sanity checks.
   EXPECT_EQ(display::Display::ROTATE_0, display.rotation());
@@ -1136,7 +1136,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   ::wm::ActivateWindow(window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 }
@@ -1148,7 +1148,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
   ::wm::ActivateWindow(window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1161,7 +1161,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1177,7 +1177,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
@@ -1194,7 +1194,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
@@ -1214,7 +1214,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 }
@@ -1236,7 +1236,7 @@ TEST_F(TabletModeControllerTest,
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(right_window.get());
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1254,7 +1254,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   ::wm::AddTransientChild(parent.get(), child.get());
   ::wm::ActivateWindow(parent.get());
   ::wm::ActivateWindow(child.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(parent.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1271,7 +1271,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   Shell::Get()->app_list_controller()->ShowAppList();
   ASSERT_TRUE(::wm::IsActiveWindow(
       GetAppListTestHelper()->GetAppListView()->GetWidget()->GetNativeView()));
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1295,7 +1295,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
       CreateDesktopWindowSnappedLeft();
   ::wm::ActivateWindow(snapped_window.get());
   ::wm::ActivateWindow(dragged_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1315,7 +1315,7 @@ TEST_F(TabletModeControllerTest,
       CreateDesktopWindowSnappedLeft();
   ::wm::ActivateWindow(snapped_window.get());
   ::wm::ActivateWindow(window_hidden_from_overview.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1345,7 +1345,7 @@ TEST_F(TabletModeControllerTest,
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(right_window.get());
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 }
@@ -1375,7 +1375,7 @@ TEST_F(TabletModeControllerTest,
   right_window_state->OnWMEvent(&snap_to_right);
   ::wm::ActivateWindow(left_window.get());
   ::wm::ActivateWindow(right_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 }
@@ -1406,7 +1406,7 @@ TEST_F(TabletModeControllerTest,
   right_window_state->OnWMEvent(&snap_to_right);
   ::wm::ActivateWindow(right_window.get());
   ::wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1437,7 +1437,7 @@ TEST_F(TabletModeControllerTest,
       CreateDesktopWindowSnappedRight();
   ::wm::ActivateWindow(left_window.get());
   ::wm::ActivateWindow(right_window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1450,7 +1450,7 @@ TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
       Shell::Get()->app_list_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
   ::wm::ActivateWindow(window.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   app_list_controller->ShowAppList();
   EXPECT_TRUE(app_list_controller->IsVisible());
 }
@@ -1465,7 +1465,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   std::unique_ptr<aura::Window> window1 = CreateDesktopWindowSnappedLeft();
   std::unique_ptr<aura::Window> window2 = CreateDesktopWindowSnappedLeft();
   ::wm::ActivateWindow(window1.get());
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1477,7 +1477,7 @@ TEST_F(TabletModeControllerTest,
        ProgrammaticallyStartSplitViewAndThenOverview) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   ::wm::ActivateWindow(window.get());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
@@ -1554,8 +1554,8 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
     SCOPED_TRACE("No window");
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-    tablet_mode_controller()->EnableTabletModeWindowManager(true);
-    tablet_mode_controller()->EnableTabletModeWindowManager(false);
+    tablet_mode_controller()->SetEnabledForTest(true);
+    tablet_mode_controller()->SetEnabledForTest(false);
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
   }
@@ -1568,11 +1568,11 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
     SCOPED_TRACE("Window is maximized");
     wm::GetWindowState(window.get())->Maximize();
     window->layer()->GetAnimator()->StopAnimating();
-    tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    tablet_mode_controller()->SetEnabledForTest(true);
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
-    tablet_mode_controller()->EnableTabletModeWindowManager(false);
+    tablet_mode_controller()->SetEnabledForTest(false);
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
@@ -1592,7 +1592,7 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   // entering and exiting tablet mode with a normal window.
   ui::Layer* layer = window->layer();
   ui::Layer* layer2 = window2->layer();
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
   layer->GetAnimator()->StopAnimating();
@@ -1602,7 +1602,7 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
 
   layer = window->layer();
   layer2 = window2->layer();
-  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_TRUE(layer->GetAnimator()->is_animating());
   EXPECT_TRUE(layer2->GetAnimator()->is_animating());
   layer->GetAnimator()->StopAnimating();
@@ -1623,13 +1623,13 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   window2->layer()->GetAnimator()->StopAnimating();
 
   // Tests that we have no logged metrics since nothing animates.
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 
-  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
   window2->layer()->GetAnimator()->StopAnimating();

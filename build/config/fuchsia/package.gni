@@ -40,14 +40,12 @@ template("fuchsia_package") {
   _archive_manifest = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
   _build_ids_file = "$_pkg_out_dir/ids.txt"
   _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
-  _key_file = "$_pkg_out_dir/signing-key"
   _meta_far_file = "$_pkg_out_dir/meta.far"
   _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
   _final_far_file = "$_pkg_out_dir/${pkg.package_name}.far"
   _package_info_path = "$_pkg_out_dir/package"
 
   _write_manifest_target = "${pkg.package_name}__write_manifest"
-  _generate_key_target = "${pkg.package_name}__genkey"
   _package_target = "${pkg.package_name}__pkg"
   _bundle_target = "${pkg.package_name}__bundle"
 
@@ -118,29 +116,6 @@ template("fuchsia_package") {
     write_runtime_deps = _runtime_deps_file
   }
 
-  # Generates a signing key to use for building the package.
-  action(_generate_key_target) {
-    forward_variables_from(invoker, [ "testonly" ])
-
-    script = "//build/gn_run_binary.py"
-
-    inputs = [
-      # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      "${fuchsia_sdk}/.hash",
-    ]
-
-    outputs = [
-      _key_file,
-    ]
-
-    args = [
-      rebase_path(_pm_tool_path, root_build_dir),
-      "-k",
-      rebase_path(_key_file, root_build_dir),
-      "genkey",
-    ]
-  }
-
   # Creates a signed Fuchsia metadata package.
   action(_package_target) {
     forward_variables_from(invoker, [ "testonly" ])
@@ -148,14 +123,12 @@ template("fuchsia_package") {
     script = "//build/gn_run_binary.py"
 
     deps = [
-      ":$_generate_key_target",
       ":$_write_manifest_target",
     ]
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
       "${fuchsia_sdk}/.hash",
-      _key_file,
     ]
 
     outputs = [
@@ -166,8 +139,6 @@ template("fuchsia_package") {
       rebase_path(_pm_tool_path, root_build_dir),
       "-o",
       rebase_path(_pkg_out_dir, root_build_dir),
-      "-k",
-      rebase_path(_key_file, root_build_dir),
       "-m",
       rebase_path(_archive_manifest, root_build_dir),
       "build",

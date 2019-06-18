@@ -40,6 +40,7 @@ if (is_android) {
   import("//build/mac/tweak_info_plist.gni")
   import("//build/util/branding.gni")
   import("//build/util/version.gni")
+  import("//content/public/app/mac_helpers.gni")
   import("//media/cdm/library_cdm/cdm_paths.gni")
   import("//third_party/icu/config.gni")
 }
@@ -879,53 +880,68 @@ if (is_win) {
     visibility = [ "//chrome/installer/mac:copies" ]
   }
 
-  mac_app_bundle("chrome_helper_app") {
-    output_name = chrome_helper_name
+  template("chrome_helper_app") {
+    mac_app_bundle(target_name) {
+      assert(defined(invoker.helper_name_suffix))
+      assert(defined(invoker.helper_bundle_id_suffix))
 
-    info_plist_target = ":chrome_helper_plist"
-    extra_substitutions = [
-      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
-      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
-    ]
+      output_name = chrome_helper_name + invoker.helper_name_suffix
 
-    sources = [
-      "app/chrome_exe_main_mac.cc",
-    ]
-
-    extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
-
-    defines = [ "HELPER_EXECUTABLE" ]
-
-    deps = [
-      "//chrome/common:buildflags",
-      "//chrome/common:version_header",
-      "//sandbox/mac:seatbelt",
-    ]
-
-    ldflags = []
-
-    if (is_component_build) {
-      ldflags += [
-        # The helper is in Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/MacOS
-        # so set rpath up to the base.
-        "-rpath",
-        "@loader_path/../../../../../../../../../..",
+      info_plist_target = ":chrome_helper_plist"
+      extra_substitutions = [
+        "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+        "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
+        "CHROMIUM_HELPER_SUFFIX=${invoker.helper_name_suffix}",
+        "CHROMIUM_HELPER_BUNDLE_ID_SUFFIX=${invoker.helper_bundle_id_suffix}",
       ]
-    }
 
-    if (enable_stripping) {
-      # At link time, preserve the global symbols specified in the .exports
-      # file. All other global symbols will be marked as private. The default
-      # //build/config/mac:strip_all config will then remove the remaining
-      # local and debug symbols.
-      ldflags += [ "-Wl,-exported_symbols_list," +
-                   rebase_path("app/app.exports", root_build_dir) ]
+      sources = [
+        "app/chrome_exe_main_mac.cc",
+      ]
+
+      extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+
+      defines = [ "HELPER_EXECUTABLE" ]
+
+      deps = [
+        "//chrome/common:version_header",
+        "//sandbox/mac:seatbelt",
+      ]
+
+      ldflags = []
+
+      if (is_component_build) {
+        ldflags += [
+          # The helper is in Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/MacOS
+          # so set rpath up to the base.
+          "-rpath",
+          "@loader_path/../../../../../../../../../..",
+        ]
+      }
+
+      if (enable_stripping) {
+        # At link time, preserve the global symbols specified in the .exports
+        # file. All other global symbols will be marked as private. The default
+        # //build/config/mac:strip_all config will then remove the remaining
+        # local and debug symbols.
+        ldflags += [ "-Wl,-exported_symbols_list," +
+                     rebase_path("app/app.exports", root_build_dir) ]
+      }
+    }
+  }
+
+  foreach(helper_params, content_mac_helpers) {
+    _helper_target = helper_params[0]
+    _helper_bundle_id = helper_params[1]
+    _helper_suffix = helper_params[2]
+    chrome_helper_app("chrome_helper_app_${_helper_target}") {
+      helper_name_suffix = _helper_suffix
+      helper_bundle_id_suffix = _helper_bundle_id
     }
   }
 
   bundle_data("chrome_framework_helpers") {
     sources = [
-      "$root_out_dir/$chrome_helper_name.app",
       "$root_out_dir/app_mode_loader",
       "$root_out_dir/chrome_crashpad_handler",
     ]
@@ -935,10 +951,15 @@ if (is_win) {
     ]
 
     public_deps = [
-      ":chrome_helper_app",
       "//chrome/app_shim:app_mode_loader",
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
+
+    foreach(helper_params, content_mac_helpers) {
+      sources +=
+          [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app" ]
+      public_deps += [ ":chrome_helper_app_${helper_params[0]}" ]
+    }
 
     if (is_asan) {
       # crashpad_handler requires the ASan runtime at its @executable_path.
@@ -1359,12 +1380,15 @@ if (is_win) {
     _chrome_symbols_sources = [
       _framework_binary_path,
       "$root_out_dir/AlertNotificationService.xpc/Contents/MacOS/AlertNotificationService",
-      "$root_out_dir/$chrome_helper_name.app/Contents/MacOS/$chrome_helper_name",
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
       "$root_out_dir/chrome_crashpad_handler",
       "$root_out_dir/libswiftshader_libEGL.dylib",
       "$root_out_dir/libswiftshader_libGLESv2.dylib",
     ]
+
+    foreach(helper_params, content_mac_helpers) {
+      _chrome_symbols_sources += [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app/Contents/MacOS/${chrome_helper_name}${helper_params[2]}" ]
+    }
 
     # It is possible to run dump_syms on unstripped products without dSYMs,
     # but doing so isn't logical and won't happen in practice.
@@ -1390,13 +1414,16 @@ if (is_win) {
       deps = [
         ":chrome_app",
         ":chrome_framework",
-        ":chrome_helper_app",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//components/crash/content/app:chrome_crashpad_handler",
         "//third_party/breakpad:dump_syms",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
+
+      foreach(helper_params, content_mac_helpers) {
+        deps += [ ":chrome_helper_app_${helper_params[0]}" ]
+      }
     }
 
     action("chrome_dsym_archive") {
@@ -1409,12 +1436,26 @@ if (is_win) {
       _dsyms = [
         "$root_out_dir/AlertNotificationService.dSYM",
         "$root_out_dir/$chrome_framework_name.dSYM",
-        "$root_out_dir/$chrome_helper_name.dSYM",
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/chrome_crashpad_handler.dSYM",
         "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
         "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
       ]
+
+      deps = [
+        ":chrome_app",
+        ":chrome_framework",
+        "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
+        "//components/crash/content/app:chrome_crashpad_handler",
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
+      ]
+
+      foreach(helper_params, content_mac_helpers) {
+        _dsyms +=
+            [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.dSYM" ]
+        deps += [ ":chrome_helper_app_${helper_params[0]}" ]
+      }
 
       sources = _chrome_symbols_sources
 
@@ -1426,16 +1467,6 @@ if (is_win) {
 
       args = [ rebase_path(_output, root_out_dir) ] +
              rebase_path(_dsyms, root_out_dir)
-
-      deps = [
-        ":chrome_app",
-        ":chrome_framework",
-        ":chrome_helper_app",
-        "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//components/crash/content/app:chrome_crashpad_handler",
-        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-      ]
     }
   } else {
     group("chrome_dump_syms") {

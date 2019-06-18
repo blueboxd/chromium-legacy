@@ -13,10 +13,6 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_tracker.h"
 
-namespace viz {
-class OverlayCandidateValidator;
-}
-
 namespace gfx {
 struct PresentationFeedback;
 }
@@ -40,9 +36,7 @@ class GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(
-      scoped_refptr<viz::ContextProviderCommandBuffer> context,
-      std::unique_ptr<viz::OverlayCandidateValidator>
-          overlay_candidate_validator);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context);
 
   ~GpuBrowserCompositorOutputSurface() override;
 

@@ -60,10 +60,10 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
         emit_frame_drop_events_ = false;
         PostCrossThreadTask(
             *main_render_task_runner_, FROM_HERE,
-            CrossThreadBind(&MediaStreamVideoRendererSink::OnFrameDropped,
-                            media_stream_video_renderer_sink_,
-                            media::VideoCaptureFrameDropReason::
-                                kRendererSinkFrameDelivererIsNotStarted));
+            CrossThreadBindOnce(&MediaStreamVideoRendererSink::OnFrameDropped,
+                                media_stream_video_renderer_sink_,
+                                media::VideoCaptureFrameDropReason::
+                                    kRendererSinkFrameDelivererIsNotStarted));
       }
       return;
     }
@@ -168,10 +168,10 @@ void MediaStreamVideoRendererSink::Start() {
   if (video_track_.Source().GetReadyState() ==
           WebMediaStreamSource::kReadyStateEnded ||
       !video_track_.IsEnabled()) {
-    PostCrossThreadTask(*io_task_runner_, FROM_HERE,
-                        WTF::CrossThreadBind(&FrameDeliverer::RenderEndOfStream,
-                                             WTF::CrossThreadUnretained(
-                                                 frame_deliverer_.get())));
+    PostCrossThreadTask(
+        *io_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&FrameDeliverer::RenderEndOfStream,
+                            CrossThreadUnretained(frame_deliverer_.get())));
   }
 }
 

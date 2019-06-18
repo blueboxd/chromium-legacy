@@ -147,6 +147,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
+                           EmitTextChangedAccessibilityEvent);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewTest, DoesNotUpdateAutocompleteOnBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
@@ -154,6 +156,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, SetSelectedLine);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
+                           EmitSelectedChildrenChangedAccessibilityEvent);
 
   // Updates |result_| to reflect the current provider state and fires
   // notifications.  If |regenerate_result| then we clear the result

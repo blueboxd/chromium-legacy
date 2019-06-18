@@ -12,6 +12,7 @@ namespace crash_reporter {
 class CrashKeyBreakpadTest : public testing::Test {
  public:
   void SetUp() override {
+    internal::ResetCrashKeyStorageForTesting();
     InitializeCrashKeys();
     ASSERT_TRUE(internal::GetCrashKeyStorage());
   }

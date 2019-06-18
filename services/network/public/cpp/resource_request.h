@@ -63,11 +63,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool skip_service_worker = false;
   bool corb_detachable = false;
   bool corb_excluded = false;
-  mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCors;
-  mojom::FetchCredentialsMode fetch_credentials_mode =
-      mojom::FetchCredentialsMode::kInclude;
-  mojom::FetchRedirectMode fetch_redirect_mode =
-      mojom::FetchRedirectMode::kFollow;
+  mojom::RequestMode mode = mojom::RequestMode::kNoCors;
+  mojom::CredentialsMode credentials_mode = mojom::CredentialsMode::kInclude;
+  mojom::RedirectMode redirect_mode = mojom::RedirectMode::kFollow;
   std::string fetch_integrity;
   int fetch_request_context_type = 0;
   scoped_refptr<ResourceRequestBody> request_body;

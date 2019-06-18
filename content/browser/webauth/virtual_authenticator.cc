@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
@@ -27,6 +28,10 @@ VirtualAuthenticator::VirtualAuthenticator(
       unique_id_(base::GenerateGUID()),
       state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {
   state_->transport = transport;
+  // If the authenticator has user verification, simulate having set it up
+  // already.
+  state_->fingerprints_enrolled = has_user_verification_;
+  SetUserPresence(true);
 }
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
@@ -62,6 +67,15 @@ void VirtualAuthenticator::ClearRegistrations() {
   state_->registrations.clear();
 }
 
+void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
+  is_user_present_ = is_user_present;
+  state_->simulate_press_callback = base::BindRepeating(
+      [](bool is_user_present, device::VirtualFidoDevice* device) {
+        return is_user_present;
+      },
+      is_user_present);
+}
+
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
   switch (protocol_) {
     case ::device::ProtocolVersion::kU2f:
@@ -72,6 +86,7 @@ std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
       config.internal_uv_support = has_user_verification_;
       config.is_platform_authenticator =
           attachment_ == ::device::AuthenticatorAttachment::kPlatform;
+      config.user_verification_succeeds = is_user_verified_;
       return std::make_unique<::device::VirtualCtap2Device>(state_, config);
     }
     default:
@@ -116,13 +131,12 @@ void VirtualAuthenticator::ClearRegistrations(
 
 void VirtualAuthenticator::SetUserPresence(bool present,
                                            SetUserPresenceCallback callback) {
-  // TODO(https://crbug.com/785955): Implement once VirtualFidoDevice supports
-  // this.
+  SetUserPresence(present);
   std::move(callback).Run();
 }
 
 void VirtualAuthenticator::GetUserPresence(GetUserPresenceCallback callback) {
-  std::move(callback).Run(false);
+  std::move(callback).Run(is_user_present_);
 }
 
 }  // namespace content

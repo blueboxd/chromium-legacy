@@ -343,4 +343,8 @@ void OverlayProcessor::SetValidatorViewportSize(const gfx::Size& size) {
     overlay_validator_->SetViewportSize(size);
 }
 
+void OverlayProcessor::SetSoftwareMirrorMode(bool software_mirror_mode) {
+  if (overlay_validator_)
+    overlay_validator_->SetSoftwareMirrorMode(software_mirror_mode);
+}
 }  // namespace viz

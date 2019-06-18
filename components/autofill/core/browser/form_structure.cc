@@ -52,6 +52,9 @@
 #include "url/origin.h"
 
 namespace autofill {
+
+using mojom::SubmissionIndicatorEvent;
+
 namespace {
 
 // Version of the client sent to the server.
@@ -659,8 +662,7 @@ bool FormStructure::EncodeUploadRequest(
                               ? submission_event_
                               : ToSubmissionIndicatorEvent(submission_source_);
 
-  DCHECK_LT(submission_event_,
-            SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+  DCHECK(autofill::mojom::IsKnownEnumValue(triggering_event));
   upload->set_submission_event(
       static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
           triggering_event));

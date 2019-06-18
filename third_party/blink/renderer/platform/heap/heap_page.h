@@ -823,7 +823,7 @@ class PLATFORM_EXPORT BaseArena {
   bool SweepUnsweptPageOnConcurrentThread(BasePage*);
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
-  bool LazySweepWithDeadline(TimeTicks deadline);
+  bool LazySweepWithDeadline(base::TimeTicks deadline);
   void CompleteSweep();
   void SweepOnConcurrentThread();
 
@@ -900,9 +900,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
     return header->PayloadEnd() == current_allocation_point_;
   }
 
-  bool IsLazySweeping() const { return is_lazy_sweeping_; }
-  void SetIsLazySweeping(bool sweeping) { is_lazy_sweeping_ = sweeping; }
-
   size_t ArenaSize();
   size_t FreeListSize();
 
@@ -957,8 +954,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   // zero before sweeping when clearing the free list and after coalescing.
   // It will increase for promptly freed objects on already swept pages.
   size_t promptly_freed_size_;
-
-  bool is_lazy_sweeping_;
 };
 
 class LargeObjectArena final : public BaseArena {

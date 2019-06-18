@@ -42,7 +42,6 @@ type_mappings = [
   "autofill.mojom.PasswordFormFieldPredictionType=autofill::PasswordFormFieldPredictionType",
   "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
   "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
-  "autofill.mojom.SubmissionIndicatorEvent=autofill::SubmissionIndicatorEvent",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
   "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
   "autofill.mojom.ValueElementPair=autofill::ValueElementPair",

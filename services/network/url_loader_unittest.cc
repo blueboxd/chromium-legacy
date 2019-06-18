@@ -1896,38 +1896,47 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   EXPECT_EQ("Value3", request_headers2.find("Header3")->second);
 }
 
-// Make sure requests are failed when the consumer tries to modify the host
-// header.
-TEST_F(URLLoaderTest, RedirectFailsOnModifyHostHeader) {
-  ResourceRequest request = CreateResourceRequest(
-      "GET", test_server()->GetURL("/redirect307-to-echo"));
+TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
+  const char* kUnsafeHeaders[] = {
+      net::HttpRequestHeaders::kContentLength,
+      net::HttpRequestHeaders::kHost,
+      net::HttpRequestHeaders::kProxyConnection,
+      net::HttpRequestHeaders::kProxyAuthorization,
+      "Proxy-Foo",
+  };
 
-  base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
-  std::unique_ptr<URLLoader> url_loader;
-  mojom::URLLoaderFactoryParams params;
-  params.process_id = mojom::kBrowserProcessId;
-  params.is_corb_enabled = false;
-  url_loader = std::make_unique<URLLoader>(
-      context(), nullptr /* network_service_client */,
-      DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-      0 /* request_id */, resource_scheduler_client(), nullptr,
-      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+  for (const auto* unsafe_header : kUnsafeHeaders) {
+    TestURLLoaderClient client;
 
-  client()->RunUntilRedirectReceived();
+    ResourceRequest request = CreateResourceRequest(
+        "GET", test_server()->GetURL("/redirect307-to-echo"));
 
-  net::HttpRequestHeaders redirect_headers;
-  redirect_headers.SetHeader(net::HttpRequestHeaders::kHost, "foo.test");
-  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+    base::RunLoop delete_run_loop;
+    mojom::URLLoaderPtr loader;
+    std::unique_ptr<URLLoader> url_loader;
+    mojom::URLLoaderFactoryParams params;
+    params.process_id = mojom::kBrowserProcessId;
+    params.is_corb_enabled = false;
+    url_loader = std::make_unique<URLLoader>(
+        context(), nullptr /* network_service_client */,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
 
-  client()->RunUntilComplete();
-  delete_run_loop.Run();
+    client.RunUntilRedirectReceived();
 
-  EXPECT_TRUE(client()->has_received_completion());
-  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
-            client()->completion_status().error_code);
+    net::HttpRequestHeaders redirect_headers;
+    redirect_headers.SetHeader(unsafe_header, "foo");
+    loader->FollowRedirect({}, redirect_headers, base::nullopt);
+
+    client.RunUntilComplete();
+    delete_run_loop.Run();
+
+    EXPECT_TRUE(client.has_received_completion());
+    EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client.completion_status().error_code);
+  }
 }
 
 // Test the client can remove headers during a redirect.
@@ -2784,7 +2793,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.mode = mojom::RequestMode::kCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
   request.corb_excluded = true;
 
@@ -2820,7 +2829,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
+  request.mode = mojom::RequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
   request.corb_excluded = true;
 
@@ -2860,7 +2869,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
+  request.mode = mojom::RequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
   request.corb_excluded = true;
 

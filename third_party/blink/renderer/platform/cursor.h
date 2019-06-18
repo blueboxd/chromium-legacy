@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CURSOR_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -41,58 +42,9 @@ class PLATFORM_EXPORT Cursor {
   USING_FAST_MALLOC(Cursor);
 
  public:
-  enum Type {
-    kPointer = 0,
-    kCross,
-    kHand,
-    kIBeam,
-    kWait,
-    kHelp,
-    kEastResize,
-    kNorthResize,
-    kNorthEastResize,
-    kNorthWestResize,
-    kSouthResize,
-    kSouthEastResize,
-    kSouthWestResize,
-    kWestResize,
-    kNorthSouthResize,
-    kEastWestResize,
-    kNorthEastSouthWestResize,
-    kNorthWestSouthEastResize,
-    kColumnResize,
-    kRowResize,
-    kMiddlePanning,
-    kEastPanning,
-    kNorthPanning,
-    kNorthEastPanning,
-    kNorthWestPanning,
-    kSouthPanning,
-    kSouthEastPanning,
-    kSouthWestPanning,
-    kWestPanning,
-    kMove,
-    kVerticalText,
-    kCell,
-    kContextMenu,
-    kAlias,
-    kProgress,
-    kNoDrop,
-    kCopy,
-    kNone,
-    kNotAllowed,
-    kZoomIn,
-    kZoomOut,
-    kGrab,
-    kGrabbing,
-    kMiddlePanningVertical,
-    kMiddlePanningHorizontal,
-    kCustom
-  };
-
   Cursor()
       // This is an invalid Cursor and should never actually get used.
-      : type_(static_cast<Type>(-1)) {}
+      : type_(static_cast<ui::CursorType>(-1)) {}
 
   Cursor(Image*, bool hot_spot_specified, const IntPoint& hot_spot);
 
@@ -106,10 +58,10 @@ class PLATFORM_EXPORT Cursor {
   ~Cursor();
   Cursor& operator=(const Cursor&);
 
-  explicit Cursor(Type);
-  Type GetType() const {
-    DCHECK_GE(type_, 0);
-    DCHECK_LE(type_, kCustom);
+  explicit Cursor(ui::CursorType);
+  ui::CursorType GetType() const {
+    DCHECK_GE(type_, static_cast<ui::CursorType>(0));
+    DCHECK_LE(type_, ui::CursorType::kCustom);
     return type_;
   }
   Image* GetImage() const { return image_.get(); }
@@ -118,7 +70,7 @@ class PLATFORM_EXPORT Cursor {
   float ImageScaleFactor() const { return image_scale_factor_; }
 
  private:
-  Type type_;
+  ui::CursorType type_;
   scoped_refptr<Image> image_;
   IntPoint hot_spot_;
   float image_scale_factor_;

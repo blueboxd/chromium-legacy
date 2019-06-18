@@ -112,12 +112,9 @@ void V0InsertionPoint::SetDistributedNodes(
 }
 
 void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
-  // We need to attach the distribution here so that they're inserted in the
-  // right order otherwise the n^2 protection inside LayoutTreeBuilder will
-  // cause them to be inserted in the wrong place later. This also lets
-  // distributed nodes benefit from the n^2 protection. If the distributed
-  // children are the direct fallback children they are attached in
-  // ContainerNodes::AttachLayoutTree() via the base class call below.
+  // If the distributed children are the direct fallback children they are
+  // attached in ContainerNodes::AttachLayoutTree() via the base class call
+  // below.
   if (!DistributedNodesAreFallback()) {
     AttachContext children_context(context);
     for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)

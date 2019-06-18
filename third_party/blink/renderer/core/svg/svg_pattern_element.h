@@ -80,6 +80,10 @@ class SVGPatternElement final : public SVGElement,
 
   const SVGPatternElement* ReferencedElement() const;
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
+    return SVGURIReference::GetCheckedAttributeTypes();
+  }
+
   void Trace(blink::Visitor*) override;
 
  private:

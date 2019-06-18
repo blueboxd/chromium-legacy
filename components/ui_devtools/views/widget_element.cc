@@ -72,14 +72,9 @@ void WidgetElement::SetVisible(bool visible) {
     widget_->Hide();
 }
 
-std::unique_ptr<protocol::Array<std::string>> WidgetElement::GetAttributes()
-    const {
-  auto attributes = protocol::Array<std::string>::create();
-  attributes->addItem("name");
-  attributes->addItem(widget_->GetName());
-  attributes->addItem("active");
-  attributes->addItem(widget_->IsActive() ? "true" : "false");
-  return attributes;
+std::vector<std::string> WidgetElement::GetAttributes() const {
+  return {"name", widget_->GetName(), "active",
+          widget_->IsActive() ? "true" : "false"};
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

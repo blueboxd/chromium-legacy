@@ -52,7 +52,7 @@ void WorkerScriptFetchInitiator::Start(
     int process_id,
     const GURL& script_url,
     const url::Origin& request_initiator,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
@@ -106,8 +106,8 @@ void WorkerScriptFetchInitiator::Start(
     // CorsURLLoaderFactory::IsSane().
     // TODO(https://crbug.com/799935): Unify |LOAD_DO_NOT_*| into
     // |allow_credentials|.
-    resource_request->fetch_credentials_mode = credentials_mode;
-    if (credentials_mode == network::mojom::FetchCredentialsMode::kOmit) {
+    resource_request->credentials_mode = credentials_mode;
+    if (credentials_mode == network::mojom::CredentialsMode::kOmit) {
       resource_request->allow_credentials = false;
       const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
                                       net::LOAD_DO_NOT_SEND_COOKIES |
@@ -188,9 +188,8 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     auto file_factory = std::make_unique<FileURLLoaderFactory>(
         storage_partition->browser_context()->GetPath(),
         storage_partition->browser_context()->GetSharedCorsOriginAccessList(),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+        // USER_VISIBLE because worker script fetch may affect the UI.
+        base::TaskPriority::USER_VISIBLE);
     network::mojom::URLLoaderFactoryPtr file_factory_ptr;
     mojo::MakeStrongBinding(std::move(file_factory),
                             mojo::MakeRequest(&file_factory_ptr));

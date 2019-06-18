@@ -1477,7 +1477,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 #endif
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -1650,8 +1649,8 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
     owned_render_widget_host_->RendererExited();
 
   // The renderer process is gone, so this frame can no longer be loading.
-  if (GetNavigationHandle())
-    GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);
+  if (navigation_request())
+    navigation_request()->set_net_error(net::ERR_ABORTED);
   ResetNavigationRequests();
   ResetLoadingState();
 
@@ -2234,10 +2233,9 @@ void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
   // return early if navigation_handle_ is null, once we prevent that case from
   // happening in practice. See https://crbug.com/605289.
 
-  // Update the error code in the NavigationHandle of the navigation.
-  if (GetNavigationHandle()) {
-    GetNavigationHandle()->set_net_error_code(
-        static_cast<net::Error>(error_code));
+  // Update the error code in the NavigationRequest.
+  if (navigation_request()) {
+    navigation_request()->set_net_error(static_cast<net::Error>(error_code));
   }
 
   frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(
@@ -3674,10 +3672,10 @@ void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
     keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
 }
 
-void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
-                                              WindowOpenDisposition disposition,
-                                              const gfx::Rect& initial_rect,
-                                              bool user_gesture) {
+void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
+                                            WindowOpenDisposition disposition,
+                                            const gfx::Rect& initial_rect,
+                                            bool user_gesture) {
   delegate_->ShowCreatedWindow(GetProcess()->GetID(), pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
@@ -4350,9 +4348,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
     if (frame_tree_node_->navigation_request() &&
         frame_tree_node_->navigation_request()->navigation_handle()) {
-      frame_tree_node_->navigation_request()
-          ->navigation_handle()
-          ->set_net_error_code(net::ERR_ABORTED);
+      frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
     frame_tree_node_->ResetNavigationRequest(false, true);
   }
@@ -4859,9 +4855,8 @@ void RenderFrameHostImpl::CommitNavigation(
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+          // A user-initiated navigation is USER_BLOCKING.
+          base::TaskPriority::USER_BLOCKING);
       non_network_url_loader_factories_.emplace(url::kFileScheme,
                                                 std::move(file_factory));
     }
@@ -6443,7 +6438,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
-              "net_error_code", base::debug::CrashKeySize::Size32),
+              "net_error", base::debug::CrashKeySize::Size32),
           base::NumberToString(navigation_request->net_error()));
 
       base::debug::SetCrashKeyString(

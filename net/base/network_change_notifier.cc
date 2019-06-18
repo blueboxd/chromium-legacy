@@ -199,13 +199,13 @@ void NetworkChangeNotifier::SetFactory(
 }
 
 // static
-NetworkChangeNotifier* NetworkChangeNotifier::Create() {
+std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::Create() {
   if (g_network_change_notifier_factory)
     return g_network_change_notifier_factory->CreateInstance();
 
 #if defined(OS_WIN)
-  NetworkChangeNotifierWin* network_change_notifier =
-      new NetworkChangeNotifierWin();
+  std::unique_ptr<NetworkChangeNotifierWin> network_change_notifier =
+      std::make_unique<NetworkChangeNotifierWin>();
   network_change_notifier->WatchForAddressChange();
   return network_change_notifier;
 #elif defined(OS_ANDROID)
@@ -213,13 +213,16 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
   CHECK(false);
   return NULL;
 #elif defined(OS_CHROMEOS)
-  return new NetworkChangeNotifierPosix(CONNECTION_NONE, SUBTYPE_NONE);
+  return std::make_unique<NetworkChangeNotifierPosix>(CONNECTION_NONE,
+                                                      SUBTYPE_NONE);
 #elif defined(OS_LINUX)
-  return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
+  return std::make_unique<NetworkChangeNotifierLinux>(
+      std::unordered_set<std::string>());
 #elif defined(OS_MACOSX)
-  return new NetworkChangeNotifierMac();
+  return std::make_unique<NetworkChangeNotifierMac>();
 #elif defined(OS_FUCHSIA)
-  return new NetworkChangeNotifierFuchsia(0 /* required_features */);
+  return std::make_unique<NetworkChangeNotifierFuchsia>(
+      0 /* required_features */);
 #else
   NOTIMPLEMENTED();
   return NULL;
@@ -485,8 +488,8 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
 }
 
 // static
-NetworkChangeNotifier* NetworkChangeNotifier::CreateMock() {
-  return new MockNetworkChangeNotifier();
+std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateMock() {
+  return std::make_unique<MockNetworkChangeNotifier>();
 }
 
 NetworkChangeNotifier::IPAddressObserver::IPAddressObserver() = default;

@@ -1331,16 +1331,17 @@ html[dir=rtl] .sh-option-icon {
 }
 
 .sh-option-image .selected-circle {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
-  height: 24px;
-  left: 208px;
-  top: 8px;
-  width: 24px;
+  box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .16),
+      0 1px 2px 1px rgba(0, 0, 0, .23);
+  height: 22px;
+  left: 209px;
+  top: 9px;
+  width: 22px;
 }
 
 html[dir=rtl] .sh-option-image .selected-circle {
   left: 0;
-  right: 208px;
+  right: 209px;
 }
 
 .sh-option-image .selected-check {

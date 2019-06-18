@@ -28,9 +28,7 @@ class OffscreenBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   OffscreenBrowserCompositorOutputSurface(
-      scoped_refptr<viz::ContextProviderCommandBuffer> context,
-      std::unique_ptr<viz::OverlayCandidateValidator>
-          overlay_candidate_validator);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context);
 
   ~OffscreenBrowserCompositorOutputSurface() override;
 

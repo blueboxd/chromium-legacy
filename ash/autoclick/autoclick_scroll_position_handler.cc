@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -19,9 +20,12 @@
 namespace ash {
 
 namespace {
-int kScrollBackgroundSizeInDips = 32;
-int kScrollIconSizeInDips = 24;
-SkColor kIconBackgroundColor = SkColorSetARGB(255, 128, 134, 139);
+constexpr int kScrollBackgroundSizeInDips = 32;
+constexpr int kScrollIconSizeInDips = 24;
+constexpr SkColor kIconBackgroundColor = SkColorSetARGB(255, 128, 134, 139);
+constexpr base::TimeDelta kAnimationTime =
+    base::TimeDelta::FromMilliseconds(500);
+constexpr float kFadedOpacity = 0.5;
 }  // namespace
 
 // View of the AutoclickScrollPositionHandler. Draws the actual contents and
@@ -52,7 +56,12 @@ class AutoclickScrollPositionView : public views::View {
                                  kScrollBackgroundSizeInDips,
                                  kScrollBackgroundSizeInDips));
     widget_->Show();
+    widget_->SetOpacity(1.0);
     SchedulePaint();
+  }
+
+  void UpdateForAnimationStep(gfx::Animation* animation) {
+    widget_->SetOpacity(animation->CurrentValueBetween(1.0, kFadedOpacity));
   }
 
  private:
@@ -84,9 +93,13 @@ class AutoclickScrollPositionView : public views::View {
 
 AutoclickScrollPositionHandler::AutoclickScrollPositionHandler(
     const gfx::Point& center_point_in_screen,
-    views::Widget* widget) {
+    views::Widget* widget)
+    : gfx::LinearAnimation(nullptr) {
   view_ = std::make_unique<AutoclickScrollPositionView>(center_point_in_screen,
                                                         widget);
+  SetDuration(kAnimationTime);
+  animation_state_ = AnimationState::kWait;
+  Start();
 }
 
 AutoclickScrollPositionHandler::~AutoclickScrollPositionHandler() {
@@ -97,6 +110,22 @@ void AutoclickScrollPositionHandler::SetCenter(
     const gfx::Point& center_point_in_screen,
     views::Widget* widget) {
   view_->SetLocation(center_point_in_screen);
+  animation_state_ = AnimationState::kWait;
+  Start();
+}
+
+void AutoclickScrollPositionHandler::AnimateToState(double state) {
+  if (animation_state_ == AnimationState::kFade)
+    view_->UpdateForAnimationStep(this);
+}
+
+void AutoclickScrollPositionHandler::AnimationStopped() {
+  if (animation_state_ == AnimationState::kWait) {
+    animation_state_ = AnimationState::kFade;
+    Start();
+  } else if (animation_state_ == AnimationState::kFade) {
+    animation_state_ = AnimationState::kDone;
+  }
 }
 
 }  // namespace ash

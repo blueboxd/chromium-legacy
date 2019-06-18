@@ -11,7 +11,7 @@ import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.content.res.AppCompatResources;
 
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
 
 /**
  * A {@link TabGridViewHolder} with a checkable button. This is used in the manual selection mode.
@@ -26,21 +26,18 @@ class SelectableTabGridViewHolder extends TabGridViewHolder {
     SelectableTabGridViewHolder(SelectableTabGridView itemView) {
         super(itemView);
         selectableTabGridView = itemView;
-        defaultLevel = itemView.getResources().getInteger(
-                org.chromium.chrome.R.integer.list_item_level_default);
-        selectedLevel = itemView.getResources().getInteger(
-                org.chromium.chrome.R.integer.list_item_level_selected);
+        defaultLevel = itemView.getResources().getInteger(R.integer.list_item_level_default);
+        selectedLevel = itemView.getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
                 itemView.getContext(), R.drawable.ic_check_googblue_24dp_animated);
         iconColorList = AppCompatResources.getColorStateList(
-                itemView.getContext(), org.chromium.chrome.R.color.default_icon_color_inverse);
+                itemView.getContext(), R.color.default_icon_color_inverse);
 
         Drawable selectedDrawable = new InsetDrawable(
                 ResourcesCompat.getDrawable(itemView.getResources(),
-                        org.chromium.chrome.tab_ui.R.drawable.tab_grid_selection_list_icon,
-                        itemView.getContext().getTheme()),
+                        R.drawable.tab_grid_selection_list_icon, itemView.getContext().getTheme()),
                 (int) itemView.getResources().getDimension(
-                        org.chromium.chrome.tab_ui.R.dimen.selection_tab_grid_toggle_button_inset));
+                        R.dimen.selection_tab_grid_toggle_button_inset));
         actionButton.setBackground(selectedDrawable);
         actionButton.getBackground().setLevel(defaultLevel);
     }

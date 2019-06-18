@@ -59,9 +59,7 @@ constexpr int kScrollVelocityThreshold = 6;
 constexpr float kWidthRatio = 0.8f;
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 // Checks if |window| can be hidden or shown with a gesture.

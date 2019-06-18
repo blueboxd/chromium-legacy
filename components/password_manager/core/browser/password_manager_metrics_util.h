@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
@@ -430,12 +431,12 @@ void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type);
 
 // Log a password successful submission event.
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event);
+    autofill::mojom::SubmissionIndicatorEvent event);
 
 // Log a password successful submission event for accepted by user password save
 // or update.
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event);
+    autofill::mojom::SubmissionIndicatorEvent event);
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);

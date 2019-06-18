@@ -391,7 +391,7 @@ void MimeHandlerViewGuest::ExitFullscreenModeForTab(content::WebContents*) {
 }
 
 bool MimeHandlerViewGuest::IsFullscreenForTabOrPending(
-    const content::WebContents* web_contents) const {
+    const content::WebContents* web_contents) {
   return is_guest_fullscreen_;
 }
 
@@ -480,7 +480,7 @@ void MimeHandlerViewGuest::FuseBeforeUnloadControl(
                       std::move(pending_before_unload_control_));
 }
 
-content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() const {
+content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() {
   return content::RenderFrameHost::FromID(embedder_frame_process_id_,
                                           embedder_frame_routing_id_);
 }

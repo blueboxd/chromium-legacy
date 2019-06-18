@@ -55,6 +55,7 @@ if (is_chromeos) {
 
   js_library("cr_network_listener_behavior") {
     deps = [
+      "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/js:assert",
     ]
     externs_list = [ "$externs_path/networking_private.js" ]

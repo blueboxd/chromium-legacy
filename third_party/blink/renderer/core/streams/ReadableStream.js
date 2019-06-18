@@ -38,7 +38,6 @@
   const internalReadableStreamSymbol = v8.createPrivateSymbol(
       'internal ReadableStream in exposed ReadableStream interface');
   // Remove this once C++ code has been updated to use CreateReadableStream.
-  const _lockNotifyTarget = v8.createPrivateSymbol('[[lockNotifyTarget]]');
   const _strategySizeAlgorithm = v8.createPrivateSymbol(
       '[[strategySizeAlgorithm]]');
   const _pullAlgorithm = v8.createPrivateSymbol('[[pullAlgorithm]]');
@@ -47,9 +46,6 @@
   const CLOSE_REQUESTED = 0b10;
   const PULLING = 0b100;
   const PULL_AGAIN = 0b1000;
-  // TODO(ricea): Remove this once blink::UnderlyingSourceBase no longer needs
-  // it.
-  const BLINK_LOCK_NOTIFICATIONS = 0b10000;
 
   const ObjectCreate = global.Object.create;
 
@@ -127,10 +123,10 @@
     // CreateReadableStream.
     constructor(underlyingSource = {}, strategy = {},
                 internalArgument = undefined) {
-      const enableBlinkLockNotifications =
+      const createdByUA =
             internalArgument === createWithExternalControllerSentinel;
 
-      if (!useCounted && !enableBlinkLockNotifications) {
+      if (!useCounted && !createdByUA) {
         binding.countUse('ReadableStreamConstructor');
         useCounted = true;
       }
@@ -157,8 +153,7 @@
 
       highWaterMark = ValidateAndNormalizeHighWaterMark(highWaterMark);
       SetUpReadableStreamDefaultControllerFromUnderlyingSource(
-          this, underlyingSource, highWaterMark, sizeAlgorithm,
-          enableBlinkLockNotifications);
+          this, underlyingSource, highWaterMark, sizeAlgorithm);
     }
   }
 
@@ -381,11 +376,8 @@
     return new ReadableStreamDefaultReader(stream);
   }
 
-  // The non-standard boolean |enableBlinkLockNotifications| argument indicates
-  // whether the stream is being created from C++.
   function CreateReadableStream(startAlgorithm, pullAlgorithm, cancelAlgorithm,
-                                highWaterMark, sizeAlgorithm,
-                                enableBlinkLockNotifications) {
+                                highWaterMark, sizeAlgorithm) {
     if (highWaterMark === undefined) {
       highWaterMark = 1;
     }
@@ -399,7 +391,7 @@
     const controller = ObjectCreate(ReadableStreamDefaultController_prototype);
     SetUpReadableStreamDefaultController(
         stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm,
-        highWaterMark, sizeAlgorithm, enableBlinkLockNotifications);
+        highWaterMark, sizeAlgorithm);
     return stream;
   }
 
@@ -490,11 +482,9 @@
     const startAlgorithm = () => undefined;
 
     const branch1Stream = CreateReadableStream(
-        startAlgorithm, pullAlgorithm, cancel1Algorithm, undefined, undefined,
-        false);
+        startAlgorithm, pullAlgorithm, cancel1Algorithm);
     const branch2Stream = CreateReadableStream(
-        startAlgorithm, pullAlgorithm, cancel2Algorithm, undefined, undefined,
-        false);
+        startAlgorithm, pullAlgorithm, cancel2Algorithm);
     const branch1controller = branch1Stream[_controller];
     const branch2controller = branch2Stream[_controller];
 
@@ -695,17 +685,6 @@
   }
 
   function ReadableStreamReaderGenericInitialize(reader, stream) {
-    // TODO(yhirano): Remove this when we don't need hasPendingActivity in
-    // blink::UnderlyingSourceBase.
-    const controller = stream[_controller];
-    if (controller[_readableStreamDefaultControllerBits] &
-        BLINK_LOCK_NOTIFICATIONS) {
-      // The stream is created with an external controller (i.e. made in
-      // Blink).
-      const lockNotifyTarget = controller[_lockNotifyTarget];
-      callFunction(lockNotifyTarget.notifyLockAcquired, lockNotifyTarget);
-    }
-
     reader[_ownerReadableStream] = stream;
     stream[_reader] = reader;
 
@@ -724,17 +703,6 @@
   }
 
   function ReadableStreamReaderGenericRelease(reader) {
-    // TODO(yhirano): Remove this when we don't need hasPendingActivity in
-    // blink::UnderlyingSourceBase.
-    const controller = reader[_ownerReadableStream][_controller];
-    if (controller[_readableStreamDefaultControllerBits] &
-        BLINK_LOCK_NOTIFICATIONS) {
-      // The stream is created with an external controller (i.e. made in
-      // Blink).
-      const lockNotifyTarget = controller[_lockNotifyTarget];
-      callFunction(lockNotifyTarget.notifyLockReleased, lockNotifyTarget);
-    }
-
     if (ReadableStreamGetState(reader[_ownerReadableStream]) ===
         STATE_READABLE) {
       rejectPromise(
@@ -1000,12 +968,10 @@
 
   function SetUpReadableStreamDefaultController(
       stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm,
-      highWaterMark, sizeAlgorithm, enableBlinkLockNotifications) {
+      highWaterMark, sizeAlgorithm) {
     controller[_controlledReadableStream] = stream;
     controller[_queue] = new binding.SimpleQueue();
     controller[_queueTotalSize] = 0;
-    controller[_readableStreamDefaultControllerBits] =
-        enableBlinkLockNotifications ? BLINK_LOCK_NOTIFICATIONS : 0b0;
     controller[_strategySizeAlgorithm] = sizeAlgorithm;
     controller[_strategyHWM] = highWaterMark;
     controller[_pullAlgorithm] = pullAlgorithm;
@@ -1019,8 +985,7 @@
   }
 
   function SetUpReadableStreamDefaultControllerFromUnderlyingSource(
-      stream, underlyingSource, highWaterMark, sizeAlgorithm,
-      enableBlinkLockNotifications) {
+      stream, underlyingSource, highWaterMark, sizeAlgorithm) {
     const controller = ObjectCreate(ReadableStreamDefaultController_prototype);
     const startAlgorithm =
           () => CallOrNoop1(underlyingSource, 'start', controller,
@@ -1029,13 +994,9 @@
         underlyingSource, 'pull', 0, controller, 'underlyingSource.pull');
     const cancelAlgorithm = CreateAlgorithmFromUnderlyingMethod(
         underlyingSource, 'cancel', 1, 'underlyingSource.cancel');
-    // TODO(ricea): Remove this once C++ API has been updated.
-    if (enableBlinkLockNotifications) {
-      controller[_lockNotifyTarget] = underlyingSource;
-    }
     SetUpReadableStreamDefaultController(
         stream, controller, startAlgorithm, pullAlgorithm, cancelAlgorithm,
-        highWaterMark, sizeAlgorithm, enableBlinkLockNotifications);
+        highWaterMark, sizeAlgorithm);
   }
 
   //

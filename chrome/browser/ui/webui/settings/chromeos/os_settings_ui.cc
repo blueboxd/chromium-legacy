@@ -13,7 +13,6 @@
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -144,7 +143,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                             IDS_OS_SETTINGS_PROFILE_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
-  DarkModeHandler::Initialize(web_ui, html_source);
   ManagedUIHandler::Initialize(web_ui, html_source);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

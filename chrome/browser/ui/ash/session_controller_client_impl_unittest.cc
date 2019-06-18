@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -189,6 +190,7 @@ class SessionControllerClientImplTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<AssistantClient> assistant_client_;
   session_manager::SessionManager session_manager_;
+  chromeos::SessionTerminationManager session_termination_manager_;
 
  private:
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -386,6 +388,24 @@ TEST_F(SessionControllerClientImplTest,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
+// Make sure adding users to multiprofiles disabled because device is locked
+// to single user.
+TEST_F(SessionControllerClientImplTest,
+       AddUserToMultiprofileDisallowedByLockToSingleUser) {
+  InitForMultiProfile();
+
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
+  user_manager()->LoginUser(account_id);
+  session_termination_manager_.SetDeviceLockedToSingleUser();
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_LOCKED_TO_SINGLE_USER,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+}
+
 TEST_F(SessionControllerClientImplTest, SendUserSession) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClientImpl client;
@@ -478,44 +498,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
             session_controller.last_user_session()->custodian_email);
-}
-
-TEST_F(SessionControllerClientImplTest, DeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  const AccountId normal_user =
-      AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
-  user_manager()->SetOwnerId(owner);
-  UserAddedToSession(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  UserAddedToSession(normal_user);
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-}
-
-TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  UserAddedToSession(owner);
-  // The device owner is empty, the current session shouldn't be the owner.
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  user_manager()->SetOwnerId(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
 }
 
 TEST_F(SessionControllerClientImplTest, UserPrefsChange) {

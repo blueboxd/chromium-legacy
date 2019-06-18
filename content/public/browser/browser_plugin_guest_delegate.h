@@ -55,7 +55,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void ElementSizeChanged(const gfx::Size& size) {}
 
   // Returns the WebContents that currently owns this guest.
-  virtual WebContents* GetOwnerWebContents() const;
+  virtual WebContents* GetOwnerWebContents();
 
   // Asks the delegate if the given guest can lock the pointer.
   // Invoking the |callback| synchronously is OK.
@@ -84,7 +84,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual bool CanBeEmbeddedInsideCrossProcessFrames();
 
   // Returns the embedder frame for this guest.
-  virtual RenderFrameHost* GetEmbedderFrame() const;
+  virtual RenderFrameHost* GetEmbedderFrame();
 };
 
 }  // namespace content

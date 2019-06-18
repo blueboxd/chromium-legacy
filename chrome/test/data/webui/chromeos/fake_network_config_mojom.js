@@ -14,6 +14,28 @@ class FakeNetworkConfig {
   /** @param {!NetworkingPrivate} extensionApi */
   constructor(extensionApi) {
     this.extensionApi_ = extensionApi;
+
+    this.observers_ = [];
+    extensionApi.onNetworkListChanged.addListener(
+        this.onNetworkListChanged.bind(this));
+    extensionApi.onDeviceStateListChanged.addListener(
+        this.onDeviceStateListChanged.bind(this));
+  }
+
+  onNetworkListChanged(networks) {
+    this.observers_.forEach(o => o.onNetworkStateListChanged());
+  }
+
+  onDeviceStateListChanged() {
+    this.observers_.forEach(o => o.onDeviceStateListChanged());
+  }
+
+  /**
+   * @param { !chromeos.networkConfig.mojom.CrosNetworkConfigObserverProxy }
+   *     observer
+   */
+  addObserver(observer) {
+    this.observers_.push(observer);
   }
 
   /**

@@ -68,6 +68,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"

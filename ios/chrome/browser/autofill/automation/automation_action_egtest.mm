@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -45,13 +44,8 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
   base::DictionaryValue dict = base::DictionaryValue();
   dict.SetKey("type", base::Value("click"));
   dict.SetKey("selector", base::Value("//*[@id=\"fill_form\"]"));
-
-  NSError* actionCreationError = nil;
-  AutomationAction* action =
-      [AutomationAction actionWithValueDictionary:dict
-                                            error:&actionCreationError];
-  CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
-  CHROME_EG_ASSERT_NO_ERROR([action execute]);
+  AutomationAction* action = [AutomationAction actionWithValueDictionary:dict];
+  [action execute];
 
   NSError* error;
   id result = chrome_test_util::ExecuteJavaScript(
@@ -69,13 +63,9 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
   base::DictionaryValue clickDict = base::DictionaryValue();
   clickDict.SetKey("type", base::Value("click"));
   clickDict.SetKey("selector", base::Value("//*[@id=\"fill_form_delay\"]"));
-
-  NSError* actionCreationError = nil;
   AutomationAction* clickAction =
-      [AutomationAction actionWithValueDictionary:clickDict
-                                            error:&actionCreationError];
-  CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
-  CHROME_EG_ASSERT_NO_ERROR([clickAction execute]);
+      [AutomationAction actionWithValueDictionary:clickDict];
+  [clickAction execute];
 
   base::DictionaryValue waitForDict = base::DictionaryValue();
   waitForDict.SetKey("type", base::Value("waitFor"));
@@ -85,10 +75,8 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
       "Smith\";"));
   waitForDict.SetKey("assertions", std::move(assertions));
   AutomationAction* waitForAction =
-      [AutomationAction actionWithValueDictionary:waitForDict
-                                            error:&actionCreationError];
-  CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
-  CHROME_EG_ASSERT_NO_ERROR([waitForAction execute]);
+      [AutomationAction actionWithValueDictionary:waitForDict];
+  [waitForAction execute];
 }
 
 - (void)testAutomationActionSelectDropdown {
@@ -96,13 +84,9 @@ const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
   selectDict.SetKey("type", base::Value("select"));
   selectDict.SetKey("selector", base::Value("//*[@name=\"cc_month_exp\"]"));
   selectDict.SetKey("index", base::Value(5));
-
-  NSError* actionCreationError = nil;
-  AutomationAction* clickAction =
-      [AutomationAction actionWithValueDictionary:selectDict
-                                            error:&actionCreationError];
-  CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
-  CHROME_EG_ASSERT_NO_ERROR([clickAction execute]);
+  AutomationAction* selectAction =
+      [AutomationAction actionWithValueDictionary:selectDict];
+  [selectAction execute];
 
   NSError* error;
   id result = chrome_test_util::ExecuteJavaScript(

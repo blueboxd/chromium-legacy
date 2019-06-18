@@ -40,6 +40,7 @@
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -974,8 +975,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
     radio_check_image_view_->SetImage(GetMenuCheckImage(icon_color));
   } else if (type_ == RADIO) {
-    radio_check_image_view_->SetImage(GetRadioButtonImage(
-        delegate->IsItemChecked(GetCommand()), render_selection, icon_color));
+    const bool toggled = delegate->IsItemChecked(GetCommand());
+    const gfx::VectorIcon& radio_icon =
+        toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
+    const SkColor radio_icon_color = GetNativeTheme()->GetSystemColor(
+        toggled ? ui::NativeTheme::kColorId_ProminentButtonColor
+                : ui::NativeTheme::kColorId_ButtonEnabledColor);
+    radio_check_image_view_->SetImage(
+        gfx::CreateVectorIcon(radio_icon, kMenuCheckSize, radio_icon_color));
   }
 
   // Render the foreground.

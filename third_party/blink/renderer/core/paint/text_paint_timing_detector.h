@@ -28,11 +28,16 @@ class TracedValue;
 
 class TextRecord : public base::SupportsWeakPtr<TextRecord> {
  public:
-  TextRecord(DOMNodeId new_node_id, uint64_t new_first_size)
-      : node_id(new_node_id), first_size(new_first_size) {}
+  TextRecord(DOMNodeId new_node_id,
+             uint64_t new_first_size,
+             const FloatRect& element_timing_rect)
+      : node_id(new_node_id),
+        first_size(new_first_size),
+        element_timing_rect_(element_timing_rect) {}
 
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
+  FloatRect element_timing_rect_;
   // The time of the first paint after fully loaded.
   base::TimeTicks paint_time = base::TimeTicks();
 #ifndef NDEBUG
@@ -61,6 +66,7 @@ class TextRecordsManager {
   }
   void RecordVisibleNode(const DOMNodeId&,
                          const uint64_t& visual_size,
+                         const FloatRect& element_timing_rect,
                          const LayoutObject&);
   bool NeedMeausuringPaintTime() const {
     return !texts_queued_for_paint_time_.IsEmpty();

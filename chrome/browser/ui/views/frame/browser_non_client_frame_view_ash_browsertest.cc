@@ -1266,7 +1266,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ToggleOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
@@ -1301,7 +1301,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   ToggleOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
 
@@ -1407,7 +1407,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ToggleOverview();
@@ -1416,7 +1416,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
@@ -1439,7 +1439,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
   // Tablet mode doesn't affect app's caption button's visibility.
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // However, overview mode does.
@@ -1449,7 +1449,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 

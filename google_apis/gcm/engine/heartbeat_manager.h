@@ -32,10 +32,15 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   typedef base::Callback<void(ConnectionFactory::ConnectionResetReason)>
       ReconnectCallback;
 
-  // Constructs a heartbeat manager with a passed in |io_task_runner|. Must be
-  // called on |io_task_runner|
+  // |io_task_runner|: for running IO tasks.
+  // |maybe_power_wrapped_io_task_runner|: for running IO tasks, where if the
+  //     feature is provided, it could be a wrapper on top of |io_task_runner|
+  //     to provide power management featueres so that a delayed task posted to
+  //     it can wake the system up from sleep to perform the task.
   explicit HeartbeatManager(
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      scoped_refptr<base::SequencedTaskRunner>
+          maybe_power_wrapped_io_task_runner);
   ~HeartbeatManager() override;
 
   // Start the heartbeat logic.

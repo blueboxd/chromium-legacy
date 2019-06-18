@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatDelegate;
 
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 
 import java.util.Arrays;
@@ -41,9 +44,40 @@ public class NightModeTestUtils {
     }
 
     /**
-     * Resets the night mode state.
+     * Resets the night mode state for {@link DummyUiActivity}.
      */
     public static void tearDownNightModeForDummyUiActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
+
+    /**
+     * Sets up initial states for night mode before
+     * {@link org.chromium.chrome.browser.ChromeActivity} is launched.
+     */
+    public static void setUpNightModeBeforeChromeActivityLaunched() {
+        FeatureUtilities.setNightModeAvailableForTesting(true);
+        NightModeUtils.setNightModeSupportedForTesting(true);
+    }
+
+    /**
+     * Sets up the night mode state for {@link org.chromium.chrome.browser.ChromeActivity}.
+     * @param nightModeEnabled Whether night mode should be enabled.
+     */
+    public static void setUpNightModeForChromeActivity(boolean nightModeEnabled) {
+        ChromePreferenceManager.getInstance().writeInt(ChromePreferenceManager.UI_THEME_SETTING_KEY,
+                nightModeEnabled ? ThemePreferences.ThemeSetting.DARK
+                                 : ThemePreferences.ThemeSetting.LIGHT);
+    }
+
+    /**
+     * Resets the night mode state after {@link org.chromium.chrome.browser.ChromeActivity} is
+     * destroyed.
+     */
+    public static void tearDownNightModeAfterChromeActivityDestroyed() {
+        FeatureUtilities.setNightModeAvailableForTesting(null);
+        NightModeUtils.setNightModeSupportedForTesting(null);
+        GlobalNightModeStateProviderHolder.resetInstanceForTesting();
+        ChromePreferenceManager.getInstance().removeKey(
+                ChromePreferenceManager.UI_THEME_SETTING_KEY);
     }
 }

@@ -39,10 +39,9 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.originated_from_service_worker &&
          skip_service_worker == request.skip_service_worker &&
          corb_detachable == request.corb_detachable &&
-         corb_excluded == request.corb_excluded &&
-         fetch_request_mode == request.fetch_request_mode &&
-         fetch_credentials_mode == request.fetch_credentials_mode &&
-         fetch_redirect_mode == request.fetch_redirect_mode &&
+         corb_excluded == request.corb_excluded && mode == request.mode &&
+         credentials_mode == request.credentials_mode &&
+         redirect_mode == request.redirect_mode &&
          fetch_integrity == request.fetch_integrity &&
          fetch_request_context_type == request.fetch_request_context_type &&
          request_body == request.request_body &&

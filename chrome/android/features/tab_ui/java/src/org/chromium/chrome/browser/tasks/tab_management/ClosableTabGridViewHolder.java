@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.View;
 
+import org.chromium.chrome.tab_ui.R;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -19,10 +21,10 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
     ClosableTabGridViewHolder(View itemView) {
         super(itemView);
         if (sCloseButtonBitmapWeakRef == null || sCloseButtonBitmapWeakRef.get() == null) {
-            int closeButtonSize = (int) itemView.getResources().getDimension(
-                    org.chromium.chrome.tab_ui.R.dimen.tab_grid_close_button_size);
-            Bitmap bitmap = BitmapFactory.decodeResource(
-                    itemView.getResources(), org.chromium.chrome.tab_ui.R.drawable.btn_close);
+            int closeButtonSize =
+                    (int) itemView.getResources().getDimension(R.dimen.tab_grid_close_button_size);
+            Bitmap bitmap =
+                    BitmapFactory.decodeResource(itemView.getResources(), R.drawable.btn_close);
             sCloseButtonBitmapWeakRef = new WeakReference<>(
                     Bitmap.createScaledBitmap(bitmap, closeButtonSize, closeButtonSize, true));
             bitmap.recycle();

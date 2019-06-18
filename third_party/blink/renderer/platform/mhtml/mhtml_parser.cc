@@ -117,7 +117,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   }
   String ContentLocation() const { return content_location_; }
   String ContentID() const { return content_id_; }
-  WTF::Time Date() const { return date_; }
+  base::Time Date() const { return date_; }
 
   // Multi-part type and boundaries are only valid for multipart MIME headers.
   String MultiPartType() const { return multipart_type_; }
@@ -134,7 +134,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   Encoding content_transfer_encoding_;
   String content_location_;
   String content_id_;
-  WTF::Time date_;
+  base::Time date_;
   String multipart_type_;
   String end_of_part_boundary_;
   String end_of_document_boundary_;
@@ -221,11 +221,11 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
 
   mime_parameters_iterator = key_value_pairs.find("date");
   if (mime_parameters_iterator != key_value_pairs.end()) {
-    WTF::Time parsed_time;
+    base::Time parsed_time;
     // Behave like //net and parse time-valued headers with a default time zone
     // of UTC.
-    if (WTF::Time::FromUTCString(mime_parameters_iterator->value.Utf8().c_str(),
-                                 &parsed_time))
+    if (base::Time::FromUTCString(
+            mime_parameters_iterator->value.Utf8().c_str(), &parsed_time))
       mime_header->date_ = parsed_time;
   }
 
@@ -276,7 +276,7 @@ HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {
   return resources;
 }
 
-WTF::Time MHTMLParser::CreationDate() const {
+base::Time MHTMLParser::CreationDate() const {
   return creation_date_;
 }
 

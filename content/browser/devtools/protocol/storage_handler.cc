@@ -60,8 +60,7 @@ void ReportUsageAndQuotaDataOnUIThread(
         Response::Error("Quota information is not available"));
   }
 
-  std::unique_ptr<Array<Storage::UsageForType>> usageList =
-      Array<Storage::UsageForType>::create();
+  auto usageList = std::make_unique<Array<Storage::UsageForType>>();
 
   blink::mojom::UsageBreakdown* breakdown_ptr = usage_breakdown.get();
   for (const auto initializer : initializers) {
@@ -70,7 +69,7 @@ void ReportUsageAndQuotaDataOnUIThread(
             .SetStorageType(initializer.type)
             .SetUsage(breakdown_ptr->*(initializer.usage_member))
             .Build();
-    usageList->addItem(std::move(entry));
+    usageList->emplace_back(std::move(entry));
   }
 
   callback->sendSuccess(usage, quota, std::move(usageList));

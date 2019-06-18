@@ -18,6 +18,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//build/mac/tweak_info_plist.gni")
+  import("//content/public/app/mac_helpers.gni")
   import("//third_party/icu/config.gni")
   import("//ui/gl/features.gni")
   import("//v8/gni/v8.gni")
@@ -712,16 +713,20 @@ if (is_mac) {
   bundle_data("content_shell_framework_helpers") {
     testonly = true
     sources = [
-      "$root_out_dir/$content_shell_helper_name.app",
       "$root_out_dir/chrome_crashpad_handler",
     ]
     outputs = [
       "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
     ]
     public_deps = [
-      ":content_shell_helper_app",
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
+    foreach(helper_params, content_mac_helpers) {
+      sources += [
+        "$root_out_dir/${content_shell_helper_name}${helper_params[2]}.app",
+      ]
+      public_deps += [ ":content_shell_helper_app_${helper_params[0]}" ]
+    }
   }
 
   tweak_info_plist("content_shell_framework_plist") {
@@ -805,28 +810,49 @@ if (is_mac) {
     ]
   }
 
-  mac_app_bundle("content_shell_helper_app") {
-    testonly = true
-    output_name = content_shell_helper_name
-    sources = [
-      "app/shell_main_mac.cc",
-    ]
-    defines = [
-      "HELPER_EXECUTABLE",
-      "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"",
-    ]
-    deps = [
-      "//sandbox/mac:seatbelt",
-    ]
-    ldflags = [
-      # The helper is in Content Shell.app/Contents/Frameworks/
-      #     Content Shell Framework.framework/Versions/C/Helpers/
-      #     Content Shell Helper.app/Contents/MacOS/
-      # so set rpath up to the base.
-      "-rpath",
-      "@executable_path/../../../../../../../../../..",
-    ]
-    info_plist_target = ":content_shell_helper_plist"
+  template("content_shell_helper_app") {
+    mac_app_bundle(target_name) {
+      assert(defined(invoker.helper_name_suffix))
+      assert(defined(invoker.helper_bundle_id_suffix))
+
+      testonly = true
+
+      output_name = content_shell_helper_name + invoker.helper_name_suffix
+
+      sources = [
+        "app/shell_main_mac.cc",
+      ]
+      defines = [
+        "HELPER_EXECUTABLE",
+        "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"",
+      ]
+      extra_substitutions = [
+        "CONTENT_SHELL_HELPER_SUFFIX=${invoker.helper_name_suffix}",
+        "CONTENT_SHELL_HELPER_BUNDLE_ID_SUFFIX=${invoker.helper_bundle_id_suffix}",
+      ]
+      deps = [
+        "//sandbox/mac:seatbelt",
+      ]
+      ldflags = [
+        # The helper is in Content Shell.app/Contents/Frameworks/
+        #     Content Shell Framework.framework/Versions/C/Helpers/
+        #     Content Shell Helper.app/Contents/MacOS/
+        # so set rpath up to the base.
+        "-rpath",
+        "@executable_path/../../../../../../../../../..",
+      ]
+      info_plist_target = ":content_shell_helper_plist"
+    }
+  }
+
+  foreach(helper_params, content_mac_helpers) {
+    _helper_target = helper_params[0]
+    _helper_bundle_id = helper_params[1]
+    _helper_suffix = helper_params[2]
+    content_shell_helper_app("content_shell_helper_app_${_helper_target}") {
+      helper_name_suffix = _helper_suffix
+      helper_bundle_id_suffix = _helper_bundle_id
+    }
   }
 
   bundle_data("content_shell_framework_bundle_data") {
